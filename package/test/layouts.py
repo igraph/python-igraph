@@ -1,5 +1,5 @@
 import unittest
-from igraph import Graph, Layout
+from igraph import Layout
 
 class LayoutTests(unittest.TestCase):
     def testConstructor(self):
@@ -90,7 +90,6 @@ class LayoutTests(unittest.TestCase):
         self.assertRaises(ValueError, layout.center, 3)
         self.assertRaises(TypeError, layout.center, p=6)
 
-
     def testToPolar(self):
         import math
         layout = Layout([(0, 0), (-1, 1), (0, 1), (1, 1)])
@@ -107,33 +106,10 @@ class LayoutTests(unittest.TestCase):
         self.assertEqual(layout.coords, [[3, 1], [5, 3]])
 
 
-class LayoutAlgorithmTests(unittest.TestCase):
-    def testFruchtermanReingold(self):
-        g = Graph.Barabasi(100)
-        lo = g.layout("fr")
-        self.failUnless(isinstance(lo, Layout))
-        lo = g.layout("fr", miny=range(100))
-        self.failUnless(isinstance(lo, Layout))
-        lo = g.layout("fr", miny=range(100), maxy=range(100))
-        self.failUnless(isinstance(lo, Layout))
-
-    def testReingoldTilford(self):
-        g = Graph.Barabasi(100)
-        lo = g.layout("rt")
-        ys = [coord[1] for coord in lo]
-        root = ys.index(0.0)
-        self.assertEqual(ys, g.shortest_paths(root)[0])
-        g = Graph.Barabasi(100) + Graph.Barabasi(50)
-        lo = g.layout("rt", root=[0, 100])
-        self.assertEqual(lo[100][1]-lo[0][1], 0)
-        lo = g.layout("rt", root=[0, 100], rootlevel = [2, 10])
-        self.assertEqual(lo[100][1]-lo[0][1], 8)
-
-
+        
 def suite():
     layout_suite = unittest.makeSuite(LayoutTests)
-    layout_algorithm_suite = unittest.makeSuite(LayoutAlgorithmTests)
-    return unittest.TestSuite([layout_suite, layout_algorithm_suite])
+    return unittest.TestSuite([layout_suite])
 
 def test():
     runner = unittest.TextTestRunner()
