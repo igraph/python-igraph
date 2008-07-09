@@ -4451,11 +4451,11 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai_3d(igraphmodule_GraphObject *
     }
   } else {
     use_seed=1;
-	if (igraphmodule_PyList_to_matrix_t(seed_o, &m)) return NULL;
+    if (igraphmodule_PyList_to_matrix_t(seed_o, &m)) return NULL;
   }
 
   if (igraph_layout_kamada_kawai_3d
-      (&self->g, &m, niter, sigma, initemp, coolexp, kkconst, use_seed, 0)) {
+      (&self->g, &m, niter, sigma, initemp, coolexp, kkconst, use_seed)) {
     igraph_matrix_destroy(&m);
     igraphmodule_handle_igraph_error();
     return NULL;
@@ -4478,23 +4478,22 @@ PyObject
 {
   static char *kwlist[] =
     { "weights", "maxiter", "maxdelta", "area", "coolexp", "repulserad",
-      "miny", "maxy", "seed", NULL };
+	  "seed", NULL };
   igraph_matrix_t m;
   igraph_bool_t use_seed=0;
-  igraph_vector_t *weights=0, *miny=0, *maxy=0;
+  igraph_vector_t *weights=0;
   long niter = 500;
   double maxdelta, area, coolexp, repulserad;
-  PyObject *result;
-  PyObject *wobj=Py_None, *miny_o=Py_None, *maxy_o=Py_None, *seed_o=Py_None;
+  PyObject *result, *wobj=Py_None, *seed_o=Py_None;
 
   maxdelta = igraph_vcount(&self->g);
   area = maxdelta * maxdelta;
   coolexp = 1.5;
   repulserad = area * maxdelta;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OlddddOOO", kwlist, &wobj,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OlddddO", kwlist, &wobj,
                                    &niter, &maxdelta, &area, &coolexp,
-                                   &repulserad, &miny_o, &maxy_o, &seed_o))
+                                   &repulserad, &seed_o))
     return NULL;
 
   if (seed_o == 0 || seed_o == Py_None) {
@@ -4503,10 +4502,9 @@ PyObject
       return NULL;
     }
   } else {
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m)) return NULL;
-	use_seed=1;
+    if (igraphmodule_PyList_to_matrix_t(seed_o, &m)) return 0;
+    use_seed=1;
   }
-
 
   /* Convert the weight parameter to a vector */
   if (igraphmodule_attrib_to_vector_t(wobj, self, &weights, ATTRIBUTE_TYPE_EDGE)) {
@@ -4514,37 +4512,22 @@ PyObject
     igraphmodule_handle_igraph_error();
     return NULL;
   }
-  /* Convert minimum and maximum y values */
-  if (igraphmodule_attrib_to_vector_t(miny_o, self, &miny, ATTRIBUTE_TYPE_EDGE)) {
-    igraph_matrix_destroy(&m);
-    if (weights) { igraph_vector_destroy(weights); free(weights); }
-    igraphmodule_handle_igraph_error();
-    return NULL;
-  }
-  if (igraphmodule_attrib_to_vector_t(maxy_o, self, &maxy, ATTRIBUTE_TYPE_EDGE)) {
-    igraph_matrix_destroy(&m);
-    if (weights) { igraph_vector_destroy(weights); free(weights); }
-    if (miny) { igraph_vector_destroy(miny); free(miny); }
-    igraphmodule_handle_igraph_error();
-    return NULL;
-  }
-
   if (igraph_layout_fruchterman_reingold
       (&self->g, &m, niter, maxdelta, area, coolexp, repulserad, use_seed,
-	  weights, miny, maxy)) {
+       weights)) {
     igraph_matrix_destroy(&m);
-    if (weights) { igraph_vector_destroy(weights); free(weights); }
-    if (miny) { igraph_vector_destroy(miny); free(miny); }
-    if (maxy) { igraph_vector_destroy(maxy); free(maxy); }
+    if (weights) {
+      igraph_vector_destroy(weights); free(weights);
+    }
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
-  if (miny) { igraph_vector_destroy(miny); free(miny); }
-  if (maxy) { igraph_vector_destroy(maxy); free(maxy); }
-  if (weights) { igraph_vector_destroy(weights); free(weights); }
   result = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
   igraph_matrix_destroy(&m);
+  if (weights) {
+    igraph_vector_destroy(weights); free(weights);
+  }
   return (PyObject *) result;
 }
 
@@ -4763,48 +4746,24 @@ PyObject *igraphmodule_Graph_layout_reingold_tilford(igraphmodule_GraphObject
                                                      * self, PyObject * args,
                                                      PyObject * kwds)
 {
-  static char *kwlist[] = { "mode", "root", "rootlevel", NULL };
+  char *kwlist[] = { "root", NULL };
   igraph_matrix_t m;
-  igraph_vector_t roots, *roots_p = 0;
-  igraph_vector_t rootlevels, *rootlevels_p = 0;
-  PyObject *roots_o=Py_None, *rootlevels_o=Py_None, *mode_o=Py_None;
-  igraph_neimode_t mode = IGRAPH_ALL;
+  long int root = 0;
   PyObject *result;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist,
-    &mode_o, &roots_o, &rootlevels_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|l", kwlist, &root))
     return NULL;
-
-  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) return NULL;
-
-  if (roots_o != Py_None) {
-    roots_p = &roots;
-    if (igraphmodule_PyObject_to_vector_t(roots_o, roots_p, 1, 0)) return 0;
-  }
-  if (rootlevels_o != Py_None) {
-    rootlevels_p = &rootlevels;
-    if (igraphmodule_PyObject_to_vector_t(rootlevels_o, rootlevels_p, 1, 0)) {
-      if (roots_p) igraph_vector_destroy(roots_p);
-      return 0;
-    }
-  }
 
   if (igraph_matrix_init(&m, 1, 1)) {
-    if (roots_p) igraph_vector_destroy(roots_p);
-    if (rootlevels_p) igraph_vector_destroy(rootlevels_p);
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
-  if (igraph_layout_reingold_tilford(&self->g, &m, mode, roots_p, rootlevels_p)) {
+  if (igraph_layout_reingold_tilford(&self->g, &m, root)) {
     igraph_matrix_destroy(&m);
-    if (roots_p) igraph_vector_destroy(roots_p);
-    if (rootlevels_p) igraph_vector_destroy(rootlevels_p);
     igraphmodule_handle_igraph_error();
     return NULL;
   }
-  if (roots_p) igraph_vector_destroy(roots_p);
-  if (rootlevels_p) igraph_vector_destroy(rootlevels_p);
 
   result = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
   igraph_matrix_destroy(&m);
@@ -4820,49 +4779,24 @@ PyObject *igraphmodule_Graph_layout_reingold_tilford(igraphmodule_GraphObject
 PyObject *igraphmodule_Graph_layout_reingold_tilford_circular(
   igraphmodule_GraphObject * self, PyObject * args, PyObject * kwds)
 {
-  static char *kwlist[] = { "mode", "root", "rootlevel", NULL };
+  char *kwlist[] = { "root", NULL };
   igraph_matrix_t m;
-  igraph_vector_t roots, *roots_p = 0;
-  igraph_vector_t rootlevels, *rootlevels_p = 0;
-  PyObject *roots_o=Py_None, *rootlevels_o=Py_None, *mode_o=Py_None;
-  igraph_neimode_t mode = IGRAPH_ALL;
+  long int root = 0;
   PyObject *result;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist,
-    &mode_o, &roots_o, &rootlevels_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|l", kwlist, &root))
     return NULL;
-
-  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) return NULL;
-
-  if (roots_o != Py_None) {
-    roots_p = &roots;
-    if (igraphmodule_PyObject_to_vector_t(roots_o, roots_p, 1, 0)) return 0;
-  }
-  if (rootlevels_o != Py_None) {
-    rootlevels_p = &rootlevels;
-    if (igraphmodule_PyObject_to_vector_t(rootlevels_o, rootlevels_p, 1, 0)) {
-      if (roots_p) igraph_vector_destroy(roots_p);
-      return 0;
-    }
-  }
 
   if (igraph_matrix_init(&m, 1, 1)) {
-    if (roots_p) igraph_vector_destroy(roots_p);
-    if (rootlevels_p) igraph_vector_destroy(rootlevels_p);
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
-  if (igraph_layout_reingold_tilford_circular(&self->g, &m, mode, roots_p,
-      rootlevels_p)) {
+  if (igraph_layout_reingold_tilford_circular(&self->g, &m, root)) {
     igraph_matrix_destroy(&m);
-    if (roots_p) igraph_vector_destroy(roots_p);
-    if (rootlevels_p) igraph_vector_destroy(rootlevels_p);
     igraphmodule_handle_igraph_error();
     return NULL;
   }
-  if (roots_p) igraph_vector_destroy(roots_p);
-  if (rootlevels_p) igraph_vector_destroy(rootlevels_p);
 
   result = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
   igraph_matrix_destroy(&m);
@@ -8837,7 +8771,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_fruchterman_reingold",
    (PyCFunction) igraphmodule_Graph_layout_fruchterman_reingold,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_fruchterman_reingold(weights=None, maxiter=500, maxdelta=None, area=None, coolexp=0.99, repulserad=maxiter*maxdelta, miny=None, maxy=None, seed=None)\n\n"
+   "layout_fruchterman_reingold(weights=None, maxiter=500, maxdelta=None, area=None, coolexp=0.99, repulserad=maxiter*maxdelta, seed=None)\n\n"
    "Places the vertices on a 2D plane according to the Fruchterman-Reingold algorithm.\n\n"
    "This is a force directed layout, see Fruchterman, T. M. J. and Reingold, E. M.:\n"
    "Graph Drawing by Force-directed Placement.\n"
@@ -8853,10 +8787,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param repulserad: determines the radius at which vertex-vertex\n"
    "  repulsion cancels out attraction of adjacent vertices.\n"
    "  C{None} means M{maxiter*maxdelta}.\n"
-   "@param miny: if not C{None}, it must be a vector with exactly as many\n"
-   "  elements as there are vertices in the graph. Each element is a\n"
-   "  minimum constraint on the Y value of the vertex in the layout.\n"
-   "@param maxy: similar to I{miny}, but with maximum constraints\n"
    "@param seed: if C{None}, uses a random starting layout for the\n"
    "  algorithm. If a matrix (list of lists), uses the given matrix\n"
    "  as the starting position.\n"
@@ -8966,26 +8896,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_reingold_tilford",
    (PyCFunction) igraphmodule_Graph_layout_reingold_tilford,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_reingold_tilford(mode=\"all\", root=None, rootlevel=None)\n"
+   "layout_reingold_tilford(root)\n"
    "Places the vertices on a 2D plane according to the Reingold-Tilford\n"
    "layout algorithm.\n\n"
-   "This is a tree layout. If the given graph is not a tree, a breadth-first\n"
-   "search is executed first to obtain a possible spanning tree.\n\n"
-   "@param mode: specifies which edges to consider when builing the tree.\n"
-   "  If it is C{OUT} then only the outgoing, if it is C{IN} then only the\n"
-   "  incoming edges of a parent are considered. If it is C{ALL} then all\n"
-   "  edges are used (this was the behaviour in igraph 0.5 and before.\n"
-   "  This parameter also influences how the root vertices are calculated\n"
-   "  if they are not given. See the I{root} parameter.\n"
-   "@param root: the index of the root vertex or root vertices.\n"
-   "  if this is a non-empty vector then the supplied vertex IDs are\n"
-   "  used as the roots of the trees (or a single tree if the graph is\n"
-   "  connected. If this is C{None} or an empty list, the root vertices\n"
-   "  are automatically calculated based on topological sorting,\n"
-   "  performed with the opposite of the I{mode} argument.\n"
-   "@param rootlevel: this argument is useful when drawing forests which are\n"
-   "  not trees. It specifies the level of the root vertices for every tree\n"
-   "  in the forest.\n"
+   "@param root: the root of the tree.\n"
    "@return: the calculated coordinate pairs in a list.\n\n"
    "@see: layout_reingold_tilford_circular\n"
    "@newfield ref: Reference\n"
@@ -8996,11 +8910,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_reingold_tilford_circular",
    (PyCFunction) igraphmodule_Graph_layout_reingold_tilford_circular,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_reingold_tilford_circular(mode=\"all\", root=None, rootlevel=None)\n"
+   "layout_reingold_tilford_circular(root)\n"
    "Circular Reingold-Tilford layout for trees.\n\n"
    "This layout is similar to the Reingold-Tilford layout, but the vertices\n"
    "are placed in a circular way, with the root vertex in the center.\n\n"
-   "See L{layout_reingold_tilford} for the explanation of the parameters.\n\n"
+   "@param root: the root of the tree.\n"
    "@return: the calculated coordinate pairs in a list.\n\n"
    "@see: layout_reingold_tilford\n"
    "@newfield ref: Reference\n"
