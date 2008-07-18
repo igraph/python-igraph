@@ -230,12 +230,6 @@ int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v, igraph
     igraph_vector_init(v, 1);
     VECTOR(*v)[0]=(igraph_real_t)PyInt_AsLong(list);
     return 0;
-  } else if (!pairs && PyLong_Check(list)) {
-    /* a single long was given instead of a list */
-    /* Let's assume that the user meant a list consisting of this single item */
-    igraph_vector_init(v, 1);
-    VECTOR(*v)[0]=(igraph_real_t)PyLong_AsDouble(list);
-    return 0;
   }
 
   if (!PySequence_Check(list)) {
@@ -692,7 +686,7 @@ int igraphmodule_attrib_to_vector_t(PyObject *o, igraphmodule_GraphObject *self,
       PyErr_NoMemory();
       return 1;
     }
-    if (igraphmodule_PyObject_float_to_vector_t(o, result)) {
+    if (igraphmodule_PyObject_to_vector_t(o, result, 0, 0)) {
       free(result);
       return 1;
     }
