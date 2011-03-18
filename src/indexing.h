@@ -1,8 +1,8 @@
-/* -*- mode: C -*-  */
+/* vim:set ts=4 sw=2 sts=2 et:  */
 /* 
-   IGraph library.
-   Copyright (C) 2006  Gabor Csardi <csardi@rmki.kfki.hu>
-   MTA RMKI, Konkoly-Thege Miklos st. 29-33, Budapest 1121, Hungary
+   IGraph library - Python interface.
+   Copyright (C) 2006-2011  Tamas Nepusz <ntamas@gmail.com>
+   5 Avenue Road, Staines, Middlesex, TW18 3AW, United Kingdom
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,13 +21,16 @@
 
 */
 
-#ifndef PYTHON_RANDOM_H
-#define PYTHON_RANDOM_H
+#ifndef PYTHON_INDEXING_H
+#define PYTHON_INDEXING_H
 
 #include <Python.h>
+#include <igraph_datatype.h>
 
-void igraphmodule_init_rng(PyObject*);
-PyObject* igraph_rng_Python_set_generator(PyObject* self, PyObject* object);
+PyObject* igraphmodule_Graph_adjmatrix_get_index(igraph_t* graph,
+        PyObject* row_index, PyObject* column_index, PyObject* attr_name);
+int igraphmodule_Graph_adjmatrix_set_index(igraph_t* graph,
+        PyObject* row_index, PyObject* column_index, PyObject* attr_name,
+        PyObject* value);
 
 #endif
-

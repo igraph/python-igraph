@@ -1,8 +1,8 @@
-/* -*- mode: C -*-  */
+/* vim:set ts=4 sw=2 sts=2 et:  */
 /* 
-   IGraph library.
-   Copyright (C) 2006  Gabor Csardi <csardi@rmki.kfki.hu>
-   MTA RMKI, Konkoly-Thege Miklos st. 29-33, Budapest 1121, Hungary
+   IGraph library - Python interface.
+   Copyright (C) 2006-2011  Tamas Nepusz <ntamas@gmail.com>
+   5 Avenue Road, Staines, Middlesex, TW18 3AW, United Kingdom
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,13 +21,19 @@
 
 */
 
-#ifndef PYTHON_RANDOM_H
-#define PYTHON_RANDOM_H
+#ifndef PYTHON_HELPERS_H
+#define PYTHON_HELPERS_H
 
 #include <Python.h>
 
-void igraphmodule_init_rng(PyObject*);
-PyObject* igraph_rng_Python_set_generator(PyObject* self, PyObject* object);
+PyObject* PyList_NewFill(Py_ssize_t len, PyObject* item);
+PyObject* PyList_Zeroes(Py_ssize_t len);
+
+char* PyObject_ConvertToCString(PyObject* string);
+
+#define PY_IGRAPH_DEPRECATED(msg) \
+  PyErr_WarnEx(PyExc_DeprecationWarning, (msg), 1)
+#define PY_IGRAPH_WARN(msg) \
+  PyErr_WarnEx(PyExc_RuntimeWarning, (msg), 1)
 
 #endif
-
