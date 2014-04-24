@@ -57,7 +57,7 @@ class NexusConnection(object):
 
     Example:
 
-      >>> print Nexus.info("karate")              # doctest:+ELLIPSIS
+      >>> print Nexus.info("karate")            #doctest:+ELLIPSIS
       Nexus dataset 'karate' (#1)
       vertices/edges: 34/78
       name: Zachary's karate club
