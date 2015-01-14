@@ -1272,16 +1272,15 @@ PyObject *igraphmodule_Graph_is_connected(igraphmodule_GraphObject * self,
                                           PyObject * args, PyObject * kwds)
 {
   char *kwlist[] = { "mode", NULL };
+  PyObject *mode_o = Py_None;
   igraph_connectedness_t mode = IGRAPH_STRONG;
   igraph_bool_t res;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|l", kwlist, &mode))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &mode_o))
     return NULL;
 
-  if (mode != IGRAPH_STRONG && mode != IGRAPH_WEAK) {
-    PyErr_SetString(PyExc_ValueError, "mode must be either STRONG or WEAK");
+  if (igraphmodule_PyObject_to_connectedness_t(mode_o, &mode))
     return NULL;
-  }
 
   if (igraph_is_connected(&self->g, &res, mode)) {
     igraphmodule_handle_igraph_error();
@@ -3947,12 +3946,8 @@ PyObject *igraphmodule_Graph_clusters(igraphmodule_GraphObject * self,
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &mode_o))
     return NULL;
 
-  if (igraphmodule_PyObject_to_connectedness_t(mode_o, &mode)) return NULL;
-
-  if (mode != IGRAPH_STRONG && mode != IGRAPH_WEAK) {
-    PyErr_SetString(PyExc_ValueError, "mode must be either STRONG or WEAK");
+  if (igraphmodule_PyObject_to_connectedness_t(mode_o, &mode))
     return NULL;
-  }
 
   igraph_vector_init(&res1, igraph_vcount(&self->g));
   igraph_vector_init(&res2, 10);
@@ -4116,20 +4111,18 @@ PyObject *igraphmodule_Graph_decompose(igraphmodule_GraphObject * self,
 {
   char *kwlist[] = { "mode", "maxcompno", "minelements", NULL };
   igraph_connectedness_t mode = IGRAPH_STRONG;
-  PyObject *list;
+  PyObject *list, *mode_o = Py_None;
   igraphmodule_GraphObject *o;
   long maxcompno = -1, minelements = -1, n, i;
   igraph_vector_ptr_t components;
   igraph_t *g;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|lll", kwlist, &mode,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oll", kwlist, &mode,
                                    &maxcompno, &minelements))
     return NULL;
 
-  if (mode != IGRAPH_STRONG && mode != IGRAPH_WEAK) {
-    PyErr_SetString(PyExc_ValueError, "mode must be either STRONG or WEAK");
+  if (igraphmodule_PyObject_to_connectedness_t(mode_o, &mode))
     return NULL;
-  }
 
   igraph_vector_ptr_init(&components, 3);
   if (igraph_decompose(&self->g, &components, mode, maxcompno, minelements)) {

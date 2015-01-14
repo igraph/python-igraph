@@ -360,7 +360,7 @@ int igraphmodule_PyObject_to_connectedness_t(PyObject *o,
   igraph_connectedness_t *result) {
   static igraphmodule_enum_translation_table_entry_t connectedness_tt[] = {
         {"weak", IGRAPH_WEAK},
-        {"string", IGRAPH_STRONG},
+        {"strong", IGRAPH_STRONG},
         {0,0}
     };
 
