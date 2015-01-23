@@ -20,7 +20,7 @@ class SimplePropertiesTests(unittest.TestCase):
         self.assertAlmostEqual(7/12, self.gdir.density(), places=5)
         self.assertAlmostEqual(7/16, self.gdir.density(True), places=5)
         self.assertAlmostEqual(1/7, self.tree.density(), places=5)
-        
+
     def testDiameter(self):
         self.assertTrue(self.gfull.diameter() == 1)
         self.assertTrue(self.gempty.diameter(unconn=False) == 10)
@@ -30,11 +30,11 @@ class SimplePropertiesTests(unittest.TestCase):
         self.assertTrue(self.gdir.diameter(False) == 2)
         self.assertTrue(self.gdir.diameter() == 3)
         self.assertTrue(self.tree.diameter() == 5)
-        
+
         s, t, d = self.tree.farthest_points()
         self.assertTrue((s == 13 or t == 13) and d == 5)
         self.assertTrue(self.gempty.farthest_points(unconn=False) == (None, None, 10))
-        
+
         d = self.tree.get_diameter()
         self.assertTrue(d[0] == 13 or d[-1] == 13)
 
@@ -152,7 +152,7 @@ class DegreeTests(unittest.TestCase):
         self.assertTrue(self.gdir.maxdegree(mode=IN) == 2)
         self.assertTrue(self.gdir.maxdegree(mode=OUT) == 3)
         self.assertTrue(self.gdir.maxdegree(mode=ALL) == 4)
-        
+
     def testStrength(self):
         # Turn off warnings about calling strength without weights
         import warnings
@@ -182,13 +182,13 @@ class DegreeTests(unittest.TestCase):
         self.assertTrue(self.gdir.strength(self.gdir.vs[1], \
                 mode=ALL, weights=ws) == 14)
 
-        
+
 
 class LocalTransitivityTests(unittest.TestCase):
     def testLocalTransitivityFull(self):
         trans = Graph.Full(10).transitivity_local_undirected()
         self.assertTrue(trans == [1.0]*10)
-        
+
     def testLocalTransitivityTree(self):
         trans = Graph.Tree(10, 3).transitivity_local_undirected()
         self.assertTrue(trans[0:3] == [0.0, 0.0, 0.0])
@@ -337,11 +337,17 @@ class NeighborhoodTests(unittest.TestCase):
                 [[0,1,2,3], [0,1,2,3,4], [0,1,2,3,4,5], [0,1,2,3,4,5,6], \
                     [1,2,3,4,5,6,7], [2,3,4,5,6,7,8], [3,4,5,6,7,8,9], \
                     [4,5,6,7,8,9], [5,6,7,8,9], [6,7,8,9]])
+        self.assertTrue(map(sorted, g.neighborhood(order=3, mindist=2)) == \
+                [[2,3], [3,4], [0,4,5], [0,1,5,6], \
+                    [1,2,6,7], [2,3,7,8], [3,4,8,9], \
+                    [4,5,9], [5,6], [6,7]])
 
     def testNeighborhoodSize(self):
         g = Graph.Ring(10, circular=False)
         self.assertTrue(g.neighborhood_size() == [2,3,3,3,3,3,3,3,3,2])
         self.assertTrue(g.neighborhood_size(order=3) == [4,5,6,7,7,7,7,6,5,4])
+        self.assertTrue(g.neighborhood_size(order=3, mindist=2) == \
+                [2,2,3,4,4,4,4,3,2,2])
 
 
 class MiscTests(unittest.TestCase):
@@ -434,7 +440,7 @@ class PathTests(unittest.TestCase):
         self.assertEqual(expected, sps)
 
         g = Graph.Lattice([5, 5], circular=False)
-        
+
         sps = sorted(g.get_all_shortest_paths(0, 12))
         expected = [[0, 1, 2, 7, 12], [0, 1, 6, 7, 12], [0, 1, 6, 11, 12], \
                     [0, 5, 6, 7, 12], [0, 5, 6, 11, 12], [0, 5, 10, 11, 12]]
@@ -464,6 +470,36 @@ class PathTests(unittest.TestCase):
         self.assertEqual(4, sum(1 for path in sps if path[-1] == 12))
         self.assertEqual(12, sum(1 for path in sps if path[-1] == 15))
 
+    def testGetAllSimplePaths(self):
+        g = Graph.Ring(20)
+        sps = sorted(g.get_all_simple_paths(0, 10))
+        self.assertEqual([
+            [0,1,2,3,4,5,6,7,8,9,10],
+            [0,19,18,17,16,15,14,13,12,11,10]
+        ], sps)
+
+        g = Graph.Ring(20, directed=True)
+        sps = sorted(g.get_all_simple_paths(0, 10))
+        self.assertEqual([ [0,1,2,3,4,5,6,7,8,9,10] ], sps)
+        sps = sorted(g.get_all_simple_paths(0, 10, mode="in"))
+        self.assertEqual([ [0,19,18,17,16,15,14,13,12,11,10] ], sps)
+        sps = sorted(g.get_all_simple_paths(0, 10, mode="all"))
+        self.assertEqual([
+            [0,1,2,3,4,5,6,7,8,9,10],
+            [0,19,18,17,16,15,14,13,12,11,10]
+        ], sps)
+
+        g = Graph.Lattice([4, 4], circular=False)
+        g = Graph([(min(u, v), max(u, v)) for u, v in g.get_edgelist()], directed=True)
+        sps = sorted(g.get_all_simple_paths(0, 15))
+        self.assertEqual(20, len(sps))
+        for path in sps:
+            self.assertEqual(0, path[0])
+            self.assertEqual(15, path[-1])
+            curr = path[0]
+            for next in path[1:]:
+                self.assertTrue(g.are_connected(curr, next))
+                curr = next
 
     def testPathLengthHist(self):
         g = Graph.Tree(15, 2)
@@ -501,7 +537,7 @@ def suite():
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
 if __name__ == "__main__":
     test()
 

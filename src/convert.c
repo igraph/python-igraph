@@ -237,6 +237,105 @@ int igraphmodule_PyObject_to_attribute_combination_type_t(PyObject* o,
   return igraphmodule_PyObject_to_enum(o, attribute_combination_type_tt, (int*)result);
 }
 
+int igraphmodule_PyObject_to_eigen_algorithm_t(PyObject *object,
+                                       igraph_eigen_algorithm_t *a) {
+  static igraphmodule_enum_translation_table_entry_t eigen_algorithm_tt[] =
+    {
+      {"auto", IGRAPH_EIGEN_AUTO},
+      {"lapack", IGRAPH_EIGEN_LAPACK},
+      {"arpack", IGRAPH_EIGEN_ARPACK},
+      {"comp_auto", IGRAPH_EIGEN_COMP_AUTO},
+      {"comp_lapack", IGRAPH_EIGEN_COMP_LAPACK},
+      {"comp_arpack", IGRAPH_EIGEN_COMP_ARPACK},
+      {0,0}
+    };
+
+  if (object == Py_None) {
+    *a = IGRAPH_EIGEN_ARPACK;
+    return 0;
+  } else {
+    return igraphmodule_PyObject_to_enum(object, eigen_algorithm_tt,
+                                         (int*)a);
+  }
+}
+
+int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
+                                           igraph_eigen_which_t *w) {
+  PyObject *key, *value;
+  Py_ssize_t pos = 0;
+
+  static igraphmodule_enum_translation_table_entry_t
+    eigen_which_position_tt[] = {
+    { "LM", IGRAPH_EIGEN_LM},
+    { "SM", IGRAPH_EIGEN_SM},
+    { "LA", IGRAPH_EIGEN_LA},
+    { "SA", IGRAPH_EIGEN_SA},
+    { "BE", IGRAPH_EIGEN_BE},
+    { "LR", IGRAPH_EIGEN_LR},
+    { "SR", IGRAPH_EIGEN_SR},
+    { "LI", IGRAPH_EIGEN_LI},
+    { "SI", IGRAPH_EIGEN_SI},
+    { "ALL", IGRAPH_EIGEN_ALL},
+    { "INTERVAL", IGRAPH_EIGEN_INTERVAL},
+    { "SELECT", IGRAPH_EIGEN_SELECT}
+  };
+
+  static igraphmodule_enum_translation_table_entry_t
+    lapack_dgeevc_balance_tt[] = {
+    { "none", IGRAPH_LAPACK_DGEEVX_BALANCE_NONE },
+    { "perm", IGRAPH_LAPACK_DGEEVX_BALANCE_PERM },
+    { "scale", IGRAPH_LAPACK_DGEEVX_BALANCE_SCALE },
+    { "both", IGRAPH_LAPACK_DGEEVX_BALANCE_BOTH }
+  };
+
+  w->pos = IGRAPH_EIGEN_LM;
+  w->howmany = 1;
+  w->il = w->iu = -1;
+  w->vl = IGRAPH_NEGINFINITY;
+  w->vu = IGRAPH_INFINITY;
+  w->vestimate = 0;
+  w->balance = IGRAPH_LAPACK_DGEEVX_BALANCE_NONE;
+
+  if (object != Py_None && !PyDict_Check(object)) {
+    PyErr_SetString(PyExc_TypeError, "Python dictionary expected");
+    return -1;
+  }
+
+  if (object != Py_None) {
+    while (PyDict_Next(object, &pos, &key, &value)) {
+      char *kv;
+      if (!PyString_Check(key)) {
+        PyErr_SetString(PyExc_TypeError, "Dict key must be string");
+        return -1;
+      }
+      kv=PyString_AsString(key);
+      if (!strcasecmp(kv, "pos")) {
+        igraphmodule_PyObject_to_enum(value, eigen_which_position_tt,
+                                      (int*) &w->pos);
+      } else if (!strcasecmp(kv, "howmany")) {
+        w->howmany = (int) PyInt_AsLong(value);
+      } else if (!strcasecmp(kv, "il")) {
+        w->il = (int) PyInt_AsLong(value);
+      } else if (!strcasecmp(kv, "iu")) {
+        w->iu = (int) PyInt_AsLong(value);
+      } else if (!strcasecmp(kv, "vl")) {
+        w->vl = PyFloat_AsDouble(value);
+      } else if (!strcasecmp(kv, "vu")) {
+        w->vu = PyFloat_AsDouble(value);
+      } else if (!strcasecmp(kv, "vestimate")) {
+        w->vestimate = (int) PyInt_AsLong(value);
+      } else if (!strcasecmp(kv, "balance")) {
+        igraphmodule_PyObject_to_enum(value, lapack_dgeevc_balance_tt,
+                                      (int*) &w->balance);
+      } else {
+        PyErr_SetString(PyExc_TypeError, "Unknown eigen parameter");
+        return -1;
+      }
+    }
+  }
+  return 0;
+}
+
 /**
  * \ingroup python_interface_conversion
  * \brief Converts a Python object to an igraph \c igraph_barabasi_algorithm_t
@@ -261,7 +360,7 @@ int igraphmodule_PyObject_to_connectedness_t(PyObject *o,
   igraph_connectedness_t *result) {
   static igraphmodule_enum_translation_table_entry_t connectedness_tt[] = {
         {"weak", IGRAPH_WEAK},
-        {"string", IGRAPH_STRONG},
+        {"strong", IGRAPH_STRONG},
         {0,0}
     };
 
@@ -358,6 +457,43 @@ int igraphmodule_PyObject_to_fas_algorithm_t(PyObject *o,
     };
 
   return igraphmodule_PyObject_to_enum(o, fas_algorithm_tt, (int*)result);
+}
+
+/**
+ * \brief Converts a Python object to an igraph \c igraph_layout_grid_t
+ */
+int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *result) {
+  static igraphmodule_enum_translation_table_entry_t layout_grid_tt[] = {
+    {"auto",   IGRAPH_LAYOUT_AUTOGRID},
+    {"grid",   IGRAPH_LAYOUT_GRID},
+    {"nogrid", IGRAPH_LAYOUT_NOGRID},
+    {0,0}
+  };
+
+  if (o == Py_True) {
+    *result = IGRAPH_LAYOUT_GRID;
+    return 0;
+  } else if (o == Py_False) {
+    *result = IGRAPH_LAYOUT_NOGRID;
+    return 0;
+  } else {
+    return igraphmodule_PyObject_to_enum(o, layout_grid_tt, (int*)result);
+  }
+}
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts a Python object to an igraph \c igraph_random_walk_stuck_t
+ */
+int igraphmodule_PyObject_to_random_walk_stuck_t(PyObject *o,
+  igraph_random_walk_stuck_t *result) {
+  static igraphmodule_enum_translation_table_entry_t random_walk_stuck_tt[] = {
+        {"return", IGRAPH_RANDOM_WALK_STUCK_RETURN},
+        {"error", IGRAPH_RANDOM_WALK_STUCK_ERROR},
+        {0,0}
+  };
+
+  return igraphmodule_PyObject_to_enum(o, random_walk_stuck_tt, (int*)result);
 }
 
 /**
@@ -634,216 +770,95 @@ int igraphmodule_PyObject_to_real_t(PyObject *object, igraph_real_t *v) {
  * \param list the Python list to be converted
  * \param v the \c igraph_vector_t containing the result
  * \param need_non_negative if true, checks whether all elements are non-negative
- * \param pairs if true, assumes that every list element is a pair of integers
  * \return 0 if everything was OK, 1 otherwise
  */
-int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v, igraph_bool_t need_non_negative, igraph_bool_t pairs) {
-  PyObject *item, *i1, *i2;
-  Py_ssize_t i, j, k;
+int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v, igraph_bool_t need_non_negative) {
+  PyObject *item, *it;
+  Py_ssize_t size_hint;
   int ok;
-  long int idx=0, idx2=0;
+  igraph_integer_t number;
 
   if (PyBaseString_Check(list)) {
     /* It is highly unlikely that a string (although it is a sequence) will
-     * provide us with integers or integer pairs */
-    if (pairs)
-      PyErr_SetString(PyExc_TypeError, "expected a sequence or an iterable containing integer pairs");
-    else
-      PyErr_SetString(PyExc_TypeError, "expected a sequence or an iterable containing integers");
+     * provide us with integers */
+    PyErr_SetString(PyExc_TypeError, "expected a sequence or an iterable containing integers");
     return 1;
   }
 
+  /* if the list is a sequence, we can pre-allocate the vector to its length */
   if (PySequence_Check(list)) {
-    ok=1;
-    
-    if (pairs && PyTuple_Check(list) && PyTuple_Size(list)==2 &&
-        PyInt_Check(PyTuple_GetItem(list,0)) &&
-        PyInt_Check(PyTuple_GetItem(list,1))) {
-      /* a pair was given instead of a list */
-      /* Assume that the user meant a list consisting of this single pair */
-      i1=i2=NULL;
-      i1=PyTuple_GetItem(list, 0);
-      if (i1) i2=PyTuple_GetItem(list, 1);
-      if (i1 && i2) {
-        idx=PyInt_AsLong(i1); idx2=PyInt_AsLong(i2);
-        if (need_non_negative && (idx<0 || idx2<0)) ok=0;
-      } else ok=0;
-      if (ok) {
-        igraph_vector_init(v, 2);
-        VECTOR(*v)[0]=(igraph_real_t)idx;
-        VECTOR(*v)[1]=(igraph_real_t)idx2;
-        return 0;
-      } else if (!ok && need_non_negative) {
-        PyErr_SetString(PyExc_TypeError, "sequence elements must be non-negative integers");
-        return 1;
-      } else {
-        PyErr_SetString(PyExc_TypeError, "sequence elements must be integers");
-        return 1;
-      }
+    size_hint = PySequence_Size(list);
+    if (size_hint < 0) {
+      /* should not happen but let's try to recover */
+      size_hint = 0;
     }
-  } else if (!pairs && PyInt_Check(list)) {
-    /* a single integer was given instead of a list */
-    /* Let's assume that the user meant a list consisting of this single item */
-    igraph_vector_init(v, 1);
-    VECTOR(*v)[0]=(igraph_real_t)PyInt_AsLong(list);
-    return 0;
-  } else if (!pairs && PyLong_Check(list)) {
-    /* a single long was given instead of a list */
-    /* Let's assume that the user meant a list consisting of this single item */
-    igraph_vector_init(v, 1);
-    VECTOR(*v)[0]=(igraph_real_t)PyLong_AsDouble(list);
-    return 0;
+  } else {
+    size_hint = 0;
   }
 
-  if (!PySequence_Check(list)) {
-    /* try to use an iterator */
-    PyObject *it = PyObject_GetIter(list);
-    if (it) {
-      PyObject *item;
-      igraph_vector_init(v, 0);
-      while ((item = PyIter_Next(it)) != 0) {
-        ok = 1;
-        if (pairs) {
-          if (!PySequence_Check(item) || PySequence_Size(item) != 2) {
-            PyErr_SetString(PyExc_TypeError, "iterable must return pairs of integers");
-            ok=0;
-          } else {
-            i1=i2=NULL;
-            i1=PySequence_GetItem(item, 0);
-            if (i1) i2=PySequence_GetItem(item, 1);
-            if (i1 && i2 && PyInt_Check(i1) && PyInt_Check(i2)) {
-              idx=PyInt_AsLong(i1); idx2=PyInt_AsLong(i2);
-              if (need_non_negative && (idx<0 || idx2<0)) {
-                PyErr_SetString(PyExc_ValueError, "iterable must return non-negative integer pairs");
-                ok=0;
-              }
-            } else {
-              PyErr_SetString(PyExc_ValueError, "iterable must return pairs of integers");
-              ok=0;
-            }
-            Py_XDECREF(i1); Py_XDECREF(i2); /* PySeq_GetItem returned new ref */
-          }
-        } else {
-          if (!PyInt_Check(item)) {
-            PyErr_SetString(PyExc_ValueError, "iterable must return integers");
-            ok=0;
-          } else {
-            idx=PyInt_AsLong(item);
-            if (need_non_negative && idx<0) {
-              PyErr_SetString(PyExc_ValueError, "iterable must return non-negative integers");
-              ok=0;
-            }
-          }
-        }
-       
-        if (ok == 0) {
-          igraph_vector_destroy(v);
-          Py_DECREF(item);
-          Py_DECREF(it);
-          return 1;
-        }
-        if (igraph_vector_push_back(v, idx)) {
-          igraphmodule_handle_igraph_error();
-          igraph_vector_destroy(v);
-          Py_DECREF(item);
-          Py_DECREF(it);
-          return 1;
-        }
-        if (pairs) {
-          if (igraph_vector_push_back(v, idx2)) {
-            igraphmodule_handle_igraph_error();
-            igraph_vector_destroy(v);
-            Py_DECREF(item);
-            Py_DECREF(it);
-            return 1;
-          }
-        }
-        Py_DECREF(item);
-      }
-      Py_DECREF(it);
-      return 0;
-    } else {
-      PyErr_SetString(PyExc_TypeError, "sequence or iterable expected");
-      return 1;
-    }
-    return 0;
+  /* initialize the result vector */
+  if (igraph_vector_init(v, 0)) {
+    igraphmodule_handle_igraph_error();
+    return 1;
   }
 
-  j=PySequence_Size(list);
-  if (pairs)
-    igraph_vector_init(v, 2*j);
-  else
-    igraph_vector_init(v, j);
-  for (i=0, k=0; i<j; i++) {
-    item=PySequence_GetItem(list, i);
-    if (item) {
-      ok=1;
-      if (pairs) {
-        if (PySequence_Check(item) && PySequence_Size(item)==2) {
-          i1=NULL; i2=NULL;
-          i1=PySequence_GetItem(item, 0);
-          if (i1) i2=PySequence_GetItem(item, 1);
-          if (i1 && i2) {
-            if (PyInt_Check(i1) && PyInt_Check(i2)) {
-              idx=PyInt_AsLong(i1);
-              idx2=PyInt_AsLong(i2);
-              if (need_non_negative && (idx<0 || idx2<0)) {
-                PyErr_SetString(PyExc_TypeError, "sequence elements must be non-negative integer pairs");
-                ok=0;
-              }
-            } else {
-              PyErr_SetString(PyExc_TypeError, "sequence elements must be integer pairs");
-              ok=0;
-            }
-            Py_XDECREF(i1); Py_XDECREF(i2);
-          } else {
-            /* this should not happen, but we return anyway.
-             * An IndexError exception was set by PySequence_GetItem
-             * at this point */
-            igraph_vector_destroy(v);
-            Py_XDECREF(i1); Py_XDECREF(i2);
-            Py_XDECREF(item);
-            return 1;
-          }
-        } else {
-          PyErr_SetString(PyExc_TypeError, "sequence elements must be integer pairs");
-          ok=0;
-        }
-      } else {
-        if (PyInt_Check(item)) {
-          idx=PyInt_AsLong(item);
-          if (need_non_negative && idx<0) {
-            PyErr_SetString(PyExc_TypeError, "sequence elements must be non-negative integers");
-            ok=0;
-          }
-        } else {
-          PyErr_SetString(PyExc_TypeError, "sequence elements must be integers");
-          ok=0;
-        }
-        Py_XDECREF(item);
-      }
-         
-      if (!ok) {
-        igraph_vector_destroy(v);
-        return 1;
-      }
-          
-      /* add idx into index vector */
-      VECTOR(*v)[k]=(igraph_real_t)idx;
-      k++;
-      if (pairs) {
-        VECTOR(*v)[k]=(igraph_real_t)idx2;
-        k++;
-      }
-    } else {
-      /* this should not happen, but we return anyway.
-       * an IndexError exception was set by PyList_GetItem
-       * at this point */
+  /* if we have a size hint, allocate the required space */
+  if (size_hint > 0) {
+    if (igraph_vector_reserve(v, size_hint)) {
+      igraphmodule_handle_igraph_error();
       igraph_vector_destroy(v);
       return 1;
     }
   }
-   
+
+  /* try to use an iterator first */
+  it = PyObject_GetIter(list);
+  if (it) {
+    while ((item = PyIter_Next(it)) != 0) {
+      ok = 1;
+
+      if (igraphmodule_PyObject_to_integer_t(item, &number)) {
+        PyErr_SetString(PyExc_ValueError, "iterable must yield integers");
+        ok=0;
+      } else {
+        if (need_non_negative && number < 0) {
+          PyErr_SetString(PyExc_ValueError, "iterable must yield non-negative integers");
+          ok=0;
+        }
+      }
+
+      Py_DECREF(item);
+     
+      if (!ok) {
+        igraph_vector_destroy(v);
+        Py_DECREF(it);
+        return 1;
+      }
+
+      if (igraph_vector_push_back(v, number)) {
+        igraphmodule_handle_igraph_error();
+        igraph_vector_destroy(v);
+        Py_DECREF(it);
+        return 1;
+      }
+    }
+    Py_DECREF(it);
+  } else {
+    /* list is not iterable; maybe it's a single number? */
+    if (igraphmodule_PyObject_to_integer_t(list, &number)) {
+      PyErr_SetString(PyExc_TypeError, "sequence or iterable expected");
+      igraph_vector_destroy(v);
+      return 1;
+    } else {
+      if (need_non_negative && number < 0) {
+        PyErr_SetString(PyExc_ValueError, "non-negative integers expected");
+        igraph_vector_destroy(v);
+        return 1;
+      }
+      igraph_vector_push_back(v, number);
+    }
+  }
+
   return 0;
 }
 
@@ -859,98 +874,82 @@ int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v, igraph
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyObject_float_to_vector_t(PyObject *list, igraph_vector_t *v) {
-  PyObject *item;
-  igraph_real_t value=0;
-  Py_ssize_t i, j, k;
+  PyObject *item, *it;
+  Py_ssize_t size_hint;
   int ok;
+  igraph_real_t number;
 
   if (PyBaseString_Check(list)) {
     /* It is highly unlikely that a string (although it is a sequence) will
-     * provide us with integers or integer pairs */
-    PyErr_SetString(PyExc_TypeError, "expected a sequence or an iterable containing floats");
+     * provide us with numbers */
+    PyErr_SetString(PyExc_TypeError, "expected a sequence or an iterable containing numbers");
     return 1;
   }
 
-  if (!PySequence_Check(list)) {
-    /* try to use an iterator */
-    PyObject *it = PyObject_GetIter(list);
-    if (it) {
-      PyObject *item;
-      igraph_vector_init(v, 0);
-      while ((item = PyIter_Next(it)) != 0) {
-        ok = 1;
-        if (!PyNumber_Check(item)) {
-          PyErr_SetString(PyExc_TypeError, "iterable must return numbers");
-          ok=0;
-        } else {
-          PyObject *item2 = PyNumber_Float(item);
-          if (item2 == 0) {
-            PyErr_SetString(PyExc_TypeError, "can't convert a list item to float");
-            ok = 0;
-          } else {
-            value=(igraph_real_t)PyFloat_AsDouble(item);
-            Py_DECREF(item2);
-          }
-        }
-       
-        if (ok == 0) {
-          igraph_vector_destroy(v);
-          Py_DECREF(item);
-          Py_DECREF(it);
-          return 1;
-        }
-        if (igraph_vector_push_back(v, value)) {
-          igraphmodule_handle_igraph_error();
-          igraph_vector_destroy(v);
-          Py_DECREF(item);
-          Py_DECREF(it);
-          return 1;
-        }
-        Py_DECREF(item);
-      }
-      Py_DECREF(it);
-      return 0;
-    } else {
-      PyErr_SetString(PyExc_TypeError, "sequence or iterable expected");
-      return 1;
+  /* if the list is a sequence, we can pre-allocate the vector to its length */
+  if (PySequence_Check(list)) {
+    size_hint = PySequence_Size(list);
+    if (size_hint < 0) {
+      /* should not happen but let's try to recover */
+      size_hint = 0;
     }
-    return 0;
+  } else {
+    size_hint = 0;
   }
 
-  j=PySequence_Size(list);
-  igraph_vector_init(v, j);
-  for (i=0, k=0; i<j; i++) {
-    item=PySequence_GetItem(list, i);
-    if (item) {
-      ok=1;
-      if (!PyNumber_Check(item)) {
-        PyErr_SetString(PyExc_TypeError, "sequence elements must be integers");
-        ok=0;
-      } else {
-        PyObject *item2 = PyNumber_Float(item);
-        if (item2 == 0) {
-          PyErr_SetString(PyExc_TypeError, "can't convert sequence element to float");
-          ok=0;
-        } else {
-          value=(igraph_real_t)PyFloat_AsDouble(item2);
-          Py_DECREF(item2);
-        }
-      }
-      Py_XDECREF(item);
-      if (!ok) {
-        igraph_vector_destroy(v);
-        return 1;
-      }
-      VECTOR(*v)[k]=value;
-      k++;
-    } else {
-      /* this should not happen, but we return anyway.
-       * an IndexError exception was set by PyList_GetItem
-       * at this point */
+  /* initialize the result vector */
+  if (igraph_vector_init(v, 0)) {
+    igraphmodule_handle_igraph_error();
+    return 1;
+  }
+
+  /* if we have a size hint, allocate the required space */
+  if (size_hint > 0) {
+    if (igraph_vector_reserve(v, size_hint)) {
+      igraphmodule_handle_igraph_error();
       igraph_vector_destroy(v);
       return 1;
     }
   }
+
+  /* try to use an iterator first */
+  it = PyObject_GetIter(list);
+  if (it) {
+    while ((item = PyIter_Next(it)) != 0) {
+      ok = 1;
+
+      if (igraphmodule_PyObject_to_real_t(item, &number)) {
+        PyErr_SetString(PyExc_ValueError, "iterable must yield numbers");
+        ok=0;
+      }
+
+      Py_DECREF(item);
+     
+      if (!ok) {
+        igraph_vector_destroy(v);
+        Py_DECREF(it);
+        return 1;
+      }
+
+      if (igraph_vector_push_back(v, number)) {
+        igraphmodule_handle_igraph_error();
+        igraph_vector_destroy(v);
+        Py_DECREF(it);
+        return 1;
+      }
+    }
+    Py_DECREF(it);
+  } else {
+    /* list is not iterable; maybe it's a single number? */
+    if (igraphmodule_PyObject_to_real_t(list, &number)) {
+      PyErr_SetString(PyExc_TypeError, "sequence or iterable expected");
+      igraph_vector_destroy(v);
+      return 1;
+    } else {
+      igraph_vector_push_back(v, number);
+    }
+  }
+
   return 0;
 }
 
@@ -1307,6 +1306,34 @@ PyObject* igraphmodule_vector_t_to_PyList(const igraph_vector_t *v,
 
 /**
  * \ingroup python_interface_conversion
+ * \brief Converts an igraph \c igraph_vector_int_t to a Python integer list
+ * 
+ * \param v the \c igraph_vector_int_t containing the vector to be converted
+ * \return the Python integer list as a \c PyObject*, or \c NULL if an error occurred
+ */
+PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v) {
+  PyObject *list, *item;
+  Py_ssize_t n, i;
+   
+  n = igraph_vector_int_size(v);
+  if (n<0)
+    return igraphmodule_handle_igraph_error();
+
+  list=PyList_New(n);
+  for (i=0; i<n; i++) {
+    item = PyInt_FromLong((long)VECTOR(*v)[i]);
+    if (!item) {
+      Py_DECREF(list);
+      return NULL;
+    }
+    PyList_SET_ITEM(list, i, item);
+  }
+
+  return list;
+}
+
+/**
+ * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_long_t to a Python integer list
  * 
  * \param v the \c igraph_vector_long_t containing the vector to be converted
@@ -1404,7 +1431,8 @@ PyObject* igraphmodule_vector_t_to_PyList_pairs(const igraph_vector_t *v) {
  * \param list the Python list to be converted
  * \param v the \c igraph_vector_t containing the result
  * \param graph  the graph that will be used to interpret vertex names
- *               if a string is yielded by the Python iterable
+ *               if a string is yielded by the Python iterable. \c NULL
+ *               means that vertex names are not allowed.
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyObject_to_edgelist(PyObject *list, igraph_vector_t *v,
@@ -2074,7 +2102,7 @@ int igraphmodule_PyObject_to_vector_ptr_t(PyObject* list, igraph_vector_ptr_t* v
       return 1;
     }
 
-    if (igraphmodule_PyObject_to_vector_t(item, subvec, need_non_negative, 0)) {
+    if (igraphmodule_PyObject_to_vector_t(item, subvec, need_non_negative)) {
       Py_DECREF(item);
       Py_DECREF(it);
       igraph_vector_destroy(subvec);

@@ -60,8 +60,10 @@ int igraphmodule_PyObject_to_community_comparison_t(PyObject *obj,
 int igraphmodule_PyObject_to_connectedness_t(PyObject *o, igraph_connectedness_t *result);
 int igraphmodule_PyObject_to_degseq_t(PyObject *o, igraph_degseq_t *result);
 int igraphmodule_PyObject_to_fas_algorithm_t(PyObject *o, igraph_fas_algorithm_t *result);
+int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *result);
 int igraphmodule_PyObject_to_neimode_t(PyObject *o, igraph_neimode_t *result);
 int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o, igraph_pagerank_algo_t *result);
+int igraphmodule_PyObject_to_random_walk_stuck_t(PyObject *o, igraph_random_walk_stuck_t *result);
 int igraphmodule_PyObject_to_reciprocity_t(PyObject *o, igraph_reciprocity_t *result);
 int igraphmodule_PyObject_to_rewiring_t(PyObject *o, igraph_rewiring_t *result);
 int igraphmodule_PyObject_to_spinglass_implementation_t(PyObject *o, igraph_spinglass_implementation_t *result);
@@ -80,7 +82,7 @@ int igraphmodule_PyObject_to_real_t(PyObject *object, igraph_real_t *v);
 int igraphmodule_PyObject_to_igraph_t(PyObject *o, igraph_t **result);
 
 int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v,
-		igraph_bool_t need_non_negative, igraph_bool_t pairs);
+		igraph_bool_t need_non_negative);
 int igraphmodule_PyObject_float_to_vector_t(PyObject *list, igraph_vector_t *v);
 int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v);
 int igraphmodule_PyObject_to_vector_long_t(PyObject *list, igraph_vector_long_t *v);
@@ -111,6 +113,10 @@ int igraphmodule_PyObject_to_drl_options_t(PyObject *obj,
                   igraph_layout_drl_options_t *options); 
 int igraphmodule_PyObject_to_attribute_combination_t(PyObject* object,
     igraph_attribute_combination_t *type);
+int igraphmodule_PyObject_to_eigen_algorithm_t(PyObject *object,
+																							 igraph_eigen_algorithm_t *a);
+int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
+																					 igraph_eigen_which_t *w);
 
 /* Conversion from attributes to igraph types */
 
@@ -134,6 +140,7 @@ PyObject* igraphmodule_vector_t_pair_to_PyList(const igraph_vector_t *v1,
 PyObject* igraphmodule_vector_t_to_PyList_pairs(const igraph_vector_t *v);
 PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
         igraphmodule_conv_t type);
+PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v);
 PyObject* igraphmodule_vector_long_t_to_PyList(const igraph_vector_long_t *v);
 PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
         igraphmodule_conv_t type);

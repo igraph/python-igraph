@@ -55,6 +55,17 @@ class VertexTests(unittest.TestCase):
         v.update_attributes(dict(b=44, c=55))
         self.assertEqual(v.attributes(), dict(a=3, b=44, c=55, d=6))
 
+    def testPhantomVertex(self):
+        v = self.g.vs[9]
+        v.delete()
+
+        # v is now a phantom vertex; try to freak igraph out now :)
+        self.assertRaises(ValueError, v.update_attributes, a=2)
+        self.assertRaises(ValueError, v.__getitem__, "a")
+        self.assertRaises(ValueError, v.__setitem__, "a", 4)
+        self.assertRaises(ValueError, v.__delitem__, "a")
+        self.assertRaises(ValueError, v.attributes)
+
     def testProxyMethods(self):
         # We only test with connected graphs because disconnected graphs might
         # print a warning when shortest_paths() is invoked on them and we want
@@ -107,7 +118,7 @@ class VertexSeqTests(unittest.TestCase):
         self.g = Graph.Full(10)
         self.g.vs["test"] = range(10)
         self.g.vs["name"] = list("ABCDEFGHIJ")
-    
+
     def testCreation(self):
         self.assertTrue(len(VertexSeq(self.g)) == 10)
         self.assertTrue(len(VertexSeq(self.g, 2)) == 1)
@@ -121,7 +132,7 @@ class VertexSeqTests(unittest.TestCase):
         for i in xrange(self.g.vcount()):
             self.assertEqual(i, self.g.vs[i].index)
         self.assertRaises(IndexError, self.g.vs.__getitem__, -1)
-        self.assertRaises(KeyError, self.g.vs.__getitem__, 1.5)
+        self.assertRaises(TypeError, self.g.vs.__getitem__, 1.5)
 
     @skipIf(np is None, "test case depends on NumPy")
     def testNumPyIndexing(self):
@@ -136,7 +147,7 @@ class VertexSeqTests(unittest.TestCase):
         self.assertRaises(IndexError, self.g.vs.__getitem__, arr[0])
 
         arr = np.array([1.5])
-        self.assertRaises(KeyError, self.g.vs.__getitem__, arr[0])
+        self.assertRaises(TypeError, self.g.vs.__getitem__, arr[0])
 
     def testPartialAttributeAssignment(self):
         only_even = self.g.vs.select(lambda v: (v.index % 2 == 0))
@@ -252,7 +263,7 @@ class VertexSeqTests(unittest.TestCase):
         self.assertRaises(ValueError, g.vs.select, 2, -1)
         self.assertRaises(ValueError, g.vs.select, (2, -1))
         self.assertRaises(ValueError, g.vs.__getitem__, (0, 1000000))
- 
+
     def testGraphMethodProxying(self):
         g = Graph.Barabasi(100)
         vs = g.vs(1,3,5,7,9)
@@ -270,7 +281,7 @@ def suite():
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
 if __name__ == "__main__":
     test()
 

@@ -1,4 +1,97 @@
 #!/usr/bin/env python
+
+import atexit
+import distutils.ccompiler
+import glob
+import os
+import shutil
+import subprocess
+import sys
+import tarfile
+import tempfile
+
+from select import select
+
+try:
+    from urllib import urlretrieve
+    from urllib2 import Request, urlopen, URLError
+except:
+    # Maybe Python 3?
+    from urllib.request import Request, urlopen, urlretrieve
+    from urllib.error import URLError
+
+###########################################################################
+
+# Global version number. Keep the format of the next line intact.
+VERSION = '0.7'
+
+# Check Python's version info and exit early if it is too old
+if sys.version_info < (2, 5):
+    print("This module requires Python >= 2.5")
+    sys.exit(0)
+
+###########################################################################
+## Here be ugly workarounds. These must be run before setuptools
+## is imported.
+
+class Workaround(object):
+    """Base class for platform-specific workarounds and hacks that are
+    needed to get the Python interface compile with as little user
+    intervention as possible."""
+
+    def required(self):
+        """Returns ``True`` if the workaround is required on the platform
+        of the user and ``False`` otherwise."""
+        raise NotImplementedError
+
+    def hack(self):
+        """Installs the workaround. This method will get called if and only
+        if the ``required()`` method returns ``True``.
+        """
+        raise NotImplementedError
+
+class OSXClangAndSystemPythonWorkaround(Workaround):
+    """Removes ``-mno-fused-madd`` from the arguments used to compile
+    Python extensions if the user is running OS X."""
+
+    def customize_compiler(self, compiler):
+        self._saved_customize_compiler(compiler)
+        while "-mno-fused-madd" in compiler.compiler:
+            compiler.compiler.remove("-mno-fused-madd")
+        while "-mno-fused-madd" in compiler.compiler_so:
+            compiler.compiler_so.remove("-mno-fused-madd")
+        while "-mno-fused-madd" in compiler.linker_so:
+            compiler.linker_so.remove("-mno-fused-madd")
+
+    def required(self):
+        return sys.platform == "darwin"
+
+    def hack(self):
+        self.hack_for_distutils()
+        self.hack_for_setuptools()
+
+    def hack_for_distutils(self):
+        from distutils import sysconfig, ccompiler
+        self._saved_customize_compiler = sysconfig.customize_compiler
+        sysconfig.customize_compiler = self.customize_compiler
+        ccompiler.customize_compiler = self.customize_compiler
+
+    def hack_for_setuptools(self):
+        if "setuptools.command.build_ext" in sys.modules:
+            sys.modules["setuptools.command.build_ext"].customize_compiler = \
+                self.customize_compiler
+
+WORKAROUNDS = [
+        OSXClangAndSystemPythonWorkaround
+]
+
+for workaround_cls in WORKAROUNDS:
+    workaround = workaround_cls()
+    if workaround.required():
+        workaround.hack()
+
+###########################################################################
+
 try:
     from setuptools import setup
     from setuptools.command.build_ext import build_ext
@@ -30,23 +123,16 @@ except:
 
 from distutils.core import Extension
 from distutils.util import get_platform
-from select import select
-from subprocess import Popen, PIPE
-from textwrap import dedent
-
-# Global version number. Keep the format of the next line intact.
-VERSION = '0.7'
-
-# Check Python's version info and exit early if it is too old
-if sys.version_info < (2, 5):
-    print("This module requires Python >= 2.5")
-    sys.exit(0)
 
 ###########################################################################
 
 LIBIGRAPH_FALLBACK_INCLUDE_DIRS = ['/usr/include/igraph', '/usr/local/include/igraph']
 LIBIGRAPH_FALLBACK_LIBRARIES = ['igraph']
 LIBIGRAPH_FALLBACK_LIBRARY_DIRS = []
+
+###########################################################################
+
+SCRIPT_ROOT = os.path.abspath(os.path.dirname(sys.modules[__name__].__file__))
 
 ###########################################################################
 
@@ -98,7 +184,8 @@ def first(iterable):
 
 def get_output(command):
     """Returns the output of a command returning a single line of output."""
-    p = Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    PIPE = subprocess.PIPE
+    p = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     p.stdin.close()
     p.stderr.close()
     line=p.stdout.readline().strip()
@@ -177,17 +264,23 @@ class IgraphCCoreBuilder(object):
     if it is not installed yet."""
 
     def __init__(self, versions_to_try, remote_url=None,
-            show_progress_bar=True):
+            show_progress_bar=True, tmproot=None):
         self.versions_to_try = versions_to_try
         self.remote_url = remote_url
         self.show_progress_bar = show_progress_bar
+        self.tmproot = tmproot
         self._tmpdir = None
+
+        if self.tmproot is None:
+            global SCRIPT_ROOT
+            self.tmproot = os.path.join(SCRIPT_ROOT, "tmp")
 
     @property
     def tmpdir(self):
         """The temporary directory in which igraph is downloaded and extracted."""
         if self._tmpdir is None:
-            self._tmpdir = tempfile.mkdtemp(prefix="igraph.")
+            create_dir_unless_exists(self.tmproot)
+            self._tmpdir = tempfile.mkdtemp(prefix="igraph.", dir=self.tmproot)
             atexit.register(cleanup_tmpdir, self._tmpdir)
         return self._tmpdir
 
@@ -216,6 +309,8 @@ class IgraphCCoreBuilder(object):
         else:
             remote_url = self.remote_url
             local_file = remote_url.rsplit("/", 1)[1]
+
+        print("Using temporary directory: %s" % self.tmpdir)
 
         # Now determine the full path where the C core will be downloaded
         local_file_full_path = os.path.join(self.tmpdir, local_file)
@@ -371,9 +466,11 @@ class BuildConfiguration(object):
                     buildcfg.use_educated_guess()
 
                 # Replaces library names with full paths to static libraries
-                # where possible
+                # where possible. libm.a is excluded because it caused problems
+                # on Sabayon Linux where libm.a is probably not compiled with
+                # -fPIC
                 if buildcfg.static_extension:
-                    buildcfg.replace_static_libraries()
+                    buildcfg.replace_static_libraries(exclusions=["m"])
 
                 # Prints basic build information
                 buildcfg.print_build_info()
@@ -488,13 +585,16 @@ class BuildConfiguration(object):
         for idx in reversed(opts_to_remove):
             sys.argv[idx:(idx+1)] = []
 
-    def replace_static_libraries(self):
+    def replace_static_libraries(self, exclusions=None):
         """Replaces references to libraries with full paths to their static
         versions if the static version is to be found on the library path."""
         if "stdc++" not in self.libraries:
             self.libraries.append("stdc++")
 
-        for library_name in self.libraries[:]:
+        if exclusions is None:
+            exclusions = []
+
+        for library_name in set(self.libraries) - set(exclusions):
             static_lib = find_static_library(library_name, self.library_dirs)
             if static_lib:
                 self.libraries.remove(library_name)
@@ -559,7 +659,6 @@ class BuildConfiguration(object):
         self.include_dirs = LIBIGRAPH_FALLBACK_INCLUDE_DIRS[:]
         self.library_dirs = LIBIGRAPH_FALLBACK_LIBRARY_DIRS[:]
 
-
 ###########################################################################
 
 # Process command line options
@@ -574,7 +673,7 @@ igraph_extension = Extension('igraph._igraph', sources)
         # include_dirs=include_dirs,
         # extra_objects=extra_objects,
         # extra_link_args=extra_link_args
-       
+
 description = """Python interface to the igraph high performance graph
 library, primarily aimed at complex network research and analysis.
 

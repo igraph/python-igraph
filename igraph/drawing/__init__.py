@@ -21,24 +21,26 @@ import os
 import platform
 import time
 
-from igraph.compat import property
+from igraph.compat import property, BytesIO
 from igraph.configuration import Configuration
 from igraph.drawing.colors import Palette, palettes
 from igraph.drawing.graph import DefaultGraphDrawer
-from igraph.drawing.utils import BoundingBox, Point, Rectangle
+from igraph.drawing.utils import BoundingBox, Point, Rectangle, find_cairo
 from igraph.utils import named_temporary_file
 
 __all__ = ["BoundingBox", "DefaultGraphDrawer", "Plot", "Point", "Rectangle", "plot"]
 
 __license__ = "GPL"
 
+cairo = find_cairo()
+
+IN_IPYTHON = False
 try:
-    import cairo
-except ImportError:
-    # No cairo support is installed. Create a fake module
-    # pylint: disable-msg=C0103
-    from igraph.drawing.utils import FakeModule
-    cairo = FakeModule()
+    # If this calls succeed without importing, we are in IPython and we can use the display facilities available via IPython
+    get_ipython()
+    IN_IPYTHON = True
+except NameError:
+    pass
 
 IN_IPYTHON = False
 try:
@@ -354,7 +356,7 @@ class Plot(object):
 
         This method is used by IPython to display this plot inline.
         """
-        io = StringIO()
+        io = BytesIO()
         # Create a new SVG surface and use that to get the SVG representation,
         # which will end up in io
         surface = cairo.SVGSurface(io, self.bbox.width, self.bbox.height)
@@ -365,7 +367,7 @@ class Plot(object):
         context.show_page()
         surface.finish()
         # Return the raw SVG representation
-        return io.getvalue()
+        return io.getvalue().encode("utf-8")
 
     @property
     def bounding_box(self):
@@ -403,7 +405,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     @param obj: the object to be plotted
     @param target: the target where the object should be plotted. It can be one
       of the following types:
-      
+
         - C{None} -- an appropriate surface will be created and the object will
           be plotted there.
 
@@ -414,7 +416,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
         - C{string} -- a file with the given name will be created and an
           appropriate Cairo surface will be attached to it. The supported image
           formats are: PNG, PDF, SVG and PostScript.
-          
+
     @param bbox: the bounding box of the plot. It must be a tuple with either
       two or four integers, or a L{BoundingBox} object. If this is a tuple
       with two integers, it is interpreted as the width and height of the plot
@@ -457,7 +459,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     if not isinstance(bbox, BoundingBox):
         bbox = BoundingBox(bbox)
 
-    result = Plot(target, bbox, background="white")
+    result = Plot(target, bbox, background=kwds.get("background", "white"))
 
     if "margin" in kwds:
         bbox = bbox.contract(kwds["margin"])
