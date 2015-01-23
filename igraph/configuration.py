@@ -32,6 +32,7 @@ from ConfigParser import SafeConfigParser
 import platform
 import os.path
 
+
 def get_platform_image_viewer():
     """Returns the path of an image viewer on the given platform"""
     plat = platform.system()
@@ -41,12 +42,13 @@ def get_platform_image_viewer():
     elif plat == "Linux":
         # Linux has a whole lot of choices, try to find one
         choices = ["eog", "gthumb", "gqview", "kuickshow", "xnview", "display",
-                "gpicview", "gwenview", "qiv", "gimv"]
+                   "gpicview", "gwenview", "qiv", "gimv"]
         paths = ["/usr/bin", "/bin"]
         for path in paths:
             for choice in choices:
                 full_path = os.path.join(path, choice)
-                if os.path.isfile(full_path): return full_path
+                if os.path.isfile(full_path):
+                    return full_path
         return ""
     elif plat == "Windows" or plat == "Microsoft":    # Thanks to Dale Hunscher
         # Use the built-in Windows image viewer, if available
@@ -54,6 +56,7 @@ def get_platform_image_viewer():
     else:
         # Unknown system
         return ""
+
 
 class Configuration(object):
     """Class representing igraph configuration details.
@@ -237,19 +240,41 @@ class Configuration(object):
 
     _sections = ("general", "apps", "plotting", "remote", "shell")
     _definitions = {
-        "general.shells": { "default": "IPythonShell,ClassicPythonShell" },
-        "general.verbose": { "default": True, "type": "boolean" },
+        "general.shells": {
+            "default": "IPythonShell,ClassicPythonShell"
+        },
+        "general.verbose": {
+            "default": True,
+            "type": "boolean"
+        },
 
-        "apps.image_viewer": { "default": get_platform_image_viewer() },
+        "apps.image_viewer": {
+            "default": get_platform_image_viewer()
+        },
 
-        "plotting.layout": { "default": "auto" },
-        "plotting.mark_groups": { "default": False, "type": "boolean" },
-        "plotting.palette": { "default": "gray" },
-        "plotting.wrap_labels": { "default": False, "type": "boolean" },
+        "plotting.layout": {
+            "default": "auto"
+        },
+        "plotting.mark_groups": {
+            "default": False,
+            "type": "boolean"
+        },
+        "plotting.palette": {
+            "default": "gray"
+        },
+        "plotting.wrap_labels": {
+            "default": False,
+            "type": "boolean"
+        },
 
-        "remote.nexus.url": { "default": "http://nexus.igraph.org" },
+        "remote.nexus.url": {
+            "default": "http://nexus.igraph.org"
+        },
 
-        "shell.ipython.inlining.Plot": { "default": True, "type": "boolean" }
+        "shell.ipython.inlining.Plot": {
+            "default": True,
+            "type": "boolean"
+        }
     }
 
     # The singleton instance we are using throughout other modules
