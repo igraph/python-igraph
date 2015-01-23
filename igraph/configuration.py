@@ -42,7 +42,7 @@ def get_platform_image_viewer():
     elif plat == "Linux":
         # Linux has a whole lot of choices, try to find one
         choices = ["eog", "gthumb", "gqview", "kuickshow", "xnview", "display",
-                   "gpicview", "gwenview", "qiv", "gimv"]
+                   "gpicview", "gwenview", "qiv", "gimv", "ristretto"]
         paths = ["/usr/bin", "/bin"]
         for path in paths:
             for choice in choices:
