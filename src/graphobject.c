@@ -11840,8 +11840,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "neighbors(vertex, mode=ALL)\n\n"
    "Returns adjacent vertices to a given vertex.\n\n"
    "@param vertex: a vertex ID\n"
-   "@param mode: whether to return only predecessors (L{OUT}),\n"
-   "  successors (L{IN}) or both (L{ALL}). Ignored for undirected\n"
+   "@param mode: whether to return only successors (L{OUT}),\n"
+   "  predecessors (L{IN}) or both (L{ALL}). Ignored for undirected\n"
    "  graphs."},
 
   {"successors", (PyCFunction) igraphmodule_Graph_successors,
@@ -11905,8 +11905,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "incident(vertex, mode=OUT)\n\n"
    "Returns the edges a given vertex is incident on.\n\n"
    "@param vertex: a vertex ID\n"
-   "@param mode: whether to return only predecessors (L{OUT}),\n"
-   "  successors (L{IN}) or both (L{ALL}). Ignored for undirected\n"
+   "@param mode: whether to return only successors (L{OUT}),\n"
+   "  predecessors (L{IN}) or both (L{ALL}). Ignored for undirected\n"
    "  graphs."},
 
   //////////////////////
