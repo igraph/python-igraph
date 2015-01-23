@@ -65,6 +65,20 @@ class EdgeTests(unittest.TestCase):
         e.update_attributes(dict(b=44, c=55))
         self.assertEqual(e.attributes(), dict(a=3, b=44, c=55, d=6))
 
+    def testPhantomEdge(self):
+        e = self.g.es[self.g.ecount()-1]
+        e.delete()
+
+        # v is now a phantom edge; try to freak igraph out now :)
+        self.assertRaises(ValueError, e.update_attributes, a=2)
+        self.assertRaises(ValueError, e.__getitem__, "a")
+        self.assertRaises(ValueError, e.__setitem__, "a", 4)
+        self.assertRaises(ValueError, e.__delitem__, "a")
+        self.assertRaises(ValueError, e.attributes)
+        self.assertRaises(ValueError, getattr, e, "source")
+        self.assertRaises(ValueError, getattr, e, "target")
+        self.assertRaises(ValueError, getattr, e, "tuple")
+
     def testProxyMethods(self):
         g = Graph.GRG(10, 0.5)
         e = g.es[0]
@@ -102,7 +116,7 @@ class EdgeSeqTests(unittest.TestCase):
     def setUp(self):
         self.g = Graph.Full(10)
         self.g.es["test"] = range(45)
-    
+
     def testCreation(self):
         self.assertTrue(len(EdgeSeq(self.g)) == 45)
         self.assertTrue(len(EdgeSeq(self.g, 2)) == 1)
@@ -116,7 +130,7 @@ class EdgeSeqTests(unittest.TestCase):
         for i in xrange(self.g.ecount()):
             self.assertEqual(i, self.g.es[i].index)
         self.assertRaises(IndexError, self.g.es.__getitem__, -1)
-        self.assertRaises(KeyError, self.g.es.__getitem__, 1.5)
+        self.assertRaises(TypeError, self.g.es.__getitem__, 1.5)
 
     @skipIf(np is None, "test case depends on NumPy")
     def testNumPyIndexing(self):
@@ -128,15 +142,15 @@ class EdgeSeqTests(unittest.TestCase):
         self.assertRaises(IndexError, self.g.es.__getitem__, arr[0])
 
         arr = np.array([1.5])
-        self.assertRaises(KeyError, self.g.es.__getitem__, arr[0])
+        self.assertRaises(TypeError, self.g.es.__getitem__, arr[0])
 
     def testPartialAttributeAssignment(self):
         only_even = self.g.es.select(lambda e: (e.index % 2 == 0))
-        
+
         only_even["test"] = [0]*len(only_even)
         expected = [[0,i][i % 2] for i in xrange(self.g.ecount())]
         self.assertTrue(self.g.es["test"] == expected)
-        
+
         only_even["test2"] = range(23)
         expected = [[i//2, None][i % 2] for i in xrange(self.g.ecount())]
         self.assertTrue(self.g.es["test2"] == expected)
@@ -240,7 +254,7 @@ class EdgeSeqTests(unittest.TestCase):
 
     def testWithinFiltering(self):
         g = Graph.Lattice([10, 10])
-        vs = [0, 1, 2, 10, 11, 12, 20, 21, 22] 
+        vs = [0, 1, 2, 10, 11, 12, 20, 21, 22]
         vs2 = (0, 1, 10, 11)
 
         es1 = g.es.select(_within = vs)
@@ -256,7 +270,7 @@ class EdgeSeqTests(unittest.TestCase):
 
     def testBetweenFiltering(self):
         g = Graph.Lattice([10, 10])
-        vs1, vs2 = [10, 11, 12], [20, 21, 22] 
+        vs1, vs2 = [10, 11, 12], [20, 21, 22]
 
         es1 = g.es.select(_between = (vs1, vs2))
         es2 = g.es.select(_between = (VertexSeq(g, vs1), VertexSeq(g, vs2)))
@@ -274,7 +288,7 @@ class EdgeSeqTests(unittest.TestCase):
         self.assertRaises(ValueError, g.es.select, 2, -1)
         self.assertRaises(ValueError, g.es.select, (2, -1))
         self.assertRaises(ValueError, g.es.__getitem__, (0, 1000000))
- 
+
     def testGraphMethodProxying(self):
         idxs = [1, 3, 5, 7, 9]
         g = Graph.Barabasi(100)
@@ -305,7 +319,7 @@ def suite():
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
 if __name__ == "__main__":
     test()
 

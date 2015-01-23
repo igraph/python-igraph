@@ -583,23 +583,25 @@ class Dendrogram(object):
         they should be drawn so that no edges cross each other.
 
         @return: the result of the inorder traversal in a list."""
-        stack = [self._merges[-1]]
         result = []
-        while len(stack)>0:
-            last = stack[-1]
-            if len(last) == 0:
-                stack.pop()
+        seen_nodes = set()
+
+        for node_index in reversed(xrange(self._nitems+self._nmerges)):
+            if node_index in seen_nodes:
                 continue
-            elif len(last) == 1:       # Right child
-                stack[-1] = ()
-                last = last[0]
-            else:                      # Left child
-                stack[-1] = (last[1],)
-                last = last[0]
-            if last < self._nitems: # This will be a regular node
-                result.append(last)
-            else:        # This is a merge node, proceed towards left
-                stack.append(self._merges[last-self._nitems])
+
+            stack = [node_index]
+            while stack:
+                last = stack.pop()
+                seen_nodes.add(last)
+                if last < self._nitems:
+                    # 'last' is a regular node so the traversal ends here, we
+                    # can append it to the results
+                    result.append(last)
+                else:
+                    # 'last' is a merge node, so let us proceed with the entry
+                    # where this merge node was created
+                    stack.extend(self._merges[last-self._nitems])
 
         return result
 
@@ -649,8 +651,6 @@ class Dendrogram(object):
           verbosity is larger than or equal to 1.
         @return: the summary of the dendrogram as a string.
         """
-        from array import array
-
         out = StringIO()
         print >>out, "Dendrogram, %d elements, %d merges" % \
                 (self._nitems, self._nmerges)
@@ -677,11 +677,11 @@ class Dendrogram(object):
         midx = 0
         max_community_idx = self._nitems
         while midx < self._nmerges:
-            char_array = array("c", " "*width)
+            char_array = [" "] * width
             for position in positions:
                 if position >= 0:
                     char_array[position] = "|"
-            char_str = char_array.tostring()
+            char_str = "".join(char_array)
             for _ in xrange(level_distance-1):
                 print >>out, char_str # Print the lines
             
@@ -694,16 +694,19 @@ class Dendrogram(object):
 
                 pos1, pos2 = positions[id1], positions[id2]
                 positions[id1], positions[id2] = -1, -1
-                positions.append((pos1+pos2)/2)
+
+                if pos1 > pos2:
+                    pos1, pos2 = pos2, pos1
+                positions.append((pos1+pos2) // 2)
 
                 dashes = "-" * (pos2 - pos1 - 1)
-                char_array[pos1:(pos2+1)] = array("c", "`%s'" % dashes)
+                char_array[pos1:(pos2+1)] = "`%s'" % dashes
 
                 cidx_incr += 1
             
             max_community_idx += cidx_incr
 
-            print >>out, char_array.tostring()
+            print >>out, "".join(char_array)
 
         return out.getvalue().strip()
 
@@ -982,6 +985,7 @@ class VertexDendrogram(Dendrogram):
                 optimal_count = n-step
                 max_q = q
         self._optimal_count = optimal_count
+        return optimal_count
 
     @optimal_count.setter
     def optimal_count(self, value):

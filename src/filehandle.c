@@ -48,6 +48,8 @@ int igraphmodule_filehandle_init(igraphmodule_filehandle_t* handle,
     }
 #endif
 
+    handle->need_close = 0;
+
     if (PyBaseString_Check(object)) {
         /* We have received a string; we need to open the file denoted by this
          * string now and mark that we opened the file ourselves (so we need

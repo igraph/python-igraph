@@ -24,13 +24,14 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
 from ConfigParser import SafeConfigParser
 import platform
 import os.path
+
 
 def get_platform_image_viewer():
     """Returns the path of an image viewer on the given platform"""
@@ -41,12 +42,13 @@ def get_platform_image_viewer():
     elif plat == "Linux":
         # Linux has a whole lot of choices, try to find one
         choices = ["eog", "gthumb", "gqview", "kuickshow", "xnview", "display",
-                "gpicview", "gwenview", "qiv", "gimv"]
+                   "gpicview", "gwenview", "qiv", "gimv", "ristretto"]
         paths = ["/usr/bin", "/bin"]
         for path in paths:
             for choice in choices:
                 full_path = os.path.join(path, choice)
-                if os.path.isfile(full_path): return full_path
+                if os.path.isfile(full_path):
+                    return full_path
         return ""
     elif plat == "Windows" or plat == "Microsoft":    # Thanks to Dale Hunscher
         # Use the built-in Windows image viewer, if available
@@ -55,16 +57,17 @@ def get_platform_image_viewer():
         # Unknown system
         return ""
 
+
 class Configuration(object):
     """Class representing igraph configuration details.
-    
+
     General ideas
     =============
 
     The configuration of igraph is stored in the form of name-value pairs.
     This object provides an interface to the configuration data using the
     syntax known from dict:
-    
+
       >>> c=Configuration()
       >>> c["general.verbose"] = True
       >>> print c["general.verbose"]
@@ -154,7 +157,11 @@ class Configuration(object):
 
     Shell settings
     --------------
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> develop
     These settings specify options for external environments in which igraph is
     embedded (e.g., IPython and its Qt console). These settings are stored in
     section C{shell}.
@@ -177,7 +184,7 @@ class Configuration(object):
         @staticmethod
         def setboolean(obj, section, key, value):
             """Sets a boolean value in the given configuration object.
-            
+
             @param obj: a configuration object
             @param section: the section of the value to be set
             @param key: the key of the value to be set
@@ -198,7 +205,7 @@ class Configuration(object):
         @staticmethod
         def setint(obj, section, key, value):
             """Sets an integer value in the given configuration object.
-            
+
             @param obj: a configuration object
             @param section: the section of the value to be set
             @param key: the key of the value to be set
@@ -237,19 +244,47 @@ class Configuration(object):
 
     _sections = ("general", "apps", "plotting", "remote", "shell")
     _definitions = {
-        "general.shells": { "default": "IPythonShell,ClassicPythonShell" },
-        "general.verbose": { "default": True, "type": "boolean" },
+        "general.shells": {
+            "default": "IPythonShell,ClassicPythonShell"
+        },
+        "general.verbose": {
+            "default": True,
+            "type": "boolean"
+        },
 
-        "apps.image_viewer": { "default": get_platform_image_viewer() },
+        "apps.image_viewer": {
+            "default": get_platform_image_viewer()
+        },
 
-        "plotting.layout": { "default": "auto" },
-        "plotting.mark_groups": { "default": False, "type": "boolean" },
-        "plotting.palette": { "default": "gray" },
-        "plotting.wrap_labels": { "default": False, "type": "boolean" },
+        "plotting.layout": {
+            "default": "auto"
+        },
+        "plotting.mark_groups": {
+            "default": False,
+            "type": "boolean"
+        },
+        "plotting.palette": {
+            "default": "gray"
+        },
+        "plotting.wrap_labels": {
+            "default": False,
+            "type": "boolean"
+        },
 
+        "remote.nexus.url": {
+            "default": "http://nexus.igraph.org"
+        },
+
+<<<<<<< HEAD
         "remote.nexus.url": { "default": "http://nexus.igraph.org" },
 
         "shell.ipython.inlining.Plot": { "default": True, "type": "boolean" }
+=======
+        "shell.ipython.inlining.Plot": {
+            "default": True,
+            "type": "boolean"
+        }
+>>>>>>> develop
     }
 
     # The singleton instance we are using throughout other modules
@@ -299,7 +334,7 @@ class Configuration(object):
     @staticmethod
     def _item_to_section_key(item):
         """Converts an item description to a section-key pair.
-        
+
         @param item: the item to be converted
         @return: if C{item} contains a period (C{.}), it is splitted into two parts
           at the first period, then the two parts are returned, so the part before
@@ -372,7 +407,7 @@ class Configuration(object):
         else:
             section, key = "general", item
         return self._config.has_option(section, key)
-            
+
     def load(self, stream=None):
         """Loads the configuration from the given file.
 

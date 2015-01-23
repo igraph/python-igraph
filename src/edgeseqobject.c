@@ -127,7 +127,7 @@ int igraphmodule_EdgeSeq_init(igraphmodule_EdgeSeqObject *self,
 	/* We selected multiple edges */
     igraph_vector_t v;
     igraph_integer_t n = igraph_ecount(&((igraphmodule_GraphObject*)g)->g);
-    if (igraphmodule_PyObject_to_vector_t(esobj, &v, 1, 0))
+    if (igraphmodule_PyObject_to_vector_t(esobj, &v, 1))
       return -1;
     if (!igraph_vector_isininterval(&v, 0, n-1)) {
       igraph_vector_destroy(&v);
@@ -242,6 +242,9 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
   PyObject *result=0, *values, *item;
   long int i, n;
 
+  if (!igraphmodule_attribute_name_check(o))
+    return 0;
+
   PyErr_Clear();
   values=PyDict_GetItem(ATTR_STRUCT_DICT(&gr->g)[ATTRHASH_IDX_EDGE], o);
   if (!values) {
@@ -338,11 +341,15 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values_mapping(igraphmodule_EdgeSeq
  */
 int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject* self, PyObject* attrname, PyObject* values) {
   PyObject *dict, *list, *item;
-  igraphmodule_GraphObject *gr=self->gref;
+  igraphmodule_GraphObject *gr;
   igraph_vector_t es;
   long i, j, n, no_of_edges;
   
+  gr = self->gref;
   dict = ATTR_STRUCT_DICT(&gr->g)[ATTRHASH_IDX_EDGE];
+
+  if (!igraphmodule_attribute_name_check(attrname))
+    return -1;
 
   if (values == 0) {
     if (igraph_es_type(&self->es) == IGRAPH_ES_ALL)

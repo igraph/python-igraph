@@ -16,6 +16,18 @@ class BasicTests(unittest.TestCase):
         g=Graph([(0,1), (0,0), (1,2)])
         self.assertTrue(g.vcount() == 3 and g.ecount() == 3 and g.is_directed() == False and g.is_simple() == False)
 
+        g=Graph(8, None)
+        self.assertEqual(8, g.vcount())
+        self.assertEqual(0, g.ecount())
+        self.assertFalse(g.is_directed())
+
+        g=Graph(edges=None)
+        self.assertEqual(0, g.vcount())
+        self.assertEqual(0, g.ecount())
+        self.assertFalse(g.is_directed())
+
+        self.assertRaises(TypeError, Graph, edgelist=[(1,2)])
+
     def testAddVertex(self):
         g = Graph()
         g.add_vertex()
@@ -152,6 +164,18 @@ class BasicTests(unittest.TestCase):
         self.assertRaises(ValueError, g.delete_edges, [("A", "C")])
         self.assertRaises(ValueError, g.delete_edges, [(0,15)])
 
+    def testGraphGetEid(self):
+        g = Graph.Famous("petersen")
+        g.vs["name"] = list("ABCDEFGHIJ")
+        edges_to_ids = dict((v, k) for k, v in enumerate(g.get_edgelist()))
+        for (source, target), edge_id in edges_to_ids.iteritems():
+            source_name, target_name = g.vs[(source, target)]["name"]
+            self.assertEqual(edge_id, g.get_eid(source, target))
+            self.assertEqual(edge_id, g.get_eid(source_name, target_name))
+
+        self.assertRaises(InternalError, g.get_eid, 0, 11)
+        self.assertRaises(ValueError, g.get_eid, "A", "K")
+
     def testGraphGetEids(self):
         g = Graph.Famous("petersen")
         eids = g.get_eids(pairs=[(0,1), (0,5), (1, 6), (4, 9), (8, 6)])
@@ -170,7 +194,7 @@ class BasicTests(unittest.TestCase):
         self.assertTrue(g.get_adjlist() == [[1], [2], [0,3], []])
         self.assertTrue(g.get_adjlist(IN) == [[2], [0], [1], [2]])
         self.assertTrue(g.get_adjlist(ALL) == [[1,2], [0,2], [0,1,3], [2]])
-        
+
     def testEdgeIncidency(self):
         g=Graph(4, [(0,1), (1,2), (2,0), (2,3)], directed=True)
         self.assertTrue(g.incident(2) == [2, 3])
@@ -189,7 +213,7 @@ class BasicTests(unittest.TestCase):
 
         g.add_vertices(1)
         g.add_edges([(0,1), (7,7), (6,6), (6,6), (6,6)])
-        
+
         # is_loop
         self.assertTrue(g.is_loop() == [False, False, False, False, \
             False, False, False, True, True, True, True])
@@ -453,7 +477,7 @@ def suite():
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
 if __name__ == "__main__":
     test()
 

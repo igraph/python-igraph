@@ -1,0 +1,6 @@
+*~
+.*.swp
+*.pyc
+build/
+igraph/*.so
+*.egg-info/

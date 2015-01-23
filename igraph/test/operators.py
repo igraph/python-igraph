@@ -1,5 +1,11 @@
 import unittest
 from igraph import *
+from igraph.test.utils import skipIf
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 class OperatorTests(unittest.TestCase):
     def testMultiplication(self):
@@ -119,7 +125,7 @@ class OperatorTests(unittest.TestCase):
         g -= [(1, 3), (0, 2), (0, 3)]
         self.assertTrue(g.vcount() == 4 and g.ecount() == 2
                         and g.clusters().membership == [0,0,1,1])
-        
+
         # Did we really use the original graph so far?
         self.assertTrue(id(g) == id(orig))
 
@@ -139,7 +145,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(len(Graph.Full(5).es) == 10)
 
     def testSimplify(self):
-        el = [(0,1), (1,0), (1,2), (2,3), (2,3), (2,3), (3,3)] 
+        el = [(0,1), (1,0), (1,2), (2,3), (2,3), (2,3), (3,3)]
         g = Graph(el)
         g.es["weight"] = [1, 2, 3, 4, 5, 6, 7]
 
@@ -182,6 +188,17 @@ class OperatorTests(unittest.TestCase):
         self.assertEqual(g2.vcount(), 5)
         self.assertEqual(g2.ecount(), 0)
 
+    @skipIf(np is None, "test case depends on NumPy")
+    def testContractVerticesWithNumPyIntegers(self):
+        g = Graph.Full(4) + Graph.Full(4) + [(0, 5), (1, 4)]
+        g2 = g.copy()
+        g2.contract_vertices([np.int32(x) for x in [0, 1, 2, 3, 1, 0, 6, 7]])
+        self.assertEqual(g2.vcount(), 8)
+        self.assertEqual(g2.ecount(), g.ecount())
+        self.assertEqual(sorted(g2.get_edgelist()),
+                [(0, 0), (0, 1), (0, 1), (0, 2), (0, 3), (0, 6), (0, 7),
+                 (1, 1), (1, 2), (1, 3), (1, 6), (1, 7), (2, 3), (6, 7)])
+
 
 def suite():
     operator_suite = unittest.makeSuite(OperatorTests)
@@ -190,7 +207,7 @@ def suite():
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
 if __name__ == "__main__":
     test()
 
