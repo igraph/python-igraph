@@ -1,6 +1,8 @@
 *~
 .*.swp
+.*.swo
 *.pyc
 build/
+dist/
 igraph/*.so
 *.egg-info/
