@@ -28,9 +28,21 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
+
+def _is_running_in_ipython():
+    """Internal function that determines whether igraph is running inside
+    IPython or not."""
+    try:
+        # get_ipython is injected into the Python builtins by IPython so
+        # this should succeed in IPython but throw a NameError otherwise
+        get_ipython
+        return True
+    except NameError:
+        return False
+
 
 @contextmanager
 def named_temporary_file(*args, **kwds):

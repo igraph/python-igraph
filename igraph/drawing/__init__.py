@@ -26,29 +26,13 @@ from igraph.configuration import Configuration
 from igraph.drawing.colors import Palette, palettes
 from igraph.drawing.graph import DefaultGraphDrawer
 from igraph.drawing.utils import BoundingBox, Point, Rectangle, find_cairo
-from igraph.utils import named_temporary_file
+from igraph.utils import _is_running_in_ipython, named_temporary_file
 
 __all__ = ["BoundingBox", "DefaultGraphDrawer", "Plot", "Point", "Rectangle", "plot"]
 
 __license__ = "GPL"
 
 cairo = find_cairo()
-
-IN_IPYTHON = False
-try:
-    # If this calls succeed without importing, we are in IPython and we can use the display facilities available via IPython
-    get_ipython()
-    IN_IPYTHON = True
-except NameError:
-    pass
-
-IN_IPYTHON = False
-try:
-    # If this calls succeed without importing, we are in IPython and we can use the display facilities available via IPython
-    get_ipython()
-    IN_IPYTHON = True
-except NameError:
-    pass
 
 #####################################################################
 
@@ -468,7 +452,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
         bbox = bbox.contract(20)
     result.add(obj, bbox, *args, **kwds)
 
-    if IN_IPYTHON and target is None:
+    if target is None and _is_running_in_ipython():
         # Get the default value of the `inline` argument from the configuration if
         # needed
         inline = kwds.get("inline")
