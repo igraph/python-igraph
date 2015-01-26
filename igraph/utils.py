@@ -75,7 +75,7 @@ def rescale(values, out_range = (0., 1.), in_range = None, clamp = False,
     parameter if present.
 
     Examples:
-        
+
         >>> rescale(range(5), (0, 8))
         [0.0, 2.0, 4.0, 6.0, 8.0]
         >>> rescale(range(5), (2, 10))
@@ -120,7 +120,7 @@ def str_to_orientation(value, reversed_horizontal=False, reversed_vertical=False
 
     The following basic values are understood: ``left-right``, ``bottom-top``,
     ``right-left``, ``top-bottom``. Possible aliases are:
-    
+
       - ``horizontal``, ``horiz``, ``h`` and ``lr`` for ``left-right``
 
       - ``vertical``, ``vert``, ``v`` and ``tb`` for top-bottom.
@@ -161,7 +161,7 @@ def consecutive_pairs(iterable, circular=False):
     and first elements is also returned.
 
     Example:
-        
+
         >>> list(consecutive_pairs(range(5)))
         [(0, 1), (1, 2), (2, 3), (3, 4)]
         >>> list(consecutive_pairs(range(5), circular=True))
@@ -250,7 +250,7 @@ class multidict(MutableMapping):
     def __setitem__(self, key, value):
         """Sets the item associated to the given `key`. Any values associated to the
         key will be erased and replaced by `value`.
-        
+
         Example:
 
            >>> d = multidict([("spam", "eggs"), ("spam", "bacon")])
@@ -323,9 +323,9 @@ class multidict(MutableMapping):
 def safemax(iterable, default=0):
     """Safer variant of ``max()`` that returns a default value if the iterable
     is empty.
-    
+
     Example:
-        
+
         >>> safemax([-5, 6, 4])
         6
         >>> safemax([])
@@ -344,9 +344,9 @@ def safemax(iterable, default=0):
 def safemin(iterable, default=0):
     """Safer variant of ``min()`` that returns a default value if the iterable
     is empty.
-    
+
     Example:
-        
+
         >>> safemin([-5, 6, 4])
         -5
         >>> safemin([])
