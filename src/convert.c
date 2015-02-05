@@ -304,11 +304,26 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
   if (object != Py_None) {
     while (PyDict_Next(object, &pos, &key, &value)) {
       char *kv;
+#ifdef IGRAPH_PYTHON3
+      PyObject *temp_bytes;
+      if (!PyUnicode_Check(key)) {
+        PyErr_SetString(PyExc_TypeError, "Dict key must be string");
+        return -1;
+      }
+      temp_bytes = PyUnicode_AsEncodedString(key, "ascii", "ignore");
+      if (temp_bytes == 0) {
+        /* Exception set already by PyUnicode_AsEncodedString */
+        return -1;
+      }
+      kv = strdup(PyBytes_AS_STRING(temp_bytes));
+      Py_DECREF(temp_bytes);
+#else
       if (!PyString_Check(key)) {
         PyErr_SetString(PyExc_TypeError, "Dict key must be string");
         return -1;
       }
       kv=PyString_AsString(key);
+#endif
       if (!strcasecmp(kv, "pos")) {
         igraphmodule_PyObject_to_enum(value, eigen_which_position_tt,
                                       (int*) &w->pos);
@@ -329,8 +344,18 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
                                       (int*) &w->balance);
       } else {
         PyErr_SetString(PyExc_TypeError, "Unknown eigen parameter");
+#ifdef IGRAPH_PYTHON3
+        if (kv != 0) {
+          free(kv);
+        }
+#endif
         return -1;
       }
+#ifdef IGRAPH_PYTHON3
+      if (kv != 0) {
+        free(kv);
+      }
+#endif
     }
   }
   return 0;
