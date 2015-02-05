@@ -184,19 +184,6 @@ class LayoutAlgorithmTests(unittest.TestCase):
         layout = g.layout("circle")
         test_is_proper_circular_layout(g, g.layout("circle"))
 
-        order = [0, 2, 4, 6, 1, 3, 5, 7]
-        ordered_layout = g.layout("circle", order=order)
-        test_is_proper_circular_layout(g, g.layout("circle"))
-        for v, w in enumerate(order):
-            self.assertAlmostEquals(layout[v][0], ordered_layout[w][0])
-            self.assertAlmostEquals(layout[v][1], ordered_layout[w][1])
-
-    def testDavidsonHarel(self):
-        # Quick smoke testing only
-        g = Graph.Barabasi(100)
-        lo = g.layout("dh")
-        self.assertTrue(isinstance(lo, Layout))
-
     def testFruchtermanReingold(self):
         g = Graph.Barabasi(100)
 
@@ -218,13 +205,6 @@ class LayoutAlgorithmTests(unittest.TestCase):
         self.assertTrue(bbox.bottom <= 3)
         self.assertTrue(bbox.left >= 4)
         self.assertTrue(bbox.right <= 6)
-
-    def testFruchtermanReingoldGrid(self):
-        g = Graph.Barabasi(100)
-        for grid_opt in ["grid", "nogrid", "auto", True, False]:
-            lo = g.layout("fr", miny=range(100), grid=grid_opt)
-            self.assertTrue(isinstance(lo, Layout))
-            self.assertTrue(all(lo[i][1] >= i for i in xrange(100)))
 
     def testKamadaKawai(self):
         g = Graph.Barabasi(100)

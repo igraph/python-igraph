@@ -2,8 +2,7 @@ import unittest
 from igraph.test import basic, layouts, games, foreign, structural, flow, \
     spectral, attributes, cliques, decomposition, operators, generators, \
     isomorphism, colortests, vertexseq, edgeseq, iterators, bipartite, \
-    conversion, rng, separators, indexing, atlas, matching, homepage, \
-    walks
+    conversion, rng, separators, indexing, atlas, matching, homepage
 
 def suite():
     return unittest.TestSuite([
@@ -31,8 +30,7 @@ def suite():
         indexing.suite(),
         atlas.suite(),
         matching.suite(),
-        homepage.suite(),
-        walks.suite()
+        homepage.suite()
     ])
 
 def run_tests(verbosity=1):
