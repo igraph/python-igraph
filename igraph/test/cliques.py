@@ -38,8 +38,9 @@ class CliqueTests(unittest.TestCase):
 
     def testMaximalCliquesFile(self):
         def read_cliques(fname):
-            return sorted(sorted(int(item) for item in line.split())
-                              for line in open(fname))
+            with open(fname) as fp:
+                return sorted(sorted(int(item) for item in line.split())
+                                for line in fp)
 
         with temporary_file() as fname:
             self.g.maximal_cliques(file=fname)
