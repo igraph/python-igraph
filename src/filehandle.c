@@ -32,8 +32,6 @@
  */
 int igraphmodule_filehandle_init(igraphmodule_filehandle_t* handle,
         PyObject* object, char* mode) {
-    handle->need_close = 0;
-
 #ifdef IGRAPH_PYTHON3
     int fp;
     if (object == 0 || PyLong_Check(object)) {
