@@ -1497,7 +1497,7 @@ class Graph(GraphBase):
         Compatibility alias to the Fruchterman-Reingold layout with the grid
         option turned on.
 
-        @see Graph.layout_fruchterman_reingold()
+        @see: Graph.layout_fruchterman_reingold()
         """
         deprecated("Graph.layout_grid_fruchterman_reingold() is deprecated since "\
             "igraph 0.8, please use Graph.layout_fruchterman_reingold(grid=True) instead")
@@ -2567,7 +2567,9 @@ class Graph(GraphBase):
 
     @classmethod
     def Random_Bipartite(klass, *args, **kwds):
-        """Generates a random bipartite graph with the given number of vertices and
+        """Random_Bipartite(n1, n2, p=None, m=None, directed=False, neimode=ALL)
+
+        Generates a random bipartite graph with the given number of vertices and
         edges (if m is given), or with the given number of vertices and the given
         connection probability (if p is given).
 

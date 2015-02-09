@@ -23,7 +23,7 @@ except:
 ###########################################################################
 
 # Global version number. Keep the format of the next line intact.
-VERSION = '0.7'
+VERSION = '0.7.1'
 
 # Check Python's version info and exit early if it is too old
 if sys.version_info < (2, 5):
@@ -741,7 +741,7 @@ options = dict(
 if "macosx" in get_platform() and "bdist_mpkg" in sys.argv:
     # OS X specific stuff to build the .mpkg installer
     options["data_files"] = [ \
-            ('/usr/local/lib', [os.path.join('..', '..', 'fatbuild', 'libigraph.0.dylib')])
+            ('/usr/local/lib', [os.path.join('..', 'igraph', 'fatbuild', 'libigraph.0.dylib')])
     ]
 
 if sys.version_info > (3, 0):

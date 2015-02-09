@@ -1,7 +1,7 @@
 #!/bin/bash
 # Creates the OS X installer package and puts it in a disk image
 
-FATLIB=../../fatbuild/libigraph.dylib
+FATLIB=../igraph/fatbuild/libigraph.dylib
 PYTHON_VERSIONS="2.6 2.7"
 
 function check_universal {
@@ -84,7 +84,7 @@ VERSION=`cat setup.py | grep "VERSION =" | cut -d '=' -f 2 | tr -d "' "`
 
 # Ensure that the igraph library we are linking to is a fat binary
 if [ ! -f ${FATLIB} ]; then
-  pushd ../.. && tools/fatbuild.sh && popd
+  pushd ../igraph && tools/fatbuild.sh && popd
   if [ ! -f ${FATLIB} ]; then
     echo "Failed to build fat igraph library: ${FATLIB}"
     exit 1
@@ -108,7 +108,7 @@ export ARCHFLAGS="-arch i386 -arch x86_64"
 # For each Python version, build the .mpkg and the .dmg
 for PYVER in $PYTHON_VERSIONS; do
   PYTHON=/usr/bin/python$PYVER
-  $PYTHON setup.py build_ext --no-download --no-pkg-config -I ../../include:../../build/include -L `dirname $FATLIB` || exit 3
+  $PYTHON setup.py build_ext --no-download --no-pkg-config -I ../igraph/include:../igraph/build/include -L `dirname $FATLIB` || exit 3
   $PYTHON setup.py bdist_mpkg --no-download --no-pkg-config || exit 4
 
   # Ensure that the built library is really universal
