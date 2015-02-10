@@ -4,5 +4,6 @@
 *.pyc
 build/
 dist/
+doc/api/
 igraph/*.so
 *.egg-info/
