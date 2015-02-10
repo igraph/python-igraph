@@ -81,6 +81,7 @@ while [ ! -f setup.py ]; do cd ..; done
 
 # Extract the version number from setup.py
 VERSION=`cat setup.py | grep "VERSION =" | cut -d '=' -f 2 | tr -d "' "`
+VERSION_UNDERSCORE=`echo ${VERSION} | tr '-' '_'`
 
 # Ensure that the igraph library we are linking to is a fat binary
 if [ ! -f ${FATLIB} ]; then
@@ -119,7 +120,7 @@ for PYVER in $PYTHON_VERSIONS; do
   check_mandatory_library_linkage ${LIB} "${DEPS}" /usr/local/lib/libigraph.0.dylib
 
   for MACVER in 10.5 10.6 10.7 10.8 10.9; do
-    MPKG="dist/python_igraph-${VERSION}-py${PYVER}-macosx${MACVER}.mpkg"
+    MPKG="dist/python_igraph-${VERSION_UNDERSCORE}-py${PYVER}-macosx${MACVER}.mpkg"
     if [ -f $MPKG ]; then
 	  break
     fi
@@ -127,6 +128,7 @@ for PYVER in $PYTHON_VERSIONS; do
 
   DMG=dist/`basename $MPKG .mpkg`.dmg
   rm -f ${DMG}
+  echo "hdiutil create -volname 'python-igraph ${VERSION}' -layout NONE -srcfolder $MPKG $DMG"
   hdiutil create -volname "python-igraph ${VERSION}" -layout NONE -srcfolder $MPKG $DMG
   rm -rf ${MPKG}
 done
