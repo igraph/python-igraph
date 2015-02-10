@@ -23,7 +23,7 @@ except:
 ###########################################################################
 
 # Global version number. Keep the format of the next line intact.
-VERSION = '0.7.1'
+VERSION = '0.7.1-2'
 
 # Check Python's version info and exit early if it is too old
 if sys.version_info < (2, 5):
@@ -258,6 +258,10 @@ def version_variants(version):
     C core to download from igraph.org."""
 
     result = [version]
+
+    # Strip any release tags
+    version, _, _ = version.partition("-")
+    result.append(version)
 
     # Add trailing ".0" as needed to ensure that we have at least
     # major.minor.patch
