@@ -35,6 +35,10 @@
 #include "memory.h"
 #include "py2compat.h"
 
+#if defined(_MSC_VER)
+  #define strcasecmp _stricmp
+#endif
+
 /**
  * \brief Converts a Python integer to a C int
  *
