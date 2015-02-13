@@ -474,6 +474,8 @@ class BuildConfiguration(object):
                         detected = buildcfg.download_and_compile_igraph()
                         if detected:
                             buildcfg.use_built_igraph()
+                        else:
+                            sys.exit(1)
 
                 # Fall back to an educated guess if everything else failed
                 if not detected:
