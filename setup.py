@@ -179,14 +179,14 @@ def find_temporary_directory():
     if not script_file.endswith("setup.py"):
         # We are probably running within an easy_install sandbox. Luckily this
         # provides a temporary directory for us so we can use that
-        result = tempfile.tempdir
+        result = tempfile.gettempdir()
     else:
         # Use a temporary directory next to setup.py. We cannot blindly use
         # the default (given by tempfile.tempdir) because it might be on a
         # RAM disk that has not enough space
         result = os.path.join(os.path.dirname(script_file), "tmp")
     return os.path.abspath(result)
-    
+
 def first(iterable):
     """Returns the first element from the given iterable."""
     for item in iterable:
