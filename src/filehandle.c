@@ -109,9 +109,10 @@ int igraphmodule_filehandle_init(igraphmodule_filehandle_t* handle,
  * \brief Destroys the file handle object.
  */
 void igraphmodule_filehandle_destroy(igraphmodule_filehandle_t* handle) {
-	if (handle->fp != 0) {
-		fflush(handle->fp);
-	}
+    if (handle->fp != 0) {
+        fflush(handle->fp);
+    }
+
     handle->fp = 0;
     
     if (handle->object != 0) {
@@ -121,10 +122,9 @@ void igraphmodule_filehandle_destroy(igraphmodule_filehandle_t* handle) {
             }
         }
         Py_DECREF(handle->object);
+        handle->object = 0;
     }
 
-    Py_XDECREF(handle->object);
-    handle->object = 0;
     handle->need_close = 0;
 }
 
