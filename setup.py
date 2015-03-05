@@ -132,10 +132,6 @@ LIBIGRAPH_FALLBACK_LIBRARY_DIRS = []
 
 ###########################################################################
 
-SCRIPT_ROOT = os.path.abspath(os.path.dirname(sys.modules[__name__].__file__))
-
-###########################################################################
-
 def cleanup_tmpdir(dirname):
     """Removes the given temporary directory if it exists."""
     if dirname is not None and os.path.exists(dirname):
@@ -175,6 +171,21 @@ def find_static_library(library_name, library_path):
             full_path = os.path.join(path, variant.format(library_name))
             if os.path.isfile(full_path):
                 return full_path
+
+def find_temporary_directory():
+    """Finds a suitable temporary directory where the installer can download the
+    C core of igraph if needed and returns its full path."""
+    script_file = sys.modules[__name__].__file__
+    if not script_file.endswith("setup.py"):
+        # We are probably running within an easy_install sandbox. Luckily this
+        # provides a temporary directory for us so we can use that
+        result = tempfile.gettempdir()
+    else:
+        # Use a temporary directory next to setup.py. We cannot blindly use
+        # the default (given by tempfile.tempdir) because it might be on a
+        # RAM disk that has not enough space
+        result = os.path.join(os.path.dirname(script_file), "tmp")
+    return os.path.abspath(result)
 
 def first(iterable):
     """Returns the first element from the given iterable."""
@@ -276,8 +287,7 @@ class IgraphCCoreBuilder(object):
         self._tmpdir = None
 
         if self.tmproot is None:
-            global SCRIPT_ROOT
-            self.tmproot = os.path.join(SCRIPT_ROOT, "tmp")
+            self.tmproot = find_temporary_directory()
 
     @property
     def tmpdir(self):
