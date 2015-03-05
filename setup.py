@@ -23,7 +23,7 @@ except:
 ###########################################################################
 
 # Global version number. Keep the format of the next line intact.
-VERSION = '0.7.1-3'
+VERSION = '0.7.1-4'
 
 # Check Python's version info and exit early if it is too old
 if sys.version_info < (2, 5):
