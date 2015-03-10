@@ -29,7 +29,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
@@ -220,7 +220,7 @@ class GraphSummary(object):
         attrs = self._graph.attributes()
         if not attrs:
             return []
-        
+
         result = ["+ graph attributes:"]
         attrs.sort()
         for attr in attrs:
@@ -279,12 +279,6 @@ class GraphSummary(object):
         in the summary. `attribute_order` must be a list containing the names of
         the attributes to be presented in this table."""
         arrow = self._arrow_format
-
-        if self._graph.is_named():
-            edges = ", ".join(arrow % (names[edge.source], names[edge.target])
-                for edge in self._graph.es)
-        else:
-            edges = " ".join(arrow % edge.tuple for edge in self._graph.es)
 
         if self._graph.is_named():
             names = self._graph.vs["name"]
