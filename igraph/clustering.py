@@ -20,7 +20,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
@@ -40,16 +40,16 @@ from igraph.utils import str_to_orientation
 
 class Clustering(object):
     """Class representing a clustering of an arbitrary ordered set.
-    
+
     This is now used as a base for L{VertexClustering}, but it might be
     useful for other purposes as well.
-    
+
     Members of an individual cluster can be accessed by the C{[]} operator:
-    
+
       >>> cl = Clustering([0,0,0,0,1,1,1,2,2,2,2])
       >>> cl[0]
       [0, 1, 2, 3]
-    
+
     The membership vector can be accessed by the C{membership} property:
 
       >>> cl.membership
@@ -95,7 +95,7 @@ class Clustering(object):
 
         if params:
             self.__dict__.update(params)
-    
+
     def __getitem__(self, idx):
         """Returns the members of the specified cluster.
 
@@ -158,7 +158,7 @@ class Clustering(object):
 
     def sizes(self, *args):
         """Returns the size of given clusters.
-        
+
         The indices are given as positional arguments. If there are no
         positional arguments, the function will return the sizes of all clusters.
         """
@@ -170,7 +170,7 @@ class Clustering(object):
             return [counts[idx] for idx in args]
 
         return counts
-    
+
     def size_histogram(self, bin_width = 1):
         """Returns the histogram of cluster sizes.
 
@@ -181,10 +181,10 @@ class Clustering(object):
 
     def summary(self, verbosity=0, width=None):
         """Returns the summary of the clustering.
-        
+
         The summary includes the number of items and clusters, and also the
         list of members for each of the clusters if the verbosity is nonzero.
-        
+
         @param verbosity: determines whether the cluster members should be
           printed. Zero verbosity prints the number of items and clusters only.
         @return: the summary of the clustering as a string.
@@ -256,6 +256,7 @@ class VertexClustering(Clustering):
 
         self._graph = graph
         self._modularity = modularity
+        self._modularity_dirty = modularity is None
         if modularity_params is None:
             self._modularity_params = {}
         else:
@@ -360,8 +361,8 @@ class VertexClustering(Clustering):
     @property
     def modularity(self):
         """Returns the modularity score"""
-        if self._modularity is None:
-            return self.recalculate_modularity()
+        if self._modularity_dirty:
+            return self._recalculate_modularity_safe()
         return self._modularity
     q = modularity
 
@@ -377,13 +378,27 @@ class VertexClustering(Clustering):
         clustering through the class member C{modularity} or C{q} if the
         graph has been modified (edges have been added or removed) since the
         creation of the L{VertexClustering} object.
-        
+
         @return: the new modularity score
         """
         self._modularity = self._graph.modularity(self._membership,
                 **self._modularity_params)
+        self._modularity_dirty = False
         return self._modularity
 
+    def _recalculate_modularity_safe(self):
+        """Recalculates the stored modularity value and swallows all exceptions
+        raised by the modularity function (if any).
+
+        @return: the new modularity score or C{None} if the modularity function
+        could not be calculated.
+        """
+        try:
+            return self.recalculate_modularity()
+        except:
+            return None
+        finally:
+            self._modularity_dirty = False
 
     def subgraph(self, idx):
         """Get the subgraph belonging to a given cluster.
@@ -556,7 +571,7 @@ class Dendrogram(object):
     def _convert_matrix_to_tuple_repr(merges, n=None):
         """Converts the matrix representation of a clustering to a tuple
         representation.
-        
+
         @param merges: the matrix representation of the clustering
         @return: the tuple representation of the clustering
         """
@@ -612,9 +627,9 @@ class Dendrogram(object):
         """Formats the dendrogram in a foreign format.
 
         Currently only the Newick format is supported.
-        
+
         Example:
-            
+
             >>> d = Dendrogram([(2, 3), (0, 1), (4, 5)])
             >>> d.format()
             '((2,3)4,(0,1)5)6;'
@@ -638,10 +653,10 @@ class Dendrogram(object):
 
     def summary(self, verbosity=0, max_leaf_count=40):
         """Returns the summary of the dendrogram.
-        
+
         The summary includes the number of leafs and branches, and also an
         ASCII art representation of the dendrogram unless it is too large.
-        
+
         @param verbosity: determines whether the ASCII representation of the
           dendrogram should be printed. Zero verbosity prints only the number
           of leafs and branches.
@@ -657,7 +672,7 @@ class Dendrogram(object):
 
         if self._nitems == 0 or verbosity < 1 or self._nitems > max_leaf_count:
             return out.getvalue().strip()
-            
+
         print >>out
 
         positions = [None] * self._nitems
@@ -684,7 +699,7 @@ class Dendrogram(object):
             char_str = "".join(char_array)
             for _ in xrange(level_distance-1):
                 print >>out, char_str # Print the lines
-            
+
             cidx_incr = 0
             while midx < self._nmerges:
                 id1, id2 = self._merges[midx]
@@ -703,7 +718,7 @@ class Dendrogram(object):
                 char_array[pos1:(pos2+1)] = "`%s'" % dashes
 
                 cidx_incr += 1
-            
+
             max_community_idx += cidx_incr
 
             print >>out, "".join(char_array)
@@ -816,7 +831,7 @@ class Dendrogram(object):
             # Mirror or rotate the layout if necessary
             if orientation == "rl":
                 layout.mirror(0)
-        
+
         # Rescale layout to the bounding box
         maxw = max(e[0] for e in item_boxes)
         maxh = max(e[1] for e in item_boxes)
@@ -847,7 +862,7 @@ class Dendrogram(object):
         context.translate(bbox.left, bbox.top)
         context.set_source_rgb(0., 0., 0.)
         context.set_line_width(1)
-        
+
         # Draw items
         if horiz:
             sgn = 0 if orientation == "rl" else -1
@@ -1028,11 +1043,11 @@ class Cover(object):
     be functions that exist only in one of them or the other.
 
     Clusters of an individual cover can be accessed by the C{[]} operator:
-    
+
       >>> cl = Cover([[0,1,2,3], [2,3,4], [0,1,6]])
       >>> cl[0]
       [0, 1, 2, 3]
-    
+
     The membership vector can be accessed by the C{membership} property.
     Note that contrary to L{Clustering} instances, the membership vector
     will contain lists that contain the cluster indices each item belongs
@@ -1140,7 +1155,7 @@ class Cover(object):
 
     def sizes(self, *args):
         """Returns the size of given clusters.
-        
+
         The indices are given as positional arguments. If there are no
         positional arguments, the function will return the sizes of all clusters.
         """
@@ -1158,10 +1173,10 @@ class Cover(object):
 
     def summary(self, verbosity=0, width=None):
         """Returns the summary of the cover.
-        
+
         The summary includes the number of items and clusters, and also the
         list of members for each of the clusters if the verbosity is nonzero.
-        
+
         @param verbosity: determines whether the cluster members should be
           printed. Zero verbosity prints the number of items and clusters only.
         @return: the summary of the cover as a string.
@@ -1312,7 +1327,7 @@ class VertexCover(Cover):
 
         if "mark_groups" not in kwds:
             if Configuration.instance()["plotting.mark_groups"]:
-                kwds["mark_groups"] = enumerate(self) 
+                kwds["mark_groups"] = enumerate(self)
         else:
             kwds["mark_groups"] = _handle_mark_groups_arg_for_clustering(
                     kwds["mark_groups"], self)
