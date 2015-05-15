@@ -359,9 +359,9 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
             drawer_method(visual_vertex, vertex, coords)
 
         # Set the font we will use to draw the labels
-        vertex_font_family = 'sans-serif' if not hasattr(graph, 'vertex_label_font') \
-            else graph.vertex_label_font
-        context.select_font_face(vertex_font_family, cairo.FONT_SLANT_NORMAL, \
+        vertex_label_family = 'sans-serif' if not hasattr(graph, 'vertex_label_family') \
+            else graph.vertex_label_family
+        context.select_font_face(vertex_label_family, cairo.FONT_SLANT_NORMAL, \
             cairo.FONT_WEIGHT_NORMAL)
 
         # Decide whether the labels have to be wrapped
@@ -384,6 +384,10 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
             if vertex.label is None:
                 continue
 
+            # Set the font family, size, color and text
+            if hasattr(vertex, 'label_family'):
+                context.select_font_face(vertex.label_family, \
+                    cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
             context.set_font_size(vertex.label_size)
             context.set_source_rgba(*vertex.label_color)
             label_drawer.text = vertex.label
@@ -452,9 +456,9 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
             edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
         
         # Edge label font
-        edge_font_family = 'sans-serif' if not hasattr(graph, 'edge_label_font') \
-            else graph.edge_label_font
-        context.select_font_face(edge_font_family, cairo.FONT_SLANT_NORMAL, \
+        edge_label_family = 'sans-serif' if not hasattr(graph, 'edge_label_family') \
+            else graph.edge_label_family
+        context.select_font_face(edge_label_family, cairo.FONT_SLANT_NORMAL, \
             cairo.FONT_WEIGHT_NORMAL)
         
         # Draw the edge labels
@@ -462,7 +466,10 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
             if visual_edge.label is None:
                 continue
 
-            # Set the font size, color and text
+            # Set the font family, size, color and text
+            if hasattr(visual_edge, 'label_family'):
+                context.select_font_face(visual_edge.label_family, \
+                    cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
             context.set_font_size(visual_edge.label_size)
             context.set_source_rgba(*visual_edge.label_color)
             label_drawer.text = visual_edge.label
