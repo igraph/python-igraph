@@ -358,12 +358,6 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         for vertex, visual_vertex, coords in vertex_coord_iter:
             drawer_method(visual_vertex, vertex, coords)
 
-        # Set the font we will use to draw the labels
-        vertex_label_family = 'sans-serif' if not hasattr(graph, 'vertex_label_family') \
-            else graph.vertex_label_family
-        context.select_font_face(vertex_label_family, cairo.FONT_SLANT_NORMAL, \
-            cairo.FONT_WEIGHT_NORMAL)
-
         # Decide whether the labels have to be wrapped
         wrap = kwds.get("wrap_labels")
         if wrap is None:
@@ -454,12 +448,6 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         else:
             # Specified edge order
             edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
-        
-        # Edge label font
-        edge_label_family = 'sans-serif' if not hasattr(graph, 'edge_label_family') \
-            else graph.edge_label_family
-        context.select_font_face(edge_label_family, cairo.FONT_SLANT_NORMAL, \
-            cairo.FONT_WEIGHT_NORMAL)
         
         # Draw the edge labels
         for edge, visual_edge in edge_coord_iter:
