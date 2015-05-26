@@ -55,7 +55,7 @@ class AbstractEdgeDrawer(object):
             label       = None
             label_color = ("black", self.palette.get)
             label_size  = 12.0
-            label_family = 'sans-serif'
+            font = 'sans-serif'
             width       = 1.0
         return VisualEdgeBuilder
 
