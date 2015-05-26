@@ -78,7 +78,7 @@ class DefaultVertexDrawer(AbstractCairoVertexDrawer):
             label_angle = -pi/2
             label_dist  = 0.0
             label_color = ("black", self.palette.get)
-            label_family = 'sans-serif'
+            font = 'sans-serif'
             label_size  = 14.0
             position = dict(func=self.layout.__getitem__)
             shape = ("circle", ShapeDrawerDirectory.resolve_default)
