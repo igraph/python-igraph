@@ -379,9 +379,8 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
                 continue
 
             # Set the font family, size, color and text
-            if hasattr(vertex, 'label_family'):
-                context.select_font_face(vertex.label_family, \
-                    cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+            context.select_font_face(vertex.font, \
+                cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
             context.set_font_size(vertex.label_size)
             context.set_source_rgba(*vertex.label_color)
             label_drawer.text = vertex.label
@@ -455,9 +454,8 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
                 continue
 
             # Set the font family, size, color and text
-            if hasattr(visual_edge, 'label_family'):
-                context.select_font_face(visual_edge.label_family, \
-                    cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+            context.select_font_face(visual_edge.font, \
+                cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
             context.set_font_size(visual_edge.label_size)
             context.set_source_rgba(*visual_edge.label_color)
             label_drawer.text = visual_edge.label
