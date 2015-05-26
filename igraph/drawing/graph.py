@@ -358,10 +358,6 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         for vertex, visual_vertex, coords in vertex_coord_iter:
             drawer_method(visual_vertex, vertex, coords)
 
-        # Set the font we will use to draw the labels
-        context.select_font_face("sans-serif", cairo.FONT_SLANT_NORMAL, \
-            cairo.FONT_WEIGHT_NORMAL)
-
         # Decide whether the labels have to be wrapped
         wrap = kwds.get("wrap_labels")
         if wrap is None:
@@ -382,6 +378,9 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
             if vertex.label is None:
                 continue
 
+            # Set the font family, size, color and text
+            context.select_font_face(vertex.font, \
+                cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
             context.set_font_size(vertex.label_size)
             context.set_source_rgba(*vertex.label_color)
             label_drawer.text = vertex.label
@@ -448,13 +447,15 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         else:
             # Specified edge order
             edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
-
+        
         # Draw the edge labels
         for edge, visual_edge in edge_coord_iter:
             if visual_edge.label is None:
                 continue
 
-            # Set the font size, color and text
+            # Set the font family, size, color and text
+            context.select_font_face(visual_edge.font, \
+                cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
             context.set_font_size(visual_edge.label_size)
             context.set_source_rgba(*visual_edge.label_color)
             label_drawer.text = visual_edge.label
