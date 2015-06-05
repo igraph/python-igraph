@@ -4107,8 +4107,7 @@ def get_include():
     for path in paths:
         if os.path.exists(os.path.join(path, "igraphmodule_api.h")):
             return os.path.abspath(path)
-    else:
-        raise ValueError("cannot find the header files of python-igraph")
+    raise ValueError("cannot find the header files of python-igraph")
 
 
 def read(filename, *args, **kwds):
