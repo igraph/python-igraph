@@ -101,7 +101,7 @@ check_mandatory_library_linkage ${FATLIB} "${LIBS}" /usr/lib/libxml2.2.dylib
 # check_mandatory_library_linkage ${FATLIB} "${LIBS}" /usr/lib/libz.1.dylib
 
 # Clean up the previous build directory
-rm -rf build/
+rm -rf build/ igraphcore/
 
 # Set up ARCHFLAGS to ensure that we build a multi-arch Python extension
 export ARCHFLAGS="-arch i386 -arch x86_64"
@@ -109,8 +109,8 @@ export ARCHFLAGS="-arch i386 -arch x86_64"
 # For each Python version, build the .mpkg and the .dmg
 for PYVER in $PYTHON_VERSIONS; do
   PYTHON=/usr/bin/python$PYVER
-  $PYTHON setup.py build_ext --no-download --no-pkg-config -I ../igraph/include:../igraph/build/include -L `dirname $FATLIB` || exit 3
-  $PYTHON setup.py bdist_mpkg --no-download --no-pkg-config || exit 4
+  $PYTHON setup.py build_ext --no-download --no-wait --no-pkg-config -I ../igraph/include:../igraph/fatbuild/x86/include -L `dirname $FATLIB` || exit 3
+  $PYTHON setup.py bdist_mpkg --no-download --no-wait --no-pkg-config || exit 4
 
   # Ensure that the built library is really universal
   LIB=build/lib.macosx-*-${PYVER}/igraph/_igraph.so
