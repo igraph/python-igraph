@@ -6,7 +6,7 @@ import sys
 ###########################################################################
 
 # Global version number. Keep the format of the next line intact.
-VERSION = '0.7.1-4'
+VERSION = '0.7.1.post5'
 
 # Check Python's version info and exit early if it is too old
 if sys.version_info < (2, 5):
@@ -330,7 +330,7 @@ def version_variants(version):
     result = [version]
 
     # Strip any release tags
-    version, _, _ = version.partition("-")
+    version, _, _ = version.partition(".post")
     result.append(version)
 
     # Add trailing ".0" as needed to ensure that we have at least
