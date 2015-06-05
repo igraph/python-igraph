@@ -4091,6 +4091,26 @@ def autocurve(graph, attribute="curved", default=0):
     graph.es[attribute] = result
 
 
+def get_include():
+    """Returns the folder that contains the C API headers of the Python
+    interface of igraph."""
+    import igraph
+    paths = [
+        # The following path works if python-igraph is installed already
+        os.path.join(sys.prefix, "include",
+                     "python{0}.{1}".format(*sys.version_info),
+                     "python-igraph"),
+        # Fallback for cases when python-igraph is not installed but
+        # imported directly from the source tree
+        os.path.join(os.path.dirname(igraph.__file__), "..", "src")
+    ]
+    for path in paths:
+        if os.path.exists(os.path.join(path, "igraphmodule_api.h")):
+            return os.path.abspath(path)
+    else:
+        raise ValueError("cannot find the header files of python-igraph")
+
+
 def read(filename, *args, **kwds):
     """Loads a graph from the given filename.
 
