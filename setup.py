@@ -819,6 +819,8 @@ Many thanks to the maintainers of this page!
 options = dict(
     name = 'python-igraph',
     version = VERSION,
+    url = 'http://pypi.python.org/pypi/python-igraph',
+
     description = 'High performance graph data structures and algorithms',
     long_description = description,
     license = 'GNU General Public License (GPL)',
