@@ -515,6 +515,7 @@ class BuildConfiguration(object):
         self.excluded_library_dirs = []
         self.pre_build_hooks = []
         self.post_build_hooks = []
+        self.wait = True
 
     @property
     def has_pkgconfig(self):
@@ -682,6 +683,9 @@ class BuildConfiguration(object):
             elif option == "--no-progress-bar":
                 opts_to_remove.append(idx)
                 self.show_progress_bar = False
+            elif option == "--no-wait":
+                opts_to_remove.append(idx)
+                self.wait = False
             elif option.startswith("--c-core-version"):
                 opts_to_remove.append(idx)
                 if option == "--c-core-version":
@@ -751,7 +755,7 @@ class BuildConfiguration(object):
         print("- LIBIGRAPH_FALLBACK_LIBRARY_DIRS")
         print("")
 
-        seconds_remaining = 10
+        seconds_remaining = 10 if self.wait else 0
         while seconds_remaining > 0:
             if seconds_remaining > 1:
                 plural = "s"
