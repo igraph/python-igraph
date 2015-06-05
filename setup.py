@@ -260,19 +260,27 @@ def first(iterable):
 def get_output(args, encoding="utf-8"):
     """Returns the output of a command returning a single line of output."""
     PIPE = subprocess.PIPE
-    p = subprocess.Popen(args, shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = p.communicate()
+    try:
+        p = subprocess.Popen(args, shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.communicate()
+        returncode = p.returncode
+    except OSError:
+        stdout, stderr = None, None
+        returncode = 77
     if encoding and type(stdout).__name__ == "bytes":
         stdout = str(stdout, encoding=encoding)
     if encoding and type(stderr).__name__ == "bytes":
         stderr = str(stderr, encoding=encoding)
-    return stdout, p.returncode
+    return stdout, returncode
 
 def get_output_single_line(args, encoding="utf-8"):
     """Returns the output of a command returning a single line of output,
     stripped from any trailing newlines."""
     stdout, returncode = get_output(args, encoding=encoding)
-    line, _, _ = stdout.partition("\n")
+    if stdout is not None:
+        line, _, _ = stdout.partition("\n")
+    else:
+        line = None
     return line, returncode
 
 def http_url_exists(url):
