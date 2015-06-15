@@ -1044,7 +1044,7 @@ full `API documentation`_ which should provide information about almost every
 of the `Graph class`_. Should you get stuck, drop a mail to the `igraph mailing
 list`_ - maybe there is someone out there who can help you out immediately.
 
-.. _API documentation: http://igraph.org/doc/python/
-.. _Graph class: http://igraph.org/doc/python/igraph.Graph-class.html
+.. _API documentation: http://igraph.org/python/doc/igraph-module.html
+.. _Graph class: http://igraph.org/python/doc/igraph.Graph-class.html
 .. _igraph mailing list: http://lists.nongnu.org/mailman/listinfo/igraph-help
 
