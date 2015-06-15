@@ -1,29 +1,12 @@
 #!/usr/bin/env python
 
-import atexit
-import distutils.ccompiler
-import glob
 import os
-import shutil
-import subprocess
 import sys
-import tarfile
-import tempfile
-
-from select import select
-
-try:
-    from urllib import urlretrieve
-    from urllib2 import Request, urlopen, URLError
-except:
-    # Maybe Python 3?
-    from urllib.request import Request, urlopen, urlretrieve
-    from urllib.error import URLError
 
 ###########################################################################
 
 # Global version number. Keep the format of the next line intact.
-VERSION = '0.7.1-4'
+VERSION = '0.7.1.post6'
 
 # Check Python's version info and exit early if it is too old
 if sys.version_info < (2, 5):
@@ -50,12 +33,41 @@ class Workaround(object):
         """
         raise NotImplementedError
 
+    def update_buildcfg(self, cfg):
+        """Allows the workaround to update the build configuration of the
+        igraph extension. This method will get called if and only if the
+        ``required()`` method returns ``True``.
+        """
+        pass
+
+    def _extend_compiler_customization(self, func):
+        """Helper function that extends ``distutils.sysconfig.customize_compiler``
+        and ``setuptools.command.build_ext.customize_compiler`` with new,
+        user-defined code at the end."""
+        from distutils import sysconfig
+        old_func = sysconfig.customize_compiler
+        def replaced(*args, **kwds):
+            old_func(*args, **kwds)
+            return func(*args, **kwds)
+        self._replace_compiler_customization_distutils(replaced)
+        self._replace_compiler_customization_setuptools(replaced)
+
+    def _replace_compiler_customization_distutils(self, new_func):
+        from distutils import ccompiler, sysconfig
+        sysconfig.customize_compiler = new_func
+        ccompiler.customize_compiler = new_func
+
+    def _replace_compiler_customization_setuptools(self, new_func):
+        if "setuptools.command.build_ext" in sys.modules:
+            sys.modules["setuptools.command.build_ext"].customize_compiler = new_func
+
+
 class OSXClangAndSystemPythonWorkaround(Workaround):
     """Removes ``-mno-fused-madd`` from the arguments used to compile
     Python extensions if the user is running OS X."""
 
-    def customize_compiler(self, compiler):
-        self._saved_customize_compiler(compiler)
+    @staticmethod
+    def remove_compiler_args(compiler):
         while "-mno-fused-madd" in compiler.compiler:
             compiler.compiler.remove("-mno-fused-madd")
         while "-mno-fused-madd" in compiler.compiler_so:
@@ -64,31 +76,76 @@ class OSXClangAndSystemPythonWorkaround(Workaround):
             compiler.linker_so.remove("-mno-fused-madd")
 
     def required(self):
-        return sys.platform == "darwin"
+        return sys.platform.startswith("darwin")
 
     def hack(self):
-        self.hack_for_distutils()
-        self.hack_for_setuptools()
+        self._extend_compiler_customization(self.remove_compiler_args)
 
-    def hack_for_distutils(self):
-        from distutils import sysconfig, ccompiler
-        self._saved_customize_compiler = sysconfig.customize_compiler
-        sysconfig.customize_compiler = self.customize_compiler
-        ccompiler.customize_compiler = self.customize_compiler
 
-    def hack_for_setuptools(self):
-        if "setuptools.command.build_ext" in sys.modules:
-            sys.modules["setuptools.command.build_ext"].customize_compiler = \
-                self.customize_compiler
+class OSXAnacondaPythonIconvWorkaround(Workaround):
+    """Anaconda Python contains a file named libxml2.la which refers to
+    /usr/lib/libiconv.la -- but such a file does not exist in OS X. This
+    hack ensures that we link to libxml2 from OS X itself and not from
+    Anaconda Python (after all, this is what would have happened if the
+    C core of igraph was compiled independently)."""
 
-WORKAROUNDS = [
-        OSXClangAndSystemPythonWorkaround
-]
+    def required(self):
+        from distutils.spawn import find_executable
+        if not sys.platform.startswith("darwin"):
+            return False
+        if "Anaconda" not in sys.version:
+            return False
+        self.xml2_config_path = find_executable("xml2-config")
+        if not self.xml2_config_path:
+            return False
+        xml2_config_path_abs = os.path.abspath(self.xml2_config_path)
+        return xml2_config_path_abs.startswith(os.path.abspath(sys.prefix))
 
-for workaround_cls in WORKAROUNDS:
-    workaround = workaround_cls()
-    if workaround.required():
-        workaround.hack()
+    def hack(self):
+        path = os.environ["PATH"].split(os.pathsep)
+        dir_to_remove = os.path.dirname(self.xml2_config_path)
+        if dir_to_remove in path:
+            path.remove(dir_to_remove)
+            os.environ["PATH"] = os.pathsep.join(path)
+
+    def update_buildcfg(self, cfg):
+        anaconda_libdir = os.path.join(sys.prefix, "lib")
+        cfg.extra_link_args.append("-Wl,-rpath,%s" % anaconda_libdir)
+        cfg.post_build_hooks.append(self.fix_install_name)
+
+    def fix_install_name(self, cfg):
+        """Fixes the install name of the libxml2 library in _igraph.so
+        to ensure that it loads libxml2 from Anaconda Python."""
+        for outputfile in cfg.get_outputs():
+            lines, retcode = get_output(["otool", "-L", outputfile])
+            if retcode:
+                raise OSError("otool -L %s failed with error code: %s" % (outputfile, retcode))
+
+            for line in lines.split("\n"):
+                if "libxml2" in line:
+                    libname = line.strip().split(" ")[0]
+                    subprocess.call(["install_name_tool", "-change",
+                                     libname, "@rpath/" + os.path.basename(libname),
+                                     outputfile])
+
+
+class WorkaroundSet(object):
+    def __init__(self, workaround_classes):
+        self.each = [cls() for cls in workaround_classes]
+        self.executed = []
+
+    def execute(self):
+        for workaround in self.each:
+            if workaround.required():
+                workaround.hack()
+                self.executed.append(workaround)
+
+
+workarounds = WorkaroundSet([
+    OSXClangAndSystemPythonWorkaround,
+    OSXAnacondaPythonIconvWorkaround
+])
+workarounds.execute()
 
 ###########################################################################
 
@@ -106,12 +163,13 @@ except ImportError:
 import atexit
 import distutils.ccompiler
 import glob
-import os
 import shutil
 import subprocess
 import sys
 import tarfile
 import tempfile
+
+from select import select
 
 try:
     from urllib import urlretrieve
@@ -148,6 +206,12 @@ def ensure_dir_does_not_exist(*args):
     path = os.path.join(*args)
     if os.path.isdir(path):
         shutil.rmtree(path)
+
+def exclude_from_list(items, items_to_exclude):
+    """Excludes certain items from a list, keeping the original order of
+    the remaining items."""
+    itemset = set(items_to_exclude)
+    return [item for item in items if item not in itemset]
 
 def find_static_library(library_name, library_path):
     """Given the raw name of a library in `library_name`, tries to find a
@@ -193,17 +257,31 @@ def first(iterable):
         return item
     raise ValueError("iterable is empty")
 
-def get_output(command):
+def get_output(args, encoding="utf-8"):
     """Returns the output of a command returning a single line of output."""
     PIPE = subprocess.PIPE
-    p = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    p.stdin.close()
-    p.stderr.close()
-    line=p.stdout.readline().strip()
-    p.wait()
-    if type(line).__name__ == "bytes":
-        line = str(line, encoding="utf-8")
-    return line, p.returncode
+    try:
+        p = subprocess.Popen(args, shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.communicate()
+        returncode = p.returncode
+    except OSError:
+        stdout, stderr = None, None
+        returncode = 77
+    if encoding and type(stdout).__name__ == "bytes":
+        stdout = str(stdout, encoding=encoding)
+    if encoding and type(stderr).__name__ == "bytes":
+        stderr = str(stderr, encoding=encoding)
+    return stdout, returncode
+
+def get_output_single_line(args, encoding="utf-8"):
+    """Returns the output of a command returning a single line of output,
+    stripped from any trailing newlines."""
+    stdout, returncode = get_output(args, encoding=encoding)
+    if stdout is not None:
+        line, _, _ = stdout.partition("\n")
+    else:
+        line = None
+    return line, returncode
 
 def http_url_exists(url):
     """Returns whether the given HTTP URL 'exists' in the sense that it is returning
@@ -260,7 +338,7 @@ def version_variants(version):
     result = [version]
 
     # Strip any release tags
-    version, _, _ = version.partition("-")
+    version, _, _ = version.partition(".post")
     result.append(version)
 
     # Add trailing ".0" as needed to ensure that we have at least
@@ -355,6 +433,18 @@ class IgraphCCoreBuilder(object):
                     "started with igraph; giving up build.")
             return False
 
+        # Patch ltmain.sh so it does not freak out on OS X when the build
+        # directory contains spaces
+        infile = os.path.join(self.builddir, "ltmain.sh")
+        outfile = os.path.join(self.builddir, "ltmain.sh.new")
+        with open(infile) as infp:
+            with open(outfile, "w") as outfp:
+                for line in infp:
+                    if line.endswith("cd $darwin_orig_dir\n"):
+                        line = line.replace("cd $darwin_orig_dir\n", "cd \"$darwin_orig_dir\"\n")
+                    outfp.write(line)
+        os.rename(outfile, infile)
+
         # Try to compile
         cwd = os.getcwd()
         try:
@@ -419,6 +509,7 @@ class BuildConfiguration(object):
         self.c_core_url = None
         self.include_dirs = []
         self.library_dirs = []
+        self.runtime_library_dirs = []
         self.libraries = []
         self.extra_compile_args = []
         self.extra_link_args = []
@@ -428,6 +519,11 @@ class BuildConfiguration(object):
         self.download_igraph_if_needed = True
         self.use_pkgconfig = True
         self._has_pkgconfig = None
+        self.excluded_include_dirs = []
+        self.excluded_library_dirs = []
+        self.pre_build_hooks = []
+        self.post_build_hooks = []
+        self.wait = True
 
     @property
     def has_pkgconfig(self):
@@ -435,7 +531,7 @@ class BuildConfiguration(object):
         and it knows about igraph or not."""
         if self._has_pkgconfig is None:
             if self.use_pkgconfig:
-                line, exit_code = get_output("pkg-config igraph")
+                line, exit_code = get_output_single_line(["pkg-config", "igraph"])
                 self._has_pkgconfig = (exit_code == 0)
             else:
                 self._has_pkgconfig = False
@@ -495,15 +591,24 @@ class BuildConfiguration(object):
                         if extension.name == "igraph._igraph")
                 buildcfg.configure(ext)
 
+                # Run any pre-build hooks
+                for hook in buildcfg.pre_build_hooks:
+                    hook(self)
+
                 # Run the original build_ext command
                 build_ext.run(self)
+
+                # Run any post-build hooks
+                for hook in buildcfg.post_build_hooks:
+                    hook(self)
 
         return custom_build_ext
 
     def configure(self, ext):
         """Configures the given Extension object using this build configuration."""
-        ext.include_dirs = self.include_dirs
-        ext.library_dirs = self.library_dirs
+        ext.include_dirs = exclude_from_list(self.include_dirs, self.excluded_include_dirs)
+        ext.library_dirs = exclude_from_list(self.library_dirs, self.excluded_library_dirs)
+        ext.runtime_library_dirs = self.runtime_library_dirs
         ext.libraries = self.libraries
         ext.extra_compile_args = self.extra_compile_args
         ext.extra_link_args = self.extra_link_args
@@ -516,10 +621,10 @@ class BuildConfiguration(object):
             print("Cannot find the C core of igraph on this system using pkg-config.")
             return False
 
-        cmd = "pkg-config igraph --cflags --libs"
+        cmd = ["pkg-config", "igraph", "--cflags", "--libs"]
         if self.static_extension:
-            cmd += " --static"
-        line, exit_code = get_output(cmd)
+            cmd += ["--static"]
+        line, exit_code = get_output_single_line(cmd)
         if exit_code > 0 or len(line) == 0:
             return False
 
@@ -554,7 +659,12 @@ class BuildConfiguration(object):
             build_type = "dynamic extension"
         print("Build type: %s" % build_type)
         print("Include path: %s" % " ".join(self.include_dirs))
+        if self.excluded_include_dirs:
+            print("  - excluding: %s" % " ".join(self.excluded_include_dirs))
         print("Library path: %s" % " ".join(self.library_dirs))
+        if self.excluded_library_dirs:
+            print("  - excluding: %s" % " ".join(self.excluded_library_dirs))
+        print("Runtime library path: %s" % " ".join(self.runtime_library_dirs))
         print("Linked dynamic libraries: %s" % " ".join(self.libraries))
         print("Linked static libraries: %s" % " ".join(self.extra_objects))
         print("Extra compiler options: %s" % " ".join(self.extra_compile_args))
@@ -581,6 +691,9 @@ class BuildConfiguration(object):
             elif option == "--no-progress-bar":
                 opts_to_remove.append(idx)
                 self.show_progress_bar = False
+            elif option == "--no-wait":
+                opts_to_remove.append(idx)
+                self.wait = False
             elif option.startswith("--c-core-version"):
                 opts_to_remove.append(idx)
                 if option == "--c-core-version":
@@ -650,7 +763,7 @@ class BuildConfiguration(object):
         print("- LIBIGRAPH_FALLBACK_LIBRARY_DIRS")
         print("")
 
-        seconds_remaining = 10
+        seconds_remaining = 10 if self.wait else 0
         while seconds_remaining > 0:
             if seconds_remaining > 1:
                 plural = "s"
@@ -680,6 +793,8 @@ class BuildConfiguration(object):
 # Process command line options
 buildcfg = BuildConfiguration()
 buildcfg.process_args_from_command_line()
+for workaround in workarounds.executed:
+    workaround.update_buildcfg(buildcfg)
 
 # Define the extension
 sources=glob.glob(os.path.join('src', '*.c'))
@@ -716,6 +831,8 @@ Many thanks to the maintainers of this page!
 options = dict(
     name = 'python-igraph',
     version = VERSION,
+    url = 'http://pypi.python.org/pypi/python-igraph',
+
     description = 'High performance graph data structures and algorithms',
     long_description = description,
     license = 'GNU General Public License (GPL)',
