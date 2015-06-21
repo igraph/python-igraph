@@ -20,7 +20,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
@@ -54,7 +54,7 @@ class Palette(object):
 
     def clear_cache(self):
         """Clears the result cache.
-        
+
         The return values of L{Palette.get} are cached. Use this method
         to clear the cache.
         """
@@ -189,7 +189,7 @@ class GradientPalette(Palette):
     Gradient palettes contain a gradient between two given colors.
 
     Example:
-    
+
       >>> pal = GradientPalette("red", "blue", 5)
       >>> pal.get(0)
       (1.0, 0.0, 0.0, 1.0)
@@ -222,9 +222,9 @@ class GradientPalette(Palette):
 
 class AdvancedGradientPalette(Palette):
     """Advanced gradient that consists of more than two base colors.
-    
+
     Example:
-    
+
       >>> pal = AdvancedGradientPalette(["red", "black", "blue"], n=9)
       >>> pal.get(2)
       (0.5, 0.0, 0.0, 1.0)
@@ -534,7 +534,7 @@ def color_to_html_format(color):
 
 def darken(color, ratio=0.5):
     """Creates a darker version of a color given by an RGB triplet.
-    
+
     This is done by mixing the original color with black using the given
     ratio. A ratio of 1.0 will yield a completely black color, a ratio
     of 0.0 will yield the original color. The alpha values are left intact.
@@ -694,7 +694,7 @@ def rgb_to_hsv(r, g, b):
 
 def lighten(color, ratio=0.5):
     """Creates a lighter version of a color given by an RGB triplet.
-    
+
     This is done by mixing the original color with white using the given
     ratio. A ratio of 1.0 will yield a completely white color, a ratio
     of 0.0 will yield the original color.
@@ -903,6 +903,10 @@ known_colors = \
                      0.53333333333333333,
                      0.47058823529411764,
                      1.0),
+    'crimson': (   0.8627450980392157,
+                   0.0784313725490196,
+                   0.23529411764705882,
+                   1.0),
     'cyan': (0.0, 1.0, 1.0, 1.0),
     'cyan1': (0.0, 1.0, 1.0, 1.0),
     'cyan2': (0.0, 0.93333333333333335, 0.93333333333333335, 1.0),
@@ -2050,6 +2054,7 @@ known_colors = \
                       0.22745098039215686,
                       0.22745098039215686,
                       1.0),
+    'indigo': (0.29411764705882354, 0.0, 0.5098039215686274, 1.0),
     'ivory': (1.0, 1.0, 0.94117647058823528, 1.0),
     'ivory1': (1.0, 1.0, 0.94117647058823528, 1.0),
     'ivory2': (   0.93333333333333335,
@@ -2698,6 +2703,8 @@ known_colors = \
                    0.10196078431372549,
                    0.54509803921568623,
                    1.0),
+    'rebecca purple': (0.4, 0.2, 0.6, 1.0),
+    'rebeccapurple': (0.4, 0.2, 0.6, 1.0),
     'red': (1.0, 0.0, 0.0, 1.0),
     'red1': (1.0, 0.0, 0.0, 1.0),
     'red2': (0.93333333333333335, 0.0, 0.0, 1.0),
@@ -3022,6 +3029,38 @@ known_colors = \
                       0.13333333333333333,
                       0.32156862745098042,
                       1.0),
+    'web gray': (   0.5019607843137255,
+                    0.5019607843137255,
+                    0.5019607843137255,
+                    1.0),
+    'webgray': (   0.5019607843137255,
+                   0.5019607843137255,
+                   0.5019607843137255,
+                   1.0),
+    'web green': (0.0, 0.5019607843137255, 0.0, 1.0),
+    'webgreen': (0.0, 0.5019607843137255, 0.0, 1.0),
+    'webgray': (   0.5019607843137255,
+                   0.5019607843137255,
+                   0.5019607843137255,
+                   1.0),
+    'web grey': (   0.5019607843137255,
+                    0.5019607843137255,
+                    0.5019607843137255,
+                    1.0),
+    'webgrey': (   0.5019607843137255,
+                   0.5019607843137255,
+                   0.5019607843137255,
+                   1.0),
+    'web maroon': (0.5019607843137255, 0.0, 0.0, 1.0),
+    'webmaroon': (0.5019607843137255, 0.0, 0.0, 1.0),
+    'web purple': (   0.4980392156862745,
+                      0.0,
+                      0.4980392156862745,
+                      1.0),
+    'webpurple': (   0.4980392156862745,
+                     0.0,
+                     0.4980392156862745,
+                     1.0),
     'wheat': (   0.96078431372549022,
                  0.87058823529411766,
                  0.70196078431372544,
