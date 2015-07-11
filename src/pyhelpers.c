@@ -30,7 +30,7 @@
  * \param  len   the length of the list to be created
  * \param  item  the item with which the list will be filled
  */
-PyObject* PyList_NewFill(Py_ssize_t len, PyObject* item) {
+PyObject* igraphmodule_PyList_NewFill(Py_ssize_t len, PyObject* item) {
 	Py_ssize_t i;
 	PyObject* result = PyList_New(len);
 
@@ -50,14 +50,14 @@ PyObject* PyList_NewFill(Py_ssize_t len, PyObject* item) {
  * 
  * \param  len   the length of the list to be created
  */
-PyObject* PyList_Zeroes(Py_ssize_t len) {
+PyObject* igraphmodule_PyList_Zeroes(Py_ssize_t len) {
 	PyObject* zero = PyInt_FromLong(0);
 	PyObject* result;
 
 	if (zero == 0)
 		return 0;
 
-	result = PyList_NewFill(len, zero);
+	result = igraphmodule_PyList_NewFill(len, zero);
 	Py_DECREF(zero);
 	return result;
 }
@@ -68,7 +68,7 @@ PyObject* PyList_Zeroes(Py_ssize_t len) {
  *
  * It is the responsibility of the caller to release the C string.
  */
-char* PyObject_ConvertToCString(PyObject* string) {
+char* igraphmodule_PyObject_ConvertToCString(PyObject* string) {
   char* result;
 
   if (string == 0)
@@ -87,5 +87,3 @@ char* PyObject_ConvertToCString(PyObject* string) {
 
   return result;
 }
-
-

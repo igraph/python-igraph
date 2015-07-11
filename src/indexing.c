@@ -74,7 +74,7 @@ PyObject* igraphmodule_Graph_adjmatrix_get_index(igraph_t* graph,
       values = igraphmodule_get_edge_attribute_values(graph, "weight");
     } else {
       /* Specifying the name of the attribute */
-      attr = PyObject_ConvertToCString(attr_name);
+      attr = igraphmodule_PyObject_ConvertToCString(attr_name);
       values = igraphmodule_get_edge_attribute_values(graph, attr);
       free(attr);
     }
@@ -148,7 +148,7 @@ static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph,
     IGRAPH_PYCHECK(igraph_incident(graph, &eids, from, neimode));
     
     n = igraph_vector_size(&eids);
-    result = PyList_Zeroes(igraph_vcount(graph));
+    result = igraphmodule_PyList_Zeroes(igraph_vcount(graph));
     if (result == 0) {
       IGRAPH_FINALLY_FREE();
       return 0;
@@ -439,7 +439,7 @@ int igraphmodule_Graph_adjmatrix_set_index(igraph_t* graph,
     values = igraphmodule_get_edge_attribute_values(graph, "weight");
   } else {
     /* Specifying the name of the attribute */
-    attr = PyObject_ConvertToCString(attr_name);
+    attr = igraphmodule_PyObject_ConvertToCString(attr_name);
     values = igraphmodule_create_or_get_edge_attribute_values(graph, attr);
     free(attr);
   }

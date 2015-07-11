@@ -1628,11 +1628,11 @@ int igraphmodule_i_get_string_vertex_attr(const igraph_t *graph,
       if (result == 0)
         IGRAPH_ERROR("null element in PyList", IGRAPH_EINVAL);
 
-      str = PyObject_ConvertToCString(result);
+      str = igraphmodule_PyObject_ConvertToCString(result);
       if (str == 0)
-        IGRAPH_ERROR("error while calling PyObject_ConvertToCString", IGRAPH_EINVAL);
+        IGRAPH_ERROR("error while calling igraphmodule_PyObject_ConvertToCString", IGRAPH_EINVAL);
 
-      /* Note: this is a bit inefficient here, PyObject_ConvertToCString
+      /* Note: this is a bit inefficient here, igraphmodule_PyObject_ConvertToCString
        * allocates a new string which could be copied into the string
        * vector straight away. Instead of that, the string vector makes
        * another copy. Probably the performance hit is not too severe.
@@ -1756,11 +1756,11 @@ int igraphmodule_i_get_string_edge_attr(const igraph_t *graph,
       if (result == 0)
         IGRAPH_ERROR("null element in PyList", IGRAPH_EINVAL);
 
-      str = PyObject_ConvertToCString(result);
+      str = igraphmodule_PyObject_ConvertToCString(result);
       if (str == 0)
-        IGRAPH_ERROR("error while calling PyObject_ConvertToCString", IGRAPH_EINVAL);
+        IGRAPH_ERROR("error while calling igraphmodule_PyObject_ConvertToCString", IGRAPH_EINVAL);
 
-      /* Note: this is a bit inefficient here, PyObject_ConvertToCString
+      /* Note: this is a bit inefficient here, igraphmodule_PyObject_ConvertToCString
        * allocates a new string which could be copied into the string
        * vector straight away. Instead of that, the string vector makes
        * another copy. Probably the performance hit is not too severe.
