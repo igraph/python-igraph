@@ -4,9 +4,9 @@ Runs all the doctests in the igraph module
 """
 
 import doctest
-import igraph
 
-if __name__ == "__main__":
+def run_doctests():
+    import igraph
     doctest.testmod(igraph)
     doctest.testmod(igraph.clustering)
     doctest.testmod(igraph.cut)
@@ -17,3 +17,5 @@ if __name__ == "__main__":
     doctest.testmod(igraph.statistics)
     doctest.testmod(igraph.utils)
 
+if __name__ == "__main__":
+    run_doctests()
