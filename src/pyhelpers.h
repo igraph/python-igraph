@@ -29,6 +29,7 @@
 PyObject* igraphmodule_PyList_NewFill(Py_ssize_t len, PyObject* item);
 PyObject* igraphmodule_PyList_Zeroes(Py_ssize_t len);
 char* igraphmodule_PyObject_ConvertToCString(PyObject* string);
+long igraphmodule_Py_HashPointer(void *p);
 
 #define PY_IGRAPH_DEPRECATED(msg) \
   PyErr_WarnEx(PyExc_DeprecationWarning, (msg), 1)

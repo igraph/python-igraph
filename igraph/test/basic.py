@@ -255,6 +255,10 @@ class BasicTests(unittest.TestCase):
         self.assertTrue(g.is_directed() == g2.is_directed())
         self.assertTrue(g2.custom_data == g.custom_data)
 
+    def testHashing(self):
+        g=Graph([(0,1), (1,2)])
+        self.assertRaises(TypeError, hash, g)
+
 
 class DatatypeTests(unittest.TestCase):
     def testMatrix(self):

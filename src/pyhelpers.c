@@ -87,3 +87,22 @@ char* igraphmodule_PyObject_ConvertToCString(PyObject* string) {
 
   return result;
 }
+
+/**
+ * Generates a hash value for a plain C pointer.
+ *
+ * This function is a copy of \c _Py_HashPointer from \c Objects/object.c in
+ * the source code of Python's C implementation.
+ */
+long igraphmodule_Py_HashPointer(void *p) {
+  long x;
+  size_t y = (size_t)p;
+
+  /* bottom 3 or 4 bits are likely to be 0; rotate y by 4 to avoid
+   * excessive hash collisions for dicts and sets */
+  y = (y >> 4) | (y << (8 * sizeof(p) - 4));
+  x = (long)y;
+  if (x == -1)
+    x = -2;
+  return x;
+}

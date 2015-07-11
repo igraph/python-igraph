@@ -15644,7 +15644,7 @@ PyTypeObject igraphmodule_GraphType = {
   &igraphmodule_Graph_as_number,  /* tp_as_number */
   0,                            /* tp_as_sequence */
   &igraphmodule_Graph_as_mapping, /* tp_as_mapping */
-  0,                            /* tp_hash */
+  (hashfunc) PyObject_HashNotImplemented,     /* tp_hash */
   0,                            /* tp_call */
   (reprfunc) igraphmodule_Graph_str,  /* tp_str */
   0,                            /* tp_getattro */

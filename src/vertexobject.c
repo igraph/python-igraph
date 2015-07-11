@@ -26,6 +26,7 @@
 #include "convert.h"
 #include "error.h"
 #include "graphobject.h"
+#include "pyhelpers.h"
 #include "vertexobject.h"
 
 /**
@@ -195,7 +196,9 @@ Py_hash_t igraphmodule_Vertex_hash(igraphmodule_VertexObject* self) {
   if (hash_index == -1)
     return -1;
 
-  hash_graph = PyObject_Hash((PyObject*)self->gref);
+  /* Graph objects are unhashable from Python so we cannot call PyObject_Hash
+   * directly. */
+  hash_graph = igraphmodule_Py_HashPointer(self->gref);
   if (hash_graph == -1)
     return -1;
 
