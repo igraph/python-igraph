@@ -19,11 +19,14 @@ unless explicitly stated by C{global.shells}, since Linux and
 Mac OS X users are likely to invoke igraph from the command line.
 """
 
+import re
+import sys
+
 # pylint: disable-msg=W0401
 # W0401: wildcard import. That's exactly what we need for the shell.
 from igraph import __version__, set_progress_handler, set_status_handler
 from igraph.configuration import Configuration
-import sys, re
+
 
 # pylint: disable-msg=C0103,R0903
 # C0103: invalid name. Disabled because this is a third-party class.
@@ -31,8 +34,8 @@ import sys, re
 class TerminalController:
     """
     A class that can be used to portably generate formatted output to
-    a terminal.  
-    
+    a terminal.
+
     `TerminalController` defines a set of instance variables whose
     values are initialized to the control sequence necessary to
     perform a given action.  These can be simply included in normal
@@ -64,7 +67,7 @@ class TerminalController:
 
     Finally, if the width and height of the terminal are known, then
     they will be stored in the `COLS` and `LINES` attributes.
-    
+
     @author: Edward Loper
     """
     # Cursor movement:
@@ -97,11 +100,11 @@ class TerminalController:
 
     # Foreground colors:
     BLACK = BLUE = GREEN = CYAN = RED = MAGENTA = YELLOW = WHITE = ''
-    
+
     # Background colors:
     BG_BLACK = BG_BLUE = BG_GREEN = BG_CYAN = ''
     BG_RED = BG_MAGENTA = BG_YELLOW = BG_WHITE = ''
-    
+
     _STRING_CAPABILITIES = """
     BOL=cr UP=cuu1 DOWN=cud1 LEFT=cub1 RIGHT=cuf1
     CLEAR_SCREEN=clear CLEAR_EOL=el CLEAR_BOL=el1 CLEAR_EOS=ed BOLD=bold
@@ -138,7 +141,7 @@ class TerminalController:
         # Look up numeric capabilities.
         self.COLS = curses.tigetnum('cols')
         self.LINES = curses.tigetnum('lines')
-        
+
         # Look up string capabilities.
         for capability in self._STRING_CAPABILITIES:
             (attrib, cap_name) = capability.split('=')
@@ -193,7 +196,7 @@ class TerminalController:
 class ProgressBar:
     """
     A 2-line progress bar, which looks like::
-    
+
                                 Header
         20% [===========----------------------------------]
 
@@ -202,7 +205,7 @@ class ProgressBar:
     """
     BAR = '%3d%% ${GREEN}[${BOLD}%s%s${NORMAL}${GREEN}]${NORMAL}'
     HEADER = '${BOLD}${CYAN}%s${NORMAL}\n'
-        
+
     def __init__(self, term):
         self.term = term
         if not (self.term.CLEAR_EOL and self.term.UP and self.term.BOL):
@@ -211,7 +214,7 @@ class ProgressBar:
         self.width = self.term.COLS or 75
         self.progress_bar = term.render(self.BAR)
         self.header = self.term.render(self.HEADER % "".center(self.width))
-        self.cleared = True #: true if we haven't drawn the bar yet.
+        self.cleared = True     #: true if we haven't drawn the bar yet.
 
         self.last_percent = 0
         self.last_message = ""
@@ -305,10 +308,10 @@ class IDLEShell(Shell):
     """IDLE embedded shell interface.
 
     This class allows igraph to be embedded in IDLE (the Tk Python IDE).
-    
+
     @todo: no progress bar support yet. Shell/Restart Shell command should
       re-import igraph again."""
-    
+
     def __init__(self):
         """Constructor.
 
@@ -318,9 +321,9 @@ class IDLEShell(Shell):
         Shell.__init__(self)
 
         import idlelib.PyShell
-        
+
         idlelib.PyShell.use_subprocess = True
-        
+
         try:
             sys.ps1
         except AttributeError:
@@ -413,7 +416,10 @@ class IPythonShell(Shell, ConsoleProgressBarMixin):
 
         try:
             # IPython >= 0.11 supports this
-            from IPython.frontend.terminal.ipapp import TerminalIPythonApp
+            try:
+                from IPython.terminal.ipapp import TerminalIPythonApp
+            except ImportError:
+                from IPython.frontend.terminal.ipapp import TerminalIPythonApp
             self._shell = TerminalIPythonApp.instance()
             sys.argv.append("--nosep")
         except ImportError:
@@ -438,7 +444,7 @@ class ClassicPythonShell(Shell, ConsoleProgressBarMixin):
     """Classic Python shell interface.
 
     This class allows igraph to be embedded in Python's shell."""
-    
+
     def __init__(self):
         """Constructor.
 
@@ -471,8 +477,8 @@ def main():
     if config.has_key("shells"):
         parts = [part.strip() for part in config["shells"].split(",")]
         shell_classes = []
-        available_classes = dict([(k, v) for k, v in globals().iteritems() \
-            if isinstance(v, type) and issubclass(v, Shell)])
+        available_classes = dict([(k, v) for k, v in globals().iteritems()
+                                  if isinstance(v, type) and issubclass(v, Shell)])
         for part in parts:
             klass = available_classes.get(part, None)
             if klass is None:
@@ -511,4 +517,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-
