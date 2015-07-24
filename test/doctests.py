@@ -4,18 +4,22 @@ Runs all the doctests in the igraph module
 """
 
 import doctest
+import sys
+
 
 def run_doctests():
     import igraph
-    doctest.testmod(igraph)
-    doctest.testmod(igraph.clustering)
-    doctest.testmod(igraph.cut)
-    doctest.testmod(igraph.datatypes)
-    doctest.testmod(igraph.drawing.utils)
-    doctest.testmod(igraph.formula)
-    doctest.testmod(igraph.remote.nexus)
-    doctest.testmod(igraph.statistics)
-    doctest.testmod(igraph.utils)
+    num_failed = 0
+    modules = [igraph, igraph.clustering, igraph.cut, igraph.datatypes,
+               igraph.drawing.utils, igraph.formula, igraph.remote.nexus,
+               igraph.statistics, igraph.utils]
+    for module in modules:
+        num_failed += doctest.testmod(module)[0]
+    return num_failed == 0
+
 
 if __name__ == "__main__":
-    run_doctests()
+    if run_doctests():
+        sys.exit(0)
+    else:
+        sys.exit(1)

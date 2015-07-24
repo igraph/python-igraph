@@ -11,12 +11,13 @@ network from Nexus, L{NexusConnection.list} to list networks having a given set 
 tags, L{NexusConnection.search} to search in the dataset descriptions, or
 L{NexusConnection.info} to show the info sheet of a dataset."""
 
+from __future__ import print_function
+
 from gzip import GzipFile
 from itertools import izip
 from textwrap import TextWrapper
 from urllib import urlencode
 from urlparse import urlparse, urlunparse
-from textwrap import TextWrapper
 
 from igraph.compat import property, BytesIO
 from igraph.configuration import Configuration
@@ -47,8 +48,9 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
+
 class NexusConnection(object):
-    """Connection to a remote Nexus server.
+    ur"""Connection to a remote Nexus server.
 
     In most cases, you will not have to instantiate this object, just use
     the global L{Nexus} variable which is an instance of L{NexusConnection}
@@ -56,14 +58,8 @@ class NexusConnection(object):
 
     Example:
 
-      >>> print Nexus.info("karate")            #doctest:+ELLIPSIS
-      Nexus dataset 'karate' (#1)
-      vertices/edges: 34/78
-      name: Zachary's karate club
-      tags: social network; undirected; weighted
-      ...
-      >>> karate = Nexus.get("karate")
       >>> from igraph import summary
+      >>> karate = Nexus.get("karate")
       >>> summary(karate)
       IGRAPH UNW- 34 78 -- Zachary's karate club network
       + attr: Author (g), Citation (g), name (g), Faction (v), id (v), name (v), weight (e)
@@ -111,7 +107,6 @@ class NexusConnection(object):
 
         params = dict(format="Python-igraph", id=dataset_id)
         response = self._get_response("/api/dataset", params, compressed=True)
-        response = self._ensure_uncompressed(response)
         result = load(response, format="pickle")
 
         if network_id is None:
@@ -195,10 +190,11 @@ class NexusConnection(object):
         if not compressed:
             content_disp = response.headers.get("Content-Disposition", "")
             compressed = bool(re.match(r'attachment; *filename=.*\.gz\"?$',
-                    content_disp))
+                                       content_disp))
         if compressed:
             return GzipFile(fileobj=BytesIO(response.read()), mode="rb")
-        return response
+        else:
+            return response
 
     def _get_response(self, path, params={}, compressed=False):
         """Sends a request to Nexus at the given path with the given parameters
@@ -213,8 +209,9 @@ class NexusConnection(object):
         if compressed:
             request.add_header("Accept-Encoding", "gzip")
         if self.debug:
-            print "[debug] Sending request: %s" % url
-        return self._opener.open(request)
+            print("[debug] Sending request: %s" % url)
+        response = self._opener.open(request)
+        return self._ensure_uncompressed(response)
 
     @staticmethod
     def _parse_dataset_id(id):
@@ -237,21 +234,37 @@ class NexusConnection(object):
         omitted after the first line and the extra lines start with
         whitespace.
 
+        The response is assumed to be in UTF-8 encoding.
+
         Examples:
 
             >>> d = Nexus._parse_text_response("Id: 17\\nName: foo")
-            >>> sorted(d.items())
-            [('Id', '17'), ('Name', 'foo')]
+            >>> for key, value in sorted(d.items()):
+            ...     print("{0}={1}".format(key, value))
+            ...
+            Id=17
+            Name=foo
             >>> d = Nexus._parse_text_response("Id: 42\\nName: foo\\n  .\\n bar")
-            >>> sorted(d.items())
-            [('Id', '42'), ('Name', 'foo\\n\\nbar')]
+            >>> for key, value in sorted(d.items()):
+            ...     print("{0}={1}".format(key, value))
+            ...
+            Id=42
+            Name=foo
+            <BLANKLINE>
+            bar
         """
+        if hasattr(response, "decode"):
+            response = response.decode("utf-8")
+
         if isinstance(response, basestring):
             response = response.split("\n")
 
         result = multidict()
         key, value = None, []
         for line in response:
+            if hasattr(line, "decode"):
+                line = line.decode("utf-8")
+
             line = line.rstrip()
             if not line:
                 continue
@@ -299,7 +312,8 @@ class NexusDatasetInfo(object):
     @undocumented: _update_from_multidict, vertices_edges"""
 
     def __init__(self, id=None, sid=None, name=None, networks=None,
-            vertices=None, edges=None, tags=None, attributes=None, rest=None):
+                 vertices=None, edges=None, tags=None, attributes=None,
+                 rest=None):
         self._conn = None
         self.id = id
         self.sid = sid
@@ -324,7 +338,7 @@ class NexusDatasetInfo(object):
         if self.vertices is None or self.edges is None:
             return ""
         elif isinstance(self.vertices, (list, tuple)) and isinstance(self.edges, (list, tuple)):
-            return " ".join("%s/%s" % (v,e) for v, e in izip(self.vertices, self.edges))
+            return " ".join("%s/%s" % pair for pair in izip(self.vertices, self.edges))
         else:
             return "%s/%s" % (self.vertices, self.edges)
 
@@ -349,14 +363,14 @@ class NexusDatasetInfo(object):
 
     def __repr__(self):
         params = "(id=%(id)r, sid=%(sid)r, name=%(name)r, networks=%(networks)r, "\
-                "vertices=%(vertices)r, edges=%(edges)r, tags=%(tags)r, "\
-                "attributes=%(attributes)r, rest=%(rest)r)" % self.__dict__
+            "vertices=%(vertices)r, edges=%(edges)r, tags=%(tags)r, "\
+            "attributes=%(attributes)r, rest=%(rest)r)" % self.__dict__
         return "%s%s" % (self.__class__.__name__, params)
 
     def __str__(self):
         if self.networks and len(self.networks) > 1:
-            lines = ["Nexus dataset '%s' (#%s) with %d networks" % \
-                    (self.sid, self.id, len(self.networks))]
+            lines = ["Nexus dataset '%s' (#%s) with %d networks" %
+                     (self.sid, self.id, len(self.networks))]
         else:
             lines = ["Nexus dataset '%(sid)s' (#%(id)s)" % self.__dict__]
 
@@ -377,7 +391,9 @@ class NexusDatasetInfo(object):
 
             for key in keys:
                 for value in self.rest.getlist(key):
-                    paragraphs = str(value).splitlines()
+                    if not isinstance(value, basestring):
+                        value = str(value)
+                    paragraphs = value.splitlines()
                     wrapper.initial_indent = "%s: " % key
                     for paragraph in paragraphs:
                         ls = wrapper.wrap(paragraph)
@@ -494,6 +510,9 @@ class NexusDatasetInfoList(object):
             self._datasets.extend([None] * diff)
 
         response = self._conn._get_response(self._method, self._params)
+        if hasattr(response, "decode"):
+            response = response.decode("utf-8")
+
         current_dataset = None
         for line in response:
             key, value = line.strip().split(": ", 1)
@@ -524,7 +543,6 @@ class NexusDatasetInfoList(object):
 
         if current_dataset:
             self._datasets[offset] = current_dataset
-
 
     def __getitem__(self, index):
         if len(self._datasets) <= index:

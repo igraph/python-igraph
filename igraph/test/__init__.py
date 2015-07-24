@@ -1,9 +1,11 @@
+import sys
 import unittest
 from igraph.test import basic, layouts, games, foreign, structural, flow, \
     spectral, attributes, cliques, decomposition, operators, generators, \
     isomorphism, colortests, vertexseq, edgeseq, iterators, bipartite, \
     conversion, rng, separators, indexing, atlas, matching, homepage, \
     walks
+
 
 def suite():
     return unittest.TestSuite([
@@ -35,18 +37,18 @@ def suite():
         walks.suite()
     ])
 
+
 def run_tests(verbosity=1):
-    try:
-        # Support for testoob to have nice colored output
-        import testoob
-        runner = testoob.main
-    except ImportError:
-        runner = unittest.TextTestRunner(verbosity=verbosity).run
-    runner(suite())
+    runner = unittest.TextTestRunner(verbosity=verbosity).run
+    result = runner(suite())
+    return result.wasSuccessful()
+
 
 # Make nosetest skip run_tests
 run_tests.__test__ = False
 
 if __name__ == "__main__":
-    run_tests(255)
-
+    if run_tests(verbosity=255):
+        sys.exit(0)
+    else:
+        sys.exit(1)

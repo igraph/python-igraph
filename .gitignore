@@ -7,3 +7,5 @@ dist/
 doc/api/
 igraph/*.so
 *.egg-info/
+.python-version
+.tox

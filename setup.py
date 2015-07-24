@@ -496,7 +496,12 @@ class IgraphCCoreBuilder(object):
         return None, None
 
     def get_download_url(self, version):
-        return "http://igraph.org/nightly/get/c/igraph-%s.tar.gz" % version
+        if "TESTING_IN_TOX" in os.environ:
+            # Make sure that tox unit tests are not counted as real
+            # igraph downloads
+            return "http://igraph.org/nightly/steal/c/igraph-%s.tar.gz" % version
+        else:
+            return "http://igraph.org/nightly/get/c/igraph-%s.tar.gz" % version
 
     def run(self):
         return self.download_and_compile()
