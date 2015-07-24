@@ -351,7 +351,11 @@ class Plot(object):
         context.show_page()
         surface.finish()
         # Return the raw SVG representation
-        return io.getvalue().encode("utf-8")
+        result = io.getvalue()
+        if hasattr(result, "encode"):
+            return result.encode("utf-8")     # for Python 2.x
+        else:
+            return result                     # for Python 3.x
 
     @property
     def bounding_box(self):
