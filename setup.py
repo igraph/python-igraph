@@ -13,6 +13,14 @@ if sys.version_info < (2, 5):
     print("This module requires Python >= 2.5")
     sys.exit(0)
 
+# Check whether we are running inside tox -- if so, we will use a non-logging
+# URL to download the C core of igraph to avoid inflating download counts
+TESTING_IN_TOX = "TESTING_IN_TOX" in os.environ
+
+# Check whether we are running in a CI environment like Travis -- if so,
+# we will download the master tarball of igraph when needed
+TESTING_IN_CI = "CONTINUOUS_INTEGRATION" in os.environ
+
 ###########################################################################
 ## Here be ugly workarounds. These must be run before setuptools
 ## is imported.
@@ -31,7 +39,7 @@ class Workaround(object):
         """Installs the workaround. This method will get called if and only
         if the ``required()`` method returns ``True``.
         """
-        raise NotImplementedError
+        pass
 
     def update_buildcfg(self, cfg):
         """Allows the workaround to update the build configuration of the
@@ -129,6 +137,16 @@ class OSXAnacondaPythonIconvWorkaround(Workaround):
                                      outputfile])
 
 
+class ContinuousIntegrationSetup(Workaround):
+    """Prepares the build configuration for a CI environment like Travis."""
+
+    def required(self):
+        return TESTING_IN_CI
+
+    def update_buildcfg(self, cfg):
+        cfg.c_core_url = "https://github.com/igraph/igraph/archive/master.tar.gz"
+
+
 class WorkaroundSet(object):
     def __init__(self, workaround_classes):
         self.each = [cls() for cls in workaround_classes]
@@ -143,7 +161,8 @@ class WorkaroundSet(object):
 
 workarounds = WorkaroundSet([
     OSXClangAndSystemPythonWorkaround,
-    OSXAnacondaPythonIconvWorkaround
+    OSXAnacondaPythonIconvWorkaround,
+    ContinuousIntegrationSetup
 ])
 workarounds.execute()
 
@@ -417,7 +436,14 @@ class IgraphCCoreBuilder(object):
 
         # Extract it in the temporary directory
         print("Extracting %s..." % local_file)
-        archive = tarfile.open(local_file_full_path, "r:gz")
+        if local_file.lower().endswith(".tar.gz"):
+            archive = tarfile.open(local_file_full_path, "r:gz")
+        elif local_file.lower().endswith(".tar.bz2"):
+            archive = tarfile.open(local_file_full_path, "r:bz2")
+        else:
+            print("Cannot extract unknown archive format: %s." % ext)
+            print("")
+            return False
         archive.extractall(self.tmpdir)
 
         # Determine the name of the build directory
@@ -433,28 +459,36 @@ class IgraphCCoreBuilder(object):
                     "started with igraph; giving up build.")
             return False
 
-        # Patch ltmain.sh so it does not freak out on OS X when the build
-        # directory contains spaces
-        infile = os.path.join(self.builddir, "ltmain.sh")
-        outfile = os.path.join(self.builddir, "ltmain.sh.new")
-        with open(infile) as infp:
-            with open(outfile, "w") as outfp:
-                for line in infp:
-                    if line.endswith("cd $darwin_orig_dir\n"):
-                        line = line.replace("cd $darwin_orig_dir\n", "cd \"$darwin_orig_dir\"\n")
-                    outfp.write(line)
-        os.rename(outfile, infile)
-
         # Try to compile
         cwd = os.getcwd()
         try:
-            print("Configuring igraph...")
             os.chdir(self.builddir)
+
+            # Run the bootstrap script if we have downloaded a tarball from
+            # Github
+            if os.path.isfile("bootstrap.sh") and not os.path.isfile("configure"):
+                print("Bootstrapping igraph...")
+                retcode = subprocess.call("sh bootstrap.sh", shell=True)
+                if retcode:
+                    return False
+
+            # Patch ltmain.sh so it does not freak out on OS X when the build
+            # directory contains spaces
+            with open("ltmain.sh") as infp:
+                with open("ltmain.sh.new", "w") as outfp:
+                    for line in infp:
+                        if line.endswith("cd $darwin_orig_dir\n"):
+                            line = line.replace("cd $darwin_orig_dir\n", "cd \"$darwin_orig_dir\"\n")
+                        outfp.write(line)
+            os.rename("ltmain.sh.new", "ltmain.sh")
+
+            print("Configuring igraph...")
             retcode = subprocess.call("CFLAGS=-fPIC CXXFLAGS=-fPIC ./configure --disable-tls --disable-gmp",
                     shell=True)
             if retcode:
                 return False
 
+            print("Building igraph...")
             retcode = subprocess.call("make", shell=True)
             if retcode:
                 return False
@@ -496,7 +530,7 @@ class IgraphCCoreBuilder(object):
         return None, None
 
     def get_download_url(self, version):
-        if "TESTING_IN_TOX" in os.environ:
+        if TESTING_IN_TOX:
             # Make sure that tox unit tests are not counted as real
             # igraph downloads
             return "http://igraph.org/nightly/steal/c/igraph-%s.tar.gz" % version
