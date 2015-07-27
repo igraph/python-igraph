@@ -91,7 +91,7 @@ class DefaultVertexDrawer(AbstractCairoVertexDrawer):
         context = self.context
         
         if visual_vertex.width is None: visual_vertex.width = visual_vertex.size
-        if visual_vertex.height is None: visual_vertex.width = visual_vertex.width
+        if visual_vertex.height is None: visual_vertex.height = visual_vertex.width
         visual_vertex.shape.draw_path(context, \
                 coords[0], coords[1], visual_vertex.width, visual_vertex.height)
         context.set_source_rgba(*visual_vertex.color)
