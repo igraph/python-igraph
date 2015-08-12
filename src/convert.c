@@ -2346,7 +2346,7 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
     } else
       return 1;
   } else {
-    PyErr_SetString(PyExc_TypeError, "only numbers, vertex names or igraph.Vertex objects can be converted to vertex IDs");
+    PyErr_SetString(PyExc_TypeError, "only numbers, strings or igraph.Vertex objects can be converted to vertex IDs");
     return 1;
   }
 
