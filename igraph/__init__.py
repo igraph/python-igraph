@@ -1865,8 +1865,11 @@ class Graph(GraphBase):
             try:
                 fp = open(fname, "rb")
             except IOError:
-                # No file with the given name, try unpickling directly
-                result = pickle.loads(fname)
+                try:
+                    # No file with the given name, try unpickling directly.
+                    result = pickle.loads(fname)
+                except TypeError:
+                    raise IOError('Cannot load file. If fname is a file name, that filename may be incorrect.')
             if fp is not None:
                 result = pickle.load(fp)
                 fp.close()
