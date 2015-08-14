@@ -6,8 +6,12 @@ env:
   - TOX_ENV=py34
   - TOX_ENV=py27
 
-before_install:
-  - sudo apt-get -y install gfortran flex bison
+addons:
+  apt:
+    packages:
+    - gfortran
+    - flex
+    - bison
 
 install:
   - pip install tox
@@ -19,3 +23,5 @@ notifications:
   email:
     on_success: change
     on_failure: always
+
+sudo: false
