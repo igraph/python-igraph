@@ -26,7 +26,7 @@ class IsomorphismTests(unittest.TestCase):
         self.assertTrue(g1.isomorphic(g2))
         self.assertTrue(g2.isomorphic_vf2(g1, return_mapping_21=True) \
           == (True, None, [0, 2, 5, 7, 1, 3, 4, 6]))
-        self.assertTrue(g2.isomorphic_bliss(g1, return_mapping_21=True, sh2="fl")\
+        self.assertTrue(g2.isomorphic_bliss(g1, return_mapping_21=True, sh1="fl")\
           == (True, None, [0, 2, 5, 7, 1, 3, 4, 6]))
         self.assertRaises(ValueError, g2.isomorphic_bliss, g1, sh2="nonexistent")
 
@@ -160,7 +160,7 @@ class SubisomorphismTests(unittest.TestCase):
         self.assertEqual(induced_subiso,
                 sorted(g3.get_subisomorphisms_lad(g2, induced=True)))
         self.assertEqual([], g3.get_subisomorphisms_lad(g, induced=True))
-        
+
         # Test with limited vertex matching
         limited_subiso = [iso for iso in all_subiso if iso[0] == 4]
         domains = [[4], [0,1,2,3,5,6,7,8], [0,1,2,3,5,6,7,8], [0,1,2,3,5,6,7,8]]
@@ -257,7 +257,7 @@ def suite():
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
 if __name__ == "__main__":
     test()
 

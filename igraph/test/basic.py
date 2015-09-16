@@ -455,7 +455,7 @@ class DegreeSequenceTests(unittest.TestCase):
         self.assertTrue(is_graphical_degree_sequence([0]))
         self.assertTrue(is_graphical_degree_sequence([0], [0]))
         self.assertFalse(is_graphical_degree_sequence([1]))
-        self.assertTrue(is_graphical_degree_sequence([1], [1]))
+        self.assertFalse(is_graphical_degree_sequence([1], [1]))
         self.assertFalse(is_graphical_degree_sequence([2]))
         self.assertFalse(is_graphical_degree_sequence([2, 1, 1, 1]))
         self.assertTrue(is_graphical_degree_sequence([2, 1, 1, 1], [1, 1, 1, 2]))
