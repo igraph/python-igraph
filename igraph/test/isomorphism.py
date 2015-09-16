@@ -140,6 +140,11 @@ class SubisomorphismTests(unittest.TestCase):
         domains = [[], [0,1,2,3,5,6,7,8], [0,1,2,3,5,6,7,8], [0,1,2,3,5,6,7,8]]
         self.assertTrue(not g.subisomorphic_lad(g2, domains=domains))
 
+        # Corner cases
+        empty = Graph()
+        self.assertTrue(g.subisomorphic_lad(empty))
+        self.assertTrue(empty.subisomorphic_lad(empty))
+
     def testGetSubisomorphismsLAD(self):
         g = Graph.Lattice([3,3], circular=False)
         g2 = Graph([(0,1), (1,2), (2,3), (3,0)])
@@ -168,6 +173,11 @@ class SubisomorphismTests(unittest.TestCase):
                 sorted(g.get_subisomorphisms_lad(g2, domains=domains)))
         domains = [[], [0,1,2,3,5,6,7,8], [0,1,2,3,5,6,7,8], [0,1,2,3,5,6,7,8]]
         self.assertEqual([], sorted(g.get_subisomorphisms_lad(g2, domains=domains)))
+
+        # Corner cases
+        empty = Graph()
+        self.assertEqual([], g.get_subisomorphisms_lad(empty))
+        self.assertEqual([], empty.get_subisomorphisms_lad(empty))
 
     def testSubisomorphicVF2(self):
         g = Graph.Lattice([3,3], circular=False)
