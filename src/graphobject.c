@@ -8262,6 +8262,7 @@ PyObject *igraphmodule_Graph_isomorphic_bliss(igraphmodule_GraphObject * self,
        &return1, &return2, &sho1, &sho2))
     return NULL;
   if (igraphmodule_PyObject_to_bliss_sh_t(sho1, &sh1)) return NULL;
+  sh2 = sh1;
   if (igraphmodule_PyObject_to_bliss_sh_t(sho2, &sh2)) return NULL;
   if (o == Py_None) other = self; else other = (igraphmodule_GraphObject *) o;
 
@@ -14520,7 +14521,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"isomorphic_bliss", (PyCFunction) igraphmodule_Graph_isomorphic_bliss,
    METH_VARARGS | METH_KEYWORDS,
    "isomorphic_bliss(other, return_mapping_12=False, return_mapping_21=False,\n"
-   "  sh1=\"fm\", sh2=\"fm\")\n\n"
+   "  sh1=\"fm\", sh2=None)\n\n"
    "Checks whether the graph is isomorphic to another graph, using the\n"
    "BLISS isomorphism algorithm.\n\n"
    "See U{http://www.tcs.hut.fi/Software/bliss/index.html} for more information\n"
@@ -14542,7 +14543,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "    - C{\"fsm\"}: smallest maximally non-trivially connected\n"
    "      non-singleton cell\n\n"
    "@param sh2: splitting heuristics to be used for the second graph.\n"
-   "  Accepted values are as above.\n"
+   "  This must be the same as C{sh1}; alternatively, it can be C{None},\n"
+   "  in which case it will automatically use the same value as C{sh1}.\n"
+   "  Currently it is present for backwards compatibility only.\n"
    "@return: if no mapping is calculated, the result is C{True} if the graphs\n"
    "  are isomorphic, C{False} otherwise. If any or both mappings are\n"
    "  calculated, the result is a 3-tuple, the first element being the\n"
