@@ -19,6 +19,8 @@ unless explicitly stated by C{global.shells}, since Linux and
 Mac OS X users are likely to invoke igraph from the command line.
 """
 
+from __future__ import print_function
+
 import re
 import sys
 
@@ -151,19 +153,19 @@ class TerminalController:
         set_fg = self._tigetstr('setf')
         if set_fg:
             for i, color in zip(range(len(self._COLORS)), self._COLORS):
-                setattr(self, color, curses.tparm(set_fg, i) or '')
+                setattr(self, color, self._tparm(set_fg, i) or '')
         set_fg_ansi = self._tigetstr('setaf')
         if set_fg_ansi:
             for i, color in zip(range(len(self._ANSICOLORS)), self._ANSICOLORS):
-                setattr(self, color, curses.tparm(set_fg_ansi, i) or '')
+                setattr(self, color, self._tparm(set_fg_ansi, i) or '')
         set_bg = self._tigetstr('setb')
         if set_bg:
             for i, color in zip(range(len(self._COLORS)), self._COLORS):
-                setattr(self, 'BG_'+color, curses.tparm(set_bg, i) or '')
+                setattr(self, 'BG_'+color, self._tparm(set_bg, i) or '')
         set_bg_ansi = self._tigetstr('setab')
         if set_bg_ansi:
             for i, color in zip(range(len(self._ANSICOLORS)), self._ANSICOLORS):
-                setattr(self, 'BG_'+color, curses.tparm(set_bg_ansi, i) or '')
+                setattr(self, 'BG_'+color, self._tparm(set_bg_ansi, i) or '')
 
     @staticmethod
     def _tigetstr(cap_name):
@@ -173,8 +175,15 @@ class TerminalController:
         # For any modern terminal, we should be able to just ignore
         # these, so strip them out.
         import curses
-        cap = curses.tigetstr(cap_name) or ''
+        cap = curses.tigetstr(cap_name) or b''
+        cap = cap.decode("latin-1")
         return re.sub(r'\$<\d+>[/*]?', '', cap)
+
+    @staticmethod
+    def _tparm(cap_name, param):
+        import curses
+        cap = curses.tparm(cap_name.encode("latin-1"), param) or b''
+        return cap.decode("latin-1")
 
     def render(self, template):
         """
@@ -182,7 +191,7 @@ class TerminalController:
         the corresponding terminal control string (if it's defined) or
         '' (if it's not).
         """
-        return re.sub(r'\$\$|\${\w+}', self._render_sub, template)
+        return re.sub('r\$\$|\${\w+}', self._render_sub, template)
 
     def _render_sub(self, match):
         """Helper function for L{render}"""
@@ -431,7 +440,7 @@ class IPythonShell(Shell, ConsoleProgressBarMixin):
 
     def __call__(self):
         """Starts the embedded shell."""
-        print "igraph %s running inside " % __version__,
+        print("igraph %s running inside " % __version__, end="")
         if self._shell.__class__.__name__ == "TerminalIPythonApp":
             self._shell.initialize()
             self._shell.shell.ex("from igraph import *")
@@ -458,7 +467,7 @@ class ClassicPythonShell(Shell, ConsoleProgressBarMixin):
         if self._shell is None:
             from code import InteractiveConsole
             self._shell = InteractiveConsole()
-            print >> sys.stderr, "igraph %s running inside " % __version__,
+            print("igraph %s running inside " % __version__, end="", file=sys.stderr)
             self._shell.runsource("from igraph import *")
 
         self._shell.interact()
@@ -470,9 +479,9 @@ def main():
     config = Configuration.instance()
 
     if config.filename:
-        print >> sys.stderr, "Using configuration from %s" % config.filename
+        print("Using configuration from %s" % config.filename, file=sys.stderr)
     else:
-        print >> sys.stderr, "No configuration file, using defaults"
+        print("No configuration file, using defaults", file=sys.stderr)
 
     if config.has_key("shells"):
         parts = [part.strip() for part in config["shells"].split(",")]
@@ -482,7 +491,7 @@ def main():
         for part in parts:
             klass = available_classes.get(part, None)
             if klass is None:
-                print >> sys.stderr, "Warning: unknown shell class `%s'" % part
+                print("Warning: unknown shell class `%s'" % part, file=sys.stderr)
                 continue
             shell_classes.append(klass)
     else:
@@ -512,8 +521,8 @@ def main():
                 set_status_handler(shell.get_status_handler())
         shell()
     else:
-        print >> sys.stderr, "No suitable Python shell was found."
-        print >> sys.stderr, "Check configuration variable `general.shells'."
+        print("No suitable Python shell was found.", file=sys.stderr)
+        print("Check configuration variable `general.shells'.", file=sys.stderr)
 
 if __name__ == '__main__':
     sys.exit(main())
