@@ -26,7 +26,7 @@ class IsomorphismTests(unittest.TestCase):
         self.assertTrue(g1.isomorphic(g2))
         self.assertTrue(g2.isomorphic_vf2(g1, return_mapping_21=True) \
           == (True, None, [0, 2, 5, 7, 1, 3, 4, 6]))
-        self.assertTrue(g2.isomorphic_bliss(g1, return_mapping_21=True, sh2="fl")\
+        self.assertTrue(g2.isomorphic_bliss(g1, return_mapping_21=True, sh1="fl")\
           == (True, None, [0, 2, 5, 7, 1, 3, 4, 6]))
         self.assertRaises(ValueError, g2.isomorphic_bliss, g1, sh2="nonexistent")
 
@@ -140,6 +140,11 @@ class SubisomorphismTests(unittest.TestCase):
         domains = [[], [0,1,2,3,5,6,7,8], [0,1,2,3,5,6,7,8], [0,1,2,3,5,6,7,8]]
         self.assertTrue(not g.subisomorphic_lad(g2, domains=domains))
 
+        # Corner cases
+        empty = Graph()
+        self.assertTrue(g.subisomorphic_lad(empty))
+        self.assertTrue(empty.subisomorphic_lad(empty))
+
     def testGetSubisomorphismsLAD(self):
         g = Graph.Lattice([3,3], circular=False)
         g2 = Graph([(0,1), (1,2), (2,3), (3,0)])
@@ -160,7 +165,7 @@ class SubisomorphismTests(unittest.TestCase):
         self.assertEqual(induced_subiso,
                 sorted(g3.get_subisomorphisms_lad(g2, induced=True)))
         self.assertEqual([], g3.get_subisomorphisms_lad(g, induced=True))
-        
+
         # Test with limited vertex matching
         limited_subiso = [iso for iso in all_subiso if iso[0] == 4]
         domains = [[4], [0,1,2,3,5,6,7,8], [0,1,2,3,5,6,7,8], [0,1,2,3,5,6,7,8]]
@@ -168,6 +173,11 @@ class SubisomorphismTests(unittest.TestCase):
                 sorted(g.get_subisomorphisms_lad(g2, domains=domains)))
         domains = [[], [0,1,2,3,5,6,7,8], [0,1,2,3,5,6,7,8], [0,1,2,3,5,6,7,8]]
         self.assertEqual([], sorted(g.get_subisomorphisms_lad(g2, domains=domains)))
+
+        # Corner cases
+        empty = Graph()
+        self.assertEqual([], g.get_subisomorphisms_lad(empty))
+        self.assertEqual([], empty.get_subisomorphisms_lad(empty))
 
     def testSubisomorphicVF2(self):
         g = Graph.Lattice([3,3], circular=False)
@@ -257,7 +267,7 @@ def suite():
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
 if __name__ == "__main__":
     test()
 
