@@ -216,7 +216,7 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
             distance_t0 = 0
             distance_t1 = euclidean_distance(x3,y3, xt1,yt1)
             counter = 0
-            while abs(distance_t1 - radius) > precision:
+            while abs(distance_t1 - radius) > precision and counter < 10:
                 if ((distance_t1-radius) > 0) !=  ((distance_t0-radius) > 0):
                     t_new = (t0 + t1)/2.0
                 else:
