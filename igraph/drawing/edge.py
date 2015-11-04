@@ -198,7 +198,7 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
             """
             return sqrt( (1.0*x1-x2) **2 + (1.0*y1-y2) **2 )
 
-        def intersect_bezier_circle(x0,y0, x1,y1, x2,y2, x3,y3, radius):
+        def intersect_bezier_circle(x0,y0, x1,y1, x2,y2, x3,y3, radius, max_iter=10):
             """ Binary search solver for finding the intersection of a Bezier curve
             and a circle centered at the curve's end point.
             Returns the x,y of the intersection point.
@@ -216,7 +216,7 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
             distance_t0 = 0
             distance_t1 = euclidean_distance(x3,y3, xt1,yt1)
             counter = 0
-            while abs(distance_t1 - radius) > precision and counter < 10:
+            while abs(distance_t1 - radius) > precision and counter < max_iter:
                 if ((distance_t1-radius) > 0) !=  ((distance_t0-radius) > 0):
                     t_new = (t0 + t1)/2.0
                 else:
