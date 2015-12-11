@@ -766,6 +766,12 @@ int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_integer_t *v) {
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyObject_to_real_t(PyObject *object, igraph_real_t *v) {
+#ifdef PYPY_VERSION
+  // PyFloatObject is not defined in pypy, but PyFloat_AS_DOUBLE() is
+  // supported on PyObject: /pypy/module/cpyext/floatobject.py
+  typedef PyObject  PyFloatObject;
+#endif
+	
   if (object == NULL) {
   } else if (PyLong_Check(object)) {
     double d = PyLong_AsDouble(object);
