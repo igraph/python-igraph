@@ -10,3 +10,12 @@ analysis of large graphs.
 
 This repository contains the source code to the Python interface of
 igraph.
+
+## Install
+```
+$ sudo python setup.py install
+```
+See details in [Installing Python Modules](https://docs.python.org/2/install/).
+
+## Notes
+This version of python-igraph is ported into [pypy](http://pypy.org/), [release-0.7](/luav/python-igraph/tree/release-0.7) is verified on Linux Ubuntu 14.04 with default pypy.
