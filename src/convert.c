@@ -491,7 +491,6 @@ int igraphmodule_PyObject_to_fas_algorithm_t(PyObject *o,
 /**
  * \brief Converts a Python object to an igraph \c igraph_layout_grid_t
  */
-/*
 int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *result) {
   static igraphmodule_enum_translation_table_entry_t layout_grid_tt[] = {
     {"auto",   IGRAPH_LAYOUT_AUTOGRID},
@@ -510,13 +509,11 @@ int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *re
     return igraphmodule_PyObject_to_enum(o, layout_grid_tt, (int*)result);
   }
 }
-*/
 
 /**
  * \ingroup python_interface_conversion
  * \brief Converts a Python object to an igraph \c igraph_random_walk_stuck_t
  */
-/*
 int igraphmodule_PyObject_to_random_walk_stuck_t(PyObject *o,
   igraph_random_walk_stuck_t *result) {
   static igraphmodule_enum_translation_table_entry_t random_walk_stuck_tt[] = {
@@ -527,7 +524,6 @@ int igraphmodule_PyObject_to_random_walk_stuck_t(PyObject *o,
 
   return igraphmodule_PyObject_to_enum(o, random_walk_stuck_tt, (int*)result);
 }
-*/
 
 /**
  * \brief Converts a Python object to an igraph \c igraph_reciprocity_t
@@ -2356,7 +2352,7 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
     } else
       return 1;
   } else {
-    PyErr_SetString(PyExc_TypeError, "only numbers, vertex names or igraph.Vertex objects can be converted to vertex IDs");
+    PyErr_SetString(PyExc_TypeError, "only numbers, strings or igraph.Vertex objects can be converted to vertex IDs");
     return 1;
   }
 
