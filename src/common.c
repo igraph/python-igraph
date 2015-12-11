@@ -56,12 +56,12 @@ PyObject* igraphmodule_resolve_graph_weakref(PyObject* ref) {
   PyObject *o;
   
 #ifndef PYPY_VERSION
-  // Not implemented in PyPy
+  /* PyWeakref_Check is not implemented in PyPy yet */
   if (!PyWeakref_Check(ref)) {
     PyErr_SetString(PyExc_TypeError, "weak reference expected");
     return NULL;
   }
-#endif  // PYPY_VERSION
+#endif  /* PYPY_VERSION */
   o=PyWeakref_GetObject(ref);
   if (o == Py_None) {
     PyErr_SetString(PyExc_TypeError, "underlying graph has already been destroyed");

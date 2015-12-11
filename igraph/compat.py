@@ -41,6 +41,7 @@ except ImportError:
 
 if sys.version_info < (2, 6):
     _property = property
+
     class property(property):
         def __init__(self, fget, *args, **kwds):
             self.__doc__ = fget.__doc__
@@ -55,7 +56,7 @@ if sys.version_info < (2, 6):
             cls_ns[propname] = property(self.fget, fset, self.fdel, self.__doc__)
             return cls_ns[propname]
 else:
-	# Note: 'module' object is not subscriptable in PyPy, but dotted notation is portable
+    # Note: 'module' object is not subscriptable in PyPy, but dotted notation is portable
     property = __builtins__.property
 
 #############################################################################

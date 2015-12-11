@@ -763,10 +763,11 @@ int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_integer_t *v) {
  */
 int igraphmodule_PyObject_to_real_t(PyObject *object, igraph_real_t *v) {
 #ifdef PYPY_VERSION
-  // PyFloatObject is not defined in pypy, but PyFloat_AS_DOUBLE() is
-  // supported on PyObject: /pypy/module/cpyext/floatobject.py
-  typedef PyObject  PyFloatObject;
-#endif
+  /* PyFloatObject is not defined in pypy, but PyFloat_AS_DOUBLE() is
+   * supported on PyObject: /pypy/module/cpyext/floatobject.py. Also,
+   * don't worry, the typedef is local to this function. */
+  typedef PyObject PyFloatObject;
+#endif   /* PYPY_VERSION */
 	
   if (object == NULL) {
   } else if (PyLong_Check(object)) {
