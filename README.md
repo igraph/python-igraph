@@ -20,4 +20,17 @@ See details in [Installing Python Modules](https://docs.python.org/2/install/).
 ## Notes
 
 This version of python-igraph is compatible with [PyPy](http://pypy.org/) and
-is regularly tested on [PyPy](http://pypy.org/) with ``tox``.
+is regularly tested on [PyPy](http://pypy.org/) with ``tox``. However, the
+PyPy version falls behind the CPython version in terms of performance; for
+instance, running all the tests takes ~5 seconds on my machine with CPython and
+~15 seconds with PyPy.
+
+There are also some subtle differences between the CPython and PyPy versions:
+
+- File operations do not work yet from PyPy, mostly because the PyPy API does
+  not implement ``PyFile_AsFile`` yet. This will be fixed soon(ish).
+
+- Docstrings defined in the C source code are not visible from PyPy.
+
+- ``GraphBase`` is hashable and iterable in PyPy but not in CPython. Since
+  ``GraphBase`` is internal anyway, this is likely to stay this way.
