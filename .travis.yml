@@ -1,12 +1,10 @@
 language: python
 
-python: 2.7
-
-env:
-  - TOX_ENV=pypy3
-  - TOX_ENV=pypy
-  - TOX_ENV=py34
-  - TOX_ENV=py27
+python:
+  - "2.7"
+  - "3.4"
+  - "pypy"
+  - "pypy3"
 
 addons:
   apt:
@@ -16,10 +14,10 @@ addons:
     - bison
 
 install:
-  - pip install tox
+  - pip install tox-travis
 
 script:
-  - tox -e $TOX_ENV
+  - tox
 
 notifications:
   email:
