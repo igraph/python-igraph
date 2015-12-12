@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import platform
 import sys
 
 ###########################################################################
@@ -20,6 +21,10 @@ TESTING_IN_TOX = "TESTING_IN_TOX" in os.environ
 # Check whether we are running in a CI environment like Travis -- if so,
 # we will download the master tarball of igraph when needed
 TESTING_IN_CI = "CONTINUOUS_INTEGRATION" in os.environ
+
+# Check whether we are compiling for PyPy. Headers will not be installed
+# for PyPy.
+IS_PYPY = platform.python_implementation() == "PyPy"
 
 ###########################################################################
 ## Here be ugly workarounds. These must be run before setuptools
@@ -867,6 +872,8 @@ versions can also be found `here <http://www.lfd.uci.edu/~gohlke/pythonlibs>`_.
 Many thanks to the maintainers of this page!
 """
 
+headers = ['src/igraphmodule_api.h'] if not IS_PYPY else []
+
 options = dict(
     name = 'python-igraph',
     version = VERSION,
@@ -886,7 +893,7 @@ options = dict(
     scripts = ['scripts/igraph'],
     test_suite = "igraph.test.suite",
 
-    headers = ['src/igraphmodule_api.h'],
+    headers = headers,
 
     platforms = 'ALL',
     keywords = ['graph', 'network', 'mathematics', 'math', 'graph theory', 'discrete mathematics'],
