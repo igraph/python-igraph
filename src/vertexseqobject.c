@@ -28,6 +28,7 @@
 #include "convert.h"
 #include "error.h"
 #include "py2compat.h"
+#include "pyhelpers.h"
 #include "vertexseqobject.h"
 #include "vertexobject.h"
 
@@ -312,6 +313,7 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values_mapping(igraphmodule_Verte
   if (PySlice_Check(o) || PyObject_HasAttrString(o, "__iter__")) {
     PyObject *result, *args;
     args = Py_BuildValue("(O)", o);
+
     if (!args)
       return NULL;
     result = igraphmodule_VertexSeq_select(self, args);
@@ -729,8 +731,9 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
          * but Python 3.x expects PyObject* */
         ok = (PySlice_GetIndicesEx((void*)item, igraph_vector_size(&v2),
               &start, &stop, &step, &sl) == 0);
+
         if (ok) {
-          range = PyObject_CallFunction((PyObject*)&PyRange_Type, "lll", start, stop, step);
+          range = igraphmodule_PyRange_create(start, stop, step);
           ok = (range != 0);
         }
         if (ok) {

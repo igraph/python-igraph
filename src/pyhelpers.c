@@ -89,6 +89,40 @@ char* igraphmodule_PyObject_ConvertToCString(PyObject* string) {
 }
 
 /**
+ * Creates a Python range object with the given start and stop indices and step
+ * size.
+ *
+ * The function returns a new reference. It is the responsibility of the caller
+ * to release it. Returns \c NULL in case of an error.
+ */
+PyObject* igraphmodule_PyRange_create(Py_ssize_t start, Py_ssize_t stop, Py_ssize_t step) {
+  static PyObject* builtin_module = 0;
+  static PyObject* range_func = 0;
+  PyObject* result;
+
+  if (builtin_module == 0) {
+    builtin_module = PyImport_ImportModule("__builtin__");
+    if (builtin_module == 0) {
+      return 0;
+    }
+  }
+
+  if (range_func == 0) {
+#ifdef IGRAPH_PYTHON3
+    range_func = PyObject_GetAttrString(builtin_module, "range");
+#else
+    range_func = PyObject_GetAttrString(builtin_module, "xrange");
+#endif
+    if (range_func == 0) {
+      return 0;
+    }
+  }
+
+  result = PyObject_CallFunction(range_func, "lll", start, stop, step);
+  return result;
+}
+
+/**
  * Generates a hash value for a plain C pointer.
  *
  * This function is a copy of \c _Py_HashPointer from \c Objects/object.c in

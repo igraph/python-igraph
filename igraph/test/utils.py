@@ -2,6 +2,7 @@
 
 import functools
 import os
+import platform
 import sys
 import tempfile
 import types
@@ -10,6 +11,7 @@ from contextlib import contextmanager
 from textwrap import dedent
 
 __all__ = ["skip", "skipIf", "temporary_file"]
+
 
 def _id(obj):
     return obj
@@ -65,3 +67,6 @@ def temporary_file(content=None, mode=None):
     tmpf.close()
     yield tmpfname
     os.unlink(tmpfname)
+
+
+is_pypy = (platform.python_implementation() == "PyPy")

@@ -1,6 +1,7 @@
 import unittest
 from igraph import *
-from igraph.test.foreign import temporary_file
+from igraph.test.foreign import is_pypy, skipIf, temporary_file
+
 
 class CliqueTests(unittest.TestCase):
     def setUp(self):
@@ -36,6 +37,7 @@ class CliqueTests(unittest.TestCase):
         self.assertEqual(sorted(map(sorted, self.g.maximal_cliques(max=3))),
                          [[0, 3, 4], [0, 4, 5]])
 
+    @skipIf(is_pypy, "not supported on PyPy")
     def testMaximalCliquesFile(self):
         def read_cliques(fname):
             with open(fname) as fp:
@@ -58,6 +60,7 @@ class CliqueTests(unittest.TestCase):
     def testCliqueNumber(self):
         self.assertEqual(self.g.clique_number(), 4)
         self.assertEqual(self.g.omega(), 4)
+
 
 class IndependentVertexSetTests(unittest.TestCase):
     def setUp(self):

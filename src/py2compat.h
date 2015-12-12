@@ -44,10 +44,7 @@ int PyFile_Close(PyObject* fileObj);
 
 PyObject* PyFile_FromObject(PyObject* filename, const char* mode);
 
-#ifdef PYPY_VERSION
-  /* PyPy does not have PyIntObject so let's just map it to PyObject */
-  typedef PyObject  PyIntObject;
-#else
+#ifndef PYPY_VERSION
   typedef PyLongObject  PyIntObject;
 #endif  /* PYPY_VERSION */
 #define PyInt_AsLong   PyLong_AsLong
