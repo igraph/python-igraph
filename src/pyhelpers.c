@@ -101,7 +101,11 @@ PyObject* igraphmodule_PyRange_create(Py_ssize_t start, Py_ssize_t stop, Py_ssiz
   PyObject* result;
 
   if (builtin_module == 0) {
+#ifdef IGRAPH_PYTHON3
+    builtin_module = PyImport_ImportModule("builtins");
+#else
     builtin_module = PyImport_ImportModule("__builtin__");
+#endif
     if (builtin_module == 0) {
       return 0;
     }

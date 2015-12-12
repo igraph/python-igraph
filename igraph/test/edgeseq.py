@@ -2,7 +2,7 @@
 
 import unittest
 from igraph import *
-from igraph.test.utils import skipIf
+from igraph.test.utils import is_pypy, skipIf
 
 try:
     import numpy as np
@@ -79,6 +79,7 @@ class EdgeTests(unittest.TestCase):
         self.assertRaises(ValueError, getattr, e, "target")
         self.assertRaises(ValueError, getattr, e, "tuple")
 
+    @skipIf(is_pypy, "docstrings of pure C methods not available in PyPy")
     def testProxyMethods(self):
         g = Graph.GRG(10, 0.5)
         e = g.es[0]

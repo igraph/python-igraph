@@ -2,7 +2,7 @@
 
 import unittest
 from igraph import *
-from igraph.test.utils import skipIf
+from igraph.test.utils import is_pypy, skipIf
 
 try:
     import numpy as np
@@ -66,6 +66,7 @@ class VertexTests(unittest.TestCase):
         self.assertRaises(ValueError, v.__delitem__, "a")
         self.assertRaises(ValueError, v.attributes)
 
+    @skipIf(is_pypy, "docstrings of pure C methods not available in PyPy")
     def testProxyMethods(self):
         # We only test with connected graphs because disconnected graphs might
         # print a warning when shortest_paths() is invoked on them and we want
@@ -171,8 +172,6 @@ class VertexSeqTests(unittest.TestCase):
         del self.g.vs["test"]
         only_even["test"] = ["D", "E"]
         self.assertTrue(self.g.vs["test"] == ["D", None, "E", None, "D", None, "E", None, "D", None])
-
-
 
     def testAllSequence(self):
         self.assertTrue(len(self.g.vs) == 10)

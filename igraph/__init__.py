@@ -437,7 +437,7 @@ class Graph(GraphBase):
             cluster = set()
             for edge in self.es[tree]:
                 cluster.update(edge.tuple)
-            clusters.append(cluster)
+            clusters.append(sorted(cluster))
         clustering = VertexCover(self, clusters)
 
         if return_articulation_points:
@@ -2867,6 +2867,18 @@ class Graph(GraphBase):
         return g
 
 
+    def __and__(self, other):
+        """Graph intersection operator.
+
+        @param other: the other graph to take the intersection with.
+        @return: the intersected graph.
+        """
+        if isinstance(other, Graph):
+            return self.intersection(other)
+        else:
+            return NotImplemented
+
+
     def __isub__(self, other):
         """In-place subtraction (difference).
 
@@ -2962,6 +2974,18 @@ class Graph(GraphBase):
         """
         return self.vcount() > 0
 
+    def __or__(self, other):
+        """Graph union operator.
+
+        @param other: the other graph to take the union with.
+        @return: the union graph.
+        """
+        if isinstance(other, Graph):
+            return self.union(other)
+        else:
+            return NotImplemented
+
+
     def __coerce__(self, other):
         """Coercion rules.
 
@@ -3004,6 +3028,8 @@ class Graph(GraphBase):
             self.is_directed(), gattrs, vattrs, eattrs)
         return (constructor, parameters, self.__dict__)
 
+    __iter__ = None                # needed for PyPy
+    __hash__ = None                # needed for PyPy
 
     def __plot__(self, context, bbox, palette, *args, **kwds):
         """Plots the graph to the given Cairo context in the given bounding box

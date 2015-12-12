@@ -279,7 +279,7 @@ static int igraphmodule_i_attribute_init(igraph_t *graph, igraph_vector_ptr_t *a
   if (!attrs)
     IGRAPH_ERROR("not enough memory to allocate attribute hashes", IGRAPH_ENOMEM);
   if (igraphmodule_i_attribute_struct_init(attrs)) {
-    PyErr_Clear();
+    PyErr_PrintEx(0);
     free(attrs);
     IGRAPH_ERROR("not enough memory to allocate attribute hashes", IGRAPH_ENOMEM);
   }
@@ -358,7 +358,7 @@ static int igraphmodule_i_attribute_copy(igraph_t *to, const igraph_t *from,
     if (!toattrs)
       IGRAPH_ERROR("not enough memory to allocate attribute hashes", IGRAPH_ENOMEM);
     if (igraphmodule_i_attribute_struct_init(toattrs)) {
-      PyErr_Clear();
+      PyErr_PrintEx(0);
       free(toattrs);
       IGRAPH_ERROR("not enough memory to allocate attribute hashes", IGRAPH_ENOMEM);
     }

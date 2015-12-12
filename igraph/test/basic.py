@@ -1,5 +1,7 @@
 import unittest
 from igraph import *
+from igraph.test.utils import is_pypy, skipIf
+
 
 class BasicTests(unittest.TestCase):
     def testGraphCreation(self):
@@ -256,8 +258,12 @@ class BasicTests(unittest.TestCase):
         self.assertTrue(g2.custom_data == g.custom_data)
 
     def testHashing(self):
-        g=Graph([(0,1), (1,2)])
+        g = Graph([(0,1), (1,2)])
         self.assertRaises(TypeError, hash, g)
+
+    def testIteration(self):
+        g = Graph()
+        self.assertRaises(TypeError, iter, g)
 
 
 class DatatypeTests(unittest.TestCase):

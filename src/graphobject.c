@@ -9375,8 +9375,7 @@ PyObject *igraphmodule_Graph_disjoint_union(igraphmodule_GraphObject * self,
     }
 
     igraph_vector_ptr_destroy(&gs);
-  }
-  else {
+  } else {
     PyErr_Clear();
     if (!PyObject_TypeCheck(other, &igraphmodule_GraphType)) {
       Py_INCREF(Py_NotImplemented);
@@ -15647,7 +15646,13 @@ PyTypeObject igraphmodule_GraphType = {
   &igraphmodule_Graph_as_number,  /* tp_as_number */
   0,                            /* tp_as_sequence */
   &igraphmodule_Graph_as_mapping, /* tp_as_mapping */
+#ifndef PYPY_VERSION
   (hashfunc) PyObject_HashNotImplemented,     /* tp_hash */
+#else
+  /* PyObject_HashNotImplemented raises an exception but it is not handled
+   * properly by PyPy so we don't use it */
+  0,                            /* tp_hash */
+#endif
   0,                            /* tp_call */
   (reprfunc) igraphmodule_Graph_str,  /* tp_str */
   0,                            /* tp_getattro */

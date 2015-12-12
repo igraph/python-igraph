@@ -10,7 +10,7 @@ class RandomWalkTests(unittest.TestCase):
             if prev is not None:
                 self.assertTrue(vertex in g.neighbors(prev, mode=mode))
             else:
-                self.assertEquals(start, vertex)
+                self.assertEqual(start, vertex)
             prev = vertex
 
     def testRandomWalkUndirected(self):
@@ -51,7 +51,7 @@ class RandomWalkTests(unittest.TestCase):
     def testRandomWalkStuck(self):
         g = Graph.Ring(10, circular=False, directed=True)
         walk = g.random_walk(5, 20)
-        self.assertEquals([5, 6, 7, 8, 9], walk)
+        self.assertEqual([5, 6, 7, 8, 9], walk)
         self.assertRaises(InternalError, g.random_walk, 5, 20, stuck="error")
 
 

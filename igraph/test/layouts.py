@@ -173,12 +173,12 @@ class LayoutAlgorithmTests(unittest.TestCase):
         def test_is_proper_circular_layout(graph, layout):
             xs, ys = zip(*layout)
             n = graph.vcount()
-            self.assertEquals(n, len(xs))
-            self.assertEquals(n, len(ys))
-            self.assertAlmostEquals(0, sum(xs))
-            self.assertAlmostEquals(0, sum(ys))
+            self.assertEqual(n, len(xs))
+            self.assertEqual(n, len(ys))
+            self.assertAlmostEqual(0, sum(xs))
+            self.assertAlmostEqual(0, sum(ys))
             for x, y in zip(xs, ys):
-                self.assertAlmostEquals(1, x**2+y**2)
+                self.assertAlmostEqual(1, x**2+y**2)
 
         g = Graph.Ring(8)
         layout = g.layout("circle")
