@@ -22,29 +22,17 @@
 
 #include "filehandle.h"
 #include "py2compat.h"
+#include "pyhelpers.h"
 
-/**
- * \ingroup python_interface_filehandle
- * \brief Constructs a new file handle object from a Python object.
- *
- * \return 0 if everything was OK, 1 otherwise. An appropriate Python
- *   exception is raised in this case.
- */
-int igraphmodule_filehandle_init(igraphmodule_filehandle_t* handle,
+#ifndef PYPY_VERSION
+#  ifndef IGRAPH_PYTHON3
+static int igraphmodule_i_filehandle_init_cpython_2(igraphmodule_filehandle_t* handle,
         PyObject* object, char* mode) {
-#ifdef IGRAPH_PYTHON3
-    int fp;
-    if (object == 0 || PyLong_Check(object)) {
-        PyErr_SetString(PyExc_TypeError, "string or file-like object expected");
-        return 1;
-    }
-#else
     if (object == 0 ||
         (!PyBaseString_Check(object) && !PyFile_Check(object))) {
         PyErr_SetString(PyExc_TypeError, "string or file handle expected");
         return 1;
     }
-#endif
 
     handle->need_close = 0;
 
@@ -52,11 +40,7 @@ int igraphmodule_filehandle_init(igraphmodule_filehandle_t* handle,
         /* We have received a string; we need to open the file denoted by this
          * string now and mark that we opened the file ourselves (so we need
          * to close it when igraphmodule_filehandle_destroy is invoked). */
-#ifdef IGRAPH_PYTHON3
-        handle->object = PyFile_FromObject(object, mode);
-#else
         handle->object = PyFile_FromString(PyString_AsString(object), mode);
-#endif
         if (handle->object == 0) {
             /* Could not open the file; just return an error code because an
              * exception was raised already */
@@ -72,12 +56,56 @@ int igraphmodule_filehandle_init(igraphmodule_filehandle_t* handle,
     }
 
     /* At this stage, handle->object is something we can handle.
-     * In Python 2, we get here only if object is a file object so we
+     * We get here only if object is a file object so we
      * can safely call PyFile_AsFile to get a FILE* object.
-     * In Python 3, we have to call PyObject_AsFileDescriptor instead
+     */
+    handle->fp = PyFile_AsFile(handle->object);
+    if (handle->fp == 0) {
+        igraphmodule_filehandle_destroy(handle);
+        /* This already called Py_DECREF(handle->object), no need to call it */
+        PyErr_SetString(PyExc_RuntimeError, "PyFile_AsFile() failed unexpectedly");
+        return 1;
+    }
+
+    return 0;
+}
+
+#  else    /* IGRAPH_PYTHON3 */
+
+static int igraphmodule_i_filehandle_init_cpython_3(igraphmodule_filehandle_t* handle,
+        PyObject* object, char* mode) {
+    int fp;
+
+    if (object == 0 || PyLong_Check(object)) {
+        PyErr_SetString(PyExc_TypeError, "string or file-like object expected");
+        return 1;
+    }
+
+    handle->need_close = 0;
+
+    if (PyBaseString_Check(object)) {
+        /* We have received a string; we need to open the file denoted by this
+         * string now and mark that we opened the file ourselves (so we need
+         * to close it when igraphmodule_filehandle_destroy is invoked). */
+        handle->object = PyFile_FromObject(object, mode);
+        if (handle->object == 0) {
+            /* Could not open the file; just return an error code because an
+             * exception was raised already */
+            return 1;
+        }
+        /* Remember that we need to close the file ourselves */
+        handle->need_close = 1;
+    } else {
+        /* This is probably a file-like object; store a reference for it and
+         * we will handle it later */
+        handle->object = object;
+        Py_INCREF(handle->object);
+    }
+
+    /* At this stage, handle->object is something we can handle.
+     * We have to call PyObject_AsFileDescriptor instead
      * and then fdopen() it to get the corresponding FILE* object.
      */
-#ifdef IGRAPH_PYTHON3
     fp = PyObject_AsFileDescriptor(handle->object);
     if (fp == -1) {
         igraphmodule_filehandle_destroy(handle);
@@ -91,17 +119,75 @@ int igraphmodule_filehandle_init(igraphmodule_filehandle_t* handle,
         PyErr_SetString(PyExc_RuntimeError, "fdopen() failed unexpectedly");
         return 1;
     }
-#else
-    handle->fp = PyFile_AsFile(handle->object);
+
+    return 0;
+}
+#  endif
+#endif   /* PYPY_VERSION */
+
+#ifdef PYPY_VERSION
+static int igraphmodule_i_filehandle_init_pypy(igraphmodule_filehandle_t* handle,
+        PyObject* object, char* mode) {
+    int fp;
+    char* fname;
+
+    if (object == 0 || !PyBaseString_Check(object)) {
+        PyErr_SetString(PyExc_TypeError, "string expected (file handles not "
+                "supported in PyPy)");
+        return 1;
+    }
+
+    /* We have received a string. Unfortunately we cannot follow the same
+     * route as we do for CPython (PyFile_FromString --> PyFile_AsFile to
+     * get a FILE*) because PyPy does not implement PyFile_AsFile. So
+     * we leave handle->object as NULL and just open the file ourselves. */
+    handle->object = 0;
+
+    /* Remember that we need to close the file ourselves */
+    handle->need_close = 1;
+
+    /* At this stage, handle->object is something we can handle.
+     * We get here only if object is a file object so we
+     * can safely call PyFile_AsFile to get a FILE* object.
+     */
+    fname = igraphmodule_PyObject_ConvertToCString(object);
+    if (fname == 0) {
+        /* Exception raised already by igraphmodule_PyObject_ConvertToCString */
+        return 1;
+    }
+
+    handle->fp = fopen(fname, mode);
+    free(fname);
+
     if (handle->fp == 0) {
         igraphmodule_filehandle_destroy(handle);
         /* This already called Py_DECREF(handle->object), no need to call it */
-        PyErr_SetString(PyExc_RuntimeError, "PyFile_AsFile() failed unexpectedly");
+        PyErr_SetString(PyExc_RuntimeError, "cannot open file");
         return 1;
     }
-#endif
 
     return 0;
+}
+#endif
+
+/**
+ * \ingroup python_interface_filehandle
+ * \brief Constructs a new file handle object from a Python object.
+ *
+ * \return 0 if everything was OK, 1 otherwise. An appropriate Python
+ *   exception is raised in this case.
+ */
+int igraphmodule_filehandle_init(igraphmodule_filehandle_t* handle,
+        PyObject* object, char* mode) {
+#ifdef PYPY_VERSION
+    return igraphmodule_i_filehandle_init_pypy(handle, object, mode);
+#else
+#  ifdef IGRAPH_PYTHON3
+    return igraphmodule_i_filehandle_init_cpython_3(handle, object, mode);
+#  else
+    return igraphmodule_i_filehandle_init_cpython_2(handle, object, mode);
+#  endif
+#endif
 }
 
 /**
@@ -111,6 +197,13 @@ int igraphmodule_filehandle_init(igraphmodule_filehandle_t* handle,
 void igraphmodule_filehandle_destroy(igraphmodule_filehandle_t* handle) {
     if (handle->fp != 0) {
         fflush(handle->fp);
+#ifdef PYPY_VERSION
+        /* we need to close the handle with PyPy here with fclose() as
+         * handle->object is NULL */
+        if (handle->need_close == 1) {
+            fclose(handle->fp);
+        }
+#endif
     }
 
     handle->fp = 0;
