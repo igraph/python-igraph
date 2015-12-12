@@ -8152,7 +8152,7 @@ PyObject *igraphmodule_Graph_canonical_permutation(
 	return NULL;
   }
 
-  if (igraph_canonical_permutation(&self->g, &labeling, sh, 0)) {
+  if (igraph_canonical_permutation(&self->g, 0, &labeling, sh, 0)) {
 	igraphmodule_handle_igraph_error();
 	igraph_vector_destroy(&labeling);
 	return NULL;
@@ -8264,6 +8264,11 @@ PyObject *igraphmodule_Graph_isomorphic_bliss(igraphmodule_GraphObject * self,
   if (igraphmodule_PyObject_to_bliss_sh_t(sho1, &sh1)) return NULL;
   sh2 = sh1;
   if (igraphmodule_PyObject_to_bliss_sh_t(sho2, &sh2)) return NULL;
+  if (sho2 != Py_None && sh2 != sh1) {
+    PY_IGRAPH_WARN("sh2 is ignored in isomorphic_bliss() and is always assumed to "
+        "be equal to sh1");
+  }
+  sh2 = sh1;
   if (o == Py_None) other = self; else other = (igraphmodule_GraphObject *) o;
 
   if (PyObject_IsTrue(return1)) {
@@ -8275,8 +8280,8 @@ PyObject *igraphmodule_Graph_isomorphic_bliss(igraphmodule_GraphObject * self,
 	map21 = &mapping_21;
   }
 
-  if (igraph_isomorphic_bliss(&self->g, &other->g, &result, map12, map21,
-      sh1, sh2, 0, 0)) {
+  if (igraph_isomorphic_bliss(&self->g, &other->g, 0, 0, &result, map12, map21,
+      sh1, 0, 0)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
