@@ -23,14 +23,11 @@ This version of python-igraph is compatible with [PyPy](http://pypy.org/) and
 is regularly tested on [PyPy](http://pypy.org/) with ``tox``. However, the
 PyPy version falls behind the CPython version in terms of performance; for
 instance, running all the tests takes ~5 seconds on my machine with CPython and
-~15 seconds with PyPy.
+~15 seconds with PyPy. This can probably be attributed to the need for
+emulating CPython reference counting, and does not seem to be alleviated by the
+JIT.
 
 There are also some subtle differences between the CPython and PyPy versions:
-
-- There is only limited support for saving and loading graphs in PyPy --
-  loading and saving works only if the file is specified as a string
-  containing a filename. File-like objects are not supported as the PyPy API
-  does not implement ``PyFile_AsFile``.
 
 - Docstrings defined in the C source code are not visible from PyPy.
 

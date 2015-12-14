@@ -1,12 +1,13 @@
 from __future__ import with_statement
 
 import unittest
+import warnings
+
 from igraph import *
 from igraph.test.utils import is_pypy, skipIf, temporary_file
 
 
 class ForeignTests(unittest.TestCase):
-    @skipIf(is_pypy, "not supported on PyPy")
     def testDIMACS(self):
         with temporary_file(u"""\
         c
@@ -35,7 +36,6 @@ class ForeignTests(unittest.TestCase):
             graph.write_dimacs(tmpfname)
 
 
-    @skipIf(is_pypy, "not supported on PyPy")
     def testDL(self):
         with temporary_file(u"""\
         dl n=5
@@ -122,7 +122,6 @@ class ForeignTests(unittest.TestCase):
         self.assertTrue(g.vs["name"] == ["eggs", "spam", "ham", "bacon"])
         self.assertTrue(g.es["weight"] == [1, 2, 0, 3, 0])
 
-    @skipIf(is_pypy, "not supported on PyPy")
     def testNCOL(self):
         with temporary_file(u"""\
         eggs spam 1
@@ -142,7 +141,6 @@ class ForeignTests(unittest.TestCase):
             self.assertTrue("name" in g.vertex_attributes() and \
                 "weight" not in g.edge_attributes())
 
-    @skipIf(is_pypy, "not supported on PyPy")
     def testLGL(self):
         with temporary_file(u"""\
         # eggs
@@ -166,7 +164,9 @@ class ForeignTests(unittest.TestCase):
         spam
         # spam
         spam""") as tmpfname:
-            g = Graph.Read_Lgl(tmpfname)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                g = Graph.Read_Lgl(tmpfname)
             self.assertTrue("name" in g.vertex_attributes() and \
                 "weight" not in g.edge_attributes())
 

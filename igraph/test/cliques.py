@@ -37,7 +37,6 @@ class CliqueTests(unittest.TestCase):
         self.assertEqual(sorted(map(sorted, self.g.maximal_cliques(max=3))),
                          [[0, 3, 4], [0, 4, 5]])
 
-    @skipIf(is_pypy, "not supported on PyPy")
     def testMaximalCliquesFile(self):
         def read_cliques(fname):
             with open(fname) as fp:
