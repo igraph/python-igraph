@@ -4117,7 +4117,7 @@ PyObject *igraphmodule_Graph_decompose(igraphmodule_GraphObject * self,
   igraph_vector_ptr_t components;
   igraph_t *g;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oll", kwlist, &mode,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oll", kwlist, &mode_o,
                                    &maxcompno, &minelements))
     return NULL;
 
