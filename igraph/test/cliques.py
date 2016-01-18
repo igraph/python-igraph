@@ -1,6 +1,7 @@
 import unittest
 from igraph import *
-from igraph.test.foreign import is_pypy, skipIf, temporary_file
+from igraph.test.foreign import temporary_file
+from igraph.test.utils import is_pypy, skipIf
 
 
 class CliqueTests(unittest.TestCase):

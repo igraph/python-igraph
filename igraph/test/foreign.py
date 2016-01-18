@@ -1,10 +1,11 @@
 from __future__ import with_statement
 
+import io
 import unittest
 import warnings
 
 from igraph import *
-from igraph.test.utils import is_pypy, skipIf, temporary_file
+from igraph.test.utils import temporary_file
 
 
 class ForeignTests(unittest.TestCase):
@@ -99,7 +100,7 @@ class ForeignTests(unittest.TestCase):
             self.assertTrue(sorted(g.get_edgelist()) == \
                     [(0,1),(0,2),(0,3),(1,2),(2,4)])
 
-    def _testNCOLOrLGL(self, func, fname):
+    def _testNCOLOrLGL(self, func, fname, can_be_reopened=True):
         g = func(fname, names=False, weights=False, \
                 directed=False)
         self.assertTrue(isinstance(g, Graph))
@@ -109,6 +110,8 @@ class ForeignTests(unittest.TestCase):
                 [(0,1),(0,2),(1,1),(1,3),(2,3)])
         self.assertTrue("name" not in g.vertex_attributes() and \
                 "weight" not in g.edge_attributes())
+        if not can_be_reopened:
+            return
 
         g = func(fname, names=False, \
                 directed=False)
@@ -170,6 +173,20 @@ class ForeignTests(unittest.TestCase):
             self.assertTrue("name" in g.vertex_attributes() and \
                 "weight" not in g.edge_attributes())
 
+    def testLGLWithIOModule(self):
+        with temporary_file(u"""\
+        # eggs
+        spam 1
+        # ham
+        eggs 2
+        bacon
+        # bacon
+        spam 3
+        # spam
+        spam""") as tmpfname:
+            with io.open(tmpfname, "r") as fp:
+                self._testNCOLOrLGL(func=Graph.Read_Lgl, fname=fp,
+                                    can_be_reopened=False)
 
     def testAdjacency(self):
         with temporary_file(u"""\
