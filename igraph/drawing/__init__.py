@@ -355,7 +355,7 @@ class Plot(object):
         if hasattr(result, "encode"):
             return result.encode("utf-8")     # for Python 2.x
         else:
-            return result                     # for Python 3.x
+            return result.decode("utf-8")     # for Python 3.x
 
     @property
     def bounding_box(self):
