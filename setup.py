@@ -590,10 +590,17 @@ class BuildConfiguration(object):
             from setuptools.command.build_ext import build_ext
         except ImportError:
             from distutils.command.build_ext import build_ext
+        from distutils.sysconfig import get_python_inc
 
         buildcfg = self
         class custom_build_ext(build_ext):
             def run(self):
+                # Bail out if we don't have the Python include files
+                include_dir = get_python_inc()
+                if not os.path.isfile(os.path.join(include_dir, "Python.h")):
+                    print("You will need the Python headers to compile this extension.")
+                    sys.exit(1)
+
                 # Print a warning if pkg-config is not available or does not know about igraph
                 if buildcfg.use_pkgconfig:
                     detected = buildcfg.detect_from_pkgconfig()
