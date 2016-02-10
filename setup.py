@@ -424,7 +424,7 @@ class IgraphCCoreBuilder(object):
             local_file = "igraph-%s.tar.gz" % self.version
         else:
             remote_url = self.remote_url
-            local_file = remote_url.rsplit("/", 1)[1]
+            _, _, local_file = remote_url.rpartition("/")
 
         print("Using temporary directory: %s" % self.tmpdir)
 
