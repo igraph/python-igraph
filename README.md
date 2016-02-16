@@ -11,11 +11,23 @@ analysis of large graphs.
 This repository contains the source code to the Python interface of
 igraph.
 
-## Install
+## Installation
 ```
 $ sudo python setup.py install
 ```
 See details in [Installing Python Modules](https://docs.python.org/2/install/).
+
+## Compiling the development version
+
+If you have downloaded the source code from Github and not PyPI, chances are
+that you have the latest development version, which might not be compatible
+with the latest release of the C core of igraph. Therefore, to install the
+bleeding edge version, you need to instruct the setup script to download the
+latest development version of the C core as well:
+
+```
+$ sudo python setup.py develop --c-core-url https://github.com/igraph/igraph/archive/master.tar.gz
+```
 
 ## Notes
 
