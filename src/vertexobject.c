@@ -24,6 +24,7 @@
 
 #include "attributes.h"
 #include "convert.h"
+#include "edgeobject.h"
 #include "error.h"
 #include "graphobject.h"
 #include "pyhelpers.h"
@@ -416,6 +417,51 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
   return 0;
 }
 
+/**
+ * \ingroup python_interface_vertex
+ * \brief Returns the inbound and outbound edges of a vertex
+ * 
+ * \param self the vertex object
+ * \param args positional arguments
+ * \param kwds keyword arguments
+ */
+PyObject* igraphmodule_Vertex_all_edges(PyObject* self) {
+  igraphmodule_VertexObject* vertex = (igraphmodule_VertexObject*)self;
+  return PyObject_CallMethod(self, "incident", "(li)",
+      (long int) vertex->idx, (int) IGRAPH_ALL
+  );
+}
+
+/**
+ * \ingroup python_interface_vertex
+ * \brief Returns the inbound edges of a vertex
+ * 
+ * \param self the vertex object
+ * \param args positional arguments
+ * \param kwds keyword arguments
+ */
+PyObject* igraphmodule_Vertex_in_edges(PyObject* self) {
+  igraphmodule_VertexObject* vertex = (igraphmodule_VertexObject*)self;
+  return PyObject_CallMethod(self, "incident", "(li)",
+      (long int) vertex->idx, (int) IGRAPH_IN
+  );
+}
+
+/**
+ * \ingroup python_interface_vertex
+ * \brief Returns the outbound edges of a vertex
+ * 
+ * \param self the vertex object
+ * \param args positional arguments
+ * \param kwds keyword arguments
+ */
+PyObject* igraphmodule_Vertex_out_edges(PyObject* self) {
+  igraphmodule_VertexObject* vertex = (igraphmodule_VertexObject*)self;
+  return PyObject_CallMethod(self, "incident", "(li)",
+      (long int) vertex->idx, (int) IGRAPH_OUT
+  );
+}
+
 /** \ingroup python_interface_vertex
  * \brief Returns the corresponding value to a given attribute of the vertex
  * \param self the vertex object
@@ -576,6 +622,38 @@ static PyObject* _identity(igraphmodule_VertexObject* vertex, PyObject* obj) {
 }
 
 /* Postprocessing function that converts a Python list of integers into a
+ * list of edges in-place. */
+static PyObject* _convert_to_edge_list(igraphmodule_VertexObject* vertex, PyObject* obj) {
+  Py_ssize_t i, n;
+
+  if (!PyList_Check(obj)) {
+    PyErr_SetString(PyExc_TypeError, "_convert_to_edge_list expected list of integers");
+    return NULL;
+  }
+
+  n = PyList_Size(obj);
+  for (i = 0; i < n; i++) {
+    PyObject* idx = PyList_GET_ITEM(obj, i);
+    PyObject* v;
+    int idx_int;
+
+    if (!PyInt_Check(idx)) {
+      PyErr_SetString(PyExc_TypeError, "_convert_to_edge_list expected list of integers");
+      return NULL;
+    }
+
+    if (PyInt_AsInt(idx, &idx_int))
+      return NULL;
+
+    v = igraphmodule_Edge_New(vertex->gref, idx_int);
+    PyList_SetItem(obj, i, v);   /* reference to v stolen, reference to idx discarded */
+  }
+
+  Py_INCREF(obj);
+  return obj;
+}
+
+/* Postprocessing function that converts a Python list of integers into a
  * list of vertices in-place. */
 static PyObject* _convert_to_vertex_list(igraphmodule_VertexObject* vertex, PyObject* obj) {
   Py_ssize_t i, n;
@@ -646,6 +724,7 @@ GRAPH_PROXY_METHOD(delete, "delete_vertices");
 GRAPH_PROXY_METHOD(diversity, "diversity");
 GRAPH_PROXY_METHOD(eccentricity, "eccentricity");
 GRAPH_PROXY_METHOD(get_shortest_paths, "get_shortest_paths");
+GRAPH_PROXY_METHOD_PP(incident, "incident", _convert_to_edge_list);
 GRAPH_PROXY_METHOD(indegree, "indegree");
 GRAPH_PROXY_METHOD(is_minimal_separator, "is_minimal_separator");
 GRAPH_PROXY_METHOD(is_separator, "is_separator");
@@ -698,6 +777,24 @@ PyMethodDef igraphmodule_Vertex_methods[] = {
     "This method thus behaves similarly to the C{update()} method of Python\n"
     "dictionaries."
   },
+  {"all_edges", (PyCFunction)igraphmodule_Vertex_all_edges, METH_NOARGS,
+    "Proxy method to L{Graph.incident(..., mode=\"all\")}\n\n"              \
+    "This method calls the incident() method of the L{Graph} class " \
+    "with this vertex as the first argument and \"all\" as the mode " \
+    "argument, and returns the result.\n\n"\
+    "@see: Graph.incident() for details."},
+  {"in_edges", (PyCFunction)igraphmodule_Vertex_in_edges, METH_NOARGS,
+    "Proxy method to L{Graph.incident(..., mode=\"in\")}\n\n"              \
+    "This method calls the incident() method of the L{Graph} class " \
+    "with this vertex as the first argument and \"in\" as the mode " \
+    "argument, and returns the result.\n\n"\
+    "@see: Graph.incident() for details."},
+  {"out_edges", (PyCFunction)igraphmodule_Vertex_out_edges, METH_NOARGS,
+    "Proxy method to L{Graph.incident(..., mode=\"out\")}\n\n"              \
+    "This method calls the incident() method of the L{Graph} class " \
+    "with this vertex as the first argument and \"out\" as the mode " \
+    "argument, and returns the result.\n\n"\
+    "@see: Graph.incident() for details."},
   GRAPH_PROXY_METHOD_SPEC(betweenness, "betweenness"),
   GRAPH_PROXY_METHOD_SPEC(closeness, "closeness"),
   GRAPH_PROXY_METHOD_SPEC(constraint, "constraint"),
@@ -706,6 +803,7 @@ PyMethodDef igraphmodule_Vertex_methods[] = {
   GRAPH_PROXY_METHOD_SPEC(diversity, "diversity"),
   GRAPH_PROXY_METHOD_SPEC(eccentricity, "eccentricity"),
   GRAPH_PROXY_METHOD_SPEC(get_shortest_paths, "get_shortest_paths"),
+  GRAPH_PROXY_METHOD_SPEC(incident, "incident"),
   GRAPH_PROXY_METHOD_SPEC(indegree, "indegree"),
   GRAPH_PROXY_METHOD_SPEC(is_minimal_separator, "is_minimal_separator"),
   GRAPH_PROXY_METHOD_SPEC(is_separator, "is_separator"),
