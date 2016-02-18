@@ -101,6 +101,7 @@ class VertexTests(unittest.TestCase):
                     [edge.index for edge in vertex.neighbors(mode=mode)]
                 )
 
+    @skipIf(is_pypy, "skipped on PyPy because we do not have access to docstrings")
     def testProxyMethods(self):
         # We only test with connected graphs because disconnected graphs might
         # print a warning when shortest_paths() is invoked on them and we want
@@ -132,13 +133,13 @@ class VertexTests(unittest.TestCase):
         }
 
         for name in Vertex.__dict__:
-            if name in ignore or name.startswith("__"):
+            if name in ignore:
                 continue
 
             func = getattr(v, name)
             docstr = func.__doc__
 
-            if not is_pypy and not docstr.startswith("Proxy method"):
+            if not docstr.startswith("Proxy method"):
                 continue
 
             result = func()

@@ -79,6 +79,7 @@ class EdgeTests(unittest.TestCase):
         self.assertRaises(ValueError, getattr, e, "target")
         self.assertRaises(ValueError, getattr, e, "tuple")
 
+    @skipIf(is_pypy, "skipped on PyPy because we do not have access to docstrings")
     def testProxyMethods(self):
         g = Graph.GRG(10, 0.5)
         e = g.es[0]
@@ -92,13 +93,13 @@ class EdgeTests(unittest.TestCase):
         }
 
         for name in Edge.__dict__:
-            if name in ignore or name.startswith("__"):
+            if name in ignore:
                 continue
 
             func = getattr(e, name)
             docstr = func.__doc__
 
-            if not is_pypy and not docstr.startswith("Proxy method"):
+            if not docstr.startswith("Proxy method"):
                 continue
 
             result = func()
