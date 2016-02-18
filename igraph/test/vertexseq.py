@@ -132,7 +132,7 @@ class VertexTests(unittest.TestCase):
         }
 
         for name in Vertex.__dict__:
-            if name in ignore:
+            if name in ignore or name.startswith("__"):
                 continue
 
             func = getattr(v, name)
@@ -178,9 +178,6 @@ class VertexSeqTests(unittest.TestCase):
 
     @skipIf(np is None, "test case depends on NumPy")
     def testNumPyIndexing(self):
-        if np is None:
-            return
-
         n = self.g.vcount()
         for i in xrange(self.g.vcount()):
             arr = np.array([i])

@@ -92,7 +92,7 @@ class EdgeTests(unittest.TestCase):
         }
 
         for name in Edge.__dict__:
-            if name in ignore:
+            if name in ignore or name.startswith("__"):
                 continue
 
             func = getattr(e, name)
