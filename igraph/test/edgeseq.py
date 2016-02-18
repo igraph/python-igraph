@@ -127,18 +127,25 @@ class EdgeSeqTests(unittest.TestCase):
         self.assertTrue(self.g.es.graph == self.g)
 
     def testIndexing(self):
-        for i in xrange(self.g.ecount()):
+        n = self.g.ecount()
+        for i in xrange(n):
             self.assertEqual(i, self.g.es[i].index)
-        self.assertRaises(IndexError, self.g.es.__getitem__, -1)
+            self.assertEqual(n-i-1, self.g.es[-i-1].index)
+        self.assertRaises(IndexError, self.g.es.__getitem__, n)
+        self.assertRaises(IndexError, self.g.es.__getitem__, -n-1)
         self.assertRaises(TypeError, self.g.es.__getitem__, 1.5)
 
     @skipIf(np is None, "test case depends on NumPy")
     def testNumPyIndexing(self):
-        for i in xrange(self.g.ecount()):
+        n = self.g.ecount()
+        for i in xrange(n):
             arr = np.array([i])
             self.assertEqual(i, self.g.es[arr[0]].index)
 
-        arr = np.array([-1])
+        arr = np.array([n])
+        self.assertRaises(IndexError, self.g.es.__getitem__, arr[0])
+
+        arr = np.array([-n-1])
         self.assertRaises(IndexError, self.g.es.__getitem__, arr[0])
 
         arr = np.array([1.5])

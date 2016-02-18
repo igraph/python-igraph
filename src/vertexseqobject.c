@@ -193,21 +193,34 @@ PyObject* igraphmodule_VertexSeq_sq_item(igraphmodule_VertexSeqObject* self,
   g=&GET_GRAPH(self);
   switch (igraph_vs_type(&self->vs)) {
     case IGRAPH_VS_ALL:
-      if (i >= 0 && i < igraph_vcount(g))
+      if (i < 0) {
+        i = igraph_vcount(g) + i;
+      }
+      if (i >= 0 && i < igraph_vcount(g)) {
         idx = (igraph_integer_t)i;
+      }
       break;
     case IGRAPH_VS_VECTOR:
     case IGRAPH_VS_VECTORPTR:
-      if (i >= 0 && i < igraph_vector_size(self->vs.data.vecptr))
+      if (i < 0) {
+        i = igraph_vector_size(self->vs.data.vecptr) + i;
+      }
+      if (i >= 0 && i < igraph_vector_size(self->vs.data.vecptr)) {
         idx = (igraph_integer_t)VECTOR(*self->vs.data.vecptr)[i];
+      }
       break;
     case IGRAPH_VS_1:
-      if (i == 0)
+      if (i == 0 || i == -1) {
         idx = self->vs.data.vid;
+      }
       break;
     case IGRAPH_VS_SEQ:
-      if (i >= 0 && i < self->vs.data.seq.to - self->vs.data.seq.from)
+      if (i < 0) {
+        i = self->vs.data.seq.to - self->vs.data.seq.from + i;
+      }
+      if (i >= 0 && i < self->vs.data.seq.to - self->vs.data.seq.from) {
         idx = self->vs.data.seq.from + (igraph_integer_t)i;
+      }
       break;
     /* TODO: IGRAPH_VS_ADJ, IGRAPH_VS_NONADJ - someday :) They are unused
        yet in the Python interface */

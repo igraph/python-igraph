@@ -196,24 +196,37 @@ PyObject* igraphmodule_EdgeSeq_sq_item(igraphmodule_EdgeSeqObject* self,
   g=&GET_GRAPH(self);
   switch (igraph_es_type(&self->es)) {
     case IGRAPH_ES_ALL:
-      if (i >= 0 && i < igraph_ecount(g))
+      if (i < 0) {
+        i = igraph_ecount(g) + i;
+      }
+      if (i >= 0 && i < igraph_ecount(g)) {
         idx = (igraph_integer_t)i;
+      }
       break;
 
     case IGRAPH_ES_VECTOR:
     case IGRAPH_ES_VECTORPTR:
-      if (i >= 0 && i < igraph_vector_size(self->es.data.vecptr))
+      if (i < 0) {
+        i = igraph_vector_size(self->es.data.vecptr) + i;
+      }
+      if (i >= 0 && i < igraph_vector_size(self->es.data.vecptr)) {
         idx = (igraph_integer_t)VECTOR(*self->es.data.vecptr)[i];
+      }
       break;
 
     case IGRAPH_ES_1:
-      if (i == 0)
+      if (i == 0 || i == -1) {
         idx = self->es.data.eid;
+      }
       break;
 
     case IGRAPH_ES_SEQ:
-      if (i >= 0 && i < self->es.data.seq.to - self->es.data.seq.from)
+      if (i < 0) {
+        i = self->es.data.seq.to - self->es.data.seq.from + i;
+      }
+      if (i >= 0 && i < self->es.data.seq.to - self->es.data.seq.from) {
         idx = self->es.data.seq.from + (igraph_integer_t)i;
+      }
       break;
 
     /* TODO: IGRAPH_ES_PAIRS, IGRAPH_ES_ADJ, IGRAPH_ES_PATH,
