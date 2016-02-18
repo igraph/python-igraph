@@ -66,7 +66,6 @@ class VertexTests(unittest.TestCase):
         self.assertRaises(ValueError, v.__delitem__, "a")
         self.assertRaises(ValueError, v.attributes)
 
-    @skipIf(is_pypy, "docstrings of pure C methods not available in PyPy")
     def testProxyMethods(self):
         # We only test with connected graphs because disconnected graphs might
         # print a warning when shortest_paths() is invoked on them and we want
@@ -101,7 +100,7 @@ class VertexTests(unittest.TestCase):
             func = getattr(v, name)
             docstr = func.__doc__
 
-            if not docstr.startswith("Proxy method"):
+            if not is_pypy and not docstr.startswith("Proxy method"):
                 continue
 
             result = func()

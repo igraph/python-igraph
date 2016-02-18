@@ -79,7 +79,6 @@ class EdgeTests(unittest.TestCase):
         self.assertRaises(ValueError, getattr, e, "target")
         self.assertRaises(ValueError, getattr, e, "tuple")
 
-    @skipIf(is_pypy, "docstrings of pure C methods not available in PyPy")
     def testProxyMethods(self):
         g = Graph.GRG(10, 0.5)
         e = g.es[0]
@@ -99,7 +98,7 @@ class EdgeTests(unittest.TestCase):
             func = getattr(e, name)
             docstr = func.__doc__
 
-            if not docstr.startswith("Proxy method"):
+            if not is_pypy and not docstr.startswith("Proxy method"):
                 continue
 
             result = func()
