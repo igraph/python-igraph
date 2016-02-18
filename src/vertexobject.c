@@ -426,10 +426,7 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
  * \param kwds keyword arguments
  */
 PyObject* igraphmodule_Vertex_all_edges(PyObject* self) {
-  igraphmodule_VertexObject* vertex = (igraphmodule_VertexObject*)self;
-  return PyObject_CallMethod(self, "incident", "(li)",
-      (long int) vertex->idx, (int) IGRAPH_ALL
-  );
+  return PyObject_CallMethod(self, "incident", "i", (int) IGRAPH_ALL);
 }
 
 /**
@@ -441,10 +438,7 @@ PyObject* igraphmodule_Vertex_all_edges(PyObject* self) {
  * \param kwds keyword arguments
  */
 PyObject* igraphmodule_Vertex_in_edges(PyObject* self) {
-  igraphmodule_VertexObject* vertex = (igraphmodule_VertexObject*)self;
-  return PyObject_CallMethod(self, "incident", "(li)",
-      (long int) vertex->idx, (int) IGRAPH_IN
-  );
+  return PyObject_CallMethod(self, "incident", "i", (int) IGRAPH_IN);
 }
 
 /**
@@ -456,10 +450,7 @@ PyObject* igraphmodule_Vertex_in_edges(PyObject* self) {
  * \param kwds keyword arguments
  */
 PyObject* igraphmodule_Vertex_out_edges(PyObject* self) {
-  igraphmodule_VertexObject* vertex = (igraphmodule_VertexObject*)self;
-  return PyObject_CallMethod(self, "incident", "(li)",
-      (long int) vertex->idx, (int) IGRAPH_OUT
-  );
+  return PyObject_CallMethod(self, "incident", "i", (int) IGRAPH_OUT);
 }
 
 /** \ingroup python_interface_vertex

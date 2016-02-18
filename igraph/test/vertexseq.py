@@ -66,6 +66,41 @@ class VertexTests(unittest.TestCase):
         self.assertRaises(ValueError, v.__delitem__, "a")
         self.assertRaises(ValueError, v.attributes)
 
+    def testIncident(self):
+        g = Graph.Famous("petersen")
+        g.to_directed()
+
+        method_table = {
+            "all": "all_edges",
+            "in": "in_edges",
+            "out": "out_edges"
+        }
+
+        for i in xrange(g.vcount()):
+            vertex = g.vs[i]
+            for mode, method_name in method_table.items():
+                method = getattr(vertex, method_name)
+                self.assertEquals(
+                    g.incident(i, mode=mode),
+                    [edge.index for edge in vertex.incident(mode=mode)]
+                )
+                self.assertEquals(
+                    g.incident(i, mode=mode),
+                    [edge.index for edge in method()]
+                )
+
+    def testNeighbors(self):
+        g = Graph.Famous("petersen")
+        g.to_directed()
+
+        for i in xrange(g.vcount()):
+            vertex = g.vs[i]
+            for mode in "all in out".split():
+                self.assertEquals(
+                    g.neighbors(i, mode=mode),
+                    [edge.index for edge in vertex.neighbors(mode=mode)]
+                )
+
     def testProxyMethods(self):
         # We only test with connected graphs because disconnected graphs might
         # print a warning when shortest_paths() is invoked on them and we want
@@ -80,11 +115,14 @@ class VertexTests(unittest.TestCase):
         # - neighbors(), predecessors() and succesors() are ignored because they
         #   return vertex lists while the methods in Graph return vertex index
         #   lists.
+        # - incident(), all_edges(), in_edges() and out_edges() are ignored
+        #   because it returns an edge list while the methods in Graph return
+        #   edge indices.
         # - pagerank() and personalized_pagerank() are ignored because of numerical
         #   inaccuracies
         # - delete() is ignored because it mutates the graph
         ignore = "neighbors predecessors successors pagerank personalized_pagerank"\
-                " delete"
+                " delete incident all_edges in_edges out_edges"
         ignore = set(ignore.split())
 
         # Methods not listed here are expected to return an int or a float
