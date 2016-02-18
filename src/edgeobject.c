@@ -435,7 +435,7 @@ int igraphmodule_Edge_set_attribute(igraphmodule_EdgeObject* self, PyObject* k, 
 
 /**
  * \ingroup python_interface_edge
- * Returns the source node index of an edge
+ * Returns the source vertex index of an edge
  */
 PyObject* igraphmodule_Edge_get_from(igraphmodule_EdgeObject* self, void* closure) {
   igraphmodule_GraphObject *o = self->gref;
@@ -452,7 +452,25 @@ PyObject* igraphmodule_Edge_get_from(igraphmodule_EdgeObject* self, void* closur
 
 /**
  * \ingroup python_interface_edge
- * Returns the target node index of an edge
+ * Returns the source vertex index of an edge
+ */
+PyObject* igraphmodule_Edge_get_source_vertex(igraphmodule_EdgeObject* self, void* closure) {
+  igraphmodule_GraphObject *o = self->gref;
+  igraph_integer_t from, to;
+
+  if (!igraphmodule_Edge_Validate((PyObject*)self))
+    return NULL;
+
+  if (igraph_edge(&o->g, self->idx, &from, &to)) {
+    igraphmodule_handle_igraph_error(); return NULL;
+  }
+
+  return igraphmodule_Vertex_New(o, from);
+}
+
+/**
+ * \ingroup python_interface_edge
+ * Returns the target vertex index of an edge
  */
 PyObject* igraphmodule_Edge_get_to(igraphmodule_EdgeObject* self, void* closure) {
   igraphmodule_GraphObject *o = self->gref;
@@ -465,6 +483,24 @@ PyObject* igraphmodule_Edge_get_to(igraphmodule_EdgeObject* self, void* closure)
     igraphmodule_handle_igraph_error(); return NULL;
   }
   return PyInt_FromLong((long)to);
+}
+
+/**
+ * \ingroup python_interface_edge
+ * Returns the target vertex of an edge
+ */
+PyObject* igraphmodule_Edge_get_target_vertex(igraphmodule_EdgeObject* self, void* closure) {
+  igraphmodule_GraphObject *o = self->gref;
+  igraph_integer_t from, to;
+
+  if (!igraphmodule_Edge_Validate((PyObject*)self))
+    return NULL;
+
+  if (igraph_edge(&o->g, self->idx, &from, &to)) {
+    igraphmodule_handle_igraph_error(); return NULL;
+  }
+
+  return igraphmodule_Vertex_New(o, to);
 }
 
 /**
@@ -493,7 +529,7 @@ long igraphmodule_Edge_get_index_long(igraphmodule_EdgeObject* self) {
 
 /**
  * \ingroup python_interface_edge
- * Returns the target node index of an edge
+ * Returns the source and target vertex index of an edge
  */
 PyObject* igraphmodule_Edge_get_tuple(igraphmodule_EdgeObject* self, void* closure) {
   igraphmodule_GraphObject *o = self->gref;
@@ -506,6 +542,36 @@ PyObject* igraphmodule_Edge_get_tuple(igraphmodule_EdgeObject* self, void* closu
     igraphmodule_handle_igraph_error(); return NULL;
   }
   return Py_BuildValue("(ii)", (long)from, (long)to);
+}
+
+/**
+ * \ingroup python_interface_edge
+ * Returns the source and target vertex of an edge
+ */
+PyObject* igraphmodule_Edge_get_vertex_tuple(igraphmodule_EdgeObject* self, void* closure) {
+  igraphmodule_GraphObject *o = self->gref;
+  igraph_integer_t from, to;
+  PyObject *from_o, *to_o;
+
+  if (!igraphmodule_Edge_Validate((PyObject*)self))
+    return NULL;
+
+  if (igraph_edge(&o->g, self->idx, &from, &to)) {
+    igraphmodule_handle_igraph_error(); return NULL;
+  }
+
+  from_o = igraphmodule_Vertex_New(o, from);
+  if (!from_o) {
+    return NULL;
+  }
+
+  to_o = igraphmodule_Vertex_New(o, to);
+  if (!to_o) {
+    Py_DECREF(from_o);
+    return NULL;
+  }
+
+  return Py_BuildValue("(NN)", from_o, to_o);     /* steals references */
 }
 
 /** \ingroup python_interface_edge
@@ -600,13 +666,22 @@ PyMethodDef igraphmodule_Edge_methods[] = {
  */
 PyGetSetDef igraphmodule_Edge_getseters[] = {
   {"source", (getter)igraphmodule_Edge_get_from, NULL,
-      "Source node index of this edge", NULL
+      "Source vertex index of this edge", NULL
+  },
+  {"source_vertex", (getter)igraphmodule_Edge_get_source_vertex, NULL,
+      "Source vertex of this edge", NULL
   },
   {"target", (getter)igraphmodule_Edge_get_to, NULL,
-      "Target node index of this edge", NULL
+      "Target vertex index of this edge", NULL
+  },
+  {"target_vertex", (getter)igraphmodule_Edge_get_target_vertex, NULL,
+      "Target vertex of this edge", NULL
   },
   {"tuple", (getter)igraphmodule_Edge_get_tuple, NULL,
-      "Source and target node index of this edge as a tuple", NULL
+      "Source and target vertex index of this edge as a tuple", NULL
+  },
+  {"vertex_tuple", (getter)igraphmodule_Edge_get_vertex_tuple, NULL,
+      "Source and target vertex of this edge as a tuple", NULL
   },
   {"index", (getter)igraphmodule_Edge_get_index, NULL,
       "Index of this edge", NULL,

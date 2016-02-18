@@ -76,8 +76,11 @@ class EdgeTests(unittest.TestCase):
         self.assertRaises(ValueError, e.__delitem__, "a")
         self.assertRaises(ValueError, e.attributes)
         self.assertRaises(ValueError, getattr, e, "source")
+        self.assertRaises(ValueError, getattr, e, "source_vertex")
         self.assertRaises(ValueError, getattr, e, "target")
+        self.assertRaises(ValueError, getattr, e, "target_vertex")
         self.assertRaises(ValueError, getattr, e, "tuple")
+        self.assertRaises(ValueError, getattr, e, "vertex_tuple")
 
     @skipIf(is_pypy, "skipped on PyPy because we do not have access to docstrings")
     def testProxyMethods(self):
