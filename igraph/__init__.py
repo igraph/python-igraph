@@ -232,16 +232,17 @@ class Graph(GraphBase):
 
         @param source: the source vertex of the edge or its name.
         @param target: the target vertex of the edge or its name.
-        """
-        if not kwds:
-            return self.add_edges([(source, target)])
 
+        @return: the newly added edge as an L{Edge} object. Use
+            C{add_edges([(source, target)])} if you don't need the L{Edge}
+            object and want to avoid the overhead of creating t.
+        """
         eid = self.ecount()
-        result = self.add_edges([(source, target)])
+        self.add_edges([(source, target)])
         edge = self.es[eid]
         for key, value in kwds.iteritems():
             edge[key] = value
-        return result
+        return edge
 
     def add_edges(self, es):
         """add_edges(es)
@@ -262,18 +263,19 @@ class Graph(GraphBase):
         specially; if a graph has C{name} as a vertex attribute, it allows one
         to refer to vertices by their names in most places where igraph expects
         a vertex ID.
-        """
-        if not kwds and name is None:
-            return self.add_vertices(1)
 
+        @return: the newly added vertex as a L{Vertex} object. Use
+            C{add_vertices(1)} if you don't need the L{Vertex} object and want
+            to avoid the overhead of creating t.
+        """
         vid = self.vcount()
-        result = self.add_vertices(1)
+        self.add_vertices(1)
         vertex = self.vs[vid]
         for key, value in kwds.iteritems():
             vertex[key] = value
         if name is not None:
             vertex["name"] = name
-        return result
+        return vertex
 
     def add_vertices(self, n):
         """add_vertices(n)

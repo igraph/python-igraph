@@ -1,6 +1,5 @@
 import unittest
 from igraph import *
-from igraph.test.utils import is_pypy, skipIf
 
 
 class BasicTests(unittest.TestCase):
@@ -32,23 +31,33 @@ class BasicTests(unittest.TestCase):
 
     def testAddVertex(self):
         g = Graph()
-        g.add_vertex()
+
+        vertex = g.add_vertex()
         self.assertTrue(g.vcount() == 1 and g.ecount() == 0)
+        self.assertEquals(0, vertex.index)
         self.assertFalse("name" in g.vertex_attributes())
-        g.add_vertex("foo")
+
+        vertex = g.add_vertex("foo")
         self.assertTrue(g.vcount() == 2 and g.ecount() == 0)
+        self.assertEquals(1, vertex.index)
         self.assertTrue("name" in g.vertex_attributes())
         self.assertEqual(g.vs["name"], [None, "foo"])
-        g.add_vertex(3)
+
+        vertex = g.add_vertex(3)
         self.assertTrue(g.vcount() == 3 and g.ecount() == 0)
+        self.assertEquals(2, vertex.index)
         self.assertTrue("name" in g.vertex_attributes())
         self.assertEqual(g.vs["name"], [None, "foo", 3])
-        g.add_vertex(name="bar")
+
+        vertex = g.add_vertex(name="bar")
         self.assertTrue(g.vcount() == 4 and g.ecount() == 0)
+        self.assertEquals(3, vertex.index)
         self.assertTrue("name" in g.vertex_attributes())
         self.assertEqual(g.vs["name"], [None, "foo", 3, "bar"])
-        g.add_vertex(name="frob", spam="cheese", ham=42)
+
+        vertex = g.add_vertex(name="frob", spam="cheese", ham=42)
         self.assertTrue(g.vcount() == 5 and g.ecount() == 0)
+        self.assertEquals(4, vertex.index)
         self.assertEqual(sorted(g.vertex_attributes()), ["ham", "name", "spam"])
         self.assertEqual(g.vs["spam"], [None]*4 + ["cheese"])
         self.assertEqual(g.vs["ham"], [None]*4 + [42])
@@ -101,6 +110,24 @@ class BasicTests(unittest.TestCase):
         # Deleting a nonexistent vertex
         self.assertRaises(ValueError, g.delete_vertices, "no-such-vertex")
         self.assertRaises(InternalError, g.delete_vertices, 2)
+
+    def testAddEdge(self):
+        g = Graph()
+        g.add_vertices(["spam", "bacon", "eggs", "ham"])
+
+        edge = g.add_edge(0, 1)
+        self.assertEqual(g.vcount(), 4)
+        self.assertEqual(g.get_edgelist(), [(0, 1)])
+        self.assertEqual(0, edge.index)
+        self.assertEqual((0, 1), edge.tuple)
+
+        edge = g.add_edge(1, 2, foo="bar")
+        self.assertEqual(g.vcount(), 4)
+        self.assertEqual(g.get_edgelist(), [(0, 1), (1, 2)])
+        self.assertEqual(1, edge.index)
+        self.assertEqual((1, 2), edge.tuple)
+        self.assertEqual("bar", edge["foo"])
+        self.assertEqual([None, "bar"], g.es["foo"])
 
     def testAddEdges(self):
         g = Graph()
