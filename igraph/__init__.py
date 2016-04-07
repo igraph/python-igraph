@@ -1712,13 +1712,26 @@ class Graph(GraphBase):
           edge attribute, every edge will have a capacity of 1.
         """
         if source is None:
-            source = self["source"]
+            try:
+                source = self["source"]
+            except KeyError:
+                raise ValueError(
+                    "source vertex must be provided in the 'source' graph "
+                    "attribute or in the 'source' argument of write_dimacs()")
+
         if target is None:
-            target = self["target"]
+            try:
+                target = self["target"]
+            except KeyError:
+                raise ValueError(
+                    "target vertex must be provided in the 'target' graph "
+                    "attribute or in the 'target' argument of write_dimacs()")
+
         if isinstance(capacity, basestring) and \
                 capacity not in self.edge_attributes():
             warn("'%s' edge attribute does not exist" % capacity)
-            capacity = None
+            capacity = [1] * self.ecount()
+
         return GraphBase.write_dimacs(self, f, source, target, capacity)
 
     def write_graphmlz(self, f, compresslevel=9):
