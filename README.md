@@ -11,6 +11,9 @@ analysis of large graphs.
 This repository contains the source code to the Python interface of
 igraph.
 
+You can learn more about python-igraph [on our website](http://igraph.org/python/).
+
+
 ## Installation
 ```
 $ sudo python setup.py install
