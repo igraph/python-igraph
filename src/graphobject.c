@@ -6580,11 +6580,6 @@ PyObject* igraphmodule_Graph_layout_drl(igraphmodule_GraphObject *self,
   if (igraphmodule_PyObject_to_drl_options_t(options_o, &options))
     return NULL;
 
-  if (igraph_layout_drl_options_init(&options, IGRAPH_LAYOUT_DRL_DEFAULT)) {
-    igraphmodule_handle_igraph_error();
-    return NULL;
-  }
-
   if (fixed_o != 0 && fixed_o != Py_None) {
     fixed = (igraph_vector_bool_t*)malloc(sizeof(igraph_vector_bool_t));
     if (!fixed) {

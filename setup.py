@@ -160,6 +160,7 @@ class WorkaroundSet(object):
     def execute(self):
         for workaround in self.each:
             if workaround.required():
+                print("Running workaround: %s" % workaround.__class__)
                 workaround.hack()
                 self.executed.append(workaround)
 

@@ -2772,8 +2772,10 @@ int igraphmodule_PyObject_to_attribute_values(PyObject *o,
 
 int igraphmodule_PyObject_to_drl_options_t(PyObject *obj,
     igraph_layout_drl_options_t *options) {
+  int retval;
+
   if (obj == Py_None) {
-    igraph_layout_drl_options_init(options, IGRAPH_LAYOUT_DRL_DEFAULT);
+    retval = igraph_layout_drl_options_init(options, IGRAPH_LAYOUT_DRL_DEFAULT);
   } else if (PyString_Check(obj)) {
     /* We have a string, so we are using a preset */
     igraph_layout_drl_default_t def=IGRAPH_LAYOUT_DRL_DEFAULT;
@@ -2791,12 +2793,9 @@ int igraphmodule_PyObject_to_drl_options_t(PyObject *obj,
       PyErr_SetString(PyExc_ValueError, "unknown DrL template name. Must be one of: default, coarsen, coarsest, refine, final");
       return 1;
     }
-    if (igraph_layout_drl_options_init(options, def)) {
-      igraphmodule_handle_igraph_error();
-      return 1;
-    }
+    retval = igraph_layout_drl_options_init(options, def);
   } else {
-    igraph_layout_drl_options_init(options, IGRAPH_LAYOUT_DRL_DEFAULT);
+    retval = igraph_layout_drl_options_init(options, IGRAPH_LAYOUT_DRL_DEFAULT);
 #define CONVERT_DRL_OPTION(OPTION, TYPE) do { \
       PyObject *o1; \
       if (PyMapping_Check(obj)) { \
@@ -2814,21 +2813,28 @@ int igraphmodule_PyObject_to_drl_options_t(PyObject *obj,
 	  CONVERT_DRL_OPTION(NAME##_attraction, real); \
 	  CONVERT_DRL_OPTION(NAME##_damping_mult, real); \
     } while (0)
-	
-    CONVERT_DRL_OPTION(edge_cut, real);
-    CONVERT_DRL_OPTION_BLOCK(init);
-    CONVERT_DRL_OPTION_BLOCK(liquid);
-    CONVERT_DRL_OPTION_BLOCK(expansion);
-    CONVERT_DRL_OPTION_BLOCK(cooldown);
-    CONVERT_DRL_OPTION_BLOCK(crunch);
-    CONVERT_DRL_OPTION_BLOCK(simmer);
+
+    if (!retval) {
+      CONVERT_DRL_OPTION(edge_cut, real);
+      CONVERT_DRL_OPTION_BLOCK(init);
+      CONVERT_DRL_OPTION_BLOCK(liquid);
+      CONVERT_DRL_OPTION_BLOCK(expansion);
+      CONVERT_DRL_OPTION_BLOCK(cooldown);
+      CONVERT_DRL_OPTION_BLOCK(crunch);
+      CONVERT_DRL_OPTION_BLOCK(simmer);
+
+      PyErr_Clear();
+    }
 
 #undef CONVERT_DRL_OPTION
 #undef CONVERT_DRL_OPTION_BLOCK
-
-    PyErr_Clear();
-	return 0;
   }
+
+  if (retval) {
+    igraphmodule_handle_igraph_error();
+    return 1;
+  }
+
   return 0;
 }
 
