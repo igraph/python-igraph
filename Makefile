@@ -4,9 +4,10 @@ build-wheel:
 	docker build -f docker/manylinux.docker -t $(TAG) .
 
 copy-wheel:
+	# copies the built wheels from the docker image to a local directory
 	rm -rf docker/wheelhouse
 	mkdir docker/wheelhouse
-	docker run --user `id -u` -v `pwd`/docker/wheelhouse:/output $(TAG) sh -c "cp /wheelhouse/python_igraph*.whl /output"
+	docker run --user `id -u` -v `pwd`/docker/wheelhouse:/output $(TAG) sh -c "cp /wheelhouse/python_igraph*.*manylinux*.whl /output"
 
 test-ubuntu: copy-wheel
 	echo 'testing ubuntu'
@@ -27,7 +28,7 @@ test-centos: copy-wheel
 
 test-alpine: copy-wheel
 	echo 'testing alpine'
-	# todo: this requires libm / glibc
+	# todo: this is failing because it requires libm linked into the wheel
 	docker run -v `pwd`/docker/wheelhouse:/wheelhouse python:2-alpine sh -c " \
 		apk update; \
 		apk add libxml2 libstdc++; \
@@ -35,6 +36,7 @@ test-alpine: copy-wheel
 		python -c \"import igraph; print igraph\"; \
 	"
 
-test-wheel: test-ubuntu test-centos test-alpine
+# note: test-alpine not included because there's no libm available
+test-wheel: test-ubuntu test-centos
 
 .PHONY: build-wheel copy-wheel test-wheel
