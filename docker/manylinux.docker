@@ -1,0 +1,23 @@
+# manylinux.docker -- dockerfile for generating manylinux wheel
+
+FROM quay.io/pypa/manylinux1_x86_64
+MAINTAINER awinter.public@gmail.com
+
+RUN echo "multilib_policy=best" >> /etc/yum.conf
+RUN yum install -y zlib-devel libxml2-devel
+# kill static libxml2 as per http://lists.gnu.org/archive/html/igraph-help/2014-05/msg00045.html
+RUN mv /usr/lib64/libxml2.a /usr/lib64/libxml2.a.org
+
+COPY ./ /python-igraph/
+RUN mkdir /wheelhouse
+WORKDIR /python-igraph
+
+RUN /bin/bash -c "for PYBIN in /opt/python/*/bin; do \
+    echo \$PYBIN; \
+    \$PYBIN/pip wheel . -w /wheelhouse; \
+done"
+
+# Bundle external shared libraries into the wheels
+RUN /bin/bash -c "for whl in /wheelhouse/*.whl; do \
+    auditwheel repair \$whl -w /wheelhouse/; \
+done"
