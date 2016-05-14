@@ -13,7 +13,7 @@ test-ubuntu: copy-wheel
 	echo 'testing ubuntu'
 	docker run -v `pwd`/docker/wheelhouse:/wheelhouse python:2 sh -c " \
 		pip install python-igraph --no-index --find-links /wheelhouse; \
-		python -c \"import igraph; print 'ok', igraph\"; \
+		python -m igraph.test.__init__; \
 	"
 
 test-centos: copy-wheel
@@ -23,7 +23,7 @@ test-centos: copy-wheel
 		yum -y install python-pip; \
 		pip install -U pip; \
 		pip install python-igraph --no-index --find-links /wheelhouse; \
-		python -c \"import igraph; print igraph\"; \
+		python -m igraph.test.__init__; \
 	"
 
 test-alpine: copy-wheel
@@ -33,7 +33,7 @@ test-alpine: copy-wheel
 		apk update; \
 		apk add libxml2 libstdc++; \
 		pip install python-igraph --no-index --find-links /wheelhouse; \
-		python -c \"import igraph; print igraph\"; \
+		python -m igraph.test.__init__; \
 	"
 
 # note: test-alpine not included because there's no libm available
