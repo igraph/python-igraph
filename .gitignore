@@ -7,3 +7,4 @@ dist/
 doc/api/
 igraph/*.so
 *.egg-info/
+/docker/wheelhouse
