@@ -28,16 +28,16 @@
 #  ifndef IGRAPH_PYTHON3
 static int igraphmodule_i_filehandle_init_cpython_2(igraphmodule_filehandle_t* handle,
         PyObject* object, char* mode) {
-	FILE* fp;
-	PyObject* fileno_method;
-	PyObject* fileno_result;
-	int fileno = -1;
+    FILE* fp;
+    PyObject* fileno_method;
+    PyObject* fileno_result;
+    int fileno = -1;
 
     if (object == 0) {
-		PyErr_SetString(PyExc_TypeError, "trying to convert a null object "
-				"to a file handle");
-		return 1;
-	}
+        PyErr_SetString(PyExc_TypeError, "trying to convert a null object "
+                "to a file handle");
+        return 1;
+    }
 
     handle->need_close = 0;
 
@@ -53,58 +53,58 @@ static int igraphmodule_i_filehandle_init_cpython_2(igraphmodule_filehandle_t* h
         }
         /* Remember that we need to close the file ourselves */
         handle->need_close = 1;
-		/* Get a FILE* object from the file */
-		fp = PyFile_AsFile(handle->object);
+        /* Get a FILE* object from the file */
+        fp = PyFile_AsFile(handle->object);
     } else if (PyFile_Check(object)) {
         /* This is a file-like object; store a reference for it and
          * we will handle it later */
         handle->object = object;
         Py_INCREF(handle->object);
-		/* Get a FILE* object from the file */
-		fp = PyFile_AsFile(handle->object);
+        /* Get a FILE* object from the file */
+        fp = PyFile_AsFile(handle->object);
     } else {
-		/* Check whether the object has a fileno() method. If so, we convert
-		 * that to a file descriptor and then fdopen() it */
-		fileno_method = PyObject_GetAttrString(object, "fileno");
-		if (fileno_method != 0) {
-			if (PyCallable_Check(fileno_method)) {
-				fileno_result = PyObject_CallObject(fileno_method, 0);
-				Py_DECREF(fileno_method);
-				if (fileno_result != 0) {
-					if (PyInt_Check(fileno_result)) {
-						fileno = (int)PyInt_AsLong(fileno_result);
-						Py_DECREF(fileno_result);
-					} else {
-						Py_DECREF(fileno_result);
-						PyErr_SetString(PyExc_TypeError,
-								"fileno() method of file-like object should return "
-								"an integer");
-						return 1;
-					}
-				} else {
-					/* Exception set already by PyObject_CallObject() */
-					return 1;
-				}
-			} else {
-				Py_DECREF(fileno_method);
-				PyErr_SetString(PyExc_TypeError,
-						"fileno() attribute of file-like object must be callable");
-				return 1;
-			}
-		} else {
-			PyErr_SetString(PyExc_TypeError, "expected filename or file-like object");
-				return 1;
-		}
+        /* Check whether the object has a fileno() method. If so, we convert
+         * that to a file descriptor and then fdopen() it */
+        fileno_method = PyObject_GetAttrString(object, "fileno");
+        if (fileno_method != 0) {
+            if (PyCallable_Check(fileno_method)) {
+                fileno_result = PyObject_CallObject(fileno_method, 0);
+                Py_DECREF(fileno_method);
+                if (fileno_result != 0) {
+                    if (PyInt_Check(fileno_result)) {
+                        fileno = (int)PyInt_AsLong(fileno_result);
+                        Py_DECREF(fileno_result);
+                    } else {
+                        Py_DECREF(fileno_result);
+                        PyErr_SetString(PyExc_TypeError,
+                                "fileno() method of file-like object should return "
+                                "an integer");
+                        return 1;
+                    }
+                } else {
+                    /* Exception set already by PyObject_CallObject() */
+                    return 1;
+                }
+            } else {
+                Py_DECREF(fileno_method);
+                PyErr_SetString(PyExc_TypeError,
+                        "fileno() attribute of file-like object must be callable");
+                return 1;
+            }
+        } else {
+            PyErr_SetString(PyExc_TypeError, "expected filename or file-like object");
+                return 1;
+        }
 
-		if (fileno > 0) {
-			fp = fdopen(fileno, mode);
-			handle->need_close = 1;
-		} else {
-			PyErr_SetString(PyExc_ValueError, "fileno() method returned invalid "
-					"file descriptor");
-			return 1;
-		}
-	}
+        if (fileno > 0) {
+            fp = fdopen(fileno, mode);
+            handle->need_close = 1;
+        } else {
+            PyErr_SetString(PyExc_ValueError, "fileno() method returned invalid "
+                    "file descriptor");
+            return 1;
+        }
+    }
 
     handle->fp = fp;
     if (handle->fp == 0) {
@@ -181,10 +181,10 @@ static int igraphmodule_i_filehandle_init_pypy_2(igraphmodule_filehandle_t* hand
     char* fname;
 
     if (object == 0) {
-		PyErr_SetString(PyExc_TypeError, "trying to convert a null object "
-				"to a file handle");
-		return 1;
-	}
+        PyErr_SetString(PyExc_TypeError, "trying to convert a null object "
+                "to a file handle");
+        return 1;
+    }
 
     handle->need_close = 0;
 
