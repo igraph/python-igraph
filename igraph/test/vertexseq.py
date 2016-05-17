@@ -170,7 +170,6 @@ class VertexSeqTests(unittest.TestCase):
     def testIndexing(self):
         n = self.g.vcount()
         for i in xrange(n):
-            print(repr(i))
             self.assertEqual(i, self.g.vs[i].index)
             self.assertEqual(n-i-1, self.g.vs[-i-1].index)
         self.assertRaises(IndexError, self.g.vs.__getitem__, n)
