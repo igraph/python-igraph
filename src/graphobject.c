@@ -3573,7 +3573,7 @@ PyObject *igraphmodule_Graph_betweenness(igraphmodule_GraphObject * self,
       return NULL;
     }
   } else if (PyNumber_Check(cutoff)) {
-    PyObject *cutoff_num = PyNumber_Int(cutoff);
+    PyObject *cutoff_num = PyNumber_Float(cutoff);
     if (cutoff_num == NULL) {
       igraph_vs_destroy(&vs);
       igraph_vector_destroy(&res);
@@ -3581,7 +3581,7 @@ PyObject *igraphmodule_Graph_betweenness(igraphmodule_GraphObject * self,
       return NULL;
     }
     if (igraph_betweenness_estimate(&self->g, &res, vs, PyObject_IsTrue(directed),
-        (igraph_integer_t)PyInt_AsLong(cutoff_num), weights,
+        (igraph_real_t)PyFloat_AsDouble(cutoff_num), weights,
         PyObject_IsTrue(nobigint))) {
       igraph_vs_destroy(&vs);
       igraph_vector_destroy(&res);
@@ -3898,13 +3898,13 @@ PyObject *igraphmodule_Graph_closeness(igraphmodule_GraphObject * self,
       return NULL;
     }
   } else if (PyNumber_Check(cutoff)) {
-    PyObject *cutoff_num = PyNumber_Int(cutoff);
+    PyObject *cutoff_num = PyNumber_Float(cutoff);
     if (cutoff_num == NULL) {
       igraph_vs_destroy(&vs); igraph_vector_destroy(&res);
       return NULL;
     }
     if (igraph_closeness_estimate(&self->g, &res, vs, mode,
-        (igraph_integer_t)PyInt_AsLong(cutoff_num), weights,
+        (igraph_real_t)PyFloat_AsDouble(cutoff_num), weights,
 	PyObject_IsTrue(normalized_o))) {
       igraph_vs_destroy(&vs);
       igraph_vector_destroy(&res);
@@ -4283,13 +4283,13 @@ PyObject *igraphmodule_Graph_edge_betweenness(igraphmodule_GraphObject * self,
       return NULL;
     }
   } else if (PyNumber_Check(cutoff)) {
-    PyObject *cutoff_num = PyNumber_Int(cutoff);
+    PyObject *cutoff_num = PyNumber_Float(cutoff);
     if (!cutoff_num) {
       if (weights) { igraph_vector_destroy(weights); free(weights); }
       igraph_vector_destroy(&res); return NULL;
     }
     if (igraph_edge_betweenness_estimate(&self->g, &res, PyObject_IsTrue(directed),
-        (igraph_integer_t)PyInt_AsLong(cutoff_num), weights)) {
+        (igraph_real_t)PyFloat_AsDouble(cutoff_num), weights)) {
       igraphmodule_handle_igraph_error();
       igraph_vector_destroy(&res);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -12579,8 +12579,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param cutoff: if it is an integer, only paths less than or equal to this\n"
    "  length are considered, effectively resulting in an estimation of the\n"
    "  betweenness for the given vertices. If C{None}, the exact betweenness is\n"
-   "  returned. Note that the length of a path is equal to the number of edges\n"
-   "  in it, even when the edges are weighted.\n"
+   "  returned.\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name.\n"
    "@param nobigint: if C{True}, igraph uses the longest available integer\n"
@@ -12827,8 +12826,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param cutoff: if it is an integer, only paths less than or equal to this\n"
    "  length are considered, effectively resulting in an estimation of the\n"
    "  betweenness values. If C{None}, the exact betweennesses are\n"
-   "  returned. Note that the length of a path is equal to the number of edges\n"
-   "  in it, even when the edges are weighted.\n"
+   "  returned.\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name.\n"
    "@return: a list with the (exact or estimated) edge betweennesses of all\n"
