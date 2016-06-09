@@ -3423,19 +3423,17 @@ class VertexSeq(_igraph.VertexSeq):
 
             >>> g.vs.find(_degree=0)             #doctest:+SKIP
         """
-        # Shortcut: if "name" is in kwds, we try that first because that
-        # attribute is indexed
-        if "name" in kwds:
-            name = kwds.pop("name")
-        elif "name_eq" in kwds:
-            name = kwds.pop("name_eq")
-        else:
-            name = None
-
-        if name is not None:
-            if args:
-                args.insert(0, name)
+        # Shortcut: if "name" is in kwds and there are no positional arguments,
+        # we try that first because that attribute is indexed
+        if not args:
+            if "name" in kwds:
+                name = kwds.pop("name")
+            elif "name_eq" in kwds:
+                name = kwds.pop("name_eq")
             else:
+                name = None
+
+            if name is not None:
                 args = [name]
 
         if args:
@@ -3444,7 +3442,7 @@ class VertexSeq(_igraph.VertexSeq):
             vertex = _igraph.VertexSeq.find(self, *args)
             if not kwds:
                 return vertex
-            vs = self.graph.vs[vertex.index]
+            vs = self.graph.vs.select(vertex.index)
         else:
             vs = self
 
@@ -3689,7 +3687,7 @@ class EdgeSeq(_igraph.EdgeSeq):
             edge = _igraph.EdgeSeq.find(self, *args)
             if not kwds:
                 return edge
-            es = self.graph.es[edge.index]
+            es = self.graph.es.select(edge.index)
         else:
             es = self
 

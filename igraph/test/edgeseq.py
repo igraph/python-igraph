@@ -300,6 +300,10 @@ class EdgeSeqTests(unittest.TestCase):
         self.assertRaises(ValueError, g.es.select, (2, -1))
         self.assertRaises(ValueError, g.es.__getitem__, (0, 1000000))
 
+    def testIndexAndKeywordFilteringFind(self):
+        self.assertRaises(ValueError, self.g.es.find, 2, test=4)
+        self.assertTrue(self.g.es.find(2, test=2) == self.g.es[2])
+
     def testGraphMethodProxying(self):
         idxs = [1, 3, 5, 7, 9]
         g = Graph.Barabasi(100)

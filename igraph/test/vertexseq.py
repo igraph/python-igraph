@@ -298,6 +298,12 @@ class VertexSeqTests(unittest.TestCase):
         del g.vs["degree"]
         self.assertTrue(len(g.vs(_degree_gt=30)) == l)
 
+    def testIndexAndKeywordFilteringFind(self):
+        self.assertRaises(ValueError, self.g.vs.find, 2, name="G")
+        self.assertRaises(ValueError, self.g.vs.find, 2, test=4)
+        self.assertTrue(self.g.vs.find(2, name="C") == self.g.vs[2])
+        self.assertTrue(self.g.vs.find(2, test=2) == self.g.vs[2])
+
     def testIndexOutOfBoundsSelect(self):
         g = Graph.Full(3)
         self.assertRaises(ValueError, g.vs.select, 4)
