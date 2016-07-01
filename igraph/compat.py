@@ -55,8 +55,10 @@ if sys.version_info < (2, 6):
             cls_ns[propname] = property(self.fget, fset, self.fdel, self.__doc__)
             return cls_ns[propname]
 else:
-	# Note: 'module' object is not subscriptable in PyPy, but dotted notation is portable
-    property = __builtins__.property
+    if isinstance(__builtins__, dict):
+        property = __builtins__["property"]
+    else:
+        property = __builtins__.property
 
 #############################################################################
 # Providing BytesIO for Python 2.5
