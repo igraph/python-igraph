@@ -283,7 +283,7 @@ class Graph(GraphBase):
         Adds some vertices to the graph.
 
         @param n: the number of vertices to be added, or the name of a single
-          vertex to be added, or an iterable of strings, each corresponding to the
+          vertex to be added, or a sequence of strings, each corresponding to the
           name of a vertex to be added. Names will be assigned to the C{name}
           vertex attribute.
         """
