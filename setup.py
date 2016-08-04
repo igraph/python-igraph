@@ -44,7 +44,7 @@ class Workaround(object):
         """Installs the workaround. This method will get called if and only
         if the ``required()`` method returns ``True``.
         """
-        raise NotImplementedError
+        pass
 
     def update_buildcfg(self, cfg):
         """Allows the workaround to update the build configuration of the
