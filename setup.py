@@ -149,7 +149,9 @@ class ContinuousIntegrationSetup(Workaround):
         return TESTING_IN_CI
 
     def update_buildcfg(self, cfg):
-        cfg.c_core_url = "https://github.com/igraph/igraph/archive/master.tar.gz"
+        # No need to update the C core URL; this is a release branch so
+        # we have to download the released tarball from the usual place.
+        pass
 
 
 class WorkaroundSet(object):
