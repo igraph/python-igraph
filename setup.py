@@ -13,6 +13,18 @@ if sys.version_info < (2, 5):
     print("This module requires Python >= 2.5")
     sys.exit(0)
 
+# Check whether we are running inside tox -- if so, we will use a non-logging
+# # URL to download the C core of igraph to avoid inflating download counts
+TESTING_IN_TOX = "TESTING_IN_TOX" in os.environ
+
+# # Check whether we are running in a CI environment like Travis -- if so,
+# # we will download the master tarball of igraph when needed
+TESTING_IN_CI = "CONTINUOUS_INTEGRATION" in os.environ
+
+# # Check whether we are compiling for PyPy. Headers will not be installed
+# # for PyPy.
+IS_PYPY = platform.python_implementation() == "PyPy"
+
 ###########################################################################
 ## Here be ugly workarounds. These must be run before setuptools
 ## is imported.
@@ -129,6 +141,16 @@ class OSXAnacondaPythonIconvWorkaround(Workaround):
                                      outputfile])
 
 
+class ContinuousIntegrationSetup(Workaround):
+    """Prepares the build configuration for a CI environment like Travis."""
+
+    def required(self):
+        return TESTING_IN_CI
+
+    def update_buildcfg(self, cfg):
+        cfg.c_core_url = "https://github.com/igraph/igraph/archive/master.tar.gz"
+
+
 class WorkaroundSet(object):
     def __init__(self, workaround_classes):
         self.each = [cls() for cls in workaround_classes]
@@ -143,7 +165,8 @@ class WorkaroundSet(object):
 
 workarounds = WorkaroundSet([
     OSXClangAndSystemPythonWorkaround,
-    OSXAnacondaPythonIconvWorkaround
+    OSXAnacondaPythonIconvWorkaround,
+    ContinuousIntegrationSetup
 ])
 workarounds.execute()
 
@@ -496,7 +519,12 @@ class IgraphCCoreBuilder(object):
         return None, None
 
     def get_download_url(self, version):
-        return "http://igraph.org/nightly/get/c/igraph-%s.tar.gz" % version
+        if TESTING_IN_TOX:
+            # Make sure that tox unit tests are not counted as real
+            # igraph downloads
+            return "http://igraph.org/nightly/steal/c/igraph-%s.tar.gz" % version
+        else:
+            return "http://igraph.org/nightly/get/c/igraph-%s.tar.gz" % version
 
     def run(self):
         return self.download_and_compile()
@@ -828,6 +856,8 @@ versions can also be found `here <http://www.lfd.uci.edu/~gohlke/pythonlibs>`_.
 Many thanks to the maintainers of this page!
 """
 
+headers = ['src/igraphmodule_api.h'] if not IS_PYPY else []
+
 options = dict(
     name = 'python-igraph',
     version = VERSION,
@@ -847,7 +877,7 @@ options = dict(
     scripts = ['scripts/igraph'],
     test_suite = "igraph.test.suite",
 
-    headers = ['src/igraphmodule_api.h'],
+    headers = headers,
 
     platforms = 'ALL',
     keywords = ['graph', 'network', 'mathematics', 'math', 'graph theory', 'discrete mathematics'],
