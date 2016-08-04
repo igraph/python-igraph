@@ -1,0 +1,36 @@
+language: python
+
+python:
+  - "2.7"
+  - "3.4"
+  - "pypy"
+  - "pypy3"
+
+addons:
+  apt:
+    packages:
+    - gfortran
+    - flex
+    - bison
+
+install:
+  - pip install tox-travis
+
+script:
+  - tox
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
+
+deploy:
+  provider: pypi
+  user: ntamas
+  password: ...
+  on:
+    tags: true
+    all_branches: true
+  distributions: "sdist bdist_wheel"
+
+sudo: false
