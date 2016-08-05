@@ -14,7 +14,6 @@ I'm not linking to it :)).
 
 from __future__ import with_statement
 
-from cStringIO import StringIO
 from warnings import warn
 
 import os
@@ -351,7 +350,11 @@ class Plot(object):
         context.show_page()
         surface.finish()
         # Return the raw SVG representation
-        return io.getvalue().encode("utf-8")
+        result = io.getvalue()
+        if hasattr(result, "encode"):
+            return result.encode("utf-8")          # for Python 2.x
+        else:
+            return result.decode("utf-8")          # for Python 3.x
 
     @property
     def bounding_box(self):
