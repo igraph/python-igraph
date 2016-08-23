@@ -141,15 +141,25 @@ class CoverTests(unittest.TestCase):
 
 class CommunityTests(unittest.TestCase):
     def reindexMembership(self, cl):
+        if hasattr(cl, "membership"):
+            cl = cl.membership
         idgen = UniqueIdGenerator()
-        return [idgen[i] for i in cl.membership]
+        return [idgen[i] for i in cl]
+
+    def assertMembershipsEqual(self, observed, expected):
+        if hasattr(observed, "membership"):
+            observed = observed.membership
+        if hasattr(expected, "membership"):
+            expected = expected.membership
+        self.assertEqual(self.reindexMembership(expected), \
+                         self.reindexMembership(observed))
 
     def testClauset(self):
         # Two cliques of size 5 with one connecting edge
         g = Graph.Full(5) + Graph.Full(5)
         g.add_edges([(0, 5)])
         cl = g.community_fastgreedy().as_clustering()
-        self.assertEqual(cl.membership, [0,0,0,0,0,1,1,1,1,1])
+        self.assertMembershipsEqual(cl, [0,0,0,0,0,1,1,1,1,1])
         self.assertAlmostEqual(cl.q, 0.4523, places=3)
 
         # Lollipop, weighted
@@ -157,46 +167,46 @@ class CommunityTests(unittest.TestCase):
         g.add_edges([(3,4)])
         weights = [1, 1, 1, 1, 1, 1, 10, 10]
         cl = g.community_fastgreedy(weights).as_clustering()
-        self.assertEqual(cl.membership, [0, 0, 0, 1, 1, 1])
+        self.assertMembershipsEqual(cl, [0,0,0,1,1,1])
         self.assertAlmostEqual(cl.q, 0.1708, places=3)
 
         # Same graph, different weights
         g.es["weight"] = [3] * g.ecount()
         cl = g.community_fastgreedy("weight").as_clustering()
-        self.assertEqual(cl.membership, [0, 0, 0, 0, 1, 1])
+        self.assertMembershipsEqual(cl, [0,0,0,0,1,1])
         self.assertAlmostEqual(cl.q, 0.1796, places=3)
 
         # Disconnected graph
         g = Graph.Full(4) + Graph.Full(4) + Graph.Full(3) + Graph.Full(2)
         cl = g.community_fastgreedy().as_clustering()
-        self.assertEqual(cl.membership, [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3])
+        self.assertMembershipsEqual(cl, [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3])
 
         # Empty graph
         g = Graph(20)
         cl = g.community_fastgreedy().as_clustering()
-        self.assertEqual(cl.membership, range(g.vcount()))
+        self.assertMembershipsEqual(cl, range(g.vcount()))
 
     def testEdgeBetweenness(self):
         # Full graph, no weights
         g = Graph.Full(5)
         cl = g.community_edge_betweenness().as_clustering()
-        self.assertEqual(cl.membership, [0]*5)
+        self.assertMembershipsEqual(cl, [0]*5)
 
         # Full graph with weights
         g.es["weight"] = 1
         g[0,1] = g[1,2] = g[2,0] = g[3,4] = 10
         cl = g.community_edge_betweenness(weights="weight").as_clustering()
-        self.assertEqual(cl.membership, [0,0,0,1,1])
+        self.assertMembershipsEqual(cl, [0,0,0,1,1])
         self.assertAlmostEqual(cl.q, 0.2750, places=3)
 
     def testEigenvector(self):
         g = Graph.Full(5) + Graph.Full(5)
         g.add_edges([(0, 5)])
         cl = g.community_leading_eigenvector()
-        self.assertTrue(cl.membership == [0,0,0,0,0,1,1,1,1,1])
+        self.assertMembershipsEqual(cl, [0,0,0,0,0,1,1,1,1,1])
         self.assertAlmostEqual(cl.q, 0.4523, places=3)
         cl = g.community_leading_eigenvector(2)
-        self.assertTrue(cl.membership == [0,0,0,0,0,1,1,1,1,1])
+        self.assertMembershipsEqual(cl, [0,0,0,0,0,1,1,1,1,1])
         self.assertAlmostEqual(cl.q, 0.4523, places=3)
 
     def testInfomap(self):
@@ -204,7 +214,7 @@ class CommunityTests(unittest.TestCase):
         cl = g.community_infomap()
         self.assertAlmostEqual(cl.codelength, 4.60605, places=3)
         self.assertAlmostEqual(cl.q, 0.40203, places=3)
-        self.assertTrue(cl.membership == [1,1,1,1,2,2,2,1,0,1,2,1,1,1,0,0,2,1,0,1,0,1] + [0]*12)
+        self.assertMembershipsEqual(cl, [1,1,1,1,2,2,2,1,0,1,2,1,1,1,0,0,2,1,0,1,0,1] + [0]*12)
 
         # Smoke testing with vertex and edge weights
         v_weights = [random.randint(1, 5) for _ in xrange(g.vcount())]
@@ -223,7 +233,7 @@ class CommunityTests(unittest.TestCase):
         g.es["weight"] = [2, 1, 2]
         g.vs["initial"] = [0, -1, -1, 1]
         cl = g.community_label_propagation("weight", "initial", [1,0,0,1])
-        self.assertTrue(cl.membership == [0, 0, 1, 1])
+        self.assertMembershipsEqual(cl, [0,0,1,1])
         cl = g.community_label_propagation(initial="initial", fixed=[1,0,0,1])
         self.assertTrue(cl.membership == [0, 0, 1, 1] or \
                         cl.membership == [0, 1, 1, 1] or \
@@ -240,8 +250,8 @@ class CommunityTests(unittest.TestCase):
               (10,14), (11,13)]
         cls = g.community_multilevel(return_levels=True)
         self.assertTrue(len(cls) == 2)
-        self.assertTrue(cls[0].membership == [0,0,0,1,0,0,1,1,2,2,2,3,2,3,2,2])
-        self.assertTrue(cls[1].membership == [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1])
+        self.assertMembershipsEqual(cls[0], [1,1,1,0,1,1,0,0,2,2,2,3,2,3,2,2])
+        self.assertMembershipsEqual(cls[1], [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1])
         self.assertAlmostEqual(cls[0].q, 0.346301, places=5)
         self.assertAlmostEqual(cls[1].q, 0.392219, places=5)
 
@@ -251,7 +261,7 @@ class CommunityTests(unittest.TestCase):
 
             cl = g.community_optimal_modularity()
             self.assertTrue(len(cl) == 2)
-            self.assertTrue(cl.membership == [0, 0, 1, 0, 1])
+            self.assertMembershipsEqual(cl, [0, 0, 1, 0, 1])
             self.assertAlmostEqual(cl.q, 0.08, places=7)
 
             ws = [i % 5 for i in xrange(g.ecount())]
@@ -262,7 +272,7 @@ class CommunityTests(unittest.TestCase):
             g = Graph.Famous("zachary")
             cl = g.community_optimal_modularity()
             self.assertTrue(len(cl) == 4)
-            self.assertTrue(cl.membership == [0, 0, 0, 0, 1, 1, 1, 0, 2, 2, 1, \
+            self.assertMembershipsEqual(cl, [0, 0, 0, 0, 1, 1, 1, 0, 2, 2, 1, \
                     0, 0, 0, 2, 2, 1, 0, 2, 0, 2, 0, 2, 3, 3, 3, 2, 3, 3, \
                     2, 2, 3, 2, 2])
             self.assertAlmostEqual(cl.q, 0.4197896, places=7)
@@ -288,15 +298,15 @@ class CommunityTests(unittest.TestCase):
                 ok = True
                 break
         self.assertTrue(ok)
-        
+
     def testWalktrap(self):
         g = Graph.Full(5) + Graph.Full(5) + Graph.Full(5)
         g += [(0,5), (5,10), (10, 0)]
         cl = g.community_walktrap().as_clustering()
-        self.assertTrue(cl.membership == [0,0,0,0,0,1,1,1,1,1,2,2,2,2,2])
+        self.assertMembershipsEqual(cl, [0,0,0,0,0,1,1,1,1,1,2,2,2,2,2])
         cl = g.community_walktrap(steps=3).as_clustering()
-        self.assertTrue(cl.membership == [0,0,0,0,0,1,1,1,1,1,2,2,2,2,2])
-       
+        self.assertMembershipsEqual(cl, [0,0,0,0,0,1,1,1,1,1,2,2,2,2,2])
+
 
 class CohesiveBlocksTests(unittest.TestCase):
     def genericTests(self, cbs):
@@ -360,7 +370,7 @@ class ComparisonTests(unittest.TestCase):
              [3, 1, 2, 1, 3, 1, 3, 1, 2, 1, 4, 2])
         ]
 
-    def _testMethod(self, method, expected): 
+    def _testMethod(self, method, expected):
         for clusters, result in zip(self.clusterings, expected):
             self.assertAlmostEqual(compare_communities(method=method, *clusters),
                     result, places=3)
@@ -410,7 +420,7 @@ def suite():
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
 if __name__ == "__main__":
     test()
 
