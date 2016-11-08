@@ -861,9 +861,11 @@ library, primarily aimed at complex network research and analysis.
 
 Graph plotting functionality is provided by the Cairo library, so make
 sure you install the Python bindings of Cairo if you want to generate
-publication-quality graph plots.
-
-See the `Cairo homepage <http://cairographics.org/pycairo>`_ for details.
+publication-quality graph plots. You can try either `pycairo
+<http://cairographics.org/pycairo>`_ or `cairocffi <http://cairocffi.readthedocs.io>`_,
+``cairocffi`` is recommended, in particular if you are on Python 3.x because
+there were bug reports affecting igraph graph plots in Jupyter notebooks
+when using ``pycairo`` (but not with ``cairocffi``).
 
 From release 0.5, the C core of the igraph library is **not** included
 in the Python distribution - you must compile and install the C core

@@ -1,15 +1,18 @@
 """
 Drawing and plotting routines for IGraph.
 
-Plotting is dependent on the C{pycairo} library which provides Python bindings
-to the popular U{Cairo library<http://www.cairographics.org>}. This means that
-if you don't have U{pycairo<http://www.cairographics.org/pycairo>} installed,
-you won't be able to use the plotting capabilities. However, you can still use
-L{Graph.write_svg} to save the graph to an SVG file and view it from
+Plotting is dependent on the C{pycairo} or C{cairocffi} libraries that provide
+Python bindings to the popular U{Cairo library<http://www.cairographics.org>}.
+This means that if you don't have U{pycairo<http://www.cairographics.org/pycairo>}
+or U{cairocffi<http://cairocffi.readthedocs.io>} installed, you won't be able
+to use the plotting capabilities. However, you can still use L{Graph.write_svg}
+to save the graph to an SVG file and view it from
 U{Mozilla Firefox<http://www.mozilla.org/firefox>} (free) or edit it in
 U{Inkscape<http://www.inkscape.org>} (free), U{Skencil<http://www.skencil.org>}
-(formerly known as Sketch, also free) or Adobe Illustrator (not free, therefore
-I'm not linking to it :)).
+(formerly known as Sketch, also free) or Adobe Illustrator.
+
+Whenever the documentation refers to the C{pycairo} library, you can safely
+replace it with C{cairocffi} as the two are API-compatible.
 """
 
 from __future__ import with_statement
