@@ -20,8 +20,9 @@ class IsSeparatorTests(unittest.TestCase):
         g = Graph.Lattice([8, 4], circular=True)
         self.assertFalse(g.is_separator([3, 11, 19, 27]))
         self.assertFalse(g.is_separator([29, 20, 11, 2]))
+        self.assertFalse(g.is_separator(range(32)))
 
-        self.assertRaises(InternalError, g.is_separator, range(32))
+        self.assertRaises(InternalError, g.is_separator, range(33))
 
     def testIsMinimalSeparator(self):
         g = Graph.Lattice([8, 4], circular=False)
@@ -29,8 +30,9 @@ class IsSeparatorTests(unittest.TestCase):
         self.assertFalse(g.is_minimal_separator([3, 11, 19, 27, 28]))
         self.assertFalse(g.is_minimal_separator([16, 25, 17]))
         self.assertTrue(g.is_minimal_separator([16, 25]))
+        self.assertFalse(g.is_minimal_separator(range(32)))
 
-        self.assertRaises(InternalError, g.is_minimal_separator, range(32))
+        self.assertRaises(InternalError, g.is_minimal_separator, range(33))
 
     def testAllMinimalSTSeparators(self):
         g = Graph.Famous("petersen")
@@ -61,7 +63,7 @@ def suite():
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
 if __name__ == "__main__":
     test()
 
