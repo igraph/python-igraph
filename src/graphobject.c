@@ -9877,7 +9877,7 @@ PyObject *igraphmodule_Graph_maxflow(igraphmodule_GraphObject * self,
   if (partition_o == NULL)
     return NULL;
 
-  return Py_BuildValue("dOOO", (double)result, flow_o, cut_o, partition_o);
+  return Py_BuildValue("dNNN", (double)result, flow_o, cut_o, partition_o);
 }
 
 /**********************************************************************
