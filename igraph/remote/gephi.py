@@ -35,15 +35,15 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
 
 class GephiConnection(object):
     """Object that represents a connection to a Gephi master server."""
-    
-    def __init__(self, url=None, host="127.0.0.1", port=8080, workspace=0):
+
+    def __init__(self, url=None, host="127.0.0.1", port=8080, workspace=1):
         """Constructs a connection to a Gephi master server.
 
         The connection object can be constructed either by specifying the `url`
@@ -81,7 +81,7 @@ class GephiConnection(object):
     def flush(self):
         """Flushes all the pending operations to the Gephi master server in a
         single request."""
-        data = "".join(self._pending_operations)
+        data = b"".join(self._pending_operations)
         self._pending_operations = []
         conn = urllib2.urlopen(self._update_url, data=data)
         return conn.read()
@@ -198,7 +198,7 @@ class GephiGraphStreamingAPIFormat(object):
 class GephiGraphStreamer(object):
     """Class that produces JSON event objects that stream an igraph graph to
     Gephi using the Gephi Graph Streaming API.
-    
+
     The Gephi graph streaming format is a simple JSON-based format that can be used
     to post mutations to a graph (i.e. node and edge additions, removals and updates)
     to a remote component. For instance, one can open up Gephi (http://www.gephi.org}),
@@ -261,7 +261,7 @@ class GephiGraphStreamer(object):
         """Posts the given graph to the destination of the streamer using the
         given JSON encoder. When `encoder` is ``None``, it falls back to the default
         JSON encoder of the streamer in the `encoder` property.
-        
+
         `destination` must be a file-like object or an instance of `GephiConnection`.
         """
         encoder = encoder or self.encoder
@@ -273,7 +273,7 @@ class GephiGraphStreamer(object):
         """Sends a single JSON event to the given destination using the given
         JSON encoder.  When `encoder` is ``None``, it falls back to the default
         JSON encoder of the streamer in the `encoder` property.
-        
+
         `destination` must be a file-like object or an instance of `GephiConnection`.
 
         The method flushes the destination after sending the event. If you want to
@@ -281,8 +281,8 @@ class GephiGraphStreamer(object):
         ``False``.
         """
         encoder = encoder or self.encoder
-        destination.write(encoder.encode(event))
-        destination.write("\r\n")
+        destination.write(encoder.encode(event).encode("utf-8"))
+        destination.write(b"\r\n")
         if flush:
             destination.flush()
 
