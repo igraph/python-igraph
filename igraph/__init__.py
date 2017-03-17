@@ -686,7 +686,7 @@ class Graph(GraphBase):
     def is_named(self):
         """is_named()
 
-        Returns whether the graph is named, i.e. whether it has a "name"
+        Returns whether the graph is named, i.e., whether it has a "name"
         vertex attribute.
         """
         return "name" in self.vertex_attributes()
@@ -694,7 +694,7 @@ class Graph(GraphBase):
     def is_weighted(self):
         """is_weighted()
 
-        Returns whether the graph is weighted, i.e. whether it has a "weight"
+        Returns whether the graph is weighted, i.e., whether it has a "weight"
         edge attribute.
         """
         return "weight" in self.edge_attributes()
