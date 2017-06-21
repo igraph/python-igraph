@@ -4,7 +4,7 @@ from igraph.test import basic, layouts, games, foreign, structural, flow, \
     spectral, attributes, cliques, decomposition, operators, generators, \
     isomorphism, colortests, vertexseq, edgeseq, iterators, bipartite, \
     conversion, rng, separators, indexing, atlas, matching, homepage, \
-    walks
+    walks, unicode
 
 
 def suite():
@@ -34,7 +34,8 @@ def suite():
         atlas.suite(),
         matching.suite(),
         homepage.suite(),
-        walks.suite()
+        walks.suite(),
+        unicode.suite()
     ])
 
 

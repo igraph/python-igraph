@@ -107,6 +107,36 @@ void igraphmodule_index_vertex_names(igraph_t *graph, igraph_bool_t force) {
   igraphmodule_i_attribute_struct_index_vertex_names(ATTR_STRUCT(graph), force);
 }
 
+int igraphmodule_PyObject_matches_attribute_record(PyObject* object, igraph_attribute_record_t* record) {
+  int result;
+
+  if (record == 0) {
+    return 0;
+  }
+
+  if (PyString_Check(object)) {
+    return PyString_IsEqualToASCIIString(object, record->name);
+  }
+
+#ifndef IGRAPH_PYTHON3
+  /* On Python 2.x, we need to handle Unicode strings as well because
+   * the user might use 'from __future__ import unicode_literals', which
+   * would turn some igraph attribute names into Unicode strings */
+  if (PyUnicode_Check(object)) {
+    PyObject* ascii = PyUnicode_AsASCIIString(object);
+    if (ascii == 0) {
+      return 0;
+    }
+
+    result = PyString_IsEqualToASCIIString(ascii, record->name);
+    Py_DECREF(ascii);
+    return result;
+  }
+#endif
+
+  return 0;
+}
+
 int igraphmodule_get_vertex_id_by_name(igraph_t *graph, PyObject* o, igraph_integer_t* vid) {
   igraphmodule_i_attribute_struct* attrs = ATTR_STRUCT(graph);
   PyObject* o_vid = NULL;
@@ -421,8 +451,6 @@ static int igraphmodule_i_attribute_add_vertices(igraph_t *graph, long int nv, i
     IGRAPH_ERROR("vertex attribute hash type mismatch", IGRAPH_EINVAL);
 
   while (PyDict_Next(dict, &pos, &key, &value)) {
-    if (!PyString_Check(key))
-      IGRAPH_ERROR("vertex attribute hash key is not a string", IGRAPH_EINVAL);
     if (!PyList_Check(value))
       IGRAPH_ERROR("vertex attribute hash member is not a list", IGRAPH_EINVAL);
     /* Check if we have specific values for the given attribute */
@@ -431,7 +459,7 @@ static int igraphmodule_i_attribute_add_vertices(igraph_t *graph, long int nv, i
       j=igraph_vector_ptr_size(attr);
       for (i=0; i<j; i++) {
         attr_rec=VECTOR(*attr)[i];
-        if (PyString_IsEqualToASCIIString(key, attr_rec->name)) {
+        if (igraphmodule_PyObject_matches_attribute_record(key, attr_rec)) {
           added_attrs[i]=1;
           break;
         }
@@ -603,8 +631,6 @@ static int igraphmodule_i_attribute_add_edges(igraph_t *graph, const igraph_vect
   if (!PyDict_Check(dict)) 
     IGRAPH_ERROR("edge attribute hash type mismatch", IGRAPH_EINVAL);
   while (PyDict_Next(dict, &pos, &key, &value)) {
-    if (!PyString_Check(key))
-      IGRAPH_ERROR("edge attribute hash key is not a string", IGRAPH_EINVAL);
     if (!PyList_Check(value))
       IGRAPH_ERROR("edge attribute hash member is not a list", IGRAPH_EINVAL);
 
@@ -614,7 +640,7 @@ static int igraphmodule_i_attribute_add_edges(igraph_t *graph, const igraph_vect
       j=igraph_vector_ptr_size(attr);
       for (i=0; i<j; i++) {
         attr_rec=VECTOR(*attr)[i];
-        if (PyString_IsEqualToASCIIString(key, attr_rec->name)) {
+        if (igraphmodule_PyObject_matches_attribute_record(key, attr_rec)) {
           added_attrs[i]=1;
           break;
         }
