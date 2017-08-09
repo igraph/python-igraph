@@ -11763,7 +11763,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  them).\n"
    "@param loops: whether self-loops should be counted.\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
-   "  even an edge attribute name.\n"
+   "  even an edge attribute name. ``None`` means to treat the graph as\n"
+   "  unweighted, falling back to ordinary degree calculations.\n"
   },
 
   /* interface to igraph_is_loop */
