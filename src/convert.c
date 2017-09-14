@@ -978,6 +978,7 @@ int igraphmodule_PyObject_float_to_vector_t(PyObject *list, igraph_vector_t *v) 
     Py_DECREF(it);
   } else {
     /* list is not iterable; maybe it's a single number? */
+    PyErr_Clear();
     if (igraphmodule_PyObject_to_real_t(list, &number)) {
       PyErr_SetString(PyExc_TypeError, "sequence or iterable expected");
       igraph_vector_destroy(v);
@@ -2649,7 +2650,7 @@ int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
     iterator = PyObject_GetIter(o);
 
     if (iterator == NULL) {
-      PyErr_SetString(PyExc_TypeError, "conversion to edge sequene failed");
+      PyErr_SetString(PyExc_TypeError, "conversion to edge sequence failed");
       return 1;
     }
 
