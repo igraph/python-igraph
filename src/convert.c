@@ -881,6 +881,7 @@ int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v, igraph
     Py_DECREF(it);
   } else {
     /* list is not iterable; maybe it's a single number? */
+    PyErr_Clear();
     if (igraphmodule_PyObject_to_integer_t(list, &number)) {
       PyErr_SetString(PyExc_TypeError, "sequence or iterable expected");
       igraph_vector_destroy(v);
