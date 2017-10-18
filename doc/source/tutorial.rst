@@ -719,8 +719,8 @@ layout algorithm (see the table above). All the remaining positional and keyword
 are passed intact to the chosen layout method. For instance, the following two calls are
 completely equivalent:
 
->>> layout = g.layout_reingold_tilford(root=2)
->>> layout = g.layout("rt", 2)
+>>> layout = g.layout_reingold_tilford(root=[2])
+>>> layout = g.layout("rt", [2])
 
 Layout methods return a :class:`Layout` object which behaves mostly like a list of lists.
 Each list entry in a :class:`Layout` object corresponds to a vertex in the original graph
