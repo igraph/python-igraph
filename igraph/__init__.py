@@ -1389,7 +1389,7 @@ class Graph(GraphBase):
             (see L{Graph.layout_circle})
 
           - C{dh}, C{davidson_harel}: Davidson-Harel layout (see
-            L{Graph.davidson_harel})
+            L{Graph.layout_davidson_harel})
 
           - C{drl}: DrL layout for large graphs (see L{Graph.layout_drl})
 
