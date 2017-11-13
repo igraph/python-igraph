@@ -11009,7 +11009,7 @@ PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject
         /* edge_betweenness = */ 0,
         /* merges = */ &merges,
         /* bridges = */ 0,
-        /* modularity = */ &q,
+        /* modularity = */ weights ? 0 : &q,
         /* membership = */ 0,
         PyObject_IsTrue(directed),
         weights)) {
@@ -11026,11 +11026,18 @@ PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject
     igraph_vector_destroy(weights); free(weights);
   }
 
-  qs=igraphmodule_vector_t_to_PyList(&q, IGRAPHMODULE_TYPE_FLOAT);
-  igraph_vector_destroy(&q);
-  if (!qs) {
-    igraph_matrix_destroy(&merges);
-    return NULL;
+  if (weights == 0) {
+    /* Calculate modularity vector only in the unweighted case as we don't
+     * calculate modularities for the weighted case */
+    qs=igraphmodule_vector_t_to_PyList(&q, IGRAPHMODULE_TYPE_FLOAT);
+    igraph_vector_destroy(&q);
+    if (!qs) {
+      igraph_matrix_destroy(&merges);
+      return NULL;
+    }
+  } else {
+    qs = Py_None;
+    Py_INCREF(qs);
   }
 
   ms=igraphmodule_matrix_t_to_PyList(&merges, IGRAPHMODULE_TYPE_INT);

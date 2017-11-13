@@ -1229,7 +1229,10 @@ class Graph(GraphBase):
         @param clusters: the number of clusters we would like to see. This
           practically defines the "level" where we "cut" the dendrogram to
           get the membership vector of the vertices. If C{None}, the dendrogram
-          is cut at the level which maximizes the modularity.
+          is cut at the level which maximizes the modularity when the graph is
+          unweighted; otherwise the dendrogram is cut at at a single cluster
+          (because cluster count selection based on modularities does not make
+          sense for this method if not all the weights are equal).
         @param directed: whether the directionality of the edges should be
           taken into account or not.
         @param weights: name of an edge attribute or a list containing
@@ -1238,7 +1241,8 @@ class Graph(GraphBase):
           modularity or at the desired number of clusters.
         """
         merges, qs = GraphBase.community_edge_betweenness(self, directed, weights)
-        qs.reverse()
+        if qs is not None:
+            qs.reverse()
         if clusters is None:
             if qs:
                 clusters = qs.index(max(qs))+1
