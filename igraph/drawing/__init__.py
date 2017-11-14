@@ -356,9 +356,11 @@ class Plot(object):
         # Return the raw SVG representation
         result = io.getvalue()
         if hasattr(result, "encode"):
-            return result.encode("utf-8")     # for Python 2.x
+            result = result.encode("utf-8")   # for Python 2.x
         else:
-            return result.decode("utf-8")     # for Python 3.x
+            result = result.decode("utf-8")   # for Python 3.x
+
+        return result, {'isolated': True}  # put it inside an iframe
 
     @property
     def bounding_box(self):
