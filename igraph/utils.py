@@ -39,11 +39,9 @@ def _is_running_in_ipython():
     """Internal function that determines whether igraph is running inside
     IPython or not."""
     try:
-        # get_ipython is injected into the Python builtins by IPython so
-        # this should succeed in IPython but throw a NameError otherwise
-        get_ipython
-        return True
-    except NameError:
+        from IPython import get_ipython
+        return get_ipython() is not None
+    except ImportError:
         return False
 
 
