@@ -9760,6 +9760,48 @@ PyObject *igraphmodule_Graph_unfold_tree(igraphmodule_GraphObject * self,
 }
 
 /**********************************************************************
+ * Dominator                                                          *
+ **********************************************************************/
+
+/** \ingroup python_interface_graph
+ * \brief Calculates the dominator tree for the graph
+ */
+PyObject *igraphmodule_Graph_dominator(igraphmodule_GraphObject * self,
+                                           PyObject * args, PyObject * kwds)
+{
+  static char *kwlist[] = { "vid", "mode", NULL };
+  PyObject *list = Py_None;
+  PyObject *mode_o = Py_None;
+  long int root = -1;
+  igraph_vector_t dom;
+  igraph_neimode_t mode = IGRAPH_OUT;
+  int res ;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "l|O", kwlist, &root, &mode_o)) {
+    return NULL;
+  }
+
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) {
+    return NULL;
+  }
+  if (mode == IGRAPH_ALL) {
+    mode = IGRAPH_OUT;
+  }
+
+  if (igraph_vector_init(&dom, 0)) {
+    return NULL;
+  }
+  res = igraph_dominator_tree(&self->g, root, &dom, NULL, NULL, mode);
+  if(res) {
+    igraph_vector_destroy(&dom);
+    return NULL;
+  }
+  list = igraphmodule_vector_t_to_PyList(&dom, IGRAPHMODULE_TYPE_INT);
+  igraph_vector_destroy(&dom);
+  return list;
+}
+
+/**********************************************************************
  * Maximum flows                                                      *
  **********************************************************************/
 
@@ -14904,6 +14946,18 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Creates the union of two (or more) graphs.\n\n"
    "@param graphs: the list of graphs to be united with\n"
    "  the current one.\n"},
+
+  /**********************/
+  /* DOMINATORS         */
+  /**********************/
+  {"dominator", (PyCFunction) igraphmodule_Graph_dominator,
+   METH_VARARGS | METH_KEYWORDS,
+   "dominator(vid, mode=)\n\n"
+   "Returns the dominator tree from the given root node"
+   "@param vid: the root vertex ID\n"
+   "@param mode: either L{IN} or L{OUT}\n"
+   "@return: a list containing the dominator tree for the current graph."
+  },
 
   /*****************/
   /* MAXIMUM FLOWS */

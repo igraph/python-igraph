@@ -1,5 +1,6 @@
 from __future__ import division
 
+import math
 import unittest
 
 from igraph import *
@@ -516,6 +517,52 @@ class PathTests(unittest.TestCase):
         h = g.path_length_hist(False)
         self.assertTrue(h.unconnected == 20)
 
+class DominatorTests(unittest.TestCase):
+    def compareDomTrees(self, alist, blist):
+        '''
+        Required due to NaN use for isolated nodes
+        '''
+        if len(alist) != len(blist):
+            return False
+        for i, (a, b) in enumerate(zip(alist, blist)):
+            if math.isnan(a) and math.isnan(b):
+                continue
+            elif a == b:
+                continue
+            else:
+                return False
+        return True
+
+    def testDominators(self):
+        # examples taken from igraph's examples/simple/dominator_tree.out
+
+        # initial
+        g = Graph(13, [(0,1), (0,7), (0,10), (1,2), (1,5), (2,3), (3,4), (4,3),
+                (4,0), (5,3), (5,6), (6,3), (7,8), (7,10), (7,11), (8,9), (9,4),
+                (9,8), (10,11), (11,12), (12,9) ], directed=True)
+        s = [-1, 0, 1, 0, 0, 1, 5, 0, 0, 0, 0, 0, 11 ]
+        r = g.dominator(0)
+        self.assertTrue(self.compareDomTrees(s, r))
+
+        # flipped edges
+        g = Graph(13, [(1,0), (2,0), (3,0), (4,1), (1,2), (4,2), (5,2), (6,3),
+                        (7,3), (12,4), (8,5), (9,6), (9,7), (10,7), (5,8), (11,8),
+                        (11,9), (9,10), (9,11), (0,11), (8,12)], directed=True)
+        s = [-1, 0, 0, 0, 0, 0, 3, 3, 0, 0, 7, 0, 4]
+        r = g.dominator(0, mode=IN)
+        self.assertTrue(self.compareDomTrees(s, r))
+
+        # disconnected components
+        g = Graph(20, [(0,1), (0,2), (0,3), (1,4), (2,1), (2,4), (2,8), (3,9),
+                       (3,10), (4,15), (8,11), (9,12), (10,12), (10,13), (11,8),
+                       (11,14), (12,14), (13,12), (14,12), (14,0), (15,11)],
+                        directed=True)
+        s = [-1, 0, 0, 0, 0, float("nan"), float("nan"), float("nan"), 0, 3, 3, 0,
+             0, 10, 0, 4, float("nan"), float("nan"), float("nan"), float("nan")]
+        r = g.dominator(0, mode=OUT)
+        self.assertTrue(self.compareDomTrees(s, r))
+
+
 def suite():
     simple_suite = unittest.makeSuite(SimplePropertiesTests)
     degree_suite = unittest.makeSuite(DegreeTests)
@@ -525,6 +572,7 @@ def suite():
     neighborhood_suite = unittest.makeSuite(NeighborhoodTests)
     path_suite = unittest.makeSuite(PathTests)
     misc_suite = unittest.makeSuite(MiscTests)
+    dominator_suite = unittest.makeSuite(DominatorTests)
     return unittest.TestSuite([simple_suite,
                                degree_suite,
                                local_transitivity_suite,
@@ -532,7 +580,8 @@ def suite():
                                centrality_suite,
                                neighborhood_suite,
                                path_suite,
-                               misc_suite])
+                               misc_suite,
+                               dominator_suite])
 
 def test():
     runner = unittest.TextTestRunner()
