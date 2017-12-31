@@ -195,7 +195,12 @@ class CommunityTests(unittest.TestCase):
         # Full graph with weights
         g.es["weight"] = 1
         g[0,1] = g[1,2] = g[2,0] = g[3,4] = 10
-        cl = g.community_edge_betweenness(weights="weight").as_clustering()
+
+        # We need to specify the desired cluster count explicitly; this is
+        # because edge betweenness-based detection does not play well with
+        # modularity-based cluster count selection (the edge weights have
+        # different semantics) so we need to give igraph a hint
+        cl = g.community_edge_betweenness(weights="weight").as_clustering(n=2)
         self.assertMembershipsEqual(cl, [0,0,0,1,1])
         self.assertAlmostEqual(cl.q, 0.2750, places=3)
 
