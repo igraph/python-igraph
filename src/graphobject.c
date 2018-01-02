@@ -176,7 +176,7 @@ void igraphmodule_Graph_dealloc(igraphmodule_GraphObject * self)
 
   igraph_destroy(&self->g);
 
-  if (PyCallable_Check(self->destructor)) {
+  if (self->destructor != NULL && PyCallable_Check(self->destructor)) {
     r = PyObject_CallObject(self->destructor, NULL);
     if (r) {
       Py_DECREF(r);
