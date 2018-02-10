@@ -37,7 +37,7 @@ namespace-qualification. E.g., to check which |igraph| version you are using, yo
 following:
 
 >>> import igraph
->>> print igraph.__version__
+>>> print(igraph.__version__)
 0.6
 
 Another way to make use of |igraph| is to import all its objects and methods into the main
@@ -155,7 +155,7 @@ Let us go on with our graph ``g`` and add some more vertices and edges to it:
 >>> g.add_edges((2,0))
 >>> g.add_vertices(3)
 >>> g.add_edges([(2,3),(3,4),(4,5),(5,3)])
->>> print g
+>>> print(g)
 IGRAPH U---- 6 7 --
 + edges:
 0--1 1--2 0--2 2--3 3--4 4--5 3--5
@@ -337,7 +337,7 @@ can assign attributes to the whole graph. Not too surprisingly, :class:`Graph` o
 themselves can also behave as dictionaries:
 
 >>> g["date"] = "2009-01-10"
->>> print g["date"]
+>>> print(g["date"])
 2009-01-10
 
 Finally, it should be mentioned that attributes can be deleted by the Python keyword
