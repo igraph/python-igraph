@@ -10,3 +10,5 @@ igraph/*.so
 .python-version
 .tox
 docker/wheelhouse
+Pipfile
+
