@@ -2848,7 +2848,7 @@ int igraphmodule_i_PyObject_pair_to_attribute_combination_record_t(
     return 1;
 
   if (result->type == IGRAPH_ATTRIBUTE_COMBINE_FUNCTION) {
-    result->func = value;
+    result->func = (void*) value;
   } else {
     result->func = 0;
   }

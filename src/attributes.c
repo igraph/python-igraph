@@ -108,7 +108,9 @@ void igraphmodule_index_vertex_names(igraph_t *graph, igraph_bool_t force) {
 }
 
 int igraphmodule_PyObject_matches_attribute_record(PyObject* object, igraph_attribute_record_t* record) {
+#ifndef IGRAPH_PYTHON3
   int result;
+#endif
 
   if (record == 0) {
     return 0;
