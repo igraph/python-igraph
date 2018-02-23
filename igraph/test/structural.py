@@ -2,6 +2,7 @@ from __future__ import division
 
 import math
 import unittest
+import warnings
 
 from igraph import *
 from igraph.compat import isnan
@@ -261,7 +262,9 @@ class CentralityTests(unittest.TestCase):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
 
         g = Graph.Star(5)
-        cl = g.closeness(cutoff=1)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            cl = g.closeness(cutoff=1)
         cl2 = [1., 0.25, 0.25, 0.25, 0.25]
         for idx in xrange(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
@@ -275,7 +278,9 @@ class CentralityTests(unittest.TestCase):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
 
         g = Graph.Star(5)
-        cl = g.closeness(cutoff=1, weights=weights)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            cl = g.closeness(cutoff=1, weights=weights)
         cl2 = [1., 0.25, 0.25, 0.25, 0.25]
         for idx in xrange(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
