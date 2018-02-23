@@ -166,6 +166,13 @@ class ForeignTests(unittest.TestCase):
             self.assertTrue("name" in g.vertex_attributes() and \
                 "weight" not in g.edge_attributes())
 
+        # This is not an LGL file; we are testing error handling here
+        with temporary_file(u"""\
+        1 2
+        1 3
+        """) as tmpfname:
+            with self.assertRaises(InternalError):
+                Graph.Read_Lgl(tmpfname)
 
     def testAdjacency(self):
         with temporary_file(u"""\

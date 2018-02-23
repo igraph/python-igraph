@@ -109,6 +109,8 @@ int igraphmodule_filehandle_init(igraphmodule_filehandle_t* handle,
  * \brief Destroys the file handle object.
  */
 void igraphmodule_filehandle_destroy(igraphmodule_filehandle_t* handle) {
+    PyObject *exc_type = 0, *exc_value = 0, *exc_traceback = 0;
+
     if (handle->fp != 0) {
         fflush(handle->fp);
     }
@@ -116,12 +118,17 @@ void igraphmodule_filehandle_destroy(igraphmodule_filehandle_t* handle) {
     handle->fp = 0;
     
     if (handle->object != 0) {
+        /* PyFile_Close might mess up the stored exception, so let's
+         * store the current exception state and restore it */
+        PyErr_Fetch(&exc_type, &exc_value, &exc_traceback);
         if (handle->need_close) {
             if (PyFile_Close(handle->object)) {
                 PyErr_WriteUnraisable(0);
             }
         }
         Py_DECREF(handle->object);
+        PyErr_Restore(exc_type, exc_value, exc_traceback);
+        exc_type = exc_value = exc_traceback = 0;
         handle->object = 0;
     }
 
