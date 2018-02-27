@@ -488,8 +488,8 @@ class IgraphCCoreBuilder(object):
             os.rename("ltmain.sh.new", "ltmain.sh")
 
             print("Configuring igraph...")
-            retcode = subprocess.call("CFLAGS=-fPIC CXXFLAGS=-fPIC ./configure --disable-tls --disable-gmp",
-                    shell=True)
+            retcode = subprocess.call(["./configure", "--disable-tls", "--disable-gmp"],
+                    env=self.enhanced_env(CFLAGS='-fPIC', CXXFLAGS='-fPIC'))
             if retcode:
                 return False
 
@@ -524,6 +524,14 @@ class IgraphCCoreBuilder(object):
         f.close()
 
         return True
+
+    @staticmethod
+    def enhanced_env(**kwargs):
+        env = os.environ.copy()
+        for k, v in kwargs.items():
+            prev = os.environ.get(k)
+            env[k] = "{0} {1}".format(prev, v) if prev else v
+        return env
 
     def find_first_version(self):
         """Finds the first version of igraph that exists in the nightly build
