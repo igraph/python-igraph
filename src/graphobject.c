@@ -7627,7 +7627,6 @@ PyObject *igraphmodule_Graph_Read_Lgl(PyTypeObject * type, PyObject * args,
       PyDict_GetItemString(kwds, "directed") == NULL) {
     if (PyErr_Occurred())
       return NULL;
-    PY_IGRAPH_WARN("Graph.Read_Lgl creates directed networks by default from igraph 0.6. To get rid of this warning, specify directed=... explicitly. This warning will be removed from igraph 0.7.");
   }
 
   if (igraphmodule_filehandle_init(&fobj, fname, "r"))
