@@ -39,6 +39,7 @@ static int igraphmodule_i_filehandle_init_cpython_2(igraphmodule_filehandle_t* h
         return 1;
     }
 
+    handle->object = 0;
     handle->need_close = 0;
 
     if (PyBaseString_Check(object)) {
@@ -98,7 +99,6 @@ static int igraphmodule_i_filehandle_init_cpython_2(igraphmodule_filehandle_t* h
 
         if (fileno > 0) {
             fp = fdopen(fileno, mode);
-            handle->need_close = 1;
         } else {
             PyErr_SetString(PyExc_ValueError, "fileno() method returned invalid "
                     "file descriptor");
@@ -129,6 +129,7 @@ static int igraphmodule_i_filehandle_init_cpython_3(igraphmodule_filehandle_t* h
     }
 
     handle->need_close = 0;
+    handle->object = 0;
 
     if (PyBaseString_Check(object)) {
         /* We have received a string; we need to open the file denoted by this
@@ -187,6 +188,7 @@ static int igraphmodule_i_filehandle_init_pypy_2(igraphmodule_filehandle_t* hand
     }
 
     handle->need_close = 0;
+    handle->object = 0;
 
     if (PyBaseString_Check(object)) {
         /* We have received a string; we need to open the file denoted by this
@@ -323,6 +325,9 @@ void igraphmodule_filehandle_destroy(igraphmodule_filehandle_t* handle) {
 
     if (handle->fp != 0) {
         fflush(handle->fp);
+        if (handle->need_close && !handle->object) {
+            fclose(handle->fp);
+        }
     }
 
     handle->fp = 0;
