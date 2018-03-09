@@ -96,12 +96,12 @@ class TestBase(unittest.TestCase):
 
 class GraphAtlasTests(TestBase):
     graphs = [Graph.Atlas(i) for i in xrange(1253)]
-    skip_graphs = set([136])
+    skip_graphs = set([])
 
 class IsoclassTests(TestBase):
     graphs = [Graph.Isoclass(3, i, directed=True) for i in xrange(16)] + \
              [Graph.Isoclass(4, i, directed=True) for i in xrange(218)]
-    skip_graphs = set([])
+    skip_graphs = set([136])
 
 def suite():
     atlas_suite = unittest.makeSuite(GraphAtlasTests)
