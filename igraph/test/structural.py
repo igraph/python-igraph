@@ -285,6 +285,24 @@ class CentralityTests(unittest.TestCase):
         for idx in xrange(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
 
+        # Test for igraph/igraph:#1078
+        g = Graph([
+            (0, 1), (0, 2), (0, 5), (0, 6), (0, 9), (1, 6), (1, 8),
+            (2, 4), (2, 6), (2, 7), (2, 8), (3, 6), (4, 8),
+            (5, 6), (5, 9), (6, 7), (6, 8), (7, 8), (7, 9), (8, 9)
+        ])
+        weights = [0.69452, 0.329886, 0.131649, 0.503269, 0.472738,
+            0.370933, 0.23857, 0.0354043, 0.189015, 0.355118, 0.768335,
+            0.893289, 0.891709, 0.494896, 0.924684, 0.432001, 0.858159,
+            0.246798, 0.881304, 0.64685]
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            cl = g.closeness(weights=weights)
+        expected_cl = [1.63318, 1.52014, 2.03724, 0.760158, 1.91449,
+            1.43224, 1.91761, 1.60198, 1.3891, 1.12829]
+        for obs, exp in zip(cl, expected_cl):
+            self.assertAlmostEqual(obs, exp, places=4)
+
     def testPageRank(self):
         g = Graph.Star(11)
         cent = g.pagerank()
