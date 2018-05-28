@@ -496,9 +496,7 @@ class VertexClustering(Clustering):
 
         if "mark_groups" not in kwds:
             if Configuration.instance()["plotting.mark_groups"]:
-                kwds["mark_groups"] = (
-                    (group, color) for color, group in enumerate(self)
-                )
+                kwds["mark_groups"] = self
         else:
             kwds["mark_groups"] = _handle_mark_groups_arg_for_clustering(
                     kwds["mark_groups"], self)
@@ -1327,7 +1325,7 @@ class VertexCover(Cover):
 
         if "mark_groups" not in kwds:
             if Configuration.instance()["plotting.mark_groups"]:
-                kwds["mark_groups"] = enumerate(self)
+                kwds["mark_groups"] = self
         else:
             kwds["mark_groups"] = _handle_mark_groups_arg_for_clustering(
                     kwds["mark_groups"], self)
@@ -1657,5 +1655,3 @@ def split_join_distance(comm1, comm2, remove_none=False):
     import igraph._igraph
     vec1, vec2 = _prepare_community_comparison(comm1, comm2, remove_none)
     return igraph._igraph._split_join_distance(vec1, vec2)
-
-

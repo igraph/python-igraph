@@ -3135,8 +3135,13 @@ class Graph(GraphBase):
                 colors.
 
               - A list containing pairs or an iterable yielding pairs, where
-              the first element of each pair is a list of vertex indices and
-              the second element is a color.
+                the first element of each pair is a list of vertex indices and
+                the second element is a color.
+
+              - A L{VertexClustering} or L{VertexCover} instance. The vertex
+                groups in the clustering or cover will be highlighted such that
+                the i-th group will be colored by the i-th color from the
+                current palette.
 
             In place of lists of vertex indices, you may also use L{VertexSeq}
             instances.

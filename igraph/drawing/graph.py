@@ -267,10 +267,20 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         if "mark_groups" in kwds:
             mark_groups = kwds["mark_groups"]
 
+            # Deferred import to avoid a cycle in the import graph
+            from igraph.clustering import VertexClustering, VertexCover
+
             # Figure out what to do with mark_groups in order to be able to
             # iterate over it and get memberlist-color pairs
             if isinstance(mark_groups, dict):
+                # Dictionary mapping vertex indices or tuples of vertex
+                # indices to colors
                 group_iter = mark_groups.iteritems()
+            elif isinstance(mark_groups, (VertexClustering, VertexCover)):
+                # Vertex clustering
+                group_iter = (
+                    (group, color) for color, group in enumerate(mark_groups)
+                )
             elif hasattr(mark_groups, "__iter__"):
                 # Lists, tuples, iterators etc
                 group_iter = iter(mark_groups)
@@ -447,7 +457,7 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         else:
             # Specified edge order
             edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
-        
+
         # Draw the edge labels
         for edge, visual_edge in edge_coord_iter:
             if visual_edge.label is None:
@@ -916,4 +926,3 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
               will be used to encode the JSON objects.
         """
         self.streamer.post(graph, self.connection, encoder=kwds.get("encoder"))
-
