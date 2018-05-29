@@ -134,7 +134,7 @@ to your graph:
 :meth:`~Graph.add_edges` is clever enough to figure out what you want to do in most of the
 cases: if you supply a single pair of integers, it will automatically assume that you want
 to add a single edge. However, if you try to add edges to vertices with invalid IDs (i.e.,
-you try to add an edge to vertex 5 when you only have three edges), you will get an
+you try to add an edge to vertex 5 when you only have three vertices), you will get an
 exception:
 
 >>> g.add_edges((5, 0))
