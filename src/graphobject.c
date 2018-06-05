@@ -12644,6 +12644,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "biconnected_components(return_articulation_points=True)\n\n"
    "Calculates the biconnected components of the graph.\n\n"
+   "Components containing a single vertex only are not considered as being\n"
+   "biconnected.\n\n"
    "@param return_articulation_points: whether to return the articulation\n"
    "  points as well\n"
    "@return: a list of lists containing edge indices making up spanning trees\n"
