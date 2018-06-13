@@ -28,7 +28,7 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
-from ConfigParser import SafeConfigParser
+from ConfigParser import ConfigParser
 import platform
 import os.path
 
@@ -42,7 +42,8 @@ def get_platform_image_viewer():
     elif plat == "Linux":
         # Linux has a whole lot of choices, try to find one
         choices = ["eog", "gthumb", "gqview", "kuickshow", "xnview", "display",
-                   "gpicview", "gwenview", "qiv", "gimv", "ristretto"]
+                   "gpicview", "gwenview", "qiv", "gimv", "ristretto",
+                   "geeqie", "eom"]
         paths = ["/usr/bin", "/bin"]
         for path in paths:
             for choice in choices:
@@ -225,15 +226,15 @@ class Configuration(object):
 
     _types = {
         "boolean": {
-            "getter": SafeConfigParser.getboolean,
+            "getter": ConfigParser.getboolean,
             "setter": Types.setboolean
         },
         "int": {
-            "getter": SafeConfigParser.getint,
+            "getter": ConfigParser.getint,
             "setter": Types.setint
         },
         "float": {
-            "getter": SafeConfigParser.getfloat,
+            "getter": ConfigParser.getfloat,
             "setter": Types.setfloat
         }
     }
@@ -285,7 +286,7 @@ class Configuration(object):
 
         @param filename: file or file pointer to be read. Can be omitted.
         """
-        self._config = SafeConfigParser()
+        self._config = ConfigParser()
         self._filename = None
 
         # Create default sections
@@ -460,3 +461,4 @@ def init():
 
     @return: the L{Configuration} object loaded or created."""
     return Configuration.instance()
+
