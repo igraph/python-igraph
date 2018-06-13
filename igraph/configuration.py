@@ -28,7 +28,12 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
-from ConfigParser import ConfigParser
+import sys
+if sys.version_info < (3, ):
+    from ConfigParser import SafeConfigParser as ConfigParser
+else:
+    from configparser import ConfigParser
+
 import platform
 import os.path
 
