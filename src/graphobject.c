@@ -283,7 +283,7 @@ PyObject *igraphmodule_Graph_str(igraphmodule_GraphObject * self)
 }
 
 /** \ingroup python_interface_copy
- * \brief Creates an exact deep copy of the graph
+ * \brief Creates a copy of the graph
  * \return the copy of the graph
  */
 PyObject *igraphmodule_Graph_copy(igraphmodule_GraphObject * self)
@@ -12713,7 +12713,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the component index for every node in the graph.\n"},
   {"copy", (PyCFunction) igraphmodule_Graph_copy,
    METH_NOARGS,
-   "copy()\n\n" "Creates an exact deep copy of the graph."},
+   "copy()\n\n"
+   "Creates a copy of the graph.\n\n"
+   "Attributes are copied by reference; in other words, if you use\n"
+   "mutable Python objects as attribute values, these objects will still\n"
+   "be shared between the old and new graph. You can use `deepcopy()`\n"
+   "from the `copy` module if you need a truly deep copy of the graph.\n"
+  },
   {"decompose", (PyCFunction) igraphmodule_Graph_decompose,
    METH_VARARGS | METH_KEYWORDS,
    "decompose(mode=STRONG, maxcompno=None, minelements=1)\n\n"
