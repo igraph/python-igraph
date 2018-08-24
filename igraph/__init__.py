@@ -162,10 +162,15 @@ class Graph(GraphBase):
           dictionary value must be an iterable with exactly M{m} items where
           M{m} is the number of edges.
         """
+        # Pop the special __ptr keyword argument
+        ptr = kwds.pop("__ptr", None)
+
         # Set up default values for the parameters. This should match the order
         # in *args
-        kwd_order = ["n", "edges", "directed", "graph_attrs", "vertex_attrs", \
-                "edge_attrs"]
+        kwd_order = (
+            "n", "edges", "directed", "graph_attrs", "vertex_attrs",
+            "edge_attrs"
+        )
         params = [0, [], False, {}, {}, {}]
 
         # Is there any keyword argument in kwds that we don't know? If so,
@@ -204,7 +209,10 @@ class Graph(GraphBase):
             edges = []
 
         # Initialize the graph
-        GraphBase.__init__(self, nverts, edges, directed)
+        if ptr:
+            GraphBase.__init__(self, __ptr=ptr)
+        else:
+            GraphBase.__init__(self, nverts, edges, directed)
 
         # Set the graph attributes
         for key, value in graph_attrs.iteritems():

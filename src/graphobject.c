@@ -1,21 +1,21 @@
 /* vim:set ts=4 sw=2 sts=2 et:  */
-/* 
+/*
    IGraph library.
    Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -38,21 +38,16 @@
 
 PyTypeObject igraphmodule_GraphType;
 
-#define CREATE_GRAPH(py_graph, c_graph) { \
-  py_graph = (igraphmodule_GraphObject *) Py_TYPE(self)->tp_alloc(Py_TYPE(self), 0); \
-  if (py_graph != NULL) { \
-    igraphmodule_Graph_init_internal(py_graph); \
-    py_graph->g = (c_graph); \
-  } \
-  RC_ALLOC("Graph", py_graph); \
-}
 #define CREATE_GRAPH_FROM_TYPE(py_graph, c_graph, py_type) { \
-  py_graph = (igraphmodule_GraphObject *) py_type->tp_alloc(py_type, 0); \
-  if (py_graph != NULL) { \
-    igraphmodule_Graph_init_internal(py_graph); \
-    py_graph->g = (c_graph); \
-  } \
-  RC_ALLOC("Graph", py_graph); \
+  py_graph = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t( \
+    py_type, &c_graph \
+  ); \
+}
+
+#define CREATE_GRAPH(py_graph, c_graph) { \
+  py_graph = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t( \
+    Py_TYPE(self), &c_graph \
+  ); \
 }
 
 /**********************************************************************
@@ -66,13 +61,14 @@ PyTypeObject igraphmodule_GraphType;
  * \ingroup python_interface_internal
  * \brief Initializes the internal structures in an \c igraph.Graph object's
  * C representation.
- * 
+ *
  * This function must be called whenever we create a new Graph object with
  * \c tp_alloc
  */
 void igraphmodule_Graph_init_internal(igraphmodule_GraphObject * self)
 {
   if (!self) return;
+
   self->destructor = NULL;
   self->weakreflist = NULL;
 }
@@ -80,21 +76,21 @@ void igraphmodule_Graph_init_internal(igraphmodule_GraphObject * self)
 /**
  * \ingroup python_interface_graph
  * \brief Creates a new igraph object in Python
- * 
+ *
  * This function is called whenever a new \c igraph.Graph object is created in
  * Python. An optional \c n parameter can be passed from Python,
  * representing the number of vertices in the graph. If it is omitted,
  * the default value is 0.
- * 
+ *
  * <b>Example call from Python:</b>
 \verbatim
 g = igraph.Graph(5);
 \endverbatim
  *
  * In fact, the parameters are processed by \c igraphmodule_Graph_init
- * 
+ *
  * \return the new \c igraph.Graph object or NULL if an error occurred.
- * 
+ *
  * \sa igraphmodule_Graph_init
  * \sa igraph_empty
  */
@@ -106,10 +102,6 @@ PyObject *igraphmodule_Graph_new(PyTypeObject * type, PyObject * args,
   self = (igraphmodule_GraphObject *) type->tp_alloc(type, 0);
   RC_ALLOC("Graph", self);
 
-  /* don't need it, the constructor will do it */
-  /*if (self != NULL) {
-     igraph_empty(&self->g, 1, 0);
-     } */
   igraphmodule_Graph_init_internal(self);
 
   return (PyObject *) self;
@@ -134,7 +126,7 @@ int igraphmodule_Graph_clear(igraphmodule_GraphObject * self)
 /**
  * \ingroup python_interface_graph
  * \brief Support for cyclic garbage collection in Python
- * 
+ *
  * This is necessary because the \c igraph.Graph object contains several
  * other \c PyObject pointers and they might point back to itself.
  */
@@ -193,31 +185,51 @@ void igraphmodule_Graph_dealloc(igraphmodule_GraphObject * self)
 /**
  * \ingroup python_interface_graph
  * \brief Initializes a new \c igraph object in Python
- * 
+ *
  * This function is called whenever a new \c igraph.Graph object is initialized in
  * Python (note that initializing is not equal to creating: an object might
  * be created but not initialized when it is being recovered from a serialized
  * state).
- * 
+ *
  * Throws \c AssertionError in Python if \c vcount is less than or equal to zero.
  * \return the new \c igraph.Graph object or NULL if an error occurred.
- * 
+ *
  * \sa igraphmodule_Graph_new
  * \sa igraph_empty
  * \sa igraph_create
  */
 int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
                             PyObject * args, PyObject * kwds) {
-  static char *kwlist[] = { "n", "edges", "directed", NULL };
+  static char *kwlist[] = { "n", "edges", "directed", "__ptr", NULL };
   long int n = 0;
-  PyObject *edges = NULL, *dir = Py_False;
+  PyObject *edges = NULL, *dir = Py_False, *ptr_o = 0;
+  void* ptr = 0;
   igraph_vector_t edges_vector;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|lO!O", kwlist,
-                                   &n, &PyList_Type, &edges, &dir))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|lO!OO!", kwlist,
+                                   &n, &PyList_Type, &edges, &dir,
+                                   &PyCapsule_Type, &ptr_o))
     return -1;
 
-  if (edges && PyList_Check(edges)) {
+  /* Safety check: if ptr is not null, it means that we have been explicitly
+   * given a pointer to an igraph_t for which we must take ownership.
+   * This means that n should be zero and edges should not be specified */
+  if (ptr_o && (n != 0 || edges != NULL)) {
+    PyErr_SetString(PyExc_ValueError, "neither n nor edges should be given "
+                    "in the call to Graph.__init__() when the graph is "
+                    "pre-initialized with a C pointer");
+    return -1;
+  }
+
+  if (ptr_o) {
+    /* We must take ownership of an igraph graph */
+    ptr = PyCapsule_GetPointer(ptr_o, "__igraph_t");
+    if (ptr == 0) {
+      PyErr_SetString(PyExc_ValueError, "pointer should not be null");
+    } else {
+      self->g = *(igraph_t*)ptr;
+    }
+  } else if (edges && PyList_Check(edges)) {
     /* Caller specified an edge list, so we use igraph_create */
     /* We have to convert the Python list to a igraph_vector_t */
     if (igraphmodule_PyObject_to_edgelist(edges, &edges_vector, 0)) {
@@ -233,9 +245,9 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
     }
 
     igraph_vector_destroy(&edges_vector);
-  }
-  else {
-    /* No edge list was specified, let's use igraph_empty */
+  } else {
+    /* No edge list was specified, and no previously initialized graph object
+     * was fed into our object, so let's use igraph_empty */
     if (igraph_empty(&self->g, (igraph_integer_t) n, PyObject_IsTrue(dir))) {
       igraphmodule_handle_igraph_error();
       return -1;
@@ -243,6 +255,64 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
   }
 
   return 0;
+}
+
+/** \ingroup python_interface_graph
+ * \brief Creates an \c igraph.Graph subtype from an existing \c igraph_t
+ *
+ * The newly created instance (which will be a subtype of )\c igraph.Graph)
+ * will take ownership of the given \c igraph_t. This function is not
+ * accessible from Python.
+ */
+PyObject* igraphmodule_Graph_subclass_from_igraph_t(
+  PyTypeObject* type, igraph_t *graph
+) {
+  PyObject* result;
+  PyObject* capsule;
+  PyObject* args;
+  PyObject* kwds;
+
+  if (!PyType_IsSubtype(type, &igraphmodule_GraphType)) {
+    PyErr_SetString(PyExc_TypeError, "igraph.GraphBase expected");
+    return 0;
+  }
+
+  capsule = PyCapsule_New(graph, "__igraph_t", 0);
+  if (capsule == 0) {
+    return 0;
+  }
+
+  args = PyTuple_New(0);
+  if (args == 0) {
+    Py_DECREF(capsule);
+    return 0;
+  }
+
+  kwds = PyDict_New();
+  if (kwds == 0) {
+    Py_DECREF(args);
+    Py_DECREF(capsule);
+    return 0;
+  }
+
+  if (PyDict_SetItemString(kwds, "__ptr", capsule)) {
+    Py_DECREF(kwds);
+    Py_DECREF(args);
+    Py_DECREF(capsule);
+    return 0;
+  }
+
+  /* kwds now holds a reference to the capsule so we can release it */
+  Py_DECREF(capsule);
+
+  /* Call the type */
+  result = PyObject_Call((PyObject*) type, args, kwds);
+
+  /* Release args and kwds */
+  Py_DECREF(args);
+  Py_DECREF(kwds);
+
+  return result;
 }
 
 /** \ingroup python_interface_graph
@@ -254,20 +324,17 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
  * See \c api.h for more details.
  */
 PyObject* igraphmodule_Graph_from_igraph_t(igraph_t *graph) {
-  igraphmodule_GraphObject* result;
-  PyTypeObject* type = &igraphmodule_GraphType;
-
-  CREATE_GRAPH_FROM_TYPE(result, *graph, type);
-
-  return (PyObject*)result;
+  return igraphmodule_Graph_subclass_from_igraph_t(
+    &igraphmodule_GraphType, graph
+  );
 }
 
 /** \ingroup python_interface_graph
  * \brief Formats an \c igraph.Graph object in a human-readable format.
- * 
+ *
  * This function is rather simple now, it returns the number of vertices
  * and edges in a string.
- * 
+ *
  * \return the formatted textual representation as a \c PyObject
  */
 PyObject *igraphmodule_Graph_str(igraphmodule_GraphObject * self)
@@ -486,7 +553,7 @@ PyObject *igraphmodule_Graph_add_vertices(igraphmodule_GraphObject * self,
 /** \ingroup python_interface_graph
  * \brief Removes vertices from an \c igraph.Graph
  * \return the modified \c igraph.Graph object
- * 
+ *
  * \todo Need more error checking on vertex IDs. (igraph fails when an
  * invalid vertex ID is given)
  * \sa igraph_delete_vertices
@@ -512,7 +579,7 @@ PyObject *igraphmodule_Graph_delete_vertices(igraphmodule_GraphObject * self,
 /** \ingroup python_interface_graph
  * \brief Adds edges to an \c igraph.Graph
  * \return the extended \c igraph.Graph object
- * 
+ *
  * \todo Need more error checking on vertex IDs. (igraph fails when an
  * invalid vertex ID is given)
  * \sa igraph_add_edges
@@ -543,7 +610,7 @@ PyObject *igraphmodule_Graph_add_edges(igraphmodule_GraphObject * self,
 /** \ingroup python_interface_graph
  * \brief Deletes edges from an \c igraph.Graph
  * \return the extended \c igraph.Graph object
- * 
+ *
  * \todo Need more error checking on vertex IDs. (igraph fails when an
  * invalid vertex ID is given)
  * \sa igraph_delete_edges
@@ -557,7 +624,7 @@ PyObject *igraphmodule_Graph_delete_edges(igraphmodule_GraphObject * self,
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &list))
     return NULL;
-	
+
   if (igraphmodule_PyObject_to_es_t(list, &es, &self->g, 0)) {
     /* something bad happened during conversion, return immediately */
     return NULL;
@@ -856,7 +923,7 @@ PyObject *igraphmodule_Graph_maxdegree(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
- * \brief Checks whether an edge is a loop edge 
+ * \brief Checks whether an edge is a loop edge
  * \return a boolean or a list of booleans
  * \sa igraph_is_loop
  */
@@ -904,7 +971,7 @@ PyObject *igraphmodule_Graph_is_loop(igraphmodule_GraphObject *self,
 }
 
 /** \ingroup python_interface_graph
- * \brief Checks whether an edge is a multiple edge 
+ * \brief Checks whether an edge is a multiple edge
  * \return a boolean or a list of booleans
  * \sa igraph_is_multiple
  */
@@ -952,7 +1019,7 @@ PyObject *igraphmodule_Graph_is_multiple(igraphmodule_GraphObject *self,
 }
 
 /** \ingroup python_interface_graph
- * \brief Checks whether an edge is mutual 
+ * \brief Checks whether an edge is mutual
  * \return a boolean or a list of booleans
  * \sa igraph_is_mutual
  */
@@ -1018,7 +1085,7 @@ PyObject *igraphmodule_Graph_has_multiple(igraphmodule_GraphObject *self) {
 }
 
 /** \ingroup python_interface_graph
- * \brief Checks the multiplicity of the edges 
+ * \brief Checks the multiplicity of the edges
  * \return the edge multiplicities as a Python list
  * \sa igraph_count_multiple
  */
@@ -1069,7 +1136,7 @@ PyObject *igraphmodule_Graph_count_multiple(igraphmodule_GraphObject *self,
  * second argument may be passed as well, meaning the type of neighbors to
  * be returned (\c OUT for successors, \c IN for predecessors or \c ALL
  * for both of them). This argument is ignored for undirected graphs.
- * 
+ *
  * \return the neighbor list as a Python list object
  * \sa igraph_neighbors
  */
@@ -1120,7 +1187,7 @@ PyObject *igraphmodule_Graph_neighbors(igraphmodule_GraphObject * self,
  * A second argument may be passed as well, meaning the type of neighbors to
  * be returned (\c OUT for successors, \c IN for predecessors or \c ALL
  * for both of them). This argument is ignored for undirected graphs.
- * 
+ *
  * \return the adjacency list as a Python list object
  * \sa igraph_incident
  */
@@ -1194,7 +1261,7 @@ PyObject *igraphmodule_Graph_reciprocity(igraphmodule_GraphObject * self,
  * This method accepts a single vertex ID as a parameter, and returns the
  * successors of the given vertex in the form of an integer list. It
  * is equivalent to calling \c igraph.Graph.neighbors with \c type=OUT
- * 
+ *
  * \return the successor list as a Python list object
  * \sa igraph_neighbors
  */
@@ -1231,7 +1298,7 @@ PyObject *igraphmodule_Graph_successors(igraphmodule_GraphObject * self,
  * This method accepts a single vertex ID as a parameter, and returns the
  * predecessors of the given vertex in the form of an integer list. It
  * is equivalent to calling \c igraph.Graph.neighbors with \c type=IN
- * 
+ *
  * \return the predecessor list as a Python list object
  * \sa igraph_neighbors
  */
@@ -1417,7 +1484,7 @@ PyObject *igraphmodule_Graph_get_eids(igraphmodule_GraphObject * self,
  * in unconnected graphs: it is \c True if the longest geodesic
  * within a component should be returned and \c False if the number of
  * vertices should be returned. They both have a default value of \c False.
- * 
+ *
  * \return the diameter as a Python integer
  * \sa igraph_diameter
  */
@@ -1586,7 +1653,7 @@ PyObject *igraphmodule_Graph_girth(igraphmodule_GraphObject *self,
 
 /**
  * \ingroup python_interface_graph
- * \brief Calculates the convergence degree of the edges in a graph 
+ * \brief Calculates the convergence degree of the edges in a graph
  */
 PyObject *igraphmodule_Graph_convergence_degree(igraphmodule_GraphObject *self) {
   igraph_vector_t result;
@@ -1606,7 +1673,7 @@ PyObject *igraphmodule_Graph_convergence_degree(igraphmodule_GraphObject *self) 
 
 /**
  * \ingroup python_interface_graph
- * \brief Calculates the sizes of the convergence fields in a graph 
+ * \brief Calculates the sizes of the convergence fields in a graph
  */
 PyObject *igraphmodule_Graph_convergence_field_size(igraphmodule_GraphObject *self) {
   igraph_vector_t ins, outs;
@@ -1709,7 +1776,7 @@ PyObject *igraphmodule_Graph_knn(igraphmodule_GraphObject *self,
 
 /** \ingroup python_interface_graph
  * \brief Calculates the radius of an \c igraph.Graph
- * 
+ *
  * \return the radius as a Python integer
  * \sa igraph_radius
  */
@@ -1809,7 +1876,7 @@ PyObject *igraphmodule_Graph_Atlas(PyTypeObject * type, PyObject * args)
  * This is intended to be a class method in Python, so the first argument
  * is the type object and not the Python igraph object (because we have
  * to allocate that in this method).
- * 
+ *
  * \return a reference to the newly generated Python igraph object
  * \sa igraph_barabasi_game
  */
@@ -1924,7 +1991,7 @@ PyObject *igraphmodule_Graph_Bipartite(PyTypeObject * type,
 
   igraph_vector_destroy(&edges);
   igraph_vector_bool_destroy(&types);
-  
+
   CREATE_GRAPH_FROM_TYPE(self, g, type);
 
   return (PyObject *) self;
@@ -1959,7 +2026,7 @@ PyObject *igraphmodule_Graph_De_Bruijn(PyTypeObject *type, PyObject *args,
  * This is intended to be a class method in Python, so the first argument
  * is the type object and not the Python igraph object (because we have
  * to allocate that in this method).
- * 
+ *
  * \return a reference to the newly generated Python igraph object
  * \sa igraph_degree_sequence_game
  */
@@ -2457,7 +2524,7 @@ PyObject *igraphmodule_Graph_Incidence(PyTypeObject * type,
  * This is intended to be a class method in Python, so the first argument
  * is the type object and not the Python igraph object (because we have
  * to allocate that in this method).
- * 
+ *
  * \return a reference to the newly generated Python igraph object
  * \sa igraph_isoclass_create
  */
@@ -2869,7 +2936,7 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
 
   if (igraph_bipartite_game(&g, &vertex_types, t,
 		(igraph_integer_t) n1, (igraph_integer_t) n2,
-		(igraph_real_t) p, (igraph_integer_t) m, 
+		(igraph_real_t) p, (igraph_integer_t) m,
 		PyObject_IsTrue(directed_o), neimode)) {
 	igraph_vector_bool_destroy(&vertex_types);
     igraphmodule_handle_igraph_error();
@@ -3479,7 +3546,7 @@ PyObject *igraphmodule_Graph_authority_score(
 
   if (weights) { igraph_vector_destroy(weights); free(weights); }
 
-  res_o = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT); 
+  res_o = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT);
   igraph_vector_destroy(&res);
   if (res_o == NULL) return igraphmodule_handle_igraph_error();
 
@@ -3702,7 +3769,7 @@ PyObject *igraphmodule_Graph_biconnected_components(igraphmodule_GraphObject *se
     igraph_vector_destroy(&points);
 	return Py_BuildValue("NN", result, result2); /* references stolen */
   }
-  
+
   return result;
 }
 
@@ -4391,8 +4458,8 @@ PyObject *igraphmodule_Graph_eigenvector_centrality(
   }
 
   if (weights) { igraph_vector_destroy(weights); free(weights); }
-  
-  res_o = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT); 
+
+  res_o = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT);
   igraph_vector_destroy(&res);
   if (res_o == NULL) return igraphmodule_handle_igraph_error();
 
@@ -4488,7 +4555,7 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
 
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
     return NULL;
-  
+
   if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
       ATTRIBUTE_TYPE_EDGE)) return NULL;
 
@@ -4749,7 +4816,7 @@ PyObject *igraphmodule_Graph_hub_score(
 
   if (weights) { igraph_vector_destroy(weights); free(weights); }
 
-  res_o = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT); 
+  res_o = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT);
   igraph_vector_destroy(&res);
   if (res_o == NULL) return igraphmodule_handle_igraph_error();
 
@@ -5039,14 +5106,14 @@ PyObject *igraphmodule_Graph_path_length_hist(igraphmodule_GraphObject *self,
   igraph_vector_destroy(&res);
   return igraphmodule_handle_igraph_error();
   }
-  
+
   result=igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_INT);
   igraph_vector_destroy(&res);
   return Py_BuildValue("Nd", result, (double)unconn);
 }
 
 /** \ingroup python_interface_graph
- * \brief Permutes the vertices of the graph 
+ * \brief Permutes the vertices of the graph
  * \return the new graph as a new igraph object
  * \sa igraph_permute_vertices
  */
@@ -5404,7 +5471,7 @@ PyObject *igraphmodule_Graph_similarity_inverse_log_weighted(
     return NULL;
 
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) return NULL;
-  if (igraphmodule_PyObject_to_vs_t(vobj, &vs, &self->g, &return_single, 0)) return NULL; 
+  if (igraphmodule_PyObject_to_vs_t(vobj, &vs, &self->g, &return_single, 0)) return NULL;
 
   if (igraph_matrix_init(&res, 0, 0)) {
     igraph_vs_destroy(&vs);
@@ -5754,7 +5821,7 @@ PyObject *igraphmodule_Graph_topological_sorting(igraphmodule_GraphObject *
     return NULL;
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) return NULL;
 
-  if (igraph_vector_init(&result, 0)) 
+  if (igraph_vector_init(&result, 0))
     return igraphmodule_handle_igraph_error();
 
   if (!PyObject_IsTrue(warnings_o)) {
@@ -5817,7 +5884,7 @@ PyObject *igraphmodule_Graph_vertex_connectivity(igraphmodule_GraphObject *self,
   }
 
   if (!IGRAPH_FINITE(res)) return Py_BuildValue("d", (double)res);
-  
+
   result = (long)res;
   return Py_BuildValue("l", result);
 }
@@ -5936,7 +6003,7 @@ igraph_bool_t igraphmodule_i_Graph_motifs_randesu_callback(const igraph_t *graph
 }
 
 /** \ingroup python_interface_graph
- * \brief Counts the motifs of the graph sorted by isomorphism classes 
+ * \brief Counts the motifs of the graph sorted by isomorphism classes
  * \return the number of motifs found for each isomorphism class
  * \sa igraph_motifs_randesu
  */
@@ -7285,7 +7352,7 @@ PyObject *igraphmodule_Graph_get_incidence(igraphmodule_GraphObject * self,
     igraph_matrix_destroy(&matrix);
     return NULL;
   }
-  
+
   if (types) { igraph_vector_bool_destroy(types); free(types); }
 
   matrix_o = igraphmodule_matrix_t_to_PyList(&matrix, IGRAPHMODULE_TYPE_INT);
@@ -7328,7 +7395,7 @@ PyObject *igraphmodule_Graph_laplacian(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  if (igraph_laplacian(&self->g, &m, /*sparseres=*/ 0, 
+  if (igraph_laplacian(&self->g, &m, /*sparseres=*/ 0,
 		       PyObject_IsTrue(normalized), weights)) {
     igraphmodule_handle_igraph_error();
     if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -7672,7 +7739,7 @@ PyObject *igraphmodule_Graph_Read_Pajek(PyTypeObject * type, PyObject * args,
     igraphmodule_filehandle_destroy(&fobj);
     return NULL;
   }
-  
+
   igraphmodule_filehandle_destroy(&fobj);
   CREATE_GRAPH_FROM_TYPE(self, g, type);
 
@@ -7739,10 +7806,10 @@ PyObject *igraphmodule_Graph_Read_GraphDB(PyTypeObject * type,
     igraphmodule_filehandle_destroy(&fobj);
     return NULL;
   }
-  
+
   igraphmodule_filehandle_destroy(&fobj);
   CREATE_GRAPH_FROM_TYPE(self, g, type);
-  
+
   return (PyObject *) self;
 }
 
@@ -7774,10 +7841,10 @@ PyObject *igraphmodule_Graph_Read_GraphML(PyTypeObject * type,
     igraphmodule_filehandle_destroy(&fobj);
     return NULL;
   }
-  
+
   igraphmodule_filehandle_destroy(&fobj);
   CREATE_GRAPH_FROM_TYPE(self, g, type);
-  
+
   return (PyObject *) self;
 }
 
@@ -8551,7 +8618,7 @@ PyObject *igraphmodule_Graph_isomorphic_vf2(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
- * \brief Counts the number of isomorphisms of two given graphs 
+ * \brief Counts the number of isomorphisms of two given graphs
  *
  * The actual code is almost the same as igraphmodule_Graph_count_subisomorphisms.
  * Make sure you correct bugs in both interfaces if applicable!
@@ -8643,7 +8710,7 @@ PyObject *igraphmodule_Graph_count_isomorphisms_vf2(igraphmodule_GraphObject *se
 }
 
 /** \ingroup python_interface_graph
- * \brief Returns all isomorphisms of two given graphs 
+ * \brief Returns all isomorphisms of two given graphs
  *
  * The actual code is almost the same as igraphmodule_Graph_get_subisomorphisms.
  * Make sure you correct bugs in both interfaces if applicable!
@@ -8891,7 +8958,7 @@ PyObject *igraphmodule_Graph_subisomorphic_vf2(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
- * \brief Counts the number of subisomorphisms of two given graphs 
+ * \brief Counts the number of subisomorphisms of two given graphs
  *
  * The actual code is almost the same as igraphmodule_Graph_count_isomorphisms.
  * Make sure you correct bugs in both interfaces if applicable!
@@ -8980,7 +9047,7 @@ PyObject *igraphmodule_Graph_count_subisomorphisms_vf2(igraphmodule_GraphObject 
 }
 
 /** \ingroup python_interface_graph
- * \brief Returns all subisomorphisms of two given graphs 
+ * \brief Returns all subisomorphisms of two given graphs
  *
  * The actual code is almost the same as igraphmodule_Graph_get_isomorphisms.
  * Make sure you correct bugs in both interfaces if applicable!
@@ -9217,7 +9284,7 @@ Py_ssize_t igraphmodule_Graph_attribute_count(igraphmodule_GraphObject * self)
 
 /** \ingroup python_interface_graph
  * \brief Handles the subscript operator on the graph.
- * 
+ *
  * When the subscript is a string, returns the corresponding value of the
  * given attribute in the graph. When the subscript is a tuple of length
  * 2, retrieves the adjacency matrix representation of the graph between
@@ -9233,7 +9300,7 @@ PyObject *igraphmodule_Graph_mp_subscript(igraphmodule_GraphObject * self,
     PyObject *ri = PyTuple_GET_ITEM(s, 0);
     PyObject *ci = PyTuple_GET_ITEM(s, 1);
     PyObject *attr;
-    
+
     if (PyTuple_Size(s) == 2) {
       attr = 0;
     } else if (PyTuple_Size(s) == 3) {
@@ -9262,7 +9329,7 @@ PyObject *igraphmodule_Graph_mp_subscript(igraphmodule_GraphObject * self,
 
 /** \ingroup python_interface_graph
  * \brief Handles the subscript assignment operator on the graph.
- * 
+ *
  * If k is a string, sets the value of the corresponding attribute of the graph.
  * If k is a tuple of length 2, sets part of the adjacency matrix.
  *
@@ -9276,7 +9343,7 @@ int igraphmodule_Graph_mp_assign_subscript(igraphmodule_GraphObject * self,
   if (PyTuple_Check(k) && PyTuple_Size(k) >= 2) {
     /* Adjacency matrix representation */
     PyObject *ri, *ci, *attr;
-    
+
     if (v == NULL) {
       PyErr_SetString(PyExc_NotImplementedError, "cannot delete parts "
           "of the adjacency matrix of a graph");
@@ -9444,7 +9511,7 @@ PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
     }
     o = (igraphmodule_GraphObject *) other;
 
-    if (igraph_union(&g, &self->g, &o->g, /*edge_map1=*/ 0, 
+    if (igraph_union(&g, &self->g, &o->g, /*edge_map1=*/ 0,
 		     /*edge_map2=*/ 0)) {
       igraphmodule_handle_igraph_error();
       return NULL;
@@ -9507,7 +9574,7 @@ PyObject *igraphmodule_Graph_intersection(igraphmodule_GraphObject * self,
     }
     o = (igraphmodule_GraphObject *) other;
 
-    if (igraph_intersection(&g, &self->g, &o->g, /*edge_map1=*/ 0, 
+    if (igraph_intersection(&g, &self->g, &o->g, /*edge_map1=*/ 0,
 			    /*edge_map2=*/ 0)) {
       igraphmodule_handle_igraph_error();
       return NULL;
@@ -9611,7 +9678,7 @@ PyObject *igraphmodule_Graph_compose(igraphmodule_GraphObject * self,
   }
   o = (igraphmodule_GraphObject *) other;
 
-  if (igraph_compose(&g, &self->g, &o->g, /*edge_map1=*/ 0, 
+  if (igraph_compose(&g, &self->g, &o->g, /*edge_map1=*/ 0,
 		     /*edge_map2=*/ 0)) {
     igraphmodule_handle_igraph_error();
     return NULL;
@@ -9647,7 +9714,7 @@ PyObject *igraphmodule_Graph_bfs(igraphmodule_GraphObject * self,
     return NULL;
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) return NULL;
 
-  if (igraph_vector_init(&vids, igraph_vcount(&self->g))) 
+  if (igraph_vector_init(&vids, igraph_vcount(&self->g)))
     return igraphmodule_handle_igraph_error();
   if (igraph_vector_init(&layers, igraph_vcount(&self->g))) {
     igraph_vector_destroy(&vids);
@@ -9830,7 +9897,7 @@ PyObject *igraphmodule_Graph_maxflow_value(igraphmodule_GraphObject * self,
     return igraphmodule_handle_igraph_error();
 
 
-  if (igraph_maxflow_value(&self->g, &result, v1, v2, &capacity_vector, 
+  if (igraph_maxflow_value(&self->g, &result, v1, v2, &capacity_vector,
 			   &stats)) {
     igraph_vector_destroy(&capacity_vector);
     return igraphmodule_handle_igraph_error();
@@ -9897,7 +9964,7 @@ PyObject *igraphmodule_Graph_maxflow(igraphmodule_GraphObject * self,
 
   flow_o = igraphmodule_vector_t_to_PyList(&flow, IGRAPHMODULE_TYPE_FLOAT);
   igraph_vector_destroy(&flow);
-  
+
   if (flow_o == NULL) {
     igraph_vector_destroy(&cut);
     igraph_vector_destroy(&partition);
@@ -9906,7 +9973,7 @@ PyObject *igraphmodule_Graph_maxflow(igraphmodule_GraphObject * self,
 
   cut_o = igraphmodule_vector_t_to_PyList(&cut, IGRAPHMODULE_TYPE_INT);
   igraph_vector_destroy(&cut);
-  
+
   if (cut_o == NULL) {
     igraph_vector_destroy(&partition);
     return NULL;
@@ -9914,7 +9981,7 @@ PyObject *igraphmodule_Graph_maxflow(igraphmodule_GraphObject * self,
 
   partition_o = igraphmodule_vector_t_to_PyList(&partition, IGRAPHMODULE_TYPE_INT);
   igraph_vector_destroy(&partition);
-  
+
   if (partition_o == NULL)
     return NULL;
 
@@ -10176,7 +10243,7 @@ PyObject *igraphmodule_Graph_mincut(igraphmodule_GraphObject * self,
     retval = igraph_st_mincut(&self->g, &value, &cut, &partition, &partition2,
         source, target, &capacity_vector);
   }
-  
+
   if (retval) {
     igraph_vector_destroy(&cut);
     igraph_vector_destroy(&partition);
@@ -10530,7 +10597,7 @@ PyObject *igraphmodule_Graph_cohesive_blocks(igraphmodule_GraphObject *self,
   }
 
   parents_o = igraphmodule_vector_t_to_PyList(&parents, IGRAPHMODULE_TYPE_INT);
-  igraph_vector_destroy(&parents); 
+  igraph_vector_destroy(&parents);
 
   if (parents_o == NULL) {
     Py_DECREF(blocks_o);
@@ -11228,12 +11295,12 @@ PyObject *igraphmodule_Graph_community_infomap(igraphmodule_GraphObject * self,
   PyObject *e_weights = Py_None, *v_weights = Py_None;
   unsigned int nb_trials = 10;
   igraph_vector_t *e_ws = 0, *v_ws = 0;
-  
+
   igraph_vector_t membership;
   PyObject *res = Py_False;
   igraph_real_t codelength;
-  
-  
+
+
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOI", kwlist, &e_weights,
         &v_weights, &nb_trials)) {
     return NULL;
@@ -11248,7 +11315,7 @@ PyObject *igraphmodule_Graph_community_infomap(igraphmodule_GraphObject * self,
     igraph_vector_destroy(&membership);
     return NULL;
   }
-  
+
   if (igraphmodule_attrib_to_vector_t(v_weights, self, &v_ws, ATTRIBUTE_TYPE_VERTEX)){
     igraph_vector_destroy(&membership);
     if (e_ws) {
@@ -11257,8 +11324,8 @@ PyObject *igraphmodule_Graph_community_infomap(igraphmodule_GraphObject * self,
     }
     return NULL;
   }
-  
-  if (igraph_community_infomap(/*in */ &self->g, 
+
+  if (igraph_community_infomap(/*in */ &self->g,
                                     /*e_weight=*/ e_ws, /*v_weight=*/ v_ws,
                                     /*nb_trials=*/nb_trials,
                               /*out*/ &membership, &codelength)) {
@@ -11274,23 +11341,23 @@ PyObject *igraphmodule_Graph_community_infomap(igraphmodule_GraphObject * self,
     }
     return NULL;
   }
-  
+
   if (e_ws) {
     igraph_vector_destroy(e_ws);
     free(e_ws);
   }
-  
+
   if (v_ws) {
     igraph_vector_destroy(v_ws);
     free(v_ws);
   }
-  
+
   res = igraphmodule_vector_t_to_PyList(&membership, IGRAPHMODULE_TYPE_INT);
   igraph_vector_destroy(&membership);
-  
+
   if (!res)
 	return NULL;
-  
+
   return Py_BuildValue("Nd", res, (double)codelength);
 }
 
@@ -12078,7 +12145,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "from vertex M{v} to vertex M{w} if the string of M{v} can be transformed into\n"
    "the string of M{w} by removing its first letter and appending a letter to it.\n"
    "\n"
-   "Please note that the graph will have M{m^n} vertices and even more edges,\n" 
+   "Please note that the graph will have M{m^n} vertices and even more edges,\n"
    "so probably you don't want to supply too big numbers for M{m} and M{n}.\n\n"
    "@param m: the size of the alphabet\n"
    "@param n: the length of the strings\n"
@@ -12129,7 +12196,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Forest_Fire(n, fw_prob, bw_factor=0.0, ambs=1, directed=False)\n\n"
    "Generates a graph based on the forest fire model\n\n"
-   "The forest fire model is a growin graph model. In every time step, a new\n"
+   "The forest fire model is a growing graph model. In every time step, a new\n"
    "vertex is added to the graph. The new vertex chooses an ambassador (or\n"
    "more than one if M{ambs>1}) and starts a simulated forest fire at its\n"
    "ambassador(s). The fire spreads through the edges. The spreading probability\n"
@@ -12326,12 +12393,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
 	 "the number of vertices in the graph, a list of shifts giving\n"
 	 "additional edges to a cycle backbone and another integer giving how\n"
 	 "many times the shifts should be performed. See\n"
-	 "U{http://mathworld.wolfram.com/LCFNotation.html} for details.\n\n" 
+	 "U{http://mathworld.wolfram.com/LCFNotation.html} for details.\n\n"
 	 "@param n: the number of vertices\n"
 	 "@param shifts: the shifts in a list or tuple\n"
 	 "@param repeats: the number of repeats\n"
 	},
-	 
+
   // interface to igraph_ring
   {"Ring", (PyCFunction) igraphmodule_Graph_Ring,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
@@ -14885,7 +14952,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  contains a subgraph that is isomorphic to the given template, C{False}\n"
    "  otherwise. If the mapping is calculated, the result is a tuple, the first\n"
    "  element being the above mentioned boolean, and the second element being\n"
-   "  the mapping from the target to the original graph.\n"}, 
+   "  the mapping from the target to the original graph.\n"},
 
   {"get_subisomorphisms_lad", (PyCFunction) igraphmodule_Graph_get_subisomorphisms_lad,
    METH_VARARGS | METH_KEYWORDS,
@@ -15755,4 +15822,3 @@ PyTypeObject igraphmodule_GraphType = {
 };
 
 #undef CREATE_GRAPH
-

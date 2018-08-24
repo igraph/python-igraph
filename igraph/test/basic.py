@@ -502,14 +502,44 @@ class DegreeSequenceTests(unittest.TestCase):
         self.assertTrue(is_graphical_degree_sequence([3, 3, 3, 3, 4]))
 
 
+class InheritedGraph(Graph):
+    def __init__(self, *args, **kwds):
+        super(InheritedGraph, self).__init__(*args, **kwds)
+        self.init_called = True
+
+    def __new__(cls, *args, **kwds):
+        result = Graph.__new__(cls, *args, **kwds)
+        result.new_called = True
+        return result
+
+
+class InheritanceTests(unittest.TestCase):
+    def testInitCalledProperly(self):
+        g = InheritedGraph()
+        self.assertTrue(getattr(g, "init_called", False))
+
+    def testNewCalledProperly(self):
+        g = InheritedGraph()
+        self.assertTrue(getattr(g, "new_called", False))
+
+    def testInitCalledProperlyWithClassMethod(self):
+        g = InheritedGraph.Tree(3, 2)
+        self.assertTrue(getattr(g, "init_called", False))
+
+    def testNewCalledProperlyWithClassMethod(self):
+        g = InheritedGraph.Tree(3, 2)
+        self.assertTrue(getattr(g, "new_called", False))
+
+
 def suite():
     basic_suite = unittest.makeSuite(BasicTests)
     datatype_suite = unittest.makeSuite(DatatypeTests)
     graph_dict_list_suite = unittest.makeSuite(GraphDictListTests)
     graph_tuple_list_suite = unittest.makeSuite(GraphTupleListTests)
     degree_sequence_suite = unittest.makeSuite(DegreeSequenceTests)
+    inheritance_suite = unittest.makeSuite(InheritanceTests)
     return unittest.TestSuite([basic_suite, datatype_suite, graph_dict_list_suite,
-        graph_tuple_list_suite, degree_sequence_suite])
+        graph_tuple_list_suite, degree_sequence_suite, inheritance_suite])
 
 def test():
     runner = unittest.TextTestRunner()
@@ -517,4 +547,3 @@ def test():
 
 if __name__ == "__main__":
     test()
-
