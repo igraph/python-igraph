@@ -25,14 +25,6 @@ class TextAlignment(object):
 
 #####################################################################
 
-class TextAlignment(object):
-    """Text alignment constants."""
-
-    LEFT, CENTER, RIGHT = "left", "center", "right"
-    TOP, BOTTOM = "top", "bottom"
-
-#####################################################################
-
 class TextDrawer(AbstractCairoDrawer):
     """Class that draws text on a Cairo context.
 
