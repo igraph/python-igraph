@@ -20,6 +20,16 @@ $ sudo python setup.py install
 ```
 See details in [Installing Python Modules](https://docs.python.org/2/install/).
 
+### Installation with pip
+Install dependencies
+```
+$ sudo apt install build-essential python-dev libxml2 libxml2-de zlib1g-dev
+```
+and then
+```
+$ pip install python-igraph
+```
+
 ## Compiling the development version
 
 If you have downloaded the source code from Github and not PyPI, chances are
