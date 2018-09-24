@@ -107,6 +107,10 @@ Having done that, you can launch Python again and check if it worked:
 
 |igraph| on Debian GNU/Linux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Make sure you have dependencie installed:
+``$ sudo apt install build-essential python-dev libxml2 libxml2-dev zlib1g-dev``
+and then install with pip / pip3
+``$ pip install python-igraph``
 
 |igraph| on RedHat Linux
 ^^^^^^^^^^^^^^^^^^^^^^^^
