@@ -13,17 +13,18 @@ igraph.
 
 You can learn more about python-igraph [on our website](http://igraph.org/python/).
 
-
 ## Installation
+
 ```
 $ sudo python setup.py install
 ```
 See details in [Installing Python Modules](https://docs.python.org/2/install/).
 
-### Installation with pip
+### Installation with pip on Debian / Ubuntu and derivatives
+
 Install dependencies
 ```
-$ sudo apt install build-essential python-dev libxml2 libxml2-de zlib1g-dev
+$ sudo apt install build-essential python-dev libxml2 libxml2-dev zlib1g-dev
 ```
 and then
 ```
