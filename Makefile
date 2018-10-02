@@ -1,7 +1,7 @@
 TAG = igraph/manylinux
 
 build-wheel:
-	docker build -f docker/manylinux.docker -t $TAG .
+	docker build -f docker/manylinux.docker -t $(TAG) .
 
 copy-wheel:
 	rm -rf docker/wheelhouse
