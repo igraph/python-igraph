@@ -8196,13 +8196,15 @@ PyObject *igraphmodule_Graph_write_leda(igraphmodule_GraphObject * self,
  */
 PyObject *igraphmodule_Graph_canonical_permutation(
 	igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds) {
-  static char *kwlist[] = { "sh", NULL };
+  static char *kwlist[] = { "sh", "color", NULL };
   PyObject *sh_o = Py_None;
+  PyObject *color_o = Py_None;
   PyObject *list;
   igraph_bliss_sh_t sh = IGRAPH_BLISS_FM;
   igraph_vector_t labeling;
+  igraph_vector_int_t *color = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &sh_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &sh_o, &color_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_bliss_sh_t(sh_o, &sh))
@@ -8213,14 +8215,23 @@ PyObject *igraphmodule_Graph_canonical_permutation(
 	return NULL;
   }
 
-  if (igraph_canonical_permutation(&self->g, 0, &labeling, sh, 0)) {
+  if (igraphmodule_attrib_to_vector_int_t(color_o, self, &color,
+	  ATTRIBUTE_TYPE_VERTEX)) return NULL;
+
+  int retval = igraph_canonical_permutation(&self->g, color, &labeling, sh, 0);
+
+  if (color) { igraph_vector_int_destroy(color); free(color); }
+
+  if (retval) {
 	igraphmodule_handle_igraph_error();
 	igraph_vector_destroy(&labeling);
 	return NULL;
   }
 
   list = igraphmodule_vector_t_to_PyList(&labeling, IGRAPHMODULE_TYPE_INT);
+
   igraph_vector_destroy(&labeling);
+
   return list;
 }
 
@@ -8311,16 +8322,19 @@ PyObject *igraphmodule_Graph_isomorphic_bliss(igraphmodule_GraphObject * self,
   igraph_bool_t result = 0;
   PyObject *o=Py_None, *return1=Py_False, *return2=Py_False;
   PyObject *sho1=Py_None, *sho2=Py_None;
+  PyObject *color1_o=Py_None, *color2_o=Py_None;
   igraphmodule_GraphObject *other;
   igraph_vector_t mapping_12, mapping_21, *map12=0, *map21=0;
   igraph_bliss_sh_t sh1=IGRAPH_BLISS_FM, sh2=IGRAPH_BLISS_FM;
+  igraph_vector_int_t *color1=0, *color2=0;
+
 
   static char *kwlist[] = { "other", "return_mapping_12",
-    "return_mapping_21", "sh1", "sh2", NULL };
+			    "return_mapping_21", "sh1", "sh2", "color1", "color2", NULL };
   /* TODO: convert igraph_bliss_info_t when needed */
   if (!PyArg_ParseTupleAndKeywords
-      (args, kwds, "|O!OOOO", kwlist, &igraphmodule_GraphType, &o,
-       &return1, &return2, &sho1, &sho2))
+      (args, kwds, "|O!OOOOOO", kwlist, &igraphmodule_GraphType, &o,
+       &return1, &return2, &sho1, &sho2, &color1_o, &color2_o))
     return NULL;
   if (igraphmodule_PyObject_to_bliss_sh_t(sho1, &sh1)) return NULL;
   sh2 = sh1;
@@ -8330,6 +8344,12 @@ PyObject *igraphmodule_Graph_isomorphic_bliss(igraphmodule_GraphObject * self,
         "be equal to sh1");
   }
   sh2 = sh1;
+
+  if (igraphmodule_attrib_to_vector_int_t(color1_o, self, &color1,
+	  ATTRIBUTE_TYPE_VERTEX)) return NULL;
+  if (igraphmodule_attrib_to_vector_int_t(color2_o, self, &color2,
+	  ATTRIBUTE_TYPE_VERTEX)) return NULL;
+
   if (o == Py_None) other = self; else other = (igraphmodule_GraphObject *) o;
 
   if (PyObject_IsTrue(return1)) {
@@ -8341,8 +8361,14 @@ PyObject *igraphmodule_Graph_isomorphic_bliss(igraphmodule_GraphObject * self,
 	map21 = &mapping_21;
   }
 
-  if (igraph_isomorphic_bliss(&self->g, &other->g, 0, 0, &result, map12, map21,
-      sh1, 0, 0)) {
+  
+  int retval = igraph_isomorphic_bliss(&self->g, &other->g, color1, color2,
+				       &result, map12, map21, sh1, 0, 0);
+
+  if (color1) { igraph_vector_int_destroy(color1); free(color1); }
+  if (color2) { igraph_vector_int_destroy(color2); free(color2); }
+  
+  if (retval) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -14610,6 +14636,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "      non-singleton cell\n\n"
    "    - C{\"fsm\"}: smallest maximally non-trivially connected\n"
    "      non-singleton cell\n\n"
+   "@param color: optional vector storing a coloring of the vertices\n "
+   "with respect to which the isomorphism is computed."
+   "If C{None}, all vertices have the same color.\n"
    "@return: a permutation vector containing vertex IDs. Vertex 0 in the original\n"
    "  graph will be mapped to an ID contained in the first element of this\n"
    "  vector; vertex 1 will be mapped to the second and so on.\n"
@@ -14650,6 +14679,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "See U{http://www.tcs.hut.fi/Software/bliss/index.html} for more information\n"
    "about the BLISS algorithm.\n\n"
    "@param other: the other graph with which we want to compare the graph.\n"
+   "@param color1: optional vector storing the coloring of the vertices of\n"
+   "  the first graph. If C{None}, all vertices have the same color.\n"
+   "@param color2: optional vector storing the coloring of the vertices of\n"
+   "  the second graph. If C{None}, all vertices have the same color.\n"
    "@param return_mapping_12: if C{True}, calculates the mapping which maps\n"
    "  the vertices of the first graph to the second.\n"
    "@param return_mapping_21: if C{True}, calculates the mapping which maps\n"
