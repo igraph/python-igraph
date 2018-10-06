@@ -43,6 +43,19 @@ class IsomorphismTests(unittest.TestCase):
         g2.vs["color"] = [0,0,1,1,0,1,1,0]
         self.assertTrue(not g1.isomorphic_vf2(g2, "color", "color"))
 
+        # Test bliss with colors
+        self.assertTrue(g1.isomorphic_bliss(g2,
+                                            color1=[0,0,0,0,0,0,0,0],
+                                            color2=[0,0,0,0,0,0,0,0]))
+
+        self.assertTrue(g1.isomorphic_bliss(g2,
+                                            color1=[1,0,2,0,0,0,0,0],
+                                            color2=[1,0,2,0,0,0,0,0]))
+
+        self.assertTrue(g1.isomorphic_bliss(g2,
+                                            color1=[0,1,0,1,0,1,0,1],
+                                            color2=[0,0,1,1,0,0,1,1]))
+
         # Test VF2 with vertex and edge colors
         self.assertTrue(g1.isomorphic_vf2(g2,
             color1=[0,1,0,1,0,1,0,1],
@@ -231,6 +244,17 @@ class PermutationTests(unittest.TestCase):
 
         self.assertTrue(g3.vcount() == g4.vcount())
         self.assertTrue(sorted(g3.get_edgelist()) == sorted(g4.get_edgelist()))
+
+        # Simple case with coloring
+        cp = g1.canonical_permutation(color = [0, 0, 1, 1])
+        g3 = g1.permute_vertices(cp)
+
+        cp = g2.canonical_permutation(color = [0, 0, 1, 1])
+        g4 = g2.permute_vertices(cp)
+
+        self.assertTrue(g3.vcount() == g4.vcount())
+        self.assertTrue(sorted(g3.get_edgelist()) == sorted(g4.get_edgelist()))
+
 
         # More complicated one: small GRG, random permutation
         g = Graph.GRG(10, 0.5)
