@@ -83,8 +83,6 @@ class AttributeTests(unittest.TestCase):
         g.vs[2]["name"] = b"quack"
         self.assertRaises(ValueError, g.degree, b"baz")
         self.assertTrue(g.degree(b"quack") == 3)
-        self.assertRaises(ValueError, g.degree, u"quack")
-        self.assertRaises(ValueError, g.degree, [u"bar", u"thud", 0])
         del g.vs["name"]
         self.assertRaises(ValueError, g.degree, [b"bar", b"thud", 0])
 
