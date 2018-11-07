@@ -75,6 +75,27 @@ class AttributeTests(unittest.TestCase):
         del g.vs["name"]
         self.assertRaises(ValueError, g.degree, [u"bar", u"thud", 0])
 
+    def testVertexNameIndexingBytes(self):
+        g = Graph.Famous("bull")
+        g.vs["name"] = [b"foo", b"bar", b"baz", b"fred", b"thud"]
+        self.assertTrue(g.degree(b"bar") == 3)
+        self.assertTrue(g.degree([b"bar", b"fred", 0]) == [3, 1, 2])
+        g.vs[2]["name"] = b"quack"
+        self.assertRaises(ValueError, g.degree, b"baz")
+        self.assertTrue(g.degree(b"quack") == 3)
+        self.assertRaises(ValueError, g.degree, u"quack")
+        self.assertRaises(ValueError, g.degree, [u"bar", u"thud", 0])
+        del g.vs["name"]
+        self.assertRaises(ValueError, g.degree, [b"bar", b"thud", 0])
+
+    def testVertexNameIndexingBug196(self):
+        g = Graph()
+        a, b = b'a', b'b'
+        g.add_vertices([a, b])
+        g.add_edges([(a, b)])
+        self.assertEqual(g.ecount(), 1)
+        self.assertTrue(g.are_connected(a, b))
+
     def testInvalidAttributeNames(self):
         g = Graph.Famous("bull")
         for attr_name in [None, 2.654, unittest, str]:
