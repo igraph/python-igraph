@@ -96,7 +96,7 @@ class TestBase(unittest.TestCase):
 
 class GraphAtlasTests(TestBase):
     graphs = [Graph.Atlas(i) for i in xrange(1253)]
-    skip_graphs = set([])
+    skip_graphs = set([180])
 
 class IsoclassTests(TestBase):
     graphs = [Graph.Isoclass(3, i, directed=True) for i in xrange(16)] + \
