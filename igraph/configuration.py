@@ -29,7 +29,7 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 """
 
 import sys
-if sys.version_info < (3, ):
+if sys.version_info < (3, 2):
     from ConfigParser import SafeConfigParser as ConfigParser
 else:
     from configparser import ConfigParser
