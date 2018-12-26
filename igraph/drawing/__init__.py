@@ -263,7 +263,7 @@ class Plot(object):
                 palette = getattr(obj, "_default_palette", self._palette)
             plotter = getattr(obj, "__plot__", None)
             if plotter is None:
-                warn("%s does not support plotting" % obj)
+                warn("%s does not support plotting" % (obj, ))
             else:
                 if opacity < 1.0:
                     ctx.push_group()
