@@ -112,6 +112,10 @@ Make sure you have all the required dependencies installed:
 
   $ sudo apt install build-essential python-dev libxml2 libxml2-dev zlib1g-dev
 
+or as answered `on Stackoverflow <https://stackoverflow.com/a/28438342/1320237>`_
+
+  $ sudo apt-get install -y libigraph0-dev
+
 and then install with pip / pip3
 
   $ pip install python-igraph
