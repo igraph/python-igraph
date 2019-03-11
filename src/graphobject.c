@@ -206,8 +206,8 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
   void* ptr = 0;
   igraph_vector_t edges_vector;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|lO!OO!", kwlist,
-                                   &n, &PyList_Type, &edges, &dir,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|lOOO!", kwlist,
+                                   &n, &edges, &dir,
                                    &PyCapsule_Type, &ptr_o))
     return -1;
 
@@ -229,7 +229,7 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
     } else {
       self->g = *(igraph_t*)ptr;
     }
-  } else if (edges && PyList_Check(edges)) {
+  } else if (edges) {
     /* Caller specified an edge list, so we use igraph_create */
     /* We have to convert the Python list to a igraph_vector_t */
     if (igraphmodule_PyObject_to_edgelist(edges, &edges_vector, 0)) {
@@ -8361,13 +8361,13 @@ PyObject *igraphmodule_Graph_isomorphic_bliss(igraphmodule_GraphObject * self,
 	map21 = &mapping_21;
   }
 
-  
+
   int retval = igraph_isomorphic_bliss(&self->g, &other->g, color1, color2,
 				       &result, map12, map21, sh1, 0, 0);
 
   if (color1) { igraph_vector_int_destroy(color1); free(color1); }
   if (color2) { igraph_vector_int_destroy(color2); free(color2); }
-  
+
   if (retval) {
     igraphmodule_handle_igraph_error();
     return NULL;

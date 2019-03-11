@@ -31,7 +31,8 @@ class BasicTests(unittest.TestCase):
             g.vcount() == 3 and g.ecount() == 3 and not g.is_directed() and
             not g.is_simple()
         )
-        g = Graph([(0, 1), (0, 0), (1, 2)])
+
+        g = Graph(((0, 1), (0, 0), (1, 2)))
         self.assertTrue(
             g.vcount() == 3 and g.ecount() == 3 and not g.is_directed() and
             not g.is_simple()
