@@ -205,6 +205,7 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
   PyObject *edges = NULL, *dir = Py_False, *ptr_o = 0;
   void* ptr = 0;
   igraph_vector_t edges_vector;
+  igraph_bool_t edges_vector_owned = 0;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|lOOO!", kwlist,
                                    &n, &edges, &dir,
@@ -232,7 +233,7 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
   } else if (edges) {
     /* Caller specified an edge list, so we use igraph_create */
     /* We have to convert the Python list to a igraph_vector_t */
-    if (igraphmodule_PyObject_to_edgelist(edges, &edges_vector, 0)) {
+    if (igraphmodule_PyObject_to_edgelist(edges, &edges_vector, 0, &edges_vector_owned)) {
       igraphmodule_handle_igraph_error();
       return -1;
     }
@@ -240,11 +241,15 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
     if (igraph_create
         (&self->g, &edges_vector, (igraph_integer_t) n, PyObject_IsTrue(dir))) {
       igraphmodule_handle_igraph_error();
-      igraph_vector_destroy(&edges_vector);
+      if (edges_vector_owned) {
+        igraph_vector_destroy(&edges_vector);
+      }
       return -1;
     }
 
-    igraph_vector_destroy(&edges_vector);
+    if (edges_vector_owned) {
+      igraph_vector_destroy(&edges_vector);
+    }
   } else {
     /* No edge list was specified, and no previously initialized graph object
      * was fed into our object, so let's use igraph_empty */
@@ -589,21 +594,27 @@ PyObject *igraphmodule_Graph_add_edges(igraphmodule_GraphObject * self,
 {
   PyObject *list;
   igraph_vector_t v;
+  igraph_bool_t v_owned = 0;
 
   if (!PyArg_ParseTuple(args, "O", &list))
     return NULL;
 
-  if (igraphmodule_PyObject_to_edgelist(list, &v, &self->g))
+  if (igraphmodule_PyObject_to_edgelist(list, &v, &self->g, &v_owned))
     return NULL;
 
   /* do the hard work :) */
   if (igraph_add_edges(&self->g, &v, 0)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&v);
+    if (v_owned) {
+      igraph_vector_destroy(&v);
+    }
     return NULL;
   }
 
-  igraph_vector_destroy(&v);
+  if (v_owned) {
+    igraph_vector_destroy(&v);
+  }
+
   Py_RETURN_NONE;
 }
 
@@ -1433,6 +1444,7 @@ PyObject *igraphmodule_Graph_get_eids(igraphmodule_GraphObject * self,
   PyObject *error = Py_True;
   PyObject *result = NULL;
   igraph_vector_t pairs, path, res;
+  igraph_bool_t pairs_owned = 0;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
                                    &pairs_o, &path_o, &directed,
@@ -1443,7 +1455,7 @@ PyObject *igraphmodule_Graph_get_eids(igraphmodule_GraphObject * self,
     return igraphmodule_handle_igraph_error();
 
   if (pairs_o != Py_None) {
-    if (igraphmodule_PyObject_to_edgelist(pairs_o, &pairs, &self->g)) {
+    if (igraphmodule_PyObject_to_edgelist(pairs_o, &pairs, &self->g, &pairs_owned)) {
       igraph_vector_destroy(&res);
       return NULL;
     }
@@ -1452,7 +1464,9 @@ PyObject *igraphmodule_Graph_get_eids(igraphmodule_GraphObject * self,
   if (path_o != Py_None) {
     if (igraphmodule_PyObject_to_vector_t(path_o, &path, 1)) {
       igraph_vector_destroy(&res);
-      if (pairs_o != Py_None) igraph_vector_destroy(&pairs);
+      if (pairs_owned) {
+        igraph_vector_destroy(&pairs);
+      }
       return NULL;
     }
   }
@@ -1462,14 +1476,22 @@ PyObject *igraphmodule_Graph_get_eids(igraphmodule_GraphObject * self,
         path_o  == Py_None ? 0 : &path,
         PyObject_IsTrue(directed),
         PyObject_IsTrue(error))) {
-    if (pairs_o != Py_None) igraph_vector_destroy(&pairs);
-    if (path_o != Py_None)  igraph_vector_destroy(&path);
+    if (pairs_owned) {
+      igraph_vector_destroy(&pairs);
+    }
+    if (path_o != Py_None) {
+      igraph_vector_destroy(&path);
+    }
     igraph_vector_destroy(&res);
     return igraphmodule_handle_igraph_error();
   }
 
-  if (pairs_o != Py_None) igraph_vector_destroy(&pairs);
-  if (path_o != Py_None)  igraph_vector_destroy(&path);
+  if (pairs_owned) {
+    igraph_vector_destroy(&pairs);
+  }
+  if (path_o != Py_None) {
+    igraph_vector_destroy(&path);
+  }
 
   result = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_INT);
   igraph_vector_destroy(&res);
@@ -1966,6 +1988,7 @@ PyObject *igraphmodule_Graph_Bipartite(PyTypeObject * type,
   igraph_t g;
   igraph_vector_bool_t types;
   igraph_vector_t edges;
+  igraph_bool_t edges_owned = 0;
   PyObject *types_o, *edges_o, *directed = Py_False;
 
   static char *kwlist[] = { "types", "edges", "directed", NULL };
@@ -1977,19 +2000,23 @@ PyObject *igraphmodule_Graph_Bipartite(PyTypeObject * type,
   if (igraphmodule_PyObject_to_vector_bool_t(types_o, &types))
     return NULL;
 
-  if (igraphmodule_PyObject_to_edgelist(edges_o, &edges, 0)) {
+  if (igraphmodule_PyObject_to_edgelist(edges_o, &edges, 0, &edges_owned)) {
     igraph_vector_bool_destroy(&types);
     return NULL;
   }
 
   if (igraph_create_bipartite(&g, &types, &edges, PyObject_IsTrue(directed))) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&edges);
+    if (edges_owned) {
+      igraph_vector_destroy(&edges);
+    }
     igraph_vector_bool_destroy(&types);
     return NULL;
   }
 
-  igraph_vector_destroy(&edges);
+  if (edges_owned) {
+    igraph_vector_destroy(&edges);
+  }
   igraph_vector_bool_destroy(&types);
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
@@ -5344,8 +5371,9 @@ PyObject *igraphmodule_Graph_similarity_jaccard(igraphmodule_GraphObject * self,
     /* Case #2: vertex pairs or edges, returning list */
     igraph_vector_t edges;
     igraph_vector_t res;
+    igraph_bool_t edges_owned;
 
-    if (igraphmodule_PyObject_to_edgelist(pairs_o, &edges, 0))
+    if (igraphmodule_PyObject_to_edgelist(pairs_o, &edges, 0, &edges_owned))
       return NULL;
 
     if (igraph_vector_init(&res, igraph_vector_size(&edges) / 2)) {
@@ -5357,12 +5385,16 @@ PyObject *igraphmodule_Graph_similarity_jaccard(igraphmodule_GraphObject * self,
     if (igraph_similarity_jaccard_pairs(&self->g, &res, &edges, mode,
           PyObject_IsTrue(loops))) {
       igraph_vector_destroy(&res);
-      igraph_vector_destroy(&edges);
+      if (edges_owned) {
+        igraph_vector_destroy(&edges);
+      }
       igraphmodule_handle_igraph_error();
       return NULL;
     }
 
-    igraph_vector_destroy(&edges);
+    if (edges_owned) {
+      igraph_vector_destroy(&edges);
+    }
 
     list = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT);
     igraph_vector_destroy(&res);
@@ -5425,12 +5457,15 @@ PyObject *igraphmodule_Graph_similarity_dice(igraphmodule_GraphObject * self,
     /* Case #2: vertex pairs or edges, returning list */
     igraph_vector_t edges;
     igraph_vector_t res;
+    igraph_bool_t edges_owned;
 
-    if (igraphmodule_PyObject_to_edgelist(pairs_o, &edges, 0))
+    if (igraphmodule_PyObject_to_edgelist(pairs_o, &edges, 0, &edges_owned))
       return NULL;
 
     if (igraph_vector_init(&res, igraph_vector_size(&edges) / 2)) {
-      igraph_vector_destroy(&edges);
+      if (edges_owned) {
+        igraph_vector_destroy(&edges);
+      }
       igraphmodule_handle_igraph_error();
       return NULL;
     }
@@ -5438,12 +5473,16 @@ PyObject *igraphmodule_Graph_similarity_dice(igraphmodule_GraphObject * self,
     if (igraph_similarity_dice_pairs(&self->g, &res, &edges, mode,
           PyObject_IsTrue(loops))) {
       igraph_vector_destroy(&res);
-      igraph_vector_destroy(&edges);
+      if (edges_owned) {
+        igraph_vector_destroy(&edges);
+      }
       igraphmodule_handle_igraph_error();
       return NULL;
     }
 
-    igraph_vector_destroy(&edges);
+    if (edges_owned) {
+      igraph_vector_destroy(&edges);
+    }
 
     list = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT);
     igraph_vector_destroy(&res);

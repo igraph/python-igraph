@@ -1,21 +1,21 @@
 /* -*- mode: C -*-  */
-/* 
+/*
    IGraph library.
    Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -56,7 +56,7 @@ int igraphmodule_PyObject_to_barabasi_algorithm_t(PyObject *o,
   igraph_barabasi_algorithm_t *result);
 int igraphmodule_PyObject_to_bliss_sh_t(PyObject *o, igraph_bliss_sh_t *result);
 int igraphmodule_PyObject_to_community_comparison_t(PyObject *obj,
-                  igraph_community_comparison_t *result); 
+                  igraph_community_comparison_t *result);
 int igraphmodule_PyObject_to_connectedness_t(PyObject *o, igraph_connectedness_t *result);
 int igraphmodule_PyObject_to_degseq_t(PyObject *o, igraph_degseq_t *result);
 int igraphmodule_PyObject_to_fas_algorithm_t(PyObject *o, igraph_fas_algorithm_t *result);
@@ -90,7 +90,10 @@ int igraphmodule_PyObject_to_vector_bool_t(PyObject *list, igraph_vector_bool_t 
 int igraphmodule_PyObject_to_vector_ptr_t(PyObject *list, igraph_vector_ptr_t *v,
 		igraph_bool_t need_non_negative);
 
-int igraphmodule_PyObject_to_edgelist(PyObject *list, igraph_vector_t *v, igraph_t *graph);
+int igraphmodule_PyObject_to_edgelist(
+    PyObject *list, igraph_vector_t *v, igraph_t *graph,
+    igraph_bool_t *list_is_owned
+);
 
 int igraphmodule_PyList_to_matrix_t(PyObject *o, igraph_matrix_t *m);
 PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v);
@@ -110,7 +113,7 @@ int igraphmodule_PyObject_to_attribute_values(PyObject *o,
 					      int type,
 					      igraph_real_t def);
 int igraphmodule_PyObject_to_drl_options_t(PyObject *obj,
-                  igraph_layout_drl_options_t *options); 
+                  igraph_layout_drl_options_t *options);
 int igraphmodule_PyObject_to_attribute_combination_t(PyObject* object,
     igraph_attribute_combination_t *type);
 int igraphmodule_PyObject_to_eigen_algorithm_t(PyObject *object,

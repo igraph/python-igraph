@@ -1,21 +1,21 @@
 /* vim:set ts=2 sw=2 sts=2 et: */
-/* 
+/*
    IGraph library.
    Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -111,7 +111,7 @@ int igraphmodule_PyObject_to_enum(PyObject *o,
   int *result) {
     char *s, *s2;
     int i, best, best_result, best_unique;
-    
+
     if (o == 0 || o == Py_None)
       return 0;
     if (PyInt_Check(o))
@@ -768,7 +768,7 @@ int igraphmodule_PyObject_to_real_t(PyObject *object, igraph_real_t *v) {
    * don't worry, the typedef is local to this function. */
   typedef PyObject PyFloatObject;
 #endif   /* PYPY_VERSION */
-	
+
   if (object == NULL) {
   } else if (PyLong_Check(object)) {
     double d = PyLong_AsDouble(object);
@@ -802,7 +802,7 @@ int igraphmodule_PyObject_to_real_t(PyObject *object, igraph_real_t *v) {
  * \brief Converts a Python object to an igraph \c igraph_vector_t
  * The incoming \c igraph_vector_t should be uninitialized. Raises suitable
  * Python exceptions when needed.
- * 
+ *
  * \param list the Python list to be converted
  * \param v the \c igraph_vector_t containing the result
  * \param need_non_negative if true, checks whether all elements are non-negative
@@ -864,7 +864,7 @@ int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v, igraph
       }
 
       Py_DECREF(item);
-     
+
       if (!ok) {
         igraph_vector_destroy(v);
         Py_DECREF(it);
@@ -905,7 +905,7 @@ int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v, igraph
  * \brief Converts a Python list of floats to an igraph \c igraph_vector_t
  * The incoming \c igraph_vector_t should be uninitialized. Raises suitable
  * Python exceptions when needed.
- * 
+ *
  * \param list the Python list to be converted
  * \param v the \c igraph_vector_t containing the result
  * \return 0 if everything was OK, 1 otherwise
@@ -961,7 +961,7 @@ int igraphmodule_PyObject_float_to_vector_t(PyObject *list, igraph_vector_t *v) 
       }
 
       Py_DECREF(item);
-     
+
       if (!ok) {
         igraph_vector_destroy(v);
         Py_DECREF(it);
@@ -1039,7 +1039,7 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
             Py_DECREF(item2);
           }
         }
-       
+
         if (ok == 0) {
           igraph_vector_int_destroy(v);
           Py_DECREF(item);
@@ -1151,7 +1151,7 @@ int igraphmodule_PyObject_to_vector_long_t(PyObject *list, igraph_vector_long_t 
             Py_DECREF(item2);
           }
         }
-       
+
         if (ok == 0) {
           igraph_vector_long_destroy(v);
           Py_DECREF(item);
@@ -1218,7 +1218,7 @@ int igraphmodule_PyObject_to_vector_long_t(PyObject *list, igraph_vector_long_t 
  * \brief Converts a Python list of objects to an igraph \c igraph_vector_bool_t
  * The incoming \c igraph_vector_bool_t should be uninitialized. Raises suitable
  * Python exceptions when needed.
- * 
+ *
  * \param list the Python list to be converted
  * \param v the \c igraph_vector_bool_t containing the result
  * \return 0 if everything was OK, 1 otherwise
@@ -1281,7 +1281,7 @@ int igraphmodule_PyObject_to_vector_bool_t(PyObject *list,
 /**
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_bool_t to a Python boolean list
- * 
+ *
  * \param v the \c igraph_vector_bool_t containing the vector to be converted
  * \return the Python boolean list as a \c PyObject*, or \c NULL if an
  * error occurred
@@ -1289,7 +1289,7 @@ int igraphmodule_PyObject_to_vector_bool_t(PyObject *list,
 PyObject* igraphmodule_vector_bool_t_to_PyList(const igraph_vector_bool_t *v) {
   PyObject *list, *item;
   Py_ssize_t n, i;
-   
+
   n=igraph_vector_bool_size(v);
   if (n<0)
     return igraphmodule_handle_igraph_error();
@@ -1307,7 +1307,7 @@ PyObject* igraphmodule_vector_bool_t_to_PyList(const igraph_vector_bool_t *v) {
 /**
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_t to a Python integer list
- * 
+ *
  * \param v the \c igraph_vector_t containing the vector to be converted
  * \return the Python integer list as a \c PyObject*, or \c NULL if an error occurred
  */
@@ -1315,7 +1315,7 @@ PyObject* igraphmodule_vector_t_to_PyList(const igraph_vector_t *v,
     igraphmodule_conv_t type) {
   PyObject *list, *item;
   Py_ssize_t n, i;
-   
+
   n=igraph_vector_size(v);
   if (n<0) return igraphmodule_handle_igraph_error();
 
@@ -1345,14 +1345,14 @@ PyObject* igraphmodule_vector_t_to_PyList(const igraph_vector_t *v,
 /**
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_int_t to a Python integer list
- * 
+ *
  * \param v the \c igraph_vector_int_t containing the vector to be converted
  * \return the Python integer list as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v) {
   PyObject *list, *item;
   Py_ssize_t n, i;
-   
+
   n = igraph_vector_int_size(v);
   if (n<0)
     return igraphmodule_handle_igraph_error();
@@ -1373,14 +1373,14 @@ PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v) {
 /**
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_long_t to a Python integer list
- * 
+ *
  * \param v the \c igraph_vector_long_t containing the vector to be converted
  * \return the Python integer list as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_vector_long_t_to_PyList(const igraph_vector_long_t *v) {
   PyObject *list, *item;
   Py_ssize_t n, i;
-   
+
   n = igraph_vector_long_size(v);
   if (n<0)
     return igraphmodule_handle_igraph_error();
@@ -1401,17 +1401,17 @@ PyObject* igraphmodule_vector_long_t_to_PyList(const igraph_vector_long_t *v) {
 /**
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_t to a Python integer tuple
- * 
+ *
  * \param v the \c igraph_vector_t containing the vector to be converted
  * \return the Python integer tuple as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v) {
   PyObject* tuple;
   Py_ssize_t n, i;
-  
+
   n=igraph_vector_size(v);
   if (n<0) return igraphmodule_handle_igraph_error();
-  
+
   tuple=PyTuple_New(n);
   for (i=0; i<n; i++) {
     PyObject *item=PyInt_FromLong((long)VECTOR(*v)[i]);
@@ -1428,22 +1428,22 @@ PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v) {
 /**
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_t to a Python list of integer pairs
- * 
+ *
  * \param v the \c igraph_vector_t containing the vector to be converted
  * \return the Python integer pair list as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_vector_t_to_PyList_pairs(const igraph_vector_t *v) {
    PyObject *list, *pair;
    long n, i, j;
-   
+
    n=igraph_vector_size(v);
    if (n<0) return igraphmodule_handle_igraph_error();
    if (n%2) return igraphmodule_handle_igraph_error();
-   
+
    /* create a new Python list */
    n>>=1;
    list=PyList_New(n);
-   
+
    /* populate the list with data */
    for (i=0, j=0; i<n; i++, j+=2) {
      pair=Py_BuildValue("(ll)", (long)VECTOR(*v)[j], (long)VECTOR(*v)[j+1]);
@@ -1465,16 +1465,23 @@ PyObject* igraphmodule_vector_t_to_PyList_pairs(const igraph_vector_t *v) {
  *
  * The incoming \c igraph_vector_t should be uninitialized. Raises suitable
  * Python exceptions when needed.
- * 
+ *
  * \param list the Python list to be converted
  * \param v the \c igraph_vector_t containing the result
  * \param graph  the graph that will be used to interpret vertex names
  *               if a string is yielded by the Python iterable. \c NULL
  *               means that vertex names are not allowed.
+ * \param list_is_owned  output argument that will be set to 1 if the
+ *        vector containing the result "owns" its memory area and can be
+ *        freed. Zero means that the vector is only a view into some memory
+ *        area owned by someone else and the vector may not be destroyed by
+ *        the caller.
  * \return 0 if everything was OK, 1 otherwise
  */
-int igraphmodule_PyObject_to_edgelist(PyObject *list, igraph_vector_t *v,
-    igraph_t *graph) {
+int igraphmodule_PyObject_to_edgelist(
+    PyObject *list, igraph_vector_t *v, igraph_t *graph,
+    igraph_bool_t* list_is_owned
+) {
   PyObject *item, *i1, *i2, *it;
   int ok;
   igraph_integer_t idx1=0, idx2=0;
@@ -1491,6 +1498,10 @@ int igraphmodule_PyObject_to_edgelist(PyObject *list, igraph_vector_t *v,
     return 1;
 
   igraph_vector_init(v, 0);
+  if (list_is_owned) {
+    *list_is_owned = 1;
+  }
+
   while ((item = PyIter_Next(it)) != 0) {
     ok = 1;
     if (!PySequence_Check(item) || PySequence_Size(item) != 2) {
@@ -1545,7 +1556,7 @@ int igraphmodule_PyObject_to_edgelist(PyObject *list, igraph_vector_t *v,
  * object as an attribute name and returns the attribute values corresponding
  * to the name as an \c igraph_vector_t, or returns a null pointer if the attribute
  * does not exist.
- * 
+ *
  * Note that if the function returned a pointer to an \c igraph_vector_t,
  * it is the caller's responsibility to destroy the object and free its
  * pointer after having finished using it.
@@ -1645,7 +1656,7 @@ int igraphmodule_attrib_to_vector_t(PyObject *o, igraphmodule_GraphObject *self,
  * Similar to igraphmodule_attrib_to_vector_t and
  * igraphmodule_attrib_to_vector_long_t. Make sure you fix bugs
  * in all three places (if any).
- * 
+ *
  * Note that if the function returned a pointer to an \c igraph_vector_int_t,
  * it is the caller's responsibility to destroy the object and free its
  * pointer after having finished using it.
@@ -1717,7 +1728,7 @@ int igraphmodule_attrib_to_vector_int_t(PyObject *o, igraphmodule_GraphObject *s
  * Similar to igraphmodule_attrib_to_vector_t and
  * igraphmodule_attrib_to_vector_int_t. Make sure you fix bugs
  * in all three places (if any).
- * 
+ *
  * Note that if the function returned a pointer to an \c igraph_vector_long_t,
  * it is the caller's responsibility to destroy the object and free its
  * pointer after having finished using it.
@@ -1794,7 +1805,7 @@ int igraphmodule_attrib_to_vector_long_t(PyObject *o, igraphmodule_GraphObject *
  *
  * Anything that evaluates to true using PyObject_IsTrue will be converted to
  * true in the resulting vector. Only numeric attributes are supported.
- * 
+ *
  * Note that if the function returned a pointer to an \c igraph_vector_bool_t,
  * it is the caller's responsibility to destroy the object and free its
  * pointer after having finished using it.
@@ -1924,7 +1935,7 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
 /**
  * \ingroup python_interface_conversion
  * \brief Converts two igraph \c igraph_vector_t vectors to a Python list of integer pairs
- * 
+ *
  * \param v1 the \c igraph_vector_t containing the 1st vector to be converted
  * \param v2 the \c igraph_vector_t containing the 2nd vector to be converted
  * \return the Python integer pair list as a \c PyObject*, or \c NULL if an error occurred
@@ -1933,14 +1944,14 @@ PyObject* igraphmodule_vector_t_pair_to_PyList(const igraph_vector_t *v1,
     const igraph_vector_t *v2) {
    PyObject *list, *pair;
    long n, i;
-   
+
    n=igraph_vector_size(v1);
    if (n<0) return igraphmodule_handle_igraph_error();
    if (igraph_vector_size(v2) != n) return igraphmodule_handle_igraph_error();
 
    /* create a new Python list */
    list=PyList_New(n);
-   
+
    /* populate the list with data */
    for (i=0; i<n; i++) {
      pair=Py_BuildValue("(ll)", (long)VECTOR(*v1)[i], (long)VECTOR(*v2)[i]);
@@ -1958,7 +1969,7 @@ PyObject* igraphmodule_vector_t_pair_to_PyList(const igraph_vector_t *v1,
 /**
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_matrix_t to a Python list of lists
- * 
+ *
  * \param m the \c igraph_matrix_t containing the matrix to be converted
  * \param type the type of conversion. If equals to IGRAPHMODULE_TYPE_INT,
  *        returns an integer matrix, else returns a float matrix.
@@ -1968,7 +1979,7 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
     igraphmodule_conv_t type) {
    PyObject *list, *row, *item;
    Py_ssize_t nr, nc, i, j;
-   
+
    nr = igraph_matrix_nrow(m);
    nc = igraph_matrix_ncol(m);
    if (nr<0 || nc<0)
@@ -1977,10 +1988,10 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
    // create a new Python list
    list=PyList_New(nr);
    // populate the list with data
-   for (i=0; i<nr; i++) 
+   for (i=0; i<nr; i++)
      {
     row=PyList_New(nc);
-    for (j=0; j<nc; j++) 
+    for (j=0; j<nc; j++)
       {
          if (type==IGRAPHMODULE_TYPE_INT) {
 	       if (!igraph_finite(MATRIX(*m, i, j)))
@@ -1989,7 +2000,7 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
              item=PyInt_FromLong((long)MATRIX(*m, i, j));
 		 } else
            item=PyFloat_FromDouble(MATRIX(*m, i, j));
-           
+
          if (PyList_SetItem(row, j, item))
            {
           // error occurred while populating the list, return immediately
@@ -1998,7 +2009,7 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
           return NULL;
            }
       }
-    if (PyList_SetItem(list, i, row)) 
+    if (PyList_SetItem(list, i, row))
       {
          Py_DECREF(row);
          Py_DECREF(list);
@@ -2012,7 +2023,7 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
 /**
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_ptr_t to a Python list of lists
- * 
+ *
  * \param v the \c igraph_vector_ptr_t containing the vector to be converted
  * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
  */
@@ -2020,7 +2031,7 @@ PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
     igraphmodule_conv_t type) {
   PyObject *list, *item;
   Py_ssize_t n, i;
-   
+
   n=igraph_vector_ptr_size(v);
   if (n<0)
     return igraphmodule_handle_igraph_error();
@@ -2041,7 +2052,7 @@ PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
 /**
  * \ingroup python_interface_conversion
  * \brief Converts a Python list of lists to an \c igraph_matrix_t
- * 
+ *
  * \param o the Python object representing the list of lists
  * \param m the address of an uninitialized \c igraph_matrix_t
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
@@ -2070,7 +2081,7 @@ int igraphmodule_PyList_to_matrix_t(PyObject* o, igraph_matrix_t *m) {
     Py_DECREF(row);
     if (n>nc) nc=n;
   }
-  
+
   igraph_matrix_init(m, nr, nc);
   for (i=0; i<nr; i++) {
     row=PySequence_GetItem(o, i);
@@ -2099,7 +2110,7 @@ int igraphmodule_PyList_to_matrix_t(PyObject* o, igraph_matrix_t *m) {
  * \ingroup python_interface_conversion
  * \brief Converts a Python list of lists to an \c igraph_vector_ptr_t
  *        containing \c igraph_vector_t items.
- * 
+ *
  * The returned vector will have an item destructor that destroys the
  * contained vectors, so it is important to call \c igraph_vector_ptr_destroy_all
  * on it instead of \c igraph_vector_ptr_destroy when the vector is no longer
@@ -2156,7 +2167,7 @@ int igraphmodule_PyObject_to_vector_ptr_t(PyObject* list, igraph_vector_ptr_t* v
       igraph_vector_ptr_destroy_all(vec);
       return 1;
     }
-    
+
     /* ownership of 'subvec' taken by 'vec' here */
   }
 
@@ -2167,7 +2178,7 @@ int igraphmodule_PyObject_to_vector_ptr_t(PyObject* list, igraph_vector_ptr_t* v
 /**
  * \ingroup python_interface_conversion
  * \brief Converts an \c igraph_strvector_t to a Python string list
- * 
+ *
  * \param v the \c igraph_strvector_t containing the vector to be converted
  * \return the Python string list as a \c PyObject*, or \c NULL if an error occurred
  */
@@ -2175,11 +2186,11 @@ PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v) {
   PyObject* list;
   Py_ssize_t n, i;
   char* ptr;
-  
+
   n=igraph_strvector_size(v);
   if (n<0)
     return igraphmodule_handle_igraph_error();
-  
+
   // create a new Python list
   list=PyList_New(n);
   /* populate the list with data */
@@ -2191,7 +2202,7 @@ PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v) {
       return NULL;
     }
   }
-  
+
    /* return the list */
    return list;
 }
@@ -2199,7 +2210,7 @@ PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v) {
 /**
  * \ingroup python_interface_conversion
  * \brief Converts a Python string list to an \c igraph_strvector_t
- * 
+ *
  * \param v the Python list as a \c PyObject*
  * \param result an \c igraph_strvector_t containing the result
  * The incoming \c igraph_strvector_t should be uninitialized. Raises suitable
@@ -2209,17 +2220,17 @@ PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v) {
 int igraphmodule_PyList_to_strvector_t(PyObject* v, igraph_strvector_t *result) {
   Py_ssize_t n, i;
   PyObject *o;
-  
+
   if (!PyList_Check(v)) {
     PyErr_SetString(PyExc_TypeError, "expected list");
     return 1;
   }
-  
+
   n=PyList_Size(v);
 
   /* initialize the string vector */
   if (igraph_strvector_init(result, n)) return 1;
-  
+
   /* populate the vector with data */
   for (i=0; i<n; i++) {
     PyObject *item = PyList_GetItem(v, i);
@@ -2272,7 +2283,7 @@ int igraphmodule_PyList_to_strvector_t(PyObject* v, igraph_strvector_t *result) 
  *
  * The incoming \c igraph_vector_ptr_t should be INITIALIZED.
  * Raises suitable Python exceptions when needed.
- * 
+ *
  * \param it the Python iterator
  * \param v the \c igraph_vector_ptr_t which will contain the result
  * \return 0 if everything was OK, 1 otherwise
@@ -2280,7 +2291,7 @@ int igraphmodule_PyList_to_strvector_t(PyObject* v, igraph_strvector_t *result) 
 int igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t(PyObject *it,
     igraph_vector_ptr_t *v) {
   PyObject *t;
-  
+
   while ((t=PyIter_Next(it))) {
     if (!PyObject_TypeCheck(t, &igraphmodule_GraphType)) {
       PyErr_SetString(PyExc_TypeError, "iterable argument must contain graphs");
@@ -2289,15 +2300,15 @@ int igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t(PyObject *it,
     }
     igraph_vector_ptr_push_back(v, &((igraphmodule_GraphObject*)t)->g);
     Py_DECREF(t);
-  }  
-  
+  }
+
   return 0;
 }
 
 /**
  * \ingroup python_interface_conversion
  * \brief Tries to interpret a Python object as a single vertex ID
- * 
+ *
  * \param o      the Python object
  * \param vid    the vertex ID will be stored here
  * \param graph  the graph that will be used to interpret vertex names
@@ -2370,7 +2381,7 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
 /**
  * \ingroup python_interface_conversion
  * \brief Tries to interpret a Python object as a vertex selector
- * 
+ *
  * \param o      the Python object
  * \param vs     the \c igraph_vs_t which will contain the result
  * \param graph  an \c igraph_t object which will be used to interpret vertex
@@ -2490,7 +2501,7 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
 
     if (return_single)
       *return_single = 0;
-    
+
     return 0;
   }
 
@@ -2508,7 +2519,7 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
 /**
  * \ingroup python_interface_conversion
  * \brief Tries to interpret a Python object as a single edge ID
- * 
+ *
  * \param o      the Python object
  * \param eid    the edge ID will be stored here
  * \param graph  the graph that will be used to interpret vertex names and
@@ -2564,7 +2575,7 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
       return 1;
   } else if (graph != 0 && PyTuple_Check(o)) {
     PyObject *o1, *o2;
-    
+
     o1 = PyTuple_GetItem(o, 0);
     if (!o1)
       return 1;
@@ -2603,7 +2614,7 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
 /**
  * \ingroup python_interface_conversion
  * \brief Tries to interpret a Python object as an edge selector
- * 
+ *
  * \param o the Python object
  * \param vs the \c igraph_es_t which will contain the result
  * \param graph  an \c igraph_t object which will be used to interpret vertex
@@ -2674,7 +2685,7 @@ int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
       IGRAPH_FINALLY_CLEAN(1);
       return 1;
     }
-    
+
     if (igraph_vector_size(&vector) > 0) {
       igraph_es_vector_copy(es, &vector);
     } else {
@@ -2686,7 +2697,7 @@ int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
 
     if (return_single)
       *return_single = 0;
-    
+
     return 0;
   }
 
@@ -2706,7 +2717,7 @@ int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
 /**
  * \ingroup python_interface_conversion
  * \brief Tries to interpret a Python object as a numeric attribute value list
- * 
+ *
  * \param o the Python object
  * \param v the \c igraph_vector_t which will contain the result
  * \param g a \c igraphmodule_GraphObject object or \c NULL - used when the
@@ -2728,7 +2739,7 @@ int igraphmodule_PyObject_to_attribute_values(PyObject *o,
   long i, n;
 
   if (o==NULL) return 1;
-  
+
   if (o == Py_None) {
     if (type == ATTRHASH_IDX_VERTEX) n=igraph_vcount(&g->g);
     else if (type == ATTRHASH_IDX_EDGE) n=igraph_ecount(&g->g);
@@ -2905,7 +2916,7 @@ int igraphmodule_i_PyObject_pair_to_attribute_combination_record_t(
  * \param object the Python object to be converted
  * \param result the result is returned here. It must be an uninitialized
  *   \c igraph_attribute_combination_t object, it will be initialized accordingly.
- *   It is the responsibility of the caller to 
+ *   It is the responsibility of the caller to
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyObject_to_attribute_combination_t(PyObject* object,
@@ -2967,4 +2978,3 @@ int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o,
 
   return igraphmodule_PyObject_to_enum(o, pagerank_algo_tt, (int*)result);
 }
-
