@@ -56,7 +56,6 @@ import operator
 from collections import defaultdict
 from itertools import izip
 from shutil import copyfileobj
-from tempfile import mkstemp
 from warnings import warn
 
 def deprecated(message):
@@ -182,12 +181,11 @@ class Graph(GraphBase):
                 self.__class__.__name__, unknown_kwds.pop()
             ))
 
-        # If the first argument is a list, assume that the number of vertices
-        # were omitted
+        # If the first argument is a list or any other iterable, assume that
+        # the number of vertices were omitted
         args = list(args)
-        if len(args) > 0:
-            if isinstance(args[0], list) or isinstance(args[0], tuple):
-                args.insert(0, params[0])
+        if len(args) > 0 and hasattr(args[0], "__iter__"):
+            args.insert(0, params[0])
 
         # Override default parameters from args
         params[:len(args)] = args
@@ -207,6 +205,15 @@ class Graph(GraphBase):
         # When 'edges' is None, assume that the user meant an empty list
         if edges is None:
             edges = []
+
+        # When 'edges' is a NumPy array or matrix, convert it into a memoryview
+        # as the lower-level C API works with memoryviews only
+        try:
+            from numpy import ndarray, matrix
+            if isinstance(edges, (ndarray, matrix)):
+                edges = numpy_to_contiguous_memoryview(edges)
+        except ImportError:
+            pass
 
         # Initialize the graph
         if ptr:

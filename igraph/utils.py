@@ -7,13 +7,18 @@
 
 from contextlib import contextmanager
 from collections import MutableMapping
+from ctypes import c_double, sizeof
 from itertools import chain
 
 import os
 import tempfile
 
-__all__ = ["dbl_epsilon", "multidict", "named_temporary_file", "rescale", \
-        "safemin", "safemax"]
+__all__ = (
+    "dbl_epsilon", "multidict", "named_temporary_file",
+    "numpy_to_contiguous_memoryview", "rescale",
+    "safemin", "safemax"
+)
+
 __docformat__ = "restructuredtext en"
 __license__ = u"""\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
@@ -34,6 +39,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
+
 
 def _is_running_in_ipython():
     """Internal function that determines whether igraph is running inside
@@ -60,8 +66,30 @@ def named_temporary_file(*args, **kwds):
     finally:
         os.unlink(tmpfile)
 
-def rescale(values, out_range = (0., 1.), in_range = None, clamp = False,
-        scale = None):
+
+def numpy_to_contiguous_memoryview(obj):
+    """Converts a NumPy array or matrix into a contiguous memoryview object
+    that is suitable to be forwarded to the Graph constructor.
+
+    This is used internally to allow us to use a NumPy array or matrix
+    directly when constructing a Graph.
+    """
+    # Deferred import to prevent a hard dependency on NumPy
+    from numpy import float32, float64, require
+
+    size = sizeof(c_double)
+    if size == 8:
+        dtype = float64
+    elif size == 4:
+        dtype = float32
+    else:
+        raise TypeError("size of C double (%d bytes) is not supported" % size)
+
+    return memoryview(require(obj, dtype=dtype, requirements="AC"))
+
+
+def rescale(values, out_range=(0., 1.), in_range=None, clamp=False,
+            scale=None):
     """Rescales a list of numbers into a given range.
 
     `out_range` gives the range of the output values; by default, the minimum
@@ -128,7 +156,10 @@ def rescale(values, out_range = (0., 1.), in_range = None, clamp = False,
     else:
         return result
 
-def str_to_orientation(value, reversed_horizontal=False, reversed_vertical=False):
+
+def str_to_orientation(
+    value, reversed_horizontal=False, reversed_vertical=False
+):
     """Tries to interpret a string as an orientation value.
 
     The following basic values are understood: ``left-right``, ``bottom-top``,
@@ -151,9 +182,11 @@ def str_to_orientation(value, reversed_horizontal=False, reversed_vertical=False
     if the string cannot be interpreted as an orientation.
     """
 
-    aliases = {"left-right": "lr", "right-left": "rl", "top-bottom": "tb",
-            "bottom-top": "bt", "top-down": "tb", "bottom-up": "bt",
-            "top-bottom": "tb", "bottom-top": "bt", "td": "tb", "bu": "bt"}
+    aliases = {
+        "left-right": "lr", "right-left": "rl", "top-bottom": "tb",
+        "bottom-top": "bt", "top-down": "tb", "bottom-up": "bt",
+        "top-bottom": "tb", "bottom-top": "bt", "td": "tb", "bu": "bt"
+    }
 
     dir = ["lr", "rl"][reversed_horizontal]
     aliases.update(horizontal=dir, horiz=dir, h=dir)
@@ -206,6 +239,7 @@ def consecutive_pairs(iterable, circular=False):
         except UnboundLocalError:
             yield first, first
 
+
 class multidict(MutableMapping):
     """A dictionary-like object that is customized to deal with multiple
     values for the same key.
@@ -219,15 +253,18 @@ class multidict(MutableMapping):
     def __init__(self, *args, **kwds):
         self._dict = {}
         if len(args) > 1:
-            raise ValueError("%r expected at most 1 argument, got %d" % \
-                    (self.__class__.__name__, len(args)))
+            raise ValueError(
+                "%r expected at most 1 argument, got %d" %
+                (self.__class__.__name__, len(args))
+            )
         if args:
             args = args[0]
             self.update(args)
         self.update(kwds)
 
     def __contains__(self, key):
-        """Returns whether there are any items associated to the given `key`."""
+        """Returns whether there are any items associated to the given
+        `key`."""
         try:
             return len(self._dict[key]) > 0
         except KeyError:
@@ -333,6 +370,7 @@ class multidict(MutableMapping):
         for key, value in kwds.iteritems():
             self.add(key, value)
 
+
 def safemax(iterable, default=0):
     """Safer variant of ``max()`` that returns a default value if the iterable
     is empty.
@@ -353,6 +391,7 @@ def safemax(iterable, default=0):
         return default
     else:
         return max(chain([first], it))
+
 
 def safemin(iterable, default=0):
     """Safer variant of ``min()`` that returns a default value if the iterable
@@ -375,11 +414,13 @@ def safemin(iterable, default=0):
     else:
         return min(chain([first], it))
 
+
 def dbl_epsilon():
     """Approximates the machine epsilon value for doubles."""
     epsilon = 1.0
     while 1.0 + epsilon / 2.0 != 1.0:
         epsilon /= 2
     return epsilon
+
 
 dbl_epsilon = dbl_epsilon()

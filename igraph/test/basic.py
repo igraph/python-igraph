@@ -5,6 +5,11 @@ from igraph import (
     is_graphical_degree_sequence, Matrix
 )
 
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
 
 class BasicTests(unittest.TestCase):
     def testGraphCreation(self):
@@ -49,6 +54,39 @@ class BasicTests(unittest.TestCase):
         self.assertFalse(g.is_directed())
 
         self.assertRaises(TypeError, Graph, edgelist=[(1, 2)])
+
+    @unittest.skipIf(np is None, "test case depends on NumPy")
+    def testGraphCreationWithNumPy(self):
+        # NumPy array with integers
+        arr = np.array([(0, 1), (1, 2), (2, 3)])
+        g = Graph(arr, directed=True)
+        self.assertTrue(
+            g.vcount() == 4 and g.ecount() == 3 and g.is_directed() and
+            g.is_simple()
+        )
+
+        # Sliced NumPy array -- the sliced array is non-contiguous but we
+        # automatically make it so
+        arr = np.array([(0, 1), (10, 11), (1, 2), (11, 12), (2, 3), (12, 13)])
+        g = Graph(arr[::2, :], directed=True)
+        self.assertTrue(
+            g.vcount() == 4 and g.ecount() == 3 and g.is_directed() and
+            g.is_simple()
+        )
+
+        # 1D NumPy array -- should raise a TypeError because we need a 2D array
+        arr = np.array([0, 1, 1, 2, 2, 3])
+        self.assertRaises(TypeError, Graph, arr)
+
+        # 3D NumPy array -- should raise a TypeError because we need a 2D array
+        arr = np.array(
+            [([0, 1], [10, 11]), ([1, 2], [11, 12]), ([2, 3], [12, 13])]
+        )
+        self.assertRaises(TypeError, Graph, arr)
+
+        # NumPy array with strings -- should be a casting error
+        arr = np.array([("a", "b"), ("c", "d"), ("e", "f")])
+        self.assertRaises(ValueError, Graph, arr)
 
     def testAddVertex(self):
         g = Graph()

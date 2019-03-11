@@ -1483,6 +1483,7 @@ int igraphmodule_PyObject_to_edgelist(
     igraph_bool_t* list_is_owned
 ) {
   PyObject *item, *i1, *i2, *it;
+  Py_buffer *buffer;
   int ok;
   igraph_integer_t idx1=0, idx2=0;
 
@@ -1491,6 +1492,45 @@ int igraphmodule_PyObject_to_edgelist(
      * provide us with integers or integer pairs */
     PyErr_SetString(PyExc_TypeError, "expected a sequence or an iterable containing integer or string pairs");
     return 1;
+  }
+
+  /* We also accept a memoryview, although we don't advertise that in the
+   * public API yet as the exact layout of the memory area has to match the
+   * way items are laid out in an igraph_vector_t, and that's an implementation
+   * detail that we don't want to commit ourselves to */
+  if (PyMemoryView_Check(list)) {
+    buffer = PyMemoryView_GET_BUFFER(list);
+
+    if (buffer->itemsize != sizeof(igraph_real_t)) {
+      PyErr_SetString(
+        PyExc_TypeError, "item size of buffer must match the size of igraph_real_t"
+      );
+      return 1;
+    }
+
+    if (buffer->ndim != 2) {
+      PyErr_SetString(PyExc_TypeError, "edge list buffers must be two-dimensional");
+      return 1;
+    }
+
+    if (buffer->shape[1] != 2) {
+      PyErr_SetString(PyExc_TypeError, "edge list buffers must have two columns");
+      return 1;
+    }
+
+    if (buffer->strides[0] != 2 * buffer->itemsize ||
+        buffer->strides[1] != buffer->itemsize) {
+      PyErr_SetString(PyExc_TypeError, "edge list buffers must be contiguous");
+      return 1;
+    }
+
+    igraph_vector_view(v, buffer->buf, buffer->len / buffer->itemsize);
+
+    if (list_is_owned) {
+      *list_is_owned = 0;
+    }
+
+    return 0;
   }
 
   it = PyObject_GetIter(list);
