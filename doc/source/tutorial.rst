@@ -110,9 +110,9 @@ user-friendly output, we can try to print the graph using Python's
 >>> print(g)
 IGRAPH U--- 0 0 --
 
-TODO: explain it
+This summary consists of `IGRAPH`, followed by a four-character long code, the number of vertices, the number of edges, two dashes (`--`) and the name of the graph (i.e. the contents of the `name` attribute, if any)
 
-This is not too exciting so far; a graph with a single vertex and no edges is not really useful
+This is not too exciting so far; a graph with no vertices and no edges is not really useful
 for us. Let's add some vertices first!
 
 >>> g.add_vertices(3)
@@ -560,7 +560,7 @@ There are also a few special structural properties for selecting edges:
   originating from Claire (who has vertex index 2):
 
   >>> g.es.select(_source=2)
-  
+
 - Using ``_target`` or ``_to`` filters based on the target vertices. This is different
   from ``_source`` and ``_from`` if the graph is directed.
 
@@ -1047,4 +1047,3 @@ list`_ - maybe there is someone out there who can help you out immediately.
 .. _API documentation: http://igraph.org/python/doc/igraph-module.html
 .. _Graph class: http://igraph.org/python/doc/igraph.Graph-class.html
 .. _igraph mailing list: http://lists.nongnu.org/mailman/listinfo/igraph-help
-
