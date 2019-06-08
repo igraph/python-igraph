@@ -811,7 +811,7 @@ class BuildConfiguration(object):
 
         print("WARNING: we were not able to detect where igraph is installed on")
         print("your machine (if it is installed at all). We will use the fallback")
-        print("library and include pathss hardcoded in setup.py and hope that the")
+        print("library and include paths hardcoded in setup.py and hope that the")
         print("C core of igraph is installed there.")
         print("")
         print("If the compilation fails and you are sure that igraph is installed")
