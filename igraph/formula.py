@@ -82,6 +82,9 @@ def generate_edges(formula):
             elif tok == ":" and token_type == token.OP:
                 # Separating semicolon between vertex names, we just go on
                 continue
+            elif token_type == token.NEWLINE:
+                # Newlines are fine
+                pass
             elif token_type == token.ENDMARKER:
                 # End markers are fine
                 pass
