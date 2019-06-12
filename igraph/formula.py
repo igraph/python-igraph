@@ -86,7 +86,7 @@ def generate_edges(formula):
                 # End markers are fine
                 pass
             else:
-                msg = "invalid token found in edge specification: %s" % formula
+                msg = "invalid token found in edge specification: %s; token_type=%r; tok=%r" % (formula, token_type, tok)
                 raise SyntaxError(msg)
         else:
             # We are parsing an edge operator
