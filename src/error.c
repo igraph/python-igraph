@@ -58,7 +58,7 @@ PyObject* igraphmodule_handle_igraph_error()
 void igraphmodule_igraph_warning_hook(const char *reason, const char *file,
 				    int line, int igraph_errno) {
   char buf[4096];
-  sprintf(buf, "%s at %s:%i", reason, file, line);
+  snprintf(buf, sizeof(buf), "%s at %s:%i", reason, file, line);
   PyErr_Warn(PyExc_RuntimeWarning, buf);
 }
 
@@ -77,7 +77,7 @@ void igraphmodule_igraph_error_hook(const char *reason, const char *file,
   if (igraph_errno == IGRAPH_ENOMEM)
       exc = PyExc_MemoryError;
 
-  sprintf(buf, "Error at %s:%i: %s, %s", file, line, reason,
+  snprintf(buf, sizeof(buf), "Error at %s:%i: %s, %s", file, line, reason,
 	  igraph_strerror(igraph_errno));
   IGRAPH_FINALLY_FREE();
 
