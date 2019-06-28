@@ -193,7 +193,9 @@ import sys
 import tarfile
 import tempfile
 
+from contextlib import closing
 from select import select
+from shutil import copyfileobj
 
 try:
     from urllib import urlretrieve
@@ -380,11 +382,9 @@ class IgraphCCoreBuilder(object):
     """Class responsible for downloading and building the C core of igraph
     if it is not installed yet."""
 
-    def __init__(self, versions_to_try, remote_url=None,
-            show_progress_bar=True, tmproot=None):
+    def __init__(self, versions_to_try, remote_url=None, tmproot=None):
         self.versions_to_try = versions_to_try
         self.remote_url = remote_url
-        self.show_progress_bar = show_progress_bar
         self.tmproot = tmproot
         self._tmpdir = None
 
@@ -432,12 +432,10 @@ class IgraphCCoreBuilder(object):
         local_file_full_path = os.path.join(self.tmpdir, local_file)
 
         # Download the C core
-        if self.show_progress_bar:
-            urlretrieve(remote_url, local_file_full_path, reporthook=_progress_hook)
-            print("")
-        else:
-            print("Downloading %s... " % local_file)
-            urlretrieve(remote_url, local_file_full_path)
+        print("Downloading %s... " % local_file)
+        in_stream = urlopen(remote_url)
+        with open(local_file_full_path, "wb") as out_file:
+            copyfileobj(in_stream, out_file)
 
         # Extract it in the temporary directory
         print("Extracting %s..." % local_file)
@@ -566,7 +564,6 @@ class BuildConfiguration(object):
         self.extra_compile_args = []
         self.extra_link_args = []
         self.extra_objects = []
-        self.show_progress_bar = True
         self.static_extension = False
         self.download_igraph_if_needed = True
         self.use_pkgconfig = True
@@ -701,8 +698,7 @@ class BuildConfiguration(object):
             print("We will also try: %s" % ", ".join(self.c_core_versions[1:]))
         print("")
 
-        igraph_builder = IgraphCCoreBuilder(self.c_core_versions, self.c_core_url,
-                show_progress_bar=self.show_progress_bar)
+        igraph_builder = IgraphCCoreBuilder(self.c_core_versions, self.c_core_url)
         if not igraph_builder.run():
             print("Could not download and compile the C core of igraph.")
             print("")
@@ -747,9 +743,6 @@ class BuildConfiguration(object):
             elif option == "--no-pkg-config":
                 opts_to_remove.append(idx)
                 self.use_pkgconfig = False
-            elif option == "--no-progress-bar":
-                opts_to_remove.append(idx)
-                self.show_progress_bar = False
             elif option == "--no-wait":
                 opts_to_remove.append(idx)
                 self.wait = False
