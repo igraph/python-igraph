@@ -1826,6 +1826,32 @@ PyObject *igraphmodule_Graph_radius(igraphmodule_GraphObject * self,
   return PyFloat_FromDouble((double)radius);
 }
 
+/** \ingroup python_interface_graph
+ * \brief Converts a tree graph into a Prufer sequence
+ * \return the Prufer sequence as a Python object
+ * \sa igraph_to_prufer
+ */
+PyObject *igraphmodule_Graph_to_prufer(igraphmodule_GraphObject * self)
+{
+  igraph_vector_int_t result;
+  PyObject *list;
+
+  if (igraph_vector_int_init(&result, 0)) {
+    return NULL;
+  }
+
+  if (igraph_to_prufer(&self->g, &result)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_int_destroy(&result);
+    return NULL;
+  }
+
+  list = igraphmodule_vector_int_t_to_PyList(&result);
+  igraph_vector_int_destroy(&result);
+
+  return list;
+}
+
 /**********************************************************************
  * Deterministic and non-deterministic graph generators               *
  **********************************************************************/
@@ -13619,6 +13645,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  forward topological order -- all vertices come before their\n"
    "  successors. If L{IN}, all vertices come before their ancestors.\n"
    "@return: a possible topological ordering as a list"},
+
+  /* interface to to_prufer */
+  {"to_prufer",
+   (PyCFunction) igraphmodule_Graph_to_prufer,
+   METH_NOARGS,
+   "to_prufer()\n\n"
+   "Converts a tree graph into a Prufer sequence.\n\n"
+   "@return: the Prufer sequence as a list"
+  },
 
   // interface to igraph_transitivity_undirected
   {"transitivity_undirected",
