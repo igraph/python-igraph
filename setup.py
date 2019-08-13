@@ -27,8 +27,8 @@ TESTING_IN_CI = "CONTINUOUS_INTEGRATION" in os.environ
 IS_PYPY = platform.python_implementation() == "PyPy"
 
 ###########################################################################
-## Here be ugly workarounds. These must be run before setuptools
-## is imported.
+# Here be ugly workarounds. These must be run before setuptools
+# is imported.
 
 
 class Workaround(object):
@@ -191,7 +191,6 @@ workarounds.execute()
 
 try:
     from setuptools import setup
-    from setuptools.command.build_ext import build_ext
 
     build_py = None
 except ImportError:
@@ -211,16 +210,14 @@ import sys
 import tarfile
 import tempfile
 
-from contextlib import closing
 from select import select
 from shutil import copyfileobj
 
 try:
-    from urllib import urlretrieve
     from urllib2 import Request, urlopen, URLError
-except:
+except ImportError:
     # Maybe Python 3?
-    from urllib.request import Request, urlopen, urlretrieve
+    from urllib.request import Request, urlopen
     from urllib.error import URLError
 
 from distutils.core import Extension
@@ -353,7 +350,7 @@ def http_url_exists(url):
             return "HEAD"
 
     try:
-        response = urlopen(HEADRequest(url))
+        urlopen(HEADRequest(url))
         return True
     except URLError:
         return False
@@ -503,7 +500,7 @@ class IgraphCCoreBuilder(object):
         elif local_file.lower().endswith(".tar.bz2"):
             archive = tarfile.open(local_file_full_path, "r:bz2")
         else:
-            print("Cannot extract unknown archive format: %s." % ext)
+            print("Cannot extract unknown archive format: %s." % local_file)
             print("")
             return False
         archive.extractall(self.tmpdir)
