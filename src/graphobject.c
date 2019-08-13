@@ -1761,7 +1761,7 @@ PyObject *igraphmodule_Graph_knn(igraphmodule_GraphObject *self,
     return NULL;
   }
 
-  if (igraph_avg_nearest_neighbor_degree(&self->g, vids, &knn, &knnk, weights)) {
+  if (igraph_avg_nearest_neighbor_degree(&self->g, vids, IGRAPH_ALL, IGRAPH_ALL, &knn, &knnk, weights)) {
     igraphmodule_handle_igraph_error();
     igraph_vs_destroy(&vids);
     igraph_vector_destroy(&knn);
