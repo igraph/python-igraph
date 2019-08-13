@@ -434,7 +434,7 @@ class IgraphCCoreBuilder(object):
     """Class responsible for downloading and building the C core of igraph
     if it is not installed yet."""
 
-    def __init__(self, versions_to_try, remote_url=None, tmproot=None):
+    def __init__(self, versions_to_try=(), remote_url=None, tmproot=None):
         self.versions_to_try = versions_to_try
         self.remote_url = remote_url
         self.tmproot = tmproot
@@ -451,6 +451,62 @@ class IgraphCCoreBuilder(object):
             self._tmpdir = tempfile.mkdtemp(prefix="igraph.", dir=self.tmproot)
             atexit.register(cleanup_tmpdir, self._tmpdir)
         return self._tmpdir
+
+    def compile_in(self, folder):
+        """Compiles igraph from its source code in the given folder."""
+        cwd = os.getcwd()
+        try:
+            os.chdir(folder)
+
+            # Run the bootstrap script if we have downloaded a tarball from
+            # Github
+            if os.path.isfile("bootstrap.sh") and not os.path.isfile("configure"):
+                print("Bootstrapping igraph...")
+                retcode = subprocess.call("sh bootstrap.sh", shell=True)
+                if retcode:
+                    return False
+
+            # Patch ltmain.sh so it does not freak out on OS X when the build
+            # directory contains spaces
+            with open("ltmain.sh") as infp:
+                with open("ltmain.sh.new", "w") as outfp:
+                    for line in infp:
+                        if line.endswith("cd $darwin_orig_dir\n"):
+                            line = line.replace(
+                                "cd $darwin_orig_dir\n", 'cd "$darwin_orig_dir"\n'
+                            )
+                        outfp.write(line)
+            os.rename("ltmain.sh.new", "ltmain.sh")
+
+            print("Configuring igraph...")
+            retcode = subprocess.call(
+                ["./configure", "--disable-tls", "--disable-gmp"],
+                env=self.enhanced_env(CFLAGS="-fPIC", CXXFLAGS="-fPIC"),
+            )
+            if retcode:
+                return False
+
+            print("Building igraph...")
+            retcode = subprocess.call("make", shell=True)
+            if retcode:
+                return False
+
+            libraries = []
+            for line in open("igraph.pc"):
+                if line.startswith("Libs: ") or line.startswith("Libs.private: "):
+                    words = line.strip().split()
+                    libraries.extend(
+                        word[2:] for word in words if word.startswith("-l")
+                    )
+
+            if not libraries:
+                # Educated guess
+                libraries = ["igraph"]
+
+            return libraries
+
+        finally:
+            os.chdir(cwd)
 
     def download_and_compile(self):
         """Downloads and compiles the C core of igraph."""
@@ -521,71 +577,22 @@ class IgraphCCoreBuilder(object):
             return False
 
         # Try to compile
-        cwd = os.getcwd()
-        try:
-            os.chdir(self.builddir)
-
-            # Run the bootstrap script if we have downloaded a tarball from
-            # Github
-            if os.path.isfile("bootstrap.sh") and not os.path.isfile("configure"):
-                print("Bootstrapping igraph...")
-                retcode = subprocess.call("sh bootstrap.sh", shell=True)
-                if retcode:
-                    return False
-
-            # Patch ltmain.sh so it does not freak out on OS X when the build
-            # directory contains spaces
-            with open("ltmain.sh") as infp:
-                with open("ltmain.sh.new", "w") as outfp:
-                    for line in infp:
-                        if line.endswith("cd $darwin_orig_dir\n"):
-                            line = line.replace(
-                                "cd $darwin_orig_dir\n", 'cd "$darwin_orig_dir"\n'
-                            )
-                        outfp.write(line)
-            os.rename("ltmain.sh.new", "ltmain.sh")
-
-            print("Configuring igraph...")
-            retcode = subprocess.call(
-                ["./configure", "--disable-tls", "--disable-gmp"],
-                env=self.enhanced_env(CFLAGS="-fPIC", CXXFLAGS="-fPIC"),
-            )
-            if retcode:
-                return False
-
-            print("Building igraph...")
-            retcode = subprocess.call("make", shell=True)
-            if retcode:
-                return False
-
-            libraries = []
-            for line in open(os.path.join(self.builddir, "igraph.pc")):
-                if line.startswith("Libs: ") or line.startswith("Libs.private: "):
-                    words = line.strip().split()
-                    libraries.extend(
-                        word[2:] for word in words if word.startswith("-l")
-                    )
-
-            if not libraries:
-                # Educated guess
-                libraries = ["igraph"]
-
-        finally:
-            os.chdir(cwd)
+        libraries = self.compile_in(self.builddir)
 
         # Compilation succeeded; copy everything into vendor/build/igraph
-        create_dir_unless_exists("vendor", "build", "igraph")
-        ensure_dir_does_not_exist("vendor", "build", "igraph", "include")
-        ensure_dir_does_not_exist("vendor", "build", "igraph", "lib")
-        shutil.copytree(
-            os.path.join(self.builddir, "include"),
-            os.path.join("vendor", "build", "igraph", "include"),
+        self.copy_build_artifacts_from(
+            self.builddir,
+            to=os.path.join("vendor", "build", "igraph"),
+            libraries=libraries,
         )
-        shutil.copytree(
-            os.path.join(self.builddir, "src", ".libs"),
-            os.path.join("vendor", "build", "igraph", "lib"),
-        )
-        with open(os.path.join("vendor", "build", "igraph", "build.cfg"), "w") as f:
+
+    def copy_build_artifacts_from(self, source, to, libraries):
+        create_dir_unless_exists(to)
+        ensure_dir_does_not_exist(to, "include")
+        ensure_dir_does_not_exist(to, "lib")
+        shutil.copytree(os.path.join(source, "include"), os.path.join(to, "include"))
+        shutil.copytree(os.path.join(source, "src", ".libs"), os.path.join(to, "lib"))
+        with open(os.path.join(to, "build.cfg"), "w") as f:
             f.write(repr(libraries))
 
         return True
@@ -687,6 +694,17 @@ class BuildConfiguration(object):
                     buildcfg.use_built_igraph()
                     detected = True
 
+                # If igraph is provided as a git submodule, use that
+                if not detected:
+                    if os.path.isfile(
+                        os.path.join("vendor", "source", "igraph", "configure.ac")
+                    ):
+                        detected = buildcfg.compile_igraph_from_vendor_source()
+                        if detected:
+                            buildcfg.use_built_igraph()
+                        else:
+                            sys.exit(1)
+
                 # Download and compile igraph if the user did not disable it and
                 # we do not know the libraries from pkg-config yet
                 if not detected:
@@ -730,6 +748,25 @@ class BuildConfiguration(object):
                     hook(self)
 
         return custom_build_ext
+
+    def compile_igraph_from_vendor_source(self):
+        """Compiles igraph from the vendored source code inside `vendor/igraph/source`.
+        This folder typically comes from a git submodule.
+        """
+        path = os.path.join("vendor", "source", "igraph")
+        print("We are going to compile the C core of igraph from %s" % path)
+        print("")
+
+        igraph_builder = IgraphCCoreBuilder()
+        libraries = igraph_builder.compile_in(path)
+        if not libraries or not igraph_builder.copy_build_artifacts_from(
+            path, to=os.path.join("vendor", "build", "igraph"), libraries=libraries
+        ):
+            print("Could not compile the C core of igraph.")
+            print("")
+            return False
+        else:
+            return True
 
     def configure(self, ext):
         """Configures the given Extension object using this build configuration."""
