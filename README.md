@@ -51,10 +51,7 @@ If you want to add a feature, fix a bug, or suggest an improvement, open an
 issue on this repository and we'll try to answer. If you have a piece of code
 that you would like to see included in the main tree, open a PR on this repo.
 
-To start developing `python-igraph`, you need a bleeding edge version of
-both `python-igraph` and its core C library, `igraph`. Moreover, you probably
-do not want either of those to install both locally so they don't interfere
-with any systemwide installations. Follow the steps below (these are
+To start developing `python-igraph`, follow the steps below (these are
 for UNIX, Windows users should change the system commands a little).
 
 First, clone this repo (e.g. via https) and enter the folder:
