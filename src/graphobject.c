@@ -4798,13 +4798,17 @@ PyObject *igraphmodule_Graph_get_all_simple_paths(igraphmodule_GraphObject *
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_integer_t from;
   igraph_vs_t to;
-  PyObject *list, *from_o, *mode_o=Py_None, *to_o=Py_None;
+  igraph_integer_t cutoff;
+  PyObject *list, *from_o, *mode_o=Py_None, *to_o=Py_None, *cutoff_o=Py_None;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist, &from_o,
-        &to_o, &mode_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &from_o,
+        &to_o, &cutoff_o, &mode_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vid(cutoff_o, &cutoff, &self->g))
     return NULL;
 
   if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
@@ -4819,7 +4823,7 @@ PyObject *igraphmodule_Graph_get_all_simple_paths(igraphmodule_GraphObject *
     return NULL;
   }
 
-  if (igraph_get_all_simple_paths(&self->g, &res, from, to, mode)) {
+  if (igraph_get_all_simple_paths(&self->g, &res, from, to, cutoff, mode)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_int_destroy(&res);
     igraph_vs_destroy(&to);

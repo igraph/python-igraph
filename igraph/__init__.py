@@ -622,7 +622,7 @@ class Graph(GraphBase):
                    "please use Graph.get_inclist() instead")
         return self.get_inclist(*args, **kwds)
 
-    def get_all_simple_paths(self, v, to=None, mode=OUT):
+    def get_all_simple_paths(self, v, to=None, cutoff=-1, mode=OUT):
         """get_all_simple_paths(v, to=None, mode=OUT)
 
         Calculates all the simple paths from a given node to some other nodes
@@ -640,6 +640,8 @@ class Graph(GraphBase):
           paths. This can be a single vertex ID, a list of vertex IDs, a single
           vertex name, a list of vertex names or a L{VertexSeq} object. C{None}
           means all the vertices.
+        @param cutoff: maximum length of path that is considered. If negative,
+          paths of all lengths are considered.
         @param mode: the directionality of the paths. L{IN} means to calculate
           incoming paths, L{OUT} means to calculate outgoing paths, L{ALL} means
           to calculate both ones.
