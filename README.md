@@ -40,11 +40,52 @@ bleeding edge version, you need to instruct the setup script to download the
 latest development version of the C core as well:
 
 ```
-$ sudo python setup.py develop --c-core-url https://github.com/igraph/igraph/archive/master.tar.gz
+$ sudo python setup.py develop --no-pkg-config --c-core-url https://github.com/igraph/igraph/archive/master.tar.gz
 ```
+
+## Contributing
+
+Contributions to `python-igraph` are welcome!
+
+If you want to add a feature, fix a bug, or suggest an improvement, open an
+issue on this repository and we'll try to answer. If you have a piece of code
+that you would like to see included in the main tree, open a PR on this repo.
+
+To start developing `python-igraph`, you need a bleeding edge version of
+both `python-igraph` and its core C library, `igraph`. Moreover, you probably
+do not want either of those to install both locally so they don't interfere
+with any systemwide installations. Follow the steps below (these are
+for UNIX, Windows users should change the system commands a little).
+
+First, clone this repo (e.g. via https) and enter the folder:
+```bash
+git clone https://github.com/igraph/python-igraph.git
+cd python-igraph
+```
+Second, build both `igraph` and `python-igraph` at the same time:
+```bash
+python setup.py build --c-core-url https://github.com/igraph/igraph/archive/master.tar.gz --no-pkg-config
+```
+**NOTE**: Building requires `autotools`, a C compiler, and a few more dependencies.
+
+This command creates a subfolder within `build` which you can insert into your
+`PYTHONPATH` to import. You need to move out of the main folder to import
+because there is a subfolder called `igraph` too. For instance on Linux:
+```bash
+cd ..
+PYTHONPATH=$(pwd)/python-igraph/build/lib.linux-x86_64-3.7:$PYTHONPATH python
+>>> import igraph
+>>> g = igraph.Graph.Full(10)
+...
+```
+You can now play with your changes and see the results. Every time you
+make changes to the `python-graph` code, you need to rebuild by calling
+the second step above. After the first build, your `igraph` C core library
+is compiled already so rebuilding is much faster.
 
 ## Notes
 
+### Pypy
 This version of python-igraph is compatible with [PyPy](http://pypy.org/) and
 is regularly tested on [PyPy](http://pypy.org/) with ``tox``. However, the
 PyPy version falls behind the CPython version in terms of performance; for
