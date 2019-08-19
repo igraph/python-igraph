@@ -4793,7 +4793,7 @@ PyObject *igraphmodule_Graph_get_all_simple_paths(igraphmodule_GraphObject *
                                                     self, PyObject * args,
                                                     PyObject * kwds)
 {
-  static char *kwlist[] = { "v", "to", "mode", NULL };
+  static char *kwlist[] = { "v", "to", "cutoff", "mode", NULL };
   igraph_vector_int_t res;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_integer_t from;
@@ -4808,7 +4808,7 @@ PyObject *igraphmodule_Graph_get_all_simple_paths(igraphmodule_GraphObject *
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
     return NULL;
 
-  if (igraphmodule_PyObject_to_vid(cutoff_o, &cutoff, &self->g))
+  if (PyInt_AsInt(cutoff_o, &cutoff))
     return NULL;
 
   if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
@@ -13178,7 +13178,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"_get_all_simple_paths",
    (PyCFunction) igraphmodule_Graph_get_all_simple_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "_get_all_simple_paths(v, to=None, mode=OUT)\n\n"
+   "_get_all_simple_paths(v, to=None, cutoff=-1, mode=OUT)\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.get_all_simple_paths()\n\n"
   },
