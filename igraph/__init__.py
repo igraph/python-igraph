@@ -649,7 +649,7 @@ class Graph(GraphBase):
           reachable node in the graph in a list. Note that in case of mode=L{IN},
           the vertices in a path are returned in reversed order!
         """
-        paths = self._get_all_simple_paths(v, to, mode)
+        paths = self._get_all_simple_paths(v, to, cutoff, mode)
         prev = 0
         result = []
         for index, item in enumerate(paths):
