@@ -4793,7 +4793,7 @@ PyObject *igraphmodule_Graph_get_all_simple_paths(igraphmodule_GraphObject *
                                                     self, PyObject * args,
                                                     PyObject * kwds)
 {
-  static char *kwlist[] = { "v", "to", "mode", NULL };
+  static char *kwlist[] = { "v", "to", "cutoff", "mode", NULL };
   igraph_vector_int_t res;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_integer_t from;
