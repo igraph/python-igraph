@@ -1661,6 +1661,73 @@ class Graph(GraphBase):
     #############################################
     # Auxiliary I/O functions
 
+    def to_networkx(self):
+        """Converts the graph to networkx format"""
+        import networkx as nx
+
+        # Graph and graph attributes
+        kw = {x: self[x] for x in self.attributes()}
+        if not self.is_directed():
+            g = nx.Graph(**kw)
+        else:
+            g = nx.DiGraph(**kw)
+
+        # Nodes and node attributes
+        vattr = self.vs.attributes()
+        kw = {v: self.vs[v] for v in vattr}
+        g.add_nodes_from(range(self.vcount()), **kw)
+
+        # Edges and edge attributes
+        eattr = self.es.attributes()
+        kw = {v: self.es[v] for v in eattr}
+        g.add_edges_from(self.get_edgelist(), **kw)
+
+        return g
+
+    @classmethod
+    def from_networkx(klass, g):
+        """Converts the graph from networkx format
+
+        Vertex names will be converted to "_nx_name" attribute and the vertices
+        will get new ids from 0 up (as standard in igraph).
+
+        @param g: networkx Graph or DiGraph
+        """
+        import networkx as nx
+
+        # Graph attributes
+        gattr = dict(g.graph)
+
+        # Nodes
+        vnames = list(g.nodes)
+        vattr = {'_nx_name': vnames}
+        vcount = len(vnames)
+        vd = {v: i for i, v in enumerate(vnames)}
+
+        # Edges
+        enames = list(g.edges)
+        edges = [(vd[v1], vd[v2]) for v1, v2 in enames]
+
+        graph = klass(
+            n=vcount,
+            edges=edges,
+            directed=isinstance(g, nx.DiGraph),
+            graph_attrs=gattr,
+            vertex_attrs=vattr)
+
+        # Node attributes
+        for v, datum in g.nodes.data():
+            for key, val in datum.items():
+                graph.vs[vd[v]][key] = val
+
+        # Edge attributes
+        for v1, v2, datum in g.edges.data():
+            eid = graph.get_eid(vd[v1], vd[v2])
+            for key, val in datum.items():
+                graph.es[eid][key] = val
+
+        return graph
+
     def write_adjacency(self, f, sep=" ", eol="\n", *args, **kwds):
         """Writes the adjacency matrix of the graph to the given file
 
