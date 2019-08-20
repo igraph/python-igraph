@@ -1665,12 +1665,21 @@ class Graph(GraphBase):
         """Converts the graph to networkx format"""
         import networkx as nx
 
-        # Graph and graph attributes
-        kw = {x: self[x] for x in self.attributes()}
-        if not self.is_directed():
-            g = nx.Graph(**kw)
+        # Graph: decide on directness and mutliplicity
+        if any(self.is_multiple()):
+            if not self.is_directed():
+                klass = nx.MultiDiGraph
+            else:
+                klass = nx.MultiGraph
         else:
-            g = nx.DiGraph(**kw)
+            if not self.is_directed():
+                klass = nx.Graph
+            else:
+                klass = nx.DiGraph
+
+        # Graph attributes
+        kw = {x: self[x] for x in self.attributes()}
+        g = klass(**kw)
 
         # Nodes and node attributes
         vattr = self.vs.attributes()
@@ -1678,6 +1687,8 @@ class Graph(GraphBase):
         g.add_nodes_from(range(self.vcount()), **kw)
 
         # Edges and edge attributes
+        # NOTE: the order of edges might change, especially in case of
+        # multigraphs (i.e. edges have "color")
         eattr = self.es.attributes()
         kw = {v: self.es[v] for v in eattr}
         g.add_edges_from(self.get_edgelist(), **kw)
