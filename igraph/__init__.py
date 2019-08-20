@@ -1686,7 +1686,7 @@ class Graph(GraphBase):
 
     @classmethod
     def from_networkx(klass, g):
-        """Converts the graph from networkx format
+        """Converts the graph from networkx
 
         Vertex names will be converted to "_nx_name" attribute and the vertices
         will get new ids from 0 up (as standard in igraph).
@@ -1725,6 +1725,99 @@ class Graph(GraphBase):
             eid = graph.get_eid(vd[v1], vd[v2])
             for key, val in datum.items():
                 graph.es[eid][key] = val
+
+        return graph
+
+    def to_graph_tool(
+            self,
+            graph_attributes=None,
+            vertex_attributes=None,
+            edge_attributes=None):
+        """Converts the graph to graph-tool
+
+        @param graph_attributes: dictionary of graph attributes to transfer.
+          Keys are attributes from the graph, values are data types (see
+          below). C{None} means no graph attributes are transferred.
+        @param vertex_attributes: dictionary of vertex attributes to transfer.
+          Keys are attributes from the vertices, values are data types (see
+          below). C{None} means no vertex attributes are transferred.
+        @param edge_attributes: dictionary of edge attributes to transfer.
+          Keys are attributes from the edges, values are data types (see
+          below). C{None} means no vertex attributes are transferred.
+
+        Data types: graph-tool only accepts specific data types. See the
+        following web page for a list:
+
+        https://graph-tool.skewed.de/static/doc/quickstart.html
+        """
+        import graph_tool as gt
+
+        # Graph
+        g = gt.Graph(directed=self.is_directed())
+
+        # Nodes
+        vc = self.vcount()
+        g.add_vertex(vc)
+
+        # Edges
+        g.add_edge_list(self.get_edgelist())
+
+        # Graph attributes
+        if graph_attributes is not None:
+            for x, dtype in graph_attributes.items():
+                gprop = g.new_graph_property(str(dtype))
+                gprop[g] = self[x]
+
+        # Vertex attributes
+        if vertex_attributes is not None:
+            for i in range(vc):
+                for x, dtype in vertex_attributes.items():
+                    vprop = g.new_vertex_property(str(dtype))
+                    vprop[g.vertex(i)] = self.vs[i][x]
+
+        # Edges and edge attributes
+        if edge_attributes is not None:
+            for e in g.edges():
+                eid = self.get_eid(int(e[0]), int(e[1]))
+                for x, dtype in edge_attributes.items():
+                    eprop = g.new_edge_property(str(dtype))
+                    eprop[e] = self.es[eid][x]
+
+        return g
+
+    @classmethod
+    def from_graph_tool(klass, g):
+        """Converts the graph from graph-tool
+
+        @param g: graph-tool Graph
+        """
+        # Graph attributes
+        gattr = dict(g.graph_properties)
+
+        # Nodes
+        vcount = g.num_vertices()
+
+        # Edges
+        edges = [(int(v1), int(v2)) for v1, v2 in g.edges()]
+
+        graph = klass(
+            n=vcount,
+            edges=edges,
+            directed=g.is_directed(),
+            graph_attrs=gattr)
+
+        #TODO:
+        ## Node attributes
+        #for i in enumerate(vcount):
+        #    v = g.get_vertex(i)
+        #    for key, val in g.vertex_properties.items():
+        #        graph.vs[i][key] = val[i]
+
+        ## Edge attributes
+        #for e in g.edges():
+        #    eid = graph.get_eid(int(e[0]), int(e[1]))
+        #    for key, val in g.edge_properties.items():
+        #        graph.es[eid][key] = val
 
         return graph
 
