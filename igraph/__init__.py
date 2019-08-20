@@ -1667,15 +1667,15 @@ class Graph(GraphBase):
 
         # Graph: decide on directness and mutliplicity
         if any(self.is_multiple()):
-            if not self.is_directed():
+            if self.is_directed():
                 klass = nx.MultiDiGraph
             else:
                 klass = nx.MultiGraph
         else:
-            if not self.is_directed():
-                klass = nx.Graph
-            else:
+            if self.is_directed():
                 klass = nx.DiGraph
+            else:
+                klass = nx.Graph
 
         # Graph attributes
         kw = {x: self[x] for x in self.attributes()}
@@ -1715,14 +1715,11 @@ class Graph(GraphBase):
         vcount = len(vnames)
         vd = {v: i for i, v in enumerate(vnames)}
 
-        # Edges
-        enames = list(g.edges)
-        edges = [(vd[v1], vd[v2]) for v1, v2 in enames]
-
+        # NOTE: we do not need a special class for multigraphs, it is taken
+        # care for at the edge level rather than at the graph level.
         graph = klass(
             n=vcount,
-            edges=edges,
-            directed=isinstance(g, nx.DiGraph),
+            directed=g.is_directed(),
             graph_attrs=gattr,
             vertex_attrs=vattr)
 
@@ -1731,11 +1728,14 @@ class Graph(GraphBase):
             for key, val in datum.items():
                 graph.vs[vd[v]][key] = val
 
-        # Edge attributes
-        for v1, v2, datum in g.edges.data():
-            eid = graph.get_eid(vd[v1], vd[v2])
+        # Edges and edge attributes
+        # NOTE: we need to do both together to deal well with multigraphs
+        # Each e might have a length of 2 (graphs) or 3 (multigraphs, the
+        # third element is the "color" of the edge)
+        for e, (_, _, datum) in zip(g.edges, g.edges.data()):
+            eid = graph.add_edge(vd[e[0]], vd[e[1]])
             for key, val in datum.items():
-                graph.es[eid][key] = val
+                eid[key] = val
 
         return graph
 
