@@ -1760,6 +1760,13 @@ class Graph(GraphBase):
         following web page for a list:
 
         https://graph-tool.skewed.de/static/doc/quickstart.html
+
+        NOTE: because of the restricted data types in graph-tool, vertex and
+        edge attributes require to be type-consistent across all vertices or
+        edges. If you set the property for only some vertices/edges, the other
+        will be tagged as None in python-igraph, so they can only be converted
+        to graph-tool with the type 'object' and any other conversion will
+        fail.
         """
         import graph_tool as gt
 
@@ -1770,29 +1777,33 @@ class Graph(GraphBase):
         vc = self.vcount()
         g.add_vertex(vc)
 
-        # Edges
-        g.add_edge_list(self.get_edgelist())
-
         # Graph attributes
         if graph_attributes is not None:
             for x, dtype in graph_attributes.items():
+                # Strange syntax for setting internal properties
                 gprop = g.new_graph_property(str(dtype))
-                gprop[g] = self[x]
+                g.graph_properties[x] = gprop
+                g.graph_properties[x] = self[x]
 
         # Vertex attributes
         if vertex_attributes is not None:
-            for i in range(vc):
-                for x, dtype in vertex_attributes.items():
-                    vprop = g.new_vertex_property(str(dtype))
-                    vprop[g.vertex(i)] = self.vs[i][x]
+            for x, dtype in vertex_attributes.items():
+                # Create a new vertex property
+                g.vertex_properties[x] = g.new_vertex_property(str(dtype))
+                # Fill the values from the igraph.Graph
+                for i in range(vc):
+                    g.vertex_properties[x][g.vertex(i)] = self.vs[i][x]
 
         # Edges and edge attributes
         if edge_attributes is not None:
-            for e in g.edges():
-                eid = self.get_eid(int(e[0]), int(e[1]))
+            for x, dtype in edge_attributes.items():
+                g.edge_properties[x] = g.new_edge_property(str(dtype))
+        for edge in self.es:
+            e = g.add_edge(edge.source, edge.target)
+            if edge_attributes is not None:
                 for x, dtype in edge_attributes.items():
-                    eprop = g.new_edge_property(str(dtype))
-                    eprop[e] = self.es[eid][x]
+                    prop = edge.attributes().get(x, None)
+                    g.edge_properties[x][e] = prop
 
         return g
 
@@ -1808,27 +1819,25 @@ class Graph(GraphBase):
         # Nodes
         vcount = g.num_vertices()
 
-        # Edges
-        edges = [(int(v1), int(v2)) for v1, v2 in g.edges()]
-
+        # Graph
         graph = klass(
             n=vcount,
-            edges=edges,
             directed=g.is_directed(),
             graph_attrs=gattr)
 
-        #TODO:
-        ## Node attributes
-        #for i in enumerate(vcount):
-        #    v = g.get_vertex(i)
-        #    for key, val in g.vertex_properties.items():
-        #        graph.vs[i][key] = val[i]
+        # Node attributes
+        for key, val in g.vertex_properties.items():
+            prop = val.get_array()
+            for i in range(vcount):
+                graph.vs[i][key] = prop[i]
 
-        ## Edge attributes
-        #for e in g.edges():
-        #    eid = graph.get_eid(int(e[0]), int(e[1]))
-        #    for key, val in g.edge_properties.items():
-        #        graph.es[eid][key] = val
+        # Edges
+        # NOTE: the order the edges are put in is necessary to set the
+        # attributes later on
+        for e in g.edges():
+            edge = graph.add_edge(int(e.source()), int(e.target()))
+            for key, val in g.edge_properties.items():
+                edge[key] = val[e]
 
         return graph
 

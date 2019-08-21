@@ -8,6 +8,18 @@ from igraph import *
 from igraph.test.utils import temporary_file
 
 
+try:
+    import networkx as nx
+except ImportError:
+    nx = None
+
+
+try:
+    import graph_tool as gt
+except ImportError:
+    gt = None
+
+
 class ForeignTests(unittest.TestCase):
     def testDIMACS(self):
         with temporary_file(u"""\
@@ -231,6 +243,198 @@ class ForeignTests(unittest.TestCase):
             self.assertTrue(g.vcount() == 3 and g.ecount() == 1 and
                 not g.is_directed())
             g.write_pickle(tmpfname)
+
+    @unittest.skipIf(nx is None, "test case depends on networkx")
+    def testGraphNetworkx(self):
+        '''Export simple graphs to/from networkx'''
+        # Undirected
+        g = Graph.Ring(10)
+        g['gattr'] = 'graph_attribute'
+        g.vs['vattr'] = list(range(g.vcount()))
+        g.es['eattr'] = list(range(len(g.es)))
+
+        # Go to networkx and back
+        g_nx = g.to_networkx()
+        g2 = Graph.from_networkx(g_nx)
+
+        self.assertFalse(g2.is_directed())
+        self.assertTrue(g2.is_simple())
+        self.assertEqual(g.vcount(), g2.vcount())
+        self.assertEqual(sorted(g.get_edgelist()), sorted(g2.get_edgelist()))
+
+        # Test attributes
+        self.assertEqual(g.attributes(), g2.attributes())
+        self.assertEqual(
+                ['_nx_name'] + g.vertex_attributes(), g2.vertex_attributes())
+        self.assertEqual(g.edge_attributes(), g2.edge_attributes())
+        #TODO: check attribute contents (especially for edges)
+
+        # Directed
+        g = Graph.Ring(10, directed=True)
+
+        # Go to networkx and back
+        g_nx = g.to_networkx()
+        g2 = Graph.from_networkx(g_nx)
+
+        self.assertTrue(g2.is_directed())
+        self.assertTrue(g2.is_simple())
+        self.assertEqual(g.vcount(), g2.vcount())
+        self.assertEqual(sorted(g.get_edgelist()), sorted(g2.get_edgelist()))
+
+    @unittest.skipIf(nx is None, "test case depends on networkx")
+    def testMultigraphNetworkx(self):
+        '''Export simple graphs to/from networkx'''
+        # Undirected
+        g = Graph.Ring(10)
+        g.add_edge(0, 1)
+        g['gattr'] = 'graph_attribute'
+        g.vs['vattr'] = list(range(g.vcount()))
+        g.es['eattr'] = list(range(len(g.es)))
+
+        # Go to networkx and back
+        g_nx = g.to_networkx()
+        g2 = Graph.from_networkx(g_nx)
+
+        self.assertFalse(g2.is_directed())
+        self.assertFalse(g2.is_simple())
+        self.assertEqual(g.vcount(), g2.vcount())
+        self.assertEqual(sorted(g.get_edgelist()), sorted(g2.get_edgelist()))
+
+        # Test attributes
+        self.assertEqual(g.attributes(), g2.attributes())
+        self.assertEqual(
+                ['_nx_name'] + g.vertex_attributes(), g2.vertex_attributes())
+        self.assertEqual(g.edge_attributes(), g2.edge_attributes())
+        #TODO: check attribute contents (especially for edges)
+
+        # Directed
+        g = Graph.Ring(10, directed=True)
+        g.add_edge(0, 1)
+
+        # Go to networkx and back
+        g_nx = g.to_networkx()
+        g2 = Graph.from_networkx(g_nx)
+
+        self.assertTrue(g2.is_directed())
+        self.assertFalse(g2.is_simple())
+        self.assertEqual(g.vcount(), g2.vcount())
+        self.assertEqual(sorted(g.get_edgelist()), sorted(g2.get_edgelist()))
+
+    @unittest.skipIf(gt is None, "test case depends on graph-tool")
+    def testGraphGraphTool(self):
+        '''Export simple graphs to/from networkx'''
+        # Undirected
+        g = Graph.Ring(10)
+        g['gattr'] = 'graph_attribute'
+        g.vs['vattr'] = list(range(g.vcount()))
+        g.es['eattr'] = list(range(len(g.es)))
+
+        # Go to graph-tool and back
+        g_gt = g.to_graph_tool(
+            graph_attributes={'gattr': 'object'},
+            vertex_attributes={'vattr': 'int'},
+            edge_attributes={'eattr': 'int'})
+        g2 = Graph.from_graph_tool(g_gt)
+
+        self.assertFalse(g2.is_directed())
+        self.assertTrue(g2.is_simple())
+        self.assertEqual(g.vcount(), g2.vcount())
+        self.assertEqual(sorted(g.get_edgelist()), sorted(g2.get_edgelist()))
+
+        # Test attributes
+        self.assertEqual(g.attributes(), g2.attributes())
+        self.assertEqual(g.vertex_attributes(), g2.vertex_attributes())
+        for i, vertex in enumerate(g.vs):
+            vertex2 = g2.vs[i]
+            for an in vertex.attribute_names():
+                self.assertEqual(
+                    vertex.attributes()[an], vertex2.attributes()[an])
+        self.assertEqual(g.edge_attributes(), g2.edge_attributes())
+        for edge in g.es:
+            eid = g2.get_eid(edge.source, edge.target)
+            edge2 = g2.es[eid]
+            for an in edge.attribute_names():
+                self.assertEqual(edge.attributes()[an], edge2.attributes()[an])
+
+        # Directed
+        g = Graph.Ring(10, directed=True)
+
+        # Go to graph-tool and back
+        g_gt = g.to_graph_tool()
+
+        g2 = Graph.from_graph_tool(g_gt)
+
+        self.assertTrue(g2.is_directed())
+        self.assertTrue(g2.is_simple())
+        self.assertEqual(g.vcount(), g2.vcount())
+        self.assertEqual(sorted(g.get_edgelist()), sorted(g2.get_edgelist()))
+
+    @unittest.skipIf(gt is None, "test case depends on graph-tool")
+    def testMultigraphGraphTool(self):
+        '''Export simple graphs to/from graph-tool'''
+        # Undirected
+        g = Graph.Ring(10)
+        g.add_edge(0, 1)
+        g['gattr'] = 'graph_attribute'
+        g.vs['vattr'] = list(range(g.vcount()))
+        g.es['eattr'] = list(range(len(g.es)))
+
+        # Go to graph-tool and back
+        g_gt = g.to_graph_tool(
+            graph_attributes={'gattr': 'object'},
+            vertex_attributes={'vattr': 'int'},
+            edge_attributes={'eattr': 'int'})
+        g2 = Graph.from_graph_tool(g_gt)
+
+        self.assertFalse(g2.is_directed())
+        self.assertFalse(g2.is_simple())
+        self.assertEqual(g.vcount(), g2.vcount())
+        self.assertEqual(sorted(g.get_edgelist()), sorted(g2.get_edgelist()))
+
+        # Test attributes
+        self.assertEqual(g.attributes(), g2.attributes())
+        self.assertEqual(g.vertex_attributes(), g2.vertex_attributes())
+        for i, vertex in enumerate(g.vs):
+            vertex2 = g2.vs[i]
+            for an in vertex.attribute_names():
+                self.assertEqual(
+                    vertex.attributes()[an], vertex2.attributes()[an])
+        self.assertEqual(g.edge_attributes(), g2.edge_attributes())
+        # Testing parallel edges is a bit more tricky
+        edge2_found = set()
+        for edge in g.es:
+            # Go through all parallel edges between these two vertices
+            for edge2 in g2.es:
+                if edge2 in edge2_found:
+                    continue
+                if edge.source != edge2.source:
+                    continue
+                if edge.target != edge2.target:
+                    continue
+                # Check all attributes between these two
+                for an in edge.attribute_names():
+                    if edge.attributes()[an] != edge2.attributes()[an]:
+                        break
+                else:
+                    # Correspondence found
+                    edge2_found.add(edge2)
+                    break
+
+            else:
+                self.assertTrue(False)
+
+        # Directed
+        g = Graph.Ring(10, directed=True)
+        g.add_edge(0, 1)
+
+        # Go to graph-tool and back
+        g_gt = g.to_graph_tool()
+        g2 = Graph.from_graph_tool(g_gt)
+
+        self.assertTrue(g2.is_directed())
+        self.assertFalse(g2.is_simple())
+        self.assertEqual(g.vcount(), g2.vcount())
+        self.assertEqual(sorted(g.get_edgelist()), sorted(g2.get_edgelist()))
 
 
 def suite():
