@@ -1682,16 +1682,12 @@ class Graph(GraphBase):
         g = klass(**kw)
 
         # Nodes and node attributes
-        vattr = self.vs.attributes()
-        kw = {v: self.vs[v] for v in vattr}
-        g.add_nodes_from(range(self.vcount()), **kw)
+        for i, v in enumerate(self.vs):
+            g.add_node(i, **v.attributes())
 
         # Edges and edge attributes
-        # NOTE: the order of edges might change, especially in case of
-        # multigraphs (i.e. edges have "color")
-        eattr = self.es.attributes()
-        kw = {v: self.es[v] for v in eattr}
-        g.add_edges_from(self.get_edgelist(), **kw)
+        for edge in self.es:
+            g.add_edge(edge.source, edge.target, **edge.attributes())
 
         return g
 

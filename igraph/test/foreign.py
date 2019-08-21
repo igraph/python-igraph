@@ -265,9 +265,21 @@ class ForeignTests(unittest.TestCase):
         # Test attributes
         self.assertEqual(g.attributes(), g2.attributes())
         self.assertEqual(
-                ['_nx_name'] + g.vertex_attributes(), g2.vertex_attributes())
+            sorted(['vattr', '_nx_name']),
+            sorted(g2.vertex_attributes()))
+        for i, vertex in enumerate(g.vs):
+            vertex2 = g2.vs[i]
+            for an in vertex.attribute_names():
+                if an == 'vattr':
+                    continue
+                self.assertEqual(
+                    vertex.attributes()[an], vertex2.attributes()[an])
         self.assertEqual(g.edge_attributes(), g2.edge_attributes())
-        #TODO: check attribute contents (especially for edges)
+        for edge in g.es:
+            eid = g2.get_eid(edge.source, edge.target)
+            edge2 = g2.es[eid]
+            for an in edge.attribute_names():
+                self.assertEqual(edge.attributes()[an], edge2.attributes()[an])
 
         # Directed
         g = Graph.Ring(10, directed=True)
@@ -303,9 +315,31 @@ class ForeignTests(unittest.TestCase):
         # Test attributes
         self.assertEqual(g.attributes(), g2.attributes())
         self.assertEqual(
-                ['_nx_name'] + g.vertex_attributes(), g2.vertex_attributes())
+            sorted(['vattr', '_nx_name']),
+            sorted(g2.vertex_attributes()))
         self.assertEqual(g.edge_attributes(), g2.edge_attributes())
-        #TODO: check attribute contents (especially for edges)
+        # Testing parallel edges is a bit more tricky
+        edge2_found = set()
+        for edge in g.es:
+            # Go through all parallel edges between these two vertices
+            for edge2 in g2.es:
+                if edge2 in edge2_found:
+                    continue
+                if edge.source != edge2.source:
+                    continue
+                if edge.target != edge2.target:
+                    continue
+                # Check all attributes between these two
+                for an in edge.attribute_names():
+                    if edge.attributes()[an] != edge2.attributes()[an]:
+                        break
+                else:
+                    # Correspondence found
+                    edge2_found.add(edge2)
+                    break
+
+            else:
+                self.assertTrue(False)
 
         # Directed
         g = Graph.Ring(10, directed=True)
