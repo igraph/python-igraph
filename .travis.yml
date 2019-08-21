@@ -18,7 +18,7 @@ addons:
 
 install:
   - pip install tox-travis
-  - python ci/install_foreign_graph_packages.py
+  #- python ci/install_foreign_graph_packages.py
 
 script:
   - tox
