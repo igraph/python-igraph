@@ -246,7 +246,6 @@ class ForeignTests(unittest.TestCase):
 
     @unittest.skipIf(nx is None, "test case depends on networkx")
     def testGraphNetworkx(self):
-        '''Export simple graphs to/from networkx'''
         # Undirected
         g = Graph.Ring(10)
         g['gattr'] = 'graph_attribute'
@@ -295,7 +294,6 @@ class ForeignTests(unittest.TestCase):
 
     @unittest.skipIf(nx is None, "test case depends on networkx")
     def testMultigraphNetworkx(self):
-        '''Export simple graphs to/from networkx'''
         # Undirected
         g = Graph.Ring(10)
         g.add_edge(0, 1)
@@ -356,7 +354,6 @@ class ForeignTests(unittest.TestCase):
 
     @unittest.skipIf(gt is None, "test case depends on graph-tool")
     def testGraphGraphTool(self):
-        '''Export simple graphs to/from networkx'''
         # Undirected
         g = Graph.Ring(10)
         g['gattr'] = 'graph_attribute'
@@ -405,7 +402,6 @@ class ForeignTests(unittest.TestCase):
 
     @unittest.skipIf(gt is None, "test case depends on graph-tool")
     def testMultigraphGraphTool(self):
-        '''Export simple graphs to/from graph-tool'''
         # Undirected
         g = Graph.Ring(10)
         g.add_edge(0, 1)
