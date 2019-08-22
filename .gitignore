@@ -11,4 +11,4 @@ igraph/*.so
 .tox
 docker/wheelhouse
 Pipfile
-
+src/core

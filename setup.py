@@ -231,86 +231,17 @@ LIBIGRAPH_FALLBACK_LIBRARY_DIRS = []
 
 ###########################################################################
 
-
-def cleanup_tmpdir(dirname):
-    """Removes the given temporary directory if it exists."""
-    if dirname is not None and os.path.exists(dirname):
-        shutil.rmtree(dirname)
-
-
-def create_dir_unless_exists(*args):
-    """Creates a directory unless it exists already."""
-    path = os.path.join(*args)
-    if not os.path.isdir(path):
-        os.makedirs(path)
-
-
-def ensure_dir_does_not_exist(*args):
-    """Ensures that the given directory does not exist."""
-    path = os.path.join(*args)
-    if os.path.isdir(path):
-        shutil.rmtree(path)
-
-
 def exclude_from_list(items, items_to_exclude):
     """Excludes certain items from a list, keeping the original order of
     the remaining items."""
     itemset = set(items_to_exclude)
     return [item for item in items if item not in itemset]
 
-
-def find_static_library(library_name, library_path):
-    """Given the raw name of a library in `library_name`, tries to find a
-    static library with this name in the given `library_path`. `library_path`
-    is automatically extended with common library directories on Linux and Mac
-    OS X."""
-
-    variants = ["lib{0}.a", "{0}.a", "{0}.lib", "lib{0}.lib"]
-    if is_unix_like():
-        extra_libdirs = [
-            "/usr/local/lib64",
-            "/usr/local/lib",
-            "/usr/lib64",
-            "/usr/lib",
-            "/lib64",
-            "/lib",
-        ]
-    else:
-        extra_libdirs = []
-
-    for path in extra_libdirs:
-        if path not in library_path and os.path.isdir(path):
-            library_path.append(path)
-
-    for path in library_path:
-        for variant in variants:
-            full_path = os.path.join(path, variant.format(library_name))
-            if os.path.isfile(full_path):
-                return full_path
-
-
-def find_temporary_directory():
-    """Finds a suitable temporary directory where the installer can download the
-    C core of igraph if needed and returns its full path."""
-    script_file = sys.modules[__name__].__file__
-    if not script_file.endswith("setup.py"):
-        # We are probably running within an easy_install sandbox. Luckily this
-        # provides a temporary directory for us so we can use that
-        result = tempfile.gettempdir()
-    else:
-        # Use a temporary directory next to setup.py. We cannot blindly use
-        # the default (given by tempfile.tempdir) because it might be on a
-        # RAM disk that has not enough space
-        result = os.path.join(os.path.dirname(script_file), "tmp")
-    return os.path.abspath(result)
-
-
 def first(iterable):
     """Returns the first element from the given iterable."""
     for item in iterable:
         return item
     raise ValueError("iterable is empty")
-
 
 def get_output(args, encoding="utf-8"):
     """Returns the output of a command returning a single line of output."""
@@ -328,7 +259,6 @@ def get_output(args, encoding="utf-8"):
         stderr = str(stderr, encoding=encoding)
     return stdout, returncode
 
-
 def get_output_single_line(args, encoding="utf-8"):
     """Returns the output of a command returning a single line of output,
     stripped from any trailing newlines."""
@@ -339,298 +269,9 @@ def get_output_single_line(args, encoding="utf-8"):
         line = None
     return line, returncode
 
-
-def http_url_exists(url):
-    """Returns whether the given HTTP URL 'exists' in the sense that it is returning
-    an HTTP error code or not. A URL is considered to exist if it does not return
-    an HTTP error code."""
-
-    class HEADRequest(Request):
-        def get_method(self):
-            return "HEAD"
-
-    try:
-        urlopen(HEADRequest(url))
-        return True
-    except URLError:
-        return False
-
-
-def is_unix_like(platform=None):
-    """Returns whether the given platform is a Unix-like platform with the usual
-    Unix filesystem. When the parameter is omitted, it defaults to ``sys.platform``
-    """
-    platform = platform or sys.platform
-    platform = platform.lower()
-    return (
-        platform.startswith("linux")
-        or platform.startswith("darwin")
-        or platform.startswith("cygwin")
-    )
-
-
-def preprocess_fallback_config():
-    """Preprocesses the fallback include and library paths depending on the
-    platform."""
-    global LIBIGRAPH_FALLBACK_INCLUDE_DIRS
-    global LIBIGRAPH_FALLBACK_LIBRARY_DIRS
-    global LIBIGRAPH_FALLBACK_LIBRARIES
-
-    if os.name == "nt" and distutils.ccompiler.get_default_compiler() == "msvc":
-        # if this setup is run in the source checkout *and* the igraph msvc was build,
-        # this code adds the right library and include dir
-        all_msvc_dirs = glob.glob(os.path.join("..", "..", "igraph-*-msvc"))
-        if len(all_msvc_dirs) > 0:
-            if len(all_msvc_dirs) > 1:
-                print(
-                    "More than one MSVC build directory (..\\..\\igraph-*-msvc) found!"
-                )
-                print(
-                    "It could happen that setup.py uses the wrong one! Please remove all but the right one!\n\n"
-                )
-
-            msvc_builddir = all_msvc_dirs[-1]
-            if not os.path.exists(os.path.join(msvc_builddir, "Release")):
-                print(
-                    "There is no 'Release' dir in the MSVC build directory\n(%s)"
-                    % msvc_builddir
-                )
-                print("Please build the MSVC build first!\n")
-            else:
-                print("Using MSVC build dir as a fallback: %s\n\n" % msvc_builddir)
-                LIBIGRAPH_FALLBACK_INCLUDE_DIRS = [
-                    os.path.join(msvc_builddir, "include")
-                ]
-                LIBIGRAPH_FALLBACK_LIBRARY_DIRS = [
-                    os.path.join(msvc_builddir, "Release")
-                ]
-
-
-def version_variants(version):
-    """Given an igraph version number, returns a list of possible version
-    number variants to try when looking for a suitable nightly build of the
-    C core to download from igraph.org."""
-
-    result = [version]
-
-    # Strip any release tags
-    version, _, _ = version.partition(".post")
-    result.append(version)
-
-    # Add trailing ".0" as needed to ensure that we have at least
-    # major.minor.patch
-    parts = version.split(".")
-    while len(parts) < 3:
-        parts.append("0")
-        result.append(".".join(parts))
-
-    return result
-
-
-###########################################################################
-
-
-class IgraphCCoreBuilder(object):
-    """Class responsible for downloading and building the C core of igraph
-    if it is not installed yet."""
-
-    def __init__(self, versions_to_try=(), remote_url=None, tmproot=None):
-        self.versions_to_try = versions_to_try
-        self.remote_url = remote_url
-        self.tmproot = tmproot
-        self._tmpdir = None
-
-        if self.tmproot is None:
-            self.tmproot = find_temporary_directory()
-
-    @property
-    def tmpdir(self):
-        """The temporary directory in which igraph is downloaded and extracted."""
-        if self._tmpdir is None:
-            create_dir_unless_exists(self.tmproot)
-            self._tmpdir = tempfile.mkdtemp(prefix="igraph.", dir=self.tmproot)
-            atexit.register(cleanup_tmpdir, self._tmpdir)
-        return self._tmpdir
-
-    def compile_in(self, folder):
-        """Compiles igraph from its source code in the given folder."""
-        cwd = os.getcwd()
-        try:
-            os.chdir(folder)
-
-            # Run the bootstrap script if we have downloaded a tarball from
-            # Github
-            if os.path.isfile("bootstrap.sh") and not os.path.isfile("configure"):
-                print("Bootstrapping igraph...")
-                retcode = subprocess.call("sh bootstrap.sh", shell=True)
-                if retcode:
-                    return False
-
-            # Patch ltmain.sh so it does not freak out on OS X when the build
-            # directory contains spaces
-            with open("ltmain.sh") as infp:
-                with open("ltmain.sh.new", "w") as outfp:
-                    for line in infp:
-                        if line.endswith("cd $darwin_orig_dir\n"):
-                            line = line.replace(
-                                "cd $darwin_orig_dir\n", 'cd "$darwin_orig_dir"\n'
-                            )
-                        outfp.write(line)
-            os.rename("ltmain.sh.new", "ltmain.sh")
-
-            print("Configuring igraph...")
-            retcode = subprocess.call(
-                ["./configure", "--disable-tls", "--disable-gmp"],
-                env=self.enhanced_env(CFLAGS="-fPIC", CXXFLAGS="-fPIC"),
-            )
-            if retcode:
-                return False
-
-            print("Building igraph...")
-            retcode = subprocess.call("make", shell=True)
-            if retcode:
-                return False
-
-            libraries = []
-            for line in open("igraph.pc"):
-                if line.startswith("Libs: ") or line.startswith("Libs.private: "):
-                    words = line.strip().split()
-                    libraries.extend(
-                        word[2:] for word in words if word.startswith("-l")
-                    )
-
-            if not libraries:
-                # Educated guess
-                libraries = ["igraph"]
-
-            return libraries
-
-        finally:
-            os.chdir(cwd)
-
-    def download_and_compile(self):
-        """Downloads and compiles the C core of igraph."""
-
-        def _progress_hook(count, block_size, total_size):
-            if total_size < 0:
-                sys.stdout.write("\rDownloading %s... please wait." % local_file)
-            else:
-                percentage = count * block_size * 100.0 / total_size
-                percentage = min(percentage, 100.0)
-                sys.stdout.write(
-                    "\rDownloading %s... %.2f%%" % (local_file, percentage)
-                )
-            sys.stdout.flush()
-
-        # Determine the remote URL if needed
-        if self.remote_url is None:
-            self.version, remote_url = self.find_first_version()
-            if not self.version:
-                print(
-                    "Version %s of the C core of igraph is not found among the "
-                    "nightly builds." % self.versions_to_try[0]
-                )
-                print("Use the --c-core-version switch to try a different version.")
-                print("")
-                return False
-            local_file = "igraph-%s.tar.gz" % self.version
-        else:
-            remote_url = self.remote_url
-            _, _, local_file = remote_url.rpartition("/")
-
-        print("Using temporary directory: %s" % self.tmpdir)
-
-        # Now determine the full path where the C core will be downloaded
-        local_file_full_path = os.path.join(self.tmpdir, local_file)
-
-        # Download the C core
-        print("Downloading %s... " % local_file)
-        in_stream = urlopen(remote_url)
-        with open(local_file_full_path, "wb") as out_file:
-            copyfileobj(in_stream, out_file)
-
-        # Extract it in the temporary directory
-        print("Extracting %s..." % local_file)
-        if local_file.lower().endswith(".tar.gz"):
-            archive = tarfile.open(local_file_full_path, "r:gz")
-        elif local_file.lower().endswith(".tar.bz2"):
-            archive = tarfile.open(local_file_full_path, "r:bz2")
-        else:
-            print("Cannot extract unknown archive format: %s." % local_file)
-            print("")
-            return False
-        archive.extractall(self.tmpdir)
-
-        # Determine the name of the build directory
-        self.builddir = None
-        for name in os.listdir(self.tmpdir):
-            full_path = os.path.join(self.tmpdir, name)
-            if name.startswith("igraph") and os.path.isdir(full_path):
-                self.builddir = full_path
-                break
-
-        if not self.builddir:
-            print(
-                "Downloaded tarball did not contain a directory whose name "
-                "started with igraph; giving up build."
-            )
-            return False
-
-        # Try to compile
-        libraries = self.compile_in(self.builddir)
-
-        # Compilation succeeded; copy everything into vendor/build/igraph
-        self.copy_build_artifacts_from(
-            self.builddir,
-            to=os.path.join("vendor", "build", "igraph"),
-            libraries=libraries,
-        )
-
-    def copy_build_artifacts_from(self, source, to, libraries):
-        create_dir_unless_exists(to)
-        ensure_dir_does_not_exist(to, "include")
-        ensure_dir_does_not_exist(to, "lib")
-        shutil.copytree(os.path.join(source, "include"), os.path.join(to, "include"))
-        shutil.copytree(os.path.join(source, "src", ".libs"), os.path.join(to, "lib"))
-        with open(os.path.join(to, "build.cfg"), "w") as f:
-            f.write(repr(libraries))
-
-        return True
-
-    @staticmethod
-    def enhanced_env(**kwargs):
-        env = os.environ.copy()
-        for k, v in kwargs.items():
-            prev = os.environ.get(k)
-            env[k] = "{0} {1}".format(prev, v) if prev else v
-        return env
-
-    def find_first_version(self):
-        """Finds the first version of igraph that exists in the nightly build
-        repo from the version numbers provided in ``self.versions_to_try``."""
-        for version in self.versions_to_try:
-            remote_url = self.get_download_url(version=version)
-            if http_url_exists(remote_url):
-                return version, remote_url
-        return None, None
-
-    def get_download_url(self, version):
-        if TESTING_IN_TOX:
-            # Make sure that tox unit tests are not counted as real
-            # igraph downloads
-            return "http://igraph.org/nightly/steal/c/igraph-%s.tar.gz" % version
-        else:
-            return "http://igraph.org/nightly/get/c/igraph-%s.tar.gz" % version
-
-    def run(self):
-        return self.download_and_compile()
-
-
 class BuildConfiguration(object):
     def __init__(self):
         global VERSION
-        self.c_core_versions = version_variants(VERSION)
-        self.c_core_url = None
         self.include_dirs = []
         self.library_dirs = []
         self.runtime_library_dirs = []
@@ -639,7 +280,7 @@ class BuildConfiguration(object):
         self.extra_link_args = []
         self.extra_objects = []
         self.static_extension = False
-        self.download_igraph_if_needed = True
+        self.external_igraph = False
         self.use_pkgconfig = True
         self._has_pkgconfig = None
         self.excluded_include_dirs = []
@@ -681,53 +322,53 @@ class BuildConfiguration(object):
                     print("You will need the Python headers to compile this extension.")
                     sys.exit(1)
 
-                # Check whether we have already compiled igraph in a previous run.
-                # If so, it should be found in vendor/build/igraph/include and
-                # vendor/build/igraph/lib
-                if os.path.exists(os.path.join("vendor", "build", "igraph")):
-                    buildcfg.use_built_igraph()
-                    detected = True
-                else:
-                    detected = False
-
-                # If igraph is provided as a git submodule, use that
-                if not detected:
-                    if os.path.isfile(
-                        os.path.join("vendor", "source", "igraph", "configure.ac")
-                    ):
-                        detected = buildcfg.compile_igraph_from_vendor_source()
-                        if detected:
-                            buildcfg.use_built_igraph()
-                        else:
-                            sys.exit(1)
-
-                # Try detecting with pkg-config if we haven't found the submodule
-                if not detected:
+                if buildcfg.external_igraph:
+                    buildcfg.libraries = ['igraph']
                     if buildcfg.use_pkgconfig:
                         detected = buildcfg.detect_from_pkgconfig()
                     else:
                         detected = False
 
-                # Download and compile igraph if the user did not disable it and
-                # we do not know the libraries from pkg-config yet
-                if not detected:
-                    if buildcfg.download_igraph_if_needed and is_unix_like():
-                        detected = buildcfg.download_and_compile_igraph()
-                        if detected:
-                            buildcfg.use_built_igraph()
-                        else:
-                            sys.exit(1)
+                    # Fall back to an educated guess if everything else failed
+                    if not detected:
+                        buildcfg.use_educated_guess()
 
-                # Fall back to an educated guess if everything else failed
-                if not detected:
-                    buildcfg.use_educated_guess()
-
-                # Replaces library names with full paths to static libraries
-                # where possible. libm.a is excluded because it caused problems
-                # on Sabayon Linux where libm.a is probably not compiled with
-                # -fPIC
-                if buildcfg.static_extension:
-                    buildcfg.replace_static_libraries(exclusions=["m"])
+                    # Replaces library names with full paths to static libraries
+                    # where possible. libm.a is excluded because it caused problems
+                    # on Sabayon Linux where libm.a is probably not compiled with
+                    # -fPIC
+                    if buildcfg.static_extension:
+                        buildcfg.replace_static_libraries(exclusions=["m"])                    
+                else:
+                    # Check whether source code from C core is available
+                    source_dir = os.path.join("src", "core")
+                    if not os.path.exists(source_dir):
+                        print("C core files are missing.")
+                        sys.exit(1)                                
+                    # Specify include dirs and library dirs for using internal compilation
+                    buildcfg.libraries = ['xml2', 'gmp', 'z', 'm']
+                    buildcfg.library_dirs = ['/usr/lib/x86_64-linux-gnu']
+                    buildcfg.include_dirs = ['/usr/include/libxml2',
+                                            os.path.join(source_dir),
+                                            os.path.join(source_dir, 'include'),
+                                            os.path.join(source_dir, 'src'),
+                                            os.path.join(source_dir, 'src', 'AMD', 'Include'),
+                                            os.path.join(source_dir, 'src', 'bliss'),
+                                            os.path.join(source_dir, 'src', 'cliquer'),
+                                            os.path.join(source_dir, 'src', 'cs'),
+                                            os.path.join(source_dir, 'src', 'COLAMD', 'Include'),
+                                            os.path.join(source_dir, 'src', 'CHOLMOD', 'Include'),
+                                            os.path.join(source_dir, 'src', 'f2c'),
+                                            os.path.join(source_dir, 'src', 'lapack'),
+                                            os.path.join(source_dir, 'src', 'plfit'),
+                                            os.path.join(source_dir, 'src', 'prpack'),
+                                            os.path.join(source_dir, 'src', 'SuiteSparse_config'),
+                                            os.path.join(source_dir, 'optional', 'glpk')
+                                            ]
+                    buildcfg.extra_compile_args = ['-DNPARTITION',
+                                                '-DNTIMER',
+                                                '-DNCAMD',
+                                                '-DPRPACK_IGRAPH_SUPPORT']
 
                 # Prints basic build information
                 buildcfg.print_build_info()
@@ -752,25 +393,6 @@ class BuildConfiguration(object):
 
         return custom_build_ext
 
-    def compile_igraph_from_vendor_source(self):
-        """Compiles igraph from the vendored source code inside `vendor/igraph/source`.
-        This folder typically comes from a git submodule.
-        """
-        path = os.path.join("vendor", "source", "igraph")
-        print("We are going to compile the C core of igraph from %s" % path)
-        print("")
-
-        igraph_builder = IgraphCCoreBuilder()
-        libraries = igraph_builder.compile_in(path)
-        if not libraries or not igraph_builder.copy_build_artifacts_from(
-            path, to=os.path.join("vendor", "build", "igraph"), libraries=libraries
-        ):
-            print("Could not compile the C core of igraph.")
-            print("")
-            return False
-        else:
-            return True
-
     def configure(self, ext):
         """Configures the given Extension object using this build configuration."""
         ext.include_dirs = exclude_from_list(
@@ -784,6 +406,35 @@ class BuildConfiguration(object):
         ext.extra_compile_args = self.extra_compile_args
         ext.extra_link_args = self.extra_link_args
         ext.extra_objects = self.extra_objects
+    
+    def prepare_sources(self):
+
+        # Define the extension
+        self.sources = glob.glob(os.path.join("src", "*.c"))
+
+        if not self.external_igraph:
+            # Check whether source code from C core is available
+            source_dir = os.path.join("src", "core")
+            if not os.path.exists(source_dir):
+                print("C core files are missing.")
+                sys.exit(1)
+
+            # Add igraph source files
+            match_ext = ['c', 'cpp', 'cc']
+            for root, dirnames, filenames in os.walk(os.path.join(source_dir, 'src')):
+                for filename in filenames:
+                    ext = filename.split('.')[-1]
+                    if ext in match_ext and \
+                    not filename.startswith('t_cholmod') and \
+                    not filename == 'arithchk.c':
+                        self.sources.append(os.path.join(root, filename))
+
+            # Add internal glpk
+            for root, dirnames, filenames in os.walk(os.path.join(source_dir, 'optional')):
+                for filename in filenames:
+                    ext = filename.split('.')[-1]
+                    if ext in match_ext and not filename.startswith('t_cholmod'):
+                        self.sources.append(os.path.join(root, filename))        
 
     def detect_from_pkgconfig(self):
         """Detects the igraph include directory, library directory and the
@@ -805,22 +456,6 @@ class BuildConfiguration(object):
         self.include_dirs = [opt[2:] for opt in opts if opt.startswith("-I")]
         return True
 
-    def download_and_compile_igraph(self):
-        """Downloads and compiles the C core of igraph."""
-        print("We will now try to download and compile the C core from scratch.")
-        print("Version number of the C core: %s" % self.c_core_versions[0])
-        if len(self.c_core_versions) > 1:
-            print("We will also try: %s" % ", ".join(self.c_core_versions[1:]))
-        print("")
-
-        igraph_builder = IgraphCCoreBuilder(self.c_core_versions, self.c_core_url)
-        if not igraph_builder.run():
-            print("Could not download and compile the C core of igraph.")
-            print("")
-            return False
-        else:
-            return True
-
     def print_build_info(self):
         """Prints the include and library path being used for debugging purposes."""
         if self.static_extension:
@@ -828,6 +463,7 @@ class BuildConfiguration(object):
         else:
             build_type = "dynamic extension"
         print("Build type: %s" % build_type)
+        print("Building with " + ("external" if self.external_igraph else "internal") + " C core igraph")
         print("Include path: %s" % " ".join(self.include_dirs))
         if self.excluded_include_dirs:
             print("  - excluding: %s" % " ".join(self.excluded_include_dirs))
@@ -849,63 +485,15 @@ class BuildConfiguration(object):
         for idx, option in enumerate(sys.argv):
             if not option.startswith("--"):
                 continue
-            if option == "--static":
+            if option == "--with-external-igraph":
+                opts_to_remove.append(idx)
+                self.external_igraph = True
+            elif option == "--static":
                 opts_to_remove.append(idx)
                 self.static_extension = True
-            elif option == "--no-download":
-                opts_to_remove.append(idx)
-                self.download_igraph_if_needed = False
-            elif option == "--no-pkg-config":
-                opts_to_remove.append(idx)
-                self.use_pkgconfig = False
-            elif option == "--no-wait":
-                opts_to_remove.append(idx)
-                self.wait = False
-            elif option.startswith("--c-core-version"):
-                opts_to_remove.append(idx)
-                if option == "--c-core-version":
-                    value = sys.argv[idx + 1]
-                    opts_to_remove.append(idx + 1)
-                else:
-                    value = option.split("=", 1)[1]
-                self.c_core_versions = [value]
-            elif option.startswith("--c-core-url"):
-                opts_to_remove.append(idx)
-                if option == "--c-core-url":
-                    value = sys.argv[idx + 1]
-                    opts_to_remove.append(idx + 1)
-                else:
-                    value = option.split("=", 1)[1]
-                self.c_core_url = value
 
         for idx in reversed(opts_to_remove):
             sys.argv[idx : (idx + 1)] = []
-
-    def replace_static_libraries(self, exclusions=None):
-        """Replaces references to libraries with full paths to their static
-        versions if the static version is to be found on the library path."""
-        if "stdc++" not in self.libraries:
-            self.libraries.append("stdc++")
-
-        if exclusions is None:
-            exclusions = []
-
-        for library_name in set(self.libraries) - set(exclusions):
-            static_lib = find_static_library(library_name, self.library_dirs)
-            if static_lib:
-                self.libraries.remove(library_name)
-                self.extra_objects.append(static_lib)
-
-    def use_built_igraph(self):
-        """Assumes that igraph is built already in ``vendor/build/igraph`` and sets up
-        the include and library paths and the library names accordingly."""
-        buildcfg.include_dirs = [os.path.join("vendor", "build", "igraph", "include")]
-        buildcfg.library_dirs = [os.path.join("vendor", "build", "igraph", "lib")]
-        buildcfg.static_extension = True
-
-        buildcfg_file = os.path.join("vendor", "build", "igraph", "build.cfg")
-        if os.path.exists(buildcfg_file):
-            buildcfg.libraries = eval(open(buildcfg_file).read())
 
     def use_educated_guess(self):
         """Tries to guess the proper library names, include and library paths
@@ -956,8 +544,6 @@ class BuildConfiguration(object):
             self.libraries.extend(["xml2", "z", "m", "stdc++"])
         self.include_dirs = LIBIGRAPH_FALLBACK_INCLUDE_DIRS[:]
         self.library_dirs = LIBIGRAPH_FALLBACK_LIBRARY_DIRS[:]
-
-
 ###########################################################################
 
 # Process command line options
@@ -966,9 +552,9 @@ buildcfg.process_args_from_command_line()
 for workaround in workarounds.executed:
     workaround.update_buildcfg(buildcfg)
 
-# Define the extension
-sources = glob.glob(os.path.join("src", "*.c"))
-igraph_extension = Extension("igraph._igraph", sources)
+buildcfg.prepare_sources()
+
+igraph_extension = Extension("igraph._igraph", buildcfg.sources)
 # library_dirs=library_dirs,
 # libraries=libraries,
 # include_dirs=include_dirs,
