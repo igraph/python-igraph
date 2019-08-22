@@ -13,8 +13,8 @@ except AttributeError:
 
 # Graph-tool
 if sys.platform == 'linux':
-    runfun('sudo echo "deb http://downloads.skewed.de/apt/bionic bionic universe" >> /etc/apt/sources.list"', shell=True)
-    runfun('sudo echo "deb-src http://downloads.skewed.de/apt/bionic bionic universe" >> /etc/apt/sources.list"', shell=True)
+    runfun('sudo echo "deb http://downloads.skewed.de/apt/bionic bionic universe" >> /etc/apt/sources.list', shell=True)
+    runfun('sudo echo "deb-src http://downloads.skewed.de/apt/bionic bionic universe" >> /etc/apt/sources.list', shell=True)
     runfun('gpg --keyserver keys.openpgp.org --recv 612DEFB798507F25', shell=True)
     runfun('gpg --export --armor 612DEFB798507F25 | sudo apt-key add -', shell=True)
     #runfun('sudo apt-key adv --keyserver keys.openpgp.org --recv-key 612DEFB798507F25', shell=True)
