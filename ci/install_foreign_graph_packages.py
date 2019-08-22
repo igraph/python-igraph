@@ -2,33 +2,24 @@
 import sys
 import subprocess as sp
 
+try:
+    runfun = sp.run
+except AttributeError:
+    runfun = sp.call
+
 
 # Networkx is installed in tox later on
 
 
 # Graph-tool
-calltext = ''
 if sys.platform == 'linux':
-    calltext += '''
-    sudo deb http://downloads.skewed.de/apt/bionic bionic universe
-    sudo deb-src http://downloads.skewed.de/apt/bionic bionic universe
-    sudo apt-key adv --keyserver keys.openpgp.org --recv-key 612DEFB798507F25
-    '''
-    calltext += '\n'
+    runfun('sudo echo "deb http://downloads.skewed.de/apt/bionic bionic universe" >> /etc/apt/sources.list"')
+    runfun('sudo echo "deb-src http://downloads.skewed.de/apt/bionic bionic universe" >> /etc/apt/sources.list"')
+    runfun('sudo apt-key adv --keyserver keys.openpgp.org --recv-key 612DEFB798507F25')
     if sys.version[0] == '2':
-        calltext += 'sudo apt-get install python-graph-tool'
+        runfun('sudo apt-get install python-graph-tool')
     else:
-        calltext += 'sudo apt-get install python3-graph-tool'
+        runfun('sudo apt-get install python3-graph-tool')
 
 else:
     print('Graph-tool installation on OSX and Windows missing for now')
-
-for call in calltext.split('\n'):
-    if call == '':
-        continue
-    print(call)
-    call = call.split()
-    try:
-        sp.run(call)
-    except AttributeError:
-        sp.call(call)
