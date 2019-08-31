@@ -687,6 +687,8 @@ class BuildConfiguration(object):
                 if os.path.exists(os.path.join("vendor", "build", "igraph")):
                     buildcfg.use_built_igraph()
                     detected = True
+                else:
+                    detected = False
 
                 # If igraph is provided as a git submodule, use that
                 if not detected:
