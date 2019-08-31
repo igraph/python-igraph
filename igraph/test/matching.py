@@ -61,7 +61,7 @@ class MaximumBipartiteMatchingTests(unittest.TestCase):
                 types=[0,1,0])
 
         # Graph not bipartite
-        self.assertRaises(ValueError, g.maximum_bipartite_matching,
+        self.assertRaises(InternalError, g.maximum_bipartite_matching,
                 types=[0,1,1,1])
 
 
