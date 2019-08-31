@@ -681,12 +681,6 @@ class BuildConfiguration(object):
                     print("You will need the Python headers to compile this extension.")
                     sys.exit(1)
 
-                # Print a warning if pkg-config is not available or does not know about igraph
-                if buildcfg.use_pkgconfig:
-                    detected = buildcfg.detect_from_pkgconfig()
-                else:
-                    detected = False
-
                 # Check whether we have already compiled igraph in a previous run.
                 # If so, it should be found in vendor/build/igraph/include and
                 # vendor/build/igraph/lib
@@ -704,6 +698,13 @@ class BuildConfiguration(object):
                             buildcfg.use_built_igraph()
                         else:
                             sys.exit(1)
+
+                # Try detecting with pkg-config if we haven't found the submodule
+                if not detected:
+                    if buildcfg.use_pkgconfig:
+                        detected = buildcfg.detect_from_pkgconfig()
+                    else:
+                        detected = False
 
                 # Download and compile igraph if the user did not disable it and
                 # we do not know the libraries from pkg-config yet
