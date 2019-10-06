@@ -66,7 +66,9 @@ class GeneratorTests(unittest.TestCase):
             ('"+" -- "-", "*" -- "/", "%%" -- "%/%"',
                 ["+", "-", "*", "/", "%%", "%/%"],
                 [(0,1),(2,3),(4,5)]
-            )
+            ),
+            ("A-B-C\nC-D", ["A", "B", "C", "D"], [(0,1),(1,2),(2,3)]),
+            ("A-B-C\n    C-D", ["A", "B", "C", "D"], [(0,1),(1,2),(2,3)])
         ]
         for formula, names, edges in tests:
             g = Graph.Formula(formula)
