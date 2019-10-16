@@ -1,8 +1,8 @@
 cd vendor/source/igraph/
 
-#./bootstrap.sh
-#./configure --disable-tls --disable-gmp
-#make
+./bootstrap.sh
+./configure
+make
 
 cd src/
 
