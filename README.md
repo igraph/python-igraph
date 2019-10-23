@@ -24,7 +24,7 @@ See details in [Installing Python Modules](https://docs.python.org/2/install/).
 
 Install dependencies
 ```
-$ sudo apt install build-essential python-dev libxml2 libxml2-dev zlib1g-dev
+$ sudo apt install build-essential python-dev libxml2 libxml2-dev zlib1g-dev bison
 ```
 and then
 ```
