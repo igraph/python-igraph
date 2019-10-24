@@ -24,7 +24,7 @@ TESTING_IN_CI = "CONTINUOUS_INTEGRATION" in os.environ
 
 # Check whether we are compiling for PyPy. Headers will not be installed
 # for PyPy.
-SKIP_H_INSTALL = (platform.python_implementation() == "PyPy") or ("SKIP_H_INSTALL" in os.environ)
+SKIP_HEADER_INSTALL = (platform.python_implementation() == "PyPy") or ("SKIP_HEADER_INSTALL" in os.environ)
 
 ###########################################################################
 # Here be ugly workarounds. These must be run before setuptools
@@ -1000,7 +1000,7 @@ versions can also be found `here <http://www.lfd.uci.edu/~gohlke/pythonlibs>`_.
 Many thanks to the maintainers of this page!
 """
 
-headers = ["src/igraphmodule_api.h"] if not SKIP_H_INSTALL else []
+headers = ["src/igraphmodule_api.h"] if not SKIP_HEADER_INSTALL else []
 
 options = dict(
     name="python-igraph",
