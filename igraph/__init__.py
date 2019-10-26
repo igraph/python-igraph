@@ -57,7 +57,6 @@ from collections import defaultdict
 from itertools import izip
 from shutil import copyfileobj
 from warnings import warn
-import numpy as np
 from scipy.sparse import csr_matrix
 
 def deprecated(message):
@@ -541,7 +540,7 @@ class Graph(GraphBase):
 
         edges = self.get_edgelist()
         if attribute is None:
-            weights = np.ones(len(edges))
+            weights = [1] * len(edges)
         else:
             if attribute not in self.es.attribute_names():
                 raise ValueError("Attribute does not exist")
