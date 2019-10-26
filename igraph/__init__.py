@@ -539,16 +539,13 @@ class Graph(GraphBase):
           given attribute where there is an edge.
         @return: the adjacency matrix as a L{scipy.sparse.csr_matrix}."""
 
-        if attribute is None:
-            return Matrix(GraphBase.get_adjacency(self, type))
-
-        if attribute not in self.es.attribute_names():
-            raise ValueError("Attribute does not exist")
-
         edges = self.get_edgelist()
         if attribute is None:
             weights = np.ones(len(edges))
         else:
+            if attribute not in self.es.attribute_names():
+                raise ValueError("Attribute does not exist")
+
             weights = self.es[attribute]
 
         N = self.vcount()
