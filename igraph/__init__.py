@@ -57,6 +57,8 @@ from collections import defaultdict
 from itertools import izip
 from shutil import copyfileobj
 from warnings import warn
+import numpy as np
+from scipy.sparse import csr_matrix
 
 def deprecated(message):
     """Prints a warning message related to the deprecation of some igraph
@@ -528,6 +530,34 @@ class Graph(GraphBase):
         """
         return DyadCensus(GraphBase.dyad_census(self, *args, **kwds))
 
+    def get_adjacency_sparse(self, attribute=None):
+        """Returns the adjacency matrix of a graph as scipy csr matrix.
+        @param attribute: if C{None}, returns the ordinary adjacency
+          matrix. When the name of a valid edge attribute is given
+          here, the matrix returned will contain the default value
+          at the places where there is no edge or the value of the
+          given attribute where there is an edge.
+        @return: the adjacency matrix as a L{scipy.sparse.csr_matrix}."""
+
+        if attribute is None:
+            return Matrix(GraphBase.get_adjacency(self, type))
+
+        if attribute not in self.es.attribute_names():
+            raise ValueError("Attribute does not exist")
+
+        edges = self.get_edgelist()
+        if attribute is None:
+            weights = np.ones(len(edges))
+        else:
+            weights = self.es[attribute]
+
+        N = self.vcount()
+        sparse_matrix = csr_matrix((weights, zip(*edges)), shape=(N, N))
+
+        if not self.is_directed():
+            sparse_matrix = sparse_matrix + sparse_matrix.T
+        return sparse_matrix
+
     def get_adjacency(self, type=GET_ADJACENCY_BOTH, attribute=None, \
             default=0, eids=False):
         """Returns the adjacency matrix of a graph.
@@ -555,11 +585,11 @@ class Graph(GraphBase):
         @return: the adjacency matrix as a L{Matrix}.
         """
         if type != GET_ADJACENCY_LOWER and type != GET_ADJACENCY_UPPER and \
-          type != GET_ADJACENCY_BOTH:
-            # Maybe it was called with the first argument as the attribute name
-            type, attribute = attribute, type
-            if type is None:
-                type = GET_ADJACENCY_BOTH
+            type != GET_ADJACENCY_BOTH:
+                # Maybe it was called with the first argument as the attribute name
+                type, attribute = attribute, type
+                if type is None:
+                    type = GET_ADJACENCY_BOTH
 
         if eids:
             result = Matrix(GraphBase.get_adjacency(self, type, eids))
