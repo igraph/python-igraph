@@ -685,7 +685,7 @@ class BuildConfiguration(object):
                 # If so, it should be found in vendor/build/igraph/include and
                 # vendor/build/igraph/lib
                 if os.path.exists(os.path.join("vendor", "build", "igraph")):
-                    buildcfg.use_built_igraph()
+                    buildcfg.use_vendored_igraph()
                     detected = True
                 else:
                     detected = False
@@ -697,7 +697,7 @@ class BuildConfiguration(object):
                     ):
                         detected = buildcfg.compile_igraph_from_vendor_source()
                         if detected:
-                            buildcfg.use_built_igraph()
+                            buildcfg.use_vendored_igraph()
                         else:
                             sys.exit(1)
 
@@ -714,7 +714,7 @@ class BuildConfiguration(object):
                     if buildcfg.download_igraph_if_needed and is_unix_like():
                         detected = buildcfg.download_and_compile_igraph()
                         if detected:
-                            buildcfg.use_built_igraph()
+                            buildcfg.use_vendored_igraph()
                         else:
                             sys.exit(1)
 
@@ -727,7 +727,10 @@ class BuildConfiguration(object):
                 # on Sabayon Linux where libm.a is probably not compiled with
                 # -fPIC
                 if buildcfg.static_extension:
-                    buildcfg.replace_static_libraries(exclusions=["m"])
+                    if buildcfg.static_extension == "only_igraph":
+                        buildcfg.replace_static_libraries(only=["igraph"])
+                    else:
+                        buildcfg.replace_static_libraries(exclusions=["m"])
 
                 # Prints basic build information
                 buildcfg.print_build_info()
@@ -823,7 +826,9 @@ class BuildConfiguration(object):
 
     def print_build_info(self):
         """Prints the include and library path being used for debugging purposes."""
-        if self.static_extension:
+        if self.static_extension == "only_igraph":
+            build_type = "dynamic extension with vendored igraph source"
+        elif self.static_extension:
             build_type = "static extension"
         else:
             build_type = "dynamic extension"
@@ -881,7 +886,7 @@ class BuildConfiguration(object):
         for idx in reversed(opts_to_remove):
             sys.argv[idx : (idx + 1)] = []
 
-    def replace_static_libraries(self, exclusions=None):
+    def replace_static_libraries(self, only=None, exclusions=None):
         """Replaces references to libraries with full paths to their static
         versions if the static version is to be found on the library path."""
         if "stdc++" not in self.libraries:
@@ -891,17 +896,21 @@ class BuildConfiguration(object):
             exclusions = []
 
         for library_name in set(self.libraries) - set(exclusions):
+            if only is not None and library_name not in only:
+                continue
+
             static_lib = find_static_library(library_name, self.library_dirs)
             if static_lib:
                 self.libraries.remove(library_name)
                 self.extra_objects.append(static_lib)
 
-    def use_built_igraph(self):
+    def use_vendored_igraph(self):
         """Assumes that igraph is built already in ``vendor/build/igraph`` and sets up
         the include and library paths and the library names accordingly."""
         buildcfg.include_dirs = [os.path.join("vendor", "build", "igraph", "include")]
         buildcfg.library_dirs = [os.path.join("vendor", "build", "igraph", "lib")]
-        buildcfg.static_extension = True
+        if not buildcfg.static_extension:
+            buildcfg.static_extension = "only_igraph"
 
         buildcfg_file = os.path.join("vendor", "build", "igraph", "build.cfg")
         if os.path.exists(buildcfg_file):
