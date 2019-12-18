@@ -40,7 +40,7 @@ int PyFile_Close(PyObject* fileObj);
 /* Python 3.x-specific part follows here */
 #define IGRAPH_PYTHON3
 
-#define PyBaseString_Check(o) PyUnicode_Check(o) || PyBytes_Check(o)
+#define PyBaseString_Check(o) (PyUnicode_Check(o) || PyBytes_Check(o))
 
 PyObject* PyFile_FromObject(PyObject* filename, const char* mode);
 
