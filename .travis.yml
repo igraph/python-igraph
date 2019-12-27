@@ -1,4 +1,4 @@
-dist: xenial
+dist: bionic
 language: python
 
 python:
@@ -16,15 +16,29 @@ addons:
     - flex
     - bison
 
+jobs:
+  include:
+    - services: docker
+    - os: osx
+      language: shell
+    - os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.8.0
+        - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
+
+env:
+  global:
+    - TWINE_USERNAME=ntamas
+
 install:
-  - pip install tox-travis
+  - python -m pip install tox-travis twine cibuildwheel==1.1.0
 
 script:
   - tox
+  - python -m cibuildwheel --output-dir wheelhouse
 
 notifications:
   email:
     on_success: change
     on_failure: always
-
-sudo: false
