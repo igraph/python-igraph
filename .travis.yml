@@ -29,6 +29,7 @@ jobs:
 
 env:
   global:
+    - CIBW_BEFORE_BUILD="yum install -y libxml2-devel flex bison"
     - TWINE_USERNAME=ntamas
 
 install:
