@@ -7,7 +7,6 @@ python:
   - "3.6"
   - "3.7"
   - "3.8"
-  - "pypy"
   - "pypy3"
 
 addons:
@@ -17,9 +16,16 @@ addons:
     - flex
     - bison
 
-env:
-  global:
-    - TWINE_USERNAME=ntamas
+jobs:
+  include:
+    - services: docker
+    - os: osx
+      language: shell
+    - os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.8.0
+        - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
 
 install:
   - python -m pip install tox-travis
