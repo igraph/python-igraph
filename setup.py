@@ -205,11 +205,22 @@ class IgraphCCoreBuilder(object):
     """Class responsible for downloading and building the C core of igraph
     if it is not installed yet."""
 
-    def compile_in(self, folder):
-        """Compiles igraph from its source code in the given folder."""
+    def compile_in(self, build_folder, source_folder=None):
+        """Compiles igraph from its source code in the given folder.
+
+        source_folder is the name of the folder that contains igraph's source
+        files. If it is `None`, it is assumed that it is the same as the
+        build folder.
+        """
+        if source_folder is None:
+            source_folder = build_folder
+
+        source_folder = os.path.abspath(source_folder)
+        build_folder = os.path.abspath(build_folder)
+
         cwd = os.getcwd()
         try:
-            os.chdir(folder)
+            os.chdir(source_folder)
 
             # Run the bootstrap script if we have downloaded a tarball from
             # Github
@@ -231,9 +242,16 @@ class IgraphCCoreBuilder(object):
                         outfp.write(line)
             os.rename("ltmain.sh.new", "ltmain.sh")
 
+            create_dir_unless_exists(build_folder)
+            os.chdir(build_folder)
+
             print("Configuring igraph...")
             retcode = subprocess.call(
-                ["./configure", "--disable-tls", "--disable-gmp"],
+                [
+                    os.path.join(source_folder, "configure"),
+                    "--disable-tls",
+                    "--disable-gmp",
+                ],
                 env=self.enhanced_env(CFLAGS="-fPIC", CXXFLAGS="-fPIC"),
             )
             if retcode:
@@ -261,13 +279,25 @@ class IgraphCCoreBuilder(object):
         finally:
             os.chdir(cwd)
 
-    def copy_build_artifacts_from(self, source, to, libraries):
-        create_dir_unless_exists(to)
-        ensure_dir_does_not_exist(to, "include")
-        ensure_dir_does_not_exist(to, "lib")
-        shutil.copytree(os.path.join(source, "include"), os.path.join(to, "include"))
-        shutil.copytree(os.path.join(source, "src", ".libs"), os.path.join(to, "lib"))
-        with open(os.path.join(to, "build.cfg"), "w") as f:
+    def copy_build_artifacts(
+        self, source_folder, build_folder, install_folder, libraries
+    ):
+        create_dir_unless_exists(install_folder)
+
+        ensure_dir_does_not_exist(install_folder, "include")
+        ensure_dir_does_not_exist(install_folder, "lib")
+
+        shutil.copytree(
+            os.path.join(source_folder, "include"),
+            os.path.join(install_folder, "include"),
+        )
+        create_dir_unless_exists(install_folder, "lib")
+
+        for fname in glob.glob(os.path.join(build_folder, "include", "*.h")):
+            shutil.copy(fname, os.path.join(install_folder, "include"))
+        for fname in glob.glob(os.path.join(build_folder, "src", ".libs", "libigraph.*")):
+            shutil.copy(fname, os.path.join(install_folder, "lib"))
+        with open(os.path.join(install_folder, "build.cfg"), "w") as f:
             f.write(repr(libraries))
 
         return True
@@ -295,8 +325,6 @@ class BuildConfiguration(object):
         self._has_pkgconfig = None
         self.excluded_include_dirs = []
         self.excluded_library_dirs = []
-        self.pre_build_hooks = []
-        self.post_build_hooks = []
         self.wait = True
 
     @property
@@ -331,9 +359,9 @@ class BuildConfiguration(object):
                     sys.exit(1)
 
                 # Check whether we have already compiled igraph in a previous run.
-                # If so, it should be found in vendor/build/igraph/include and
-                # vendor/build/igraph/lib
-                if os.path.exists(os.path.join("vendor", "build", "igraph")):
+                # If so, it should be found in vendor/install/igraph/include and
+                # vendor/install/igraph/lib
+                if os.path.exists(os.path.join("vendor", "install", "igraph")):
                     buildcfg.use_vendored_igraph()
                     detected = True
                 else:
@@ -381,16 +409,8 @@ class BuildConfiguration(object):
                 )
                 buildcfg.configure(ext)
 
-                # Run any pre-build hooks
-                for hook in buildcfg.pre_build_hooks:
-                    hook(self)
-
                 # Run the original build_ext command
                 build_ext.run(self)
-
-                # Run any post-build hooks
-                for hook in buildcfg.post_build_hooks:
-                    hook(self)
 
         return custom_build_ext
 
@@ -398,14 +418,23 @@ class BuildConfiguration(object):
         """Compiles igraph from the vendored source code inside `vendor/igraph/source`.
         This folder typically comes from a git submodule.
         """
-        path = os.path.join("vendor", "source", "igraph")
-        print("We are going to compile the C core of igraph from %s" % path)
+        source_folder = os.path.join("vendor", "source", "igraph")
+        build_folder = os.path.join("vendor", "build", "igraph")
+        install_folder = os.path.join("vendor", "install", "igraph")
+
+        print("We are going to compile the C core of igraph.")
+        print("  Source folder: %s" % source_folder)
+        print("  Build folder: %s" % build_folder)
+        print("  Install folder: %s" % install_folder)
         print("")
 
         igraph_builder = IgraphCCoreBuilder()
-        libraries = igraph_builder.compile_in(path)
-        if not libraries or not igraph_builder.copy_build_artifacts_from(
-            path, to=os.path.join("vendor", "build", "igraph"), libraries=libraries
+        libraries = igraph_builder.compile_in(build_folder, source_folder=source_folder)
+        if not libraries or not igraph_builder.copy_build_artifacts(
+            source_folder=source_folder,
+            build_folder=build_folder,
+            install_folder=install_folder,
+            libraries=libraries,
         ):
             print("Could not compile the C core of igraph.")
             print("")
@@ -509,14 +538,14 @@ class BuildConfiguration(object):
                 self.extra_objects.append(static_lib)
 
     def use_vendored_igraph(self):
-        """Assumes that igraph is built already in ``vendor/build/igraph`` and sets up
+        """Assumes that igraph is installed already in ``vendor/install/igraph`` and sets up
         the include and library paths and the library names accordingly."""
-        buildcfg.include_dirs = [os.path.join("vendor", "build", "igraph", "include")]
-        buildcfg.library_dirs = [os.path.join("vendor", "build", "igraph", "lib")]
+        buildcfg.include_dirs = [os.path.join("vendor", "install", "igraph", "include")]
+        buildcfg.library_dirs = [os.path.join("vendor", "install", "igraph", "lib")]
         if not buildcfg.static_extension:
             buildcfg.static_extension = "only_igraph"
 
-        buildcfg_file = os.path.join("vendor", "build", "igraph", "build.cfg")
+        buildcfg_file = os.path.join("vendor", "install", "igraph", "build.cfg")
         if os.path.exists(buildcfg_file):
             buildcfg.libraries = eval(open(buildcfg_file).read())
 
