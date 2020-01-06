@@ -16,12 +16,13 @@ addons:
     - flex
     - bison
 
+install:
+  - python -m pip install tox-travis
+
 jobs:
   include:
     - stage: test
       services: docker
-      install:
-        - python -m pip install tox-travis
       script:
         - tox
     - stage: wheels
