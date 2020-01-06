@@ -9,6 +9,7 @@ igraph/*.so
 *.egg-info/
 .python-version
 .tox
+.venv/
 docker/wheelhouse
 Pipfile
 
