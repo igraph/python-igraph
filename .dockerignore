@@ -1,3 +1,15 @@
+# ignore git's own files
+.git
+
 # ignore build commands so we don't trigger unnecessary rebuilds during iteration
 docker/*
 Makefile
+
+# ignore build and dist folders for python
+build/*
+dist/*
+
+# also ignore build folder for vendored stuff
+vendor/build/*
+vendor/install/*
+

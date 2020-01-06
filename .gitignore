@@ -11,5 +11,8 @@ igraph/*.so
 .tox
 .venv/
 docker/wheelhouse
+vendor/build/
+vendor/install/
 Pipfile
+Pipfile.lock
 

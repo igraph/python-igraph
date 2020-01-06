@@ -6,3 +6,5 @@ include scripts/mkdoc.sh
 include scripts/epydoc-patched
 include scripts/epydoc.cfg
 include test/*.py
+graft vendor/source/igraph
+
