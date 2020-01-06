@@ -19,12 +19,13 @@ addons:
 install:
   - python -m pip install tox-travis
 
+script:
+  - tox
+
 jobs:
   include:
     - stage: test
       services: docker
-      script:
-        - tox
     - stage: wheels
       services: docker
       language: shell
