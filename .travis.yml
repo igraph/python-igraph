@@ -6,6 +6,7 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
+  - "3.8"
   - "pypy"
   - "pypy3"
 
@@ -16,28 +17,15 @@ addons:
     - flex
     - bison
 
-jobs:
-  include:
-    - services: docker
-    - os: osx
-      language: shell
-    - os: windows
-      language: shell
-      before_install:
-        - choco install python --version 3.8.0
-        - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
-
 env:
   global:
-    - CIBW_BEFORE_BUILD="yum install -y libxml2-devel flex bison"
     - TWINE_USERNAME=ntamas
 
 install:
-  - python -m pip install tox-travis twine cibuildwheel==1.1.0
+  - python -m pip install tox-travis
 
 script:
   - tox
-  - python -m cibuildwheel --output-dir wheelhouse
 
 notifications:
   email:
