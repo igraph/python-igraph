@@ -18,20 +18,36 @@ addons:
 
 jobs:
   include:
-    - services: docker
-    - os: osx
+    - stage: test
+      services: docker
+      install:
+        - python -m pip install tox-travis
+      script:
+        - tox
+    - stage: wheels
+      services: docker
       language: shell
-    - os: windows
+      install:
+        - python -m pip install cibuildwheel==1.1.0
+      script:
+        - python -m cibuildwheel --output-dir wheelhouse
+    - stage: wheels
+      os: osx
+      language: shell
+      install:
+        - python -m pip install cibuildwheel==1.1.0
+      script:
+        - python -m cibuildwheel --output-dir wheelhouse
+    - stage: wheels
+      os: windows
       language: shell
       before_install:
         - choco install python --version 3.8.0
         - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
-
-install:
-  - python -m pip install tox-travis
-
-script:
-  - tox
+      install:
+        - python -m pip install cibuildwheel==1.1.0
+      script:
+        - python -m cibuildwheel --output-dir wheelhouse
 
 notifications:
   email:
