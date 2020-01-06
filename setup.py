@@ -22,17 +22,7 @@ SKIP_HEADER_INSTALL = (platform.python_implementation() == "PyPy") or (
 
 ###########################################################################
 
-try:
-    from setuptools import setup
-
-    build_py = None
-except ImportError:
-    from distutils.core import setup
-
-    try:
-        from distutils.command.build_py import build_py_2to3 as build_py
-    except ImportError:
-        from distutils.command.build_py import build_py
+from setuptools import setup, Extension
 
 import distutils.ccompiler
 import glob
@@ -41,8 +31,6 @@ import subprocess
 import sys
 
 from select import select
-
-from distutils.core import Extension
 
 ###########################################################################
 
@@ -326,12 +314,10 @@ class BuildConfiguration(object):
     @property
     def build_ext(self):
         """Returns a class that can be used as a replacement for the
-        ``build_ext`` command in ``distutils`` and that will download and
-        compile the C core of igraph if needed."""
-        try:
-            from setuptools.command.build_ext import build_ext
-        except ImportError:
-            from distutils.command.build_ext import build_ext
+        ``build_ext`` command in ``setuptools`` and that will compile the C core
+        of igraph before compiling the Python extension.
+        """
+        from setuptools.command.build_ext import build_ext
         from distutils.sysconfig import get_python_inc
 
         buildcfg = self
@@ -662,9 +648,6 @@ options = dict(
 )
 
 if sys.version_info > (3, 0):
-    if build_py is None:
-        options["use_2to3"] = True
-    else:
-        options["cmdclass"]["build_py"] = build_py
+    options["use_2to3"] = True
 
 setup(**options)
