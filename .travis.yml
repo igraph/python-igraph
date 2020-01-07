@@ -29,9 +29,8 @@ jobs:
     - stage: wheels
       services: docker
       language: shell
-      sudo: true
       install:
-        - python -m pip install cibuildwheel==1.1.0
+        - sudo python -m pip install cibuildwheel==1.1.0
       script:
         - python -m cibuildwheel --output-dir wheelhouse
     - stage: wheels
