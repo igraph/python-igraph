@@ -30,7 +30,7 @@ jobs:
       services: docker
       language: shell
       env:
-        - CIBW_BEFORE_BUILD=yum install -y flex bison
+        - CIBW_BEFORE_BUILD="yum install -y flex bison"
       install:
         - sudo python -m pip install cibuildwheel==1.1.0
       script:
