@@ -29,6 +29,7 @@ jobs:
     - stage: wheels
       services: docker
       language: shell
+      sudo: true
       install:
         - python -m pip install cibuildwheel==1.1.0
       script:
