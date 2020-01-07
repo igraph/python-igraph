@@ -30,6 +30,7 @@ jobs:
       services: docker
       language: shell
       install:
+        - sudo apt install gfortran flex bison
         - sudo python -m pip install cibuildwheel==1.1.0
       script:
         - python -m cibuildwheel --output-dir wheelhouse
