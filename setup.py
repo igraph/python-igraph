@@ -466,6 +466,7 @@ class BuildConfiguration(object):
             sys.exit(1)
 
         self.use_vendored_igraph()
+        return True
 
     def configure(self, ext):
         """Configures the given Extension object using this build configuration."""
