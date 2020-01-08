@@ -30,7 +30,7 @@ jobs:
       services: docker
       language: shell
       env:
-        - CIBW_BEFORE_BUILD="yum install -y flex bison libxml2-devel zlib-devel"
+        - CIBW_BEFORE_BUILD="yum install -y flex bison libxml2-devel zlib-devel && python setup.py build_c_core"
         - CIBW_BUILD_VERBOSITY=1
       install:
         - sudo python -m pip install cibuildwheel==1.1.0

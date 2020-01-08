@@ -22,7 +22,7 @@ SKIP_HEADER_INSTALL = (platform.python_implementation() == "PyPy") or (
 
 ###########################################################################
 
-from setuptools import setup, Extension
+from setuptools import setup, Command, Extension
 
 import distutils.ccompiler
 import glob
@@ -295,7 +295,9 @@ class IgraphCCoreBuilder(object):
 
         for fname in glob.glob(os.path.join(build_folder, "include", "*.h")):
             shutil.copy(fname, os.path.join(install_folder, "include"))
-        for fname in glob.glob(os.path.join(build_folder, "src", ".libs", "libigraph.*")):
+        for fname in glob.glob(
+            os.path.join(build_folder, "src", ".libs", "libigraph.*")
+        ):
             shutil.copy(fname, os.path.join(install_folder, "lib"))
         with open(os.path.join(install_folder, "build.cfg"), "w") as f:
             f.write(repr(libraries))
@@ -340,6 +342,35 @@ class BuildConfiguration(object):
         return self._has_pkgconfig
 
     @property
+    def build_c_core(self):
+        """Returns a class representing a custom setup.py command that builds
+        the C core of igraph.
+
+        This is used in CI environments where we want to build the C core of
+        igraph once and then build the Python interface for various Python
+        versions without having to recompile the C core all the time.
+
+        If is also used as a custom building block of `build_ext`.
+        """
+
+        buildcfg = self
+
+        class build_c_core(Command):
+            description = "Compile the C core of igraph only"
+            user_options = []
+
+            def initialize_options(self):
+                pass
+
+            def finalize_options(self):
+                pass
+
+            def run(self):
+                buildcfg.c_core_built = buildcfg.compile_igraph_from_vendor_source()
+
+        return build_c_core
+
+    @property
     def build_ext(self):
         """Returns a class that can be used as a replacement for the
         ``build_ext`` command in ``setuptools`` and that will compile the C core
@@ -361,33 +392,16 @@ class BuildConfiguration(object):
                 # Check whether we have already compiled igraph in a previous run.
                 # If so, it should be found in vendor/install/igraph/include and
                 # vendor/install/igraph/lib
-                if os.path.exists(os.path.join("vendor", "install", "igraph")):
-                    buildcfg.use_vendored_igraph()
-                    detected = True
-                else:
-                    detected = False
+                self.run_command("build_c_core")
+                if not buildcfg.c_core_built:
+                    # Try detecting with pkg-config if we haven't found the submodule
+                    detected = (
+                        buildcfg.use_pkgconfig and buildcfg.detect_from_pkgconfig()
+                    )
 
-                # If igraph is provided as a git submodule, use that
-                if not detected:
-                    if os.path.isfile(
-                        os.path.join("vendor", "source", "igraph", "configure.ac")
-                    ):
-                        detected = buildcfg.compile_igraph_from_vendor_source()
-                        if detected:
-                            buildcfg.use_vendored_igraph()
-                        else:
-                            sys.exit(1)
-
-                # Try detecting with pkg-config if we haven't found the submodule
-                if not detected:
-                    if buildcfg.use_pkgconfig:
-                        detected = buildcfg.detect_from_pkgconfig()
-                    else:
-                        detected = False
-
-                # Fall back to an educated guess if everything else failed
-                if not detected:
-                    buildcfg.use_educated_guess()
+                    # Fall back to an educated guess if everything else failed
+                    if not detected:
+                        buildcfg.use_educated_guess()
 
                 # Replaces library names with full paths to static libraries
                 # where possible. libm.a is excluded because it caused problems
@@ -418,11 +432,22 @@ class BuildConfiguration(object):
         """Compiles igraph from the vendored source code inside `vendor/igraph/source`.
         This folder typically comes from a git submodule.
         """
+        if os.path.exists(os.path.join("vendor", "install", "igraph")):
+            # Vendored igraph already compiled and installed, just use it
+            self.use_vendored_igraph()
+            return True
+
+        if not os.path.isfile(
+            os.path.join("vendor", "source", "igraph", "configure.ac")
+        ):
+            # No git submodule present with vendored source
+            return False
+
         source_folder = os.path.join("vendor", "source", "igraph")
         build_folder = os.path.join("vendor", "build", "igraph")
         install_folder = os.path.join("vendor", "install", "igraph")
 
-        print("We are going to compile the C core of igraph.")
+        print("We are going to build the C core of igraph.")
         print("  Source folder: %s" % source_folder)
         print("  Build folder: %s" % build_folder)
         print("  Install folder: %s" % install_folder)
@@ -438,9 +463,9 @@ class BuildConfiguration(object):
         ):
             print("Could not compile the C core of igraph.")
             print("")
-            return False
-        else:
-            return True
+            sys.exit(1)
+
+        self.use_vendored_igraph()
 
     def configure(self, ext):
         """Configures the given Extension object using this build configuration."""
@@ -673,7 +698,10 @@ options = dict(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    cmdclass={"build_ext": buildcfg.build_ext},
+    cmdclass={
+        "build_c_core": buildcfg.build_c_core,  # used by CI
+        "build_ext": buildcfg.build_ext,
+    },
 )
 
 if sys.version_info > (3, 0):
