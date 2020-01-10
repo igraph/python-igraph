@@ -14,7 +14,7 @@ before_build:
 build_script:
   - set PATH=C:\msys64\usr\bin;%PATH%
   - set MSYSTEM=MINGW64
-  - C:\msys64\usr\bin\bash -lc "cd /c/projects/python-igraph && cibuildwheel --output-dir wheelhouse"
+  - C:\msys64\usr\bin\bash -lc "export ACLOCAL_PATH=/c/msys64/usr/share/aclocal && cd /c/projects/python-igraph && cibuildwheel --output-dir wheelhouse"
 
 artifacts:
   - path: "wheelhouse\\*.whl"
