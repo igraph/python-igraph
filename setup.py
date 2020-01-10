@@ -177,25 +177,8 @@ def preprocess_fallback_config():
                 ]
 
 
-def version_variants(version):
-    """Given an igraph version number, returns a list of possible version
-    number variants to try when looking for a suitable nightly build of the
-    C core to download from igraph.org."""
-
-    result = [version]
-
-    # Strip any release tags
-    version, _, _ = version.partition(".post")
-    result.append(version)
-
-    # Add trailing ".0" as needed to ensure that we have at least
-    # major.minor.patch
-    parts = version.split(".")
-    while len(parts) < 3:
-        parts.append("0")
-        result.append(".".join(parts))
-
-    return result
+def shellquote(s):
+    return "'" + s.replace("'", "'\\''") + "'"
 
 
 ###########################################################################
@@ -247,12 +230,9 @@ class IgraphCCoreBuilder(object):
 
             print("Configuring igraph...")
             retcode = subprocess.call(
-                [
-                    os.path.join(source_folder, "configure"),
-                    "--disable-tls",
-                    "--disable-gmp",
-                ],
+                "sh {0} --disable-tls --disable-gmp".format(shellquote(os.path.join(source_folder, "configure"))),
                 env=self.enhanced_env(CFLAGS="-fPIC", CXXFLAGS="-fPIC"),
+                shell=True
             )
             if retcode:
                 return False
