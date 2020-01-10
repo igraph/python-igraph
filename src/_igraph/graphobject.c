@@ -8272,6 +8272,7 @@ PyObject *igraphmodule_Graph_canonical_permutation(
   igraph_bliss_sh_t sh = IGRAPH_BLISS_FM;
   igraph_vector_t labeling;
   igraph_vector_int_t *color = 0;
+  int retval;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &sh_o, &color_o))
     return NULL;
@@ -8287,7 +8288,7 @@ PyObject *igraphmodule_Graph_canonical_permutation(
   if (igraphmodule_attrib_to_vector_int_t(color_o, self, &color,
 	  ATTRIBUTE_TYPE_VERTEX)) return NULL;
 
-  int retval = igraph_canonical_permutation(&self->g, color, &labeling, sh, 0);
+  retval = igraph_canonical_permutation(&self->g, color, &labeling, sh, 0);
 
   if (color) { igraph_vector_int_destroy(color); free(color); }
 
@@ -8396,7 +8397,7 @@ PyObject *igraphmodule_Graph_isomorphic_bliss(igraphmodule_GraphObject * self,
   igraph_vector_t mapping_12, mapping_21, *map12=0, *map21=0;
   igraph_bliss_sh_t sh1=IGRAPH_BLISS_FM, sh2=IGRAPH_BLISS_FM;
   igraph_vector_int_t *color1=0, *color2=0;
-
+  int retval;
 
   static char *kwlist[] = { "other", "return_mapping_12",
 			    "return_mapping_21", "sh1", "sh2", "color1", "color2", NULL };
@@ -8430,8 +8431,7 @@ PyObject *igraphmodule_Graph_isomorphic_bliss(igraphmodule_GraphObject * self,
 	map21 = &mapping_21;
   }
 
-
-  int retval = igraph_isomorphic_bliss(&self->g, &other->g, color1, color2,
+  retval = igraph_isomorphic_bliss(&self->g, &other->g, color1, color2,
 				       &result, map12, map21, sh1, 0, 0);
 
   if (color1) { igraph_vector_int_destroy(color1); free(color1); }
