@@ -2,6 +2,7 @@ image:
   - Visual Studio 2015
 
 build_script:
+  - cmd: git submodule update --init
   - cmd: pip install cibuildwheel==1.1.0
   - cmd: cibuildwheel --output-dir wheelhouse
 

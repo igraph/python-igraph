@@ -440,8 +440,7 @@ class BuildConfiguration(object):
         vendor_source_path = os.path.join("vendor", "source", "igraph")
         if not os.path.isfile(os.path.join(vendor_source_path, "configure.ac")):
             # No git submodule present with vendored source
-            print("Cannot find vendored igraph source in vendor/source/igraph")
-            print("Assuming that igraph's C core is already installed")
+            print("Cannot find vendored igraph source in " + vendor_source_path)
             print("")
             return False
 
