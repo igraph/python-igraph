@@ -20,7 +20,7 @@ before_build:
   - git submodule update --init --recursive
 
 build_script:
-  - bash -lc "cd /c/projects/python-igraph && cibuildwheel --output-dir wheelhouse"
+  - bash cibuildwheel --output-dir wheelhouse
 
 artifacts:
   - path: "wheelhouse\\*.whl"
