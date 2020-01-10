@@ -327,7 +327,7 @@ class BuildConfiguration(object):
         self._has_pkgconfig = None
         self.excluded_include_dirs = []
         self.excluded_library_dirs = []
-        self.wait = True
+        self.wait = platform.system() != "Windows"
 
     @property
     def has_pkgconfig(self):
