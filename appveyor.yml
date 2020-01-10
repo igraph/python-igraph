@@ -2,6 +2,10 @@ image:
   - Visual Studio 2015
 
 build_script:
+  - C:\msys64\usr\bin\bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Sy"
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S autoconf automake bison flex"
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S libxml2-devel zip"
   - cmd: git submodule update --init
   - cmd: pip install cibuildwheel==1.1.0
   - cmd: cibuildwheel --output-dir wheelhouse
