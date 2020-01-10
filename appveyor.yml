@@ -1,14 +1,20 @@
 image:
   - Visual Studio 2015
 
-build_script:
+install:
   - C:\msys64\usr\bin\bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Sy"
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S autoconf automake bison flex libtool"
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S libxml2-devel zip"
-  - cmd: git submodule update --init
-  - cmd: pip install cibuildwheel==1.1.0
-  - cmd: cibuildwheel --output-dir wheelhouse
+  - pip install cibuildwheel==1.1.0
+
+before_build:
+  - git submodule update --init --recursive
+
+build_script:
+  - set PATH=C:\msys64\usr\bin;%PATH%
+  - set MSYSTEM=MINGW64
+  - cibuildwheel --output-dir wheelhouse
 
 artifacts:
   - path: "wheelhouse\\*.whl"
