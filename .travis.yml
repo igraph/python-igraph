@@ -31,7 +31,7 @@ jobs:
       language: shell
       env:
         - CIBW_BEFORE_BUILD="yum install -y flex bison libxml2-devel zlib-devel && python setup.py build_c_core"
-        - CIBW_TEST_COMMAND="python setup.py test"
+        - CIBW_TEST_COMMAND="cd {project} && python -m unittest"
       install:
         - sudo python -m pip install cibuildwheel==1.1.0
       script:
@@ -41,7 +41,7 @@ jobs:
       language: shell
       env:
         - CIBW_BEFORE_BUILD="python setup.py build_c_core"
-        - CIBW_TEST_COMMAND="python setup.py test"
+        - CIBW_TEST_COMMAND="cd {project} && python -m unittest"
       install:
         - python -m pip install cibuildwheel==1.1.0
       script:
