@@ -61,9 +61,9 @@ class CutTests(unittest.TestCase):
         return g
 
     def constructLadderGraph(self, directed=False):
-        el  = zip(range(0, 5), range(1, 6))
-        el += zip(range(6, 11), range(7, 12))
-        el += zip(range(0, 6), range(6, 12))
+        el  = list(zip(range(0, 5), range(1, 6)))
+        el += list(zip(range(6, 11), range(7, 12)))
+        el += list(zip(range(0, 6), range(6, 12)))
         g = Graph(el, directed=directed)
         return g
 
@@ -206,7 +206,7 @@ class GomoryHuTests(unittest.TestCase):
     def testRandomGRG(self):
         g = Graph.GRG(25, 0.4)
         self.validate_gomory_hu_tree(g, g.gomory_hu_tree())
-        g.es["capacity"] = [randint(0, 10) for _ in xrange(g.ecount())]
+        g.es["capacity"] = [randint(0, 10) for _ in range(g.ecount())]
         self.validate_gomory_hu_tree(g, g.gomory_hu_tree("capacity"))
 
     def validate_gomory_hu_tree(self, g, t):

@@ -215,9 +215,9 @@ class BiconnectedComponentTests(unittest.TestCase):
 
     def testBiconnectedComponents(self):
         s = self.g1.biconnected_components()
-        self.assertTrue(len(s) == 1 and s[0]==range(10))
+        self.assertTrue(len(s) == 1 and s[0]==list(range(10)))
         s, ap = self.g1.biconnected_components(True)
-        self.assertTrue(len(s) == 1 and s[0]==range(10))
+        self.assertTrue(len(s) == 1 and s[0]==list(range(10)))
 
         s = self.g3.biconnected_components()
         self.assertTrue(len(s) == 2 and s[0]==[2,4,5] and s[1]==[0,1,2,3])
@@ -258,7 +258,7 @@ class CentralityTests(unittest.TestCase):
         g = Graph.Star(5)
         cl = g.closeness()
         cl2 = [1., 0.57142, 0.57142, 0.57142, 0.57142]
-        for idx in xrange(g.vcount()):
+        for idx in range(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
 
         g = Graph.Star(5)
@@ -266,7 +266,7 @@ class CentralityTests(unittest.TestCase):
             warnings.simplefilter("ignore")
             cl = g.closeness(cutoff=1)
         cl2 = [1., 0.25, 0.25, 0.25, 0.25]
-        for idx in xrange(g.vcount()):
+        for idx in range(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
 
         weights = [1] * 4
@@ -274,7 +274,7 @@ class CentralityTests(unittest.TestCase):
         g = Graph.Star(5)
         cl = g.closeness(weights=weights)
         cl2 = [1., 0.57142, 0.57142, 0.57142, 0.57142]
-        for idx in xrange(g.vcount()):
+        for idx in range(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
 
         g = Graph.Star(5)
@@ -282,7 +282,7 @@ class CentralityTests(unittest.TestCase):
             warnings.simplefilter("ignore")
             cl = g.closeness(cutoff=1, weights=weights)
         cl2 = [1., 0.25, 0.25, 0.25, 0.25]
-        for idx in xrange(g.vcount()):
+        for idx in range(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
 
         # Test for igraph/igraph:#1078
@@ -354,14 +354,14 @@ class CentralityTests(unittest.TestCase):
 class NeighborhoodTests(unittest.TestCase):
     def testNeighborhood(self):
         g = Graph.Ring(10, circular=False)
-        self.assertTrue(map(sorted, g.neighborhood()) == \
+        self.assertTrue(list(map(sorted, g.neighborhood())) == \
                 [[0,1], [0,1,2], [1,2,3], [2,3,4], [3,4,5], [4,5,6], \
                     [5,6,7], [6,7,8], [7,8,9], [8,9]])
-        self.assertTrue(map(sorted, g.neighborhood(order=3)) == \
+        self.assertTrue(list(map(sorted, g.neighborhood(order=3))) == \
                 [[0,1,2,3], [0,1,2,3,4], [0,1,2,3,4,5], [0,1,2,3,4,5,6], \
                     [1,2,3,4,5,6,7], [2,3,4,5,6,7,8], [3,4,5,6,7,8,9], \
                     [4,5,6,7,8,9], [5,6,7,8,9], [6,7,8,9]])
-        self.assertTrue(map(sorted, g.neighborhood(order=3, mindist=2)) == \
+        self.assertTrue(list(map(sorted, g.neighborhood(order=3, mindist=2))) == \
                 [[2,3], [3,4], [0,4,5], [0,1,5,6], \
                     [1,2,6,7], [2,3,7,8], [3,4,8,9], \
                     [4,5,9], [5,6], [6,7]])
@@ -528,7 +528,7 @@ class PathTests(unittest.TestCase):
     def testPathLengthHist(self):
         g = Graph.Tree(15, 2)
         h = g.path_length_hist()
-        self.assertTrue(h.unconnected == 0L)
+        self.assertTrue(h.unconnected == 0)
         self.assertTrue([(int(l),x) for l,_,x in h.bins()] == \
           [(1,14),(2,19),(3,20),(4,20),(5,16),(6,16)])
         g = Graph.Full(5)+Graph.Full(4)

@@ -11,7 +11,7 @@ class BipartiteTests(unittest.TestCase):
     def testFullBipartite(self):
         g = Graph.Full_Bipartite(10, 5)
         self.assertTrue(g.vcount() == 15 and g.ecount() == 50 and g.is_directed() == False)
-        expected = sorted([(i, j) for i in xrange(10) for j in xrange(10, 15)])
+        expected = sorted([(i, j) for i in range(10) for j in range(10, 15)])
         self.assertTrue(sorted(g.get_edgelist()) == expected)
         self.assertTrue(g.vs["type"] == [False]*10 + [True]*5)
 

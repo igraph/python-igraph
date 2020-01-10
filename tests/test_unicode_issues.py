@@ -7,11 +7,11 @@ class UnicodeTests(unittest.TestCase):
     def testBug128(self):
         y = [1, 4, 9]
         g = Graph(n=len(y), directed=True, vertex_attrs={'y': y})
-        self.assertEquals(3, g.vcount())
+        self.assertEqual(3, g.vcount())
         g.add_vertices(1)
         # Bug #128 would prevent us from reaching the next statement
         # because an exception would have been thrown here
-        self.assertEquals(4, g.vcount())
+        self.assertEqual(4, g.vcount())
 
         
 def suite():

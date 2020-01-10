@@ -8,7 +8,7 @@ class GraphAdjacencyMatrixLikeIndexingTests(unittest.TestCase):
         for v1, v2 in g.get_edgelist():
             self.assertEqual(g[v1, v2], 1)
             self.assertEqual(g[v2, v1], 1)
-        for v1 in xrange(g.vcount()):
+        for v1 in range(g.vcount()):
             for v2 in set(range(g.vcount())) - set(g.neighbors(v1)):
                 self.assertEqual(g[v1, v2], 0)
                 self.assertEqual(g[v2, v1], 0)
@@ -22,7 +22,7 @@ class GraphAdjacencyMatrixLikeIndexingTests(unittest.TestCase):
         for idx, (v1, v2) in enumerate(g.get_edgelist()):
             self.assertEqual(g[v1, v2], idx)
             self.assertEqual(g[v2, v1], idx)
-        for v1 in xrange(g.vcount()):
+        for v1 in range(g.vcount()):
             for v2 in set(range(g.vcount())) - set(g.neighbors(v1)):
                 self.assertEqual(g[v1, v2], 0)
                 self.assertEqual(g[v2, v1], 0)
@@ -33,7 +33,7 @@ class GraphAdjacencyMatrixLikeIndexingTests(unittest.TestCase):
         for idx, (v1, v2) in enumerate(g.get_edgelist()):
             self.assertEqual(g[v1, v2, "value"], idx+20)
             self.assertEqual(g[v2, v1, "value"], idx+20)
-        for v1 in xrange(g.vcount()):
+        for v1 in range(g.vcount()):
             for v2 in set(range(g.vcount())) - set(g.neighbors(v1)):
                 self.assertEqual(g[v1, v2, "value"], 0)
                 self.assertEqual(g[v2, v1, "value"], 0)

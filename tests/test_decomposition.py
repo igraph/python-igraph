@@ -222,8 +222,8 @@ class CommunityTests(unittest.TestCase):
         self.assertMembershipsEqual(cl, [1,1,1,1,2,2,2,1,0,1,2,1,1,1,0,0,2,1,0,1,0,1] + [0]*12)
 
         # Smoke testing with vertex and edge weights
-        v_weights = [random.randint(1, 5) for _ in xrange(g.vcount())]
-        e_weights = [random.randint(1, 5) for _ in xrange(g.ecount())]
+        v_weights = [random.randint(1, 5) for _ in range(g.vcount())]
+        e_weights = [random.randint(1, 5) for _ in range(g.ecount())]
         cl = g.community_infomap(edge_weights=e_weights)
         cl = g.community_infomap(vertex_weights=v_weights)
         cl = g.community_infomap(edge_weights=e_weights, vertex_weights=v_weights)
@@ -269,7 +269,7 @@ class CommunityTests(unittest.TestCase):
             self.assertMembershipsEqual(cl, [0, 0, 1, 0, 1])
             self.assertAlmostEqual(cl.q, 0.08, places=7)
 
-            ws = [i % 5 for i in xrange(g.ecount())]
+            ws = [i % 5 for i in range(g.ecount())]
             cl = g.community_optimal_modularity(weights=ws)
             self.assertAlmostEqual(cl.q, g.modularity(cl.membership, weights=ws),
                     places=7)
@@ -282,7 +282,7 @@ class CommunityTests(unittest.TestCase):
                     2, 2, 3, 2, 2])
             self.assertAlmostEqual(cl.q, 0.4197896, places=7)
 
-            ws = [2+(i % 3) for i in xrange(g.ecount())]
+            ws = [2+(i % 3) for i in range(g.ecount())]
             cl = g.community_optimal_modularity(weights=ws)
             self.assertAlmostEqual(cl.q, g.modularity(cl.membership, weights=ws),
                     places=7)
@@ -297,7 +297,7 @@ class CommunityTests(unittest.TestCase):
 
         # Spinglass community detection is a bit unstable, so run it three times
         ok = False
-        for i in xrange(3):
+        for i in range(3):
             cl = g.community_spinglass()
             if self.reindexMembership(cl) == [0,0,0,0,0,1,1,1,1,1,2,2,2,2,2]:
                 ok = True
@@ -332,8 +332,8 @@ class CohesiveBlocksTests(unittest.TestCase):
         cbs = g.cohesive_blocks()
         self.genericTests(cbs)
         self.assertEqual(sorted(list(cbs)),
-                [range(0, 5), range(18), [0, 1, 2, 3, 4, 6, 7, 8, 9, 10],
-                 range(6, 10), range(12, 16), range(12, 17)])
+                [list(range(0, 5)), list(range(18)), [0, 1, 2, 3, 4, 6, 7, 8, 9, 10],
+                 list(range(6, 10)), list(range(12, 16)), list(range(12, 17))])
         self.assertEqual(cbs.cohesions(), [1, 2, 2, 4, 3, 3])
         self.assertEqual(cbs.max_cohesions(), [4, 4, 4, 4, 4,
             1, 3, 3, 3, 3, 2, 1, 3, 3, 3, 3, 2, 1])
@@ -350,8 +350,8 @@ class CohesiveBlocksTests(unittest.TestCase):
         cbs = g.cohesive_blocks()
         self.genericTests(cbs)
 
-        expected_blocks = [range(7), range(23), range(7)+range(16, 23),
-                range(6, 16), [6, 7, 10, 13]]
+        expected_blocks = [list(range(7)), list(range(23)), list(range(7))+list(range(16, 23)),
+                list(range(6, 16)), [6, 7, 10, 13]]
         observed_blocks = sorted(sorted(int(x)-1 for x in g.vs[bl]["name"]) for bl in cbs)
         self.assertEqual(expected_blocks, observed_blocks)
         self.assertTrue(cbs.cohesions() == [1, 2, 2, 5, 3])

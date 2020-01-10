@@ -59,7 +59,7 @@ def temporary_file(content=None, mode=None):
 
     tmpf = open(tmpfname, mode)
     if content is not None:
-        if isinstance(content, unicode):
+        if hasattr(content, "encode"):
             tmpf.write(dedent(content).encode("utf8"))
         else:
             tmpf.write(content)

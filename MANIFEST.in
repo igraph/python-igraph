@@ -1,10 +1,10 @@
 include setup.cfg
-include src/*.h
+include src/_igraph/*.h
 include MANIFEST.in
 include COPYING
 include scripts/mkdoc.sh
 include scripts/epydoc-patched
 include scripts/epydoc.cfg
-include test/*.py
+include tests/*.py
 graft vendor/source/igraph
 

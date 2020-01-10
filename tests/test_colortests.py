@@ -1,6 +1,10 @@
 import unittest
 
-from itertools import izip
+try:
+    from itertools import izip
+except ImportError:
+    izip = zip  # Python 3.x
+
 from igraph import *
 
 class ColorTests(unittest.TestCase):

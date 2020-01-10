@@ -93,30 +93,30 @@ class BasicTests(unittest.TestCase):
 
         vertex = g.add_vertex()
         self.assertTrue(g.vcount() == 1 and g.ecount() == 0)
-        self.assertEquals(0, vertex.index)
+        self.assertEqual(0, vertex.index)
         self.assertFalse("name" in g.vertex_attributes())
 
         vertex = g.add_vertex("foo")
         self.assertTrue(g.vcount() == 2 and g.ecount() == 0)
-        self.assertEquals(1, vertex.index)
+        self.assertEqual(1, vertex.index)
         self.assertTrue("name" in g.vertex_attributes())
         self.assertEqual(g.vs["name"], [None, "foo"])
 
         vertex = g.add_vertex(3)
         self.assertTrue(g.vcount() == 3 and g.ecount() == 0)
-        self.assertEquals(2, vertex.index)
+        self.assertEqual(2, vertex.index)
         self.assertTrue("name" in g.vertex_attributes())
         self.assertEqual(g.vs["name"], [None, "foo", 3])
 
         vertex = g.add_vertex(name="bar")
         self.assertTrue(g.vcount() == 4 and g.ecount() == 0)
-        self.assertEquals(3, vertex.index)
+        self.assertEqual(3, vertex.index)
         self.assertTrue("name" in g.vertex_attributes())
         self.assertEqual(g.vs["name"], [None, "foo", 3, "bar"])
 
         vertex = g.add_vertex(name="frob", spam="cheese", ham=42)
         self.assertTrue(g.vcount() == 5 and g.ecount() == 0)
-        self.assertEquals(4, vertex.index)
+        self.assertEqual(4, vertex.index)
         self.assertEqual(
             sorted(g.vertex_attributes()), ["ham", "name", "spam"]
         )
@@ -264,7 +264,7 @@ class BasicTests(unittest.TestCase):
         g = Graph.Famous("petersen")
         g.vs["name"] = list("ABCDEFGHIJ")
         edges_to_ids = dict((v, k) for k, v in enumerate(g.get_edgelist()))
-        for (source, target), edge_id in edges_to_ids.iteritems():
+        for (source, target), edge_id in edges_to_ids.items():
             source_name, target_name = g.vs[(source, target)]["name"]
             self.assertEqual(edge_id, g.get_eid(source, target))
             self.assertEqual(edge_id, g.get_eid(source_name, target_name))

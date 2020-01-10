@@ -118,7 +118,7 @@ class LayoutTests(unittest.TestCase):
         layout = Layout([(0, 0), (-1, 1), (0, 1), (1, 1)])
         layout.to_radial(min_angle=180, max_angle=0, max_radius=2)
         exp = [[0., 0.], [-2., 0.], [0., 2.], [2, 0.]]
-        for idx in xrange(4):
+        for idx in range(4):
             self.assertAlmostEqual(layout.coords[idx][0], exp[idx][0], places=3)
             self.assertAlmostEqual(layout.coords[idx][1], exp[idx][1], places=3)
 
@@ -162,12 +162,12 @@ class LayoutAlgorithmTests(unittest.TestCase):
         del g["layout"]
         lo = layout_test(g, test_with_dims=(2,))
         self.assertEqual([tuple(item) for item in lo],
-                         zip(range(20), range(20, 40)))
+                         list(zip(range(20), range(20, 40))))
 
         g.vs["z"] = range(40, 60)
         lo = layout_test(g)
         self.assertEqual([tuple(item) for item in lo],
-                         zip(range(20), range(20, 40), range(40, 60)))
+                         list(zip(range(20), range(20, 40), range(40, 60))))
 
     def testCircle(self):
         def test_is_proper_circular_layout(graph, layout):
@@ -188,8 +188,8 @@ class LayoutAlgorithmTests(unittest.TestCase):
         ordered_layout = g.layout("circle", order=order)
         test_is_proper_circular_layout(g, g.layout("circle"))
         for v, w in enumerate(order):
-            self.assertAlmostEquals(layout[v][0], ordered_layout[w][0])
-            self.assertAlmostEquals(layout[v][1], ordered_layout[w][1])
+            self.assertAlmostEqual(layout[v][0], ordered_layout[w][0])
+            self.assertAlmostEqual(layout[v][1], ordered_layout[w][1])
 
     def testDavidsonHarel(self):
         # Quick smoke testing only
@@ -205,11 +205,11 @@ class LayoutAlgorithmTests(unittest.TestCase):
 
         lo = g.layout("fr", miny=range(100))
         self.assertTrue(isinstance(lo, Layout))
-        self.assertTrue(all(lo[i][1] >= i for i in xrange(100)))
+        self.assertTrue(all(lo[i][1] >= i for i in range(100)))
 
         lo = g.layout("fr", miny=range(100), maxy=range(100))
         self.assertTrue(isinstance(lo, Layout))
-        self.assertTrue(all(lo[i][1] == i for i in xrange(100)))
+        self.assertTrue(all(lo[i][1] == i for i in range(100)))
 
         lo = g.layout("fr", miny=[2]*100, maxy=[3]*100, minx=[4]*100, maxx=[6]*100)
         self.assertTrue(isinstance(lo, Layout))
@@ -224,7 +224,7 @@ class LayoutAlgorithmTests(unittest.TestCase):
         for grid_opt in ["grid", "nogrid", "auto", True, False]:
             lo = g.layout("fr", miny=range(100), grid=grid_opt)
             self.assertTrue(isinstance(lo, Layout))
-            self.assertTrue(all(lo[i][1] >= i for i in xrange(100)))
+            self.assertTrue(all(lo[i][1] >= i for i in range(100)))
 
     def testKamadaKawai(self):
         g = Graph.Barabasi(100)

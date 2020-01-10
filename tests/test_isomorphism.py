@@ -258,7 +258,7 @@ class PermutationTests(unittest.TestCase):
 
         # More complicated one: small GRG, random permutation
         g = Graph.GRG(10, 0.5)
-        perm = range(10)
+        perm = list(range(10))
         shuffle(perm)
         g2 = g.permute_vertices(perm)
         g3 = g.permute_vertices(g.canonical_permutation())

@@ -4,12 +4,13 @@ import warnings
 import unittest
 from igraph import *
 
-class TestBase(unittest.TestCase):
+
+class AtlasTestBase(object):
     def testPageRank(self):
         for idx, g in enumerate(self.__class__.graphs):
             try:
                 pr = g.pagerank()
-            except Exception, ex:
+            except Exception as ex:
                 self.assertTrue(False, msg="PageRank calculation threw exception for graph #%d: %s" % (idx, ex))
                 raise
 
@@ -35,7 +36,7 @@ class TestBase(unittest.TestCase):
 
                 try:
                     ec, eval = g.evcent(return_eigenvalue=True)
-                except Exception, ex:
+                except Exception as ex:
                     self.assertTrue(False, msg="Eigenvector centrality threw exception for graph #%d: %s" % (idx, ex))
                     raise
 
@@ -62,7 +63,7 @@ class TestBase(unittest.TestCase):
                         msg="Minimum eigenvector centrality is less than 0 for graph #%d" % idx)
 
                 ec2 = [sum(ec[u.index] for u in v.predecessors()) for v in g.vs]
-                for i in xrange(n):
+                for i in range(n):
                     self.assertAlmostEqual(ec[i] * eval, ec2[i], places=7, \
                             msg="Eigenvector centrality in graph #%d seems to be invalid "\
                             "for vertex %d" % (idx, i))
@@ -94,13 +95,13 @@ class TestBase(unittest.TestCase):
             self.assertTrue(min(sc) >= 0, \
                     msg="Minimum authority score is less than 0 for graph #%d" % idx)
 
-class GraphAtlasTests(TestBase):
-    graphs = [Graph.Atlas(i) for i in xrange(1253)]
+class GraphAtlasTests(unittest.TestCase, AtlasTestBase):
+    graphs = [Graph.Atlas(i) for i in range(1253)]
     skip_graphs = set([180])
 
-class IsoclassTests(TestBase):
-    graphs = [Graph.Isoclass(3, i, directed=True) for i in xrange(16)] + \
-             [Graph.Isoclass(4, i, directed=True) for i in xrange(218)]
+class IsoclassTests(unittest.TestCase, AtlasTestBase):
+    graphs = [Graph.Isoclass(3, i, directed=True) for i in range(16)] + \
+             [Graph.Isoclass(4, i, directed=True) for i in range(218)]
     skip_graphs = set([136])
 
 def suite():

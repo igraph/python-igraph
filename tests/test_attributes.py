@@ -42,10 +42,10 @@ class AttributeTests(unittest.TestCase):
 
     def testMassVertexAttributeAssignment(self):
         g = Graph.Full(5)
-        g.vs.set_attribute_values("name", range(5))
-        self.assertTrue(g.vs.get_attribute_values("name") == range(5))
-        g.vs["name"] = range(5,10)
-        self.assertTrue(g.vs["name"] == range(5,10))
+        g.vs.set_attribute_values("name", list(range(5)))
+        self.assertTrue(g.vs.get_attribute_values("name") == list(range(5)))
+        g.vs["name"] = list(range(5,10))
+        self.assertTrue(g.vs["name"] == list(range(5,10)))
         g.vs["name2"] = (1,2,3,4,6) 
         self.assertTrue(g.vs["name2"] == [1,2,3,4,6])
         g.vs.set_attribute_values("name", [2])
@@ -53,10 +53,10 @@ class AttributeTests(unittest.TestCase):
 
     def testMassEdgeAttributeAssignment(self):
         g = Graph.Full(5)
-        g.es.set_attribute_values("name", range(10))
-        self.assertTrue(g.es.get_attribute_values("name") == range(10))
-        g.es["name"] = range(10,20)
-        self.assertTrue(g.es["name"] == range(10,20))
+        g.es.set_attribute_values("name", list(range(10)))
+        self.assertTrue(g.es.get_attribute_values("name") == list(range(10)))
+        g.es["name"] = list(range(10,20))
+        self.assertTrue(g.es["name"] == list(range(10,20)))
         g.es["name2"] = (1,2,3,4,6,1,2,3,4,6) 
         self.assertTrue(g.es["name2"] == [1,2,3,4,6,1,2,3,4,6])
         g.es.set_attribute_values("name", [2])
@@ -129,7 +129,7 @@ class AttributeCombinationTests(unittest.TestCase):
         g = self.g
         g.simplify(combine_edges="random")
         del g.es["weight2"]
-        for i in xrange(100):
+        for i in range(100):
             self.assertTrue(g.es[0]["weight"] in (1, 2))
             self.assertTrue(g.es[1]["weight"] == 3)
             self.assertTrue(g.es[2]["weight"] in (4, 5, 6))

@@ -1,6 +1,8 @@
 import unittest
+
 from igraph import *
-from igraph.test.utils import skipIf
+
+from .utils import skipIf
 
 try:
     import numpy as np

@@ -633,7 +633,7 @@ buildcfg = BuildConfiguration()
 buildcfg.process_args_from_command_line()
 
 # Define the extension
-sources = glob.glob(os.path.join("src", "*.c"))
+sources = glob.glob(os.path.join("src", "_igraph", "*.c"))
 igraph_extension = Extension("igraph._igraph", sources)
 
 description = """Python interface to the igraph high performance graph
@@ -652,7 +652,7 @@ versions can also be found `here <http://www.lfd.uci.edu/~gohlke/pythonlibs>`_.
 Many thanks to the maintainers of this page!
 """
 
-headers = ["src/igraphmodule_api.h"] if not SKIP_HEADER_INSTALL else []
+headers = ["src/_igraph/igraphmodule_api.h"] if not SKIP_HEADER_INSTALL else []
 
 options = dict(
     name="python-igraph",
@@ -664,17 +664,15 @@ options = dict(
     author="Tamas Nepusz",
     author_email="ntamas@gmail.com",
     ext_modules=[igraph_extension],
-    package_dir={"igraph": "igraph"},
+    package_dir={"igraph": "src/igraph"},
     packages=[
         "igraph",
-        "igraph.test",
         "igraph.app",
         "igraph.drawing",
         "igraph.remote",
         "igraph.vendor",
     ],
     scripts=["scripts/igraph"],
-    test_suite="igraph.test.suite",
     headers=headers,
     platforms="ALL",
     keywords=[

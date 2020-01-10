@@ -1,8 +1,10 @@
 # vim:ts=4 sw=4 sts=4:
 
 import unittest
+
 from igraph import *
-from igraph.test.utils import is_pypy, skipIf
+
+from .utils import is_pypy, skipIf
 
 try:
     import numpy as np
@@ -16,13 +18,13 @@ class EdgeTests(unittest.TestCase):
     def testHash(self):
         data = {}
         n = self.g.ecount()
-        for i in xrange(n):
+        for i in range(n):
             code1 = hash(self.g.es[i])
             code2 = hash(self.g.es[i])
             self.assertEqual(code1, code2)
             data[self.g.es[i]] = i
 
-        for i in xrange(n):
+        for i in range(n):
             self.assertEqual(i, data[self.g.es[i]])
 
     def testRichCompare(self):
@@ -132,7 +134,7 @@ class EdgeSeqTests(unittest.TestCase):
 
     def testIndexing(self):
         n = self.g.ecount()
-        for i in xrange(n):
+        for i in range(n):
             self.assertEqual(i, self.g.es[i].index)
             self.assertEqual(n-i-1, self.g.es[-i-1].index)
         self.assertRaises(IndexError, self.g.es.__getitem__, n)
@@ -142,7 +144,7 @@ class EdgeSeqTests(unittest.TestCase):
     @skipIf(np is None, "test case depends on NumPy")
     def testNumPyIndexing(self):
         n = self.g.ecount()
-        for i in xrange(n):
+        for i in range(n):
             arr = np.array([i])
             self.assertEqual(i, self.g.es[arr[0]].index)
 
@@ -159,11 +161,11 @@ class EdgeSeqTests(unittest.TestCase):
         only_even = self.g.es.select(lambda e: (e.index % 2 == 0))
 
         only_even["test"] = [0]*len(only_even)
-        expected = [[0,i][i % 2] for i in xrange(self.g.ecount())]
+        expected = [[0,i][i % 2] for i in range(self.g.ecount())]
         self.assertTrue(self.g.es["test"] == expected)
 
         only_even["test2"] = range(23)
-        expected = [[i//2, None][i % 2] for i in xrange(self.g.ecount())]
+        expected = [[i//2, None][i % 2] for i in range(self.g.ecount())]
         self.assertTrue(self.g.es["test2"] == expected)
 
     def testSequenceReusing(self):
@@ -187,7 +189,7 @@ class EdgeSeqTests(unittest.TestCase):
 
     def testAllSequence(self):
         self.assertTrue(len(self.g.es) == 45)
-        self.assertTrue(self.g.es["test"] == range(45))
+        self.assertTrue(self.g.es["test"] == list(range(45)))
 
     def testEmptySequence(self):
         empty_es = self.g.es.select(None)
@@ -209,7 +211,7 @@ class EdgeSeqTests(unittest.TestCase):
         only_even = self.g.es.select(lambda e: (e.index % 2 == 0))
         self.assertTrue(len(only_even) == 23)
         self.assertRaises(KeyError, only_even.__getitem__, "nonexistent")
-        self.assertTrue(only_even["test"] == [i*2 for i in xrange(23)])
+        self.assertTrue(only_even["test"] == [i*2 for i in range(23)])
 
     def testChainedCallableFilteringSelect(self):
         only_div_six = self.g.es.select(lambda e: (e.index % 2 == 0),
@@ -238,7 +240,7 @@ class EdgeSeqTests(unittest.TestCase):
         self.assertTrue(subset["test"] == [2,3,4,2])
 
     def testIterableFilteringSelect(self):
-        subset = self.g.es.select(xrange(5,8))
+        subset = self.g.es.select(range(5,8))
         self.assertTrue(len(subset) == 3)
         self.assertTrue(subset["test"] == [5,6,7])
 
@@ -253,7 +255,7 @@ class EdgeSeqTests(unittest.TestCase):
     def testKeywordFilteringSelect(self):
         g = Graph.Barabasi(1000, 2)
         g.es["betweenness"] = g.edge_betweenness()
-        g.es["parity"] = [i % 2 for i in xrange(g.ecount())]
+        g.es["parity"] = [i % 2 for i in range(g.ecount())]
         self.assertTrue(len(g.es(betweenness_gt=10)) < 2000)
         self.assertTrue(len(g.es(betweenness_gt=10, parity=0)) < 2000)
 

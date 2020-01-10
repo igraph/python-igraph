@@ -86,13 +86,13 @@ class GeneratorTests(unittest.TestCase):
         el=g.get_edgelist()
         el.sort()
         self.assertTrue(not g.is_directed())
-        self.assertTrue(el == [(x, y) for x in xrange(19) for y in xrange(x+1, 20)])
+        self.assertTrue(el == [(x, y) for x in range(19) for y in range(x+1, 20)])
 
         g=Graph.Full_Citation(20, True)
         el=g.get_edgelist()
         el.sort()
         self.assertTrue(g.is_directed())
-        self.assertTrue(el == [(x, y) for x in xrange(1, 20) for y in xrange(x)])
+        self.assertTrue(el == [(x, y) for x in range(1, 20) for y in range(x)])
 
         self.assertRaises(InternalError, Graph.Full_Citation, -2)
 

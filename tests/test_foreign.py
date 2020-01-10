@@ -5,7 +5,8 @@ import unittest
 import warnings
 
 from igraph import *
-from igraph.test.utils import temporary_file
+
+from .utils import temporary_file
 
 
 class ForeignTests(unittest.TestCase):

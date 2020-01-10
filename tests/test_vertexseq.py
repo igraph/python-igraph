@@ -1,8 +1,10 @@
 # vim:ts=4 sw=4 sts=4:
 
 import unittest
+
 from igraph import *
-from igraph.test.utils import is_pypy, skipIf
+
+from .utils import is_pypy, skipIf
 
 try:
     import numpy as np
@@ -16,19 +18,19 @@ class VertexTests(unittest.TestCase):
     def testHash(self):
         data = {}
         n = self.g.vcount()
-        for i in xrange(n):
+        for i in range(n):
             code1 = hash(self.g.vs[i])
             code2 = hash(self.g.vs[i])
             self.assertEqual(code1, code2)
             data[self.g.vs[i]] = i
 
-        for i in xrange(n):
+        for i in range(n):
             self.assertEqual(i, data[self.g.vs[i]])
 
     def testRichCompare(self):
         g2 = Graph.Full(10)
-        for i in xrange(self.g.vcount()):
-            for j in xrange(self.g.vcount()):
+        for i in range(self.g.vcount()):
+            for j in range(self.g.vcount()):
                 self.assertEqual(i == j, self.g.vs[i] == self.g.vs[j])
                 self.assertEqual(i != j, self.g.vs[i] != self.g.vs[j])
                 self.assertEqual(i <  j, self.g.vs[i] <  self.g.vs[j])
@@ -76,15 +78,15 @@ class VertexTests(unittest.TestCase):
             "out": "out_edges"
         }
 
-        for i in xrange(g.vcount()):
+        for i in range(g.vcount()):
             vertex = g.vs[i]
             for mode, method_name in method_table.items():
                 method = getattr(vertex, method_name)
-                self.assertEquals(
+                self.assertEqual(
                     g.incident(i, mode=mode),
                     [edge.index for edge in vertex.incident(mode=mode)]
                 )
-                self.assertEquals(
+                self.assertEqual(
                     g.incident(i, mode=mode),
                     [edge.index for edge in method()]
                 )
@@ -93,10 +95,10 @@ class VertexTests(unittest.TestCase):
         g = Graph.Famous("petersen")
         g.to_directed()
 
-        for i in xrange(g.vcount()):
+        for i in range(g.vcount()):
             vertex = g.vs[i]
             for mode in "all in out".split():
-                self.assertEquals(
+                self.assertEqual(
                     g.neighbors(i, mode=mode),
                     [edge.index for edge in vertex.neighbors(mode=mode)]
                 )
@@ -169,7 +171,7 @@ class VertexSeqTests(unittest.TestCase):
 
     def testIndexing(self):
         n = self.g.vcount()
-        for i in xrange(n):
+        for i in range(n):
             self.assertEqual(i, self.g.vs[i].index)
             self.assertEqual(n-i-1, self.g.vs[-i-1].index)
         self.assertRaises(IndexError, self.g.vs.__getitem__, n)
@@ -179,7 +181,7 @@ class VertexSeqTests(unittest.TestCase):
     @skipIf(np is None, "test case depends on NumPy")
     def testNumPyIndexing(self):
         n = self.g.vcount()
-        for i in xrange(self.g.vcount()):
+        for i in range(self.g.vcount()):
             arr = np.array([i])
             self.assertEqual(i, self.g.vs[arr[0]].index)
             arr = np.array([-i-1])
@@ -219,7 +221,7 @@ class VertexSeqTests(unittest.TestCase):
 
     def testAllSequence(self):
         self.assertTrue(len(self.g.vs) == 10)
-        self.assertTrue(self.g.vs["test"] == range(10))
+        self.assertTrue(self.g.vs["test"] == list(range(10)))
 
     def testEmptySequence(self):
         empty_vs = self.g.vs.select(None)
@@ -276,7 +278,7 @@ class VertexSeqTests(unittest.TestCase):
         self.assertRaises(ValueError, self.g.vs.find, "NoSuchName")
 
     def testIterableFilteringSelect(self):
-        subset = self.g.vs.select(xrange(5,8))
+        subset = self.g.vs.select(range(5,8))
         self.assertTrue(len(subset) == 3)
         self.assertTrue(subset["test"] == [5,6,7])
 
@@ -291,7 +293,7 @@ class VertexSeqTests(unittest.TestCase):
     def testKeywordFilteringSelect(self):
         g = Graph.Barabasi(10000)
         g.vs["degree"] = g.degree()
-        g.vs["parity"] = [i % 2 for i in xrange(g.vcount())]
+        g.vs["parity"] = [i % 2 for i in range(g.vcount())]
         l = len(g.vs(degree_gt=30))
         self.assertTrue(l < 1000)
         self.assertTrue(len(g.vs(degree_gt=30, parity=0)) <= 500)
