@@ -183,7 +183,7 @@ def quote_path_for_shell(s):
     if "MSYSTEM" in os.environ:
         s = s.replace("\\", "/")
         if s[1:3] == ":/":
-            s = s[0] + s[2:]
+            s = "/" + s[0] + s[2:]
 
     # Now the proper quoting
     return "'" + s.replace("'", "'\\''") + "'"
