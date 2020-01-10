@@ -662,6 +662,7 @@ options = dict(
         "igraph.vendor",
     ],
     scripts=["scripts/igraph"],
+    install_requires=["texttable>=1.6.2"],
     headers=headers,
     platforms="ALL",
     keywords=[

@@ -9,6 +9,7 @@ from igraph.vendor import vendor_import
 from igraph.statistics import median
 from itertools import islice
 from math import ceil
+from texttable import Texttable
 from textwrap import TextWrapper
 
 __all__ = ["GraphSummary"]
@@ -32,8 +33,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
-
-texttable = vendor_import("texttable")
 
 class FakeWrapper(object):
     """Object whose interface is compatible with C{textwrap.TextWrapper}
@@ -321,7 +320,7 @@ class GraphSummary(object):
 
     def _new_table(self, headers=None):
         """Constructs a new table to pretty-print vertex and edge attributes"""
-        table = texttable.Texttable(max_width=0)
+        table = Texttable(max_width=0)
         table.set_deco(0)
         if headers is not None:
             table.header(headers)
