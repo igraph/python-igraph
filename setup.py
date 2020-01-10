@@ -177,7 +177,15 @@ def preprocess_fallback_config():
                 ]
 
 
-def shellquote(s):
+def quote_path_for_shell(s):
+    # On MinGW / MSYS, we need to use forward slash style and remove unsafe
+    # characters in order not to trip up the configure script
+    if "MSYSTEM" in os.environ:
+        s = s.replace("\\", "/")
+        if s[1:3] == ":/":
+            s = s[0] + s[2:]
+
+    # Now the proper quoting
     return "'" + s.replace("'", "'\\''") + "'"
 
 
@@ -230,7 +238,7 @@ class IgraphCCoreBuilder(object):
 
             print("Configuring igraph...")
             retcode = subprocess.call(
-                "sh {0} --disable-tls --disable-gmp".format(shellquote(os.path.join(source_folder, "configure"))),
+                "sh {0} --disable-tls --disable-gmp".format(quote_path_for_shell(os.path.join(source_folder, "configure"))),
                 env=self.enhanced_env(CFLAGS="-fPIC", CXXFLAGS="-fPIC"),
                 shell=True
             )
