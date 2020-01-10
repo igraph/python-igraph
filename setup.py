@@ -240,7 +240,7 @@ class IgraphCCoreBuilder(object):
                                 "cd $darwin_orig_dir\n", 'cd "$darwin_orig_dir"\n'
                             )
                         outfp.write(line)
-            os.rename("ltmain.sh.new", "ltmain.sh")
+            shutil.move("ltmain.sh.new", "ltmain.sh")
 
             create_dir_unless_exists(build_folder)
             os.chdir(build_folder)

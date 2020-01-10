@@ -4,7 +4,7 @@ image:
 install:
   - C:\msys64\usr\bin\bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Sy"
-  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S autoconf automake bison flex libtool"
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S autoconf automake bison flex libtool mingw-w64-x86_64-libtool"
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S libxml2-devel zip"
   - pip install cibuildwheel==1.1.0
 
@@ -14,7 +14,7 @@ before_build:
 build_script:
   - set PATH=C:\msys64\usr\bin;%PATH%
   - set MSYSTEM=MINGW64
-  - C:\msys64\usr\bin\bash -lc "cd /c/projects/python-igraph && cibuildwheel --output-dir wheelhouse"
+  - cibuildwheel --output-dir wheelhouse
 
 artifacts:
   - path: "wheelhouse\\*.whl"
