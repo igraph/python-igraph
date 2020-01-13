@@ -5,9 +5,10 @@ environment:
   PATH: C:\msys64\usr\bin;C:\msys64\mingw64\bin;C:\Windows\System32;C:\Windows;%PATH%
   MSYSTEM: MINGW64
   TARGET_ARCH: "x64"
+  IGRAPH_EXTRA_LIBRARY_PATH: C:\msys64\mingw64\lib
 
 platform:
-    - x64
+  - x64
 
 install:
   - bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"
@@ -18,6 +19,7 @@ install:
 
 before_build:
   - git submodule update --init --recursive
+  - python setup.py build_c_core
 
 build_script:
   - cibuildwheel --output-dir wheelhouse

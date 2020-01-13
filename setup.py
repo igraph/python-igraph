@@ -391,6 +391,13 @@ class BuildConfiguration(object):
                     if not detected:
                         buildcfg.use_educated_guess()
 
+                # Add any extra library paths if needed; this is needed for the
+                # Appveyor CI build
+                if "IGRAPH_EXTRA_LIBRARY_PATH" in os.environ:
+                    buildcfg.library_dirs = list(
+                        os.environ["IGRAPH_EXTRA_LIBRARY_PATH"].split(os.pathsep)
+                    ) + buildcfg.library_dirs
+                
                 # Replaces library names with full paths to static libraries
                 # where possible. libm.a is excluded because it caused problems
                 # on Sabayon Linux where libm.a is probably not compiled with
