@@ -5,7 +5,6 @@
 @undocumented: _get_wrapper_for_width, FakeWrapper
 """
 
-from igraph.vendor import vendor_import
 from igraph.statistics import median
 from itertools import islice
 from math import ceil
