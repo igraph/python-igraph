@@ -237,8 +237,14 @@ class IgraphCCoreBuilder(object):
             os.chdir(build_folder)
 
             print("Configuring igraph...")
+            configure_args = ["--disable-tls", "--disable-gmp"]
+            if "IGRAPH_EXTRA_CONFIGURE_ARGS" in os.environ:
+                configure_args.extend(os.environ["IGRAPH_EXTRA_CONFIGURE_ARGS"].split(" "))
             retcode = subprocess.call(
-                "sh {0} --disable-tls --disable-gmp".format(quote_path_for_shell(os.path.join(source_folder, "configure"))),
+                "sh {0} {1}".format(
+                    quote_path_for_shell(os.path.join(source_folder, "configure")),
+                    " ".join(configure_args)
+                ),
                 env=self.enhanced_env(CFLAGS="-fPIC", CXXFLAGS="-fPIC"),
                 shell=True
             )
