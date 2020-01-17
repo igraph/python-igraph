@@ -6,6 +6,7 @@ environment:
   MSYSTEM: MINGW64
   TARGET_ARCH: "x64"
   CIBW_BEFORE_BUILD: python setup.py build_c_core
+  CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
   CIBW_SKIP: "*-win32"
   IGRAPH_EXTRA_CONFIGURE_ARGS: "--disable-graphml"
   # DEVENV_EXECUTABLE: C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe
