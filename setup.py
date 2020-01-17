@@ -615,7 +615,9 @@ class BuildConfiguration(object):
     def replace_static_libraries(self, only=None, exclusions=None):
         """Replaces references to libraries with full paths to their static
         versions if the static version is to be found on the library path."""
-        if "stdc++" not in self.libraries:
+        building_on_windows = platform.system() == "Windows"
+            
+        if not building_on_windows and "stdc++" not in self.libraries:
             self.libraries.append("stdc++")
 
         if exclusions is None:
