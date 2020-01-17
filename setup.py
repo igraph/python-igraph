@@ -341,11 +341,17 @@ class IgraphCCoreBuilder(object):
             shutil.copy(fname, os.path.join(install_folder, "include"))
 
         if building_on_windows:
-            for fname in glob.glob(
-                os.path.join(source_folder, "Release", "*.lib")
-            ):
-                print("Copying to lib folder:", fname)
-                shutil.copy(fname, os.path.join(install_folder, "lib"))
+            msvc_builddir = find_msvc_source_folder(build_folder, requires_built=True)
+            if msvc_builddir is not None:
+                print("Using MSVC build dir: %s\n\n" % msvc_builddir)
+                for fname in glob.glob(
+                    os.path.join(msvc_builddir, "Release", "*.lib")
+                ):
+                    print("Copying to lib folder:", fname)
+                    shutil.copy(fname, os.path.join(install_folder, "lib"))
+            else:
+                print("Cannot find MSVC build dir in %s\n\n" % build_folder)
+                return False
         else:
             for fname in glob.glob(
                 os.path.join(build_folder, "src", ".libs", "libigraph.*")
