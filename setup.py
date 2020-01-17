@@ -380,6 +380,7 @@ class BuildConfiguration(object):
         self.libraries = []
         self.extra_compile_args = []
         self.extra_link_args = []
+        self.define_macros = []
         self.extra_objects = []
         self.static_extension = False
         self.use_pkgconfig = True
@@ -482,6 +483,8 @@ class BuildConfiguration(object):
                 # Prints basic build information
                 buildcfg.print_build_info()
 
+                # Find the igraph extension and configure it with the settings
+                # of this build configuration
                 ext = first(
                     extension
                     for extension in self.extensions
@@ -548,6 +551,7 @@ class BuildConfiguration(object):
         ext.extra_compile_args = self.extra_compile_args
         ext.extra_link_args = self.extra_link_args
         ext.extra_objects = self.extra_objects
+        ext.define_macros = self.define_macros
 
     def detect_from_pkgconfig(self):
         """Detects the igraph include directory, library directory and the
@@ -635,10 +639,14 @@ class BuildConfiguration(object):
     def use_vendored_igraph(self):
         """Assumes that igraph is installed already in ``vendor/install/igraph`` and sets up
         the include and library paths and the library names accordingly."""
+        building_on_windows = platform.system() == "Windows"
+            
         buildcfg.include_dirs = [os.path.join("vendor", "install", "igraph", "include")]
         buildcfg.library_dirs = [os.path.join("vendor", "install", "igraph", "lib")]
         if not buildcfg.static_extension:
             buildcfg.static_extension = "only_igraph"
+            if building_on_windows:
+                buildcfg.define_macros.append(("IGRAPH_NO_IMPORTS", "1"))
 
         buildcfg_file = os.path.join("vendor", "install", "igraph", "build.cfg")
         if os.path.exists(buildcfg_file):
