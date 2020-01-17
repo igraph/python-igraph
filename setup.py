@@ -286,11 +286,11 @@ class IgraphCCoreBuilder(object):
                     return False
 
                 os.chdir(msvc_source)
-                retcode = subprocess.call("devenv /upgrade igraph.vcproj")
-                if retcode:
-                    return False
+                # retcode = subprocess.call("devenv /upgrade igraph.vcproj")
+                # if retcode:
+                #     return False
 
-                retcode = subprocess.call("msbuild.exe igraph.vcxproj")
+                retcode = subprocess.call("msbuild.exe igraph.vcxproj /p:configuration=Release")
             else:
                 retcode = subprocess.call("make", shell=True)
 
