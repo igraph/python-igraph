@@ -286,10 +286,10 @@ class IgraphCCoreBuilder(object):
                     return False
 
                 from distutils.spawn import find_executable
-                print(repr(find_executable("devenv")))
-                print(repr("\n".join(os.environ["PATH"].split(os.pathsep))))
+                devenv = os.environ.get("DEVENV_EXECUTABLE", "devenv")
+                print(devenv)
                 os.chdir(msvc_source)
-                retcode = subprocess.call("devenv /upgrade igraph.vcproj")
+                retcode = subprocess.call(quote_path_for_shell(devenv) + " /upgrade igraph.vcproj")
                 if retcode:
                     return False
 
