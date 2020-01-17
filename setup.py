@@ -285,15 +285,11 @@ class IgraphCCoreBuilder(object):
                 if not msvc_source:
                     return False
 
-                from distutils.spawn import find_executable
                 devenv = os.environ.get("DEVENV_EXECUTABLE")
                 os.chdir(msvc_source)
                 if devenv is None:
                     retcode = subprocess.call("devenv /upgrade igraph.vcproj", shell=True)
                 else:
-                    print("=====")
-                    subprocess.call("dir " + quote_path_for_shell(os.path.dirname(devenv)), shell=True)
-                    print("=====")
                     retcode = subprocess.call([devenv, "/upgrade", "igraph.vcproj"])
                 if retcode:
                     return False
@@ -328,6 +324,8 @@ class IgraphCCoreBuilder(object):
     def copy_build_artifacts(
         self, source_folder, build_folder, install_folder, libraries
     ):
+        building_on_windows = platform.system() == "Windows"
+            
         create_dir_unless_exists(install_folder)
 
         ensure_dir_does_not_exist(install_folder, "include")
@@ -341,10 +339,19 @@ class IgraphCCoreBuilder(object):
 
         for fname in glob.glob(os.path.join(build_folder, "include", "*.h")):
             shutil.copy(fname, os.path.join(install_folder, "include"))
-        for fname in glob.glob(
-            os.path.join(build_folder, "src", ".libs", "libigraph.*")
-        ):
-            shutil.copy(fname, os.path.join(install_folder, "lib"))
+
+        if building_on_windows:
+            for fname in glob.glob(
+                os.path.join(source_folder, "Release", "*.lib")
+            ):
+                print("Copying to lib folder:", fname)
+                shutil.copy(fname, os.path.join(install_folder, "lib"))
+        else:
+            for fname in glob.glob(
+                os.path.join(build_folder, "src", ".libs", "libigraph.*")
+            ):
+                shutil.copy(fname, os.path.join(install_folder, "lib"))
+
         with open(os.path.join(install_folder, "build.cfg"), "w") as f:
             f.write(repr(libraries))
 
