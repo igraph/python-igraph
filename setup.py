@@ -140,6 +140,35 @@ def is_unix_like(platform=None):
     )
 
 
+def find_msvc_source_folder(folder = ".", requires_built=False):
+    """Finds the folder that contains the MSVC-specific source of igraph if there
+    is any. Returns `None` if no such folder is found. Prints a warning if the
+    choice is ambiguous.
+    """
+    all_msvc_dirs = glob.glob(os.path.join(folder, "igraph-*-msvc"))
+    if len(all_msvc_dirs) > 0:
+        if len(all_msvc_dirs) > 1:
+            print(
+                "More than one MSVC build directory (..\\..\\igraph-*-msvc) found!"
+            )
+            print(
+                "It could happen that setup.py uses the wrong one! Please remove all but the right one!\n\n"
+            )
+
+        msvc_builddir = all_msvc_dirs[-1]
+        if requires_built and not os.path.exists(os.path.join(msvc_builddir, "Release")):
+            print(
+                "There is no 'Release' dir in the MSVC build directory\n(%s)"
+                % msvc_builddir
+            )
+            print("Please build the MSVC build first!\n")
+            return None
+
+        return msvc_builddir
+    else:
+        return None
+
+
 def preprocess_fallback_config():
     """Preprocesses the fallback include and library paths depending on the
     platform."""
@@ -147,34 +176,25 @@ def preprocess_fallback_config():
     global LIBIGRAPH_FALLBACK_LIBRARY_DIRS
     global LIBIGRAPH_FALLBACK_LIBRARIES
 
-    if os.name == "nt" and distutils.ccompiler.get_default_compiler() == "msvc":
+    if platform.system() == "Windows" and distutils.ccompiler.get_default_compiler() == "msvc":
         # if this setup is run in the source checkout *and* the igraph msvc was build,
         # this code adds the right library and include dir
-        all_msvc_dirs = glob.glob(os.path.join("..", "..", "igraph-*-msvc"))
-        if len(all_msvc_dirs) > 0:
-            if len(all_msvc_dirs) > 1:
-                print(
-                    "More than one MSVC build directory (..\\..\\igraph-*-msvc) found!"
-                )
-                print(
-                    "It could happen that setup.py uses the wrong one! Please remove all but the right one!\n\n"
-                )
+        msvc_builddir = find_msvc_source_folder(os.path.join("..", ".."), requires_built=True)
 
-            msvc_builddir = all_msvc_dirs[-1]
-            if not os.path.exists(os.path.join(msvc_builddir, "Release")):
-                print(
-                    "There is no 'Release' dir in the MSVC build directory\n(%s)"
-                    % msvc_builddir
-                )
-                print("Please build the MSVC build first!\n")
-            else:
-                print("Using MSVC build dir as a fallback: %s\n\n" % msvc_builddir)
-                LIBIGRAPH_FALLBACK_INCLUDE_DIRS = [
-                    os.path.join(msvc_builddir, "include")
-                ]
-                LIBIGRAPH_FALLBACK_LIBRARY_DIRS = [
-                    os.path.join(msvc_builddir, "Release")
-                ]
+        if msvc_builddir is not None:
+            print("Using MSVC build dir: %s\n\n" % msvc_builddir)
+            LIBIGRAPH_FALLBACK_INCLUDE_DIRS = [
+                os.path.join(msvc_builddir, "include")
+            ]
+            LIBIGRAPH_FALLBACK_LIBRARY_DIRS = [
+                os.path.join(msvc_builddir, "Release")
+            ]
+            return True
+        else:
+            return False
+
+    else:
+        return True
 
 
 def quote_path_for_shell(s):
@@ -221,8 +241,8 @@ class IgraphCCoreBuilder(object):
                 if retcode:
                     return False
 
-            # Patch ltmain.sh so it does not freak out on OS X when the build
-            # directory contains spaces
+            # Patch ltmain.sh so it does not freak out when the build directory
+            # contains spaces
             with open("ltmain.sh") as infp:
                 with open("ltmain.sh.new", "w") as outfp:
                     for line in infp:
@@ -237,7 +257,7 @@ class IgraphCCoreBuilder(object):
             os.chdir(build_folder)
 
             print("Configuring igraph...")
-            configure_args = ["--disable-tls", "--disable-gmp"]
+            configure_args = ["--disable-tls"]
             if "IGRAPH_EXTRA_CONFIGURE_ARGS" in os.environ:
                 configure_args.extend(os.environ["IGRAPH_EXTRA_CONFIGURE_ARGS"].split(" "))
             retcode = subprocess.call(
@@ -251,22 +271,46 @@ class IgraphCCoreBuilder(object):
             if retcode:
                 return False
 
+            building_on_windows = platform.system() == "Windows"
+            
+            if building_on_windows:
+                print("Creating Microsoft Visual Studio project...")
+                retcode = subprocess.call("make msvc", shell=True)
+                if retcode:
+                    return False
+
             print("Building igraph...")
-            retcode = subprocess.call("make", shell=True)
+            if building_on_windows:
+                msvc_source = find_msvc_source_folder()
+                if not msvc_source:
+                    return False
+
+                os.chdir(msvc_source)
+                retcode = subprocess.call("devenv /upgrade igraph.vcproj")
+                if retcode:
+                    return False
+
+                retcode = subprocess.call("msbuild.exe igraph.vcxproj")
+            else:
+                retcode = subprocess.call("make", shell=True)
+
             if retcode:
                 return False
 
-            libraries = []
-            for line in open("igraph.pc"):
-                if line.startswith("Libs: ") or line.startswith("Libs.private: "):
-                    words = line.strip().split()
-                    libraries.extend(
-                        word[2:] for word in words if word.startswith("-l")
-                    )
-
-            if not libraries:
-                # Educated guess
+            if building_on_windows:
                 libraries = ["igraph"]
+            else:
+                libraries = []
+                for line in open("igraph.pc"):
+                    if line.startswith("Libs: ") or line.startswith("Libs.private: "):
+                        words = line.strip().split()
+                        libraries.extend(
+                            word[2:] for word in words if word.startswith("-l")
+                        )
+
+                if not libraries:
+                    # Educated guess
+                    libraries = ["igraph"]
 
             return libraries
 
