@@ -285,10 +285,13 @@ class IgraphCCoreBuilder(object):
                 if not msvc_source:
                     return False
 
+                from distutils.spawn import find_executable
+                print(repr(find_executable("devenv")))
+                print(repr("\n".join(os.environ["PATH"].split(os.pathsep))))
                 os.chdir(msvc_source)
-                # retcode = subprocess.call("devenv /upgrade igraph.vcproj")
-                # if retcode:
-                #     return False
+                retcode = subprocess.call("devenv /upgrade igraph.vcproj")
+                if retcode:
+                    return False
 
                 retcode = subprocess.call("msbuild.exe igraph.vcxproj /p:configuration=Release")
             else:
