@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+usr/bin/env python
 
 import os
 import platform
@@ -286,10 +286,15 @@ class IgraphCCoreBuilder(object):
                     return False
 
                 from distutils.spawn import find_executable
-                devenv = os.environ.get("DEVENV_EXECUTABLE", "devenv")
-                print(devenv)
+                devenv = os.environ.get("DEVENV_EXECUTABLE")
                 os.chdir(msvc_source)
-                retcode = subprocess.call(quote_path_for_shell(devenv) + " /upgrade igraph.vcproj")
+                if devenv is None:
+                    retcode = subprocess.call("devenv /upgrade igraph.vcproj", shell=True)
+                else:
+                    print("=====")
+                    subprocess.call("dir " + quote_path_for_shell(os.path.dirname(devenv)), shell=True)
+                    print("=====")
+                    retcode = subprocess.call([devenv, "/upgrade", "igraph.vcproj"])
                 if retcode:
                     return False
 
