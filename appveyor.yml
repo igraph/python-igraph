@@ -8,7 +8,7 @@ environment:
   CIBW_BEFORE_BUILD: python setup.py build_c_core
   CIBW_SKIP: "*-win32"
   IGRAPH_EXTRA_CONFIGURE_ARGS: "--disable-graphml"
-  DEVENV_EXECUTABLE: C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe
+  # DEVENV_EXECUTABLE: C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe
 
 platform:
   - x64
@@ -24,6 +24,7 @@ before_build:
   - git submodule update --init --recursive
 
 build_script:
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
   - cibuildwheel --output-dir wheelhouse
 
 artifacts:
