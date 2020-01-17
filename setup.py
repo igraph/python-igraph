@@ -347,7 +347,6 @@ class IgraphCCoreBuilder(object):
                 for fname in glob.glob(
                     os.path.join(msvc_builddir, "Release", "*.lib")
                 ):
-                    print("Copying to lib folder:", fname)
                     shutil.copy(fname, os.path.join(install_folder, "lib"))
             else:
                 print("Cannot find MSVC build dir in %s\n\n" % build_folder)

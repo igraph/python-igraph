@@ -1886,10 +1886,7 @@ class Graph(GraphBase):
         """Reads a graph from Python pickled format
 
         @param fname: the name of the file, a stream to read from, or
-          a string containing the pickled data. The string is assumed to
-          hold pickled data if it is longer than 40 characters and
-          contains a substring that's peculiar to pickled versions
-          of an C{igraph} Graph object.
+          a string containing the pickled data.
         @return: the created graph object.
         """
         import cPickle as pickle
@@ -1900,6 +1897,14 @@ class Graph(GraphBase):
             fp = None
             try:
                 fp = open(fname, "rb")
+            except UnicodeDecodeError:
+                try:
+                    # We are on Python 3.6 or above and we are passing a pickled
+                    # stream that cannot be decoded as Unicode. Try unpickling
+                    # directly.
+                    result = pickle.loads(fname)
+                except TypeError:
+                    raise IOError('Cannot load file. If fname is a file name, that filename may be incorrect.')
             except IOError:
                 try:
                     # No file with the given name, try unpickling directly.
