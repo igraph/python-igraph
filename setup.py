@@ -645,7 +645,7 @@ class BuildConfiguration(object):
         if not buildcfg.static_extension:
             buildcfg.static_extension = "only_igraph"
             if building_on_windows:
-                buildcfg.define_macros.append(("IGRAPH_NO_IMPORTS", "1"))
+                buildcfg.define_macros.append(("IGRAPH_STATIC", "1"))
 
         buildcfg_file = os.path.join("vendor", "install", "igraph", "build.cfg")
         if os.path.exists(buildcfg_file):
