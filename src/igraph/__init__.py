@@ -592,6 +592,36 @@ class Graph(GraphBase):
 
         return Matrix(data)
 
+    def get_adjacency_sparse(self, attribute=None):
+        """Returns the adjacency matrix of a graph as scipy csr matrix.
+        @param attribute: if C{None}, returns the ordinary adjacency
+          matrix. When the name of a valid edge attribute is given
+          here, the matrix returned will contain the default value
+          at the places where there is no edge or the value of the
+          given attribute where there is an edge.
+        @return: the adjacency matrix as a L{scipy.sparse.csr_matrix}."""
+        try:
+            from scipy.sparse import csr_matrix
+        except ImportError:
+            raise ImportError('You should install scipy package in order to use this function')
+
+        edges = self.get_edgelist()
+        if attribute is None:
+            weights = np.ones(len(edges))
+        else:
+            if attribute not in self.es.attribute_names():
+                raise ValueError("Attribute does not exist")
+
+            weights = self.es[attribute]
+
+        N = self.vcount()
+        sparse_matrix = csr_matrix((weights, zip(*edges)), shape=(N, N))
+
+        if not self.is_directed():
+            sparse_matrix = sparse_matrix + sparse_matrix.T
+            di = np.diag_indices(len(edges))
+            sparse_matrix[di] /= 2
+        return sparse_matrix
 
     def get_adjlist(self, mode=OUT):
         """get_adjlist(mode=OUT)
