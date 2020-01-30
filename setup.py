@@ -209,6 +209,44 @@ def quote_path_for_shell(s):
     return "'" + s.replace("'", "'\\''") + "'"
 
 
+def wait_for_keypress(seconds):
+    """Wait for a keypress or until the given number of seconds have passed,
+    whichever happens first.
+    """
+    is_windows = platform.system() == "windows"
+
+    while seconds > 0:
+        if seconds > 1:
+            plural = "s"
+        else:
+            plural = ""
+
+        sys.stdout.write(
+            "\rContinuing in %2d second%s; press Enter to continue "
+            "immediately. " % (seconds, plural)
+        )
+        sys.stdout.flush()
+
+        if is_windows:
+            from msvcrt import kbhit
+
+            for i in range(10):
+                if kbhit():
+                    seconds = 0
+                    break
+                sleep(0.1)
+        else:
+            rlist, _, _ = select([sys.stdin], [], [], 1)
+            if rlist:
+                sys.stdin.readline()
+                seconds = 0
+                break
+
+        seconds -= 1
+
+    sys.stdout.write("\r" + " " * 65 + "\r")
+
+
 ###########################################################################
 
 
@@ -674,26 +712,8 @@ class BuildConfiguration(object):
         print("- LIBIGRAPH_FALLBACK_LIBRARY_DIRS")
         print("")
 
-        seconds_remaining = 10 if self.wait else 0
-        while seconds_remaining > 0:
-            if seconds_remaining > 1:
-                plural = "s"
-            else:
-                plural = ""
-
-            sys.stdout.write(
-                "\rContinuing in %2d second%s; press Enter to continue "
-                "immediately. " % (seconds_remaining, plural)
-            )
-            sys.stdout.flush()
-
-            rlist, _, _ = select([sys.stdin], [], [], 1)
-            if rlist:
-                sys.stdin.readline()
-                break
-
-            seconds_remaining -= 1
-        sys.stdout.write("\r" + " " * 65 + "\r")
+        if self.wait:
+            wait_for_keypress(seconds=10)
 
         self.libraries = LIBIGRAPH_FALLBACK_LIBRARIES[:]
         if self.static_extension:
