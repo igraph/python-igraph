@@ -323,6 +323,17 @@ class VertexSeqTests(unittest.TestCase):
         for v, d in zip(vs, vs.degree()):
             self.assertEqual(v.degree(), d)
 
+    def testBug73(self):
+        # This is a regression test for igraph/python-igraph#73
+        g = Graph()
+        g.add_vertices(2)
+        g.vs[0]["name"] = 1
+        g.vs[1]["name"] = "h"
+
+        self.assertEqual(1, g.vs.find("h").index)
+        self.assertEqual(1, g.vs.find(1).index)
+        self.assertEqual(0, g.vs.find(name=1).index)
+
 
 def suite():
     vertex_suite = unittest.makeSuite(VertexTests)

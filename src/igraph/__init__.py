@@ -3469,8 +3469,11 @@ class VertexSeq(_igraph.VertexSeq):
 
             >>> g.vs.find(_degree=0)             #doctest:+SKIP
         """
-        # Shortcut: if "name" is in kwds and there are no positional arguments,
-        # we try that first because that attribute is indexed
+        # Shortcut: if "name" is in kwds, there are no positional arguments,
+        # and the specified name is a string, we try that first because that
+        # attribute is indexed. Note that we cannot do this if name is an
+        # integer, because it would then translate to g.vs.select(name), which
+        # searches by _index_ if the argument is an integer
         if not args:
             if "name" in kwds:
                 name = kwds.pop("name")
@@ -3479,7 +3482,7 @@ class VertexSeq(_igraph.VertexSeq):
             else:
                 name = None
 
-            if name is not None:
+            if name is not None and isinstance(name, (str, unicode)):
                 args = [name]
 
         if args:
