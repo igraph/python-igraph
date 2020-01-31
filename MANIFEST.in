@@ -15,6 +15,6 @@ prune vendor/source/igraph/interfaces
 prune vendor/source/igraph/msvc
 prune vendor/source/igraph/nexus
 prune vendor/source/igraph/tools/virtual
-prune vendor/source/optional/simpleraytracer
-prune vendor/source/tools/virtual
+prune vendor/source/igraph/optional/simpleraytracer
+prune vendor/source/igraph/tools/virtual
 
