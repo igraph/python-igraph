@@ -607,7 +607,7 @@ class Graph(GraphBase):
 
         edges = self.get_edgelist()
         if attribute is None:
-            weights = np.ones(len(edges))
+            weights = [1] * len(edges)
         else:
             if attribute not in self.es.attribute_names():
                 raise ValueError("Attribute does not exist")
