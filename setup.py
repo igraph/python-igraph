@@ -535,6 +535,38 @@ class BuildConfiguration(object):
 
         return custom_build_ext
 
+    @property
+    def sdist(self):
+        """Returns a class that can be used as a replacement for the
+        ``sdist`` command in ``setuptools`` and that will clean up
+        ``vendor/source/igraph`` before running the original ``sdist``
+        command.
+        """
+        from setuptools.command.sdist import sdist
+        from distutils.sysconfig import get_python_inc
+
+        buildcfg = self
+
+        class custom_sdist(sdist):
+            def run(self):
+                # Clean up vendor/source/igraph with git
+                cwd = os.getcwd()
+                try:
+                    os.chdir(os.path.join("vendor", "source", "igraph"))
+                    if os.path.exists(".git"):
+                        retcode = subprocess.call("git clean -dfx", shell=True)
+                        if retcode:
+                            print("Failed to clean vendor/source/igraph with git")
+                            print("")
+                            return False
+                finally:
+                    os.chdir(cwd)
+
+                # Run the original sdist command
+                sdist.run(self)
+
+        return custom_sdist
+
     def compile_igraph_from_vendor_source(self):
         """Compiles igraph from the vendored source code inside `vendor/igraph/source`.
         This folder typically comes from a git submodule.
@@ -799,6 +831,7 @@ options = dict(
     cmdclass={
         "build_c_core": buildcfg.build_c_core,  # used by CI
         "build_ext": buildcfg.build_ext,
+        "sdist": buildcfg.sdist
     },
 )
 

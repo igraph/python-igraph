@@ -6,5 +6,12 @@ include scripts/mkdoc.sh
 include scripts/epydoc-patched
 include scripts/epydoc.cfg
 include tests/*.py
+
 graft vendor/source/igraph
+prune vendor/source/igraph/doc/abstracts
+prune vendor/source/igraph/doc/papers
+prune vendor/source/igraph/doc/presentations
+prune vendor/source/igraph/tools/virtual
+prune vendor/source/optional/simpleraytracer
+prune vendor/source/tools/virtual
 
