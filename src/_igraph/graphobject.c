@@ -11745,6 +11745,93 @@ PyObject *igraphmodule_Graph_community_walktrap(igraphmodule_GraphObject * self,
   return res;
 }
 
+/**
+ * Leiden community detection method of Traag, Waltman & van Eck
+ */
+PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
+        PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = {"edge_weights", "node_weights", "resolution_parameter",
+                           "beta", "initial_membership", "n_iterations"};
+
+  PyObject *edge_weights_o = Py_None;
+  PyObject *node_weights_o = Py_None;
+  PyObject *initial_membership_o = Py_None;
+  PyObject *res;
+
+  int ret = 0;
+  long int n_iterations = 2;
+  double resolution_parameter = 1.0;
+  double beta = 0.01;
+  igraph_vector_t *edge_weights = NULL, *node_weights = NULL, *membership;
+  igraph_bool_t start = 1;
+  igraph_integer_t nb_clusters = 0;
+  igraph_real_t quality = 0.0;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOddOl", kwlist,
+        &edge_weights_o, &node_weights_o, &resolution_parameter, &beta, &initial_membership_o, &n_iterations))
+    return NULL;
+
+  // Get edge weights
+  if (igraphmodule_attrib_to_vector_t(edge_weights_o, self, &edge_weights,
+    ATTRIBUTE_TYPE_EDGE)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  // Get node weights
+  if (igraphmodule_attrib_to_vector_t(node_weights_o, self, &node_weights,
+    ATTRIBUTE_TYPE_VERTEX)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  // Get initial membership
+  if (igraphmodule_attrib_to_vector_t(initial_membership_o, self, &membership,
+    ATTRIBUTE_TYPE_VERTEX)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (!membership) {
+    start = 0;
+    membership = (igraph_vector_t*)calloc(1, sizeof(igraph_vector_t));
+    if (membership==0) {
+      PyErr_NoMemory();
+      return 1;
+    }
+    igraph_vector_init(membership, 0);
+  }
+
+  /*********************/
+
+  ret = igraph_community_leiden(&self->g,
+                              edge_weights, node_weights,
+                              resolution_parameter, beta,
+                              start, membership,
+                              &nb_clusters, &quality);
+
+  if (edge_weights != 0) {
+    igraph_vector_destroy(edge_weights);
+    free(edge_weights);
+  }
+  if (node_weights != 0) {
+    igraph_vector_destroy(node_weights);
+    free(node_weights);
+  }
+
+  if (ret) {
+    res = igraphmodule_vector_t_to_PyList(membership, IGRAPHMODULE_TYPE_INT);
+  }
+
+  igraph_vector_destroy(membership);
+  free(membership);
+
+  if (ret)
+  {  return res; }
+  else
+  {  return NULL; }
+}
+
 /**********************************************************************
  * Random walks                                                       *
  **********************************************************************/
