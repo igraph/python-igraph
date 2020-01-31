@@ -1428,23 +1428,17 @@ class Graph(GraphBase):
         if (node_weights is None):
           if objective_function == _igraph.MODULARITY:
             if (weights):
-              node_weights = self.strength(weigths)
+              node_weights = self.strength(weights=weights)
             else:
               node_weights = self.degree()
           elif objective_function != _igraph.CPM:
             raise ValueError("objective_function must be CPM or MODULARITY.")
 
-        internal_resolution_parameter = resolution_parameter
-        if objective_function == _igraph.MODULARITY:
-          # TODO: This does not work if node_weights are provided as an attribute.
-          internal_resolution_parameter /= sum(node_weights)
-        elif objective_function != _igraph.CPM:
-          raise ValueError("objective_function must be CPM or MODULARITY.")
-
         membership = GraphBase.community_leiden(self,
           edge_weights=weights, node_weights=node_weights, 
-          resolution_parameter=internal_resolution_parameter, beta=beta,
-          initial_membership=initial_membership, n_iterations=n_iterations)
+          resolution_parameter=resolution_parameter,
+          normalize_resolution=(objective_function == _igraph.MODULARITY),
+          beta=beta, initial_membership=initial_membership, n_iterations=n_iterations)
         if weights is not None:
             modularity_params=dict(weights=weights)
         else:
