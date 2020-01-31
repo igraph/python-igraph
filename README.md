@@ -44,6 +44,43 @@ $ pip install python-igraph
 This should compile the C core of igraph as well as the Python extension
 automatically.
 
+### Linking to an existing igraph installation
+
+The source code of the Python package includes the source code of the matching
+igraph version that the Python interface should compile against. However, if
+you want to link the Python interface to a custom installation of the C core
+that has already been compiled and installed on your system, you can ask
+`setup.py` to use the pre-compiled version. This option requires that your
+custom installation of igraph is discoverable with `pkg-config`. First, check
+whether `pkg-config` can tell you the required compiler and linker flags for
+igraph:
+
+```
+$ pkg-config --cflags --libs igraph
+```
+
+If `pkg-config` responds with a set of compiler and linker flags and not an
+error message, you are probably okay. You can then proceed with the
+installation using pip:
+
+```
+$ pip install python-igraph --install-option="--use-pkg-config"
+```
+
+Alternatively, if you have already downloaded and extracted the source code
+of igraph, you can run `setup.py` directly:
+
+```
+$ python setup.py build --use-pkg-config
+```
+
+This option is primarily intended for package maintainers in Linux
+distributions so they can ensure that the packaged Python interface links to
+the packaged igraph library instead of bringing its own copy.
+
+It is also useful on macOS if you want to link to the igraph library installed
+from Homebrew.
+
 ## Compiling the development version
 
 If you have downloaded the source code from Github and not PyPI, chances are

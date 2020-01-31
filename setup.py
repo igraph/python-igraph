@@ -420,7 +420,7 @@ class BuildConfiguration(object):
         self.define_macros = []
         self.extra_objects = []
         self.static_extension = False
-        self.use_pkgconfig = True
+        self.use_pkgconfig = False
         self._has_pkgconfig = None
         self.excluded_include_dirs = []
         self.excluded_library_dirs = []
@@ -486,19 +486,20 @@ class BuildConfiguration(object):
                     print("You will need the Python headers to compile this extension.")
                     sys.exit(1)
 
-                # Check whether we have already compiled igraph in a previous run.
-                # If so, it should be found in vendor/install/igraph/include and
-                # vendor/install/igraph/lib
-                self.run_command("build_c_core")
-                if not buildcfg.c_core_built:
-                    # Try detecting with pkg-config if we haven't found the submodule
-                    detected = (
-                        buildcfg.use_pkgconfig and buildcfg.detect_from_pkgconfig()
-                    )
-
-                    # Fall back to an educated guess if everything else failed
+                # Check whether the user asked us to discover a pre-built igraph
+                # with pkg-config
+                if buildcfg.use_pkgconfig:
+                    detected = buildcfg.detect_from_pkgconfig()
                     if not detected:
-                        buildcfg.use_educated_guess()
+                        print("Cannot find the C core of igraph on this system using pkg-config.")
+                        sys.exit(1)
+                else:
+                    # Build the C core from the vendored igraph source
+                    self.run_command("build_c_core")
+                    if not buildcfg.c_core_built:
+                        # Fall back to an educated guess if everything else failed
+                        if not detected:
+                            buildcfg.use_educated_guess()
 
                 # Add any extra library paths if needed; this is needed for the
                 # Appveyor CI build
@@ -594,7 +595,6 @@ class BuildConfiguration(object):
         """Detects the igraph include directory, library directory and the
         list of libraries to link to using ``pkg-config``."""
         if not buildcfg.has_pkgconfig:
-            print("Cannot find the C core of igraph on this system using pkg-config.")
             return False
 
         cmd = ["pkg-config", "igraph", "--cflags", "--libs"]
@@ -649,6 +649,9 @@ class BuildConfiguration(object):
             elif option == "--no-wait":
                 opts_to_remove.append(idx)
                 self.wait = False
+            elif option == "--use-pkg-config":
+                opts_to_remove.append(idx)
+                self.use_pkgconfig = True
 
         for idx in reversed(opts_to_remove):
             sys.argv[idx : (idx + 1)] = []
