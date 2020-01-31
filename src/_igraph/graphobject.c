@@ -11773,21 +11773,21 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
         &edge_weights_o, &node_weights_o, &resolution_parameter, &normalize_resolution, &beta, &initial_membership_o, &n_iterations))
     return NULL;
 
-  // Get edge weights
+  /* Get edge weights */
   if (igraphmodule_attrib_to_vector_t(edge_weights_o, self, &edge_weights,
     ATTRIBUTE_TYPE_EDGE)) {
     igraphmodule_handle_igraph_error();
     error = -1;
   }
 
-  // Get node weights
+  /* Get node weights */
   if (!error && igraphmodule_attrib_to_vector_t(node_weights_o, self, &node_weights,
     ATTRIBUTE_TYPE_VERTEX)) {
     igraphmodule_handle_igraph_error();
     error = -1;
   }
 
-  // Get initial membership
+  /* Get initial membership */
   if (!error && igraphmodule_attrib_to_vector_t(initial_membership_o, self, &membership,
     ATTRIBUTE_TYPE_VERTEX)) {
     igraphmodule_handle_igraph_error();
@@ -11805,11 +11805,28 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
     }
   }
 
-  if (normalize_resolution && node_weights != 0) {
-      resolution_parameter /= igraph_vector_sum(node_weights); }
+  if (normalize_resolution)
+  {
+    /* If we need to normalize the resolution parameter,
+     * we will need to have node weights. */
+    if (node_weights == 0)
+    {
+      node_weights = (igraph_vector_t*)calloc(1, sizeof(igraph_vector_t));
+      if (node_weights==0) {
+        PyErr_NoMemory();
+        error = -1;
+      } else {
+        igraph_vector_init(node_weights, 0);
+        if (igraph_strength(&self->g, node_weights, igraph_vss_all(), IGRAPH_ALL, 0, edge_weights)) {
+          igraphmodule_handle_igraph_error();
+          error = -1;
+        }
+      }
+    }
+    resolution_parameter /= igraph_vector_sum(node_weights); 
+  }
 
-  /*********************/
-
+  /* Run actual Leiden algorithm for several iterations. */
   if (!error) {
     if (n_iterations > 0) {
       for (i = 0; !error && i < n_iterations; i++) {
@@ -15826,7 +15843,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "       Higher resolutions lead to more smaller communities, while \n"
    "       lower resolutions lead to fewer larger communities.\n"
    "     @param normalize_resolution: if set to true, the resolution parameter\n"
-   "       will be divided by the sum of the node weights (if supplied)."
+   "       will be divided by the sum of the node weights. If this is not\n"
+   "       supplied, it will default to the node degree, or weighted degree\n"
+   "       in case edge_weights are supplied.\n"
    "     @param node_weights: the node weights used in the Leiden algorithm.\n"
    "     @param beta: parameter affecting the randomness in the Leiden \n"
    "       algorithm. This affects only the refinement step of the algorithm.\n"

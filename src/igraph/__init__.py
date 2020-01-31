@@ -1425,20 +1425,15 @@ class Graph(GraphBase):
           to Leiden: guaranteeing well-connected communities. Scientific 
           reports, 9(1), 5233. doi: 10.1038/s41598-019-41695-z
         """
-        if (node_weights is None):
-          if objective_function == _igraph.MODULARITY:
-            if (weights):
-              node_weights = self.strength(weights=weights)
-            else:
-              node_weights = self.degree()
-          elif objective_function != _igraph.CPM:
-            raise ValueError("objective_function must be CPM or MODULARITY.")
+        if objective_function not in [_igraph.MODULARITY, _igraph.CPM]:
+          raise ValueError("objective_function must be CPM or MODULARITY.")
 
         membership = GraphBase.community_leiden(self,
           edge_weights=weights, node_weights=node_weights, 
           resolution_parameter=resolution_parameter,
           normalize_resolution=(objective_function == _igraph.MODULARITY),
           beta=beta, initial_membership=initial_membership, n_iterations=n_iterations)
+
         if weights is not None:
             modularity_params=dict(weights=weights)
         else:
