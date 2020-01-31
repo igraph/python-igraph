@@ -221,6 +221,7 @@ PyObject *igraphmodule_Graph_community_optimal_modularity(igraphmodule_GraphObje
 PyObject* igraphmodule_Graph_community_spinglass(igraphmodule_GraphObject* self, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_community_walktrap(igraphmodule_GraphObject* self, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_modularity(igraphmodule_GraphObject* self, PyObject *args, PyObject *kwds);
+PyObject* igraphmodule_Graph_leiden(igraphmodule_GraphObject* self, PyObject *args, PyObject *kwds);
 
 PyObject *igraphmodule_Graph_is_bipartite(igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds);
 

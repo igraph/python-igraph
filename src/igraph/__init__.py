@@ -1390,6 +1390,67 @@ class Graph(GraphBase):
         if return_single: return result[0]
         return result
 
+    def community_leiden(self, objective_function=_igraph.CPM, weights=None, 
+        resolution_parameter=1.0, beta=0.01, initial_membership=None,
+        n_iterations=2, node_weights=None):
+        """community_leiden(objective_function=CPM, weights=None, 
+        resolution_parameter=1.0, beta=0.01, initial_membership=None,
+        n_iterations=2, node_weights=None)
+
+        Finds the community structure of the graph using the
+        Leiden algorithm of Traag, van Eck & Waltman.
+
+        @keyword objective_function: whether to use the Constant Potts 
+          Model (CPM) or modularity. Must be either C{CPM} or C{MODULARITY}.
+        @keyword weights: edge weights to be used. Can be a sequence or
+          iterable or even an edge attribute name.
+        @keyword resolution_parameter: the resolution parameter to use.
+          Higher resolutions lead to more smaller communities, while 
+          lower resolutions lead to fewer larger communities.
+        @keyword beta: parameter affecting the randomness in the Leiden 
+          algorithm. This affects only the refinement step of the algorithm.
+        @keyword initial_membership: if provided, the Leiden algorithm
+          will try to improve this provided membership. If no argument is
+          provided, the aglorithm simply starts from the singleton partition.
+        @keyword n_iterations: the number of iterations to iterate the Leiden
+          algorithm. Each iteration may improve the partition further.
+        @keyword node_weights: the node weights used in the Leiden algorithm.
+          If this is not provided, it will be automatically determined on the
+          basis of whether you want to use CPM or modularity. If you do provide
+          this, please make sure that you understand what you are doing.
+        @return: an appropriate L{VertexClustering} object.
+
+        @newfield ref: Reference
+        @ref: Traag, V. A., Waltman, L., & van Eck, N. J. (2019). From Louvain
+          to Leiden: guaranteeing well-connected communities. Scientific 
+          reports, 9(1), 5233. doi: 10.1038/s41598-019-41695-z
+        """
+        if (node_weights is None):
+          if objective_function == _igraph.MODULARITY:
+            if (weights):
+              node_weights = self.strength(weigths)
+            else:
+              node_weights = self.degree()
+          elif objective_function != _igraph.CPM:
+            raise ValueError("objective_function must be CPM or MODULARITY.")
+
+        internal_resolution_parameter = resolution_parameter
+        if objective_function == _igraph.MODULARITY:
+          # TODO: This does not work if node_weights are provided as an attribute.
+          internal_resolution_parameter /= sum(node_weights)
+        elif objective_function != _igraph.CPM:
+          raise ValueError("objective_function must be CPM or MODULARITY.")
+
+        membership = GraphBase.community_leiden(self,
+          edge_weights=weights, node_weights=node_weights, 
+          resolution_parameter=internal_resolution_parameter, beta=beta,
+          initial_membership=initial_membership, n_iterations=n_iterations)
+        if weights is not None:
+            modularity_params=dict(weights=weights)
+        else:
+            modularity_params={}
+        return VertexClustering(self, membership,
+                modularity_params=modularity_params)
 
     def layout(self, layout=None, *args, **kwds):
         """Returns the layout of the graph according to a layout algorithm.
