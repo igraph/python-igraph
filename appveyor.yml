@@ -2,14 +2,21 @@ image:
   - Visual Studio 2017
 
 environment:
-  PATH: C:\msys64\usr\bin;C:\msys64\mingw64\bin;C:\Windows\System32;C:\Windows;%PATH%
-  MSYSTEM: MINGW64
-  TARGET_ARCH: "x64"
-  CIBW_BEFORE_BUILD: python setup.py build_c_core
-  CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
-  CIBW_SKIP: "*-win32"
-  IGRAPH_EXTRA_CONFIGURE_ARGS: "--disable-graphml"
-  # DEVENV_EXECUTABLE: C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe
+  global:
+    CIBW_BEFORE_BUILD: python setup.py build_c_core
+    CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
+    IGRAPH_EXTRA_CONFIGURE_ARGS: "--disable-graphml"
+
+  matrix:
+    - CIBW_BUILD: "*-win_amd64"
+      MSYSTEM: MINGW64
+      PATH: C:\msys64\usr\bin;C:\msys64\mingw64\bin;C:\Windows\System32;C:\Windows;%PATH%
+      TARGET_ARCH: "x64"
+
+    - CIBW_BUILD: "*-win32"
+      MSYSTEM: MINGW32
+      PATH: C:\msys64\usr\bin;C:\msys64\mingw32\bin;C:\Windows\System32;C:\Windows;%PATH%
+      TARGET_ARCH: "x86"
 
 platform:
   - x64
