@@ -14,6 +14,7 @@ environment:
       TARGET_ARCH: "x64"
 
     - CIBW_BUILD: "*-win32"
+      CIBW_SKIP: "cp27-*"
       MSYSTEM: MINGW32
       PATH: C:\msys64\usr\bin;C:\msys64\mingw32\bin;C:\Windows\System32;C:\Windows;%PATH%
       TARGET_ARCH: "x86"
