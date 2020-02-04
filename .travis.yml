@@ -7,14 +7,14 @@ python:
   - "3.6"
   - "3.7"
   - "3.8"
-  - "pypy3"
+  - pypy3
 
 addons:
   apt:
     packages:
-    - gfortran
-    - flex
-    - bison
+      - gfortran
+      - flex
+      - bison
 
 install:
   - python -m pip install tox-travis
@@ -51,3 +51,20 @@ notifications:
   email:
     on_success: change
     on_failure: always
+
+before_deploy:
+  - git config --local user.name "ntamas"
+  - git config --local user.email "ntamas@gmail.com"
+  - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
+  - git tag $TRAVIS_TAG
+
+deploy:
+  provider: releases
+  api_key:
+    secure: CAn8qENTIZSFed7VjqcQR42mjrPGV+QptW2XkncPaRwFooizPKgRsphgKzgv7k7peEQhQs/WOEtL0a3ofYRbbucOVbJ/nTVI0qGba9Lz/afsQ2UsbGnan0hXua9D/bo1wRhgqz8j0q6LHb3O8rgQOAKi8hWCChglr2saeRsy5Fc=
+  file: wheelhouse/*.whl
+  file_glob: true
+  draft: true
+  skip_cleanup: true
+  on:
+    repo: igraph/python-igraph
