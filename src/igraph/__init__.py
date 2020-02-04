@@ -3647,13 +3647,13 @@ class VertexSeq(_igraph.VertexSeq):
             "notin": lambda a, b: a not in b }
         for keyword, value in kwds.iteritems():
             if "_" not in keyword or keyword.rindex("_") == 0:
-                keyword = keyword+"_eq"
+                keyword = keyword + "_eq"
             attr, _, op = keyword.rpartition("_")
             try:
                 func = operators[op]
             except KeyError:
                 # No such operator, assume that it's part of the attribute name
-                attr, func = keyword, operators["eq"]
+                attr, op, func = keyword, "eq", operators["eq"]
 
             if attr[0] == '_':
                 # Method call, not an attribute
@@ -3855,9 +3855,15 @@ class EdgeSeq(_igraph.EdgeSeq):
         properties of the edges, e.g., their centrality.  The rules are as
         follows:
 
-          1. C{_source} or {_from} means the source vertex of an edge.
+          1. C{_source} or {_from} means the source vertex of an edge. For
+             undirected graphs, only the C{eq} operator is supported and it
+             is treated as {_incident} (since undirected graphs have no notion
+             of edge directionality).
 
-          2. C{_target} or {_to} means the target vertex of an edge.
+          2. C{_target} or {_to} means the target vertex of an edge. For
+             undirected graphs, only the C{eq} operator is supported and it
+             is treated as {_incident} (since undirected graphs have no notion
+             of edge directionality).
 
           3. C{_within} ignores the operator and checks whether both endpoints
              of the edge lie within a specified set.
@@ -3867,7 +3873,10 @@ class EdgeSeq(_igraph.EdgeSeq):
              endpoint lies within another specified set. The two sets must be
              given as a tuple.
 
-          5. Otherwise, the rest of the name is interpreted as a method of the
+          5. C{_incident} ignores the operator and checks whether the edge is
+             incident on a specific vertex or a set of vertices.
+
+          6. Otherwise, the rest of the name is interpreted as a method of the
              L{Graph} object. This method is called with the edge sequence as
              its first argument (all others left at default values) and edges
              are filtered according to the value returned by the method.
@@ -3911,6 +3920,7 @@ class EdgeSeq(_igraph.EdgeSeq):
 
         @return: the new, filtered edge sequence"""
         es = _igraph.EdgeSeq.select(self, *args)
+        is_directed = self.graph.is_directed()
 
         def _ensure_set(value):
             if isinstance(value, VertexSeq):
@@ -3930,25 +3940,55 @@ class EdgeSeq(_igraph.EdgeSeq):
             "notin": lambda a, b: a not in b }
         for keyword, value in kwds.iteritems():
             if "_" not in keyword or keyword.rindex("_") == 0:
-                keyword = keyword+"_eq"
+                keyword = keyword + "_eq"
             pos = keyword.rindex("_")
             attr, op = keyword[0:pos], keyword[pos+1:]
             try:
                 func = operators[op]
             except KeyError:
                 # No such operator, assume that it's part of the attribute name
-                attr = "%s_%s" % (attr,op)
-                func = operators["eq"]
+                attr, op, func = keyword, "eq", operators["eq"]
 
             if attr[0] == '_':
-                if attr == "_source" or attr == "_from":
+                if attr in ("_source", "_from", "_target", "_to") and not is_directed:
+                    if op not in ("eq", "in"):
+                        raise RuntimeError("unsupported for undirected graphs")
+
+                    # translate to _incident to avoid confusion
+                    attr = "_incident"
+                    if func == operators["eq"]:
+                        if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):
+                            value = set(value)
+                        else:
+                            value = set([value])
+
+                if attr in ("_source", "_from"):
                     values = [e.source for e in es]
                     if op == "in" or op == "notin":
                         value = _ensure_set(value)
-                elif attr == "_target" or attr == "_to":
+
+                elif attr in ("_target", "_to"):
                     values = [e.target for e in es]
                     if op == "in" or op == "notin":
                         value = _ensure_set(value)
+
+                elif attr == "_incident":
+                    func = None          # ignoring function, filtering here
+                    value = _ensure_set(value)
+
+                    # Fetch all the edges that are incident on at least one of
+                    # the vertices specified
+                    candidates = set()
+                    for v in value:
+                        candidates.update(es.graph.incident(v))
+
+                    if not es.is_all():
+                        # Find those that are in the current edge sequence
+                        filtered_idxs = [i for i, e in enumerate(es) if e.index in candidates]
+                    else:
+                        # We are done, the filtered indexes are in the candidates set
+                        filtered_idxs = sorted(candidates)
+
                 elif attr == "_within":
                     func = None          # ignoring function, filtering here
                     value = _ensure_set(value)
@@ -3968,6 +4008,7 @@ class EdgeSeq(_igraph.EdgeSeq):
                         # exactly once in increasing order of edge IDs
                         filtered_idxs = [i for i in candidates
                                 if es[i].source in value and es[i].target in value]
+
                 elif attr == "_between":
                     if len(value) != 2:
                         raise ValueError("_between selector requires two vertex ID lists")
@@ -3994,6 +4035,7 @@ class EdgeSeq(_igraph.EdgeSeq):
                         filtered_idxs = [i for i in candidates
                                 if (es[i].source in set1 and es[i].target in set2) or
                                 (es[i].target in set1 and es[i].source in set2)]
+
                 else:
                     # Method call, not an attribute
                     values = getattr(es.graph, attr[1:])(es)
@@ -4003,8 +4045,7 @@ class EdgeSeq(_igraph.EdgeSeq):
             # If we have a function to apply on the values, do that; otherwise
             # we assume that filtered_idxs has already been calculated.
             if func is not None:
-                filtered_idxs=[i for i, v in enumerate(values) \
-                               if func(v, value)]
+                filtered_idxs = [i for i, v in enumerate(values) if func(v, value)]
 
             es = es.select(filtered_idxs)
 

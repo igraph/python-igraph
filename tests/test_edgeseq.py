@@ -11,6 +11,7 @@ try:
 except ImportError:
     np = None
 
+
 class EdgeTests(unittest.TestCase):
     def setUp(self):
         self.g = Graph.Full(10)
@@ -119,6 +120,10 @@ class EdgeTests(unittest.TestCase):
 
 
 class EdgeSeqTests(unittest.TestCase):
+    def assert_edges_unique_in(self, es):
+        pairs = sorted(e.tuple for e in es)
+        self.assertEqual(pairs, sorted(set(pairs)))
+
     def setUp(self):
         self.g = Graph.Full(10)
         self.g.es["test"] = range(45)
@@ -260,8 +265,8 @@ class EdgeSeqTests(unittest.TestCase):
         self.assertTrue(len(g.es(betweenness_gt=10, parity=0)) < 2000)
 
     def testSourceTargetFiltering(self):
-        g = Graph.Barabasi(1000, 2)
-        es1 = set(e.source for e in g.es.select(_target_in = [2,4]))
+        g = Graph.Barabasi(1000, 2, directed=True)
+        es1 = set(e.source for e in g.es.select(_target_in = [2, 4]))
         es2 = set(v1 for v1, v2 in g.get_edgelist() if v2 in [2, 4])
         self.assertTrue(es1 == es2)
 
@@ -276,10 +281,12 @@ class EdgeSeqTests(unittest.TestCase):
         for es in [es1, es2]:
             self.assertTrue(len(es) == 12)
             self.assertTrue(all(e.source in vs and e.target in vs for e in es))
+            self.assert_edges_unique_in(es)
 
             es_filtered = es.select(_within = vs2)
             self.assertTrue(len(es_filtered) == 4)
             self.assertTrue(all(e.source in vs2 and e.target in vs2 for e in es_filtered))
+            self.assert_edges_unique_in(es_filtered)
 
     def testBetweenFiltering(self):
         g = Graph.Lattice([10, 10])
@@ -292,6 +299,69 @@ class EdgeSeqTests(unittest.TestCase):
             self.assertTrue(len(es) == 3)
             self.assertTrue(all((e.source in vs1 and e.target in vs2) or \
                                 (e.target in vs1 and e.source in vs2) for e in es))
+            self.assert_edges_unique_in(es)
+
+    def testIncidentFiltering(self):
+        g = Graph.Lattice([10, 10], circular=False)
+        vs = (0, 1, 10, 11)
+        vs2 = (11, 0, 24)
+        vs3 = sorted(set(vs).intersection(set(vs2)))
+
+        es = g.es.select(_incident = vs)
+        self.assertEqual(8, len(es))
+        self.assertTrue(all((e.source in vs or e.target in vs) for e in es))
+        self.assert_edges_unique_in(es)
+
+        es_filtered = es.select(_incident = vs2)
+        self.assertEqual(6, len(es_filtered))
+        self.assertTrue(all((e.source in vs3 or e.target in vs3) for e in es_filtered))
+        self.assert_edges_unique_in(es_filtered)
+
+    def testIncidentFilteringByNames(self):
+        g = Graph.Lattice([10, 10], circular=False)
+        vs = (0, 1, 10, 11)
+        g.vs[vs]["name"] = ["A", "B", "C", "D"]
+
+        vs2 = (11, 0, 24)
+        g.vs[24]["name"] = "X"
+
+        vs3 = sorted(set(vs).intersection(set(vs2)))
+
+        es = g.es.select(_incident = ("A", "B", "C", "D"))
+        self.assertEqual(8, len(es))
+        self.assertTrue(all((e.source in vs or e.target in vs) for e in es))
+        self.assert_edges_unique_in(es)
+
+        es_filtered = es.select(_incident = ("D", "A", "X"))
+        self.assertEqual(6, len(es_filtered))
+        self.assertTrue(all((e.source in vs3 or e.target in vs3) for e in es_filtered))
+        self.assert_edges_unique_in(es_filtered)
+
+        es_filtered = es_filtered.select(_from="A")
+        self.assertEqual(2, len(es_filtered))
+        self.assertTrue(all((e.source == 0 or e.target == 0) for e in es_filtered))
+        self.assert_edges_unique_in(es_filtered)
+
+    def testSourceAndTargetFilteringForUndirectedGraphs(self):
+        g = Graph.Lattice([10, 10], circular=False)
+        vs = (0, 1, 10, 11)
+        vs2 = (11, 0, 24)
+        vs3 = sorted(set(vs).intersection(set(vs2)))
+
+        es = g.es.select(_from = vs)
+        self.assertEqual(8, len(es))
+        self.assertTrue(all((e.source in vs or e.target in vs) for e in es))
+        self.assert_edges_unique_in(es)
+
+        es_filtered = es.select(_to_in = vs2)
+        self.assertEqual(6, len(es_filtered))
+        self.assertTrue(all((e.source in vs3 or e.target in vs3) for e in es_filtered))
+        self.assert_edges_unique_in(es_filtered)
+
+        es_filtered = es_filtered.select(_from_eq = 0)
+        self.assertEqual(2, len(es_filtered))
+        self.assertTrue(all((e.source == 0 or e.target == 0) for e in es_filtered))
+        self.assert_edges_unique_in(es_filtered)
 
     def testIndexOutOfBoundsSelect(self):
         g = Graph.Full(3)
