@@ -3918,7 +3918,8 @@ class EdgeSeq(_igraph.EdgeSeq):
           >>> g.es["bs"] = g.edge_betweenness()
           >>> edges = g.es.select(bs_gt=10, bs_lt=30)
 
-        @return: the new, filtered edge sequence"""
+        @return: the new, filtered edge sequence
+        """
         es = _igraph.EdgeSeq.select(self, *args)
         is_directed = self.graph.is_directed()
 
@@ -3938,6 +3939,13 @@ class EdgeSeq(_igraph.EdgeSeq):
             "ne": operator.ne, \
             "in": lambda a, b: a in b, \
             "notin": lambda a, b: a not in b }
+
+        # TODO(ntamas): some keyword arguments should be prioritized over
+        # others; for instance, we have optimized code paths for _source and
+        # _target in directed and undirected graphs if es.is_all() is True;
+        # these should be executed first. This matters only if there are 
+        # multiple keyword arguments and es.is_all() is True.
+
         for keyword, value in kwds.iteritems():
             if "_" not in keyword or keyword.rindex("_") == 0:
                 keyword = keyword + "_eq"
@@ -3963,14 +3971,28 @@ class EdgeSeq(_igraph.EdgeSeq):
                             value = set([value])
 
                 if attr in ("_source", "_from"):
-                    values = [e.source for e in es]
-                    if op == "in" or op == "notin":
-                        value = _ensure_set(value)
+                    if es.is_all() and op == "eq":
+                        # shortcut here: use .incident() as it is much faster
+                        filtered_idxs = sorted(es.graph.incident(value, mode="out"))
+                        func = None
+                        # TODO(ntamas): there are more possibilities; we could
+                        # optimize "ne", "in" and "notin" in similar ways
+                    else:
+                        values = [e.source for e in es]
+                        if op == "in" or op == "notin":
+                            value = _ensure_set(value)
 
                 elif attr in ("_target", "_to"):
-                    values = [e.target for e in es]
-                    if op == "in" or op == "notin":
-                        value = _ensure_set(value)
+                    if es.is_all() and op == "eq":
+                        # shortcut here: use .incident() as it is much faster
+                        filtered_idxs = sorted(es.graph.incident(value, mode="in"))
+                        func = None
+                        # TODO(ntamas): there are more possibilities; we could
+                        # optimize "ne", "in" and "notin" in similar ways
+                    else:
+                        values = [e.target for e in es]
+                        if op == "in" or op == "notin":
+                            value = _ensure_set(value)
 
                 elif attr == "_incident":
                     func = None          # ignoring function, filtering here
