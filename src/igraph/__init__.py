@@ -32,7 +32,6 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 # pylint: disable-msg=W0401
 # W0401: wildcard import
 from igraph._igraph import *
-from igraph._igraph import __version__, __build_date__
 from igraph.clustering import *
 from igraph.cut import *
 from igraph.configuration import Configuration
@@ -45,6 +44,7 @@ from igraph.matching import *
 from igraph.statistics import *
 from igraph.summary import *
 from igraph.utils import *
+from igraph.version import __version__, __version_info__
 
 import os
 import math

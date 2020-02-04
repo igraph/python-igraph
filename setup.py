@@ -759,6 +759,11 @@ class BuildConfiguration(object):
 
 ###########################################################################
 
+# Import version number from version.py so we only need to change it in
+# one place when a new release is created
+__version__ = None
+exec(open("src/igraph/version.py").read())
+
 # Process command line options
 buildcfg = BuildConfiguration()
 buildcfg.process_args_from_command_line()
@@ -787,7 +792,7 @@ headers = ["src/_igraph/igraphmodule_api.h"] if not SKIP_HEADER_INSTALL else []
 
 options = dict(
     name="python-igraph",
-    version=VERSION,
+    version=__version__,
     url="http://pypi.python.org/pypi/python-igraph",
     description="High performance graph data structures and algorithms",
     long_description=description,

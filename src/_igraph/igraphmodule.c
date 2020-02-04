@@ -844,7 +844,7 @@ extern PyObject* igraphmodule_arpack_options_default;
   {
     const char* version;
     igraph_version(&version, 0, 0, 0);
-    PyModule_AddStringConstant(m, "__version__", version);
+    PyModule_AddStringConstant(m, "__igraph_version__", version);
   }
   PyModule_AddStringConstant(m, "__build_date__", __DATE__);
 
