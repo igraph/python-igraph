@@ -79,7 +79,22 @@ int igraphmodule_i_attribute_struct_index_vertex_names(
     value = PyInt_FromLong(n);              /* we do own a reference to value */
     if (value == 0)
       return 1;
-    PyDict_SetItem(attrs->vertex_name_index, key, value);
+
+    if (PyDict_SetItem(attrs->vertex_name_index, key, value)) {
+      /* probably unhashable vertex name. If the error is a TypeError, convert
+       * it to a more readable error message */
+      if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError)) {
+        PyErr_Format(
+          PyExc_RuntimeError,
+          "error while indexing vertex names; did you accidentally try to "
+          "use a non-hashable object as a vertex name earlier? "
+          "Check the name of vertex %R (%R)", value, key
+        );
+      }
+
+      return 1;
+    }
+
     /* PyDict_SetItem did an INCREF for both the key and a value, therefore we
      * have to drop our reference on value */
     Py_DECREF(value);
