@@ -86,6 +86,24 @@ class AttributeTests(unittest.TestCase):
         del g.vs["name"]
         self.assertRaises(ValueError, g.degree, [b"bar", b"thud", 0])
 
+    def testUnhashableVertexNames(self):
+        g = Graph.Famous("bull")
+        g.vs["name"] = [str(x) for x in range(4)]
+
+        value = "this is not hashable".split() 
+        g.vs[2]["name"] = value
+
+        # Trigger an indexing by doing a lookup by name
+        try:
+            g.vs.find("3")
+            err = None
+        except Exception as ex:
+            err = ex
+
+        # Check the exception
+        self.assertTrue(isinstance(err, RuntimeError))
+        self.assertTrue(repr(value) in str(err))
+
     def testVertexNameIndexingBug196(self):
         g = Graph()
         a, b = b'a', b'b'
