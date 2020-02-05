@@ -12011,7 +12011,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Counts the number of edges.\n"
    "@return: the number of edges in the graph.\n" "@rtype: integer"},
 
-  // interface to igraph_is_dag`
+  // interface to igraph_is_dag
   {"is_dag", (PyCFunction) igraphmodule_Graph_is_dag,
    METH_NOARGS,
    "is_dag()\n\n"
@@ -15831,9 +15831,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_leiden",
    (PyCFunction) igraphmodule_Graph_community_leiden,
    METH_VARARGS | METH_KEYWORDS,
-   "community_leiden(edge_weights=None,node_weights=None\n"
-   "     resolution_parameter=1.0, normalize_resolution=False, beta=0.01,\n"
-   "     initial_membership=None,n_iterations=2)\n\n"
+   "community_leiden(edge_weights=None, node_weights=None, \n"
+   "     resolution_parameter=1.0, normalize_resolution=False, beta=0.01, \n"
+   "     initial_membership=None, n_iterations=2)\n\n"
    "     Finds the community structure of the graph using the\n"
    "     Leiden algorithm of Traag, van Eck & Waltman \n\n"
    "     @param edge_weights: edge weights to be used. Can be a sequence or\n"

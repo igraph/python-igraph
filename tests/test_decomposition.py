@@ -312,6 +312,39 @@ class CommunityTests(unittest.TestCase):
         cl = g.community_walktrap(steps=3).as_clustering()
         self.assertMembershipsEqual(cl, [0,0,0,0,0,1,1,1,1,1,2,2,2,2,2])
 
+    def testLeiden(self):
+
+        # Example from paper (Fig. C.1)
+        high_weight = 3.0
+        low_weight = 3.0/2.0
+        edges = [(0, 1, high_weight),
+                (2, 3, high_weight),
+                (4, 2, high_weight),
+                (3, 4, high_weight),
+                (5, 6, high_weight),
+                (7, 5, high_weight),
+                (6, 7, high_weight),
+                (0, 2, low_weight),
+                (0, 3, low_weight),
+                (0, 4, low_weight),
+                (1, 5, low_weight),
+                (1, 6, low_weight),
+                (1, 7, low_weight)]
+        G = Graph.TupleList(edges, weights=True)
+
+        # We don't find the optimal partition if we are greedy
+        cl = G.community_leiden(CPM, resolution_parameter=1, weights='weight',
+                                beta=0, n_iterations=-1)
+        self.assertMembershipsEqual(cl, [0, 0, 1, 1, 1, 2, 2, 2])
+
+        # We do find the optimal partition if we allow for non-decreasing moves
+        # (The randomness is only present in the refinement, which is why we
+        # start from all nodes in the same community: this should then be
+        # refined).
+        cl = G.community_leiden(CPM, resolution_parameter=1, weights='weight',
+                                beta=5, n_iterations=-1,
+                                initial_membership=[0]*G.vcount())
+        self.assertMembershipsEqual(cl, [0, 1, 0, 0, 0, 1, 1, 1])
 
 class CohesiveBlocksTests(unittest.TestCase):
     def genericTests(self, cbs):
