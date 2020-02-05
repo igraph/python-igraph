@@ -1,0 +1,48 @@
+{%- if 0 %}
+<div class="row">
+  <div class="col-md-12" role="navigation" aria-label="related navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ pathto(master_doc) }}">{{ shorttitle|e }}</a></li>
+    {%- for parent in parents %}
+      <li class="breadcrumb-item"><a href="{{ parent.link|e }}"
+           {% if loop.last %}
+           accesskey="U"
+           class="active"
+           {% endif %}>{{ parent.title }}</a></li>
+    {%- endfor %}
+    <li class="breadcrumb-item active">{{ title }}</li>
+    </ol>
+  </div>
+</div>
+{%- endif %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="navigation-header mb-4" width="100%" summary="Navigation header">
+      <div class="btn-group" role="group">
+      {%- if prev %}
+        <a href="{{ prev.link|e }}" title="{{ _('Previous Chapter: ') + prev.title|striptags }}" class="btn btn-light" role="button" {{ accesskey("P") }}>
+          <i class="fa fa-chevron-left"></i> {{ prev.title|striptags|truncate(length=24, killwords=True) }}
+        </a>
+      {%- endif %}
+
+      {%- if parents %}
+        <a href="{{ parents[-1].link|e }}" title="{{ _('Parent: ') + parents[-1].title|striptags }}" class="btn btn-light" role="button" {{ accesskey("U") }}>
+          <i class="fa fa-chevron-up"></i> {{ parents[-1].title|striptags }}
+        </a>
+      {%- else %}
+        <a href="{{ pathto(master_doc) }}" title="{{ _('Parent: ') + shorttitle|striptags }}" class="btn btn-light" role="button" {{ accesskey("U") }}>
+          <i class="fa fa-home"></i> {{ shorttitle|striptags }}
+        </a>
+      {%- endif %}
+
+      {%- if next %}
+        <a href="{{ next.link|e }}" title="{{ _('Next Chapter: ') + next.title|striptags }}" class="btn btn-light" role="button" {{ accesskey("N") }}>
+          {{ next.title|striptags|truncate(length=24, killwords=True) }} <i class="fa fa-chevron-right"></i>
+        </a>
+      {%- endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
