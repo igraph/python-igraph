@@ -1041,9 +1041,10 @@ long-term plans are to extend this tutorial into a proper manual-style
 documentation to |igraph| in the next chapters. In the meanwhile, check out the
 full `API documentation`_ which should provide information about almost every
 |igraph| class, function or method. A good starting point is the documentation
-of the `Graph class`_. Should you get stuck, drop a mail to the `igraph mailing
-list`_ - maybe there is someone out there who can help you out immediately.
+of the `Graph class`_. Should you get stuck, try asking in our
+`Discourse group`_ first - maybe there is someone out there who can help you
+out immediately.
 
-.. _API documentation: http://igraph.org/python/doc/igraph-module.html
-.. _Graph class: http://igraph.org/python/doc/igraph.Graph-class.html
-.. _igraph mailing list: http://lists.nongnu.org/mailman/listinfo/igraph-help
+.. _API documentation: https://igraph.org/python/doc/igraph-module.html
+.. _Graph class: https://igraph.org/python/doc/igraph.Graph-class.html
+.. _Discourse group: https://igraph.discourse.group
