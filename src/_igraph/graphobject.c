@@ -11745,6 +11745,135 @@ PyObject *igraphmodule_Graph_community_walktrap(igraphmodule_GraphObject * self,
   return res;
 }
 
+/**
+ * Leiden community detection method of Traag, Waltman & van Eck
+ */
+PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
+        PyObject *args, PyObject *kwds) {
+
+  static char *kwlist[] = {"edge_weights", "node_weights", "resolution_parameter",
+                           "normalize_resolution", "beta", "initial_membership", "n_iterations", NULL};
+  
+  PyObject *edge_weights_o = Py_None;
+  PyObject *node_weights_o = Py_None;
+  PyObject *initial_membership_o = Py_None;
+  PyObject *res;
+
+  int error = 0, i;
+  long int n_iterations = 2;
+  double resolution_parameter = 1.0;
+  double beta = 0.01;
+  igraph_vector_t *edge_weights = NULL, *node_weights = NULL, *membership;
+  igraph_bool_t start = 1;
+  igraph_bool_t normalize_resolution = 0;
+  igraph_integer_t nb_clusters = 0;
+  igraph_real_t quality = 0.0, prev_quality = -IGRAPH_INFINITY;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOdidOl", kwlist,
+        &edge_weights_o, &node_weights_o, &resolution_parameter, &normalize_resolution, &beta, &initial_membership_o, &n_iterations))
+    return NULL;
+
+  /* Get edge weights */
+  if (igraphmodule_attrib_to_vector_t(edge_weights_o, self, &edge_weights,
+    ATTRIBUTE_TYPE_EDGE)) {
+    igraphmodule_handle_igraph_error();
+    error = -1;
+  }
+
+  /* Get node weights */
+  if (!error && igraphmodule_attrib_to_vector_t(node_weights_o, self, &node_weights,
+    ATTRIBUTE_TYPE_VERTEX)) {
+    igraphmodule_handle_igraph_error();
+    error = -1;
+  }
+
+  /* Get initial membership */
+  if (!error && igraphmodule_attrib_to_vector_t(initial_membership_o, self, &membership,
+    ATTRIBUTE_TYPE_VERTEX)) {
+    igraphmodule_handle_igraph_error();
+    error = -1;
+  }
+
+  if (!error && membership == 0) {
+    start = 0;
+    membership = (igraph_vector_t*)calloc(1, sizeof(igraph_vector_t));
+    if (membership==0) {
+      PyErr_NoMemory();
+      error = -1;
+    } else {
+      igraph_vector_init(membership, 0);
+    }
+  }
+
+  if (normalize_resolution)
+  {
+    /* If we need to normalize the resolution parameter,
+     * we will need to have node weights. */
+    if (node_weights == 0)
+    {
+      node_weights = (igraph_vector_t*)calloc(1, sizeof(igraph_vector_t));
+      if (node_weights==0) {
+        PyErr_NoMemory();
+        error = -1;
+      } else {
+        igraph_vector_init(node_weights, 0);
+        if (igraph_strength(&self->g, node_weights, igraph_vss_all(), IGRAPH_ALL, 0, edge_weights)) {
+          igraphmodule_handle_igraph_error();
+          error = -1;
+        }
+      }
+    }
+    resolution_parameter /= igraph_vector_sum(node_weights); 
+  }
+
+  /* Run actual Leiden algorithm for several iterations. */
+  if (!error) {
+    if (n_iterations > 0) {
+      for (i = 0; !error && i < n_iterations; i++) {
+        error = igraph_community_leiden(&self->g,
+                                        edge_weights, node_weights,
+                                        resolution_parameter, beta,
+                                        start, membership,
+                                        &nb_clusters, &quality);
+        start = 1;
+      }
+    } else {
+      while (!error && prev_quality < quality) {
+        error = igraph_community_leiden(&self->g,
+                                        edge_weights, node_weights,
+                                        resolution_parameter, beta,
+                                        start, membership,
+                                        &nb_clusters, &quality);
+        start = 1;
+        prev_quality = quality;
+      }
+    }
+  }
+
+  if (edge_weights != 0) {
+    igraph_vector_destroy(edge_weights);
+    free(edge_weights);
+  }
+  if (node_weights != 0) {
+    igraph_vector_destroy(node_weights);
+    free(node_weights);
+  }
+
+  if (!error) {
+    res = igraphmodule_vector_t_to_PyList(membership, IGRAPHMODULE_TYPE_INT);
+  }
+
+  if (membership != 0) {
+    igraph_vector_destroy(membership);
+    free(membership);
+  }
+
+  if (!error)
+  {  return res; }
+  else
+  {  return NULL; }
+}
+
 /**********************************************************************
  * Random walks                                                       *
  **********************************************************************/
@@ -15699,6 +15828,34 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  original implementation is used.\n"
    "@return: the community membership vector.\n"
   },
+  {"community_leiden",
+   (PyCFunction) igraphmodule_Graph_community_leiden,
+   METH_VARARGS | METH_KEYWORDS,
+   "community_leiden(edge_weights=None, node_weights=None, \n"
+   "     resolution_parameter=1.0, normalize_resolution=False, beta=0.01, \n"
+   "     initial_membership=None, n_iterations=2)\n\n"
+   "     Finds the community structure of the graph using the\n"
+   "     Leiden algorithm of Traag, van Eck & Waltman \n\n"
+   "     @param edge_weights: edge weights to be used. Can be a sequence or\n"
+   "       iterable or even an edge attribute name.\n"
+   "     @param node_weights: the node weights used in the Leiden algorithm.\n"
+   "     @param resolution_parameter: the resolution parameter to use.\n"
+   "       Higher resolutions lead to more smaller communities, while \n"
+   "       lower resolutions lead to fewer larger communities.\n"
+   "     @param normalize_resolution: if set to true, the resolution parameter\n"
+   "       will be divided by the sum of the node weights. If this is not\n"
+   "       supplied, it will default to the node degree, or weighted degree\n"
+   "       in case edge_weights are supplied.\n"
+   "     @param node_weights: the node weights used in the Leiden algorithm.\n"
+   "     @param beta: parameter affecting the randomness in the Leiden \n"
+   "       algorithm. This affects only the refinement step of the algorithm.\n"
+   "     @param initial_membership: if provided, the Leiden algorithm\n"
+   "       will try to improve this provided membership. If no argument is\n"
+   "       provided, the aglorithm simply starts from the singleton partition.\n"
+   "     @param n_iterations: the number of iterations to iterate the Leiden\n"
+   "       algorithm. Each iteration may improve the partition further.\n"
+   "     @return: the community membership vector.\n"
+  },  
   {"community_walktrap",
    (PyCFunction) igraphmodule_Graph_community_walktrap,
    METH_VARARGS | METH_KEYWORDS,
