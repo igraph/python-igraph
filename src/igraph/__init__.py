@@ -1425,7 +1425,7 @@ class Graph(GraphBase):
           to Leiden: guaranteeing well-connected communities. Scientific 
           reports, 9(1), 5233. doi: 10.1038/s41598-019-41695-z
         """
-        if objective_function not in ["CPM", "modularity"]:
+        if objective_function.lower() not in ("cpm", "modularity"):
           raise ValueError("objective_function must be \"CPM\" or \"modularity\".")
 
         membership = GraphBase.community_leiden(self,
