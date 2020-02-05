@@ -332,16 +332,21 @@ class CommunityTests(unittest.TestCase):
                 (1, 7, low_weight)]
         G = Graph.TupleList(edges, weights=True)
 
+        import random
+        random.seed(0)
+        set_random_number_generator(random)
         # We don't find the optimal partition if we are greedy
-        cl = G.community_leiden(CPM, resolution_parameter=1, weights='weight',
+        cl = G.community_leiden("CPM", resolution_parameter=1, weights='weight',
                                 beta=0, n_iterations=-1)
         self.assertMembershipsEqual(cl, [0, 0, 1, 1, 1, 2, 2, 2])
 
-        # We do find the optimal partition if we allow for non-decreasing moves
+        random.seed(0)
+        set_random_number_generator(random)
+        # We can find the optimal partition if we allow for non-decreasing moves
         # (The randomness is only present in the refinement, which is why we
         # start from all nodes in the same community: this should then be
         # refined).
-        cl = G.community_leiden(CPM, resolution_parameter=1, weights='weight',
+        cl = G.community_leiden("CPM", resolution_parameter=1, weights='weight',
                                 beta=5, n_iterations=-1,
                                 initial_membership=[0]*G.vcount())
         self.assertMembershipsEqual(cl, [0, 1, 0, 0, 0, 1, 1, 1])

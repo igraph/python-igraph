@@ -840,9 +840,6 @@ extern PyObject* igraphmodule_arpack_options_default;
   PyModule_AddIntConstant(m, "TRANSITIVITY_NAN", IGRAPH_TRANSITIVITY_NAN);
   PyModule_AddIntConstant(m, "TRANSITIVITY_ZERO", IGRAPH_TRANSITIVITY_ZERO);
 
-  PyModule_AddIntConstant(m, "CPM", 0);
-  PyModule_AddIntConstant(m, "MODULARITY", 1);
-
   /* More useful constants */
   {
     const char* version;

@@ -1390,7 +1390,7 @@ class Graph(GraphBase):
         if return_single: return result[0]
         return result
 
-    def community_leiden(self, objective_function=_igraph.CPM, weights=None, 
+    def community_leiden(self, objective_function="CPM", weights=None,
         resolution_parameter=1.0, beta=0.01, initial_membership=None,
         n_iterations=2, node_weights=None):
         """community_leiden(objective_function=CPM, weights=None, 
@@ -1401,7 +1401,7 @@ class Graph(GraphBase):
         Leiden algorithm of Traag, van Eck & Waltman.
 
         @keyword objective_function: whether to use the Constant Potts 
-          Model (CPM) or modularity. Must be either C{CPM} or C{MODULARITY}.
+          Model (CPM) or modularity. Must be either C{"CPM"} or C{"modularity"}.
         @keyword weights: edge weights to be used. Can be a sequence or
           iterable or even an edge attribute name.
         @keyword resolution_parameter: the resolution parameter to use.
@@ -1425,13 +1425,13 @@ class Graph(GraphBase):
           to Leiden: guaranteeing well-connected communities. Scientific 
           reports, 9(1), 5233. doi: 10.1038/s41598-019-41695-z
         """
-        if objective_function not in [_igraph.MODULARITY, _igraph.CPM]:
-          raise ValueError("objective_function must be CPM or MODULARITY.")
+        if objective_function not in ["CPM", "modularity"]:
+          raise ValueError("objective_function must be \"CPM\" or \"modularity\".")
 
         membership = GraphBase.community_leiden(self,
           edge_weights=weights, node_weights=node_weights, 
           resolution_parameter=resolution_parameter,
-          normalize_resolution=(objective_function == _igraph.MODULARITY),
+          normalize_resolution=(objective_function == "modularity"),
           beta=beta, initial_membership=initial_membership, n_iterations=n_iterations)
 
         if weights is not None:
