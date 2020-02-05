@@ -140,7 +140,7 @@ exception:
 >>> g.add_edges((5, 0))
 Traceback (most recent call last):
   File "<stdin>", line 6, in <module>
-igraph.core.InternalError: Error at ../../src/type_indexededgelist.c:245: cannot add edges, invalid vertex id
+TypeError: iterable must return pairs of integers or strings
 
 Most |igraph| functions will raise an :exc:`igraph.core.InternalError` if
 something goes wrong. The message corresponding to the exception gives you a
@@ -152,9 +152,9 @@ but it is invaluable for |igraph| developers if you think you found an error in
 
 Let us go on with our graph ``g`` and add some more vertices and edges to it:
 
->>> g.add_edges((2,0))
+>>> g.add_edges([(2, 0)])
 >>> g.add_vertices(3)
->>> g.add_edges([(2,3),(3,4),(4,5),(5,3)])
+>>> g.add_edges([(2, 3), (3, 4), (4, 5), (5, 3)])
 >>> print(g)
 IGRAPH U---- 6 7 --
 + edges:
@@ -176,7 +176,7 @@ vertices at its two endpoints, you can use :meth:`~Graph.get_eid` to get the
 edge ID. Remember, all these are *methods* of the :class:`Graph` class and you
 must call them on the appropriate :class:`Graph` instance!
 
->>> g.get_eid(2,3)
+>>> g.get_eid(2, 3)
 3
 >>> g.delete_edges(3)
 >>> summary(g)
