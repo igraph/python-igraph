@@ -36,6 +36,7 @@ jobs:
       install:
         - sudo python -m pip install cibuildwheel==1.1.0
       script:
+        - python setup.py sdist
         - python -m cibuildwheel --output-dir wheelhouse
       before_deploy: &before_deploy_releases
         - git config --local user.name "ntamas"
@@ -60,7 +61,7 @@ jobs:
       os: osx
       language: shell
       env:
-        - CIBW_BEFORE_BUILD="python setup.py sdist && python setup.py build_c_core"
+        - CIBW_BEFORE_BUILD="python setup.py build_c_core"
         - CIBW_TEST_COMMAND="cd {project} && python -m unittest"
       install:
         - python -m pip install cibuildwheel==1.1.0
