@@ -41,8 +41,8 @@ jobs:
       before_deploy: &before_deploy_releases
         - git config --local user.name "ntamas"
         - git config --local user.email "ntamas@gmail.com"
-        - export TRAVIS_TAG=0.8.0
-        - git tag $TRAVIS_TAG
+        # - export TRAVIS_TAG=0.8.0
+        # - git tag $TRAVIS_TAG
       deploy: &deploy_releases
         provider: releases
         token:
@@ -57,6 +57,7 @@ jobs:
         cleanup: false
         on:
           repo: igraph/python-igraph
+          tags: true
 
     - stage: wheels
       os: osx
