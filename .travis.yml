@@ -41,13 +41,15 @@ jobs:
       before_deploy: &before_deploy_releases
         - git config --local user.name "ntamas"
         - git config --local user.email "ntamas@gmail.com"
-        # - export TRAVIS_TAG=0.8.0
-        # - git tag $TRAVIS_TAG
+        - export TRAVIS_TAG=0.8.0
+        - git tag $TRAVIS_TAG
       deploy: &deploy_releases
         provider: releases
         token:
           secure: CAn8qENTIZSFed7VjqcQR42mjrPGV+QptW2XkncPaRwFooizPKgRsphgKzgv7k7peEQhQs/WOEtL0a3ofYRbbucOVbJ/nTVI0qGba9Lz/afsQ2UsbGnan0hXua9D/bo1wRhgqz8j0q6LHb3O8rgQOAKi8hWCChglr2saeRsy5Fc=
-        file: wheelhouse/*.whl
+        file:
+          - wheelhouse/*.whl
+          - dist/python-igraph-${TRAVIS_TAG}.tar.gz
         file_glob: true
         draft: true
         edge: true
