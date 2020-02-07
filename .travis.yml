@@ -57,7 +57,6 @@ jobs:
         cleanup: false
         on:
           repo: igraph/python-igraph
-          tags: true
 
     - stage: wheels
       os: osx
