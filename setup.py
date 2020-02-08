@@ -6,9 +6,6 @@ import sys
 
 ###########################################################################
 
-# Global version number. Keep the format of the next line intact.
-VERSION = "0.7.1.post6"
-
 # Check Python's version info and exit early if it is too old
 if sys.version_info < (2, 7):
     print("This module requires Python >= 2.7")
