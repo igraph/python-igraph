@@ -779,10 +779,6 @@ publication-quality graph plots. You can try either `pycairo
 ``cairocffi`` is recommended, in particular if you are on Python 3.x because
 there were bug reports affecting igraph graph plots in Jupyter notebooks
 when using ``pycairo`` (but not with ``cairocffi``).
-
-Unofficial installers for 64-bit Windows machines and/or different Python
-versions can also be found `here <http://www.lfd.uci.edu/~gohlke/pythonlibs>`_.
-Many thanks to the maintainers of this page!
 """
 
 headers = ["src/_igraph/igraphmodule_api.h"] if not SKIP_HEADER_INSTALL else []
