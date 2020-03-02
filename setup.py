@@ -802,6 +802,9 @@ options = dict(
     ],
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
+    extras_require={
+        "plotting": ["pycairo>=1.18.0"]
+    },
     headers=headers,
     platforms="ALL",
     keywords=[
