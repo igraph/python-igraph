@@ -17,7 +17,7 @@ addons:
       - bison
 
 install:
-  - python -m pip install tox-travis
+  - python -m pip install tox-travis scipy
 
 script:
   - tox
