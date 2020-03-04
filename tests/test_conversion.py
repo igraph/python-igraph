@@ -87,8 +87,13 @@ class GraphRepresentationTests(unittest.TestCase):
         ]))
 
     def testGetSparseAdjacency(self):
+        try:
+            from scipy import sparse
+            import numpy as np
+        except ImportError:
+            self.skipTest("Scipy is a dependency of this test.")
+
         # Undirected case
-        import numpy as np
         g = Graph.Tree(6, 3)
         g.es["weight"] = range(5)
         self.assertTrue(np.all(
