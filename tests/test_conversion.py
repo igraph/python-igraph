@@ -86,6 +86,30 @@ class GraphRepresentationTests(unittest.TestCase):
             [0, 0, 0, 0, 0, 0]
         ]))
 
+    def testGetSparseAdjacency(self):
+        try:
+            from scipy import sparse
+            import numpy as np
+        except ImportError:
+            self.skipTest("Scipy and numpy are dependencies of this test.")
+
+        # Undirected case
+        g = Graph.Tree(6, 3)
+        g.es["weight"] = range(5)
+        self.assertTrue(np.all(
+            (g.get_adjacency_sparse() == np.array(g.get_adjacency().data))
+        ))
+        self.assertTrue(np.all(
+            (g.get_adjacency_sparse(attribute="weight") == np.array(g.get_adjacency(attribute="weight").data))
+        ))
+
+        # Directed case
+        g = Graph.Tree(6, 3, "tree_out")
+        g.add_edges([(0,1), (1,0)])
+        self.assertTrue(np.all(
+            g.get_adjacency_sparse() == np.array(g.get_adjacency().data)
+        ))
+
 
 def suite():
     direction_suite = unittest.makeSuite(DirectedUndirectedTests)
