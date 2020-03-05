@@ -91,7 +91,7 @@ class GraphRepresentationTests(unittest.TestCase):
             from scipy import sparse
             import numpy as np
         except ImportError:
-            self.skipTest("Scipy is a dependency of this test.")
+            self.skipTest("Scipy and numpy are dependencies of this test.")
 
         # Undirected case
         g = Graph.Tree(6, 3)
