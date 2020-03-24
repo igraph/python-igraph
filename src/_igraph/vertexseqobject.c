@@ -1,23 +1,23 @@
 /* -*- mode: C -*-  */
 /* vim: set ts=2 sts=2 sw=2 et: */
 
-/* 
+/*
    IGraph library.
    Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -73,7 +73,7 @@ igraphmodule_VertexSeq_copy(igraphmodule_VertexSeqObject* o) {
 
   copy=(igraphmodule_VertexSeqObject*)PyType_GenericNew(Py_TYPE(o), 0, 0);
   if (copy == NULL) return NULL;
- 
+
   if (igraph_vs_type(&o->vs) == IGRAPH_VS_VECTOR) {
     igraph_vector_t v;
     if (igraph_vector_copy(&v, o->vs.data.vecptr)) {
@@ -258,7 +258,7 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values(igraphmodule_VertexSeqObje
     PyErr_SetString(PyExc_KeyError, "Attribute does not exist");
     return NULL;
   } else if (PyErr_Occurred()) return NULL;
-  
+
   switch (igraph_vs_type(&self->vs)) {
     case IGRAPH_VS_NONE:
       n = 0;
@@ -269,7 +269,7 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values(igraphmodule_VertexSeqObje
       n = PyList_Size(values);
       result = PyList_New(n);
       if (!result) return 0;
-      
+
       for (i=0; i<n; i++) {
         item = PyList_GET_ITEM(values, i);
         Py_INCREF(item);
@@ -333,7 +333,7 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values_mapping(igraphmodule_Verte
     Py_DECREF(args);
     return result;
   }
-  
+
   /* Handle everything else according to the mapping protocol */
   return igraphmodule_VertexSeq_get_attribute_values(self, o);
 }
@@ -425,7 +425,7 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
     if (igraph_vector_init(&vs, 0)) {
       igraphmodule_handle_igraph_error();
       return -1;
-    } 
+    }
     if (igraph_vs_as_vector(&gr->g, self->vs, &vs)) {
       igraphmodule_handle_igraph_error();
       igraph_vector_destroy(&vs);
@@ -453,7 +453,7 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
           Py_DECREF(item);
           igraph_vector_destroy(&vs);
           return -1;
-        } /* PyList_SetItem stole a reference to the item automatically */ 
+        } /* PyList_SetItem stole a reference to the item automatically */
       }
       igraph_vector_destroy(&vs);
     } else if (values != 0) {
@@ -586,6 +586,7 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
   PyObject *args) {
   igraphmodule_VertexSeqObject *result;
   igraphmodule_GraphObject *gr;
+  igraph_integer_t igraph_idx;
   long i, j, n, m;
 
   gr=self->gref;
@@ -776,10 +777,12 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
       }
       /* Do the iteration */
       while ((item2=PyIter_Next(iter)) != 0) {
-        if (PyInt_Check(item2)) {
-          long idx = PyInt_AsLong(item2);
+        if (igraphmodule_PyObject_to_integer_t(item2, &igraph_idx)) {
+          /* We simply ignore elements that we don't know */
           Py_DECREF(item2);
-          if (idx >= m || idx < 0) {
+        } else {
+          Py_DECREF(item2);
+          if (igraph_idx >= m || igraph_idx < 0) {
             PyErr_SetString(PyExc_ValueError, "vertex index out of range");
             Py_DECREF(result);
             Py_DECREF(iter);
@@ -787,7 +790,7 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
             igraph_vector_destroy(&v2);
             return NULL;
           }
-          if (igraph_vector_push_back(&v, VECTOR(v2)[idx])) {
+          if (igraph_vector_push_back(&v, VECTOR(v2)[(long int) igraph_idx])) {
             Py_DECREF(result);
             Py_DECREF(iter);
             igraphmodule_handle_igraph_error();
@@ -795,9 +798,6 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
             igraph_vector_destroy(&v2);
             return NULL;
           }
-        } else {
-          /* We simply ignore elements that we don't know */
-          Py_DECREF(item2);
         }
       }
       /* Deallocate stuff */
@@ -845,7 +845,7 @@ PyObject* igraphmodule_VertexSeq_get_graph(igraphmodule_VertexSeqObject* self,
 
 /**
  * \ingroup python_interface_vertexseq
- * Returns the indices of the vertices in this vertex sequence 
+ * Returns the indices of the vertices in this vertex sequence
  */
 PyObject* igraphmodule_VertexSeq_get_indices(igraphmodule_VertexSeqObject* self,
   void* closure) {
@@ -856,7 +856,7 @@ PyObject* igraphmodule_VertexSeq_get_indices(igraphmodule_VertexSeqObject* self,
   if (igraph_vector_init(&vs, 0)) {
     igraphmodule_handle_igraph_error();
     return 0;
-  } 
+  }
   if (igraph_vs_as_vector(&gr->g, self->vs, &vs)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_destroy(&vs);
@@ -1041,4 +1041,3 @@ PyTypeObject igraphmodule_VertexSeqType =
   0,                                          /* tp_subclasses */
   0,                                          /* tp_weakreflist */
 };
-

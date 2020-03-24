@@ -29,20 +29,20 @@ class EdgeTests(unittest.TestCase):
             self.assertEqual(i, data[self.g.es[i]])
 
     def testRichCompare(self):
-        idxs = [2,5,9,13,42]
+        idxs = [2, 5, 9, 13, 42]
         g2 = Graph.Full(10)
         for i in idxs:
             for j in idxs:
                 self.assertEqual(i == j, self.g.es[i] == self.g.es[j])
                 self.assertEqual(i != j, self.g.es[i] != self.g.es[j])
-                self.assertEqual(i <  j, self.g.es[i] <  self.g.es[j])
-                self.assertEqual(i >  j, self.g.es[i] >  self.g.es[j])
+                self.assertEqual(i < j, self.g.es[i] < self.g.es[j])
+                self.assertEqual(i > j, self.g.es[i] > self.g.es[j])
                 self.assertEqual(i <= j, self.g.es[i] <= self.g.es[j])
                 self.assertEqual(i >= j, self.g.es[i] >= self.g.es[j])
                 self.assertFalse(self.g.es[i] == g2.es[j])
                 self.assertFalse(self.g.es[i] != g2.es[j])
-                self.assertFalse(self.g.es[i] <  g2.es[j])
-                self.assertFalse(self.g.es[i] >  g2.es[j])
+                self.assertFalse(self.g.es[i] < g2.es[j])
+                self.assertFalse(self.g.es[i] > g2.es[j])
                 self.assertFalse(self.g.es[i] <= g2.es[j])
                 self.assertFalse(self.g.es[i] >= g2.es[j])
 
@@ -69,7 +69,7 @@ class EdgeTests(unittest.TestCase):
         self.assertEqual(e.attributes(), dict(a=3, b=44, c=55, d=6))
 
     def testPhantomEdge(self):
-        e = self.g.es[self.g.ecount()-1]
+        e = self.g.es[self.g.ecount() - 1]
         e.delete()
 
         # v is now a phantom edge; try to freak igraph out now :)
@@ -95,8 +95,7 @@ class EdgeTests(unittest.TestCase):
         ignore = set(ignore.split())
 
         # Methods not listed here are expected to return an int or a float
-        return_types = {
-        }
+        return_types = {}
 
         for name in Edge.__dict__:
             if name in ignore:
@@ -109,14 +108,17 @@ class EdgeTests(unittest.TestCase):
                 continue
 
             result = func()
-            self.assertEqual(getattr(g, name)(e.index), result,
-                    msg=("Edge.%s proxy method misbehaved" % name))
-
-            return_type = return_types.get(name, (int, float))
-            self.assertTrue(isinstance(result, return_type),
-                    msg=("Edge.%s proxy method did not return %s" % (name, return_type))
+            self.assertEqual(
+                getattr(g, name)(e.index),
+                result,
+                msg=("Edge.%s proxy method misbehaved" % name),
             )
 
+            return_type = return_types.get(name, (int, float))
+            self.assertTrue(
+                isinstance(result, return_type),
+                msg=("Edge.%s proxy method did not return %s" % (name, return_type)),
+            )
 
 
 class EdgeSeqTests(unittest.TestCase):
@@ -131,8 +133,8 @@ class EdgeSeqTests(unittest.TestCase):
     def testCreation(self):
         self.assertTrue(len(EdgeSeq(self.g)) == 45)
         self.assertTrue(len(EdgeSeq(self.g, 2)) == 1)
-        self.assertTrue(len(EdgeSeq(self.g, [1,2,3])) == 3)
-        self.assertTrue(EdgeSeq(self.g, [1,2,3]).indices == [1,2,3])
+        self.assertTrue(len(EdgeSeq(self.g, [1, 2, 3])) == 3)
+        self.assertTrue(EdgeSeq(self.g, [1, 2, 3]).indices == [1, 2, 3])
         self.assertRaises(ValueError, EdgeSeq, self.g, 112)
         self.assertRaises(ValueError, EdgeSeq, self.g, [112])
         self.assertTrue(self.g.es.graph == self.g)
@@ -141,9 +143,9 @@ class EdgeSeqTests(unittest.TestCase):
         n = self.g.ecount()
         for i in range(n):
             self.assertEqual(i, self.g.es[i].index)
-            self.assertEqual(n-i-1, self.g.es[-i-1].index)
+            self.assertEqual(n - i - 1, self.g.es[-i - 1].index)
         self.assertRaises(IndexError, self.g.es.__getitem__, n)
-        self.assertRaises(IndexError, self.g.es.__getitem__, -n-1)
+        self.assertRaises(IndexError, self.g.es.__getitem__, -n - 1)
         self.assertRaises(TypeError, self.g.es.__getitem__, 1.5)
 
     @skipIf(np is None, "test case depends on NumPy")
@@ -156,28 +158,34 @@ class EdgeSeqTests(unittest.TestCase):
         arr = np.array([n])
         self.assertRaises(IndexError, self.g.es.__getitem__, arr[0])
 
-        arr = np.array([-n-1])
+        arr = np.array([-n - 1])
         self.assertRaises(IndexError, self.g.es.__getitem__, arr[0])
 
         arr = np.array([1.5])
         self.assertRaises(TypeError, self.g.es.__getitem__, arr[0])
 
+        ind = [1, 3, 5, 8, 3, 2]
+        arr = np.array(ind)
+        self.assertEqual(ind, [edge.index for edge in self.g.es[arr.tolist()]])
+        self.assertEqual(ind, [edge.index for edge in self.g.es[list(arr)]])
+
     def testPartialAttributeAssignment(self):
         only_even = self.g.es.select(lambda e: (e.index % 2 == 0))
 
-        only_even["test"] = [0]*len(only_even)
-        expected = [[0,i][i % 2] for i in range(self.g.ecount())]
+        only_even["test"] = [0] * len(only_even)
+        expected = [[0, i][i % 2] for i in range(self.g.ecount())]
         self.assertTrue(self.g.es["test"] == expected)
 
         only_even["test2"] = range(23)
-        expected = [[i//2, None][i % 2] for i in range(self.g.ecount())]
+        expected = [[i // 2, None][i % 2] for i in range(self.g.ecount())]
         self.assertTrue(self.g.es["test2"] == expected)
 
     def testSequenceReusing(self):
-        if "test" in self.g.edge_attributes(): del self.g.es["test"]
+        if "test" in self.g.edge_attributes():
+            del self.g.es["test"]
 
         self.g.es["test"] = ["A", "B", "C"]
-        self.assertTrue(self.g.es["test"] == ["A", "B", "C"]*15)
+        self.assertTrue(self.g.es["test"] == ["A", "B", "C"] * 15)
         self.g.es["test"] = "ABC"
         self.assertTrue(self.g.es["test"] == ["ABC"] * 45)
 
@@ -216,46 +224,48 @@ class EdgeSeqTests(unittest.TestCase):
         only_even = self.g.es.select(lambda e: (e.index % 2 == 0))
         self.assertTrue(len(only_even) == 23)
         self.assertRaises(KeyError, only_even.__getitem__, "nonexistent")
-        self.assertTrue(only_even["test"] == [i*2 for i in range(23)])
+        self.assertTrue(only_even["test"] == [i * 2 for i in range(23)])
 
     def testChainedCallableFilteringSelect(self):
-        only_div_six = self.g.es.select(lambda e: (e.index % 2 == 0),
-          lambda e: (e.index % 3 == 0))
+        only_div_six = self.g.es.select(
+            lambda e: (e.index % 2 == 0), lambda e: (e.index % 3 == 0)
+        )
         self.assertTrue(len(only_div_six) == 8)
         self.assertTrue(only_div_six["test"] == [0, 6, 12, 18, 24, 30, 36, 42])
 
-        only_div_six = self.g.es.select(lambda e: (e.index % 2 == 0)).select(\
-          lambda e: (e.index % 3 == 0))
+        only_div_six = self.g.es.select(lambda e: (e.index % 2 == 0)).select(
+            lambda e: (e.index % 3 == 0)
+        )
         self.assertTrue(len(only_div_six) == 8)
         self.assertTrue(only_div_six["test"] == [0, 6, 12, 18, 24, 30, 36, 42])
 
     def testIntegerFilteringFind(self):
         self.assertEqual(self.g.es.find(3).index, 3)
-        self.assertEqual(self.g.es.select(2,3,4,2).find(3).index, 2)
+        self.assertEqual(self.g.es.select(2, 3, 4, 2).find(3).index, 2)
         self.assertRaises(IndexError, self.g.es.find, 178)
 
     def testIntegerFilteringSelect(self):
-        subset = self.g.es.select(2,3,4,2)
+        subset = self.g.es.select(2, 3, 4, 2)
         self.assertTrue(len(subset) == 4)
-        self.assertTrue(subset["test"] == [2,3,4,2])
+        self.assertTrue(subset["test"] == [2, 3, 4, 2])
         self.assertRaises(TypeError, self.g.es.select, 2, 3, 4, 2, None)
 
-        subset = self.g.es[2,3,4,2]
+        subset = self.g.es[2, 3, 4, 2]
         self.assertTrue(len(subset) == 4)
-        self.assertTrue(subset["test"] == [2,3,4,2])
+        self.assertTrue(subset["test"] == [2, 3, 4, 2])
 
     def testIterableFilteringSelect(self):
-        subset = self.g.es.select(range(5,8))
+        subset = self.g.es.select(range(5, 8))
         self.assertTrue(len(subset) == 3)
-        self.assertTrue(subset["test"] == [5,6,7])
+        self.assertTrue(subset["test"] == [5, 6, 7])
 
     def testSliceFilteringSelect(self):
         subset = self.g.es.select(slice(5, 8))
         self.assertTrue(len(subset) == 3)
-        self.assertTrue(subset["test"] == [5,6,7])
+        self.assertTrue(subset["test"] == [5, 6, 7])
         subset = self.g.es[40:56:2]
         self.assertTrue(len(subset) == 3)
-        self.assertTrue(subset["test"] == [40,42,44])
+        self.assertTrue(subset["test"] == [40, 42, 44])
 
     def testKeywordFilteringSelect(self):
         g = Graph.Barabasi(1000, 2)
@@ -266,7 +276,7 @@ class EdgeSeqTests(unittest.TestCase):
 
     def testSourceTargetFiltering(self):
         g = Graph.Barabasi(1000, 2, directed=True)
-        es1 = set(e.source for e in g.es.select(_target_in = [2, 4]))
+        es1 = set(e.source for e in g.es.select(_target_in=[2, 4]))
         es2 = set(v1 for v1, v2 in g.get_edgelist() if v2 in [2, 4])
         self.assertTrue(es1 == es2)
 
@@ -275,30 +285,37 @@ class EdgeSeqTests(unittest.TestCase):
         vs = [0, 1, 2, 10, 11, 12, 20, 21, 22]
         vs2 = (0, 1, 10, 11)
 
-        es1 = g.es.select(_within = vs)
-        es2 = g.es.select(_within = VertexSeq(g, vs))
+        es1 = g.es.select(_within=vs)
+        es2 = g.es.select(_within=VertexSeq(g, vs))
 
         for es in [es1, es2]:
             self.assertTrue(len(es) == 12)
             self.assertTrue(all(e.source in vs and e.target in vs for e in es))
             self.assert_edges_unique_in(es)
 
-            es_filtered = es.select(_within = vs2)
+            es_filtered = es.select(_within=vs2)
             self.assertTrue(len(es_filtered) == 4)
-            self.assertTrue(all(e.source in vs2 and e.target in vs2 for e in es_filtered))
+            self.assertTrue(
+                all(e.source in vs2 and e.target in vs2 for e in es_filtered)
+            )
             self.assert_edges_unique_in(es_filtered)
 
     def testBetweenFiltering(self):
         g = Graph.Lattice([10, 10])
         vs1, vs2 = [10, 11, 12], [20, 21, 22]
 
-        es1 = g.es.select(_between = (vs1, vs2))
-        es2 = g.es.select(_between = (VertexSeq(g, vs1), VertexSeq(g, vs2)))
+        es1 = g.es.select(_between=(vs1, vs2))
+        es2 = g.es.select(_between=(VertexSeq(g, vs1), VertexSeq(g, vs2)))
 
         for es in [es1, es2]:
             self.assertTrue(len(es) == 3)
-            self.assertTrue(all((e.source in vs1 and e.target in vs2) or \
-                                (e.target in vs1 and e.source in vs2) for e in es))
+            self.assertTrue(
+                all(
+                    (e.source in vs1 and e.target in vs2)
+                    or (e.target in vs1 and e.source in vs2)
+                    for e in es
+                )
+            )
             self.assert_edges_unique_in(es)
 
     def testIncidentFiltering(self):
@@ -307,12 +324,12 @@ class EdgeSeqTests(unittest.TestCase):
         vs2 = (11, 0, 24)
         vs3 = sorted(set(vs).intersection(set(vs2)))
 
-        es = g.es.select(_incident = vs)
+        es = g.es.select(_incident=vs)
         self.assertEqual(8, len(es))
         self.assertTrue(all((e.source in vs or e.target in vs) for e in es))
         self.assert_edges_unique_in(es)
 
-        es_filtered = es.select(_incident = vs2)
+        es_filtered = es.select(_incident=vs2)
         self.assertEqual(6, len(es_filtered))
         self.assertTrue(all((e.source in vs3 or e.target in vs3) for e in es_filtered))
         self.assert_edges_unique_in(es_filtered)
@@ -327,12 +344,12 @@ class EdgeSeqTests(unittest.TestCase):
 
         vs3 = sorted(set(vs).intersection(set(vs2)))
 
-        es = g.es.select(_incident = ("A", "B", "C", "D"))
+        es = g.es.select(_incident=("A", "B", "C", "D"))
         self.assertEqual(8, len(es))
         self.assertTrue(all((e.source in vs or e.target in vs) for e in es))
         self.assert_edges_unique_in(es)
 
-        es_filtered = es.select(_incident = ("D", "A", "X"))
+        es_filtered = es.select(_incident=("D", "A", "X"))
         self.assertEqual(6, len(es_filtered))
         self.assertTrue(all((e.source in vs3 or e.target in vs3) for e in es_filtered))
         self.assert_edges_unique_in(es_filtered)
@@ -348,17 +365,17 @@ class EdgeSeqTests(unittest.TestCase):
         vs2 = (11, 0, 24)
         vs3 = sorted(set(vs).intersection(set(vs2)))
 
-        es = g.es.select(_from = vs)
+        es = g.es.select(_from=vs)
         self.assertEqual(8, len(es))
         self.assertTrue(all((e.source in vs or e.target in vs) for e in es))
         self.assert_edges_unique_in(es)
 
-        es_filtered = es.select(_to_in = vs2)
+        es_filtered = es.select(_to_in=vs2)
         self.assertEqual(6, len(es_filtered))
         self.assertTrue(all((e.source in vs3 or e.target in vs3) for e in es_filtered))
         self.assert_edges_unique_in(es_filtered)
 
-        es_filtered = es_filtered.select(_from_eq = 0)
+        es_filtered = es_filtered.select(_from_eq=0)
         self.assertEqual(2, len(es_filtered))
         self.assertTrue(all((e.source == 0 or e.target == 0) for e in es_filtered))
         self.assert_edges_unique_in(es_filtered)
@@ -394,8 +411,8 @@ class EdgeSeqTests(unittest.TestCase):
     def testIsAll(self):
         g = Graph.Full(5)
         self.assertTrue(g.es.is_all())
-        self.assertFalse(g.es.select(1,2,3).is_all())
-        self.assertFalse(g.es.select(_within=[1,2,3]).is_all())
+        self.assertFalse(g.es.select(1, 2, 3).is_all())
+        self.assertFalse(g.es.select(_within=[1, 2, 3]).is_all())
 
 
 def suite():
@@ -403,10 +420,11 @@ def suite():
     es_suite = unittest.makeSuite(EdgeSeqTests)
     return unittest.TestSuite([edge_suite, es_suite])
 
+
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
 
+
 if __name__ == "__main__":
     test()
-

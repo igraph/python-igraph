@@ -1,23 +1,23 @@
 /* -*- mode: C -*-  */
 /* vim: set ts=2 sts=2 sw=2 et: */
 
-/* 
+/*
    IGraph library.
    Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -49,7 +49,7 @@ PyTypeObject igraphmodule_EdgeSeqType;
 PyObject* igraphmodule_EdgeSeq_new(PyTypeObject *subtype,
 	PyObject *args, PyObject *kwds) {
   igraphmodule_EdgeSeqObject* o;
-  
+
   o=(igraphmodule_EdgeSeqObject*)PyType_GenericNew(subtype, args, kwds);
   if (o == NULL) return NULL;
 
@@ -58,7 +58,7 @@ PyObject* igraphmodule_EdgeSeq_new(PyTypeObject *subtype,
   o->weakreflist=0;
 
   RC_ALLOC("EdgeSeq", o);
-  
+
   return (PyObject*)o;
 }
 
@@ -73,7 +73,7 @@ igraphmodule_EdgeSeq_copy(igraphmodule_EdgeSeqObject* o) {
 
   copy=(igraphmodule_EdgeSeqObject*)PyType_GenericNew(Py_TYPE(o), 0, 0);
   if (copy == NULL) return NULL;
- 
+
   if (igraph_es_type(&o->es) == IGRAPH_ES_VECTOR) {
     igraph_vector_t v;
     if (igraph_vector_copy(&v, o->es.data.vecptr)) {
@@ -191,7 +191,7 @@ PyObject* igraphmodule_EdgeSeq_sq_item(igraphmodule_EdgeSeqObject* self,
                        Py_ssize_t i) {
   igraph_t *g;
   igraph_integer_t idx = -1;
-  
+
   if (!self->gref) return NULL;
   g=&GET_GRAPH(self);
   switch (igraph_es_type(&self->es)) {
@@ -358,7 +358,7 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
   igraphmodule_GraphObject *gr;
   igraph_vector_t es;
   long i, j, n, no_of_edges;
-  
+
   gr = self->gref;
   dict = ATTR_STRUCT_DICT(&gr->g)[ATTRHASH_IDX_EDGE];
 
@@ -407,7 +407,7 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
         if (PyList_SetItem(list, i, item)) {
           Py_DECREF(item);
           return -1;
-        } /* PyList_SetItem stole a reference to the item automatically */ 
+        } /* PyList_SetItem stole a reference to the item automatically */
       }
     } else if (values != 0) {
       /* We don't have attributes with the given name yet. Create an entry
@@ -434,7 +434,7 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
     if (igraph_vector_init(&es, 0)) {
       igraphmodule_handle_igraph_error();
       return -1;
-    } 
+    }
     if (igraph_es_as_vector(&gr->g, self->es, &es)) {
       igraphmodule_handle_igraph_error();
       igraph_vector_destroy(&es);
@@ -459,7 +459,7 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
           Py_DECREF(item);
           igraph_vector_destroy(&es);
           return -1;
-        } /* PyList_SetItem stole a reference to the item automatically */ 
+        } /* PyList_SetItem stole a reference to the item automatically */
       }
       igraph_vector_destroy(&es);
     } else if (values != 0) {
@@ -559,6 +559,7 @@ PyObject* igraphmodule_EdgeSeq_find(igraphmodule_EdgeSeqObject *self, PyObject *
 PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject *args) {
   igraphmodule_EdgeSeqObject *result;
   igraphmodule_GraphObject *gr;
+  igraph_integer_t igraph_idx;
   long i, j, n, m;
 
   gr=self->gref;
@@ -682,7 +683,7 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
       /* Iterators and everything that was not handled directly */
       PyObject *iter, *item2;
       igraph_vector_t v, v2;
-      
+
       /* Allocate stuff */
       if (igraph_vector_init(&v, 0)) {
         igraphmodule_handle_igraph_error();
@@ -743,10 +744,12 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
       }
       /* Do the iteration */
       while ((item2=PyIter_Next(iter)) != 0) {
-        if (PyInt_Check(item2)) {
-          long idx = PyInt_AsLong(item2);
+        if (igraphmodule_PyObject_to_integer_t(item2, &igraph_idx)) {
+          /* We simply ignore elements that we don't know */
           Py_DECREF(item2);
-          if (idx >= m || idx < 0) {
+        } else {
+          Py_DECREF(item2);
+          if (igraph_idx >= m || igraph_idx < 0) {
             PyErr_SetString(PyExc_ValueError, "edge index out of range");
             Py_DECREF(result);
             Py_DECREF(iter);
@@ -754,7 +757,7 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
             igraph_vector_destroy(&v2);
             return NULL;
           }
-          if (igraph_vector_push_back(&v, VECTOR(v2)[idx])) {
+          if (igraph_vector_push_back(&v, VECTOR(v2)[(long int) igraph_idx])) {
             Py_DECREF(result);
             Py_DECREF(iter);
             igraphmodule_handle_igraph_error();
@@ -762,9 +765,6 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
             igraph_vector_destroy(&v2);
             return NULL;
           }
-        } else {
-          /* We simply ignore elements that we don't know */
-          Py_DECREF(item2);
         }
       }
       /* Deallocate stuff */
@@ -877,7 +877,7 @@ PyObject* igraphmodule_EdgeSeq_get_graph(igraphmodule_EdgeSeqObject* self,
 
 /**
  * \ingroup python_interface_edgeseq
- * Returns the indices of the edges in this edge sequence 
+ * Returns the indices of the edges in this edge sequence
  */
 PyObject* igraphmodule_EdgeSeq_get_indices(igraphmodule_EdgeSeqObject* self,
   void* closure) {
@@ -888,7 +888,7 @@ PyObject* igraphmodule_EdgeSeq_get_indices(igraphmodule_EdgeSeqObject* self,
   if (igraph_vector_init(&es, 0)) {
     igraphmodule_handle_igraph_error();
     return 0;
-  } 
+  }
   if (igraph_es_as_vector(&gr->g, self->es, &es)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_destroy(&es);
@@ -968,4 +968,3 @@ PyTypeObject igraphmodule_EdgeSeqType =
   0,                                          /* tp_subclasses */
   0,                                          /* tp_weakreflist */
 };
-
