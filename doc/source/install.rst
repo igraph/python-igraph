@@ -8,160 +8,136 @@
 Installing |igraph|
 ===================
 
-This chapter describes how to install the C core of |igraph| and its Python bindings
-on various operating systems.
+This chapter describes how to install the C core of |igraph| and its Python bindings on
+Windows, macOS, and GNU/Linux.
 
 Which |igraph| is right for you?
 ================================
 
-|igraph| is primarily a library written in C. It is *not* a standalone program, nor it is
-a Python package that you can just drop on your Python path to start using it. Therefore,
-if you would like to exploit |igraph|'s functionality in Python, you must install
-a few packages. Do not worry, though, there are precompiled packages for the major operating
-systems, so you will not have to compile |igraph| from source unless you use an esoteric
-operating system or you have specific requirements (i.e., adding a custom patch to |igraph|'s
-C core). Precompiled packages are often called *binary packages*, while the raw source code
-is usually referred to as the *source package*.
+|igraph| is primarily a library written in C. It is *not* a standalone program, nor it is a
+pure Python package that you can just drop in your Python path. Therefore, if you would like
+to use |igraph|'s functionality in Python, you must install a few packages. Do not worry,
+though, there are precompiled packages for the major operating systems. Precompiled packages
+are often called *binary packages*, while the raw source code is usually referred to as the
+*source package*.
 
-In general, you should almost always opt for the binary package unless a binary package is not
-available for your platform or you have some local modifications that you want to incorporate
-into |igraph|'s source. `Installation from a binary package`_ tells you how to install |igraph|
-from a precompiled binary package on various platforms. `Compiling igraph from source`_ tells
-you how to compile |igraph| from the source package.
+In general, you should almost always opt for the binary package unless a binary package is
+not available for your platform or you have some local modifications that you want to
+incorporate into |igraph|'s source. `Installation from a binary package`_ tells you how to
+install |igraph| from a precompiled binary package on various platforms. `Compiling igraph
+from source`_ tells you how to compile |igraph| from the source package.
 
 Installation from a binary package
 ==================================
 
-|igraph| on Windows
--------------------
+Installing |igraph| from the Python Package Index
+-------------------------------------------------
 
-There is a Windows installer for |igraph|'s Python interface on the
-`Python Package Index <http://pypi.python.org/pypi/python-igraph>`_.
-Download the one that is suitable for your Python version (currently
-there are binary packages for Python 2.6, Python 2.7 and Python 3.2,
-though it might change in the future). To test the installed package, launch
-your favourite Python IDE and type the following:
+To ensure getting the latest binary release of |igraph|'s Python interface, it is recommended
+that you install it from the `Python Package Index
+<http://pypi.python.org/pypi/python-igraph>`_ (PyPI), which has installers for Windows, Linux,
+and macOS. Currently there are binary packages for Python 2.7, and Python 3.5 through 3.8, but
+note that support for Python 2.7 will be discontinued with the version 0.9.0 release of
+|igraph|'s Python interface.
+
+Many users like to install packages into a project-specific `virtual environment
+<https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments>`_.
+A variation of the following commands should work on most platforms:
+
+  $ python -m venv ENV
+  $ source ENV/bin/activate
+  $ pip install python-igraph
+
+To test the installed package, launch Python within the virtual environment and run the
+following:
 
   >>> import igraph.test
   >>> igraph.test.run_tests()
 
-The above commands run the bundled test cases to ensure that everything
-is fine with your |igraph| installation.
+The above commands run the bundled test cases to ensure that everything is fine with your
+|igraph| installation.
 
-Graph plotting in |igraph| on Windows
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Installing |igraph| via Conda
+-----------------------------
 
-Graph plotting in |igraph| is implemented using a third-party package
-called `Cairo <http://www.cairographics.org>`_. If you want to create
-publication-quality plots in |igraph| on Windows, you must also install
-Cairo and its Python bindings. The Cairo project does not provide
-pre-compiled binaries for Windows, but Christoph Gohlke maintains a site
-containing unofficial Windows binaries for several Python extension packages,
-including Cairo itself. Therefore, the easiest way to install Cairo on Windows
-along with its Python bindings is simply to download it from
-`Christoph's site <http://www.lfd.uci.edu/~gohlke/pythonlibs/#pycairo>`_. Make
-sure you use an installer that is suitable for your Windows platform (32-bit or
-64-bit) and the version of Python you are using.
+Users of the `Anaconda Python distribution <https://www.anaconda.com/distribution/>`_ or the
+`conda package manager <https://conda.io/>`_ may opt to install |igraph|'s Python interface
+using conda. That can be achieved by running the following command:
 
-In case you use a version of Python for which the above site does not provide
-an installer, you can install it from an alternative source in a slightly more
-complicated way by following the steps below:
+  $ conda install -c conda-forge python-graph
 
-1. Get the latest PyCairo for Windows installer from
-   http://ftp.gnome.org/pub/gnome/binaries/win32/pycairo/1.8. Make sure you
-   grab the one that matches your Python version. At the time of writing,
-   the above folder contained installers for Python 2.6 and 2.7 only. You may
-   also try and go one level up, then down then 1.4 subfolder -- these are
-   older versions, but they work with Python 2.5 and Python 2.6 as well.
+To test the installed package, launch Python and run the following:
 
-2. Install PyCairo using the installer. The installer extracts the necessary
-   files into ``Lib\site-packages\cairo`` within the folder where Python is
-   installed. Unfortunately there are some extra DLLs which are required to
-   make Cairo work, so we have to get these as well.
+  >>> import igraph.test
+  >>> igraph.test.run_tests()
 
-3. Head to http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/ and get
-   the binary versions of Cairo (``cairo_1.8.10-3_win32.zip`` at the time of
-   writing), Fontconfig (``fontconfig_2.8.0-2_win32.zip``), Freetype
-   (``freetype_2.4.4-1_win32.zip``), Expat (``expat_2.0.1-1_win32.zip``),
-   ``libpng`` (``libpng_1.4.3-1_win32.zip``) and ``zlib``
-   (``zlib_1.2.5-2_win32.zip``).  Version numbers may vary, so be
-   adaptive! Each ZIP file will contain a ``bin`` subfolder with a DLL file in
-   it. Put the following DLLs in ``Lib\site-packages\cairo`` within your Python
-   installation:
+The above commands run the bundled test cases to ensure that everything is fine with your
+|igraph| installation.
 
-   - ``freetype6.dll`` (from ``freetype_2.4.4-1_win32.zip``)
-   - ``libcairo-2.dll`` (from ``cairo_1.8.10-3_win32.zip``)
-   - ``libexpat-1.dll`` (from ``expat_2.0.1-1_win32.zip``)
-   - ``libfontconfig-1.dll`` (from ``fontconfig_2.8.0-2_win32.zip``)
-   - ``libpng14-14.dll`` (from ``libpng_1.4.3-1_win32.zip``)
-   - ``zlib1.dll`` (from ``zlib_1.2.5-2_win32.zip``).
+|igraph| on Windows
+-------------------
 
-Having done that, you can launch Python again and check if it worked:
+There is a Windows installer for |igraph|'s Python interface on the `Python Package Index
+<http://pypi.python.org/pypi/python-igraph>`_ (see `Installing igraph from the Python Package
+Index`_).
 
-  >>> from igraph import * 
-  >>> g = Graph.Famous("petersen")
-  >>> plot(g)
+TODO: Check if Windows still requires special steps to get PyCairo running.
+
+Graph plotting in |igraph| is implemented using a third-party package called `Cairo
+<http://www.cairographics.org>`_. If you want to create publication-quality plots in |igraph|
+on Windows, you must also install Cairo and its Python bindings. The Cairo project does not
+provide pre-compiled binaries for Windows, but Christoph Gohlke maintains a site containing
+unofficial Windows binaries for several Python extension packages, including Cairo.
+Therefore, the easiest way to install Cairo on Windows along with its Python bindings is
+simply to download it from `Christoph's site
+<http://www.lfd.uci.edu/~gohlke/pythonlibs/#pycairo>`_. Make sure you use an installer that is
+suitable for your Windows platform (32-bit or 64-bit) and the version of Python you are using.
+
+After running the installer, you can launch Python again and check if it worked:
+
+  >>> import igraph as ig
+  >>> g = ig.Graph.Famous("petersen")
+  >>> ig.plot(g)
+
+If PyCairo was successfully installed, this will display a Petersen graph.
+
+|igraph| on macOS
+-----------------
+
+The Mac installer for |igraph|'s Python interface on the `Python Package Index
+<http://pypi.python.org/pypi/python-igraph>`_ works for Intel-based Macs only. PowerPC
+users should compile the package themselves (see `Compiling igraph from source`_).
+
+TODO: Check if PyCairo on Mac still requires using Brew
+
+Graph plotting in |igraph| is implemented using a third-party package called `Cairo
+<http://www.cairographics.org>`_. If you want to create publication-quality plots in |igraph|
+on macOS, you must also install Cairo and its Python bindings. The Cairo project does not
+provide pre-compiled binaries for macOS, but the `Homebrew package manager
+<https://brew.sh/>`, so you can use it to install Cairo. After installing Homebrew itself, you
+can run:
+
+  $ brew install cairo
+
+After installing Cairo, launch Python and check if it worked:
+
+  >>> import igraph as ig
+  >>> g = ig.Graph.Famous("petersen")
+  >>> ig.plot(g)
+
+If Cairo was successfully installed, this will display a Petersen graph.
 
 |igraph| on Linux
 -----------------
 
-|igraph| on Debian GNU/Linux
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+|igraph|'s Python interface and its dependencies have been packaged for most popular Linux
+distributions, including Arch Linux, Debian, Fedora, GNU Guix, NixOS, and Ubuntu. Because
+distribution packages are often outdated, you may choose to install |igraph| from the `Python
+Package Index <http://pypi.python.org/pypi/python-igraph>`_ instead to get a more recent
+release (see `Installing igraph from the Python Package Index`_).
 
-Make sure you have all the required dependencies installed:
-
-  $ sudo apt install build-essential python-dev libxml2 libxml2-dev zlib1g-dev
-
-and then install with pip / pip3
-
-  $ pip install python-igraph
-
-|igraph| on RedHat Linux
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-|igraph| on other Linux distributions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-|igraph| on Mac OS X
---------------------
-
-There is a Mac OS X installer for |igraph|'s Python interface on the
-`Python Package Index <http://pypi.python.org/pypi/python-igraph>`_
-which works for Intel-based Macs running OS X Lion. The default
-Python version in Leopard is Python 2.7, so the package is compiled
-for this specific version. PowerPC users should compile the package
-themselves (see `Compiling igraph from source`_). To test the
-installed package, launch your favourite Python IDE or the default
-command line interpreter and type the following:
-
-  >>> import igraph.test
-  >>> igraph.test.run_tests()
-
-The above commands run the bundled test cases to ensure that everything
-is fine with your |igraph| installation.
-
-Graph plotting in |igraph| on Mac OS X
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Graph plotting in |igraph| is implemented using a third-party package
-called `Cairo <http://www.cairographics.org>`_. If you want to create
-publication-quality plots in |igraph| on Mac OS X, you must also install
-Cairo and its Python bindings. The Cairo project does not provide
-pre-compiled binaries for Mac OS X, but `MacPorts <http://www.macports.org>`_
-and `Fink <http://www.finkproject.org>`_ does, so you can use them to
-install Cairo. The `Cairo homepage <http://www.cairographics.org>`_ gives
-you some installation instructions. However, this is only one half of the
-job, you will also need the Python bindings of Cairo from the
-`PyCairo homepage <http://www.cairographics.org/pycairo>`_. At the moment
-there are no precompiled PyCairo packages for Mac OS X either.
-
-TODO: detailed compilation instructions for PyCairo
-
-|igraph| on other operating systems
------------------------------------
 
 Compiling |igraph| from source
 ==============================
 
-Summary
-=======
+TODO

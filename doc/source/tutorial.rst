@@ -6,17 +6,15 @@
 Tutorial
 ========
 
-This chapter contains a short overview of |igraph|'s capabilities. It is highly recommended
-to read it at least once if you are new to |igraph|. I assume that you have already installed
-|igraph|; if you did not, see :ref:`installing-igraph` first. Familiarity with the Python
-language is also assumed; if this is the first time you are trying to use Python, there are
-many good Python tutorials on the Internet to get you started. Mark Pilgrim's
-`Dive Into Python <http://www.diveintopython.net>`_ is one that I personally suggest.
-If this is the first time you ever try to use a programming language,
-`A Byte of Python <http://swaroopch.com/notes/Python>`_ is even better. If
-you already have a stable programming background in other languages and you just want a
-quick overview of Python, `Learn Python in 10 minutes
-<http://www.poromenos.org/tutorials/python>`_ is probably your best bet.
+This chapter contains a short overview of |igraph|'s capabilities. It is highly recommended to read
+it at least once if you are new to |igraph|. I assume that you have already installed |igraph|; if
+you did not, see :ref:`installing-igraph` first. Familiarity with the Python language is also
+assumed; if this is the first time you are trying to use Python, there are many good Python
+tutorials on the Internet to get you started. If this is the first time you ever try to use a
+programming language, `A Byte of Python <http://swaroopch.com/notes/Python>`_ is a good place to
+start out. If you already have a stable programming background in other languages and you just want
+a quick overview of Python, `Learn Python in 10 minutes <https://www.stavros.io/tutorials/python/>`_
+is probably your best bet.
 
 
 Starting |igraph|
