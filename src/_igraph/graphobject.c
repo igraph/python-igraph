@@ -11763,7 +11763,7 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
   long int n_iterations = 2;
   double resolution_parameter = 1.0;
   double beta = 0.01;
-  igraph_vector_t *edge_weights = NULL, *node_weights = NULL, *membership;
+  igraph_vector_t *edge_weights = NULL, *node_weights = NULL, *membership = NULL;
   igraph_bool_t start = 1;
   igraph_bool_t normalize_resolution = 0;
   igraph_integer_t nb_clusters = 0;
@@ -11859,7 +11859,7 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
     free(node_weights);
   }
 
-  if (!error) {
+  if (!error && membership != 0) {
     res = igraphmodule_vector_t_to_PyList(membership, IGRAPHMODULE_TYPE_INT);
   }
 
