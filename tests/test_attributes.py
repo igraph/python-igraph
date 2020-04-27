@@ -1,4 +1,5 @@
 # vim:ts=4 sw=4 sts=4:
+import sys
 import unittest
 from igraph import *
 
@@ -102,7 +103,8 @@ class AttributeTests(unittest.TestCase):
 
         # Check the exception
         self.assertTrue(isinstance(err, RuntimeError))
-        self.assertTrue(repr(value) in str(err))
+        if sys.version_info >= (3, 4):
+            self.assertTrue(repr(value) in str(err))
 
     def testVertexNameIndexingBug196(self):
         g = Graph()

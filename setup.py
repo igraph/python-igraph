@@ -836,6 +836,9 @@ options = dict(
     },
 )
 
+if sys.version_info <= (2, 7):
+    options["requires"] = options.pop("install_requires")
+
 if sys.version_info > (3, 0):
     options["use_2to3"] = True
 

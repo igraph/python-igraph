@@ -87,8 +87,11 @@ int igraphmodule_i_attribute_struct_index_vertex_names(
         PyErr_Format(
           PyExc_RuntimeError,
           "error while indexing vertex names; did you accidentally try to "
-          "use a non-hashable object as a vertex name earlier? "
-          "Check the name of vertex %R (%R)", value, key
+          "use a non-hashable object as a vertex name earlier?"
+#ifdef IGRAPH_PYTHON3
+          /* %R is not supported in Python 2.x */
+          " Check the name of vertex %R (%R)", value, key
+#endif
         );
       }
 

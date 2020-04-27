@@ -47,7 +47,7 @@ except ImportError:
 
 
 @contextmanager
-def temporary_file(content=None, mode=None):
+def temporary_file(content=None, mode=None, binary=False):
     tmpf, tmpfname = tempfile.mkstemp()
     os.close(tmpf)
 
@@ -59,7 +59,7 @@ def temporary_file(content=None, mode=None):
 
     tmpf = open(tmpfname, mode)
     if content is not None:
-        if hasattr(content, "encode"):
+        if hasattr(content, "encode") and not binary:
             tmpf.write(dedent(content).encode("utf8"))
         else:
             tmpf.write(content)

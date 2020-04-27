@@ -226,7 +226,7 @@ class ForeignTests(unittest.TestCase):
             pickle = bytes(pickle)
         else:
             pickle = "".join(map(chr, pickle))
-        with temporary_file(pickle, "wb") as tmpfname:
+        with temporary_file(pickle, "wb", binary=True) as tmpfname:
             g = Graph.Read_Pickle(pickle)
             self.assertTrue(isinstance(g, Graph))
             self.assertTrue(g.vcount() == 3 and g.ecount() == 1 and
