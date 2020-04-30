@@ -263,6 +263,8 @@ class IgraphCCoreBuilder(object):
 
         source_folder = os.path.abspath(source_folder)
         build_folder = os.path.abspath(build_folder)
+        
+        build_to_source_folder = os.path.relpath(source_folder, build_folder)
 
         cwd = os.getcwd()
         try:
@@ -297,7 +299,7 @@ class IgraphCCoreBuilder(object):
                 configure_args.extend(os.environ["IGRAPH_EXTRA_CONFIGURE_ARGS"].split(" "))
             retcode = subprocess.call(
                 "sh {0} {1}".format(
-                    quote_path_for_shell(os.path.join(source_folder, "configure")),
+                    quote_path_for_shell(os.path.join(build_to_source_folder, "configure")),
                     " ".join(configure_args)
                 ),
                 env=self.enhanced_env(CFLAGS="-fPIC", CXXFLAGS="-fPIC"),
