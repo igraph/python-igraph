@@ -8477,6 +8477,7 @@ typedef struct {
   PyObject* callback_fn;
   PyObject* graph1;
   PyObject* graph2;
+  igraph_vector_ptr_t* result;
 } igraphmodule_i_Graph_isomorphic_vf2_callback_data_t;
 
 igraph_bool_t igraphmodule_i_Graph_isomorphic_vf2_callback_fn(
@@ -8519,6 +8520,34 @@ igraph_bool_t igraphmodule_i_Graph_isomorphic_vf2_callback_fn(
 
   return retval;
 }
+
+static igraph_bool_t igraphmodule_i_Graph_get_subisomorphisms_vf2_callback_fn(
+        const igraph_vector_t *map12,
+        const igraph_vector_t *map21,
+        void *arg) {
+
+    igraphmodule_i_Graph_isomorphic_vf2_callback_data_t *data = arg;
+    igraph_vector_ptr_t *vector = data->result;
+    igraph_vector_t *newvector = igraph_Calloc(1, igraph_vector_t);
+
+    if (!igraphmodule_i_Graph_isomorphic_vf2_callback_fn(map12, map21, data)){
+      return 0;
+    }
+
+    IGRAPH_UNUSED(map12);
+    if (!newvector) {
+        igraph_error("Out of memory", __FILE__, __LINE__, IGRAPH_ENOMEM);
+        return 0;           /* stop right here */
+    }
+    IGRAPH_FINALLY(igraph_free, newvector);
+    IGRAPH_CHECK(igraph_vector_copy(newvector, map21));
+    IGRAPH_FINALLY(igraph_vector_destroy, newvector);
+    IGRAPH_CHECK(igraph_vector_ptr_push_back(vector, newvector));
+    IGRAPH_FINALLY_CLEAN(2);
+
+    return 1;         /* continue finding subisomorphisms */
+}
+
 
 igraph_bool_t igraphmodule_i_Graph_isomorphic_vf2_node_compat_fn(
     const igraph_t *graph1, const igraph_t *graph2,
@@ -9156,19 +9185,21 @@ PyObject *igraphmodule_Graph_get_subisomorphisms_vf2(igraphmodule_GraphObject *s
   PyObject *color1_o=Py_None, *color2_o=Py_None;
   PyObject *edge_color1_o=Py_None, *edge_color2_o=Py_None;
   PyObject *node_compat_fn=Py_None, *edge_compat_fn=Py_None;
+  PyObject *callback_fn=Py_None;
   PyObject *res;
   igraphmodule_GraphObject *other;
   igraph_vector_int_t *color1=0, *color2=0;
   igraph_vector_int_t *edge_color1=0, *edge_color2=0;
   igraphmodule_i_Graph_isomorphic_vf2_callback_data_t callback_data;
+  int retval;
 
   static char *kwlist[] = { "other", "color1", "color2", "edge_color1",
-    "edge_color2", "node_compat_fn", "edge_compat_fn", NULL };
+    "edge_color2", "callback", "node_compat_fn", "edge_compat_fn", NULL };
 
   if (!PyArg_ParseTupleAndKeywords
-      (args, kwds, "O!|OOOOOO", kwlist, &igraphmodule_GraphType, &o,
+      (args, kwds, "O!|OOOOOOO", kwlist, &igraphmodule_GraphType, &o,
        &color1_o, &color2_o, &edge_color1_o, &edge_color2_o,
-       &node_compat_fn, &edge_compat_fn))
+       &callback_fn, &node_compat_fn, &edge_compat_fn))
     return NULL;
 
   if (igraph_vector_ptr_init(&result, 0)) {
@@ -9176,6 +9207,11 @@ PyObject *igraphmodule_Graph_get_subisomorphisms_vf2(igraphmodule_GraphObject *s
   }
 
   other=(igraphmodule_GraphObject*)o;
+
+  if (callback_fn != Py_None && !PyCallable_Check(callback_fn)) {
+    PyErr_SetString(PyExc_TypeError, "callback must be None or callable");
+    return NULL;
+  }
 
   if (node_compat_fn != Py_None && !PyCallable_Check(node_compat_fn)) {
     PyErr_SetString(PyExc_TypeError, "node_compat_fn must be None or callable");
@@ -9210,28 +9246,36 @@ PyObject *igraphmodule_Graph_get_subisomorphisms_vf2(igraphmodule_GraphObject *s
 
   callback_data.graph1 = (PyObject*)self;
   callback_data.graph2 = (PyObject*)other;
-  callback_data.callback_fn = 0;
+  callback_data.callback_fn = callback_fn == Py_None ? 0 : callback_fn;
   callback_data.node_compat_fn = node_compat_fn == Py_None ? 0 : node_compat_fn;
   callback_data.edge_compat_fn = edge_compat_fn == Py_None ? 0 : edge_compat_fn;
+  callback_data.result = &result;
 
-  if (igraph_get_subisomorphisms_vf2(&self->g, &other->g, color1, color2,
+  if (callback_data.callback_fn == 0) {
+    retval = igraph_get_subisomorphisms_vf2(&self->g, &other->g, color1, color2,
         edge_color1, edge_color2, &result,
         node_compat_fn == Py_None ? 0 : igraphmodule_i_Graph_isomorphic_vf2_node_compat_fn,
         edge_compat_fn == Py_None ? 0 : igraphmodule_i_Graph_isomorphic_vf2_edge_compat_fn,
-        &callback_data)) {
-    igraphmodule_handle_igraph_error();
-    if (color1) { igraph_vector_int_destroy(color1); free(color1); }
-    if (color2) { igraph_vector_int_destroy(color2); free(color2); }
-    if (edge_color1) { igraph_vector_int_destroy(edge_color1); free(edge_color1); }
-    if (edge_color2) { igraph_vector_int_destroy(edge_color2); free(edge_color2); }
-    igraph_vector_ptr_destroy(&result);
-    return NULL;
+        &callback_data);
+  } else {
+    retval = igraph_subisomorphic_function_vf2(&self->g, &other->g, color1, color2, 
+        edge_color1, edge_color2, 0, 0,
+        igraphmodule_i_Graph_get_subisomorphisms_vf2_callback_fn,
+        node_compat_fn == Py_None ? 0 : igraphmodule_i_Graph_isomorphic_vf2_node_compat_fn,
+        edge_compat_fn == Py_None ? 0 : igraphmodule_i_Graph_isomorphic_vf2_edge_compat_fn,
+        &callback_data);
   }
 
   if (color1) { igraph_vector_int_destroy(color1); free(color1); }
   if (color2) { igraph_vector_int_destroy(color2); free(color2); }
   if (edge_color1) { igraph_vector_int_destroy(edge_color1); free(edge_color1); }
   if (edge_color2) { igraph_vector_int_destroy(edge_color2); free(edge_color2); }
+
+  if (retval){
+    igraphmodule_handle_igraph_error();
+    igraph_vector_ptr_destroy(&result);
+    return NULL;
+  }
 
   res = igraphmodule_vector_ptr_t_to_PyList(&result, IGRAPHMODULE_TYPE_INT);
 
@@ -11753,7 +11797,7 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
 
   static char *kwlist[] = {"edge_weights", "node_weights", "resolution_parameter",
                            "normalize_resolution", "beta", "initial_membership", "n_iterations", NULL};
-  
+
   PyObject *edge_weights_o = Py_None;
   PyObject *node_weights_o = Py_None;
   PyObject *initial_membership_o = Py_None;
@@ -15133,8 +15177,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    (PyCFunction) igraphmodule_Graph_get_subisomorphisms_vf2,
    METH_VARARGS | METH_KEYWORDS,
    "get_subisomorphisms_vf2(other, color1=None, color2=None,\n"
-   "  edge_color1=None, edge_color2=None, node_compat_fn=None,\n"
-   "  edge_compat_fn=None)\n\n"
+   "  edge_color1=None, edge_color2=None, callback=None,\n"
+   "  node_compat_fn=None, edge_compat_fn=None)\n"
    "Returns all subisomorphisms between the graph and another one\n\n"
    "Vertex and edge colors may be used to restrict the isomorphisms, as only\n"
    "vertices and edges with the same color will be allowed to match each other.\n\n"
@@ -15147,6 +15191,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  the first graph. If C{None}, all edges have the same color.\n"
    "@param edge_color2: optional vector storing the coloring of the edges of\n"
    "  the second graph. If C{None}, all edges have the same color.\n"
+   "@param callback: if not C{None}, the subisomorphism search will not stop at\n"
+   "  the first match; it will call this callback function instead for every\n"
+   "  subisomorphism found. The callback function must accept four arguments:\n"
+   "  the first graph, the second graph, a mapping from the nodes of the\n"
+   "  first graph to the second, and a mapping from the nodes of the second\n"
+   "  graph to the first. The function must return C{True} if the search\n"
+   "  should continue or C{False} otherwise.\n"   
    "@param node_compat_fn: a function that receives the two graphs and two\n"
    "  node indices (one from the first graph, one from the second graph) and\n"
    "  returns C{True} if the nodes given by the two indices are compatible\n"

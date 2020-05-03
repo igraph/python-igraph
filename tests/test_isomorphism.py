@@ -192,6 +192,33 @@ class SubisomorphismTests(unittest.TestCase):
         self.assertEqual([], g.get_subisomorphisms_lad(empty))
         self.assertEqual([], empty.get_subisomorphisms_lad(empty))
 
+    def testGetSubisomorphismsVF2(self):
+        g = Graph.Lattice([3,3], circular=False)
+        g2 = Graph([(0,1), (1,2), (2,3), (3,0)])
+        g3 = g + [(0,4), (2,4), (6,4), (8,4), (3,1), (1,5), (5,7), (7,3)]
+
+        all_subiso = "0143 0341 1034 1254 1430 1452 2145 2541 3014 3410 3476 \
+        3674 4103 4125 4301 4367 4521 4587 4763 4785 5214 5412 5478 5874 6347 \
+        6743 7436 7458 7634 7854 8547 8745"
+        all_subiso = sorted([int(x) for x in item] for item in all_subiso.split())
+
+        self.assertEqual(all_subiso, sorted(g.get_subisomorphisms_vf2(g2)))
+        self.assertEqual([], sorted(g2.get_subisomorphisms_vf2(g)))
+
+        # Test callback
+        def limit10(g1, g2, m1, m2):
+            limit10.counter += 1
+            if limit10.counter > 10:
+                return False
+            return True
+        limit10.counter = 0
+        self.assertEqual(all_subiso[:10], sorted(g.get_subisomorphisms_vf2(g2, callback=limit10)))
+
+        # Corner cases
+        empty = Graph()
+        self.assertEqual([[]], g.get_subisomorphisms_vf2(empty))
+        self.assertEqual([[]], empty.get_subisomorphisms_vf2(empty))        
+
     def testSubisomorphicVF2(self):
         g = Graph.Lattice([3,3], circular=False)
         g2 = Graph([(0,1), (1,2), (1,3)])
