@@ -64,7 +64,7 @@ Users of the `Anaconda Python distribution <https://www.anaconda.com/distributio
 `conda package manager <https://conda.io/>`_ may opt to install |igraph|'s Python interface
 using conda. That can be achieved by running the following command:
 
-  $ conda install -c conda-forge python-graph
+  $ conda install -c conda-forge python-igraph
 
 To test the installed package, launch Python and run the following:
 
