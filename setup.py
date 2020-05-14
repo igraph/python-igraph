@@ -26,6 +26,7 @@ import glob
 import shutil
 import subprocess
 import sys
+import sysconfig
 
 from select import select
 
@@ -36,6 +37,11 @@ LIBIGRAPH_FALLBACK_LIBRARIES = ["igraph"]
 LIBIGRAPH_FALLBACK_LIBRARY_DIRS = []
 
 ###########################################################################
+
+
+def building_on_windows_msvc():
+    """Returns True when using the non-MingW CPython interpreter on Windows"""
+    return platform.system() == "Windows" and sysconfig.get_platform() != "mingw"
 
 
 def create_dir_unless_exists(*args):
@@ -308,7 +314,7 @@ class IgraphCCoreBuilder(object):
             if retcode:
                 return False
 
-            building_on_windows = platform.system() == "Windows"
+            building_on_windows = building_on_windows_msvc()
             
             if building_on_windows:
                 print("Creating Microsoft Visual Studio project...")
@@ -361,7 +367,7 @@ class IgraphCCoreBuilder(object):
     def copy_build_artifacts(
         self, source_folder, build_folder, install_folder, libraries
     ):
-        building_on_windows = platform.system() == "Windows"
+        building_on_windows = building_on_windows_msvc()
             
         create_dir_unless_exists(install_folder)
 
@@ -690,7 +696,7 @@ class BuildConfiguration(object):
     def replace_static_libraries(self, only=None, exclusions=None):
         """Replaces references to libraries with full paths to their static
         versions if the static version is to be found on the library path."""
-        building_on_windows = platform.system() == "Windows"
+        building_on_windows = building_on_windows_msvc()
             
         if not building_on_windows and "stdc++" not in self.libraries:
             self.libraries.append("stdc++")
@@ -710,7 +716,7 @@ class BuildConfiguration(object):
     def use_vendored_igraph(self):
         """Assumes that igraph is installed already in ``vendor/install/igraph`` and sets up
         the include and library paths and the library names accordingly."""
-        building_on_windows = platform.system() == "Windows"
+        building_on_windows = building_on_windows_msvc()
             
         buildcfg.include_dirs = [os.path.join("vendor", "install", "igraph", "include")]
         buildcfg.library_dirs = [os.path.join("vendor", "install", "igraph", "lib")]
