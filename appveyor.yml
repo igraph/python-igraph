@@ -25,6 +25,7 @@ platform:
 install:
   - bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"
   - bash -lc "pacman --noconfirm -Sy"
+  - bash -lc "pacman --noconfirm -S zstd"
   - bash -lc "pacman --noconfirm -S autoconf automake bison flex libtool mingw-w64-x86_64-libtool mingw-w64-i686-libxml2 mingw-w64-x86_64-libxml2 zip"
   - pip install cibuildwheel==1.1.0
 
