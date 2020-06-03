@@ -487,6 +487,7 @@ class BuildConfiguration(object):
 
                 # Check whether the user asked us to discover a pre-built igraph
                 # with pkg-config
+                detected = False
                 if buildcfg.use_pkgconfig:
                     detected = buildcfg.detect_from_pkgconfig()
                     if not detected:
