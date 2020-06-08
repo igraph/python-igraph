@@ -1,5 +1,5 @@
 
-[![](https://travis-ci.org/igraph/python-igraph.svg?branch=master)](https://travis-ci.org/igraph/python-igraph)
+[![Travis CI](https://img.shields.io/travis/igraph/python-igraph)](https://travis-ci.org/igraph/python-igraph)
 [![PyPI pyversions](https://img.shields.io/badge/python-2.7%20%7C%203.5%20%7C%203.6%20%7C%203.7%20%7C%203.8-blue)](https://pypi.python.org/pypi/python-igraph)
 [![PyPI wheels](https://img.shields.io/pypi/wheel/python-igraph.svg)](https://pypi.python.org/pypi/python-igraph)
 
