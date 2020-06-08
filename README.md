@@ -1,5 +1,7 @@
 
 [![](https://travis-ci.org/igraph/python-igraph.svg?branch=master)](https://travis-ci.org/igraph/python-igraph)
+[![PyPI pyversions](https://img.shields.io/badge/python-2.7%20%7C%203.5%20%7C%203.6%20%7C%203.7%20%7C%203.8-blue)](https://pypi.python.org/pypi/python-igraph)
+[![PyPI wheels](https://img.shields.io/pypi/wheel/python-igraph.svg)](https://pypi.python.org/pypi/python-igraph)
 
 Python interface for the igraph library
 ---------------------------------------
@@ -149,7 +151,23 @@ faster than the first one as the C core does not need to be recompiled.
 
 ## Notes
 
-### Pypy
+### Supported Python versions
+
+We aim to keep up with the development cycle of Python and support all official
+Python versions that have not reached their end of life yet. Currently this
+means that we support Python 3.5 to 3.8, inclusive. Please refer to [this
+page](https://devguide.python.org/#branchstatus) for the status of Python
+branches and let us know if you encounter problems with `python-igraph` on any
+of the non-EOL Python versions.
+
+Continuous integration tests are regularly executed on all non-EOL Python
+branches.
+
+As for Python 2.x, the latest branch of `python-igraph` that supports Python 2
+is the 0.8.x series. Python 2 support will be dropped with the release of
+`python-igraph` 0.9.
+
+### PyPy
 
 This version of python-igraph is compatible with [PyPy](http://pypy.org/) and
 is regularly tested on [PyPy](http://pypy.org/) with ``tox``. However, the
