@@ -60,7 +60,14 @@ class BipartiteTests(unittest.TestCase):
         self.assertListEqual(g.es['weight'], [1, 1, 1, 2])
         self.assertTrue(sorted(g.get_edgelist()) == [(0, 3), (0, 4), (1, 2),(1,3)])
 
-        # Ignore multiple when weighted=True
+        # Graph is not weighted when weighted=`str`
+        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], weighted='some_attr_name')
+        self.assertTrue(all((g.vcount() == 5, g.ecount() == 4, not g.is_directed(), not g.is_weighted())))
+        self.assertTrue(g.vs["type"] == [False]*2 + [True]*3)
+        self.assertListEqual(g.es['some_attr_name'], [1, 1, 1, 2])
+        self.assertTrue(sorted(g.get_edgelist()) == [(0, 3), (0, 4), (1, 2),(1,3)])
+
+        # Ignore multiple when passed `weighted`
         g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], multiple=True, weighted=True)
         self.assertTrue(all((g.vcount() == 5, g.ecount() == 4, not g.is_directed(), g.is_weighted())))
         self.assertTrue(g.vs["type"] == [False]*2 + [True]*3)
