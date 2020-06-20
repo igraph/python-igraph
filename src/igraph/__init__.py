@@ -2821,20 +2821,16 @@ class Graph(GraphBase):
         @return: the graph with a binary vertex attribute named C{"type"} that
           stores the vertex classes.
         """
-        weighted = kwds.pop('weighted', False)
+        weighted = kwds.pop("weighted", False)
         result, types = klass._Incidence(*args, **kwds)
         if weighted:
-          weight_attr = 'weight' if weighted == True else weighted
-          result.es[weight_attr] = 1
-          mat = args[0]
-          for i, weights in enumerate(mat):
-            for j, weight in enumerate(weights):
-              if weight:
-                source = i
-                target = len(mat) + j
-                eid = result.get_eid(source, target)
-                result.es[eid][weight_attr] = weight
-          # result = kclass._add_weights(args[0], weighted, result)
+            mat = args[0]
+            weight_attr = "weight" if weighted == True else weighted
+            result.es[weight_attr] = 1
+            for edge in result.es:
+                source, target = edge.tuple
+                row, column = source, target - len(mat)
+                edge[weight_attr] = mat[row][column]
         result.vs["type"] = types
         return result
 
