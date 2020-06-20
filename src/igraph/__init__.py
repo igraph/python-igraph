@@ -2831,7 +2831,10 @@ class Graph(GraphBase):
             result.es[weight_attr] = 1
             for edge in result.es:
                 source, target = edge.tuple
-                row, column = source, target - len(mat)
+                if result.is_directed() and kwds.get("mode", "out") == "in":
+                    row, column = target, source - len(mat)
+                else:
+                    row, column = source, target - len(mat)
                 edge[weight_attr] = mat[row][column]
         result.vs["type"] = types
         return result
