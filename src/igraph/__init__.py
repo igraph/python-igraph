@@ -2822,6 +2822,8 @@ class Graph(GraphBase):
           stores the vertex classes.
         """
         weighted = kwds.pop("weighted", False)
+        if weighted:
+          kwds["multiple"] = False
         result, types = klass._Incidence(*args, **kwds)
         if weighted:
             mat = args[0]
