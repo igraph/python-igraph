@@ -88,6 +88,13 @@ class BipartiteTests(unittest.TestCase):
         self.assertListEqual(g.es['weight'], [1, 1, 1, 2])
         self.assertTrue(sorted(g.get_edgelist()) == [(2, 1), (3, 0), (3, 1), (4, 0)])
 
+        # Should work when directed=True and mode=all with weighted
+        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], directed=True, mode="all", weighted=True)
+        self.assertTrue(all((g.vcount() == 5, g.ecount() == 8, g.is_directed(), g.is_weighted())))
+        self.assertTrue(g.vs["type"] == [False]*2 + [True]*3)
+        self.assertListEqual(g.es['weight'], [1, 1, 1, 1, 1, 1, 2, 2])
+        self.assertTrue(sorted(g.get_edgelist()) == [(0, 3), (0, 4), (1, 2), (1, 3), (2, 1), (3, 0), (3, 1), (4, 0)])
+
     def testGetIncidence(self):
         mat = [[0, 1, 1], [1, 1, 0]]
         v1, v2 = [0, 1], [2, 3, 4]
