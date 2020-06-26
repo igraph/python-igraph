@@ -11753,7 +11753,7 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
 
   static char *kwlist[] = {"edge_weights", "node_weights", "resolution_parameter",
                            "normalize_resolution", "beta", "initial_membership", "n_iterations", NULL};
-  
+
   PyObject *edge_weights_o = Py_None;
   PyObject *node_weights_o = Py_None;
   PyObject *initial_membership_o = Py_None;
@@ -11823,12 +11823,12 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
         }
       }
     }
-    resolution_parameter /= igraph_vector_sum(node_weights); 
+    resolution_parameter /= igraph_vector_sum(node_weights);
   }
 
   /* Run actual Leiden algorithm for several iterations. */
   if (!error) {
-    if (n_iterations > 0) {
+    if (n_iterations >= 0) {
       for (i = 0; !error && i < n_iterations; i++) {
         error = igraph_community_leiden(&self->g,
                                         edge_weights, node_weights,
@@ -11839,13 +11839,13 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
       }
     } else {
       while (!error && prev_quality < quality) {
+        prev_quality = quality;
         error = igraph_community_leiden(&self->g,
                                         edge_weights, node_weights,
                                         resolution_parameter, beta,
                                         start, membership,
                                         &nb_clusters, &quality);
         start = 1;
-        prev_quality = quality;
       }
     }
   }
@@ -15855,7 +15855,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "     @param n_iterations: the number of iterations to iterate the Leiden\n"
    "       algorithm. Each iteration may improve the partition further.\n"
    "     @return: the community membership vector.\n"
-  },  
+  },
   {"community_walktrap",
    (PyCFunction) igraphmodule_Graph_community_walktrap,
    METH_VARARGS | METH_KEYWORDS,
