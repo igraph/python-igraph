@@ -2825,15 +2825,19 @@ class Graph(GraphBase):
           weighted argument. If it is C{True} then a weighted graph is created and
           the name of the edge attribute will be ‘weight’.
 
+        @raise ValueError: if the weighted and multiple are passed together.
+
         @return: the graph with a binary vertex attribute named C{"type"} that
           stores the vertex classes.
         """
         weighted = kwds.pop("weighted", False)
-        if weighted:
-          kwds["multiple"] = False
+        is_weighted = True if weighted or weighted == "" else False
+        multiple = kwds.get("multiple", False)
+        if is_weighted and multiple:
+            raise ValueError("arguments weighted and multiple can not co-exist")
         result, types = klass._Incidence(*args, **kwds)
         result.vs["type"] = types
-        if weighted:
+        if is_weighted:
             weight_attr = "weight" if weighted == True else weighted
             mat = args[0]
             _, rows, columns = result.get_incidence()

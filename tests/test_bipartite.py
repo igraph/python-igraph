@@ -61,17 +61,17 @@ class BipartiteTests(unittest.TestCase):
         self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2),(1,3)])
 
         # Graph is not weighted when weighted=`str`
-        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], weighted='some_attr_name')
+        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], weighted="some_attr_name")
         self.assertTrue(all((g.vcount() == 5, g.ecount() == 4, not g.is_directed(), not g.is_weighted())))
         self.assertListEqual(g.vs["type"], [False]*2 + [True]*3)
-        self.assertListEqual(g.es['some_attr_name'], [1, 1, 1, 2])
+        self.assertListEqual(g.es["some_attr_name"], [1, 1, 1, 2])
         self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2),(1,3)])
 
-        # Ignore multiple when passed `weighted`
-        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], multiple=True, weighted=True)
-        self.assertTrue(all((g.vcount() == 5, g.ecount() == 4, not g.is_directed(), g.is_weighted())))
+        # Graph is not weighted when weighted=""
+        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], weighted="")
+        self.assertTrue(all((g.vcount() == 5, g.ecount() == 4, not g.is_directed(), not g.is_weighted())))
         self.assertListEqual(g.vs["type"], [False]*2 + [True]*3)
-        self.assertListEqual(g.es["weight"], [1, 1, 1, 2])
+        self.assertListEqual(g.es[""], [1, 1, 1, 2])
         self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2),(1,3)])
 
         # Should work when directed=True and mode=out with weighted
@@ -94,6 +94,17 @@ class BipartiteTests(unittest.TestCase):
         self.assertListEqual(g.vs["type"], [False]*2 + [True]*3)
         self.assertListEqual(g.es["weight"], [1, 1, 1, 1, 1, 1, 2, 2])
         self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2), (1, 3), (2, 1), (3, 0), (3, 1), (4, 0)])
+
+    def testIncidenceError(self):
+        msg = "arguments weighted and multiple can not co-exist"
+        with self.assertRaisesRegex(ValueError, msg) as e:
+            Graph.Incidence([[0, 1, 1], [1, 2, 0]], multiple=True, weighted=True)
+
+        with self.assertRaisesRegex(ValueError, msg) as e:
+            Graph.Incidence([[0, 1, 1], [1, 2, 0]], multiple=True, weighted="string")
+
+        with self.assertRaisesRegex(ValueError, msg) as e:
+            Graph.Incidence([[0, 1, 1], [1, 2, 0]], multiple=True, weighted="")
 
     def testGetIncidence(self):
         mat = [[0, 1, 1], [1, 1, 0]]
