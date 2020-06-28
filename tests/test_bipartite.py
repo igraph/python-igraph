@@ -97,14 +97,17 @@ class BipartiteTests(unittest.TestCase):
 
     def testIncidenceError(self):
         msg = "arguments weighted and multiple can not co-exist"
-        with self.assertRaisesRegex(ValueError, msg) as e:
+        with self.assertRaises(ValueError) as e:
             Graph.Incidence([[0, 1, 1], [1, 2, 0]], multiple=True, weighted=True)
+        self.assertIn(msg, e.exception.args)
 
-        with self.assertRaisesRegex(ValueError, msg) as e:
+        with self.assertRaises(ValueError) as e:
             Graph.Incidence([[0, 1, 1], [1, 2, 0]], multiple=True, weighted="string")
+        self.assertIn(msg, e.exception.args)
 
-        with self.assertRaisesRegex(ValueError, msg) as e:
+        with self.assertRaises(ValueError) as e:
             Graph.Incidence([[0, 1, 1], [1, 2, 0]], multiple=True, weighted="")
+        self.assertIn(msg, e.exception.args)
 
     def testGetIncidence(self):
         mat = [[0, 1, 1], [1, 1, 0]]
