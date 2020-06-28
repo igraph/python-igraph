@@ -2820,10 +2820,10 @@ class Graph(GraphBase):
         @param weighted: defines whether to create a weighted graph from the
           incidence matrix. If it is c{None} then an unweighted graph is created
           and the multiple argument is used to determine the edges of the graph.
-          If it is a character constant then for every non-zero matrix entry, an
-          edge is created and the value of the entry is added as an edge attribute
-          named by the weighted argument. If it is C{True} then a weighted graph
-          is created and the name of the edge attribute will be ‘weight’.
+          If it is a string then for every non-zero matrix entry, an edge is created
+          and the value of the entry is added as an edge attribute named by the
+          weighted argument. If it is C{True} then a weighted graph is created and
+          the name of the edge attribute will be ‘weight’.
 
         @return: the graph with a binary vertex attribute named C{"type"} that
           stores the vertex classes.
@@ -2837,12 +2837,13 @@ class Graph(GraphBase):
             weight_attr = "weight" if weighted == True else weighted
             mat = args[0]
             _, rows, columns = result.get_incidence()
+            num_vertices_of_first_kind = len(rows)
             for edge in result.es:
                 source, target = edge.tuple
                 if source in rows:
-                    edge[weight_attr] = mat[source][target - len(rows)]
+                    edge[weight_attr] = mat[source][target - num_vertices_of_first_kind]
                 else:
-                    edge[weight_attr] = mat[target][source - len(rows)]
+                    edge[weight_attr] = mat[target][source - num_vertices_of_first_kind]
         return result
 
     def bipartite_projection(self, types="type", multiplicity=True, probe1=-1,
