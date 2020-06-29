@@ -2817,12 +2817,37 @@ class Graph(GraphBase):
           what the value is. If C{True}, non-zero entries are rounded up to
           the nearest integer and this will be the number of multiple edges
           created.
+        @param weighted: defines whether to create a weighted graph from the
+          incidence matrix. If it is c{None} then an unweighted graph is created
+          and the multiple argument is used to determine the edges of the graph.
+          If it is a string then for every non-zero matrix entry, an edge is created
+          and the value of the entry is added as an edge attribute named by the
+          weighted argument. If it is C{True} then a weighted graph is created and
+          the name of the edge attribute will be ‘weight’.
+
+        @raise ValueError: if the weighted and multiple are passed together.
 
         @return: the graph with a binary vertex attribute named C{"type"} that
           stores the vertex classes.
         """
+        weighted = kwds.pop("weighted", False)
+        is_weighted = True if weighted or weighted == "" else False
+        multiple = kwds.get("multiple", False)
+        if is_weighted and multiple:
+            raise ValueError("arguments weighted and multiple can not co-exist")
         result, types = klass._Incidence(*args, **kwds)
         result.vs["type"] = types
+        if is_weighted:
+            weight_attr = "weight" if weighted == True else weighted
+            mat = args[0]
+            _, rows, columns = result.get_incidence()
+            num_vertices_of_first_kind = len(rows)
+            for edge in result.es:
+                source, target = edge.tuple
+                if source in rows:
+                    edge[weight_attr] = mat[source][target - num_vertices_of_first_kind]
+                else:
+                    edge[weight_attr] = mat[target][source - num_vertices_of_first_kind]
         return result
 
     def bipartite_projection(self, types="type", multiplicity=True, probe1=-1,
