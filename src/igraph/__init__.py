@@ -32,7 +32,6 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 # pylint: disable-msg=W0401
 # W0401: wildcard import
 from igraph._igraph import *
-from igraph._igraph import __version__, __build_date__
 from igraph.clustering import *
 from igraph.cut import *
 from igraph.configuration import Configuration
@@ -42,10 +41,10 @@ from igraph.datatypes import *
 from igraph.formula import *
 from igraph.layout import *
 from igraph.matching import *
-from igraph.remote.nexus import *
 from igraph.statistics import *
 from igraph.summary import *
 from igraph.utils import *
+from igraph.version import __version__, __version_info__
 
 import os
 import math
@@ -593,6 +592,35 @@ class Graph(GraphBase):
 
         return Matrix(data)
 
+    def get_adjacency_sparse(self, attribute=None):
+        """Returns the adjacency matrix of a graph as scipy csr matrix.
+        @param attribute: if C{None}, returns the ordinary adjacency
+          matrix. When the name of a valid edge attribute is given
+          here, the matrix returned will contain the default value
+          at the places where there is no edge or the value of the
+          given attribute where there is an edge.
+        @return: the adjacency matrix as a L{scipy.sparse.csr_matrix}."""
+        try:
+            from scipy import sparse
+        except ImportError:
+            raise ImportError('You should install scipy package in order to use this function')
+        import numpy as np
+
+        edges = self.get_edgelist()
+        if attribute is None:
+            weights = [1] * len(edges)
+        else:
+            if attribute not in self.es.attribute_names():
+                raise ValueError("Attribute does not exist")
+
+            weights = self.es[attribute]
+
+        N = self.vcount()
+        mtx = sparse.csr_matrix((weights, zip(*edges)), shape=(N, N))
+
+        if not self.is_directed():
+            mtx = mtx + sparse.triu(mtx, 1).T + sparse.tril(mtx, -1).T
+        return mtx
 
     def get_adjlist(self, mode=OUT):
         """get_adjlist(mode=OUT)
@@ -1391,6 +1419,59 @@ class Graph(GraphBase):
         if return_single: return result[0]
         return result
 
+    def community_leiden(self, objective_function="CPM", weights=None,
+        resolution_parameter=1.0, beta=0.01, initial_membership=None,
+        n_iterations=2, node_weights=None):
+        """community_leiden(objective_function=CPM, weights=None,
+        resolution_parameter=1.0, beta=0.01, initial_membership=None,
+        n_iterations=2, node_weights=None)
+
+        Finds the community structure of the graph using the
+        Leiden algorithm of Traag, van Eck & Waltman.
+
+        @keyword objective_function: whether to use the Constant Potts
+          Model (CPM) or modularity. Must be either C{"CPM"} or C{"modularity"}.
+        @keyword weights: edge weights to be used. Can be a sequence or
+          iterable or even an edge attribute name.
+        @keyword resolution_parameter: the resolution parameter to use.
+          Higher resolutions lead to more smaller communities, while
+          lower resolutions lead to fewer larger communities.
+        @keyword beta: parameter affecting the randomness in the Leiden
+          algorithm. This affects only the refinement step of the algorithm.
+        @keyword initial_membership: if provided, the Leiden algorithm
+          will try to improve this provided membership. If no argument is
+          provided, the aglorithm simply starts from the singleton partition.
+        @keyword n_iterations: the number of iterations to iterate the Leiden
+          algorithm. Each iteration may improve the partition further. Using
+          a negative number of iterations will run until a stable iteration is
+          encountered (i.e. the quality was not increased during that
+          iteration).
+        @keyword node_weights: the node weights used in the Leiden algorithm.
+          If this is not provided, it will be automatically determined on the
+          basis of whether you want to use CPM or modularity. If you do provide
+          this, please make sure that you understand what you are doing.
+        @return: an appropriate L{VertexClustering} object.
+
+        @newfield ref: Reference
+        @ref: Traag, V. A., Waltman, L., & van Eck, N. J. (2019). From Louvain
+          to Leiden: guaranteeing well-connected communities. Scientific
+          reports, 9(1), 5233. doi: 10.1038/s41598-019-41695-z
+        """
+        if objective_function.lower() not in ("cpm", "modularity"):
+          raise ValueError("objective_function must be \"CPM\" or \"modularity\".")
+
+        membership = GraphBase.community_leiden(self,
+          edge_weights=weights, node_weights=node_weights,
+          resolution_parameter=resolution_parameter,
+          normalize_resolution=(objective_function == "modularity"),
+          beta=beta, initial_membership=initial_membership, n_iterations=n_iterations)
+
+        if weights is not None:
+            modularity_params=dict(weights=weights)
+        else:
+            modularity_params={}
+        return VertexClustering(self, membership,
+                modularity_params=modularity_params)
 
     def layout(self, layout=None, *args, **kwds):
         """Returns the layout of the graph according to a layout algorithm.
@@ -2062,10 +2143,7 @@ class Graph(GraphBase):
         """Reads a graph from Python pickled format
 
         @param fname: the name of the file, a stream to read from, or
-          a string containing the pickled data. The string is assumed to
-          hold pickled data if it is longer than 40 characters and
-          contains a substring that's peculiar to pickled versions
-          of an C{igraph} Graph object.
+          a string containing the pickled data.
         @return: the created graph object.
         """
         import cPickle as pickle
@@ -2076,6 +2154,14 @@ class Graph(GraphBase):
             fp = None
             try:
                 fp = open(fname, "rb")
+            except UnicodeDecodeError:
+                try:
+                    # We are on Python 3.6 or above and we are passing a pickled
+                    # stream that cannot be decoded as Unicode. Try unpickling
+                    # directly.
+                    result = pickle.loads(fname)
+                except TypeError:
+                    raise IOError('Cannot load file. If fname is a file name, that filename may be incorrect.')
             except IOError:
                 try:
                     # No file with the given name, try unpickling directly.
@@ -2907,12 +2993,37 @@ class Graph(GraphBase):
           what the value is. If C{True}, non-zero entries are rounded up to
           the nearest integer and this will be the number of multiple edges
           created.
+        @param weighted: defines whether to create a weighted graph from the
+          incidence matrix. If it is c{None} then an unweighted graph is created
+          and the multiple argument is used to determine the edges of the graph.
+          If it is a string then for every non-zero matrix entry, an edge is created
+          and the value of the entry is added as an edge attribute named by the
+          weighted argument. If it is C{True} then a weighted graph is created and
+          the name of the edge attribute will be ‘weight’.
+
+        @raise ValueError: if the weighted and multiple are passed together.
 
         @return: the graph with a binary vertex attribute named C{"type"} that
           stores the vertex classes.
         """
+        weighted = kwds.pop("weighted", False)
+        is_weighted = True if weighted or weighted == "" else False
+        multiple = kwds.get("multiple", False)
+        if is_weighted and multiple:
+            raise ValueError("arguments weighted and multiple can not co-exist")
         result, types = klass._Incidence(*args, **kwds)
         result.vs["type"] = types
+        if is_weighted:
+            weight_attr = "weight" if weighted == True else weighted
+            mat = args[0]
+            _, rows, columns = result.get_incidence()
+            num_vertices_of_first_kind = len(rows)
+            for edge in result.es:
+                source, target = edge.tuple
+                if source in rows:
+                    edge[weight_attr] = mat[source][target - num_vertices_of_first_kind]
+                else:
+                    edge[weight_attr] = mat[target][source - num_vertices_of_first_kind]
         return result
 
     def bipartite_projection(self, types="type", multiplicity=True, probe1=-1,
@@ -3641,8 +3752,11 @@ class VertexSeq(_igraph.VertexSeq):
 
             >>> g.vs.find(_degree=0)             #doctest:+SKIP
         """
-        # Shortcut: if "name" is in kwds and there are no positional arguments,
-        # we try that first because that attribute is indexed
+        # Shortcut: if "name" is in kwds, there are no positional arguments,
+        # and the specified name is a string, we try that first because that
+        # attribute is indexed. Note that we cannot do this if name is an
+        # integer, because it would then translate to g.vs.select(name), which
+        # searches by _index_ if the argument is an integer
         if not args:
             if "name" in kwds:
                 name = kwds.pop("name")
@@ -3651,7 +3765,7 @@ class VertexSeq(_igraph.VertexSeq):
             else:
                 name = None
 
-            if name is not None:
+            if name is not None and isinstance(name, (str, unicode)):
                 args = [name]
 
         if args:
@@ -3786,13 +3900,13 @@ class VertexSeq(_igraph.VertexSeq):
             "notin": lambda a, b: a not in b }
         for keyword, value in kwds.iteritems():
             if "_" not in keyword or keyword.rindex("_") == 0:
-                keyword = keyword+"_eq"
+                keyword = keyword + "_eq"
             attr, _, op = keyword.rpartition("_")
             try:
                 func = operators[op]
             except KeyError:
                 # No such operator, assume that it's part of the attribute name
-                attr, func = keyword, operators["eq"]
+                attr, op, func = keyword, "eq", operators["eq"]
 
             if attr[0] == '_':
                 # Method call, not an attribute
@@ -3994,9 +4108,15 @@ class EdgeSeq(_igraph.EdgeSeq):
         properties of the edges, e.g., their centrality.  The rules are as
         follows:
 
-          1. C{_source} or {_from} means the source vertex of an edge.
+          1. C{_source} or {_from} means the source vertex of an edge. For
+             undirected graphs, only the C{eq} operator is supported and it
+             is treated as {_incident} (since undirected graphs have no notion
+             of edge directionality).
 
-          2. C{_target} or {_to} means the target vertex of an edge.
+          2. C{_target} or {_to} means the target vertex of an edge. For
+             undirected graphs, only the C{eq} operator is supported and it
+             is treated as {_incident} (since undirected graphs have no notion
+             of edge directionality).
 
           3. C{_within} ignores the operator and checks whether both endpoints
              of the edge lie within a specified set.
@@ -4006,7 +4126,10 @@ class EdgeSeq(_igraph.EdgeSeq):
              endpoint lies within another specified set. The two sets must be
              given as a tuple.
 
-          5. Otherwise, the rest of the name is interpreted as a method of the
+          5. C{_incident} ignores the operator and checks whether the edge is
+             incident on a specific vertex or a set of vertices.
+
+          6. Otherwise, the rest of the name is interpreted as a method of the
              L{Graph} object. This method is called with the edge sequence as
              its first argument (all others left at default values) and edges
              are filtered according to the value returned by the method.
@@ -4048,8 +4171,10 @@ class EdgeSeq(_igraph.EdgeSeq):
           >>> g.es["bs"] = g.edge_betweenness()
           >>> edges = g.es.select(bs_gt=10, bs_lt=30)
 
-        @return: the new, filtered edge sequence"""
+        @return: the new, filtered edge sequence
+        """
         es = _igraph.EdgeSeq.select(self, *args)
+        is_directed = self.graph.is_directed()
 
         def _ensure_set(value):
             if isinstance(value, VertexSeq):
@@ -4067,27 +4192,78 @@ class EdgeSeq(_igraph.EdgeSeq):
             "ne": operator.ne, \
             "in": lambda a, b: a in b, \
             "notin": lambda a, b: a not in b }
+
+        # TODO(ntamas): some keyword arguments should be prioritized over
+        # others; for instance, we have optimized code paths for _source and
+        # _target in directed and undirected graphs if es.is_all() is True;
+        # these should be executed first. This matters only if there are
+        # multiple keyword arguments and es.is_all() is True.
+
         for keyword, value in kwds.iteritems():
             if "_" not in keyword or keyword.rindex("_") == 0:
-                keyword = keyword+"_eq"
+                keyword = keyword + "_eq"
             pos = keyword.rindex("_")
             attr, op = keyword[0:pos], keyword[pos+1:]
             try:
                 func = operators[op]
             except KeyError:
                 # No such operator, assume that it's part of the attribute name
-                attr = "%s_%s" % (attr,op)
-                func = operators["eq"]
+                attr, op, func = keyword, "eq", operators["eq"]
 
             if attr[0] == '_':
-                if attr == "_source" or attr == "_from":
-                    values = [e.source for e in es]
-                    if op == "in" or op == "notin":
-                        value = _ensure_set(value)
-                elif attr == "_target" or attr == "_to":
-                    values = [e.target for e in es]
-                    if op == "in" or op == "notin":
-                        value = _ensure_set(value)
+                if attr in ("_source", "_from", "_target", "_to") and not is_directed:
+                    if op not in ("eq", "in"):
+                        raise RuntimeError("unsupported for undirected graphs")
+
+                    # translate to _incident to avoid confusion
+                    attr = "_incident"
+                    if func == operators["eq"]:
+                        if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):
+                            value = set(value)
+                        else:
+                            value = set([value])
+
+                if attr in ("_source", "_from"):
+                    if es.is_all() and op == "eq":
+                        # shortcut here: use .incident() as it is much faster
+                        filtered_idxs = sorted(es.graph.incident(value, mode="out"))
+                        func = None
+                        # TODO(ntamas): there are more possibilities; we could
+                        # optimize "ne", "in" and "notin" in similar ways
+                    else:
+                        values = [e.source for e in es]
+                        if op == "in" or op == "notin":
+                            value = _ensure_set(value)
+
+                elif attr in ("_target", "_to"):
+                    if es.is_all() and op == "eq":
+                        # shortcut here: use .incident() as it is much faster
+                        filtered_idxs = sorted(es.graph.incident(value, mode="in"))
+                        func = None
+                        # TODO(ntamas): there are more possibilities; we could
+                        # optimize "ne", "in" and "notin" in similar ways
+                    else:
+                        values = [e.target for e in es]
+                        if op == "in" or op == "notin":
+                            value = _ensure_set(value)
+
+                elif attr == "_incident":
+                    func = None          # ignoring function, filtering here
+                    value = _ensure_set(value)
+
+                    # Fetch all the edges that are incident on at least one of
+                    # the vertices specified
+                    candidates = set()
+                    for v in value:
+                        candidates.update(es.graph.incident(v))
+
+                    if not es.is_all():
+                        # Find those that are in the current edge sequence
+                        filtered_idxs = [i for i, e in enumerate(es) if e.index in candidates]
+                    else:
+                        # We are done, the filtered indexes are in the candidates set
+                        filtered_idxs = sorted(candidates)
+
                 elif attr == "_within":
                     func = None          # ignoring function, filtering here
                     value = _ensure_set(value)
@@ -4107,6 +4283,7 @@ class EdgeSeq(_igraph.EdgeSeq):
                         # exactly once in increasing order of edge IDs
                         filtered_idxs = [i for i in candidates
                                 if es[i].source in value and es[i].target in value]
+
                 elif attr == "_between":
                     if len(value) != 2:
                         raise ValueError("_between selector requires two vertex ID lists")
@@ -4133,6 +4310,7 @@ class EdgeSeq(_igraph.EdgeSeq):
                         filtered_idxs = [i for i in candidates
                                 if (es[i].source in set1 and es[i].target in set2) or
                                 (es[i].target in set1 and es[i].source in set2)]
+
                 else:
                     # Method call, not an attribute
                     values = getattr(es.graph, attr[1:])(es)
@@ -4142,8 +4320,7 @@ class EdgeSeq(_igraph.EdgeSeq):
             # If we have a function to apply on the values, do that; otherwise
             # we assume that filtered_idxs has already been calculated.
             if func is not None:
-                filtered_idxs=[i for i, v in enumerate(values) \
-                               if func(v, value)]
+                filtered_idxs = [i for i, v in enumerate(values) if func(v, value)]
 
             es = es.select(filtered_idxs)
 

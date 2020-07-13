@@ -1,4 +1,4 @@
-dist: xenial
+dist: bionic
 language: python
 
 python:
@@ -6,25 +6,73 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
-  - "pypy"
-  - "pypy3"
+  - "3.8"
+  - pypy3
 
 addons:
   apt:
     packages:
-    - gfortran
-    - flex
-    - bison
+      - gfortran
+      - flex
+      - bison
 
 install:
-  - pip install tox-travis
+  - python -m pip install tox-travis
 
 script:
   - tox
+
+jobs:
+  include:
+    - stage: test
+      services: docker
+
+    - stage: wheels
+      services: docker
+      language: shell
+      env:
+        - CIBW_BEFORE_BUILD="yum install -y flex bison libxml2-devel zlib-devel && python setup.py build_c_core"
+        - CIBW_TEST_COMMAND="cd {project} && python -m unittest"
+      install:
+        - sudo python -m pip install cibuildwheel==1.1.0
+      script:
+        - python setup.py sdist
+        - python -m cibuildwheel --output-dir wheelhouse
+      before_deploy: &before_deploy_releases
+        - git config --local user.name "ntamas"
+        - git config --local user.email "ntamas@gmail.com"
+        # - export TRAVIS_TAG=0.8.0
+        # - git tag $TRAVIS_TAG
+      deploy: &deploy_releases
+        provider: releases
+        token:
+          secure: CAn8qENTIZSFed7VjqcQR42mjrPGV+QptW2XkncPaRwFooizPKgRsphgKzgv7k7peEQhQs/WOEtL0a3ofYRbbucOVbJ/nTVI0qGba9Lz/afsQ2UsbGnan0hXua9D/bo1wRhgqz8j0q6LHb3O8rgQOAKi8hWCChglr2saeRsy5Fc=
+        file:
+          - wheelhouse/*.whl
+          - dist/python-igraph-${TRAVIS_TAG}.tar.gz
+        file_glob: true
+        draft: true
+        edge: true
+        overwrite: true
+        cleanup: false
+        on:
+          repo: igraph/python-igraph
+          tags: true
+
+    - stage: wheels
+      os: osx
+      language: shell
+      env:
+        - CIBW_BEFORE_BUILD="python setup.py build_c_core"
+        - CIBW_TEST_COMMAND="cd {project} && python -m unittest"
+      install:
+        - python -m pip install cibuildwheel==1.1.0
+      script:
+        - python -m cibuildwheel --output-dir wheelhouse
+      before_deploy: *before_deploy_releases
+      deploy: *deploy_releases
 
 notifications:
   email:
     on_success: change
     on_failure: always
-
-sudo: false

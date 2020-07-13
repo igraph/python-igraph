@@ -1,8 +1,19 @@
 include setup.cfg
-include src/*.h
+include src/_igraph/*.h
 include MANIFEST.in
 include COPYING
 include scripts/mkdoc.sh
 include scripts/epydoc-patched
 include scripts/epydoc.cfg
-include test/*.py
+include tests/*.py
+
+graft vendor/source/igraph
+prune vendor/source/igraph/doc/abstracts
+prune vendor/source/igraph/doc/papers
+prune vendor/source/igraph/doc/presentations
+prune vendor/source/igraph/interfaces
+prune vendor/source/igraph/nexus
+prune vendor/source/igraph/tools/virtual
+prune vendor/source/igraph/optional/simpleraytracer
+prune vendor/source/igraph/tools/virtual
+

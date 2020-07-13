@@ -6,17 +6,15 @@
 Tutorial
 ========
 
-This chapter contains a short overview of |igraph|'s capabilities. It is highly recommended
-to read it at least once if you are new to |igraph|. I assume that you have already installed
-|igraph|; if you did not, see :ref:`installing-igraph` first. Familiarity with the Python
-language is also assumed; if this is the first time you are trying to use Python, there are
-many good Python tutorials on the Internet to get you started. Mark Pilgrim's
-`Dive Into Python <http://www.diveintopython.net>`_ is one that I personally suggest.
-If this is the first time you ever try to use a programming language,
-`A Byte of Python <http://swaroopch.com/notes/Python>`_ is even better. If
-you already have a stable programming background in other languages and you just want a
-quick overview of Python, `Learn Python in 10 minutes
-<http://www.poromenos.org/tutorials/python>`_ is probably your best bet.
+This chapter contains a short overview of |igraph|'s capabilities. It is highly recommended to read
+it at least once if you are new to |igraph|. I assume that you have already installed |igraph|; if
+you did not, see :ref:`installing-igraph` first. Familiarity with the Python language is also
+assumed; if this is the first time you are trying to use Python, there are many good Python
+tutorials on the Internet to get you started. If this is the first time you ever try to use a
+programming language, `A Byte of Python <http://swaroopch.com/notes/Python>`_ is a good place to
+start out. If you already have a stable programming background in other languages and you just want
+a quick overview of Python, `Learn Python in 10 minutes <https://www.stavros.io/tutorials/python/>`_
+is probably your best bet.
 
 
 Starting |igraph|
@@ -140,7 +138,7 @@ exception:
 >>> g.add_edges((5, 0))
 Traceback (most recent call last):
   File "<stdin>", line 6, in <module>
-igraph.core.InternalError: Error at ../../src/type_indexededgelist.c:245: cannot add edges, invalid vertex id
+TypeError: iterable must return pairs of integers or strings
 
 Most |igraph| functions will raise an :exc:`igraph.core.InternalError` if
 something goes wrong. The message corresponding to the exception gives you a
@@ -152,9 +150,9 @@ but it is invaluable for |igraph| developers if you think you found an error in
 
 Let us go on with our graph ``g`` and add some more vertices and edges to it:
 
->>> g.add_edges((2,0))
+>>> g.add_edges([(2, 0)])
 >>> g.add_vertices(3)
->>> g.add_edges([(2,3),(3,4),(4,5),(5,3)])
+>>> g.add_edges([(2, 3), (3, 4), (4, 5), (5, 3)])
 >>> print(g)
 IGRAPH U---- 6 7 --
 + edges:
@@ -176,7 +174,7 @@ vertices at its two endpoints, you can use :meth:`~Graph.get_eid` to get the
 edge ID. Remember, all these are *methods* of the :class:`Graph` class and you
 must call them on the appropriate :class:`Graph` instance!
 
->>> g.get_eid(2,3)
+>>> g.get_eid(2, 3)
 3
 >>> g.delete_edges(3)
 >>> summary(g)
@@ -1041,9 +1039,10 @@ long-term plans are to extend this tutorial into a proper manual-style
 documentation to |igraph| in the next chapters. In the meanwhile, check out the
 full `API documentation`_ which should provide information about almost every
 |igraph| class, function or method. A good starting point is the documentation
-of the `Graph class`_. Should you get stuck, drop a mail to the `igraph mailing
-list`_ - maybe there is someone out there who can help you out immediately.
+of the `Graph class`_. Should you get stuck, try asking in our
+`Discourse group`_ first - maybe there is someone out there who can help you
+out immediately.
 
-.. _API documentation: http://igraph.org/python/doc/igraph-module.html
-.. _Graph class: http://igraph.org/python/doc/igraph.Graph-class.html
-.. _igraph mailing list: http://lists.nongnu.org/mailman/listinfo/igraph-help
+.. _API documentation: https://igraph.org/python/doc/igraph-module.html
+.. _Graph class: https://igraph.org/python/doc/igraph.Graph-class.html
+.. _Discourse group: https://igraph.discourse.group

@@ -82,14 +82,18 @@ class DefaultVertexDrawer(AbstractCairoVertexDrawer):
             label_size  = 14.0
             position = dict(func=self.layout.__getitem__)
             shape = ("circle", ShapeDrawerDirectory.resolve_default)
-            size  = 20.0
+            size = 20.0
+            width = None
+            height = None
         return VisualVertexBuilder
 
     def draw(self, visual_vertex, vertex, coords):
         context = self.context
 
-        visual_vertex.shape.draw_path(context, \
-                coords[0], coords[1], visual_vertex.size)
+        width = visual_vertex.width if visual_vertex.width is not None else visual_vertex.size
+        height = visual_vertex.height if visual_vertex.height is not None else visual_vertex.size
+
+        visual_vertex.shape.draw_path(context, coords[0], coords[1], width, height)
         context.set_source_rgba(*visual_vertex.color)
         context.fill_preserve()
         context.set_source_rgba(*visual_vertex.frame_color)

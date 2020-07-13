@@ -11,6 +11,7 @@ to do so. In almost all cases, you are better off with calling
 from cStringIO import StringIO
 from igraph.datatypes import UniqueIdGenerator
 
+import re
 import tokenize
 import token
 
@@ -205,9 +206,9 @@ def construct_graph_from_formula(cls, formula = None, attr = "name",
 
     vertex_ids, edges, directed = UniqueIdGenerator(), [], False
     # Loop over each part in the formula
-    for part in formula.split(","):
-        # Drop newlines from the part
-        part = part.strip().replace("\n", "").replace("\t", "")
+    for part in re.compile(r"[,\n]").split(formula):
+        # Strip leading and trailing whitespace in the part
+        part = part.strip()
         # Parse the first vertex specification from the formula
         for start_names, end_names, arrowheads in generate_edges(part):
             start_ids = [vertex_ids[name] for name in start_names]

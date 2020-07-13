@@ -8,7 +8,12 @@ doc/api/
 igraph/*.so
 *.egg-info/
 .python-version
+.eggs/
 .tox
+.venv/
 docker/wheelhouse
+vendor/build/
+vendor/install/
 Pipfile
+Pipfile.lock
 

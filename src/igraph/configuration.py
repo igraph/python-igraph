@@ -151,16 +151,6 @@ class Configuration(object):
           vertices automatically if they don't fit within the vertex.
           Default: C{False}.
 
-    Remote repository settings
-    --------------------------
-
-    These settings specify how igraph should access remote graph repositories.
-    Currently only the Nexus repository is supported. All these settings are
-    stored in section C{remote}.
-
-        - B{nexus.url}: the root URL of the Nexus repository. Default:
-          C{http://nexus.igraph.org}.
-
     Shell settings
     --------------
 
@@ -271,10 +261,6 @@ class Configuration(object):
         "plotting.wrap_labels": {
             "default": False,
             "type": "boolean"
-        },
-
-        "remote.nexus.url": {
-            "default": "http://nexus.igraph.org"
         },
 
         "shell.ipython.inlining.Plot": {
