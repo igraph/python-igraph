@@ -1742,6 +1742,182 @@ class Graph(GraphBase):
     #############################################
     # Auxiliary I/O functions
 
+    def to_networkx(self):
+        """Converts the graph to networkx format"""
+        import networkx as nx
+
+        # Graph: decide on directness and mutliplicity
+        if any(self.is_multiple()):
+            if self.is_directed():
+                klass = nx.MultiDiGraph
+            else:
+                klass = nx.MultiGraph
+        else:
+            if self.is_directed():
+                klass = nx.DiGraph
+            else:
+                klass = nx.Graph
+
+        # Graph attributes
+        kw = {x: self[x] for x in self.attributes()}
+        g = klass(**kw)
+
+        # Nodes and node attributes
+        for i, v in enumerate(self.vs):
+            g.add_node(i, **v.attributes())
+
+        # Edges and edge attributes
+        for edge in self.es:
+            g.add_edge(edge.source, edge.target, **edge.attributes())
+
+        return g
+
+    @classmethod
+    def from_networkx(klass, g):
+        """Converts the graph from networkx
+
+        Vertex names will be converted to "_nx_name" attribute and the vertices
+        will get new ids from 0 up (as standard in igraph).
+
+        @param g: networkx Graph or DiGraph
+        """
+        import networkx as nx
+
+        # Graph attributes
+        gattr = dict(g.graph)
+
+        # Nodes
+        vnames = list(g.nodes)
+        vattr = {'_nx_name': vnames}
+        vcount = len(vnames)
+        vd = {v: i for i, v in enumerate(vnames)}
+
+        # NOTE: we do not need a special class for multigraphs, it is taken
+        # care for at the edge level rather than at the graph level.
+        graph = klass(
+            n=vcount,
+            directed=g.is_directed(),
+            graph_attrs=gattr,
+            vertex_attrs=vattr)
+
+        # Node attributes
+        for v, datum in g.nodes.data():
+            for key, val in datum.items():
+                graph.vs[vd[v]][key] = val
+
+        # Edges and edge attributes
+        # NOTE: we need to do both together to deal well with multigraphs
+        # Each e might have a length of 2 (graphs) or 3 (multigraphs, the
+        # third element is the "color" of the edge)
+        for e, (_, _, datum) in zip(g.edges, g.edges.data()):
+            eid = graph.add_edge(vd[e[0]], vd[e[1]])
+            for key, val in datum.items():
+                eid[key] = val
+
+        return graph
+
+    def to_graph_tool(
+            self,
+            graph_attributes=None,
+            vertex_attributes=None,
+            edge_attributes=None):
+        """Converts the graph to graph-tool
+
+        @param graph_attributes: dictionary of graph attributes to transfer.
+          Keys are attributes from the graph, values are data types (see
+          below). C{None} means no graph attributes are transferred.
+        @param vertex_attributes: dictionary of vertex attributes to transfer.
+          Keys are attributes from the vertices, values are data types (see
+          below). C{None} means no vertex attributes are transferred.
+        @param edge_attributes: dictionary of edge attributes to transfer.
+          Keys are attributes from the edges, values are data types (see
+          below). C{None} means no vertex attributes are transferred.
+
+        Data types: graph-tool only accepts specific data types. See the
+        following web page for a list:
+
+        https://graph-tool.skewed.de/static/doc/quickstart.html
+
+        NOTE: because of the restricted data types in graph-tool, vertex and
+        edge attributes require to be type-consistent across all vertices or
+        edges. If you set the property for only some vertices/edges, the other
+        will be tagged as None in python-igraph, so they can only be converted
+        to graph-tool with the type 'object' and any other conversion will
+        fail.
+        """
+        import graph_tool as gt
+
+        # Graph
+        g = gt.Graph(directed=self.is_directed())
+
+        # Nodes
+        vc = self.vcount()
+        g.add_vertex(vc)
+
+        # Graph attributes
+        if graph_attributes is not None:
+            for x, dtype in graph_attributes.items():
+                # Strange syntax for setting internal properties
+                gprop = g.new_graph_property(str(dtype))
+                g.graph_properties[x] = gprop
+                g.graph_properties[x] = self[x]
+
+        # Vertex attributes
+        if vertex_attributes is not None:
+            for x, dtype in vertex_attributes.items():
+                # Create a new vertex property
+                g.vertex_properties[x] = g.new_vertex_property(str(dtype))
+                # Fill the values from the igraph.Graph
+                for i in range(vc):
+                    g.vertex_properties[x][g.vertex(i)] = self.vs[i][x]
+
+        # Edges and edge attributes
+        if edge_attributes is not None:
+            for x, dtype in edge_attributes.items():
+                g.edge_properties[x] = g.new_edge_property(str(dtype))
+        for edge in self.es:
+            e = g.add_edge(edge.source, edge.target)
+            if edge_attributes is not None:
+                for x, dtype in edge_attributes.items():
+                    prop = edge.attributes().get(x, None)
+                    g.edge_properties[x][e] = prop
+
+        return g
+
+    @classmethod
+    def from_graph_tool(klass, g):
+        """Converts the graph from graph-tool
+
+        @param g: graph-tool Graph
+        """
+        # Graph attributes
+        gattr = dict(g.graph_properties)
+
+        # Nodes
+        vcount = g.num_vertices()
+
+        # Graph
+        graph = klass(
+            n=vcount,
+            directed=g.is_directed(),
+            graph_attrs=gattr)
+
+        # Node attributes
+        for key, val in g.vertex_properties.items():
+            prop = val.get_array()
+            for i in range(vcount):
+                graph.vs[i][key] = prop[i]
+
+        # Edges
+        # NOTE: the order the edges are put in is necessary to set the
+        # attributes later on
+        for e in g.edges():
+            edge = graph.add_edge(int(e.source()), int(e.target()))
+            for key, val in g.edge_properties.items():
+                edge[key] = val[e]
+
+        return graph
+
     def write_adjacency(self, f, sep=" ", eol="\n", *args, **kwds):
         """Writes the adjacency matrix of the graph to the given file
 
