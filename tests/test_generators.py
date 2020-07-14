@@ -1,6 +1,12 @@
 import unittest
 from igraph import *
 
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
+
 class GeneratorTests(unittest.TestCase):
     def testStar(self):
         g=Graph.Star(5, "in")
@@ -164,13 +170,8 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(el == [(0,1), (0,2), (1,0), (3,1)])
         self.assertTrue(g.es["w0"] == [1, 2, 2, 1])
 
+    @unittest.skipIf(pd is None, "test case depends on Pandas")
     def testDataFrame(self):
-        try:
-            import pandas as pd
-        except ImportError:
-            print('pandas not found, skipping')
-            return
-
         edges = pd.DataFrame(
             [['A', 'B', 0.1], ['C', 'A', 0.4]],
             columns=[0, 1, 'weight'])
