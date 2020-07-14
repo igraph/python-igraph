@@ -164,6 +164,28 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(el == [(0,1), (0,2), (1,0), (3,1)])
         self.assertTrue(g.es["w0"] == [1, 2, 2, 1])
 
+    def testDataFrame(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            print('pandas not found, skipping')
+            return
+
+        edges = pd.DataFrame(
+            [['A', 'B', 0.1], ['C', 'A', 0.4]],
+            columns=[0, 1, 'weight'])
+
+        vertices = pd.DataFrame(
+            [['A', 'blue'], ['B', 'yellow'], ['C', 'blue']],
+            columns=[0, 'color'])
+
+        g = Graph.DataFrame(edges, directed=False)
+        self.assertTrue(g.es["weight"] == [0.1, 0.4])
+
+        g = Graph.DataFrame(edges, directed=True, vertices=vertices)
+        self.assertTrue(g.es["weight"] == [0.1, 0.4])
+        self.assertTrue(g.vs["color"] == ['blue', 'yellow', 'blue'])
+
         
 def suite():
     generator_suite = unittest.makeSuite(GeneratorTests)
