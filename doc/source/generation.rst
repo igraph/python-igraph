@@ -49,9 +49,25 @@ If you don't specify a format, |igraph| will try to figure it out or, if that fa
 
 From external libraries
 +++++++++++++++++++++++
-|igraph| can read from and write to `networkx`_ and `graph-tool`_ formats:
+|igraph| can read from and write to `networkx`_ and `graph-tool`_ graph formats:
 
 >>> g = Graph.from_networkx(nwx)
+
+and
+
+>>> g = Graph.from_graph_tool(gt)
+
+From pandas DataFrame(s)
+++++++++++++++++++++++++
+A common practice is to store edges in a `pandas.DataFrame`, where the two first columns are the source and target vertex ids,
+and any additional column indicates edge attributes. You can generate a graph via :meth:`Graph.DataFrame`:
+
+>>> g = Graph.DataFrame(edges, directed=False)
+
+It is possible to set vertex attributes at the same time via a separate DataFrame. The first column is assumed to contain all
+vertex ids (including any vertices without edges) and any additional columns are vertex attributes:
+
+>>> g = Graph.DataFrame(edges, directed=False, vertices=vertices)
 
 From a formula
 ++++++++++++++
@@ -91,9 +107,9 @@ Lattice
 
 creates a 3x3 grid in two dimensions (9 vertices total). `circular` is used to connect each edge of the lattice back onto the other side, a process also known as "periodic boundary condition" that is sometimes helpful to smoothen out edge effects.
 
-The one dimensional, circular case (a ring) is important enough to deserve its own constructor :meth:`Graph.Ring`.
+The one dimensional case (path graph or ring) is important enough to deserve its own constructor :meth:`Graph.Ring`, which can be circular or not:
 
-.. note:: The line graph is a one dimensional, non-circular lattice, and can be also constructed as a non-circular ring.
+>>> g = Graph.Ring(n=4, circular=False)
 
 Graph atlas
 +++++++++++
@@ -133,10 +149,10 @@ Stochastic graphs can be created according to several different models or games:
  - preference, the non-growing variant of establishment :meth:`Graph.Preference`
  - asymmetric preference :meth:`Graph.Asymmetric_Prefernce`
  - recent degree :meth:`Graph.Recent_Degree`
- - K-regular (each node has degree K) :meth:`Graph.K_Regular`
+ - k-regular (each node has degree K) :meth:`Graph.K_Regular`
  - non-growing graph with edge probabilities proportional to node fitnesses :meth:`Graph.Static_Fitness`
- - non-growing graph with prescribed power-law degree distributions :meth:`Graph.Static_Power_Law`
- - in agreement with a sequence of degrees :meth:`Graph.Degree_Sequence`
+ - non-growing graph with prescribed power-law degree distribution(s) :meth:`Graph.Static_Power_Law`
+ - random graph with a given degree sequence :meth:`Graph.Degree_Sequence`
  - bipartite :meth:`Graph.Random_Bipartite`
 
 
@@ -148,6 +164,5 @@ Finally, there are some ways of generating graphs that are not covered by the pr
  - De Bruijn graphs :meth:`Graph.De_Bruijn`
  - Lederberg-Coxeter-Frucht graphs :meth:`Graph.LCF`
  - graphs with a specified isomorphy class :meth:`Graph.Isoclass`
- - 
                      
 .. _API documentation: https://igraph.org/python/doc/igraph-module.html
