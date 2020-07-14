@@ -40,7 +40,7 @@ LIBIGRAPH_FALLBACK_LIBRARY_DIRS = []
 
 
 def building_on_windows_msvc():
-    """Returns True when using the non-MingW CPython interpreter on Windows"""
+    """Returns True when using the non-MinGW CPython interpreter on Windows"""
     return platform.system() == "Windows" and sysconfig.get_platform() != "mingw"
 
 
