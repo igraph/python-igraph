@@ -53,6 +53,14 @@ From external libraries
 
 >>> g = Graph.from_networkx(nwx)
 
+From a formula
+++++++++++++++
+To create a graph from a string formula, use :meth:`Graph.Formula`, e.g.:
+
+>>> g = Graph.Formula('D-A:B:F:G, A-C-F-A, B-E-G-B, A-B, F-G, H-F:G, H-I-J')
+
+.. note:: This particular formula also assigns the 'name' attribute to vertices.
+
 Full graphs
 +++++++++++
 To create a full graph, use :meth:`Graph.Full`:
