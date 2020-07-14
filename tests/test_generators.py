@@ -173,19 +173,19 @@ class GeneratorTests(unittest.TestCase):
     @unittest.skipIf(pd is None, "test case depends on Pandas")
     def testDataFrame(self):
         edges = pd.DataFrame(
-            [['A', 'B', 0.1], ['C', 'A', 0.4]],
+            [['C', 'A', 0.4], ['A', 'B', 0.1]],
             columns=[0, 1, 'weight'])
+
+        g = Graph.DataFrame(edges, directed=False)
+        self.assertTrue(g.es["weight"] == [0.1, 0.4])
 
         vertices = pd.DataFrame(
             [['A', 'blue'], ['B', 'yellow'], ['C', 'blue']],
             columns=[0, 'color'])
 
-        g = Graph.DataFrame(edges, directed=False)
-        self.assertTrue(g.es["weight"] == [0.1, 0.4])
-
         g = Graph.DataFrame(edges, directed=True, vertices=vertices)
-        self.assertTrue(g.es["weight"] == [0.1, 0.4])
         self.assertTrue(g.vs["color"] == ['blue', 'yellow', 'blue'])
+        self.assertTrue(g.es["weight"] == [0.4, 0.1])
 
         
 def suite():
