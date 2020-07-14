@@ -2894,7 +2894,7 @@ class Graph(GraphBase):
             if names.duplicated().any():
                 raise ValueError('Vertex names must be unique')
 
-            if np.setdiff1d(names_edges, names.values):
+            if len(np.setdiff1d(names_edges, names.values)):
                 raise ValueError(
                     'Some vertices in the edge DataFrame are missing from vertices DataFrame')
 
