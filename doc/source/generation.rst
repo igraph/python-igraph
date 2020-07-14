@@ -7,8 +7,8 @@ The :class:`Graph` class is the main object used to generate graphs:
 
 >>> from igraph import Graph
 
-General graph from nodes and edges
-++++++++++++++++++++++++++++++++++
+From nodes and edges
+++++++++++++++++++++
 Nodes are always numbered from 0 upwards. To create a generic graph with a specified number of nodes (e.g. 10) and a list of edges between them, you can use the generic constructor:
 
 >>> g = Graph(n=10, edges=[[0, 1], [2, 3]])
@@ -23,13 +23,21 @@ To specify edge weights (or any other vertex/edge attributes), use dictionaries:
 >>>           edge_attrs={'weight': [0.1, 0.2]},
 >>>           vertex_attrs={'color': ['b', 'g', 'g', 'y']})
 
-From adjecency matrix
-+++++++++++++++++++++
+Variations on this constructor is :meth:`Graph.DictList`, which constructs a graph from a list-of-dictionaries representation, and :meth:`Graph.TupleList`, which constructs a graph from a list-of-tuples representation.
+
+To create a bipartite graph from a list of types and a list of edges, use :meth:`Graph.Bipartite`.
+
+From matrices
++++++++++++++
 To create a graph from an adjecency matrix, use :meth:`Graph.Adjacency` or, for weighted matrices, :meth:`Graph.Weighted_Adjacency`:
 
->>> g = igraph.Graph.Adjacency([[0, 1, 1], [0, 0, 0], [0, 0, 1]])
+>>> g = Graph.Adjacency([[0, 1, 1], [0, 0, 0], [0, 0, 1]])
 
 This graph is directed and has edges `[0, 1]`, `[0, 2]` and `[2, 2]` (a loop).
+
+To create a bipartite graph from an incidence matrix, use :meth:`Graph.Incidence`:
+
+>>> g = Graph.Incidence([[0, 1, 1], [1, 1, 0]])
 
 From file
 +++++++++
@@ -38,6 +46,12 @@ To load a graph from a preexisting file in any of the supported formats, use :me
 >>> g = Graph.Load('myfile.gml', format='gml')
 
 If you don't specify a format, |igraph| will try to figure it out or, if that fails, it will complain.
+
+From external libraries
++++++++++++++++++++++++
+|igraph| can read from and write to `networkx`_ and `graph-tool`_ formats:
+
+>>> g = Graph.from_networkx(nwx)
 
 Full graphs
 +++++++++++
@@ -69,7 +83,9 @@ Lattice
 
 creates a 3x3 grid in two dimensions (9 vertices total). `circular` is used to connect each edge of the lattice back onto the other side, a process also known as "periodic boundary condition" that is sometimes helpful to smoothen out edge effects.
 
-.. note:: The line graph is a one dimensional, non-circular lattice.
+The one dimensional, circular case (a ring) is important enough to deserve its own constructor :meth:`Graph.Ring`.
+
+.. note:: The line graph is a one dimensional, non-circular lattice, and can be also constructed as a non-circular ring.
 
 Graph atlas
 +++++++++++
@@ -98,10 +114,10 @@ Random graphs
 +++++++++++++
 Stochastic graphs can be created according to several different models or games:
 
- - bipartite :meth:`Graph.Random_Bipartite`
  - Barabasi-Albert model: :meth:`Graph.Barabasi`
  - Erdos-Renyi: :meth:`Graph.Erdos_Renyi`
  - Watts-Strogatz :meth:`Graph.Watts_Strogatz`
+ - stochastic block model :meth:`Graph.SBM`
  - forest fire game :meth:`Graph.Forest_Fire`
  - random geometric graph :meth:`Graph.GRG`
  - growing :meth:`Graph.Growing_Random`
@@ -109,10 +125,21 @@ Stochastic graphs can be created according to several different models or games:
  - preference, the non-growing variant of establishment :meth:`Graph.Preference`
  - asymmetric preference :meth:`Graph.Asymmetric_Prefernce`
  - recent degree :meth:`Graph.Recent_Degree`
- - non-growing graph with edge probabilities proportional to node
-fitnesses :meth:`Graph.Static_Fitness`
+ - K-regular (each node has degree K) :meth:`Graph.K_Regular`
+ - non-growing graph with edge probabilities proportional to node fitnesses :meth:`Graph.Static_Fitness`
  - non-growing graph with prescribed power-law degree distributions :meth:`Graph.Static_Power_Law`
  - in agreement with a sequence of degrees :meth:`Graph.Degree_Sequence`
+ - bipartite :meth:`Graph.Random_Bipartite`
 
 
+Other graphs
+++++++++++++
+Finally, there are some ways of generating graphs that are not covered by the previous sections:
+
+ - Kautz graphs :meth:`Graph.Kautz`
+ - De Bruijn graphs :meth:`Graph.De_Bruijn`
+ - Lederberg-Coxeter-Frucht graphs :meth:`Graph.LCF`
+ - graphs with a specified isomorphy class :meth:`Graph.Isoclass`
+ - 
+                     
 .. _API documentation: https://igraph.org/python/doc/igraph-module.html
