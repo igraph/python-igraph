@@ -2901,10 +2901,7 @@ class Graph(GraphBase):
             names = names.values
 
         # create graph
-        g = Graph(0, directed=directed)
-
-        # add vertices
-        g.add_vertices(len(names))
+        g = Graph(n=len(names), directed=directed)
 
         # vertex attributes
         if vertices is not None:
