@@ -33,6 +33,7 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 # W0401: wildcard import
 from igraph._igraph import *
 
+from collections import defaultdict, Counter
 from warnings import warn
 
 
@@ -84,8 +85,10 @@ def union(graphs, byname='auto'):
     if ngr == 0:
         return None
     if ngr == 1:
-        return graphs[0]
+        return graphs[0].copy()
     # Now there are at least two graphs
+
+    # TODO: edgemap??
 
     if byname:
         allnames = [g.vs['name'] for g in graphs]
@@ -113,12 +116,54 @@ def union(graphs, byname='auto'):
     gu = newgraphs[0].union(newgraphs[1:])
 
     # Graph attributes
-    # TODO
+    a_first = {}
+    a_num = set()
+    for ig, g in enumerate(newgraphs, 1):
+        for an in g.attributes():
+            av = g[an]
+            # No conflicts
+            if an not in gu.attributes:
+                a_first[an] = ig
+                gu[an] = av
+                continue
+            if gu[an] == av:
+                continue
+            if an not in a_num:
+                # New conflict
+                a_num.add(an)
+                igf = a_first[an]
+                gu[f'{an}_{igf}'] = gu.pop(an)
+            gu[f'{an}_{ig}'] = av
 
     # Vertex attributes
-    # TODO
+    attrs = set([g.vertex_attributes() for g in newgraphs])
+    nve = gu.vcounts()
+    for an in attrs:
+        # Check for conflicts at at least one vertex
+        conflict = False
+        vals = [None for i in range(nve)]
+        for g in newgraphs:
+            if an in g.vertex_attributes():
+                for i, avi in enumerate(g.vs[an]):
+                    if vals[i] is None:
+                        vals[i] = avi
+                    elif vals[i] != avi:
+                        conflict = True
+                        break
+            if conflict:
+                break
+
+        if not conflict:
+            gu.vs[an] = vals
+            continue
+
+        # There is a conflict, name after the graph number
+        for ig, g in enumerate(newgraphs, 1):
+            if an in g.vertex_attributes():
+                gu.vs[f'{an}_{ig}'] = g.vs[an]
 
     # Edge attributes
+    # We need a map from the original edges to the union edges to do this
     # TODO
 
     return gu
@@ -174,7 +219,7 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
     if ngr == 0:
         return None
     if ngr == 1:
-        return graphs[0]
+        return graphs[0].copy()
     # Now there are at least two graphs
 
     if byname:
