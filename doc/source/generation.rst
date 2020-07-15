@@ -163,6 +163,6 @@ Finally, there are some ways of generating graphs that are not covered by the pr
  - Kautz graphs :meth:`Graph.Kautz`
  - De Bruijn graphs :meth:`Graph.De_Bruijn`
  - Lederberg-Coxeter-Frucht graphs :meth:`Graph.LCF`
- - graphs with a specified isomorphy class :meth:`Graph.Isoclass`
+ - graphs with a specified isomorphism class :meth:`Graph.Isoclass`
                      
 .. _API documentation: https://igraph.org/python/doc/igraph-module.html
