@@ -113,6 +113,7 @@ def union(graphs, byname='auto'):
     else:
         newgraphs = graphs
 
+    # How are edges mapped around??
     gu = newgraphs[0].union(newgraphs[1:])
 
     # Graph attributes
@@ -136,7 +137,7 @@ def union(graphs, byname='auto'):
             gu[f'{an}_{ig}'] = av
 
     # Vertex attributes
-    attrs = set([g.vertex_attributes() for g in newgraphs])
+    attrs = set([g.vertex_attributes() for g in newgraphs]) - set(['name'])
     nve = gu.vcounts()
     for an in attrs:
         # Check for conflicts at at least one vertex
