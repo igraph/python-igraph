@@ -2873,12 +2873,13 @@ class Graph(GraphBase):
 
         # Handle if some elements are 'NA'
         if edges.iloc[:, :2].isna().values.any():
-            warn("In `d' `NA' elements were replaced with string \"NA\"")
+            warn("In 'edges' NA elements were replaced with string \"NA\"")
             edges = edges.copy()
             edges.iloc[:, :2].fillna('NA', inplace=True)
 
         if (vertices is not None) and vertices.iloc[:, 0].isna().values.any():
-            warn("In `vertices.iloc[:, 0]` `NA' elements were replaced with string \"NA\"")
+            warn("In the fist column of 'vertices' NA elements were replaced "+
+                 "with string \"NA\"")
             vertices = vertices.copy()
             vertices.iloc[:, 0].fillna('NA', inplace=True)
 
