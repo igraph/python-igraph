@@ -14825,7 +14825,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"canonical_permutation",
    (PyCFunction) igraphmodule_Graph_canonical_permutation,
    METH_VARARGS | METH_KEYWORDS,
-   "canonical_permutation(sh=\"fm\")\n\n"
+   "canonical_permutation(sh=\"fm\", color=None)\n\n"
    "Calculates the canonical permutation of a graph using the BLISS isomorphism\n"
    "algorithm.\n\n"
    "Passing the permutation returned here to L{Graph.permute_vertices()} will\n"
