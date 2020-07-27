@@ -369,7 +369,7 @@ the vertex) and :dfn:`out-degree` (the number of edges originating from the vert
 [3, 1, 4, 3, 2, 3, 2]
 
 If the graph was directed, we would have been able to calculate the in- and out-degrees
-separately using ``g.degree(type="in")`` and ``g.degree(type="out")``. You can
+separately using ``g.degree(mode="in")`` and ``g.degree(mode="out")``. You can
 also pass a single vertex ID or a list of vertex IDs to :meth:`~Graph.degree` if you
 want to calculate the degrees for only a subset of vertices:
 
