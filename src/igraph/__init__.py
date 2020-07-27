@@ -2878,7 +2878,7 @@ class Graph(GraphBase):
             edges.iloc[:, :2].fillna('NA', inplace=True)
 
         if (vertices is not None) and vertices.iloc[:, 0].isna().values.any():
-            warn("In the fist column of 'vertices' NA elements were replaced "+
+            warn("In the first column of 'vertices' NA elements were replaced "+
                  "with string \"NA\"")
             vertices = vertices.copy()
             vertices.iloc[:, 0].fillna('NA', inplace=True)

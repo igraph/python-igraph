@@ -172,7 +172,7 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(el == [(0,1), (0,2), (1,0), (3,1)])
         self.assertTrue(g.es["w0"] == [1, 2, 2, 1])
 
-    @unittest.skipIf((np is None) or (pd is None), "test case depends on numpy/Pandas")
+    @unittest.skipIf((np is None) or (pd is None), "test case depends on NumPy/Pandas")
     def testDataFrame(self):
         edges = pd.DataFrame(
             [['C', 'A', 0.4], ['A', 'B', 0.1]],
