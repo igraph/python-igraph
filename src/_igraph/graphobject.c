@@ -2573,7 +2573,7 @@ PyObject *igraphmodule_Graph_Incidence(PyTypeObject * type,
 }
 
 /** \ingroup python_interface_graph
- * \brief Generates a graph with a given isomorphy class
+ * \brief Generates a graph with a given isomorphism class
  * This is intended to be a class method in Python, so the first argument
  * is the type object and not the Python igraph object (because we have
  * to allocate that in this method).
@@ -8306,7 +8306,7 @@ PyObject *igraphmodule_Graph_canonical_permutation(
 }
 
 /** \ingroup python_interface_graph
- * \brief Calculates the isomorphy class of a graph or its subgraph
+ * \brief Calculates the isomorphism class of a graph or its subgraph
  * \sa igraph_isoclass, igraph_isoclass_subgraph
  */
 PyObject *igraphmodule_Graph_isoclass(igraphmodule_GraphObject * self,
@@ -12738,9 +12738,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"Isoclass", (PyCFunction) igraphmodule_Graph_Isoclass,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Isoclass(n, class, directed=False)\n\n"
-   "Generates a graph with a given isomorphy class.\n\n"
+   "Generates a graph with a given isomorphism class.\n\n"
    "@param n: the number of vertices in the graph (3 or 4)\n"
-   "@param class: the isomorphy class\n"
+   "@param class: the isomorphism class\n"
    "@param directed: whether the graph should be directed.\n"},
 
   /* interface to igraph_watts_strogatz_game */
@@ -14037,7 +14037,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  motifs.\n"
    "@param callback: C{None} or a callable that will be called for every motif\n"
    "  found in the graph. The callable must accept three parameters: the graph\n"
-   "  itself, the list of vertices in the motif and the isomorphy class of the\n"
+   "  itself, the list of vertices in the motif and the isomorphism class of the\n"
    "  motif (see L{Graph.isoclass()}). The search will stop when the callback\n"
    "  returns an object with a non-zero truth value or raises an exception.\n"
    "@return: the list of motifs if I{callback} is C{None}, or C{None} otherwise\n"
@@ -14853,13 +14853,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"isoclass", (PyCFunction) igraphmodule_Graph_isoclass,
    METH_VARARGS | METH_KEYWORDS,
    "isoclass(vertices)\n\n"
-   "Returns the isomorphy class of the graph or its subgraph.\n\n"
+   "Returns the isomorphism class of the graph or its subgraph.\n\n"
    "Isomorphy class calculations are implemented only for graphs with\n"
    "3 or 4 vertices.\n\n"
    "@param vertices: a list of vertices if we want to calculate the\n"
-   "  isomorphy class for only a subset of vertices. C{None} means to\n"
+   "  isomorphism class for only a subset of vertices. C{None} means to\n"
    "  use the full graph.\n"
-   "@return: the isomorphy class of the (sub)graph\n\n"},
+   "@return: the isomorphism class of the (sub)graph\n\n"},
   {"isomorphic", (PyCFunction) igraphmodule_Graph_isomorphic,
    METH_VARARGS | METH_KEYWORDS,
    "isomorphic(other)\n\n"
