@@ -3026,6 +3026,85 @@ class Graph(GraphBase):
                     edge[weight_attr] = mat[target][source - num_vertices_of_first_kind]
         return result
 
+    @classmethod
+    def DataFrame(klass, edges, directed=True, vertices=None):
+        """DataFrame(directed=True, vertices=None)
+
+        Generates a graph from one or two dataframes.
+
+        @param edges: pandas DataFrame containing edges and metadata
+        @param directed: bool setting whether the graph is directed
+        @param vertices: None (default) or pandas DataFrame containing vertex
+          metadata. The first column must contain the unique ids of the
+          vertices and will be set as attribute 'name'. All other columns
+          will be added as vertex attributes by column name.
+
+        @return: the graph
+        """
+        import numpy as np
+        import pandas as pd
+
+        if edges.shape[1] < 2:
+            raise ValueError("the data frame should contain at least two columns")
+
+        # Handle if some elements are 'NA'
+        if edges.iloc[:, :2].isna().values.any():
+            warn("In 'edges' NA elements were replaced with string \"NA\"")
+            edges = edges.copy()
+            edges.iloc[:, :2].fillna('NA', inplace=True)
+
+        if (vertices is not None) and vertices.iloc[:, 0].isna().values.any():
+            warn("In the first column of 'vertices' NA elements were replaced "+
+                 "with string \"NA\"")
+            vertices = vertices.copy()
+            vertices.iloc[:, 0].fillna('NA', inplace=True)
+
+        names = np.unique(edges.values[:, :2])
+
+        if vertices is not None:
+            names_edges = names
+            if vertices.shape[1] < 1:
+                raise ValueError('vertices has no columns')
+
+            names = vertices.iloc[:, 0].astype(str)
+
+            if names.duplicated().any():
+                raise ValueError('Vertex names must be unique')
+
+            if len(np.setdiff1d(names_edges, names.values)):
+                raise ValueError(
+                    'Some vertices in the edge DataFrame are missing from vertices DataFrame')
+
+            names = names.values
+
+        # create graph
+        g = Graph(n=len(names), directed=directed)
+
+        # vertex attributes
+        if vertices is not None:
+            cols = vertices.columns
+            for v, (_, attr) in zip(g.vs, vertices.iterrows()):
+                v['name'] = attr[cols[0]]
+                if len(cols) > 1:
+                    for an in cols[1:]:
+                        v[an] = attr[an]
+
+        # create edge list
+        names_idx = pd.Series(index=names, data=np.arange(len(names)))
+        e0 = names_idx[edges.values[:, 0]]
+        e1 = names_idx[edges.values[:, 1]]
+
+        # add the edges
+        g.add_edges(zip(e0, e1))
+
+        # edge attributes
+        if edges.shape[1] > 2:
+            for e, (_, attr) in zip(g.es, edges.iloc[:, 2:]):
+                for an, av in attr.items():
+                    e[an] = av
+
+        return g
+
     def bipartite_projection(self, types="type", multiplicity=True, probe1=-1,
             which="both"):
         """Projects a bipartite graph into two one-mode graphs. Edge directions
