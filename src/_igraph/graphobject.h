@@ -192,7 +192,7 @@ PyObject* igraphmodule_Graph_compose(igraphmodule_GraphObject* self, PyObject* o
 PyObject* igraphmodule_Graph_difference(igraphmodule_GraphObject* self, PyObject* other);
 PyObject* igraphmodule_Graph_disjoint_union(igraphmodule_GraphObject* self, PyObject* other);
 PyObject* igraphmodule_Graph_intersection(igraphmodule_GraphObject* self, PyObject* other);
-PyObject* igraphmodule_Graph_union(igraphmodule_GraphObject* self, PyObject* other);
+PyObject* igraphmodule_Graph_union(igraphmodule_GraphObject* self, PyObject* args, PyObject * kwds);
 
 PyObject* igraphmodule_Graph_bfs(igraphmodule_GraphObject* self, PyObject* args, PyObject* kwds);
 PyObject* igraphmodule_Graph_bfsiter(igraphmodule_GraphObject* self, PyObject* args, PyObject* kwds);

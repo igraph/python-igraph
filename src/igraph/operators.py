@@ -88,8 +88,6 @@ def union(graphs, byname='auto'):
         return graphs[0].copy()
     # Now there are at least two graphs
 
-    # TODO: edgemap??
-
     if byname:
         allnames = [g.vs['name'] for g in graphs]
         uninames = list(set.union(*(set(an) for an in allnames)))
@@ -113,8 +111,14 @@ def union(graphs, byname='auto'):
     else:
         newgraphs = graphs
 
-    # How are edges mapped around??
-    gu = newgraphs[0].union(newgraphs[1:])
+    # If any graph has any edge attributes, we need edgemaps
+    edgemaps = any(len(g.edge_attributes()) for g in graphs)
+    res = newgraphs[0].union(newgraphs[1:], edgemaps)
+    if edgemaps:
+        gu = res['graph']
+        maps = res['edgemaps']
+    else:
+        gu = res
 
     # Graph attributes
     a_first = {}
@@ -164,8 +168,8 @@ def union(graphs, byname='auto'):
                 gu.vs[f'{an}_{ig}'] = g.vs[an]
 
     # Edge attributes
-    # We need a map from the original edges to the union edges to do this
-    # TODO
+    if edgemaps:
+        # TODO: apply the edgemaps
 
     return gu
 
