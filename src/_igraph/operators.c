@@ -35,8 +35,10 @@ PyObject *igraphmodule__union(PyObject *self,
   static char* kwlist[] = { "graphs", "edgemaps", NULL };
   PyObject *it, *em_list, *graphs, *with_edgemaps_o;
   int with_edgemaps = 0;
+  long int no_of_graphs;
   igraphmodule_GraphObject *o;
   PyObject *result;
+  PyTypeObject *result_type;
   igraph_t g;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist,
@@ -60,12 +62,13 @@ PyObject *igraphmodule__union(PyObject *self,
     Py_DECREF(it);
     return igraphmodule_handle_igraph_error();
   }
-  if (igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t(it, &gs)) {
+  if (igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t_with_type(it, &gs, &result_type)) {
     Py_DECREF(it);
     igraph_vector_ptr_destroy(&gs);
     return NULL;
   }
   Py_DECREF(it);
+  no_of_graphs = (long int) igraph_vector_ptr_size(&gs);
 
   /* prepare edgemaps if requested */
   if (with_edgemaps) {
@@ -81,11 +84,8 @@ PyObject *igraphmodule__union(PyObject *self,
     return NULL;
   }
 
-  igraph_vector_ptr_destroy(&gs);
-
   if (with_edgemaps) {
     long int i;
-    long int no_of_graphs = (long int) igraph_vector_ptr_size(&gs);
     em_list = PyList_New((Py_ssize_t) no_of_graphs);
     Py_INCREF(em_list);
     for (i = 0; i < no_of_graphs; i++) {
@@ -102,10 +102,19 @@ PyObject *igraphmodule__union(PyObject *self,
     igraph_vector_ptr_destroy(edgemaps);
   }
 
+  igraph_vector_ptr_destroy(&gs);
+
   /* this is correct as long as attributes are not copied by the
    * operator. if they are copied, the initialization should not empty
    * the attribute hashes */
-  o = (igraphmodule_GraphObject*) igraphmodule_Graph_from_igraph_t(&g);
+  if (no_of_graphs > 0) {
+    o = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t(
+        result_type,
+        &g);
+  }
+  else {
+    o = (igraphmodule_GraphObject*) igraphmodule_Graph_from_igraph_t(&g);
+  }
 
   if (with_edgemaps) {
     /* wrap in a dictionary */
@@ -134,8 +143,10 @@ PyObject *igraphmodule__intersection(PyObject *self,
   static char* kwlist[] = { "graphs", "edgemaps", NULL };
   PyObject *it, *em_list, *graphs, *with_edgemaps_o;
   int with_edgemaps = 0;
+  long int no_of_graphs;
   igraphmodule_GraphObject *o;
   PyObject *result;
+  PyTypeObject *result_type;
   igraph_t g;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist,
@@ -159,12 +170,13 @@ PyObject *igraphmodule__intersection(PyObject *self,
     Py_DECREF(it);
     return igraphmodule_handle_igraph_error();
   }
-  if (igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t(it, &gs)) {
+  if (igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t_with_type(it, &gs, &result_type)) {
     Py_DECREF(it);
     igraph_vector_ptr_destroy(&gs);
     return NULL;
   }
   Py_DECREF(it);
+  no_of_graphs = (long int) igraph_vector_ptr_size(&gs);
 
   /* prepare edgemaps if requested */
   if (with_edgemaps) {
@@ -180,11 +192,8 @@ PyObject *igraphmodule__intersection(PyObject *self,
     return NULL;
   }
 
-  igraph_vector_ptr_destroy(&gs);
-
   if (with_edgemaps) {
     long int i;
-    long int no_of_graphs = (long int) igraph_vector_ptr_size(&gs);
     em_list = PyList_New((Py_ssize_t) no_of_graphs);
     Py_INCREF(em_list);
     for (i = 0; i < no_of_graphs; i++) {
@@ -201,10 +210,19 @@ PyObject *igraphmodule__intersection(PyObject *self,
     igraph_vector_ptr_destroy(edgemaps);
   }
 
+  igraph_vector_ptr_destroy(&gs);
+
   /* this is correct as long as attributes are not copied by the
    * operator. if they are copied, the initialization should not empty
    * the attribute hashes */
-  o = (igraphmodule_GraphObject*) igraphmodule_Graph_from_igraph_t(&g);
+  if (no_of_graphs > 0) {
+    o = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t(
+        result_type,
+        &g);
+  }
+  else {
+    o = (igraphmodule_GraphObject*) igraphmodule_Graph_from_igraph_t(&g);
+  }
 
   if (with_edgemaps) {
     /* wrap in a dictionary */

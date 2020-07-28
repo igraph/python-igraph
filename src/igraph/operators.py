@@ -129,7 +129,7 @@ def union(graphs, byname='auto'):
         for an in g.attributes():
             av = g[an]
             # No conflicts
-            if an not in gu.attributes:
+            if an not in gu.attributes():
                 a_first[an] = ig
                 gu[an] = av
                 continue
@@ -264,12 +264,11 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
 
         if keep_all_vertices:
             uninames = list(set.union(*(set(an) for an in allnames)))
-            permutation_map = {x: i for i, x in enumerate(uninames)}
         else:
-            #TODO
-            pass
+            uninames = list(set.intersection(*(set(an) for an in allnames)))
+        permutation_map = {x: i for i, x in enumerate(uninames)}
 
-        nve = len(uninames)
+        nv = len(uninames)
         newgraphs = []
         for g, an in zip(graphs, allnames):
             # Make a copy
@@ -279,16 +278,15 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
                 # Add the missing vertices
                 v_missing = list(set(uninames) - set(an))
                 ng.add_vertices(v_missing)
-
-                # Reorder vertices to match uninames
-                # vertex k -> p[k]
-                permutation = [permutation_map[x] for x in ng.vs['name']]
-                ng = ng.permute_vertices(permutation)
-
             else:
-                # Delete the vertices
-                #TODO
-                pass
+                # Delete the private vertices
+                v_private = list(set(an) - set(uninames))
+                ng.delete_vertices(v_private)
+
+            # Reorder vertices to match uninames
+            # vertex k -> p[k]
+            permutation = [permutation_map[x] for x in ng.vs['name']]
+            ng = ng.permute_vertices(permutation)
 
             newgraphs.append(ng)
     else:
@@ -310,7 +308,7 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
         for an in g.attributes():
             av = g[an]
             # No conflicts
-            if an not in gu.attributes:
+            if an not in gu.attributes():
                 a_first[an] = ig
                 gu[an] = av
                 continue

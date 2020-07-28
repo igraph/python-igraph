@@ -28,6 +28,19 @@ class OperatorTests(unittest.TestCase):
         g = intersection(gs)
         self.assertTrue(g.get_edgelist() == [(0, 1)])
 
+    def testIntersectionManyAttributes(self):
+        gs = [Graph.Tree(7, 2), Graph.Lattice([7])]
+        gs[0]['attr'] = 'graph1'
+        gs[0].vs['name'] = ['one', 'two', 'three', 'four', 'five', 'six', '7']
+        gs[1].vs['name'] = ['two', 'one', 'three', 'four', 'five', 'six', '7']
+        gs[0].vs[0]['attr'] = 'set'
+        gs[1].vs[5]['attr'] = 'set_too'
+        g = intersection(gs)
+        self.assertTrue(g['attr'] == 'graph1')
+        self.assertTrue(g.vs[0]['attr'] == 'set')
+        self.assertTrue(g.vs[5]['attr'] == 'set_too')
+        self.assertTrue(g.get_edgelist() == [(0, 1)])
+
     def testUnionMany(self):
         gs = [Graph.Tree(7, 2), Graph.Lattice([7])]
         g = union(gs)

@@ -267,7 +267,8 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
  *
  * The newly created instance (which will be a subtype of )\c igraph.Graph)
  * will take ownership of the given \c igraph_t. This function is not
- * accessible from Python.
+ * accessible from Python, however it is in the header file for other C API
+ * functions to use.
  */
 PyObject* igraphmodule_Graph_subclass_from_igraph_t(
   PyTypeObject* type, igraph_t *graph
