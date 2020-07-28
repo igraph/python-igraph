@@ -55,7 +55,6 @@ PyObject *igraphmodule__union(PyObject *self,
       return igraphmodule_handle_igraph_error();
   }
 
-  igraph_vector_ptr_t *edgemaps = 0;
   /* Get all elements, store the graphs in an igraph_vector_ptr */
   igraph_vector_ptr_t gs;
   if (igraph_vector_ptr_init(&gs, 0)) {
@@ -70,21 +69,22 @@ PyObject *igraphmodule__union(PyObject *self,
   Py_DECREF(it);
   no_of_graphs = (long int) igraph_vector_ptr_size(&gs);
 
-  /* prepare edgemaps if requested */
   if (with_edgemaps) {
-    if (igraph_vector_ptr_init(edgemaps, 0)) {
+    /* prepare edgemaps */
+    igraph_vector_ptr_t edgemaps;
+    if (igraph_vector_ptr_init(&edgemaps, 0)) {
       return igraphmodule_handle_igraph_error();
     }
-  }
 
-  /* Create union */
-  if (igraph_union_many(&g, &gs, edgemaps)) {
-    igraph_vector_ptr_destroy(&gs);
-    igraphmodule_handle_igraph_error();
-    return NULL;
-  }
+    /* Create union */
+    if (igraph_union_many(&g, &gs, &edgemaps)) {
+      igraph_vector_ptr_destroy(&gs);
+      igraph_vector_ptr_destroy(&edgemaps);
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
 
-  if (with_edgemaps) {
+    /* extract edgema[s */
     long int i;
     em_list = PyList_New((Py_ssize_t) no_of_graphs);
     Py_INCREF(em_list);
@@ -94,12 +94,20 @@ PyObject *igraphmodule__union(PyObject *self,
       PyObject *emi = PyList_New((Py_ssize_t) no_of_edges);
       Py_INCREF(emi);
       for (j = 0; j < no_of_edges; j++) {
-        igraph_vector_t *map = VECTOR(*edgemaps)[j];
+        igraph_vector_t *map = VECTOR(edgemaps)[j];
         PyList_SetItem(emi, (Py_ssize_t) j, PyLong_FromLong(VECTOR(*map)[j]));
       }
       PyList_SetItem(em_list, (Py_ssize_t) i, emi);
     }
-    igraph_vector_ptr_destroy(edgemaps);
+    igraph_vector_ptr_destroy(&edgemaps);
+  }
+  else {
+    /* Create union */
+    if (igraph_union_many(&g, &gs, /* edgemaps */ 0)) {
+      igraph_vector_ptr_destroy(&gs);
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
   }
 
   igraph_vector_ptr_destroy(&gs);
@@ -163,7 +171,6 @@ PyObject *igraphmodule__intersection(PyObject *self,
       return igraphmodule_handle_igraph_error();
   }
 
-  igraph_vector_ptr_t *edgemaps = 0;
   /* Get all elements, store the graphs in an igraph_vector_ptr */
   igraph_vector_ptr_t gs;
   if (igraph_vector_ptr_init(&gs, 0)) {
@@ -178,21 +185,21 @@ PyObject *igraphmodule__intersection(PyObject *self,
   Py_DECREF(it);
   no_of_graphs = (long int) igraph_vector_ptr_size(&gs);
 
-  /* prepare edgemaps if requested */
   if (with_edgemaps) {
-    if (igraph_vector_ptr_init(edgemaps, 0)) {
+    /* prepare edgemaps */
+    igraph_vector_ptr_t edgemaps;
+    if (igraph_vector_ptr_init(&edgemaps, 0)) {
       return igraphmodule_handle_igraph_error();
     }
-  }
 
-  /* Create intersection */
-  if (igraph_intersection_many(&g, &gs, edgemaps)) {
-    igraph_vector_ptr_destroy(&gs);
-    igraphmodule_handle_igraph_error();
-    return NULL;
-  }
+    /* Create intersection */
+    if (igraph_intersection_many(&g, &gs, &edgemaps)) {
+      igraph_vector_ptr_destroy(&gs);
+      igraph_vector_ptr_destroy(&edgemaps);
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
 
-  if (with_edgemaps) {
     long int i;
     em_list = PyList_New((Py_ssize_t) no_of_graphs);
     Py_INCREF(em_list);
@@ -202,12 +209,21 @@ PyObject *igraphmodule__intersection(PyObject *self,
       PyObject *emi = PyList_New((Py_ssize_t) no_of_edges);
       Py_INCREF(emi);
       for (j = 0; j < no_of_edges; j++) {
-        igraph_vector_t *map = VECTOR(*edgemaps)[j];
+        igraph_vector_t *map = VECTOR(edgemaps)[j];
         PyList_SetItem(emi, (Py_ssize_t) j, PyLong_FromLong(VECTOR(*map)[j]));
       }
       PyList_SetItem(em_list, (Py_ssize_t) i, emi);
     }
-    igraph_vector_ptr_destroy(edgemaps);
+    igraph_vector_ptr_destroy(&edgemaps);
+
+  } 
+  else {
+    /* Create intersection */
+    if (igraph_intersection_many(&g, &gs, /* edgemaps */ 0)) {
+      igraph_vector_ptr_destroy(&gs);
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
   }
 
   igraph_vector_ptr_destroy(&gs);

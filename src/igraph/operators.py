@@ -143,7 +143,9 @@ def union(graphs, byname='auto'):
             gu['{:}_{:}'.format(an, ig)] = av
 
     # Vertex attributes
-    attrs = set.union(*[set(g.vertex_attributes()) for g in newgraphs]) - set(['name'])
+    if byname:
+        gu.vs['name'] = uninames
+    attrs = set.union(*(set(g.vertex_attributes()) for g in newgraphs)) - set(['name'])
     nve = gu.vcount()
     for an in attrs:
         # Check for conflicts at at least one vertex
@@ -152,9 +154,12 @@ def union(graphs, byname='auto'):
         for g in newgraphs:
             if an in g.vertex_attributes():
                 for i, avi in enumerate(g.vs[an]):
+                    if avi is None:
+                        continue
                     if vals[i] is None:
                         vals[i] = avi
-                    elif vals[i] != avi:
+                        continue
+                    if vals[i] != avi:
                         conflict = True
                         break
             if conflict:
@@ -171,7 +176,7 @@ def union(graphs, byname='auto'):
 
     # Edge attributes
     if edgemaps:
-        attrs = set.union([set(g.edge_attributes()) for g in newgraphs])
+        attrs = set.union(*(set(g.edge_attributes()) for g in newgraphs))
         ne = gu.ecount()
         for an in attrs:
             # Check for conflicts at at least one edge
@@ -181,9 +186,12 @@ def union(graphs, byname='auto'):
                 if an not in g.edge_attributes():
                     continue
                 for iu, avi in zip(emap, g.es[an]):
+                    if avi is None:
+                        continue
                     if vals[iu] is None:
                         vals[iu] = avi
-                    elif vals[iu] != avi:
+                        continue
+                    if vals[iu] != avi:
                         conflict = True
                         break
                 if conflict:
@@ -322,7 +330,9 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
             gu['{:}_{:}'.format(an, ig)] = av
 
     # Vertex attributes
-    attrs = set.union(*[set(g.vertex_attributes()) for g in newgraphs]) - set(['name'])
+    if byname:
+        gu.vs['name'] = uninames
+    attrs = set.union(*(set(g.vertex_attributes()) for g in newgraphs)) - set(['name'])
     nv = gu.vcount()
     for an in attrs:
         # Check for conflicts at at least one vertex
@@ -332,9 +342,12 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
             if an not in g.vertex_attributes():
                 continue
             for i, avi in enumerate(g.vs[an]):
+                if avi is None:
+                    continue
                 if vals[i] is None:
                     vals[i] = avi
-                elif vals[i] != avi:
+                    continue
+                if vals[i] != avi:
                     conflict = True
                     break
             if conflict:
@@ -351,7 +364,7 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
 
     # Edge attributes
     if edgemaps:
-        attrs = set.union([set(g.edge_attributes()) for g in newgraphs])
+        attrs = set.union(*(set(g.edge_attributes()) for g in newgraphs))
         ne = gu.ecount()
         for an in attrs:
             # Check for conflicts at at least one edge
@@ -363,9 +376,12 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
                 for iu, avi in zip(emap, g.es[an]):
                     if iu == -1:
                         continue
+                    if avi is None:
+                        continue
                     if vals[iu] is None:
                         vals[iu] = avi
-                    elif vals[iu] != avi:
+                        continue
+                    if vals[iu] != avi:
                         conflict = True
                         break
                 if conflict:
