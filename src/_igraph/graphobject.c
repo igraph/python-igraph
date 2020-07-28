@@ -9564,7 +9564,7 @@ PyObject *igraphmodule_Graph_disjoint_union(igraphmodule_GraphObject * self,
 PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
                                    PyObject * args, PyObject * kwds)
 {
-  static char* kwlist[] = { "edgemaps", NULL };
+  static char* kwlist[] = { "other", "edgemaps", NULL };
   PyObject *it, *other;
   PyObject *with_edgemaps = Py_False;
   igraphmodule_GraphObject *o;
@@ -9682,7 +9682,7 @@ PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
 PyObject *igraphmodule_Graph_intersection(igraphmodule_GraphObject * self,
                                    PyObject * args, PyObject * kwds)
 {
-  static char* kwlist[] = { "edgemaps", NULL };
+  static char* kwlist[] = { "other", "edgemaps", NULL };
   PyObject *it, *other;
   PyObject *with_edgemaps = Py_False;
   igraphmodule_GraphObject *o;
