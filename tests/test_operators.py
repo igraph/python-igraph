@@ -23,6 +23,16 @@ class OperatorTests(unittest.TestCase):
         g = Graph.Tree(7, 2) | Graph.Lattice([7])
         self.assertTrue(g.vcount() == 7 and g.ecount() == 12)
 
+    def testIntersectionMany(self):
+        gs = [Graph.Tree(7, 2), Graph.Lattice([7])]
+        g = intersection(gs)
+        self.assertTrue(g.get_edgelist() == [(0, 1)])
+
+    def testUnionMany(self):
+        gs = [Graph.Tree(7, 2), Graph.Lattice([7])]
+        g = union(gs)
+        self.assertTrue(g.vcount() == 7 and g.ecount() == 12)
+
     def testInPlaceAddition(self):
         g = Graph.Full(3)
         orig = g

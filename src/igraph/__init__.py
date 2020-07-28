@@ -41,6 +41,7 @@ from igraph.datatypes import *
 from igraph.formula import *
 from igraph.layout import *
 from igraph.matching import *
+from igraph.operators import *
 from igraph.statistics import *
 from igraph.summary import *
 from igraph.utils import *

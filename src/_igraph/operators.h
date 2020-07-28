@@ -25,7 +25,7 @@
 
 #include <Python.h>
 
-PyObject* igraphmodule__union(PyObject* graphs, PyObject* with_edgemaps_o);
-PyObject* igraphmodule__intersection(PyObject* graphs, PyObject* with_edgemaps_o);
+PyObject* igraphmodule__union(PyObject* self, PyObject* args, PyObject* kwds);
+PyObject* igraphmodule__intersection(PyObject* self, PyObject* args, PyObject* kwds);
 
 #endif

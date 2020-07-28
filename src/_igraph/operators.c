@@ -29,14 +29,23 @@
 /** \ingroup python_interface_graph
  * \brief Creates the union of two or more graphs
  */
-PyObject *igraphmodule__union(PyObject * graphs, PyObject * with_edgemaps_o)
+PyObject *igraphmodule__union(PyObject *self,
+		PyObject *args, PyObject *kwds)
 {
-  PyObject *it, *em_list;
-  int with_edgemaps = PyObject_IsTrue(with_edgemaps_o);
+  static char* kwlist[] = { "graphs", "edgemaps", NULL };
+  PyObject *it, *em_list, *graphs, *with_edgemaps_o;
+  int with_edgemaps = 0;
   igraphmodule_GraphObject *o;
   PyObject *result;
   igraph_t g;
-  
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist,
+      &graphs, &with_edgemaps_o))
+    return NULL;
+
+  if (PyObject_IsTrue(with_edgemaps_o))
+    with_edgemaps = 1;
+
   /* Needs to be an iterable */
   it = PyObject_GetIter(graphs);
   if (!it) {
@@ -119,13 +128,22 @@ PyObject *igraphmodule__union(PyObject * graphs, PyObject * with_edgemaps_o)
 /** \ingroup python_interface_graph
  * \brief Creates the intersection of two or more graphs
  */
-PyObject *igraphmodule__intersection(PyObject * graphs, PyObject * with_edgemaps_o)
+PyObject *igraphmodule__intersection(PyObject *self,
+		PyObject *args, PyObject *kwds)
 {
-  PyObject *it, *em_list;
-  int with_edgemaps = PyObject_IsTrue(with_edgemaps_o);
+  static char* kwlist[] = { "graphs", "edgemaps", NULL };
+  PyObject *it, *em_list, *graphs, *with_edgemaps_o;
+  int with_edgemaps = 0;
   igraphmodule_GraphObject *o;
   PyObject *result;
   igraph_t g;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist,
+      &graphs, &with_edgemaps_o))
+    return NULL;
+
+  if (PyObject_IsTrue(with_edgemaps_o))
+    with_edgemaps = 1;
 
   /* Needs to be an iterable */
   it = PyObject_GetIter(graphs);

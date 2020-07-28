@@ -36,6 +36,7 @@
 #include "random.h"
 #include "vertexobject.h"
 #include "vertexseqobject.h"
+#include "operators.h"
 
 #define IGRAPH_MODULE
 #include "igraphmodule_api.h"
@@ -650,6 +651,14 @@ static PyMethodDef igraphmodule_methods[] =
     METH_VARARGS | METH_KEYWORDS,
     "_split_join_distance(comm1, comm2)"
   },
+  {"_union", (PyCFunction)igraphmodule__union,
+    METH_VARARGS | METH_KEYWORDS,
+    "_union(graphs, edgemaps)"
+  },
+  {"_intersection", (PyCFunction)igraphmodule__intersection,
+    METH_VARARGS | METH_KEYWORDS,
+    "_intersection(graphs, edgemaps)"
+  },
   {NULL, NULL, 0, NULL}
 };
 
@@ -657,7 +666,7 @@ static PyMethodDef igraphmodule_methods[] =
   "Low-level Python interface for the igraph library. " \
   "Should not be used directly.\n\n"                    \
   "@undocumented: community_to_membership, _compare_communities, _power_law_fit, " \
-  "_split_join_distance"
+  "_split_join_distance, _union, _intersection"
 
 /**
  * Module definition table (only for Python 3.x)

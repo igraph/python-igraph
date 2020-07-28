@@ -32,6 +32,8 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 # pylint: disable-msg=W0401
 # W0401: wildcard import
 from igraph._igraph import *
+from igraph._igraph import _union
+from igraph._igraph import _intersection
 
 from collections import defaultdict, Counter
 from warnings import warn
@@ -113,7 +115,7 @@ def union(graphs, byname='auto'):
 
     # If any graph has any edge attributes, we need edgemaps
     edgemaps = any(len(g.edge_attributes()) for g in graphs)
-    res = _union(newgraphs, edgemaps=edgemaps)
+    res = _union(newgraphs, edgemaps)
     if edgemaps:
         gu = res['graph']
         edgemaps = res['edgemaps']
@@ -137,12 +139,12 @@ def union(graphs, byname='auto'):
                 # New conflict
                 a_num.add(an)
                 igf = a_first[an]
-                gu[f'{an}_{igf}'] = gu.pop(an)
-            gu[f'{an}_{ig}'] = av
+                gu['{:}_{:}'.format(an, igf)] = gu.pop(an)
+            gu['{:}_{:}'.format(an, ig)] = av
 
     # Vertex attributes
-    attrs = set([g.vertex_attributes() for g in newgraphs]) - set(['name'])
-    nve = gu.vcounts()
+    attrs = set.union(*[set(g.vertex_attributes()) for g in newgraphs]) - set(['name'])
+    nve = gu.vcount()
     for an in attrs:
         # Check for conflicts at at least one vertex
         conflict = False
@@ -165,12 +167,12 @@ def union(graphs, byname='auto'):
         # There is a conflict, name after the graph number
         for ig, g in enumerate(newgraphs, 1):
             if an in g.vertex_attributes():
-                gu.vs[f'{an}_{ig}'] = g.vs[an]
+                gu.vs['{:}_{:}'.format(an, ig)] = g.vs[an]
 
     # Edge attributes
     if edgemaps:
         attrs = set.union([set(g.edge_attributes()) for g in newgraphs])
-        ne = gu.ecounts()
+        ne = gu.ecount()
         for an in attrs:
             # Check for conflicts at at least one edge
             conflict = False
@@ -199,7 +201,7 @@ def union(graphs, byname='auto'):
                 vals = [None for i in range(ne)]
                 for iu, avi in zip(emap, g.es[an]):
                     vals[iu] = avi
-                gu.es[f'{an}_{ig}'] = vals
+                gu.es['{:}_{:}'.format(an, ig)] = vals
 
     return gu
 
@@ -294,7 +296,7 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
 
     # If any graph has any edge attributes, we need edgemaps
     edgemaps = any(len(g.edge_attributes()) for g in graphs)
-    res = _intersection(newgraphs, edgemaps=edgemaps)
+    res = _intersection(newgraphs, edgemaps)
     if edgemaps:
         gu = res['graph']
         edgemaps = res['edgemaps']
@@ -318,12 +320,12 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
                 # New conflict
                 a_num.add(an)
                 igf = a_first[an]
-                gu[f'{an}_{igf}'] = gu.pop(an)
-            gu[f'{an}_{ig}'] = av
+                gu['{:}_{:}'.format(an, igf)] = gu.pop(an)
+            gu['{:}_{:}'.format(an, ig)] = av
 
     # Vertex attributes
-    attrs = set([g.vertex_attributes() for g in newgraphs]) - set(['name'])
-    nv = gu.vcounts()
+    attrs = set.union(*[set(g.vertex_attributes()) for g in newgraphs]) - set(['name'])
+    nv = gu.vcount()
     for an in attrs:
         # Check for conflicts at at least one vertex
         conflict = False
@@ -347,12 +349,12 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
         # There is a conflict, name after the graph number
         for ig, g in enumerate(newgraphs, 1):
             if an in g.vertex_attributes():
-                gu.vs[f'{an}_{ig}'] = g.vs[an]
+                gu.vs['{:}_{:}'.format(an, ig)] = g.vs[an]
 
     # Edge attributes
     if edgemaps:
         attrs = set.union([set(g.edge_attributes()) for g in newgraphs])
-        ne = gu.ecounts()
+        ne = gu.ecount()
         for an in attrs:
             # Check for conflicts at at least one edge
             conflict = False
@@ -385,6 +387,6 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
                     if iu == -1:
                         continue
                     vals[iu] = avi
-                gu.es[f'{an}_{ig}'] = vals
+                gu.es['{:}_{:}'.format(an, ig)] = vals
 
     return gu
