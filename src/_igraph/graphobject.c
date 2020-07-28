@@ -9562,13 +9562,13 @@ PyObject *igraphmodule_Graph_disjoint_union(igraphmodule_GraphObject * self,
  * \brief Creates the union of two or more graphs
  */
 PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
-                                   PyObject * args, PyObject * kwds,
-                                   )
+                                   PyObject * args, PyObject * kwds)
 {
   static char* kwlist[] = { "edgemaps", NULL };
   PyObject *it, *other;
   PyObject *with_edgemaps = Py_False;
-  igraphmodule_GraphObject *o, *result;
+  igraphmodule_GraphObject *o;
+  PyObject *result;
   igraph_t g;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &other, &with_edgemaps))
@@ -9599,7 +9599,8 @@ PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
     /* prepare edgemaps if requested */
     if (PyObject_IsTrue(with_edgemaps)) {
       if (igraph_vector_ptr_init(edgemaps, 0)) {
-      return igraphmodule_handle_igraph_error();
+        return igraphmodule_handle_igraph_error();
+      }
     }
 
     /* Create union */
@@ -9622,7 +9623,7 @@ PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
       Py_INCREF(str_edgemaps);
       for (i = 0; i < no_of_graphs; i++) {
         long int j;
-        long int no_of_edges = (long int) igraph_ecount(VECTOR(*gs)[i]);
+        long int no_of_edges = (long int) igraph_ecount(VECTOR(gs)[i]);
         PyObject *emi = PyList_New((Py_ssize_t) no_of_edges);
         Py_INCREF(emi);
         for (j = 0; j < no_of_edges; j++) {
@@ -9639,14 +9640,15 @@ PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
       /* wrap in a dictionary */
       result = PyDict_New();
       Py_INCREF(result);
-      PyDict_SetItem(result, str_graph, o);
+      PyDict_SetItem(result, str_graph, (PyObject *) o);
       PyDict_SetItem(result, str_edgemaps, em_list);
 
       igraph_vector_ptr_destroy(edgemaps);
 
     }
     else {
-      CREATE_GRAPH(result, g);
+      CREATE_GRAPH(o, g);
+      result = (PyObject *) o;
     }
   }
   /* Did we receive only two graphs? */
@@ -9667,7 +9669,8 @@ PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
     /* this is correct as long as attributes are not copied by the
      * operator. if they are copied, the initialization should not empty
      * the attribute hashes */
-    CREATE_GRAPH(result, g);
+    CREATE_GRAPH(o, g);
+    result = (PyObject *) o;
   }
 
   return (PyObject *) result;
@@ -9677,13 +9680,13 @@ PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
  * \brief Creates the intersection of two or more graphs
  */
 PyObject *igraphmodule_Graph_intersection(igraphmodule_GraphObject * self,
-                                   PyObject * args, PyObject * kwds,
-                                   )
+                                   PyObject * args, PyObject * kwds)
 {
   static char* kwlist[] = { "edgemaps", NULL };
-  PyObject *it;
+  PyObject *it, *other;
   PyObject *with_edgemaps = Py_False;
-  igraphmodule_GraphObject *o, *result;
+  igraphmodule_GraphObject *o;
+  PyObject *result;
   igraph_t g;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &other, &with_edgemaps))
@@ -9714,7 +9717,8 @@ PyObject *igraphmodule_Graph_intersection(igraphmodule_GraphObject * self,
     /* prepare edgemaps if requested */
     if (PyObject_IsTrue(with_edgemaps)) {
       if (igraph_vector_ptr_init(edgemaps, 0)) {
-      return igraphmodule_handle_igraph_error();
+        return igraphmodule_handle_igraph_error();
+      }
     }
 
     /* Create intersection */
@@ -9737,7 +9741,7 @@ PyObject *igraphmodule_Graph_intersection(igraphmodule_GraphObject * self,
       Py_INCREF(str_edgemaps);
       for (i = 0; i < no_of_graphs; i++) {
         long int j;
-        long int no_of_edges = (long int) igraph_ecount(VECTOR(*gs)[i]);
+        long int no_of_edges = (long int) igraph_ecount(VECTOR(gs)[i]);
         PyObject *emi = PyList_New((Py_ssize_t) no_of_edges);
         Py_INCREF(emi);
         for (j = 0; j < no_of_edges; j++) {
@@ -9754,13 +9758,14 @@ PyObject *igraphmodule_Graph_intersection(igraphmodule_GraphObject * self,
       /* wrap in a dictionary */
       result = PyDict_New();
       Py_INCREF(result);
-      PyDict_SetItem(result, str_graph, o);
+      PyDict_SetItem(result, str_graph, (PyObject *) o);
       PyDict_SetItem(result, str_edgemaps, em_list);
 
       igraph_vector_ptr_destroy(edgemaps);
     }
     else {
-      CREATE_GRAPH(result, g);
+      CREATE_GRAPH(o, g);
+      result = (PyObject *) o;
     }
   }
   /* Did we receive only two graphs? */
@@ -9781,7 +9786,8 @@ PyObject *igraphmodule_Graph_intersection(igraphmodule_GraphObject * self,
     /* this is correct as long as attributes are not copied by the
      * operator. if they are copied, the initialization should not empty
      * the attribute hashes */
-    CREATE_GRAPH(result, g);
+    CREATE_GRAPH(o, g);
+    result = (PyObject *) o;
   }
 
   return (PyObject *) result;
