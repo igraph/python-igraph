@@ -78,6 +78,21 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(g.ecount() == 2)
         self.assertTrue(sorted(g.vertex_attributes()) == ['attr', 'attr2_1', 'attr2_2', 'name'])
 
+    def testUnionManyEdgemap(self):
+        gs = [
+            Graph.Formula('A-B'),
+            Graph.Formula('C-D, A-B'),
+            ]
+        gs[0].es[0]['attr'] = 'set'
+        gs[1].es[0]['attr'] = 'set_too'
+        g = union(gs)
+        for e in g.es:
+            vnames = [g.vs[e.source]['name'], g.vs[e.target]['name']]
+            if set(vnames) == set(['A', 'B']):
+                self.assertTrue(e['attr'] == 'set')
+            else:
+                self.assertTrue(e['attr'] == 'set_too')
+
     def testInPlaceAddition(self):
         g = Graph.Full(3)
         orig = g

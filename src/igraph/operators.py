@@ -192,6 +192,7 @@ def union(graphs, byname='auto'):
                         vals[iu] = avi
                         continue
                     if vals[iu] != avi:
+                        print(g, g.vs['name'], emap, avi, iu, vals[iu])
                         conflict = True
                         break
                 if conflict:
