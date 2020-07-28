@@ -113,7 +113,7 @@ def union(graphs, byname='auto'):
 
     # If any graph has any edge attributes, we need edgemaps
     edgemaps = any(len(g.edge_attributes()) for g in graphs)
-    res = newgraphs[0].union(newgraphs[1:], edgemaps)
+    res = newgraphs[0].union(newgraphs[1:], edgemaps=edgemaps)
     if edgemaps:
         gu = res['graph']
         maps = res['edgemaps']
@@ -262,7 +262,9 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
     else:
         newgraphs = graphs
 
-    gu = newgraphs[0].intersection(newgraphs[1:])
+    # If any graph has any edge attributes, we need edgemaps
+    edgemaps = any(len(g.edge_attributes()) for g in graphs)
+    gu = newgraphs[0].intersection(newgraphs[1:], edgemaps=edgemaps)
 
     # Graph attributes
     # TODO

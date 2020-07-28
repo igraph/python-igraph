@@ -9559,7 +9559,7 @@ PyObject *igraphmodule_Graph_disjoint_union(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
- * \brief Creates the union of two graphs (operator version)
+ * \brief Creates the union of two or more graphs
  */
 PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
                                    PyObject * args, PyObject * kwds,
@@ -9577,9 +9577,9 @@ PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
   /* Did we receive an iterable? */
   it = PyObject_GetIter(other);
   if (it) {
+    igraph_vector_ptr_t *edgemaps = 0;
     /* Get all elements, store the graphs in an igraph_vector_ptr */
     igraph_vector_ptr_t gs;
-    igraph_vector_ptr_t *edgemaps = 0;
     if (igraph_vector_ptr_init(&gs, 0)) {
       Py_DECREF(it);
       return igraphmodule_handle_igraph_error();
@@ -9611,14 +9611,15 @@ PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
 
     igraph_vector_ptr_destroy(&gs);
 
-    /* this is correct as long as attributes are not copied by the
-     * operator. if they are copied, the initialization should not empty
-     * the attribute hashes */
     if (PyObject_IsTrue(with_edgemaps)) {
       long int i;
       long int no_of_graphs = (long int) igraph_vector_ptr_size(&gs);
       PyObject *em_list = PyList_New((Py_ssize_t) no_of_graphs);
+      PyObject * str_graph = PyUnicode_FromString("graph");
+      PyObject * str_edgemaps = PyUnicode_FromString("edgemaps");
       Py_INCREF(em_list);
+      Py_INCREF(str_graph);
+      Py_INCREF(str_edgemaps);
       for (i = 0; i < no_of_graphs; i++) {
         long int j;
         long int no_of_edges = (long int) igraph_ecount(VECTOR(*gs)[i]);
@@ -9630,19 +9631,25 @@ PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
         }
         PyList_SetItem(em_list, (Py_ssize_t) i, emi);
       }
-      /* create the graph and wrapping dictionary */
+      /* this is correct as long as attributes are not copied by the
+       * operator. if they are copied, the initialization should not empty
+       * the attribute hashes */
       CREATE_GRAPH(o, g);
+
+      /* wrap in a dictionary */
       result = PyDict_New();
       Py_INCREF(result);
-      PyDict_SetItem(result, PyUnicode_FromString("graph"), o);
-      PyDict_SetItem(result, PyUnicode_FromString("edgemaps"), em_list);
+      PyDict_SetItem(result, str_graph, o);
+      PyDict_SetItem(result, str_edgemaps, em_list);
 
       igraph_vector_ptr_destroy(edgemaps);
 
-    } else {
+    }
+    else {
       CREATE_GRAPH(result, g);
     }
   }
+  /* Did we receive only two graphs? */
   else {
     PyErr_Clear();
     if (!PyObject_TypeCheck(other, &igraphmodule_GraphType)) {
@@ -9667,18 +9674,25 @@ PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
- * \brief Creates the intersection of two graphs (operator version)
+ * \brief Creates the intersection of two or more graphs
  */
 PyObject *igraphmodule_Graph_intersection(igraphmodule_GraphObject * self,
-                                          PyObject * other)
+                                   PyObject * args, PyObject * kwds,
+                                   )
 {
+  static char* kwlist[] = { "edgemaps", NULL };
   PyObject *it;
+  PyObject *with_edgemaps = Py_False;
   igraphmodule_GraphObject *o, *result;
   igraph_t g;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &other, &with_edgemaps))
+    return NULL;
 
   /* Did we receive an iterable? */
   it = PyObject_GetIter(other);
   if (it) {
+    igraph_vector_ptr_t *edgemaps = 0;
     /* Get all elements, store the graphs in an igraph_vector_ptr */
     igraph_vector_ptr_t gs;
     if (igraph_vector_ptr_init(&gs, 0)) {
@@ -9697,15 +9711,59 @@ PyObject *igraphmodule_Graph_intersection(igraphmodule_GraphObject * self,
     }
     Py_DECREF(it);
 
-    /* Create union */
-    if (igraph_intersection_many(&g, &gs, /*edgemaps=*/ 0)) {
+    /* prepare edgemaps if requested */
+    if (PyObject_IsTrue(with_edgemaps)) {
+      if (igraph_vector_ptr_init(edgemaps, 0)) {
+      return igraphmodule_handle_igraph_error();
+    }
+
+    /* Create intersection */
+    if (igraph_intersection_many(&g, &gs, edgemaps)) {
       igraph_vector_ptr_destroy(&gs);
       igraphmodule_handle_igraph_error();
       return NULL;
     }
 
     igraph_vector_ptr_destroy(&gs);
+
+    if (PyObject_IsTrue(with_edgemaps)) {
+      long int i;
+      long int no_of_graphs = (long int) igraph_vector_ptr_size(&gs);
+      PyObject *em_list = PyList_New((Py_ssize_t) no_of_graphs);
+      PyObject * str_graph = PyUnicode_FromString("graph");
+      PyObject * str_edgemaps = PyUnicode_FromString("edgemaps");
+      Py_INCREF(em_list);
+      Py_INCREF(str_graph);
+      Py_INCREF(str_edgemaps);
+      for (i = 0; i < no_of_graphs; i++) {
+        long int j;
+        long int no_of_edges = (long int) igraph_ecount(VECTOR(*gs)[i]);
+        PyObject *emi = PyList_New((Py_ssize_t) no_of_edges);
+        Py_INCREF(emi);
+        for (j = 0; j < no_of_edges; j++) {
+          igraph_vector_t *map = VECTOR(*edgemaps)[j];
+          PyList_SetItem(emi, (Py_ssize_t) j, PyLong_FromLong(VECTOR(*map)[j]));
+        }
+        PyList_SetItem(em_list, (Py_ssize_t) i, emi);
+      }
+      /* this is correct as long as attributes are not copied by the
+       * operator. if they are copied, the initialization should not empty
+       * the attribute hashes */
+      CREATE_GRAPH(o, g);
+
+      /* wrap in a dictionary */
+      result = PyDict_New();
+      Py_INCREF(result);
+      PyDict_SetItem(result, str_graph, o);
+      PyDict_SetItem(result, str_edgemaps, em_list);
+
+      igraph_vector_ptr_destroy(edgemaps);
+    }
+    else {
+      CREATE_GRAPH(result, g);
+    }
   }
+  /* Did we receive only two graphs? */
   else {
     PyErr_Clear();
     if (!PyObject_TypeCheck(other, &igraphmodule_GraphType)) {
@@ -9719,12 +9777,12 @@ PyObject *igraphmodule_Graph_intersection(igraphmodule_GraphObject * self,
       igraphmodule_handle_igraph_error();
       return NULL;
     }
-  }
 
-  /* this is correct as long as attributes are not copied by the
-   * operator. if they are copied, the initialization should not empty
-   * the attribute hashes */
-  CREATE_GRAPH(result, g);
+    /* this is correct as long as attributes are not copied by the
+     * operator. if they are copied, the initialization should not empty
+     * the attribute hashes */
+    CREATE_GRAPH(result, g);
+  }
 
   return (PyObject *) result;
 }
