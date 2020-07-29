@@ -19,8 +19,16 @@ class OperatorTests(unittest.TestCase):
         g = Graph.Tree(7, 2) & Graph.Lattice([7])
         self.assertTrue(g.get_edgelist() == [(0, 1)])
 
+    def testIntersectionMethod(self):
+        g = Graph.Tree(7, 2).intersection(Graph.Lattice([7]))
+        self.assertTrue(g.get_edgelist() == [(0, 1)])
+
     def testUnion(self):
         g = Graph.Tree(7, 2) | Graph.Lattice([7])
+        self.assertTrue(g.vcount() == 7 and g.ecount() == 12)
+
+    def testUnionMethod(self):
+        g = Graph.Tree(7, 2).union(Graph.Lattice([7]))
         self.assertTrue(g.vcount() == 7 and g.ecount() == 12)
 
     def testIntersectionMany(self):

@@ -3601,6 +3601,29 @@ class Graph(GraphBase):
         """
         return str(GraphSummary(self, verbosity, width, *args, **kwds))
 
+    def intersection(self, other, byname='auto'):
+        '''intersection(graphs)
+
+        Creates the intersection of two (or more) graphs.
+
+        @param graphs: the list of graphs to be intersected with
+        the current one.
+        @param byname: whether to use vertex names instead of ids. See
+        L{igraph.intersection} for details.
+        '''
+        return intersection([self, other], byname=byname)
+
+    def union(self, other, byname='auto'):
+        '''union(graphs)
+
+        Creates the union of two (or more) graphs.
+        @param graphs: the list of graphs to be united with
+        the current one.
+        @param byname: whether to use vertex names instead of ids. See
+        L{igraph.union} for details.
+        '''
+        return union([self, other], byname=byname)
+
     _format_mapping = {
           "ncol":       ("Read_Ncol", "write_ncol"),
           "lgl":        ("Read_Lgl", "write_lgl"),
