@@ -3212,6 +3212,56 @@ class Graph(GraphBase):
         return super(Graph, self).get_incidence(types, *args, **kwds)
 
     ###########################
+    # DFS (C version will come soon)
+    def dfs(self, vid, mode=OUT):
+        """Conducts a depth first search (DFS) on the graph.
+
+        @param vid: the root vertex ID
+        @param mode: either L{IN} or L{OUT} or L{ALL}, ignored
+          for undirected graphs.
+        @return: a tuple with the following items:
+           - The vertex IDs visited (in order)
+           - The parent of every vertex in the DFS
+        """
+        nv = self.vcount()
+        added = [False for v in range(nv)]
+        stack = []
+
+        # prepare output
+        vids = []
+        parents = []
+
+        # ok start from vid
+        stack.append(vid)
+        vids.append(vid)
+        parents.append(vid)
+        added[vid] = True
+
+        # go down the rabbit hole
+        while stack:
+            vid = stack[-1]
+            if mode == IN:
+                edges = self.vs[vid].in_edges()
+            else:
+                edges = self.vs[vid].out_edges()
+            for edge in edges:
+                neighbor = edge.target
+                if neighbor == vid:
+                    neighbor = edge.source
+                if not added[neighbor]:
+                    # Add hanging neighbor
+                    stack.append(neighbor)
+                    vids.append(neighbor)
+                    parents.append(vid)
+                    added[neighbor] = True
+                    break
+            else:
+                # No neighbor found, end of subtree
+                stack.pop()
+
+        return (vids, parents)
+
+    ###########################
     # ctypes support
 
     @property
