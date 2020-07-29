@@ -62,31 +62,31 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
     return NULL;
   }
   
-  if (igraph_dqueue_init(&o->queue, 100)) {
+  if (igraph_stack_init(&o->stack, 100)) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
   if (igraph_vector_init(&o->neis, 0)) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
-    igraph_dqueue_destroy(&o->queue);
+    igraph_stack_destroy(&o->stack);
     return NULL;
   }
   
   if (PyInt_Check(root)) {
     r=PyInt_AsLong(root);
   } else {
-    r=((igraphmodule_VertexObject*)root)->idx;
+    r = ((igraphmodule_VertexObject*)root)->idx;
   }
-  /* push the root onto the queue */
-  if (igraph_dqueue_push(&o->queue, r) ||
-      igraph_dqueue_push(&o->queue, 0) ||
-      igraph_dqueue_push(&o->queue, -1)) {
-    igraph_dqueue_destroy(&o->queue);
+  /* push the root onto the stack */
+  if (igraph_stack_push(&o->stack, r) ||
+      igraph_stack_push(&o->stack, 0) ||
+      igraph_stack_push(&o->stack, -1)) {
+    igraph_stack_destroy(&o->stack);
     igraph_vector_destroy(&o->neis);
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
-  o->visited[r]=1;
+  o->visited[r] = 1;
   
   if (!igraph_is_directed(&g->g)) mode=IGRAPH_ALL;
   o->mode=mode;
@@ -130,13 +130,13 @@ int igraphmodule_DFSIter_clear(igraphmodule_DFSIterObject *self) {
   PyObject_GC_UnTrack(self);
   
   tmp=(PyObject*)self->gref;
-  self->gref=NULL;
+  self->gref = NULL;
   Py_XDECREF(tmp);
 
-  igraph_dqueue_destroy(&self->queue);
+  igraph_stack_destroy(&self->stack);
   igraph_vector_destroy(&self->neis);
   free(self->visited);
-  self->visited=0;
+  self->visited = 0;
   
   return 0;
 }
@@ -159,53 +159,82 @@ PyObject* igraphmodule_DFSIter_iter(igraphmodule_DFSIterObject* self) {
 }
 
 PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self) {
-  if (!igraph_dqueue_empty(&self->queue)) {
-    /* pop the last element on the queue */
-    igraph_integer_t vid = (igraph_integer_t)igraph_dqueue_pop(&self->queue);
-    igraph_integer_t dist = (igraph_integer_t)igraph_dqueue_pop(&self->queue);
-    igraph_integer_t parent = (igraph_integer_t)igraph_dqueue_pop(&self->queue);
+  /* the design is to return the top of the stack and then proceed until
+   * we have found an unvisited neighbor and push that on top */
+  igraph_integer_t parent_out, dist_out, vid_out;
+  igraph_bool_t any = 0;
+
+  /* nothing on the stack, end of iterator */
+  if(igraph_stack_empty(&self->stack)) {
+    return NULL;
+  }
+
+  /* peek at the top element on the stack
+   * because we save three things, pop 3 in inverse order and push them back */
+  parent_out = (igraph_integer_t)igraph_stack_pop(&self->stack);
+  dist_out = (igraph_integer_t)igraph_stack_pop(&self->stack);
+  vid_out = (igraph_integer_t)igraph_stack_pop(&self->stack);
+  igraph_stack_push(&self->stack, (long int) vid_out);
+  igraph_stack_push(&self->stack, (long int) dist_out);
+  igraph_stack_push(&self->stack, (long int) parent_out);
+
+  /* look for neighbors until you found one or until you have exausted the graph */
+  while (!any && !igraph_stack_empty(&self->stack)) {
+    igraph_integer_t parent = (igraph_integer_t)igraph_stack_pop(&self->stack);
+    igraph_integer_t dist = (igraph_integer_t)igraph_stack_pop(&self->stack);
+    igraph_integer_t vid = (igraph_integer_t)igraph_stack_pop(&self->stack);
+    igraph_stack_push(&self->stack, (long int) vid);
+    igraph_stack_push(&self->stack, (long int) dist);
+    igraph_stack_push(&self->stack, (long int) parent);
     long int i;
-    
-    /* look for neighbors */
+    /* the values above are returned at at this stage. However, we must
+     * prepare for the next iteration by putting the next unvisited
+     * neighbor onto the stack */
     if (igraph_neighbors(self->graph, &self->neis, vid, self->mode)) {
       igraphmodule_handle_igraph_error();
       return NULL;
     }
-	
-
-    /* FIXME: change into DFS algorithm */
     for (i=0; i<igraph_vector_size(&self->neis); i++) {
       igraph_integer_t neighbor = (igraph_integer_t)VECTOR(self->neis)[i];
-      if (self->visited[neighbor]==0) {
-	self->visited[neighbor]=1;
-	if (igraph_dqueue_push(&self->queue, neighbor) ||
-	    igraph_dqueue_push(&self->queue, dist+1) ||
-	    igraph_dqueue_push(&self->queue, vid)) {
-	  igraphmodule_handle_igraph_error();
-	  return NULL;
-	}
+      /* new neighbor, push the next item onto the stack */
+      if (self->visited[neighbor] == 0) {
+        any = 1;
+        self->visited[neighbor]=1;
+        if (igraph_stack_push(&self->stack, neighbor) ||
+            igraph_stack_push(&self->stack, dist+1) ||
+            igraph_stack_push(&self->stack, vid)) {
+          igraphmodule_handle_igraph_error();
+          return NULL;
+        }
+        break;
       }
     }
+    /* no new neighbors, end of subtree */
+    if (!any) {
+       igraph_stack_pop(&self->stack);
+       igraph_stack_pop(&self->stack);
+       igraph_stack_pop(&self->stack);
+    }
+  }
 
-    if (self->advanced) {
-      PyObject *vertexobj, *parentobj;
-      vertexobj = igraphmodule_Vertex_New(self->gref, vid);
-      if (!vertexobj)
-        return NULL;
-      if (parent >= 0) {
-        parentobj = igraphmodule_Vertex_New(self->gref, parent);
-        if (!parentobj)
-            return NULL;
-      } else {
-        Py_INCREF(Py_None);
-        parentobj=Py_None;
-      }
-      return Py_BuildValue("NlN", vertexobj, (long int)dist, parentobj);
+  /* no matter what the stack situation is: that is a worry for the next cycle
+   * now just return the top of the stack as it was at the function entry */
+  PyObject *vertexobj = igraphmodule_Vertex_New(self->gref, vid_out);
+  if (self->advanced) {
+    PyObject *parentobj;
+    if (!vertexobj)
+      return NULL;
+    if (parent_out >= 0) {
+      parentobj = igraphmodule_Vertex_New(self->gref, parent_out);
+      if (!parentobj)
+          return NULL;
     } else {
-      return igraphmodule_Vertex_New(self->gref, vid);
+      Py_INCREF(Py_None);
+      parentobj=Py_None;
     }
+    return Py_BuildValue("NlN", vertexobj, (long int)dist_out, parentobj);
   } else {
-    return NULL;
+    return vertexobj;
   }
 }
 
