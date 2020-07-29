@@ -23,6 +23,7 @@
 #include "attributes.h"
 #include "arpackobject.h"
 #include "bfsiter.h"
+#include "dfsiter.h"
 #include "common.h"
 #include "convert.h"
 #include "edgeseqobject.h"
@@ -9918,6 +9919,23 @@ PyObject *igraphmodule_Graph_unfold_tree(igraphmodule_GraphObject * self,
   CREATE_GRAPH(result_o, result);
 
   return Py_BuildValue("NN", result_o, mapping_o);
+}
+
+/** \ingroup python_interface_graph
+ * \brief Constructs a depth first search (DFS) iterator of the graph
+ */
+PyObject *igraphmodule_Graph_dfsiter(igraphmodule_GraphObject * self,
+                                     PyObject * args, PyObject * kwds)
+{
+  char *kwlist[] = { "vid", "mode", "advanced", NULL };
+  PyObject *root, *adv = Py_False, *mode_o = Py_None;
+  igraph_neimode_t mode = IGRAPH_OUT;
+
+  if (!PyArg_ParseTupleAndKeywords
+      (args, kwds, "O|OO", kwlist, &root, &mode_o, &adv))
+    return NULL;
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) return NULL;
+  return igraphmodule_DFSIter_new(self, root, mode, PyObject_IsTrue(adv));
 }
 
 /**********************************************************************
