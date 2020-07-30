@@ -25,24 +25,31 @@ Edges also have ids from 0 to `m-1` and are counted by :meth:`Graph.ecount`:
 
 >>> m = g.ecount()
 
-To get a sequence of vertices, use their ids and :meth:`Graph.vs`:
+To get a sequence of vertices, use their ids and :attr:`Graph.vs`:
 
 >>> for v in g.vs:
 >>>     print(v)
 
-Similarly for edges:
+Similarly for edges, use :attr:`Graph.es`:
 
 >>> for e in g.es:
 >>>     print(e)
 
-Incidence and neighborhood
+.. note:: These two attributes are special sequences with their own useful methods. Some are described below, and all can be found in the `API documentation`_.
+
+If you prefer a vanilla edge list, you can use :meth:`Graph.get_edge_list`.
+
+Incidence
 ++++++++++++++++++++++++++++++
 To get the vertices at the two ends of an edge, use :attr:`Edge.source` and :attr:`Edge.target`:
 
 >>> e = g.es[0]
 >>> v1, v2 = e.source, e.target
 
-Vice versa, to get the edges incident on a vertex, you can use :meth:`Vertex.incident`, :meth:`Vertex.out_edges` and
+Vice versa, to get the edge if from the source and target vertices, you can use :meth:`Graph.get_eid` or, for multiple pairs of source/targets,
+:meth:`Graph.get_eids`.
+
+To get the edges incident on a vertex, you can use :meth:`Vertex.incident`, :meth:`Vertex.out_edges` and
 :meth:`Vertex.in_edges`. The three are equivalent on undirected graphs but not directed ones, of course:
 
 >>> v = g.vs[0]
@@ -52,6 +59,10 @@ The :meth:`Graph.incident` function fulfills the same purpose with a slightly di
 
 >>> edges = g.incident(0)
 
+To get the full adjacency/incidence list representation of the graph, use :meth:`Graph.get_adjlist`, :meth:`Graph.g.get_inclist()` or, for a bipartite graph, :meth:`Graph.get_incidence`.
+
+Neighborhood
++++++++++++++
 To compute the neighbors, successors, and predecessors, the methods :meth:`Graph.neighbors`, :meth:`Graph.successors` and
 :meth:`Graph.predecessors` are available. The three give the same answer in undirected graphs and have a similar dual syntax:
 
@@ -74,13 +85,6 @@ To compute the degree, in-degree, or out-degree of a node, use :meth:`Vertex.deg
 To compute the max degree in a list of vertices, use :meth:`Graph.maxdegree`.
 
 :meth:`Graph.knn` computes the average degree of the neighbors.
-
-Flow
-++++
-Flow is a characteristic of directed graphs. The following functions are available:
-
-- :meth:`Graph.maxflow` between two nodes
-- :meth:`Graph.maxflow_value` - similar to the previous one, but only the value is returned
 
 Adding and removing vertices and edges
 ++++++++++++++++++++++++++++++++++++++
@@ -162,7 +166,9 @@ Pathfinding
 +++++++++++
 Several pathfinding algorithms are available:
 
-- :meth:`Graph.shortest_paths`
+- :meth:`Graph.shortest_paths` or :meth:`Graph.get_shortest_paths`
+- :meth:`Graph.get_all_shortest_paths`
+- :meth:`Graph.get_all_simple_paths`
 - :meth:`Graph.spanning_tree` finds a minimum spanning tree
 - :meth:`Graph.mincut` calculates the minimum cut between the source and target vertices
 - :meth:`Graph.st_mincut` - as previous one, but returns a simpler data structure
@@ -172,19 +178,27 @@ Global properties
 +++++++++++++++++++++
 A number of global graph measures are available:
 
-- :meth:`Graph.diameter`
+- :meth:`Graph.diameter` or :meth:`Graph.get_diameter`
+- :meth:`Graph.girth`
 - :meth:`Graph.radius`
+
+Distributions:
+
+- :meth:`Graph.degree_distribution`
 - :meth:`Graph.path_length_hist`
 
 Connectedness:
 
 - :meth:`Graph.minimum_size_separators`
+- :meth:`Graph.feedback_arc_set`
 
 Some properties related to optimality:
 
+- :meth:`Graph.farthest_points`
 - :meth:`Graph.modularity`
 - :meth:`Graph.maximal_cliques`
 - :meth:`Graph.largest_cliques`
+- :meth:`Graph.independence_number` (aka :meth:`Graph.alpha`)
 - :meth:`Graph.maximal_independent_vertex_sets`
 - :meth:`Graph.largest_independent_vertex_sets`
 - :meth:`Graph.mincut`
@@ -197,16 +211,34 @@ Cliques and motifs:
 - :meth:`Graph.motifs_randesu` and :meth:`Graph.motifs_randesu_estimate`
 - :meth:`Graph.g.motifs_randesu_no` counts the number of motifs
 
+Structural:
+
+- :meth:`Graph.edge_connectivity` or :meth:`Graph.edge_disjoint_paths`
+- :meth:`Graph.vertex_connectivity`
+
 Other complex measures are:
 
-- :meth:`Graph.vertex_connectivity`
-- :meth:`Graph.transitivity_undirected`
-- :meth:`Graph.transitivity_avglocal_undirected`
-- :meth:`Graph.transitivity_local_undirected`
-- :meth:`Graph.triad_census`
 - :meth:`Graph.coreness` (aka :meth:`Graph.shell_index`)
+- :meth:`Graph.density`
+- :meth:`Graph.hub_score`
+- :meth:`Graph.transitivity_undirected`
+- :meth:`Graph.transitivity_local_undirected`
+- :meth:`Graph.transitivity_avglocal_undirected`
+- :meth:`Graph.dyad_census`
+- :meth:`Graph.triad_census`
 - :meth:`Graph.reciprocity` (directed graphs)
+- :meth:`Graph.isoclass` (only 3 or 4 vertices)
 
+Boolean properties:
+
+- :meth:`Graph.is_bipartite`
+- :meth:`Graph.is_connected`
+- :meth:`Graph.is_dag`
+- :meth:`Graph.is_directed`
+- :meth:`Graph.is_named`
+- :meth:`Graph.is_simple`
+- :meth:`Graph.is_weighted`
+- :meth:`Graph.has_multiple`
 
 Vertex properties
 +++++++++++++++++++
@@ -215,16 +247,40 @@ A spectrum of vertex-level properties can be computed. Similarity measures inclu
 - :meth:`Graph.similarity_dice`
 - :meth:`Graph.similarity_jaccard`
 - :meth:`Graph.similarity_inverse_log_weighted`
+- :meth:`Graph.diversity`
 
 Centrality-related:
 
+- :meth:`Graph.bibcoupling`
+- :meth:`Graph.eccentricity`
 - :meth:`Graph.strength`
 - :meth:`Graph.pagerank`
 - :meth:`Graph.personalized_pagerank`
+- :meth:`Graph.eigenvector_centrality` aka :meth:`Graph.evcent`
+
+Structural:
+
+- :meth:`Graph.betweenness`
 
 Connectedness:
 
 - :meth:`Graph.subcomponent`
+- :meth:`Graph.is_separator`
+- :meth:`Graph.is_minimal_separator`
+- :meth:`Graph.biconnected_components`
+- :meth:`Graph.blocks`
+
+Edge properties
++++++++++++++++
+As for vertices, edge properties are implemented. Basic properties include:
+
+- :meth:`Graph.is_loop`
+- :meth:`Graph.is_multiple`
+- :meth:`Graph.is_mutual`
+
+and more complex ones:
+
+- :meth:`Graph.edge_betweenness`
 
 Matrix representations
 +++++++++++++++++++++++
@@ -246,7 +302,9 @@ To compute the line graph, there is :meth:`Graph.linegraph`:
 
 >>> gl = g.linegraph()
 
-To compute the subgraph spannes by some vertices/edges, use :meth:`Graph.subgraph` and :meth:`Graph.subgraph_edges`:
+The function :meth:`Graph.decompose` decomposes the graph into subgraphs.
+
+To compute the subgraph spannes by some vertices/edges, use :meth:`Graph.subgraph` (aka :meth:`Graph.induced_subgraph`) and :meth:`Graph.subgraph_edges`:
 
 >>> g_sub = g.subgraph([0, 1])
 >>> g_sub = g.subgraph_edges([0])
@@ -263,13 +321,29 @@ To rewire the graph at random while keeping some structural properties, there ar
 
 To compute graph k-cores, the method :meth:`Graph.k_core` is available.
 
+The dominator tree from a given node can be obtained with :meth:`Graph.dominator`.
+
+Bipartite graphs can be decomposed using :meth:`Graph.bipartite_projection`. The size of the projections can be computed using :meth:`Graph.bipartite_projection_size`.
+
 Graph comparisons
 ++++++++++++++++++
 |igraph| enables comparisons between graphs:
 
+- :meth:`Graph.isomorphic`
+- :meth:`Graph.isomorphic_vf2`
+- :meth:`Graph.subisomorphic_vf2`
 - :meth:`Graph.subisomorphic_lad`
-- :meth:`Graph.g.subisomorphic_vf2`
+- :meth:`Graph.get_isomorphisms_vf2`
+- :meth:`Graph.get_subisomorphisms_vf2`
+- :meth:`Graph.get_subisomorphisms_lad`
+- :meth:`Graph.get_automorphisms_vf2`
 
+Flow
+++++
+Flow is a characteristic of directed graphs. The following functions are available:
 
+- :meth:`Graph.maxflow` between two nodes
+- :meth:`Graph.maxflow_value` - similar to the previous one, but only the value is returned
+- :meth:`Graph.gomory_hu_tree`
 
 .. _API documentation: https://igraph.org/python/doc/igraph-module.html

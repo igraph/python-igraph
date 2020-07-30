@@ -13078,7 +13078,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  the algorithm assumes that there might be some loops in the graph\n"
    "  and calculates the density accordingly. If C{False}, the algorithm\n"
    "  assumes that there can't be any loops.\n"
-   "@return: the reciprocity of the graph."},
+   "@return: the density of the graph."},
 
   /* interfaces to igraph_diameter */
   {"diameter", (PyCFunction) igraphmodule_Graph_diameter,
