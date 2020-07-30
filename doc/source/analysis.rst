@@ -14,6 +14,8 @@ To get a summary representation of the graph, use :meth:`Graph.summary`. For ins
 
 will provide a fairly detailed description.
 
+To copy a graph, use :meth:`Graph.copy`.
+
 Vertices and edges
 +++++++++++++++++++++++++++
 Vertices are numbered 0 to `n-1`, where n is the number of vertices in the graph. These are called the "vertex ids".
@@ -47,7 +49,7 @@ To get the vertices at the two ends of an edge, use :attr:`Edge.source` and :att
 >>> v1, v2 = e.source, e.target
 
 Vice versa, to get the edge if from the source and target vertices, you can use :meth:`Graph.get_eid` or, for multiple pairs of source/targets,
-:meth:`Graph.get_eids`.
+:meth:`Graph.get_eids`. The boolean version, asking whether two vertices are directly connected, is :meth:`Graph.are_connected`.
 
 To get the edges incident on a vertex, you can use :meth:`Vertex.incident`, :meth:`Vertex.out_edges` and
 :meth:`Vertex.in_edges`. The three are equivalent on undirected graphs but not directed ones, of course:
@@ -55,7 +57,7 @@ To get the edges incident on a vertex, you can use :meth:`Vertex.incident`, :met
 >>> v = g.vs[0]
 >>> edges = v.incident()
 
-The :meth:`Graph.incident` function fulfills the same purpose with a slightly different syntax based on vertex ids:
+The :meth:`Graph.adjecent` and :meth:`Graph.incident` functions fulfill the same purpose with a slightly different syntax based on vertex ids:
 
 >>> edges = g.incident(0)
 
@@ -115,6 +117,8 @@ To remove edges, use :meth:`Graph.delete_edges`:
 
 You can also remove edges between source and target nodes.
 
+To contract vertices, use :meth:`Graph.contract_vertices`. Edges between contracted vertices will become loops.
+
 Graph operators
 +++++++++++++++++
 It is possible to compute the union, intersection, difference, and other set operations (operators) between graphs.
@@ -162,25 +166,33 @@ To perform a random walk from a certain vertex, use :meth:`Graph.random_walk`:
 
 >>> vids = g.random_walk(0, 3)
 
-Pathfinding
-+++++++++++
+Pathfinding and cuts
+++++++++++++++++++++
 Several pathfinding algorithms are available:
 
 - :meth:`Graph.shortest_paths` or :meth:`Graph.get_shortest_paths`
 - :meth:`Graph.get_all_shortest_paths`
 - :meth:`Graph.get_all_simple_paths`
 - :meth:`Graph.spanning_tree` finds a minimum spanning tree
+
+As well as functions related to cuts and paths:
+
 - :meth:`Graph.mincut` calculates the minimum cut between the source and target vertices
 - :meth:`Graph.st_mincut` - as previous one, but returns a simpler data structure
 - :meth:`Graph.mincut_value` - as previous one, but returns only the value
+- :meth:`Graph.all_st_cuts`
+- :meth:`Graph.all_st_mincuts`
 
 Global properties
 +++++++++++++++++++++
-A number of global graph measures are available:
+A number of global graph measures are available.
+
+Basic:
 
 - :meth:`Graph.diameter` or :meth:`Graph.get_diameter`
 - :meth:`Graph.girth`
 - :meth:`Graph.radius`
+- :meth:`Graph.average_path_length`
 
 Distributions:
 
@@ -189,10 +201,26 @@ Distributions:
 
 Connectedness:
 
+- :meth:`Graph.all_minimal_st_separators`
 - :meth:`Graph.minimum_size_separators`
 - :meth:`Graph.feedback_arc_set`
+- :meth:`Graph.cut_vertices` or :meth:`Graph.articulation_points`
 
-Some properties related to optimality:
+Cliques and motifs:
+
+- :meth:`Graph.clique_number` (aka :meth:`Graph.omega`)
+- :meth:`Graph.cliques`
+- :meth:`Graph.maximal_cliques`
+- :meth:`Graph.largest_cliques`
+- :meth:`Graph.motifs_randesu` and :meth:`Graph.motifs_randesu_estimate`
+- :meth:`Graph.g.motifs_randesu_no` counts the number of motifs
+
+Structural:
+
+- :meth:`Graph.edge_connectivity` or :meth:`Graph.edge_disjoint_paths` or :meth:`Graph.adhesion`
+- :meth:`Graph.vertex_connectivity` or :meth:`Graph.cohesion`
+
+Optimality:
 
 - :meth:`Graph.farthest_points`
 - :meth:`Graph.modularity`
@@ -205,19 +233,11 @@ Some properties related to optimality:
 - :meth:`Graph.mincut_value`
 - :meth:`Graph.maximum_bipartite_matching` (bipartite graphs)
 
-Cliques and motifs:
-
-- :meth:`Graph.clique_number` (aka :meth:`Graph.omega`)
-- :meth:`Graph.motifs_randesu` and :meth:`Graph.motifs_randesu_estimate`
-- :meth:`Graph.g.motifs_randesu_no` counts the number of motifs
-
-Structural:
-
-- :meth:`Graph.edge_connectivity` or :meth:`Graph.edge_disjoint_paths`
-- :meth:`Graph.vertex_connectivity`
-
 Other complex measures are:
 
+- :meth:`Graph.assortativity`
+- :meth:`Graph.assortativity_degree`
+- :meth:`Graph.assortativity_nominal`
 - :meth:`Graph.coreness` (aka :meth:`Graph.shell_index`)
 - :meth:`Graph.density`
 - :meth:`Graph.hub_score`
@@ -249,18 +269,19 @@ A spectrum of vertex-level properties can be computed. Similarity measures inclu
 - :meth:`Graph.similarity_inverse_log_weighted`
 - :meth:`Graph.diversity`
 
-Centrality-related:
-
-- :meth:`Graph.bibcoupling`
-- :meth:`Graph.eccentricity`
-- :meth:`Graph.strength`
-- :meth:`Graph.pagerank`
-- :meth:`Graph.personalized_pagerank`
-- :meth:`Graph.eigenvector_centrality` aka :meth:`Graph.evcent`
-
 Structural:
 
+- :meth:`Graph.authority_score`
 - :meth:`Graph.betweenness`
+- :meth:`Graph.bibcoupling`
+- :meth:`Graph.closeness`
+- :meth:`Graph.constraint`
+- :meth:`Graph.cocitation`
+- :meth:`Graph.eccentricity`
+- :meth:`Graph.eigenvector_centrality` aka :meth:`Graph.evcent`
+- :meth:`Graph.pagerank`
+- :meth:`Graph.personalized_pagerank`
+- :meth:`Graph.strength`
 
 Connectedness:
 
@@ -277,6 +298,7 @@ As for vertices, edge properties are implemented. Basic properties include:
 - :meth:`Graph.is_loop`
 - :meth:`Graph.is_multiple`
 - :meth:`Graph.is_mutual`
+- :meth:`Graph.count_multiple`
 
 and more complex ones:
 
@@ -290,34 +312,60 @@ Matrix-related functionality includes:
 - :meth:`Graph.get_adjacency_sparse` (sparase CSR matrix version)
 - :meth:`Graph.laplacian`
 
+Clustering
+++++++++++
+|igraph| includes several approaches to unsupervised graph clustering and community detection:
 
+- :meth:`Graph.clusters` (aka :meth:`Graph.components`): the connected components
+- :meth:`Graph.cohesive_blocks`
+- :meth:`Graph.community_edge_betweenness`
+- :meth:`Graph.community_fastgreedy`
+- :meth:`Graph.community_infomap`
+- :meth:`Graph.community_label_propagation`
+- :meth:`Graph.community_leading_eigenvector`
+- :meth:`Graph.community_leading_eigenvector_naive`
+- :meth:`Graph.community_leiden`
+- :meth:`Graph.community_multilevel` (a version of Louvain)
+- :meth:`Graph.community_optimal_modularity` (exact solution, < 100 vertices)
+- :meth:`Graph.community_spinglass`
+- :meth:`Graph.community_walktrap`
 
-Simplification, subgraphs, etc.
-+++++++++++++++++++++++++++++++
+Simplification, permutations and rewiring
++++++++++++++++++++++++++++++++++++++++++
 To simplify a graph (remove multiedges and loops), use :meth:`Graph.simplify`:
 
 >>> g_simple = g.simplify()
 
-To compute the line graph, there is :meth:`Graph.linegraph`:
-
->>> gl = g.linegraph()
-
-The function :meth:`Graph.decompose` decomposes the graph into subgraphs.
-
-To compute the subgraph spannes by some vertices/edges, use :meth:`Graph.subgraph` (aka :meth:`Graph.induced_subgraph`) and :meth:`Graph.subgraph_edges`:
-
->>> g_sub = g.subgraph([0, 1])
->>> g_sub = g.subgraph_edges([0])
+To return a directed/undirected copy of the graph, use :meth:`Graph.as_directed` and :meth:`Graph.as_undirected`, respectively.
 
 To permute the order of vertices, you can use :meth:`Graph.permute_vertices`:
 
 >>> g = ig.Tree(6, 2)
 >>> g_perm = g.permute_vertices([1, 0, 2, 3, 4, 5])
 
+The canonical permutation can be obtained via :meth:`Graph.canonical_permutation`, which can then be directly passed to the function above.
+
 To rewire the graph at random while keeping some structural properties, there are:
 
 - :meth:`Graph.rewire`
 - :meth:`Graph.rewire_edges`
+
+Line graph
+++++++++++
+To compute the line graph, there is :meth:`Graph.linegraph`:
+
+>>> gl = g.linegraph()
+
+Composition and subgraphs
+++++++++++++++++++++++++++
+The function :meth:`Graph.decompose` decomposes the graph into subgraphs. Vice versa, the function :meth:`Graph.compose` returns the composition of two graphs.
+
+To compute the subgraph spannes by some vertices/edges, use :meth:`Graph.subgraph` (aka :meth:`Graph.induced_subgraph`) and :meth:`Graph.subgraph_edges`:
+
+>>> g_sub = g.subgraph([0, 1])
+>>> g_sub = g.subgraph_edges([0])
+
+To compute the minimum spanning tree, use :meth:`Graph.spanning_tree`.
 
 To compute graph k-cores, the method :meth:`Graph.k_core` is available.
 
@@ -325,7 +373,7 @@ The dominator tree from a given node can be obtained with :meth:`Graph.dominator
 
 Bipartite graphs can be decomposed using :meth:`Graph.bipartite_projection`. The size of the projections can be computed using :meth:`Graph.bipartite_projection_size`.
 
-Graph comparisons
+Morphisms
 ++++++++++++++++++
 |igraph| enables comparisons between graphs:
 
@@ -337,6 +385,9 @@ Graph comparisons
 - :meth:`Graph.get_subisomorphisms_vf2`
 - :meth:`Graph.get_subisomorphisms_lad`
 - :meth:`Graph.get_automorphisms_vf2`
+- :meth:`Graph.count_isomorphisms_vf2`
+- :meth:`Graph.count_subisomorphisms_vf2`
+- :meth:`Graph.count_automorphisms_vf2`
 
 Flow
 ++++
