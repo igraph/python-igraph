@@ -71,6 +71,16 @@ To compute the degree, in-degree, or out-degree of a node, use :meth:`Vertex.deg
 >>> deg = g.vs[0].degree()
 >>> deg = g.degree(0)
 
+To compute the max degree in a list of vertices, use :meth:`Graph.maxdegree`.
+
+:meth:`Graph.knn` computes the average degree of the neighbors.
+
+Flow
+++++
+Flow is a characteristic of directed graphs. The following functions are available:
+
+- :meth:`Graph.maxflow` between two nodes
+- :meth:`Graph.maxflow_value` - similar to the previous one, but only the value is returned
 
 Adding and removing vertices and edges
 ++++++++++++++++++++++++++++++++++++++
@@ -140,7 +150,7 @@ Graph traversing
 A common operation is traversing the graph. |igraph| currently exposes breath-first search (BFS) via :meth:`Graph.bfs` and :meth:`Graph.bfsiter`:
 
 >>> [vertices, layers, parents] = g.bfs()
->>> it = g.bfsiter()  # Lazy, iterator version
+>>> it = g.bfsiter()  # Lazy version
 
 A depth-first search function is in the works.
 
@@ -154,7 +164,9 @@ Several pathfinding algorithms are available:
 
 - :meth:`Graph.shortest_paths`
 - :meth:`Graph.spanning_tree` finds a minimum spanning tree
-- :meth:`Graph.st_mincut` calculates the minimum cut between the source and target vertices
+- :meth:`Graph.mincut` calculates the minimum cut between the source and target vertices
+- :meth:`Graph.st_mincut` - as previous one, but returns a simpler data structure
+- :meth:`Graph.mincut_value` - as previous one, but returns only the value
 
 Global properties
 +++++++++++++++++++++
@@ -163,9 +175,29 @@ A number of global graph measures are available:
 - :meth:`Graph.diameter`
 - :meth:`Graph.radius`
 - :meth:`Graph.path_length_hist`
-- :meth:`Graph.clique_number` (aka :meth:`Graph.omega`)
 
-More complex measures are:
+Connectedness:
+
+- :meth:`Graph.minimum_size_separators`
+
+Some properties related to optimality:
+
+- :meth:`Graph.modularity`
+- :meth:`Graph.maximal_cliques`
+- :meth:`Graph.largest_cliques`
+- :meth:`Graph.maximal_independent_vertex_sets`
+- :meth:`Graph.largest_independent_vertex_sets`
+- :meth:`Graph.mincut`
+- :meth:`Graph.mincut_value`
+- :meth:`Graph.maximum_bipartite_matching` (bipartite graphs)
+
+Cliques and motifs:
+
+- :meth:`Graph.clique_number` (aka :meth:`Graph.omega`)
+- :meth:`Graph.motifs_randesu` and :meth:`Graph.motifs_randesu_estimate`
+- :meth:`Graph.g.motifs_randesu_no` counts the number of motifs
+
+Other complex measures are:
 
 - :meth:`Graph.vertex_connectivity`
 - :meth:`Graph.transitivity_undirected`
@@ -174,6 +206,7 @@ More complex measures are:
 - :meth:`Graph.triad_census`
 - :meth:`Graph.coreness` (aka :meth:`Graph.shell_index`)
 - :meth:`Graph.reciprocity` (directed graphs)
+
 
 Vertex properties
 +++++++++++++++++++
@@ -193,18 +226,25 @@ Connectedness:
 
 - :meth:`Graph.subcomponent`
 
-Graph comparisons
-++++++++++++++++++
-|igraph| enables comparisons between graphs:
+Matrix representations
++++++++++++++++++++++++
+Matrix-related functionality includes:
 
-- :meth:`Graph.subisomorphic_lad`
-- :meth:`Graph.g.subisomorphic_vf2`
+- :meth:`Graph.get_adjacency`
+- :meth:`Graph.get_adjacency_sparse` (sparase CSR matrix version)
+- :meth:`Graph.laplacian`
+
+
 
 Simplification, subgraphs, etc.
 +++++++++++++++++++++++++++++++
 To simplify a graph (remove multiedges and loops), use :meth:`Graph.simplify`:
 
 >>> g_simple = g.simplify()
+
+To compute the line graph, there is :meth:`Graph.linegraph`:
+
+>>> gl = g.linegraph()
 
 To compute the subgraph spannes by some vertices/edges, use :meth:`Graph.subgraph` and :meth:`Graph.subgraph_edges`:
 
@@ -220,5 +260,16 @@ To rewire the graph at random while keeping some structural properties, there ar
 
 - :meth:`Graph.rewire`
 - :meth:`Graph.rewire_edges`
+
+To compute graph k-cores, the method :meth:`Graph.k_core` is available.
+
+Graph comparisons
+++++++++++++++++++
+|igraph| enables comparisons between graphs:
+
+- :meth:`Graph.subisomorphic_lad`
+- :meth:`Graph.g.subisomorphic_vf2`
+
+
 
 .. _API documentation: https://igraph.org/python/doc/igraph-module.html
