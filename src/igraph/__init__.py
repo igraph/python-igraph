@@ -258,7 +258,7 @@ class Graph(GraphBase):
             edge[key] = value
         return edge
 
-    def add_edges(self, es):
+    def add_edges(self, es, attributes=None):
         """add_edges(es)
 
         Adds some edges to the graph.
@@ -266,8 +266,17 @@ class Graph(GraphBase):
         @param es: the list of edges to be added. Every edge is represented
           with a tuple containing the vertex IDs or names of the two
           endpoints. Vertices are enumerated from zero.
+        @params attributes: dict of sequences, all of length equal to the
+          number of edges to be added, containing the attributes of the new
+          edges.
         """
-        return GraphBase.add_edges(self, es)
+        eid = self.ecount()
+        res = GraphBase.add_edges(self, es)
+        n = self.ecount() - eid
+        if (attributes is not None) and (n > 0):
+            for key, val in attributes.items():
+                self.es[eid:][key] = val
+        return res
 
     def add_vertex(self, name=None, **kwds):
         """add_vertex(name=None, **kwds)
@@ -291,7 +300,7 @@ class Graph(GraphBase):
             vertex["name"] = name
         return vertex
 
-    def add_vertices(self, n):
+    def add_vertices(self, n, attributes=None):
         """add_vertices(n)
 
         Adds some vertices to the graph.
@@ -300,13 +309,24 @@ class Graph(GraphBase):
           vertex to be added, or a sequence of strings, each corresponding to the
           name of a vertex to be added. Names will be assigned to the C{name}
           vertex attribute.
+        @params attributes: dict of sequences, all of length equal to the
+          number of vertices to be added, containing the attributes of the new
+          vertices. If n is a string (so a single vertex is added), then the
+          values of this dict are the attributes themselves, but if n=1 then
+          they have to be lists of length 1.
+
+        Note that if n is a sequence of strings, indicating the names of the
+        new vertices, and attributes has a key 'name', the two conflict. In
+        that case the attribute will be applied.
         """
         if isinstance(n, basestring):
             # Adding a single vertex with a name
             m = self.vcount()
             result = GraphBase.add_vertices(self, 1)
             self.vs[m]["name"] = n
-            return result
+            if attributes is not None:
+                for key, val in attributes.items():
+                    self.vs[m][key] = val
         elif hasattr(n, "__iter__"):
             m = self.vcount()
             if not hasattr(n, "__len__"):
@@ -314,9 +334,18 @@ class Graph(GraphBase):
             else:
                 names = n
             result = GraphBase.add_vertices(self, len(names))
-            self.vs[m:]["name"] = names
-            return result
-        return GraphBase.add_vertices(self, n)
+            if len(names) > 0:
+                self.vs[m:]["name"] = names
+                if attributes is not None:
+                    for key, val in attributes.items():
+                        self.vs[m:][key] = val
+        else:
+            result = GraphBase.add_vertices(self, n)
+            if (attributes is not None) and (n > 0):
+                m = self.vcount() - n
+                for key, val in attributes.items():
+                    self.vs[m:][key] = val
+        return result
 
     def adjacent(self, *args, **kwds):
         """adjacent(vertex, mode=OUT)

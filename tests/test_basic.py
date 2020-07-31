@@ -120,19 +120,25 @@ class BasicTests(unittest.TestCase):
         self.assertEqual(
             sorted(g.vertex_attributes()), ["ham", "name", "spam"]
         )
-        self.assertEqual(g.vs["spam"], [None]*4 + ["cheese"])
-        self.assertEqual(g.vs["ham"], [None]*4 + [42])
+        self.assertEqual(g.vs["spam"], [None] * 4 + ["cheese"])
+        self.assertEqual(g.vs["ham"], [None] * 4 + [42])
 
     def testAddVertices(self):
         g = Graph()
         g.add_vertices(2)
         self.assertTrue(g.vcount() == 2 and g.ecount() == 0)
+
         g.add_vertices("spam")
         self.assertTrue(g.vcount() == 3 and g.ecount() == 0)
         self.assertEqual(g.vs[2]["name"], "spam")
+
         g.add_vertices(["bacon", "eggs"])
         self.assertTrue(g.vcount() == 5 and g.ecount() == 0)
         self.assertEqual(g.vs[2:]["name"], ["spam", "bacon", "eggs"])
+
+        g.add_vertices(2, attributes={'color': ['k', 'b']})
+        self.assertEqual(g.vs[2:]["name"], ["spam", "bacon", "eggs", None, None])
+        self.assertEqual(g.vs[5:]["color"], ["k", "b"])
 
     def testDeleteVertices(self):
         g = Graph([(0, 1), (1, 2), (2, 3), (0, 2), (3, 4), (4, 5)])
@@ -207,6 +213,14 @@ class BasicTests(unittest.TestCase):
         self.assertEqual(g.get_edgelist(), [
             (0, 1), (1, 2), (2, 3), (1, 3), (0, 2), (0, 3)
         ])
+
+        g.add_edges([(0, 0), (1, 1)], attributes={'color': ['k', 'b']})
+        self.assertEqual(g.get_edgelist(), [
+            (0, 1), (1, 2), (2, 3), (1, 3), (0, 2), (0, 3), (0, 0), (1, 1),
+        ])
+        self.assertEqual(
+            g.es['color'],
+            [None, None, None, None, None, None, 'k', 'b'])
 
     def testDeleteEdges(self):
         g = Graph.Famous("petersen")
