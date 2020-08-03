@@ -23,6 +23,7 @@
 #include "attributes.h"
 #include "arpackobject.h"
 #include "bfsiter.h"
+#include "dfsiter.h"
 #include "common.h"
 #include "convert.h"
 #include "edgeseqobject.h"
@@ -9920,6 +9921,23 @@ PyObject *igraphmodule_Graph_unfold_tree(igraphmodule_GraphObject * self,
   return Py_BuildValue("NN", result_o, mapping_o);
 }
 
+/** \ingroup python_interface_graph
+ * \brief Constructs a depth first search (DFS) iterator of the graph
+ */
+PyObject *igraphmodule_Graph_dfsiter(igraphmodule_GraphObject * self,
+                                     PyObject * args, PyObject * kwds)
+{
+  char *kwlist[] = { "vid", "mode", "advanced", NULL };
+  PyObject *root, *adv = Py_False, *mode_o = Py_None;
+  igraph_neimode_t mode = IGRAPH_OUT;
+
+  if (!PyArg_ParseTupleAndKeywords
+      (args, kwds, "O|OO", kwlist, &root, &mode_o, &adv))
+    return NULL;
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) return NULL;
+  return igraphmodule_DFSIter_new(self, root, mode, PyObject_IsTrue(adv));
+}
+
 /**********************************************************************
  * Dominator                                                          *
  **********************************************************************/
@@ -14517,6 +14535,17 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  returns the distance of the vertex from the root and the\n"
    "  parent of the vertex in the BFS tree as well.\n"
    "@return: the BFS iterator as an L{igraph.BFSIter} object.\n"},
+  {"dfsiter", (PyCFunction) igraphmodule_Graph_dfsiter,
+   METH_VARARGS | METH_KEYWORDS,
+   "dfsiter(vid, mode=OUT, advanced=False)\n\n"
+   "Constructs a depth first search (DFS) iterator of the graph.\n\n"
+   "@param vid: the root vertex ID\n"
+   "@param mode: either L{IN} or L{OUT} or L{ALL}.\n"
+   "@param advanced: if C{False}, the iterator returns the next\n"
+   "  vertex in DFS order in every step. If C{True}, the iterator\n"
+   "  returns the distance of the vertex from the root and the\n"
+   "  parent of the vertex in the DFS tree as well.\n"
+   "@return: the DFS iterator as an L{igraph.DFSIter} object.\n"},
 
   /////////////////
   // CONVERSIONS //
