@@ -25,6 +25,7 @@
 
 #include <Python.h>
 
+PyObject* igraphmodule__disjoint_union(PyObject* self, PyObject* args, PyObject* kwds);
 PyObject* igraphmodule__union(PyObject* self, PyObject* args, PyObject* kwds);
 PyObject* igraphmodule__intersection(PyObject* self, PyObject* args, PyObject* kwds);
 

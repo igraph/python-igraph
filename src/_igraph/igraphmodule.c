@@ -651,6 +651,10 @@ static PyMethodDef igraphmodule_methods[] =
     METH_VARARGS | METH_KEYWORDS,
     "_split_join_distance(comm1, comm2)"
   },
+  {"_disjoint_union", (PyCFunction)igraphmodule__disjoint_union,
+    METH_VARARGS | METH_KEYWORDS,
+    "_disjoint_union(graphs)"
+  },
   {"_union", (PyCFunction)igraphmodule__union,
     METH_VARARGS | METH_KEYWORDS,
     "_union(graphs, edgemaps)"

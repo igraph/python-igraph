@@ -11,9 +11,9 @@ except ImportError:
 
 class OperatorTests(unittest.TestCase):
     def testMultiplication(self):
-        g = Graph.Full(3)*3
+        g = Graph.Full(3) * 3
         self.assertTrue(g.vcount() == 9 and g.ecount() == 9
-                        and g.clusters().membership == [0,0,0,1,1,1,2,2,2])
+                        and g.clusters().membership == [0, 0, 0, 1, 1, 1, 2, 2, 2])
 
     def testIntersection(self):
         g = Graph.Tree(7, 2) & Graph.Lattice([7])
@@ -22,6 +22,18 @@ class OperatorTests(unittest.TestCase):
     def testIntersectionMethod(self):
         g = Graph.Tree(7, 2).intersection(Graph.Lattice([7]))
         self.assertTrue(g.get_edgelist() == [(0, 1)])
+
+    def testDisjointUnion(self):
+        g1 = Graph.Tree(7, 2)
+        g2 = Graph.Lattice([7])
+
+        # Method
+        g = g1.disjoint_union(g2)
+        self.assertTrue(g.vcount() == 14 and g.ecount() == 13)
+
+        # Module function
+        g = disjoint_union([g1, g2])
+        self.assertTrue(g.vcount() == 14 and g.ecount() == 13)
 
     def testUnion(self):
         g = Graph.Tree(7, 2) | Graph.Lattice([7])

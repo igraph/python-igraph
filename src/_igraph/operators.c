@@ -27,6 +27,70 @@
 
 
 /** \ingroup python_interface_graph
+ * \brief Creates the disjoint union of two or more graphs
+ */
+PyObject *igraphmodule__disjoint_union(PyObject *self,
+		PyObject *args, PyObject *kwds)
+{
+  static char* kwlist[] = { "graphs", NULL };
+  PyObject *it, *graphs;
+  long int no_of_graphs;
+  igraphmodule_GraphObject *o;
+  PyObject *result;
+  PyTypeObject *result_type;
+  igraph_t g;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist,
+      &graphs))
+    return NULL;
+
+  /* Needs to be an iterable */
+  it = PyObject_GetIter(graphs);
+  if (!it) {
+      Py_DECREF(it);
+      return igraphmodule_handle_igraph_error();
+  }
+
+  /* Get all elements, store the graphs in an igraph_vector_ptr */
+  igraph_vector_ptr_t gs;
+  if (igraph_vector_ptr_init(&gs, 0)) {
+    Py_DECREF(it);
+    return igraphmodule_handle_igraph_error();
+  }
+  if (igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t_with_type(it, &gs, &result_type)) {
+    Py_DECREF(it);
+    igraph_vector_ptr_destroy(&gs);
+    return NULL;
+  }
+  Py_DECREF(it);
+  no_of_graphs = (long int) igraph_vector_ptr_size(&gs);
+
+  /* Create disjoint union */
+  if (igraph_disjoint_union_many(&g, &gs)) {
+    igraph_vector_ptr_destroy(&gs);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  igraph_vector_ptr_destroy(&gs);
+
+  /* this is correct as long as attributes are not copied by the
+   * operator. if they are copied, the initialization should not empty
+   * the attribute hashes */
+  if (no_of_graphs > 0) {
+    result = igraphmodule_Graph_subclass_from_igraph_t(
+        result_type,
+        &g);
+  }
+  else {
+    result = igraphmodule_Graph_from_igraph_t(&g);
+  }
+
+  return result;
+}
+
+
+/** \ingroup python_interface_graph
  * \brief Creates the union of two or more graphs
  */
 PyObject *igraphmodule__union(PyObject *self,
@@ -135,7 +199,7 @@ PyObject *igraphmodule__union(PyObject *self,
     result = (PyObject *) o;
   }
 
-  return (PyObject *) result;
+  return result;
 }
 
 /** \ingroup python_interface_graph
@@ -247,7 +311,7 @@ PyObject *igraphmodule__intersection(PyObject *self,
     result = (PyObject *) o;
   }
 
-  return (PyObject *) result;
+  return result;
 }
 
 

@@ -3303,7 +3303,7 @@ class Graph(GraphBase):
             elif other == 1:
                 return self
             elif other > 1:
-                return self.disjoint_union([self]*(other-1))
+                return self.disjoint_union([self] * (other - 1))
             else:
                 return NotImplemented
 
@@ -3601,28 +3601,48 @@ class Graph(GraphBase):
         """
         return str(GraphSummary(self, verbosity, width, *args, **kwds))
 
-    def intersection(self, other, byname='auto'):
-        '''intersection(graphs)
+    def disjoint_union(self, other):
+        '''disjoint_union(self, other)
 
-        Creates the intersection of two (or more) graphs.
+        Creates the disjoint union of two (or more) graphs.
 
-        @param graphs: the list of graphs to be intersected with
+        @param graphs: graph or list of graphs to be united with
         the current one.
-        @param byname: whether to use vertex names instead of ids. See
-        L{igraph.intersection} for details.
+        @return: the disjoint union graph
         '''
-        return intersection([self, other], byname=byname)
+        if isinstance(other, GraphBase):
+            other = [other]
+        return disjoint_union([self] + other)
 
     def union(self, other, byname='auto'):
-        '''union(graphs)
+        '''union(self, other)
 
         Creates the union of two (or more) graphs.
-        @param graphs: the list of graphs to be united with
+
+        @param graphs: graph or list of graphs to be united with
         the current one.
         @param byname: whether to use vertex names instead of ids. See
         L{igraph.union} for details.
+        @return: the union graph
         '''
-        return union([self, other], byname=byname)
+        if isinstance(other, GraphBase):
+            other = [other]
+        return union([self] + other, byname=byname)
+
+    def intersection(self, other, byname='auto'):
+        '''intersection(self, other)
+
+        Creates the intersection of two (or more) graphs.
+
+        @param other: graph or list of graphs to be intersected with
+        the current one.
+        @param byname: whether to use vertex names instead of ids. See
+        L{igraph.intersection} for details.
+        @return: the intersection graph
+        '''
+        if isinstance(other, GraphBase):
+            other = [other]
+        return intersection([self] + other, byname=byname)
 
     _format_mapping = {
           "ncol":       ("Read_Ncol", "write_ncol"),

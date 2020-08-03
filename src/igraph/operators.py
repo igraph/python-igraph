@@ -32,11 +32,78 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 # pylint: disable-msg=W0401
 # W0401: wildcard import
 from igraph._igraph import *
-from igraph._igraph import _union
-from igraph._igraph import _intersection
+from igraph._igraph import _union, _intersection, _disjoint_union
 
 from collections import defaultdict, Counter
 from warnings import warn
+
+
+def disjoint_union(graphs):
+    """Graph disjoint union.
+
+    The disjoint union of two or more graphs is created.
+
+    This function keeps the attributes of all graphs. All graph, vertex and
+    edge attributes are copied to the result. If an attribute is present in
+    multiple graphs and would result a name clash, then this attribute is
+    renamed by adding suffixes: _1, _2, etc.
+
+    An error is generated if some input graphs are directed and others are
+    undirected.
+
+    @param graph: list of graphs. A lazy sequence is not acceptable.
+    @return: the disjoint union graph
+    """
+    if any(not isinstance(g, GraphBase) for g in graphs):
+        raise TypeError('Not all elements are graphs')
+
+    ngr = len(graphs)
+    # Trivial cases
+    if ngr == 0:
+        return None
+    if ngr == 1:
+        return graphs[0].copy()
+    # Now there are at least two graphs
+
+    gu = _disjoint_union(graphs)
+
+    # Graph attributes
+    a_first = {}
+    a_num = set()
+    for ig, g in enumerate(graphs, 1):
+        for an in g.attributes():
+            av = g[an]
+            # No conflicts
+            if an not in gu.attributes():
+                a_first[an] = ig
+                gu[an] = av
+                continue
+            if gu[an] == av:
+                continue
+            if an not in a_num:
+                # New conflict
+                a_num.add(an)
+                igf = a_first[an]
+                gu['{:}_{:}'.format(an, igf)] = gu.pop(an)
+            gu['{:}_{:}'.format(an, ig)] = av
+
+    # Vertex attributes
+    i = 0
+    for g in graphs:
+        nv = g.vcount()
+        for attr in g.vertex_attributes():
+            gu.vs[i: i + nv][attr] = g.vs[attr]
+        i += nv
+
+    # Edge attributes
+    i = 0
+    for g in graphs:
+        ne = g.ecount()
+        for attr in g.edge_attributes():
+            gu.es[i: i + ne][attr] = g.es[attr]
+        i += ne
+
+    return gu
 
 
 def union(graphs, byname='auto'):
