@@ -282,6 +282,17 @@ class BasicTests(unittest.TestCase):
         g.delete_edges()
         self.assertEqual(0, g.ecount())
 
+    def testClear(self):
+        g = Graph.Famous("petersen")
+        g["name"] = list("petersen")
+
+        # Clearing the graph
+        g.clear()
+
+        self.assertEqual(0, g.vcount())
+        self.assertEqual(0, g.ecount())
+        self.assertEqual([], g.attributes())
+
     def testGraphGetEid(self):
         g = Graph.Famous("petersen")
         g.vs["name"] = list("ABCDEFGHIJ")
