@@ -2,7 +2,7 @@ Graph analysis
 ==============
 |igraph| enables analysis of graphs/networks from simple operations such as adding and removing nodes to complex theoretical constructs such as community detection. Read the `API documentation`_ for details on each function and class.
 
-The context for the following examples will be to import the :class:`Graph` class and to have one or more graphs available:
+The context for the following examples will be to import |igraph| (commonly as `ig`), have the :class:`Graph` class and to have one or more graphs available:
 
 >>> import igraph as ig
 >>> from igraph import Graph
@@ -14,7 +14,8 @@ To get a summary representation of the graph, use :meth:`Graph.summary`. For ins
 
 will provide a fairly detailed description.
 
-To copy a graph, use :meth:`Graph.copy`.
+To copy a graph, use :meth:`Graph.copy`. This is a "shallow" copy: any mutable objects in the attributes are not copied (they would refer to the same instance).
+If you want to copy a graph including all its attributes, use Python's `deepcopy` module.
 
 Vertices and edges
 +++++++++++++++++++++++++++
@@ -37,7 +38,13 @@ Similarly for edges, use :attr:`Graph.es`:
 >>> for e in g.es:
 >>>     print(e)
 
-.. note:: These two attributes are special sequences with their own useful methods. Some are described below, and all can be found in the `API documentation`_.
+You can index and slice vertices and edges similar to a list:
+
+>>> g.vs[:4]
+>>> g.vs[0, 2, 4]
+>>> g.es[3]
+
+.. note:: The `vs` and `es` attributes are special sequences with their own useful methods. See `API documentation`_ for a full list.
 
 If you prefer a vanilla edge list, you can use :meth:`Graph.get_edge_list`.
 
@@ -57,7 +64,7 @@ To get the edges incident on a vertex, you can use :meth:`Vertex.incident`, :met
 >>> v = g.vs[0]
 >>> edges = v.incident()
 
-The :meth:`Graph.adjecent` and :meth:`Graph.incident` functions fulfill the same purpose with a slightly different syntax based on vertex ids:
+The :meth:`Graph.incident` function fulfills the same purpose with a slightly different syntax based on vertex ids:
 
 >>> edges = g.incident(0)
 
@@ -71,7 +78,7 @@ To compute the neighbors, successors, and predecessors, the methods :meth:`Graph
 >>> neis = g.vs[0].neighbors()
 >>> neis = g.neighbors(0)
 
-To get the list of vertives within a certain distance of one or more initial nodes, you can use :meth:`Graph.neighborhood`:
+To get the list of vertices within a certain distance from one or more initial vertices, you can use :meth:`Graph.neighborhood`:
 
 >>> g.neighborhood([0, 1], order=2)
 
@@ -100,7 +107,6 @@ This changes the graph `g` in place. You can specify the name of the vertices if
 
 To remove nodes, use :meth:`Graph.delete_vertices`:
 
->>> g.delete_vertices(None)  # remove all vertices
 >>> g.delete_vertices([1, 2])
 
 Again, you can specify the names or the actual :class:`Vertex` objects instead.
@@ -112,8 +118,7 @@ To add edges, use :meth:`Graph.add_edge` and :meth:`Graph.add_edges`:
 
 To remove edges, use :meth:`Graph.delete_edges`:
 
->>> g.delete_edges(None)   # remove all edges
->>> g.delete_edges([0, 5]) # remove by edge ID
+>>> g.delete_edges([0, 5]) # remove by edge id
 
 You can also remove edges between source and target nodes.
 
@@ -153,14 +158,17 @@ To sort a graph topologically, use :meth:`Graph.topological_sorting`:
 >>> g = ig.Graph.Tree(10, 2, mode=ig.TREE_OUT)
 >>> g.topological_sorting()
 
-Graph traversing
+Graph traversal
 +++++++++++++++++++++
-A common operation is traversing the graph. |igraph| currently exposes breath-first search (BFS) via :meth:`Graph.bfs` and :meth:`Graph.bfsiter`:
+A common operation is traversing the graph. |igraph| currently exposes breadth-first search (BFS) via :meth:`Graph.bfs` and :meth:`Graph.bfsiter`:
 
 >>> [vertices, layers, parents] = g.bfs()
 >>> it = g.bfsiter()  # Lazy version
 
-A depth-first search function is in the works.
+Depth-first search has a similar infrastructure via :meth:`Graph.dfs` and :meth:`Graph.dfsiter`:
+
+>>> [vertices, parents] = g.dfs()
+>>> it = g.dfsiter()  # Lazy version
 
 To perform a random walk from a certain vertex, use :meth:`Graph.random_walk`:
 
@@ -182,6 +190,10 @@ As well as functions related to cuts and paths:
 - :meth:`Graph.mincut_value` - as previous one, but returns only the value
 - :meth:`Graph.all_st_cuts`
 - :meth:`Graph.all_st_mincuts`
+- :meth:`Graph.edge_connectivity` or :meth:`Graph.edge_disjoint_paths` or :meth:`Graph.adhesion`
+- :meth:`Graph.vertex_connectivity` or :meth:`Graph.cohesion`
+
+See also the section on flow.
 
 Global properties
 +++++++++++++++++++++
@@ -203,7 +215,6 @@ Connectedness:
 
 - :meth:`Graph.all_minimal_st_separators`
 - :meth:`Graph.minimum_size_separators`
-- :meth:`Graph.feedback_arc_set`
 - :meth:`Graph.cut_vertices` or :meth:`Graph.articulation_points`
 
 Cliques and motifs:
@@ -213,12 +224,13 @@ Cliques and motifs:
 - :meth:`Graph.maximal_cliques`
 - :meth:`Graph.largest_cliques`
 - :meth:`Graph.motifs_randesu` and :meth:`Graph.motifs_randesu_estimate`
-- :meth:`Graph.g.motifs_randesu_no` counts the number of motifs
+- :meth:`Graph.motifs_randesu_no` counts the number of motifs
 
-Structural:
+Directed acyclic graphs:
 
-- :meth:`Graph.edge_connectivity` or :meth:`Graph.edge_disjoint_paths` or :meth:`Graph.adhesion`
-- :meth:`Graph.vertex_connectivity` or :meth:`Graph.cohesion`
+- :meth:`Graph.is_dag`
+- :meth:`Graph.feedback_arc_set`
+- :meth:`Graph.topological_sorting`
 
 Optimality:
 
@@ -231,6 +243,7 @@ Optimality:
 - :meth:`Graph.largest_independent_vertex_sets`
 - :meth:`Graph.mincut`
 - :meth:`Graph.mincut_value`
+- :meth:`Graph.feedback_arc_set`
 - :meth:`Graph.maximum_bipartite_matching` (bipartite graphs)
 
 Other complex measures are:
@@ -238,16 +251,14 @@ Other complex measures are:
 - :meth:`Graph.assortativity`
 - :meth:`Graph.assortativity_degree`
 - :meth:`Graph.assortativity_nominal`
-- :meth:`Graph.coreness` (aka :meth:`Graph.shell_index`)
 - :meth:`Graph.density`
-- :meth:`Graph.hub_score`
 - :meth:`Graph.transitivity_undirected`
-- :meth:`Graph.transitivity_local_undirected`
 - :meth:`Graph.transitivity_avglocal_undirected`
 - :meth:`Graph.dyad_census`
 - :meth:`Graph.triad_census`
 - :meth:`Graph.reciprocity` (directed graphs)
 - :meth:`Graph.isoclass` (only 3 or 4 vertices)
+- :meth:`Graph.biconnected_components` aka :meth:`Graph.blocks`
 
 Boolean properties:
 
@@ -272,24 +283,25 @@ A spectrum of vertex-level properties can be computed. Similarity measures inclu
 Structural:
 
 - :meth:`Graph.authority_score`
+- :meth:`Graph.hub_score`
 - :meth:`Graph.betweenness`
 - :meth:`Graph.bibcoupling`
 - :meth:`Graph.closeness`
 - :meth:`Graph.constraint`
 - :meth:`Graph.cocitation`
+- :meth:`Graph.coreness` (aka :meth:`Graph.shell_index`)
 - :meth:`Graph.eccentricity`
-- :meth:`Graph.eigenvector_centrality` aka :meth:`Graph.evcent`
+- :meth:`Graph.eigenvector_centrality`
 - :meth:`Graph.pagerank`
 - :meth:`Graph.personalized_pagerank`
 - :meth:`Graph.strength`
+- :meth:`Graph.transitivity_local_undirected`
 
 Connectedness:
 
 - :meth:`Graph.subcomponent`
 - :meth:`Graph.is_separator`
 - :meth:`Graph.is_minimal_separator`
-- :meth:`Graph.biconnected_components`
-- :meth:`Graph.blocks`
 
 Edge properties
 +++++++++++++++
@@ -309,14 +321,14 @@ Matrix representations
 Matrix-related functionality includes:
 
 - :meth:`Graph.get_adjacency`
-- :meth:`Graph.get_adjacency_sparse` (sparase CSR matrix version)
+- :meth:`Graph.get_adjacency_sparse` (sparse CSR matrix version)
 - :meth:`Graph.laplacian`
 
 Clustering
 ++++++++++
 |igraph| includes several approaches to unsupervised graph clustering and community detection:
 
-- :meth:`Graph.clusters` (aka :meth:`Graph.components`): the connected components
+- :meth:`Graph.components` (aka :meth:`Graph.clusters`): the connected components
 - :meth:`Graph.cohesive_blocks`
 - :meth:`Graph.community_edge_betweenness`
 - :meth:`Graph.community_fastgreedy`
@@ -332,6 +344,10 @@ Clustering
 
 Simplification, permutations and rewiring
 +++++++++++++++++++++++++++++++++++++++++
+To check is a graph is simple, you can use :meth:`Graph.is_simple`.
+
+>>> g.is_simple()
+
 To simplify a graph (remove multiedges and loops), use :meth:`Graph.simplify`:
 
 >>> g_simple = g.simplify()
@@ -345,16 +361,20 @@ To permute the order of vertices, you can use :meth:`Graph.permute_vertices`:
 
 The canonical permutation can be obtained via :meth:`Graph.canonical_permutation`, which can then be directly passed to the function above.
 
-To rewire the graph at random while keeping some structural properties, there are:
+To rewire the graph at random, there are:
 
-- :meth:`Graph.rewire`
-- :meth:`Graph.rewire_edges`
+- :meth:`Graph.rewire` - preserves the degree distribution
+- :meth:`Graph.rewire_edges` - fixed rewiring probability for each endpoint
 
 Line graph
 ++++++++++
-To compute the line graph, there is :meth:`Graph.linegraph`:
+To compute the line graph of a graph `g`, which represents the connectedness of the *edges* of g, you can use :meth:`Graph.linegraph`:
 
+>>> g = Graph(n=4, edges=[[0, 1], [0, 2]])
 >>> gl = g.linegraph()
+
+In this case, the line graph has two vertices, representing the two edges of the original graph, and one edge, representing the point where
+those two original edges touch.
 
 Composition and subgraphs
 ++++++++++++++++++++++++++
@@ -396,5 +416,15 @@ Flow is a characteristic of directed graphs. The following functions are availab
 - :meth:`Graph.maxflow` between two nodes
 - :meth:`Graph.maxflow_value` - similar to the previous one, but only the value is returned
 - :meth:`Graph.gomory_hu_tree`
+
+Flow and cuts are closely related, therefore you might find the following functions useful as well:
+
+- :meth:`Graph.mincut` calculates the minimum cut between the source and target vertices
+- :meth:`Graph.st_mincut` - as previous one, but returns a simpler data structure
+- :meth:`Graph.mincut_value` - as previous one, but returns only the value
+- :meth:`Graph.all_st_cuts`
+- :meth:`Graph.all_st_mincuts`
+- :meth:`Graph.edge_connectivity` or :meth:`Graph.edge_disjoint_paths` or :meth:`Graph.adhesion`
+- :meth:`Graph.vertex_connectivity` or :meth:`Graph.cohesion`
 
 .. _API documentation: https://igraph.org/python/doc/igraph-module.html
