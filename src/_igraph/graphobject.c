@@ -14545,7 +14545,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  vertex in DFS order in every step. If C{True}, the iterator\n"
    "  returns the distance of the vertex from the root and the\n"
    "  parent of the vertex in the DFS tree as well.\n"
-   "@return: the DFS iterator as an L{igraph.BFSIter} object.\n"},
+   "@return: the DFS iterator as an L{igraph.DFSIter} object.\n"},
 
   /////////////////
   // CONVERSIONS //

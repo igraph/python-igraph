@@ -3240,16 +3240,10 @@ class Graph(GraphBase):
         # go down the rabbit hole
         while stack:
             vid = stack[-1]
-            if mode == IN:
-                edges = self.vs[vid].in_edges()
-            else:
-                edges = self.vs[vid].out_edges()
-            for edge in edges:
-                neighbor = edge.target
-                if neighbor == vid:
-                    neighbor = edge.source
+            neighbors = self.neighbors(vid, mode=mode)
+            for neighbor in neighbors:
                 if not added[neighbor]:
-                    # Add hanging neighbor
+                    # Add hanging subtree neighbor
                     stack.append(neighbor)
                     vids.append(neighbor)
                     parents.append(vid)
