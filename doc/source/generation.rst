@@ -7,6 +7,10 @@ The :class:`Graph` class is the main object used to generate graphs:
 
 >>> from igraph import Graph
 
+To copy a graph, use :meth:`Graph.copy`:
+
+>>> g_new = g.copy()
+
 From nodes and edges
 ++++++++++++++++++++
 Nodes are always numbered from 0 upwards. To create a generic graph with a specified number of nodes (e.g. 10) and a list of edges between them, you can use the generic constructor:
