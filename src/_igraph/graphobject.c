@@ -565,10 +565,21 @@ PyObject *igraphmodule_Graph_add_vertices(igraphmodule_GraphObject * self,
  */
 PyObject *igraphmodule_Graph_delete_vertices(igraphmodule_GraphObject * self,
                                              PyObject * args, PyObject * kwds) {
-  PyObject *list;
+  PyObject *list = 0;
   igraph_vs_t vs;
 
-  if (!PyArg_ParseTuple(args, "O", &list)) return NULL;
+  if (!PyArg_ParseTuple(args, "|O", &list)) return NULL;
+
+  /* no arguments means delete all. */
+  
+  /*Py_None also means all for now, but it is deprecated */
+  if (list == Py_None) {
+        PyErr_Warn(PyExc_DeprecationWarning, "Graph.delete_vertices(None) is "
+                   "deprecated since igraph 0.8.3, please use "
+                   "Graph.delete_vertices() instead");
+  }
+
+  /* this already converts no arguments and Py_None to all vertices */
   if (igraphmodule_PyObject_to_vs_t(list, &vs, &self->g, 0, 0)) return NULL;
 
   if (igraph_delete_vertices(&self->g, vs)) {
