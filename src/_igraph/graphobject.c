@@ -571,7 +571,7 @@ PyObject *igraphmodule_Graph_delete_vertices(igraphmodule_GraphObject * self,
   if (!PyArg_ParseTuple(args, "|O", &list)) return NULL;
 
   /* no arguments means delete all. */
-  
+
   /*Py_None also means all for now, but it is deprecated */
   if (list == Py_None) {
         PyErr_Warn(PyExc_DeprecationWarning, "Graph.delete_vertices(None) is "
@@ -640,13 +640,23 @@ PyObject *igraphmodule_Graph_add_edges(igraphmodule_GraphObject * self,
 PyObject *igraphmodule_Graph_delete_edges(igraphmodule_GraphObject * self,
                                           PyObject * args, PyObject * kwds)
 {
-  PyObject *list;
+  PyObject *list = 0;
   igraph_es_t es;
   static char *kwlist[] = { "edges", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &list))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &list))
     return NULL;
 
+  /* no arguments means delete all. */
+
+  /*Py_None also means all for now, but it is deprecated */
+  if (list == Py_None) {
+        PyErr_Warn(PyExc_DeprecationWarning, "Graph.delete_vertices(None) is "
+                   "deprecated since igraph 0.8.3, please use "
+                   "Graph.delete_vertices() instead");
+  }
+
+  /* this already converts no arguments and Py_None to all vertices */
   if (igraphmodule_PyObject_to_es_t(list, &es, &self->g, 0)) {
     /* something bad happened during conversion, return immediately */
     return NULL;
@@ -12060,7 +12070,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "delete_vertices(vs)\n\n"
    "Deletes vertices and all its edges from the graph.\n\n"
    "@param vs: a single vertex ID or the list of vertex IDs\n"
-   "  to be deleted.\n"},
+   "  to be deleted. No argument deletes all vertices.\n"},
 
   /* interface to igraph_add_edges */
   {"add_edges", (PyCFunction) igraphmodule_Graph_add_edges,
@@ -12079,7 +12089,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "All vertices will be kept, even if they lose all their edges.\n"
    "Nonexistent edges will be silently ignored.\n\n"
    "@param es: the list of edges to be removed. Edges are identifed by\n"
-   "  edge IDs. L{EdgeSeq} objects are also accepted here.\n"},
+   "  edge IDs. L{EdgeSeq} objects are also accepted here. No argument\n"
+   "  deletes all edges.\n"},
 
   /* interface to igraph_degree */
   {"degree", (PyCFunction) igraphmodule_Graph_degree,
