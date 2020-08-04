@@ -11,6 +11,7 @@ igraph/*.so
 .eggs/
 .tox
 .venv/
+.vscode/
 docker/wheelhouse
 vendor/build/
 vendor/install/
