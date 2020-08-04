@@ -23,8 +23,8 @@ class IteratorTests(unittest.TestCase):
     def testDFS(self):
         g = Graph.Tree(10, 2)
         vs, ps = g.dfs(0)
-        self.assertEqual(vs, [0, 1, 3, 7, 8, 4, 9, 2, 5, 6])
-        self.assertEqual(ps, [0, 0, 1, 3, 3, 1, 4, 0, 2, 2])
+        self.assertEqual(vs, [0, 2, 6, 5, 1, 4, 9, 3, 8, 7])
+        self.assertEqual(ps, [0, 0, 2, 2, 0, 1, 4, 1, 3, 3])
 
     def testDFSIter(self):
         g = Graph.Tree(10, 2)

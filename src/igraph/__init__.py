@@ -3261,23 +3261,23 @@ class Graph(GraphBase):
         parents = []
 
         # ok start from vid
-        stack.append(vid)
+        stack.append((vid, self.neighbors(vid, mode=mode)))
         vids.append(vid)
         parents.append(vid)
         added[vid] = True
 
         # go down the rabbit hole
         while stack:
-            vid = stack[-1]
-            neighbors = self.neighbors(vid, mode=mode)
-            for neighbor in neighbors:
+            vid, neighbors = stack[-1]
+            if neighbors:
+                # Get next neighbor to visit
+                neighbor = neighbors.pop()
                 if not added[neighbor]:
                     # Add hanging subtree neighbor
-                    stack.append(neighbor)
+                    stack.append((neighbor, self.neighbors(neighbor, mode=mode)))
                     vids.append(neighbor)
                     parents.append(vid)
                     added[neighbor] = True
-                    break
             else:
                 # No neighbor found, end of subtree
                 stack.pop()
