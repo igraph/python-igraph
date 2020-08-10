@@ -14658,7 +14658,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
    "Read_Edgelist(f, directed=True)\n\n"
    "Reads an edge list from a file and creates a graph based on it.\n\n"
-   "Please note that the vertex indices are zero-based.\n\n"
+   "Please note that the vertex indices are zero-based. A vertex of zero\n"
+   "degree will be created for every integer that is in range but does not\n"
+   "appear in the edgelist.\n\n"
    "@param f: the name of the file or a Python file handle\n"
    "@param directed: whether the generated graph should be directed.\n"},
   /* interface to igraph_read_graph_graphdb */
