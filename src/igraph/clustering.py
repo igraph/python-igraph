@@ -422,13 +422,16 @@ class VertexClustering(Clustering):
 
 
     def giant(self):
-        """Returns the giant community of the clustered graph.
+        """Returns the largest cluster of the clustered graph.
 
-        The giant component a community for which no larger community exists.
-        @note: there can be multiple giant communities, this method will return
-          the copy of an arbitrary one if there are multiple giant communities.
+        The largest cluster is a cluster for which no larger cluster exists in
+        the clustering. It may also be known as the I{giant community} if the
+        clustering represents the result of a community detection function.
 
-        @return: a copy of the giant community.
+        @note: there can be multiple largest clusters, this method will return
+          the copy of an arbitrary one if there are multiple largest clusters.
+
+        @return: a copy of the largest cluster.
         @precondition: the vertex set of the graph hasn't been modified since
           the moment the clustering was constructed.
         """
