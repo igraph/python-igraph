@@ -22,6 +22,22 @@ class OperatorTests(unittest.TestCase):
     def testUnion(self):
         g = Graph.Tree(7, 2) | Graph.Lattice([7])
         self.assertTrue(g.vcount() == 7 and g.ecount() == 12)
+        self.assertTrue(sorted(g.get_edgelist()) == [
+            (0, 1), (0, 2), (0, 6), (1, 2), (1, 3), (1, 4), (2, 3), (2, 5),
+            (2, 6), (3, 4), (4, 5), (5, 6)
+        ])
+
+    def testDifference(self):
+        g = Graph.Tree(7, 2) - Graph.Lattice([7])
+        self.assertTrue(g.vcount() == 7 and g.ecount() == 5)
+        self.assertTrue(sorted(g.get_edgelist()) == [(0, 2), (1, 3), (1, 4), (2, 5), (2, 6)])
+
+    def testDifferenceWithSelfLoop(self):
+        # https://github.com/igraph/igraph/issues/597#
+        g = Graph.Ring(10) + [(0, 0)]
+        g -= Graph.Ring(5)
+        self.assertTrue(g.vcount() == 10 and g.ecount() == 7)
+        self.assertTrue(sorted(g.get_edgelist()) == [(0, 0), (0, 9), (4, 5), (5, 6), (6, 7), (7, 8), (8, 9)])
 
     def testInPlaceAddition(self):
         g = Graph.Full(3)
