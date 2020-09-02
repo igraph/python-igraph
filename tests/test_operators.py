@@ -10,6 +10,24 @@ except ImportError:
     np = None
 
 class OperatorTests(unittest.TestCase):
+    def testComplementer(self):
+        g = Graph.Full(3)
+        g2 = g.complementer()
+        self.assertTrue(g2.vcount() == 3 and g2.ecount() == 3)
+        self.assertTrue(sorted(g2.get_edgelist()) == [(0, 0), (1, 1), (2, 2)])
+
+        g = Graph.Full(3) + Graph.Full(2)
+        g2 = g.complementer(False)
+        self.assertTrue(sorted(g2.get_edgelist()) == [
+            (0, 3), (0, 4), (1, 3), (1, 4), (2, 3), (2, 4)
+        ])
+
+        g2 = g.complementer(loops=True)
+        self.assertTrue(sorted(g2.get_edgelist()) == [
+            (0, 0), (0, 3), (0, 4), (1, 1), (1, 3), (1, 4), (2, 2), (2, 3), (2, 4),
+            (3, 3), (4, 4)
+        ])
+
     def testMultiplication(self):
         g = Graph.Full(3)*3
         self.assertTrue(g.vcount() == 9 and g.ecount() == 9

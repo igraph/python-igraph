@@ -9717,13 +9717,14 @@ PyObject *igraphmodule_Graph_difference(igraphmodule_GraphObject * self,
  * \brief Creates the complementer of a graph
  */
 PyObject *igraphmodule_Graph_complementer(igraphmodule_GraphObject * self,
-                                          PyObject * args)
+                                          PyObject * args, PyObject * kwds)
 {
+  static char *kwlist[] = { "loops", NULL };
   igraphmodule_GraphObject *result;
   PyObject *o = Py_True;
   igraph_t g;
 
-  if (!PyArg_ParseTuple(args, "|O", &o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &o))
     return NULL;
   if (igraph_complementer(&g, &self->g, PyObject_IsTrue(o))) {
     igraphmodule_handle_igraph_error();
@@ -15264,7 +15265,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // OPERATORS //
   ///////////////
   {"complementer", (PyCFunction) igraphmodule_Graph_complementer,
-   METH_VARARGS,
+   METH_VARARGS | METH_KEYWORDS,
    "complementer(loops=False)\n\n"
    "Returns the complementer of the graph\n\n"
    "@param loops: whether to include loop edges in the complementer.\n"
