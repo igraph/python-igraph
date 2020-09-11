@@ -3971,6 +3971,32 @@ PyObject *igraphmodule_Graph_bipartite_projection_size(igraphmodule_GraphObject 
 }
 
 /** \ingroup python_interface_graph
+ * \brief Calculates the bridges of a graph.
+ * \return the list of bridges in a PyObject
+ * \sa igraph_bridges
+ */
+PyObject *igraphmodule_Graph_bridges(igraphmodule_GraphObject *self) {
+  igraph_vector_t res;
+  PyObject *o;
+  if (igraph_vector_init(&res, 0)) {
+	igraphmodule_handle_igraph_error();
+	return NULL;
+  }
+
+  if (igraph_bridges(&self->g, &res)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_destroy(&res);
+    return NULL;
+  }
+
+  igraph_vector_sort(&res);
+  o = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_INT);
+  igraph_vector_destroy(&res);
+
+  return o;
+}
+
+/** \ingroup python_interface_graph
  * \brief Calculates the closeness centrality of some vertices in a graph.
  * \return the closeness centralities as a list (or a single float)
  * \sa igraph_betweenness
@@ -12976,6 +13002,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "bipartite_projection_size(types)\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.bipartite_projection_size()\n"},
+
+  /* interface to igraph_bridges */
+  {"bridges", (PyCFunction)igraphmodule_Graph_bridges,
+   METH_NOARGS,
+   "bridges()\n\n"
+   "Returns the list of bridges in the graph.\n\n"
+   "An edge is a bridge if its removal increases the number of (weakly) connected\n"
+   "components in the graph.\n"
+  },
 
   /* interface to igraph_closeness */
   {"closeness", (PyCFunction) igraphmodule_Graph_closeness,
