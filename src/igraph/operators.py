@@ -65,34 +65,38 @@ def disjoint_union(graphs):
         return graphs[0].copy()
     # Now there are at least two graphs
 
-    gu = _disjoint_union(graphs)
+    graph_union = _disjoint_union(graphs)
 
     # Graph attributes
-    a_first = {}
-    a_num = set()
+    # NOTE: a_first_graph tracks which graph has the 1st occurrence of an
+    # attribute, while a_conflict track attributes with naming conflicts
+    a_first_graph = {}
+    a_conflict = set()
     for ig, g in enumerate(graphs, 1):
-        for an in g.attributes():
-            av = g[an]
+        # NOTE: a_name is the name of the attribute, a_value its value
+        for a_name in g.attributes():
+            a_value = g[a_name]
             # No conflicts
-            if an not in gu.attributes():
-                a_first[an] = ig
-                gu[an] = av
+            if a_name not in graph_union.attributes():
+                a_first_graph[a_name] = ig
+                graph_union[a_name] = a_value
                 continue
-            if gu[an] == av:
+            if graph_union[a_name] == a_value:
                 continue
-            if an not in a_num:
+            if a_name not in a_conflict:
                 # New conflict
-                a_num.add(an)
-                igf = a_first[an]
-                gu['{:}_{:}'.format(an, igf)] = gu.pop(an)
-            gu['{:}_{:}'.format(an, ig)] = av
+                a_conflict.add(a_name)
+                igf = a_first_graph[a_name]
+                graph_union['{:}_{:}'.format(a_name, igf)] = \
+                    graph_union.pop(a_name)
+            graph_union['{:}_{:}'.format(a_name, ig)] = a_value
 
     # Vertex attributes
     i = 0
     for g in graphs:
         nv = g.vcount()
         for attr in g.vertex_attributes():
-            gu.vs[i: i + nv][attr] = g.vs[attr]
+            graph_union.vs[i: i + nv][attr] = g.vs[attr]
         i += nv
 
     # Edge attributes
@@ -100,10 +104,10 @@ def disjoint_union(graphs):
     for g in graphs:
         ne = g.ecount()
         for attr in g.edge_attributes():
-            gu.es[i: i + ne][attr] = g.es[attr]
+            graph_union.es[i: i + ne][attr] = g.es[attr]
         i += ne
 
-    return gu
+    return graph_union
 
 
 def union(graphs, byname='auto'):
@@ -159,16 +163,16 @@ def union(graphs, byname='auto'):
 
     if byname:
         allnames = [g.vs['name'] for g in graphs]
-        uninames = list(set.union(*(set(an) for an in allnames)))
+        uninames = list(set.union(*(set(vns) for vns in allnames)))
         permutation_map = {x: i for i, x in enumerate(uninames)}
         nve = len(uninames)
         newgraphs = []
-        for g, an in zip(graphs, allnames):
+        for g, vertex_names in zip(graphs, allnames):
             # Make a copy
             ng = g.copy()
 
             # Add the missing vertices
-            v_missing = list(set(uninames) - set(an))
+            v_missing = list(set(uninames) - set(vertex_names))
             ng.add_vertices(v_missing)
 
             # Reorder vertices to match uninames
@@ -184,102 +188,104 @@ def union(graphs, byname='auto'):
     edgemaps = any(len(g.edge_attributes()) for g in graphs)
     res = _union(newgraphs, edgemaps)
     if edgemaps:
-        gu = res['graph']
+        graph_union = res['graph']
         edgemaps = res['edgemaps']
     else:
-        gu = res
+        graph_union = res
 
     # Graph attributes
-    a_first = {}
-    a_num = set()
+    a_first_graph = {}
+    a_conflict = set()
     for ig, g in enumerate(newgraphs, 1):
-        for an in g.attributes():
-            av = g[an]
+        # NOTE: a_name is the name of the attribute, a_value its value
+        for a_name in g.attributes():
+            a_value = g[a_name]
             # No conflicts
-            if an not in gu.attributes():
-                a_first[an] = ig
-                gu[an] = av
+            if a_name not in graph_union.attributes():
+                a_first_graph[a_name] = ig
+                graph_union[a_name] = a_value
                 continue
-            if gu[an] == av:
+            if graph_union[a_name] == a_value:
                 continue
-            if an not in a_num:
+            if a_name not in a_conflict:
                 # New conflict
-                a_num.add(an)
-                igf = a_first[an]
-                gu['{:}_{:}'.format(an, igf)] = gu.pop(an)
-            gu['{:}_{:}'.format(an, ig)] = av
+                a_conflict.add(a_name)
+                igf = a_first_graph[a_name]
+                graph_union['{:}_{:}'.format(a_name, igf)] = \
+                    graph_union.pop(a_name)
+            graph_union['{:}_{:}'.format(a_name, ig)] = a_value
 
     # Vertex attributes
     if byname:
-        gu.vs['name'] = uninames
+        graph_union.vs['name'] = uninames
     attrs = set.union(*(set(g.vertex_attributes()) for g in newgraphs)) - set(['name'])
-    nve = gu.vcount()
-    for an in attrs:
+    nve = graph_union.vcount()
+    for a_name in attrs:
         # Check for conflicts at at least one vertex
         conflict = False
         vals = [None for i in range(nve)]
         for g in newgraphs:
-            if an in g.vertex_attributes():
-                for i, avi in enumerate(g.vs[an]):
-                    if avi is None:
+            if a_name in g.vertex_attributes():
+                for i, a_value in enumerate(g.vs[a_name]):
+                    if a_value is None:
                         continue
                     if vals[i] is None:
-                        vals[i] = avi
+                        vals[i] = a_value
                         continue
-                    if vals[i] != avi:
+                    if vals[i] != a_value:
                         conflict = True
                         break
             if conflict:
                 break
 
         if not conflict:
-            gu.vs[an] = vals
+            graph_union.vs[a_name] = vals
             continue
 
         # There is a conflict, name after the graph number
         for ig, g in enumerate(newgraphs, 1):
-            if an in g.vertex_attributes():
-                gu.vs['{:}_{:}'.format(an, ig)] = g.vs[an]
+            if a_name in g.vertex_attributes():
+                graph_union.vs['{:}_{:}'.format(a_name, ig)] = g.vs[a_name]
 
     # Edge attributes
     if edgemaps:
         attrs = set.union(*(set(g.edge_attributes()) for g in newgraphs))
-        ne = gu.ecount()
-        for an in attrs:
+        ne = graph_union.ecount()
+        for a_name in attrs:
             # Check for conflicts at at least one edge
             conflict = False
             vals = [None for i in range(ne)]
             for g, emap in zip(newgraphs, edgemaps):
-                if an not in g.edge_attributes():
+                if a_name not in g.edge_attributes():
                     continue
-                for iu, avi in zip(emap, g.es[an]):
-                    if avi is None:
+                for iu, a_value in zip(emap, g.es[a_name]):
+                    if a_value is None:
                         continue
                     if vals[iu] is None:
-                        vals[iu] = avi
+                        vals[iu] = a_value
                         continue
-                    if vals[iu] != avi:
-                        print(g, g.vs['name'], emap, avi, iu, vals[iu])
+                    if vals[iu] != a_value:
+                        print(g, g.vs['name'], emap, a_value, iu, vals[iu])
                         conflict = True
                         break
                 if conflict:
                     break
 
             if not conflict:
-                gu.es[an] = vals
+                graph_union.es[a_name] = vals
                 continue
 
             # There is a conflict, name after the graph number
             for ig, (g, emap) in enumerate(zip(newgraphs, edgemaps), 1):
-                if an not in g.edge_attributes():
+                if a_name not in g.edge_attributes():
                     continue
                 # Pass through map
                 vals = [None for i in range(ne)]
-                for iu, avi in zip(emap, g.es[an]):
-                    vals[iu] = avi
-                gu.es['{:}_{:}'.format(an, ig)] = vals
+                for iu, a_value in zip(emap, g.es[a_name]):
+                    vals[iu] = a_value
+                graph_union.es['{:}_{:}'.format(a_name, ig)] = vals
 
-    return gu
+    return graph_union
 
 
 def intersection(graphs, byname='auto', keep_all_vertices=True):
@@ -339,24 +345,24 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
         allnames = [g.vs['name'] for g in graphs]
 
         if keep_all_vertices:
-            uninames = list(set.union(*(set(an) for an in allnames)))
+            uninames = list(set.union(*(set(vns) for vns in allnames)))
         else:
-            uninames = list(set.intersection(*(set(an) for an in allnames)))
+            uninames = list(set.intersection(*(set(vns) for vns in allnames)))
         permutation_map = {x: i for i, x in enumerate(uninames)}
 
         nv = len(uninames)
         newgraphs = []
-        for g, an in zip(graphs, allnames):
+        for g, vertex_names in zip(graphs, allnames):
             # Make a copy
             ng = g.copy()
 
             if keep_all_vertices:
                 # Add the missing vertices
-                v_missing = list(set(uninames) - set(an))
+                v_missing = list(set(uninames) - set(vertex_names))
                 ng.add_vertices(v_missing)
             else:
                 # Delete the private vertices
-                v_private = list(set(an) - set(uninames))
+                v_private = list(set(vertex_names) - set(uninames))
                 ng.delete_vertices(v_private)
 
             # Reorder vertices to match uninames
@@ -372,103 +378,105 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
     edgemaps = any(len(g.edge_attributes()) for g in graphs)
     res = _intersection(newgraphs, edgemaps)
     if edgemaps:
-        gu = res['graph']
+        graph_intsec = res['graph']
         edgemaps = res['edgemaps']
     else:
-        gu = res
+        graph_intsec = res
 
     # Graph attributes
-    a_first = {}
-    a_num = set()
+    a_first_graph = {}
+    a_conflict = set()
     for ig, g in enumerate(newgraphs, 1):
-        for an in g.attributes():
-            av = g[an]
+        # NOTE: a_name is the name of the attribute, a_value its value
+        for a_name in g.attributes():
+            a_value = g[a_name]
             # No conflicts
-            if an not in gu.attributes():
-                a_first[an] = ig
-                gu[an] = av
+            if a_name not in graph_intsec.attributes():
+                a_first_graph[a_name] = ig
+                graph_intsec[a_name] = a_value
                 continue
-            if gu[an] == av:
+            if graph_intsec[a_name] == a_value:
                 continue
-            if an not in a_num:
+            if a_name not in a_conflict:
                 # New conflict
-                a_num.add(an)
-                igf = a_first[an]
-                gu['{:}_{:}'.format(an, igf)] = gu.pop(an)
-            gu['{:}_{:}'.format(an, ig)] = av
+                a_conflict.add(a_name)
+                igf = a_first_graph[a_name]
+                graph_intsec['{:}_{:}'.format(a_name, igf)] = \
+                    graph_intsec.pop(a_name)
+            graph_intsec['{:}_{:}'.format(a_name, ig)] = a_value
 
     # Vertex attributes
     if byname:
-        gu.vs['name'] = uninames
+        graph_intsec.vs['name'] = uninames
     attrs = set.union(*(set(g.vertex_attributes()) for g in newgraphs)) - set(['name'])
-    nv = gu.vcount()
-    for an in attrs:
+    nv = graph_intsec.vcount()
+    for a_name in attrs:
         # Check for conflicts at at least one vertex
         conflict = False
         vals = [None for i in range(nv)]
         for g in newgraphs:
-            if an not in g.vertex_attributes():
+            if a_name not in g.vertex_attributes():
                 continue
-            for i, avi in enumerate(g.vs[an]):
-                if avi is None:
+            for i, a_value in enumerate(g.vs[a_name]):
+                if a_value is None:
                     continue
                 if vals[i] is None:
-                    vals[i] = avi
+                    vals[i] = a_value
                     continue
-                if vals[i] != avi:
+                if vals[i] != a_value:
                     conflict = True
                     break
             if conflict:
                 break
 
         if not conflict:
-            gu.vs[an] = vals
+            graph_intsec.vs[a_name] = vals
             continue
 
         # There is a conflict, name after the graph number
         for ig, g in enumerate(newgraphs, 1):
-            if an in g.vertex_attributes():
-                gu.vs['{:}_{:}'.format(an, ig)] = g.vs[an]
+            if a_name in g.vertex_attributes():
+                graph_intsec.vs['{:}_{:}'.format(a_name, ig)] = g.vs[a_name]
 
     # Edge attributes
     if edgemaps:
         attrs = set.union(*(set(g.edge_attributes()) for g in newgraphs))
-        ne = gu.ecount()
-        for an in attrs:
+        ne = graph_intsec.ecount()
+        for a_name in attrs:
             # Check for conflicts at at least one edge
             conflict = False
             vals = [None for i in range(ne)]
             for g, emap in zip(newgraphs, edgemaps):
-                if an not in g.edge_attributes():
+                if a_name not in g.edge_attributes():
                     continue
-                for iu, avi in zip(emap, g.es[an]):
+                for iu, a_value in zip(emap, g.es[a_name]):
                     if iu == -1:
                         continue
-                    if avi is None:
+                    if a_value is None:
                         continue
                     if vals[iu] is None:
-                        vals[iu] = avi
+                        vals[iu] = a_value
                         continue
-                    if vals[iu] != avi:
+                    if vals[iu] != a_value:
                         conflict = True
                         break
                 if conflict:
                     break
 
             if not conflict:
-                gu.es[an] = vals
+                graph_intsec.es[a_name] = vals
                 continue
 
             # There is a conflict, name after the graph number
             for ig, (g, emap) in enumerate(zip(newgraphs, edgemaps), 1):
-                if an not in g.edge_attributes():
+                if a_name not in g.edge_attributes():
                     continue
                 # Pass through map
                 vals = [None for i in range(ne)]
-                for iu, avi in zip(emap, g.es[an]):
+                for iu, a_value in zip(emap, g.es[a_name]):
                     if iu == -1:
                         continue
-                    vals[iu] = avi
-                gu.es['{:}_{:}'.format(an, ig)] = vals
+                    vals[iu] = a_value
+                graph_intsec.es['{:}_{:}'.format(a_name, ig)] = vals
 
-    return gu
+    return graph_intsec

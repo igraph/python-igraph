@@ -35,6 +35,7 @@ PyObject *igraphmodule__disjoint_union(PyObject *self,
   static char* kwlist[] = { "graphs", NULL };
   PyObject *it, *graphs;
   long int no_of_graphs;
+  igraph_vector_ptr_t gs;
   igraphmodule_GraphObject *o;
   PyObject *result;
   PyTypeObject *result_type;
@@ -52,7 +53,6 @@ PyObject *igraphmodule__disjoint_union(PyObject *self,
   }
 
   /* Get all elements, store the graphs in an igraph_vector_ptr */
-  igraph_vector_ptr_t gs;
   if (igraph_vector_ptr_init(&gs, 0)) {
     Py_DECREF(it);
     return igraphmodule_handle_igraph_error();
@@ -100,6 +100,7 @@ PyObject *igraphmodule__union(PyObject *self,
   PyObject *it, *em_list, *graphs, *with_edgemaps_o;
   int with_edgemaps = 0;
   long int no_of_graphs;
+  igraph_vector_ptr_t gs;
   igraphmodule_GraphObject *o;
   PyObject *result;
   PyTypeObject *result_type;
@@ -120,7 +121,6 @@ PyObject *igraphmodule__union(PyObject *self,
   }
 
   /* Get all elements, store the graphs in an igraph_vector_ptr */
-  igraph_vector_ptr_t gs;
   if (igraph_vector_ptr_init(&gs, 0)) {
     Py_DECREF(it);
     return igraphmodule_handle_igraph_error();
@@ -158,9 +158,9 @@ PyObject *igraphmodule__union(PyObject *self,
       PyObject *emi = PyList_New((Py_ssize_t) no_of_edges);
       for (j = 0; j < no_of_edges; j++) {
         PyObject *dest = PyLong_FromLong(VECTOR(*map)[j]);
-        PyList_SetItem(emi, (Py_ssize_t) j, dest);
+        PyList_SET_ITEM(emi, (Py_ssize_t) j, dest);
       }
-      PyList_SetItem(em_list, (Py_ssize_t) i, emi);
+      PyList_SET_ITEM(em_list, (Py_ssize_t) i, emi);
     }
     igraph_vector_ptr_destroy(&edgemaps);
   }
@@ -189,11 +189,10 @@ PyObject *igraphmodule__union(PyObject *self,
 
   if (with_edgemaps) {
     /* wrap in a dictionary */
-    PyObject * str_graph = PyUnicode_FromString("graph");
-    PyObject * str_edgemaps = PyUnicode_FromString("edgemaps");
     result = PyDict_New();
-    PyDict_SetItem(result, str_graph, (PyObject *) o);
-    PyDict_SetItem(result, str_edgemaps, em_list);
+    PyDict_SetItemString(result, "graph", (PyObject *) o);
+    Py_DECREF(o);
+    PyDict_SetItemString(result, "edgemaps", em_list);
   }
   else {
     result = (PyObject *) o;
@@ -212,6 +211,7 @@ PyObject *igraphmodule__intersection(PyObject *self,
   PyObject *it, *em_list, *graphs, *with_edgemaps_o;
   int with_edgemaps = 0;
   long int no_of_graphs;
+  igraph_vector_ptr_t gs;
   igraphmodule_GraphObject *o;
   PyObject *result;
   PyTypeObject *result_type;
@@ -232,7 +232,6 @@ PyObject *igraphmodule__intersection(PyObject *self,
   }
 
   /* Get all elements, store the graphs in an igraph_vector_ptr */
-  igraph_vector_ptr_t gs;
   if (igraph_vector_ptr_init(&gs, 0)) {
     Py_DECREF(it);
     return igraphmodule_handle_igraph_error();
@@ -269,9 +268,9 @@ PyObject *igraphmodule__intersection(PyObject *self,
       PyObject *emi = PyList_New((Py_ssize_t) no_of_edges);
       for (j = 0; j < no_of_edges; j++) {
         PyObject *dest = PyLong_FromLong(VECTOR(*map)[j]);
-        PyList_SetItem(emi, (Py_ssize_t) j, dest);
+        PyList_SET_ITEM(emi, (Py_ssize_t) j, dest);
       }
-      PyList_SetItem(em_list, (Py_ssize_t) i, emi);
+      PyList_SET_ITEM(em_list, (Py_ssize_t) i, emi);
     }
     igraph_vector_ptr_destroy(&edgemaps);
 
@@ -301,11 +300,11 @@ PyObject *igraphmodule__intersection(PyObject *self,
 
   if (with_edgemaps) {
     /* wrap in a dictionary */
-    PyObject * str_graph = PyUnicode_FromString("graph");
-    PyObject * str_edgemaps = PyUnicode_FromString("edgemaps");
     result = PyDict_New();
-    PyDict_SetItem(result, str_graph, (PyObject *) o);
-    PyDict_SetItem(result, str_edgemaps, em_list);
+    PyDict_SetItemString(result, "graph", (PyObject *) o);
+    Py_DECREF(o);
+    PyDict_SetItemString(result, "edgemaps", em_list);
+    Py_DECREF(em_list);
   }
   else {
     result = (PyObject *) o;

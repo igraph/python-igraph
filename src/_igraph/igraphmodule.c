@@ -670,7 +670,7 @@ static PyMethodDef igraphmodule_methods[] =
   "Low-level Python interface for the igraph library. " \
   "Should not be used directly.\n\n"                    \
   "@undocumented: community_to_membership, _compare_communities, _power_law_fit, " \
-  "_split_join_distance, _union, _intersection"
+  "_split_join_distance, _union, _intersection, _disjoint_union"
 
 /**
  * Module definition table (only for Python 3.x)
