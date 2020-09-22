@@ -44,8 +44,8 @@ Many users like to install packages into a project-specific `virtual environment
 <https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments>`_.
 A variation of the following commands should work on most platforms:
 
-  $ python -m venv ENV
-  $ source ENV/bin/activate
+  $ python -m venv venv
+  $ source venv/bin/activate
   $ pip install python-igraph
 
 To test the installed package, launch Python within the virtual environment and run the

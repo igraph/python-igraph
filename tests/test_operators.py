@@ -10,6 +10,24 @@ except ImportError:
     np = None
 
 class OperatorTests(unittest.TestCase):
+    def testComplementer(self):
+        g = Graph.Full(3)
+        g2 = g.complementer()
+        self.assertTrue(g2.vcount() == 3 and g2.ecount() == 3)
+        self.assertTrue(sorted(g2.get_edgelist()) == [(0, 0), (1, 1), (2, 2)])
+
+        g = Graph.Full(3) + Graph.Full(2)
+        g2 = g.complementer(False)
+        self.assertTrue(sorted(g2.get_edgelist()) == [
+            (0, 3), (0, 4), (1, 3), (1, 4), (2, 3), (2, 4)
+        ])
+
+        g2 = g.complementer(loops=True)
+        self.assertTrue(sorted(g2.get_edgelist()) == [
+            (0, 0), (0, 3), (0, 4), (1, 1), (1, 3), (1, 4), (2, 2), (2, 3), (2, 4),
+            (3, 3), (4, 4)
+        ])
+
     def testMultiplication(self):
         g = Graph.Full(3)*3
         self.assertTrue(g.vcount() == 9 and g.ecount() == 9
@@ -22,6 +40,22 @@ class OperatorTests(unittest.TestCase):
     def testUnion(self):
         g = Graph.Tree(7, 2) | Graph.Lattice([7])
         self.assertTrue(g.vcount() == 7 and g.ecount() == 12)
+        self.assertTrue(sorted(g.get_edgelist()) == [
+            (0, 1), (0, 2), (0, 6), (1, 2), (1, 3), (1, 4), (2, 3), (2, 5),
+            (2, 6), (3, 4), (4, 5), (5, 6)
+        ])
+
+    def testDifference(self):
+        g = Graph.Tree(7, 2) - Graph.Lattice([7])
+        self.assertTrue(g.vcount() == 7 and g.ecount() == 5)
+        self.assertTrue(sorted(g.get_edgelist()) == [(0, 2), (1, 3), (1, 4), (2, 5), (2, 6)])
+
+    def testDifferenceWithSelfLoop(self):
+        # https://github.com/igraph/igraph/issues/597#
+        g = Graph.Ring(10) + [(0, 0)]
+        g -= Graph.Ring(5)
+        self.assertTrue(g.vcount() == 10 and g.ecount() == 7)
+        self.assertTrue(sorted(g.get_edgelist()) == [(0, 0), (0, 9), (4, 5), (5, 6), (6, 7), (7, 8), (8, 9)])
 
     def testInPlaceAddition(self):
         g = Graph.Full(3)

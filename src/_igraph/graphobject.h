@@ -186,7 +186,7 @@ PyObject* igraphmodule_Graph_edge_attributes(igraphmodule_GraphObject* self);
 PyObject* igraphmodule_Graph_get_vertices(igraphmodule_GraphObject* self, void* closure);
 PyObject* igraphmodule_Graph_get_edges(igraphmodule_GraphObject* self, void* closure);
 
-PyObject* igraphmodule_Graph_complementer(igraphmodule_GraphObject* self, PyObject* args);
+PyObject* igraphmodule_Graph_complementer(igraphmodule_GraphObject* self, PyObject* args, PyObject* kwds);
 PyObject* igraphmodule_Graph_complementer_op(igraphmodule_GraphObject* self);
 PyObject* igraphmodule_Graph_compose(igraphmodule_GraphObject* self, PyObject* other);
 PyObject* igraphmodule_Graph_difference(igraphmodule_GraphObject* self, PyObject* other);

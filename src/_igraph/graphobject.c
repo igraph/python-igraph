@@ -23,6 +23,7 @@
 #include "attributes.h"
 #include "arpackobject.h"
 #include "bfsiter.h"
+#include "dfsiter.h"
 #include "common.h"
 #include "convert.h"
 #include "edgeseqobject.h"
@@ -3988,6 +3989,32 @@ PyObject *igraphmodule_Graph_bipartite_projection_size(igraphmodule_GraphObject 
   if (types) { igraph_vector_bool_destroy(types); free(types); }
 
   return Py_BuildValue("llll", (long)vcount1, (long)ecount1, (long)vcount2, (long)ecount2);
+}
+
+/** \ingroup python_interface_graph
+ * \brief Calculates the bridges of a graph.
+ * \return the list of bridges in a PyObject
+ * \sa igraph_bridges
+ */
+PyObject *igraphmodule_Graph_bridges(igraphmodule_GraphObject *self) {
+  igraph_vector_t res;
+  PyObject *o;
+  if (igraph_vector_init(&res, 0)) {
+	igraphmodule_handle_igraph_error();
+	return NULL;
+  }
+
+  if (igraph_bridges(&self->g, &res)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_destroy(&res);
+    return NULL;
+  }
+
+  igraph_vector_sort(&res);
+  o = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_INT);
+  igraph_vector_destroy(&res);
+
+  return o;
 }
 
 /** \ingroup python_interface_graph
@@ -9737,13 +9764,14 @@ PyObject *igraphmodule_Graph_difference(igraphmodule_GraphObject * self,
  * \brief Creates the complementer of a graph
  */
 PyObject *igraphmodule_Graph_complementer(igraphmodule_GraphObject * self,
-                                          PyObject * args)
+                                          PyObject * args, PyObject * kwds)
 {
+  static char *kwlist[] = { "loops", NULL };
   igraphmodule_GraphObject *result;
   PyObject *o = Py_True;
   igraph_t g;
 
-  if (!PyArg_ParseTuple(args, "|O", &o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &o))
     return NULL;
   if (igraph_complementer(&g, &self->g, PyObject_IsTrue(o))) {
     igraphmodule_handle_igraph_error();
@@ -9939,6 +9967,23 @@ PyObject *igraphmodule_Graph_unfold_tree(igraphmodule_GraphObject * self,
   CREATE_GRAPH(result_o, result);
 
   return Py_BuildValue("NN", result_o, mapping_o);
+}
+
+/** \ingroup python_interface_graph
+ * \brief Constructs a depth first search (DFS) iterator of the graph
+ */
+PyObject *igraphmodule_Graph_dfsiter(igraphmodule_GraphObject * self,
+                                     PyObject * args, PyObject * kwds)
+{
+  char *kwlist[] = { "vid", "mode", "advanced", NULL };
+  PyObject *root, *adv = Py_False, *mode_o = Py_None;
+  igraph_neimode_t mode = IGRAPH_OUT;
+
+  if (!PyArg_ParseTupleAndKeywords
+      (args, kwds, "O|OO", kwlist, &root, &mode_o, &adv))
+    return NULL;
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) return NULL;
+  return igraphmodule_DFSIter_new(self, root, mode, PyObject_IsTrue(adv));
 }
 
 /**********************************************************************
@@ -12980,6 +13025,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Internal function, undocumented.\n\n"
    "@see: Graph.bipartite_projection_size()\n"},
 
+  /* interface to igraph_bridges */
+  {"bridges", (PyCFunction)igraphmodule_Graph_bridges,
+   METH_NOARGS,
+   "bridges()\n\n"
+   "Returns the list of bridges in the graph.\n\n"
+   "An edge is a bridge if its removal increases the number of (weakly) connected\n"
+   "components in the graph.\n"
+  },
+
   /* interface to igraph_closeness */
   {"closeness", (PyCFunction) igraphmodule_Graph_closeness,
    METH_VARARGS | METH_KEYWORDS,
@@ -13100,7 +13154,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  the algorithm assumes that there might be some loops in the graph\n"
    "  and calculates the density accordingly. If C{False}, the algorithm\n"
    "  assumes that there can't be any loops.\n"
-   "@return: the reciprocity of the graph."},
+   "@return: the density of the graph."},
 
   /* interfaces to igraph_diameter */
   {"diameter", (PyCFunction) igraphmodule_Graph_diameter,
@@ -14539,6 +14593,17 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  returns the distance of the vertex from the root and the\n"
    "  parent of the vertex in the BFS tree as well.\n"
    "@return: the BFS iterator as an L{igraph.BFSIter} object.\n"},
+  {"dfsiter", (PyCFunction) igraphmodule_Graph_dfsiter,
+   METH_VARARGS | METH_KEYWORDS,
+   "dfsiter(vid, mode=OUT, advanced=False)\n\n"
+   "Constructs a depth first search (DFS) iterator of the graph.\n\n"
+   "@param vid: the root vertex ID\n"
+   "@param mode: either L{IN} or L{OUT} or L{ALL}.\n"
+   "@param advanced: if C{False}, the iterator returns the next\n"
+   "  vertex in DFS order in every step. If C{True}, the iterator\n"
+   "  returns the distance of the vertex from the root and the\n"
+   "  parent of the vertex in the DFS tree as well.\n"
+   "@return: the DFS iterator as an L{igraph.DFSIter} object.\n"},
 
   /////////////////
   // CONVERSIONS //
@@ -14651,7 +14716,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
    "Read_Edgelist(f, directed=True)\n\n"
    "Reads an edge list from a file and creates a graph based on it.\n\n"
-   "Please note that the vertex indices are zero-based.\n\n"
+   "Please note that the vertex indices are zero-based. A vertex of zero\n"
+   "degree will be created for every integer that is in range but does not\n"
+   "appear in the edgelist.\n\n"
    "@param f: the name of the file or a Python file handle\n"
    "@param directed: whether the generated graph should be directed.\n"},
   /* interface to igraph_read_graph_graphdb */
@@ -15255,7 +15322,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // OPERATORS //
   ///////////////
   {"complementer", (PyCFunction) igraphmodule_Graph_complementer,
-   METH_VARARGS,
+   METH_VARARGS | METH_KEYWORDS,
    "complementer(loops=False)\n\n"
    "Returns the complementer of the graph\n\n"
    "@param loops: whether to include loop edges in the complementer.\n"
