@@ -22,7 +22,7 @@ class IsomorphismTests(unittest.TestCase):
                        (5, 1), (5, 4), (5, 6), \
                        (7, 3), (7, 6), (7, 4)])
 
-        # Test the isomorphy of g1 and g2
+        # Test the isomorphism of g1 and g2
         self.assertTrue(g1.isomorphic(g2))
         self.assertTrue(g2.isomorphic_vf2(g1, return_mapping_21=True) \
           == (True, None, [0, 2, 5, 7, 1, 3, 4, 6]))

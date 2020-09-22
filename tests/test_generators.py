@@ -1,6 +1,14 @@
 import unittest
 from igraph import *
 
+try:
+    import numpy as np
+    import pandas as pd
+except ImportError:
+    np = None
+    pd = None
+
+
 class GeneratorTests(unittest.TestCase):
     def testStar(self):
         g=Graph.Star(5, "in")
@@ -164,7 +172,31 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(el == [(0,1), (0,2), (1,0), (3,1)])
         self.assertTrue(g.es["w0"] == [1, 2, 2, 1])
 
-        
+    @unittest.skipIf((np is None) or (pd is None), "test case depends on NumPy/Pandas")
+    def testDataFrame(self):
+        edges = pd.DataFrame(
+            [['C', 'A', 0.4], ['A', 'B', 0.1]],
+            columns=[0, 1, 'weight'])
+
+        g = Graph.DataFrame(edges, directed=False)
+        self.assertTrue(g.es["weight"] == [0.1, 0.4])
+
+        vertices = pd.DataFrame(
+            [['A', 'blue'], ['B', 'yellow'], ['C', 'blue']],
+            columns=[0, 'color'])
+
+        g = Graph.DataFrame(edges, directed=True, vertices=vertices)
+        self.assertTrue(g.vs['name'] == ['A', 'B', 'C'])
+        self.assertTrue(g.vs["color"] == ['blue', 'yellow', 'blue'])
+        self.assertTrue(g.es["weight"] == [0.4, 0.1])
+
+        vertices.iloc[0, 0] = np.nan
+        g = Graph.DataFrame(edges, directed=True, vertices=vertices)
+        self.assertTrue(g.vs['name'] == ['NA', 'B', 'C'])
+        self.assertTrue(g.vs["color"] == ['blue', 'yellow', 'blue'])
+        self.assertTrue(g.es["weight"] == [0.4, 0.1])
+
+
 def suite():
     generator_suite = unittest.makeSuite(GeneratorTests)
     return unittest.TestSuite([generator_suite])

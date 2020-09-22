@@ -26,6 +26,7 @@
 #include "arpackobject.h"
 #include "attributes.h"
 #include "bfsiter.h"
+#include "dfsiter.h"
 #include "common.h"
 #include "convert.h"
 #include "edgeobject.h"
@@ -777,6 +778,8 @@ extern PyObject* igraphmodule_arpack_options_default;
     INITERROR;
   if (PyType_Ready(&igraphmodule_BFSIterType) < 0)
     INITERROR;
+  if (PyType_Ready(&igraphmodule_DFSIterType) < 0)
+    INITERROR;
   if (PyType_Ready(&igraphmodule_ARPACKOptionsType) < 0)
     INITERROR;
 
@@ -796,6 +799,7 @@ extern PyObject* igraphmodule_arpack_options_default;
   /* Add the types to the core module */
   PyModule_AddObject(m, "GraphBase", (PyObject*)&igraphmodule_GraphType);
   PyModule_AddObject(m, "BFSIter", (PyObject*)&igraphmodule_BFSIterType);
+  PyModule_AddObject(m, "DFSIter", (PyObject*)&igraphmodule_DFSIterType);
   PyModule_AddObject(m, "ARPACKOptions", (PyObject*)&igraphmodule_ARPACKOptionsType);
   PyModule_AddObject(m, "Edge", (PyObject*)&igraphmodule_EdgeType);
   PyModule_AddObject(m, "EdgeSeq", (PyObject*)&igraphmodule_EdgeSeqType);

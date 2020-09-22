@@ -259,7 +259,7 @@ class Graph(GraphBase):
             edge[key] = value
         return edge
 
-    def add_edges(self, es):
+    def add_edges(self, es, attributes=None):
         """add_edges(es)
 
         Adds some edges to the graph.
@@ -267,8 +267,17 @@ class Graph(GraphBase):
         @param es: the list of edges to be added. Every edge is represented
           with a tuple containing the vertex IDs or names of the two
           endpoints. Vertices are enumerated from zero.
+        @params attributes: dict of sequences, all of length equal to the
+          number of edges to be added, containing the attributes of the new
+          edges.
         """
-        return GraphBase.add_edges(self, es)
+        eid = self.ecount()
+        res = GraphBase.add_edges(self, es)
+        n = self.ecount() - eid
+        if (attributes is not None) and (n > 0):
+            for key, val in attributes.items():
+                self.es[eid:][key] = val
+        return res
 
     def add_vertex(self, name=None, **kwds):
         """add_vertex(name=None, **kwds)
@@ -292,7 +301,7 @@ class Graph(GraphBase):
             vertex["name"] = name
         return vertex
 
-    def add_vertices(self, n):
+    def add_vertices(self, n, attributes=None):
         """add_vertices(n)
 
         Adds some vertices to the graph.
@@ -301,13 +310,24 @@ class Graph(GraphBase):
           vertex to be added, or a sequence of strings, each corresponding to the
           name of a vertex to be added. Names will be assigned to the C{name}
           vertex attribute.
+        @params attributes: dict of sequences, all of length equal to the
+          number of vertices to be added, containing the attributes of the new
+          vertices. If n is a string (so a single vertex is added), then the
+          values of this dict are the attributes themselves, but if n=1 then
+          they have to be lists of length 1.
+
+        Note that if n is a sequence of strings, indicating the names of the
+        new vertices, and attributes has a key 'name', the two conflict. In
+        that case the attribute will be applied.
         """
         if isinstance(n, basestring):
             # Adding a single vertex with a name
             m = self.vcount()
             result = GraphBase.add_vertices(self, 1)
             self.vs[m]["name"] = n
-            return result
+            if attributes is not None:
+                for key, val in attributes.items():
+                    self.vs[m][key] = val
         elif hasattr(n, "__iter__"):
             m = self.vcount()
             if not hasattr(n, "__len__"):
@@ -315,9 +335,18 @@ class Graph(GraphBase):
             else:
                 names = n
             result = GraphBase.add_vertices(self, len(names))
-            self.vs[m:]["name"] = names
-            return result
-        return GraphBase.add_vertices(self, n)
+            if len(names) > 0:
+                self.vs[m:]["name"] = names
+                if attributes is not None:
+                    for key, val in attributes.items():
+                        self.vs[m:][key] = val
+        else:
+            result = GraphBase.add_vertices(self, n)
+            if (attributes is not None) and (n > 0):
+                m = self.vcount() - n
+                for key, val in attributes.items():
+                    self.vs[m:][key] = val
+        return result
 
     def adjacent(self, *args, **kwds):
         """adjacent(vertex, mode=OUT)
@@ -3027,6 +3056,85 @@ class Graph(GraphBase):
                     edge[weight_attr] = mat[target][source - num_vertices_of_first_kind]
         return result
 
+    @classmethod
+    def DataFrame(klass, edges, directed=True, vertices=None):
+        """DataFrame(directed=True, vertices=None)
+
+        Generates a graph from one or two dataframes.
+
+        @param edges: pandas DataFrame containing edges and metadata
+        @param directed: bool setting whether the graph is directed
+        @param vertices: None (default) or pandas DataFrame containing vertex
+          metadata. The first column must contain the unique ids of the
+          vertices and will be set as attribute 'name'. All other columns
+          will be added as vertex attributes by column name.
+
+        @return: the graph
+        """
+        import numpy as np
+        import pandas as pd
+
+        if edges.shape[1] < 2:
+            raise ValueError("the data frame should contain at least two columns")
+
+        # Handle if some elements are 'NA'
+        if edges.iloc[:, :2].isna().values.any():
+            warn("In 'edges' NA elements were replaced with string \"NA\"")
+            edges = edges.copy()
+            edges.iloc[:, :2].fillna('NA', inplace=True)
+
+        if (vertices is not None) and vertices.iloc[:, 0].isna().values.any():
+            warn("In the first column of 'vertices' NA elements were replaced "+
+                 "with string \"NA\"")
+            vertices = vertices.copy()
+            vertices.iloc[:, 0].fillna('NA', inplace=True)
+
+        names = np.unique(edges.values[:, :2])
+
+        if vertices is not None:
+            names_edges = names
+            if vertices.shape[1] < 1:
+                raise ValueError('vertices has no columns')
+
+            names = vertices.iloc[:, 0].astype(str)
+
+            if names.duplicated().any():
+                raise ValueError('Vertex names must be unique')
+
+            if len(np.setdiff1d(names_edges, names.values)):
+                raise ValueError(
+                    'Some vertices in the edge DataFrame are missing from vertices DataFrame')
+
+            names = names.values
+
+        # create graph
+        g = Graph(n=len(names), directed=directed)
+
+        # vertex attributes
+        if vertices is not None:
+            cols = vertices.columns
+            for v, (_, attr) in zip(g.vs, vertices.iterrows()):
+                v['name'] = attr[cols[0]]
+                if len(cols) > 1:
+                    for an in cols[1:]:
+                        v[an] = attr[an]
+
+        # create edge list
+        names_idx = pd.Series(index=names, data=np.arange(len(names)))
+        e0 = names_idx[edges.values[:, 0]]
+        e1 = names_idx[edges.values[:, 1]]
+
+        # add the edges
+        g.add_edges(zip(e0, e1))
+
+        # edge attributes
+        if edges.shape[1] > 2:
+            for e, (_, attr) in zip(g.es, edges.iloc[:, 2:]):
+                for an, av in attr.items():
+                    e[an] = av
+
+        return g
+
     def bipartite_projection(self, types="type", multiplicity=True, probe1=-1,
             which="both"):
         """Projects a bipartite graph into two one-mode graphs. Edge directions
@@ -3132,6 +3240,50 @@ class Graph(GraphBase):
           indices.
         """
         return super(Graph, self).get_incidence(types, *args, **kwds)
+
+    ###########################
+    # DFS (C version will come soon)
+    def dfs(self, vid, mode=OUT):
+        """Conducts a depth first search (DFS) on the graph.
+
+        @param vid: the root vertex ID
+        @param mode: either L{IN} or L{OUT} or L{ALL}, ignored
+          for undirected graphs.
+        @return: a tuple with the following items:
+           - The vertex IDs visited (in order)
+           - The parent of every vertex in the DFS
+        """
+        nv = self.vcount()
+        added = [False for v in range(nv)]
+        stack = []
+
+        # prepare output
+        vids = []
+        parents = []
+
+        # ok start from vid
+        stack.append((vid, self.neighbors(vid, mode=mode)))
+        vids.append(vid)
+        parents.append(vid)
+        added[vid] = True
+
+        # go down the rabbit hole
+        while stack:
+            vid, neighbors = stack[-1]
+            if neighbors:
+                # Get next neighbor to visit
+                neighbor = neighbors.pop()
+                if not added[neighbor]:
+                    # Add hanging subtree neighbor
+                    stack.append((neighbor, self.neighbors(neighbor, mode=mode)))
+                    vids.append(neighbor)
+                    parents.append(vid)
+                    added[neighbor] = True
+            else:
+                # No neighbor found, end of subtree
+                stack.pop()
+
+        return (vids, parents)
 
     ###########################
     # ctypes support

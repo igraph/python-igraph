@@ -152,7 +152,7 @@ class GraphSummary(object):
 
         if self._graph.is_named():
             names = self._graph.vs["name"]
-            maxlen = max(len(name) for name in names)
+            maxlen = max(len(str(name)) for name in names)
             format_str = "%%%ds %s %%s" % (maxlen, self._arrow)
             for v1, name in enumerate(names):
                 neis = self._graph.successors(v1)
