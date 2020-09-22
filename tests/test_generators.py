@@ -179,7 +179,7 @@ class GeneratorTests(unittest.TestCase):
             columns=[0, 1, 'weight'])
 
         g = Graph.DataFrame(edges, directed=False)
-        self.assertTrue(g.es["weight"] == [0.1, 0.4])
+        self.assertTrue(g.es["weight"] == [0.4, 0.1])
 
         vertices = pd.DataFrame(
             [['A', 'blue'], ['B', 'yellow'], ['C', 'blue']],
@@ -187,12 +187,6 @@ class GeneratorTests(unittest.TestCase):
 
         g = Graph.DataFrame(edges, directed=True, vertices=vertices)
         self.assertTrue(g.vs['name'] == ['A', 'B', 'C'])
-        self.assertTrue(g.vs["color"] == ['blue', 'yellow', 'blue'])
-        self.assertTrue(g.es["weight"] == [0.4, 0.1])
-
-        vertices.iloc[0, 0] = np.nan
-        g = Graph.DataFrame(edges, directed=True, vertices=vertices)
-        self.assertTrue(g.vs['name'] == ['NA', 'B', 'C'])
         self.assertTrue(g.vs["color"] == ['blue', 'yellow', 'blue'])
         self.assertTrue(g.es["weight"] == [0.4, 0.1])
 
