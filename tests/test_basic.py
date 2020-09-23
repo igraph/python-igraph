@@ -178,6 +178,10 @@ class BasicTests(unittest.TestCase):
         self.assertRaises(ValueError, g.delete_vertices, "no-such-vertex")
         self.assertRaises(InternalError, g.delete_vertices, 2)
 
+        # Delete all vertices
+        g.delete_vertices()
+        self.assertEqual(0, g.vcount())
+
     def testAddEdge(self):
         g = Graph()
         g.add_vertices(["spam", "bacon", "eggs", "ham"])
@@ -273,6 +277,21 @@ class BasicTests(unittest.TestCase):
         self.assertRaises(ValueError, g.delete_edges, [(0, 2)])
         self.assertRaises(ValueError, g.delete_edges, [("A", "C")])
         self.assertRaises(ValueError, g.delete_edges, [(0, 15)])
+
+        # Delete all edges
+        g.delete_edges()
+        self.assertEqual(0, g.ecount())
+
+    def testClear(self):
+        g = Graph.Famous("petersen")
+        g["name"] = list("petersen")
+
+        # Clearing the graph
+        g.clear()
+
+        self.assertEqual(0, g.vcount())
+        self.assertEqual(0, g.ecount())
+        self.assertEqual([], g.attributes())
 
     def testGraphGetEid(self):
         g = Graph.Famous("petersen")
