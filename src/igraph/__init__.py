@@ -41,6 +41,7 @@ from igraph.datatypes import *
 from igraph.formula import *
 from igraph.layout import *
 from igraph.matching import *
+from igraph.operators import *
 from igraph.statistics import *
 from igraph.summary import *
 from igraph.utils import *
@@ -3088,23 +3089,26 @@ class Graph(GraphBase):
             vertices = vertices.copy()
             vertices.iloc[:, 0].fillna('NA', inplace=True)
 
-        names = np.unique(edges.values[:, :2])
+        names_edges = np.unique(edges.values[:, :2])
 
-        if vertices is not None:
-            names_edges = names
+        if vertices is None:
+            names = names_edges
+        else:
             if vertices.shape[1] < 1:
                 raise ValueError('vertices has no columns')
 
-            names = vertices.iloc[:, 0].astype(str)
+            names_vertices = vertices.iloc[:, 0].astype(str)
 
-            if names.duplicated().any():
+            if names_vertices.duplicated().any():
                 raise ValueError('Vertex names must be unique')
 
-            if len(np.setdiff1d(names_edges, names.values)):
+            names_vertices = names_vertices.values
+
+            if len(np.setdiff1d(names_edges, names_vertices)):
                 raise ValueError(
                     'Some vertices in the edge DataFrame are missing from vertices DataFrame')
 
-            names = names.values
+            names = names_vertices
 
         # create graph
         g = Graph(n=len(names), directed=directed)
@@ -3128,9 +3132,9 @@ class Graph(GraphBase):
 
         # edge attributes
         if edges.shape[1] > 2:
-            for e, (_, attr) in zip(g.es, edges.iloc[:, 2:]):
-                for an, av in attr.items():
-                    e[an] = av
+            for e, (_, attr) in zip(g.es, edges.iloc[:, 2:].iterrows()):
+                for a_name, a_value in attr.items():
+                    e[a_name] = a_value
 
         return g
 
@@ -3379,7 +3383,7 @@ class Graph(GraphBase):
         elif isinstance(other, tuple) and len(other) == 2:
             self.delete_edges([other])
         elif isinstance(other, list):
-            if len(other)>0:
+            if len(other) > 0:
                 if isinstance(other[0], tuple):
                     self.delete_edges(other)
                 elif isinstance(other[0], (int, long, basestring)):
@@ -3418,7 +3422,7 @@ class Graph(GraphBase):
         elif isinstance(other, tuple) and len(other) == 2:
             result.delete_edges([other])
         elif isinstance(other, list):
-            if len(other)>0:
+            if len(other) > 0:
                 if isinstance(other[0], tuple):
                     result.delete_edges(other)
                 elif isinstance(other[0], (int, long, basestring)):
@@ -3454,7 +3458,7 @@ class Graph(GraphBase):
             elif other == 1:
                 return self
             elif other > 1:
-                return self.disjoint_union([self]*(other-1))
+                return self.disjoint_union([self] * (other - 1))
             else:
                 return NotImplemented
 
@@ -3751,6 +3755,49 @@ class Graph(GraphBase):
         @return: the summary of the graph.
         """
         return str(GraphSummary(self, verbosity, width, *args, **kwds))
+
+    def disjoint_union(self, other):
+        '''disjoint_union(self, other)
+
+        Creates the disjoint union of two (or more) graphs.
+
+        @param graphs: graph or list of graphs to be united with
+        the current one.
+        @return: the disjoint union graph
+        '''
+        if isinstance(other, GraphBase):
+            other = [other]
+        return disjoint_union([self] + other)
+
+    def union(self, other, byname='auto'):
+        '''union(self, other)
+
+        Creates the union of two (or more) graphs.
+
+        @param graphs: graph or list of graphs to be united with
+        the current one.
+        @param byname: whether to use vertex names instead of ids. See
+        L{igraph.union} for details.
+        @return: the union graph
+        '''
+        if isinstance(other, GraphBase):
+            other = [other]
+        return union([self] + other, byname=byname)
+
+    def intersection(self, other, byname='auto'):
+        '''intersection(self, other)
+
+        Creates the intersection of two (or more) graphs.
+
+        @param other: graph or list of graphs to be intersected with
+        the current one.
+        @param byname: whether to use vertex names instead of ids. See
+        L{igraph.intersection} for details.
+        @return: the intersection graph
+        '''
+        if isinstance(other, GraphBase):
+            other = [other]
+        return intersection([self] + other, byname=byname)
 
     _format_mapping = {
           "ncol":       ("Read_Ncol", "write_ncol"),

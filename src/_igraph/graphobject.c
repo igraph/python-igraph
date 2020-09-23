@@ -268,7 +268,8 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
  *
  * The newly created instance (which will be a subtype of )\c igraph.Graph)
  * will take ownership of the given \c igraph_t. This function is not
- * accessible from Python.
+ * accessible from Python, however it is in the header file for other C API
+ * functions to use.
  */
 PyObject* igraphmodule_Graph_subclass_from_igraph_t(
   PyTypeObject* type, igraph_t *graph
@@ -9522,194 +9523,9 @@ PyObject *igraphmodule_Graph_edge_attributes(igraphmodule_GraphObject * self)
 }
 
 /**********************************************************************
- * Graph operations (union, intersection etc)                         *
+ * Graph operations                             *
+ * Disjoint union, union and intersection are in operators.c          *
  **********************************************************************/
-
-/** \ingroup python_interface_graph
- * \brief Creates the disjoint union of two graphs (operator version)
- */
-PyObject *igraphmodule_Graph_disjoint_union(igraphmodule_GraphObject * self,
-                                            PyObject * other)
-{
-  PyObject *it;
-  igraphmodule_GraphObject *o, *result;
-  igraph_t g;
-
-  /* Did we receive an iterable? */
-  it = PyObject_GetIter(other);
-  if (it) {
-    /* Get all elements, store the graphs in an igraph_vector_ptr */
-    igraph_vector_ptr_t gs;
-    if (igraph_vector_ptr_init(&gs, 0)) {
-      Py_DECREF(it);
-      return igraphmodule_handle_igraph_error();
-    }
-    if (igraph_vector_ptr_push_back(&gs, &self->g)) {
-      Py_DECREF(it);
-      igraph_vector_ptr_destroy(&gs);
-      return igraphmodule_handle_igraph_error();
-    }
-    if (igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t(it, &gs)) {
-      igraph_vector_ptr_destroy(&gs);
-      Py_DECREF(it);
-      return NULL;
-    }
-    Py_DECREF(it);
-
-    /* Create disjoint union */
-    if (igraph_disjoint_union_many(&g, &gs)) {
-      igraph_vector_ptr_destroy(&gs);
-      return igraphmodule_handle_igraph_error();
-    }
-
-    igraph_vector_ptr_destroy(&gs);
-  } else {
-    PyErr_Clear();
-    if (!PyObject_TypeCheck(other, &igraphmodule_GraphType)) {
-      Py_INCREF(Py_NotImplemented);
-      return Py_NotImplemented;
-    }
-    o = (igraphmodule_GraphObject *) other;
-
-    if (igraph_disjoint_union(&g, &self->g, &o->g)) {
-      igraphmodule_handle_igraph_error();
-      return NULL;
-    }
-  }
-
-  /* this is correct as long as attributes are not copied by the
-   * operator. if they are copied, the initialization should not empty
-   * the attribute hashes */
-  CREATE_GRAPH(result, g);
-
-  return (PyObject *) result;
-}
-
-/** \ingroup python_interface_graph
- * \brief Creates the union of two graphs (operator version)
- */
-PyObject *igraphmodule_Graph_union(igraphmodule_GraphObject * self,
-                                   PyObject * other)
-{
-  PyObject *it;
-  igraphmodule_GraphObject *o, *result;
-  igraph_t g;
-
-  /* Did we receive an iterable? */
-  it = PyObject_GetIter(other);
-  if (it) {
-    /* Get all elements, store the graphs in an igraph_vector_ptr */
-    igraph_vector_ptr_t gs;
-    if (igraph_vector_ptr_init(&gs, 0)) {
-      Py_DECREF(it);
-      return igraphmodule_handle_igraph_error();
-    }
-    if (igraph_vector_ptr_push_back(&gs, &self->g)) {
-      Py_DECREF(it);
-      igraph_vector_ptr_destroy(&gs);
-      return igraphmodule_handle_igraph_error();
-    }
-    if (igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t(it, &gs)) {
-      Py_DECREF(it);
-      igraph_vector_ptr_destroy(&gs);
-      return NULL;
-    }
-    Py_DECREF(it);
-
-    /* Create union */
-    if (igraph_union_many(&g, &gs, /*edgemaps=*/ 0)) {
-      igraph_vector_ptr_destroy(&gs);
-      igraphmodule_handle_igraph_error();
-      return NULL;
-    }
-
-    igraph_vector_ptr_destroy(&gs);
-  }
-  else {
-    PyErr_Clear();
-    if (!PyObject_TypeCheck(other, &igraphmodule_GraphType)) {
-      Py_INCREF(Py_NotImplemented);
-      return Py_NotImplemented;
-    }
-    o = (igraphmodule_GraphObject *) other;
-
-    if (igraph_union(&g, &self->g, &o->g, /*edge_map1=*/ 0,
-		     /*edge_map2=*/ 0)) {
-      igraphmodule_handle_igraph_error();
-      return NULL;
-    }
-  }
-
-  /* this is correct as long as attributes are not copied by the
-   * operator. if they are copied, the initialization should not empty
-   * the attribute hashes */
-  CREATE_GRAPH(result, g);
-
-  return (PyObject *) result;
-}
-
-/** \ingroup python_interface_graph
- * \brief Creates the intersection of two graphs (operator version)
- */
-PyObject *igraphmodule_Graph_intersection(igraphmodule_GraphObject * self,
-                                          PyObject * other)
-{
-  PyObject *it;
-  igraphmodule_GraphObject *o, *result;
-  igraph_t g;
-
-  /* Did we receive an iterable? */
-  it = PyObject_GetIter(other);
-  if (it) {
-    /* Get all elements, store the graphs in an igraph_vector_ptr */
-    igraph_vector_ptr_t gs;
-    if (igraph_vector_ptr_init(&gs, 0)) {
-      Py_DECREF(it);
-      return igraphmodule_handle_igraph_error();
-    }
-    if (igraph_vector_ptr_push_back(&gs, &self->g)) {
-      Py_DECREF(it);
-      igraph_vector_ptr_destroy(&gs);
-      return igraphmodule_handle_igraph_error();
-    }
-    if (igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t(it, &gs)) {
-      Py_DECREF(it);
-      igraph_vector_ptr_destroy(&gs);
-      return NULL;
-    }
-    Py_DECREF(it);
-
-    /* Create union */
-    if (igraph_intersection_many(&g, &gs, /*edgemaps=*/ 0)) {
-      igraph_vector_ptr_destroy(&gs);
-      igraphmodule_handle_igraph_error();
-      return NULL;
-    }
-
-    igraph_vector_ptr_destroy(&gs);
-  }
-  else {
-    PyErr_Clear();
-    if (!PyObject_TypeCheck(other, &igraphmodule_GraphType)) {
-      Py_INCREF(Py_NotImplemented);
-      return Py_NotImplemented;
-    }
-    o = (igraphmodule_GraphObject *) other;
-
-    if (igraph_intersection(&g, &self->g, &o->g, /*edge_map1=*/ 0,
-			    /*edge_map2=*/ 0)) {
-      igraphmodule_handle_igraph_error();
-      return NULL;
-    }
-  }
-
-  /* this is correct as long as attributes are not copied by the
-   * operator. if they are copied, the initialization should not empty
-   * the attribute hashes */
-  CREATE_GRAPH(result, g);
-
-  return (PyObject *) result;
-}
 
 /** \ingroup python_interface_graph
  * \brief Creates the difference of two graphs (operator version)
@@ -15310,23 +15126,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"difference", (PyCFunction) igraphmodule_Graph_difference,
    METH_O,
    "difference(other)\n\nSubtracts the given graph from the original"},
-  {"disjoint_union", (PyCFunction) igraphmodule_Graph_disjoint_union,
-   METH_O,
-   "disjoint_union(graphs)\n\n"
-   "Creates the disjoint union of two (or more) graphs.\n\n"
-   "@param graphs: the list of graphs to be united with the current one.\n"},
-  {"intersection", (PyCFunction) igraphmodule_Graph_intersection,
-   METH_O,
-   "intersection(graphs)\n\n"
-   "Creates the intersection of two (or more) graphs.\n\n"
-   "@param graphs: the list of graphs to be intersected with\n"
-   "  the current one.\n"},
-  {"union", (PyCFunction) igraphmodule_Graph_union,
-   METH_O,
-   "union(graphs)\n\n"
-   "Creates the union of two (or more) graphs.\n\n"
-   "@param graphs: the list of graphs to be united with\n"
-   "  the current one.\n"},
 
   /**********************/
   /* DOMINATORS         */
@@ -16064,9 +15863,9 @@ PyNumberMethods igraphmodule_Graph_as_number = {
   (unaryfunc) igraphmodule_Graph_complementer_op, /*nb_invert */
   0,                            /*nb_lshift */
   0,                            /*nb_rshift */
-  (binaryfunc) igraphmodule_Graph_intersection, /*nb_and */
+  0,                            /*nb_and */
   0,                            /*nb_xor */
-  (binaryfunc) igraphmodule_Graph_union,  /*nb_or */
+  0,                            /*nb_or */
 #ifndef IGRAPH_PYTHON3
   0,                            /*nb_coerce */
 #endif

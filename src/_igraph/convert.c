@@ -2347,6 +2347,41 @@ int igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t(PyObject *it,
 
 /**
  * \ingroup python_interface_conversion
+ * \brief Appends the contents of a Python iterator returning graphs to
+ * an \c igraph_vectorptr_t, and also stores the class of the first graph
+ *
+ * The incoming \c igraph_vector_ptr_t should be INITIALIZED.
+ * Raises suitable Python exceptions when needed.
+ *
+ * \param it the Python iterator
+ * \param v the \c igraph_vector_ptr_t which will contain the result
+ * \return 0 if everything was OK, 1 otherwise
+ */
+int igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t_with_type(PyObject *it,
+    igraph_vector_ptr_t *v,
+    PyTypeObject **g_type) {
+  PyObject *t;
+  int first = 1;
+
+  while ((t=PyIter_Next(it))) {
+    if (!PyObject_TypeCheck(t, &igraphmodule_GraphType)) {
+      PyErr_SetString(PyExc_TypeError, "iterable argument must contain graphs");
+      Py_DECREF(t);
+      return 1;
+    }
+    if (first) {
+      *g_type = Py_TYPE(t);
+      first = 0;
+    }
+    igraph_vector_ptr_push_back(v, &((igraphmodule_GraphObject*)t)->g);
+    Py_DECREF(t);
+  }
+
+  return 0;
+}
+
+/**
+ * \ingroup python_interface_conversion
  * \brief Tries to interpret a Python object as a single vertex ID
  *
  * \param o      the Python object

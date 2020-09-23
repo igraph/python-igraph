@@ -29,13 +29,29 @@ class OperatorTests(unittest.TestCase):
         ])
 
     def testMultiplication(self):
-        g = Graph.Full(3)*3
+        g = Graph.Full(3) * 3
         self.assertTrue(g.vcount() == 9 and g.ecount() == 9
-                        and g.clusters().membership == [0,0,0,1,1,1,2,2,2])
+                        and g.clusters().membership == [0, 0, 0, 1, 1, 1, 2, 2, 2])
 
     def testIntersection(self):
         g = Graph.Tree(7, 2) & Graph.Lattice([7])
         self.assertTrue(g.get_edgelist() == [(0, 1)])
+
+    def testIntersectionMethod(self):
+        g = Graph.Tree(7, 2).intersection(Graph.Lattice([7]))
+        self.assertTrue(g.get_edgelist() == [(0, 1)])
+
+    def testDisjointUnion(self):
+        g1 = Graph.Tree(7, 2)
+        g2 = Graph.Lattice([7])
+
+        # Method
+        g = g1.disjoint_union(g2)
+        self.assertTrue(g.vcount() == 14 and g.ecount() == 13)
+
+        # Module function
+        g = disjoint_union([g1, g2])
+        self.assertTrue(g.vcount() == 14 and g.ecount() == 13)
 
     def testUnion(self):
         g = Graph.Tree(7, 2) | Graph.Lattice([7])
@@ -56,6 +72,80 @@ class OperatorTests(unittest.TestCase):
         g -= Graph.Ring(5)
         self.assertTrue(g.vcount() == 10 and g.ecount() == 7)
         self.assertTrue(sorted(g.get_edgelist()) == [(0, 0), (0, 9), (4, 5), (5, 6), (6, 7), (7, 8), (8, 9)])
+
+    def testUnionMethod(self):
+        g = Graph.Tree(7, 2).union(Graph.Lattice([7]))
+        self.assertTrue(g.vcount() == 7 and g.ecount() == 12)
+
+    def testIntersectionMany(self):
+        gs = [Graph.Tree(7, 2), Graph.Lattice([7])]
+        g = intersection(gs)
+        self.assertTrue(g.get_edgelist() == [(0, 1)])
+
+    def testIntersectionManyAttributes(self):
+        gs = [Graph.Tree(7, 2), Graph.Lattice([7])]
+        gs[0]['attr'] = 'graph1'
+        gs[0].vs['name'] = ['one', 'two', 'three', 'four', 'five', 'six', '7']
+        gs[1].vs['name'] = ['one', 'two', 'three', 'four', 'five', 'six', '7']
+        gs[0].vs[0]['attr'] = 'set'
+        gs[1].vs[5]['attr'] = 'set_too'
+        g = intersection(gs)
+        names = g.vs['name']
+        self.assertTrue(g['attr'] == 'graph1')
+        self.assertTrue(g.vs[names.index('one')]['attr'] == 'set')
+        self.assertTrue(g.vs[names.index('six')]['attr'] == 'set_too')
+        self.assertTrue(g.ecount() == 1)
+        self.assertTrue(
+            set(g.get_edgelist()[0]) == set([names.index('one'), names.index('two')]),
+        )
+
+    def testIntersectionManyEdgemap(self):
+        gs = [
+            Graph.Formula('A-B'),
+            Graph.Formula('A-B,C-D'),
+            ]
+        gs[0].es[0]['attr'] = 'set'
+        gs[1].es[1]['attr'] = 'set_too'
+        g = intersection(gs)
+        self.assertTrue(g.es['attr'] == ['set'])
+
+    def testUnionMany(self):
+        gs = [Graph.Tree(7, 2), Graph.Lattice([7]), Graph.Lattice([7])]
+        g = union(gs)
+        self.assertTrue(g.vcount() == 7 and g.ecount() == 12)
+
+    def testUnionManyAttributes(self):
+        gs = [
+            Graph.Formula('A-B'),
+            Graph.Formula('A-B,C-D'),
+            ]
+        gs[0]['attr'] = 'graph1'
+        gs[0].vs['attr'] = ['set', 'set_too']
+        gs[0].vs['attr2'] = ['set', 'set_too']
+        gs[1].vs[0]['attr'] = 'set'
+        gs[1].vs[0]['attr2'] = 'conflict'
+        g = union(gs)
+        names = g.vs['name']
+        self.assertTrue(g['attr'] == 'graph1')
+        self.assertTrue(g.vs[names.index('A')]['attr'] == 'set')
+        self.assertTrue(g.vs[names.index('B')]['attr'] == 'set_too')
+        self.assertTrue(g.ecount() == 2)
+        self.assertTrue(sorted(g.vertex_attributes()) == ['attr', 'attr2_1', 'attr2_2', 'name'])
+
+    def testUnionManyEdgemap(self):
+        gs = [
+            Graph.Formula('A-B'),
+            Graph.Formula('C-D, A-B'),
+            ]
+        gs[0].es[0]['attr'] = 'set'
+        gs[1].es[0]['attr'] = 'set_too'
+        g = union(gs)
+        for e in g.es:
+            vnames = [g.vs[e.source]['name'], g.vs[e.target]['name']]
+            if set(vnames) == set(['A', 'B']):
+                self.assertTrue(e['attr'] == 'set')
+            else:
+                self.assertTrue(e['attr'] == 'set_too')
 
     def testInPlaceAddition(self):
         g = Graph.Full(3)
