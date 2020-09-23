@@ -60,7 +60,7 @@ def disjoint_union(graphs):
     ngr = len(graphs)
     # Trivial cases
     if ngr == 0:
-        return None
+        raise ValueError("disjoint_union() needs at least one graph")
     if ngr == 1:
         return graphs[0].copy()
     # Now there are at least two graphs
@@ -156,7 +156,7 @@ def union(graphs, byname='auto'):
 
     # Trivial cases
     if ngr == 0:
-        return None
+        raise ValueError("union() needs at least one graph")
     if ngr == 1:
         return graphs[0].copy()
     # Now there are at least two graphs
@@ -336,7 +336,7 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
 
     # Trivial cases
     if ngr == 0:
-        return None
+        raise ValueError("intersection() needs at least one graph")
     if ngr == 1:
         return graphs[0].copy()
     # Now there are at least two graphs

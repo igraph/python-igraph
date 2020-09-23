@@ -33,6 +33,18 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(g.vcount() == 9 and g.ecount() == 9
                         and g.clusters().membership == [0, 0, 0, 1, 1, 1, 2, 2, 2])
 
+    def testDifference(self):
+        g = Graph.Tree(7, 2) - Graph.Lattice([7])
+        self.assertTrue(g.vcount() == 7 and g.ecount() == 5)
+        self.assertTrue(sorted(g.get_edgelist()) == [(0, 2), (1, 3), (1, 4), (2, 5), (2, 6)])
+
+    def testDifferenceWithSelfLoop(self):
+        # https://github.com/igraph/igraph/issues/597#
+        g = Graph.Ring(10) + [(0, 0)]
+        g -= Graph.Ring(5)
+        self.assertTrue(g.vcount() == 10 and g.ecount() == 7)
+        self.assertTrue(sorted(g.get_edgelist()) == [(0, 0), (0, 9), (4, 5), (5, 6), (6, 7), (7, 8), (8, 9)])
+
     def testIntersection(self):
         g = Graph.Tree(7, 2) & Graph.Lattice([7])
         self.assertTrue(g.get_edgelist() == [(0, 1)])
@@ -40,6 +52,17 @@ class OperatorTests(unittest.TestCase):
     def testIntersectionMethod(self):
         g = Graph.Tree(7, 2).intersection(Graph.Lattice([7]))
         self.assertTrue(g.get_edgelist() == [(0, 1)])
+
+    def testIntersectionNoGraphs(self):
+        self.assertRaises(ValueError, intersection, [])
+
+    def testIntersectionSingle(self):
+        g1 = Graph.Tree(7, 2)
+        g = intersection([g1])
+        self.assertTrue(g != g1)
+        self.assertTrue(g.vcount() == g1.vcount() and g.ecount() == g1.ecount())
+        self.assertTrue(g.is_directed() == g1.is_directed())
+        self.assertTrue(g.get_edgelist() == g1.get_edgelist())
 
     def testDisjointUnion(self):
         g1 = Graph.Tree(7, 2)
@@ -53,6 +76,17 @@ class OperatorTests(unittest.TestCase):
         g = disjoint_union([g1, g2])
         self.assertTrue(g.vcount() == 14 and g.ecount() == 13)
 
+    def testDisjointUnionNoGraphs(self):
+        self.assertRaises(ValueError, disjoint_union, [])
+
+    def testDisjointUnionSingle(self):
+        g1 = Graph.Tree(7, 2)
+        g = disjoint_union([g1])
+        self.assertTrue(g != g1)
+        self.assertTrue(g.vcount() == g1.vcount() and g.ecount() == g1.ecount())
+        self.assertTrue(g.is_directed() == g1.is_directed())
+        self.assertTrue(g.get_edgelist() == g1.get_edgelist())
+
     def testUnion(self):
         g = Graph.Tree(7, 2) | Graph.Lattice([7])
         self.assertTrue(g.vcount() == 7 and g.ecount() == 12)
@@ -61,53 +95,20 @@ class OperatorTests(unittest.TestCase):
             (2, 6), (3, 4), (4, 5), (5, 6)
         ])
 
-    def testDifference(self):
-        g = Graph.Tree(7, 2) - Graph.Lattice([7])
-        self.assertTrue(g.vcount() == 7 and g.ecount() == 5)
-        self.assertTrue(sorted(g.get_edgelist()) == [(0, 2), (1, 3), (1, 4), (2, 5), (2, 6)])
-
-    def testDifferenceWithSelfLoop(self):
-        # https://github.com/igraph/igraph/issues/597#
-        g = Graph.Ring(10) + [(0, 0)]
-        g -= Graph.Ring(5)
-        self.assertTrue(g.vcount() == 10 and g.ecount() == 7)
-        self.assertTrue(sorted(g.get_edgelist()) == [(0, 0), (0, 9), (4, 5), (5, 6), (6, 7), (7, 8), (8, 9)])
-
     def testUnionMethod(self):
         g = Graph.Tree(7, 2).union(Graph.Lattice([7]))
         self.assertTrue(g.vcount() == 7 and g.ecount() == 12)
 
-    def testIntersectionMany(self):
-        gs = [Graph.Tree(7, 2), Graph.Lattice([7])]
-        g = intersection(gs)
-        self.assertTrue(g.get_edgelist() == [(0, 1)])
+    def testUnionNoGraphs(self):
+        self.assertRaises(ValueError, union, [])
 
-    def testIntersectionManyAttributes(self):
-        gs = [Graph.Tree(7, 2), Graph.Lattice([7])]
-        gs[0]['attr'] = 'graph1'
-        gs[0].vs['name'] = ['one', 'two', 'three', 'four', 'five', 'six', '7']
-        gs[1].vs['name'] = ['one', 'two', 'three', 'four', 'five', 'six', '7']
-        gs[0].vs[0]['attr'] = 'set'
-        gs[1].vs[5]['attr'] = 'set_too'
-        g = intersection(gs)
-        names = g.vs['name']
-        self.assertTrue(g['attr'] == 'graph1')
-        self.assertTrue(g.vs[names.index('one')]['attr'] == 'set')
-        self.assertTrue(g.vs[names.index('six')]['attr'] == 'set_too')
-        self.assertTrue(g.ecount() == 1)
-        self.assertTrue(
-            set(g.get_edgelist()[0]) == set([names.index('one'), names.index('two')]),
-        )
-
-    def testIntersectionManyEdgemap(self):
-        gs = [
-            Graph.Formula('A-B'),
-            Graph.Formula('A-B,C-D'),
-            ]
-        gs[0].es[0]['attr'] = 'set'
-        gs[1].es[1]['attr'] = 'set_too'
-        g = intersection(gs)
-        self.assertTrue(g.es['attr'] == ['set'])
+    def testUnionSingle(self):
+        g1 = Graph.Tree(7, 2)
+        g = union([g1])
+        self.assertTrue(g != g1)
+        self.assertTrue(g.vcount() == g1.vcount() and g.ecount() == g1.ecount())
+        self.assertTrue(g.is_directed() == g1.is_directed())
+        self.assertTrue(g.get_edgelist() == g1.get_edgelist())
 
     def testUnionMany(self):
         gs = [Graph.Tree(7, 2), Graph.Lattice([7]), Graph.Lattice([7])]
@@ -146,6 +147,49 @@ class OperatorTests(unittest.TestCase):
                 self.assertTrue(e['attr'] == 'set')
             else:
                 self.assertTrue(e['attr'] == 'set_too')
+
+    def testIntersectionNoGraphs(self):
+        self.assertRaises(ValueError, intersection, [])
+
+    def testIntersectionSingle(self):
+        g1 = Graph.Tree(7, 2)
+        g = intersection([g1])
+        self.assertTrue(g != g1)
+        self.assertTrue(g.vcount() == g1.vcount() and g.ecount() == g1.ecount())
+        self.assertTrue(g.is_directed() == g1.is_directed())
+        self.assertTrue(g.get_edgelist() == g1.get_edgelist())
+
+    def testIntersectionMany(self):
+        gs = [Graph.Tree(7, 2), Graph.Lattice([7])]
+        g = intersection(gs)
+        self.assertTrue(g.get_edgelist() == [(0, 1)])
+
+    def testIntersectionManyAttributes(self):
+        gs = [Graph.Tree(7, 2), Graph.Lattice([7])]
+        gs[0]['attr'] = 'graph1'
+        gs[0].vs['name'] = ['one', 'two', 'three', 'four', 'five', 'six', '7']
+        gs[1].vs['name'] = ['one', 'two', 'three', 'four', 'five', 'six', '7']
+        gs[0].vs[0]['attr'] = 'set'
+        gs[1].vs[5]['attr'] = 'set_too'
+        g = intersection(gs)
+        names = g.vs['name']
+        self.assertTrue(g['attr'] == 'graph1')
+        self.assertTrue(g.vs[names.index('one')]['attr'] == 'set')
+        self.assertTrue(g.vs[names.index('six')]['attr'] == 'set_too')
+        self.assertTrue(g.ecount() == 1)
+        self.assertTrue(
+            set(g.get_edgelist()[0]) == set([names.index('one'), names.index('two')]),
+        )
+
+    def testIntersectionManyEdgemap(self):
+        gs = [
+            Graph.Formula('A-B'),
+            Graph.Formula('A-B,C-D'),
+            ]
+        gs[0].es[0]['attr'] = 'set'
+        gs[1].es[1]['attr'] = 'set_too'
+        g = intersection(gs)
+        self.assertTrue(g.es['attr'] == ['set'])
 
     def testInPlaceAddition(self):
         g = Graph.Full(3)
