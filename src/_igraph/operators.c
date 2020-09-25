@@ -36,7 +36,6 @@ PyObject *igraphmodule__disjoint_union(PyObject *self,
   PyObject *it, *graphs;
   long int no_of_graphs;
   igraph_vector_ptr_t gs;
-  igraphmodule_GraphObject *o;
   PyObject *result;
   PyTypeObject *result_type;
   igraph_t g;
