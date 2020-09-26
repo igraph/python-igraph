@@ -11639,7 +11639,7 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
   PyObject *edge_weights_o = Py_None;
   PyObject *node_weights_o = Py_None;
   PyObject *initial_membership_o = Py_None;
-  PyObject *res;
+  PyObject *res = Py_None;
 
   int error = 0, i;
   long int n_iterations = 2;
