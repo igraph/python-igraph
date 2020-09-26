@@ -65,7 +65,7 @@ The command-line startup script imports all of |igraph|'s methods and objects in
 namespace, so it is practically equivalent to ``from igraph import *``. The difference between
 the two approaches (apart from saving some typing) is that the command-line script checks
 whether you have any of Python's more advanced shells installed and uses that instead of the
-standard Python shell. Currently the module looks for `IPython <http://ipython.scipy.org>`_ and
+standard Python shell. Currently the module looks for `IPython <https://ipython.org/>`_ and
 IDLE (the Tcl/Tk-based graphical shell supplied with Python). If neither IPython nor IDLE is
 installed, the startup script launches the default Python shell. You can also modify the
 order in which these shells are searched by tweaking |igraph|'s configuration file
