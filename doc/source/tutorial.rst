@@ -229,7 +229,7 @@ Let's do the same with a stochastic generator!
 IGRAPH U---- 100 516 --
 + attr: x (v), y (v)
 
-TODO: discuss what the ``+ attr`` line means.
+where ``+ attr`` shows names of the attributes for vertices (v) and edges (e).
 
 :meth:`Graph.GRG` generates a geometric random graph: *n* points are chosen randomly and
 uniformly inside the unit square and pairs of points closer to each other than a predefined
@@ -637,7 +637,14 @@ you look them up by names, the other one will be available only by its index.
 Treating a graph as an adjacency matrix
 =======================================
 
-TODO
+Adjacency matrix is another way to form a graph. In adjacency matrix, rows and columns are labeled by graph vertices: the elements of the matrix indicate whether the vertices *i* and *j* have a common edge (*i, j*). 
+The adjacency matrix for the example graph is
+
+>>> g.get_adjacency()
+Matrix([[0, 1, 1, 0, 0, 1, 0], [1, 0, 0, 0, 0, 0, 0], [1, 0, 0, 1, 1, 1, 0], [0, 0, 1, 0, 1, 0, 1], [0, 0, 1, 1, 0, 0, 0], [1, 0, 1, 0, 0, 0, 1], [0, 0, 0, 1, 0, 1, 0]])
+
+For example, Claire (``[1, 0, 0, 1, 1, 1, 0]``) is directly connected to Alice (who has vertex index 0), Dennis (index 3),
+Esther (index 4), and Frank (index 5), but not to Bob (index 1) nor George (index 6).
 
 Layouts and plotting
 ====================
