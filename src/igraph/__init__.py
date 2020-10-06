@@ -481,11 +481,14 @@ class Graph(GraphBase):
             trees = GraphBase.biconnected_components(self, False)
 
         clusters = []
-        for tree in trees:
-            cluster = set()
-            for edge in self.es[tree]:
-                cluster.update(edge.tuple)
-            clusters.append(sorted(cluster))
+        if trees:
+            edgelist = self.get_edgelist()
+            for tree in trees:
+                cluster = set()
+                for edge_id in tree:
+                    cluster.update(edgelist[edge_id])
+                clusters.append(sorted(cluster))
+
         clustering = VertexCover(self, clusters)
 
         if return_articulation_points:
