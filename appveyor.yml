@@ -24,8 +24,8 @@ platform:
 
 install:
   # update msys2 keyring first
-  - bash -lc "curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz"
-  - bash -lc "curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig"
+  - bash -lc "curl -O https://mirror.yandex.ru/mirrors/msys2/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz"
+  - bash -lc "curl -O https://mirror.yandex.ru/mirrors/msys2/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig"
   - bash -lc "pacman --noconfirm -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz"
 
   # update msys2
@@ -33,7 +33,7 @@ install:
   - bash -lc "pacman --noconfirm -Sy"
   - bash -lc "pacman --needed --noconfirm -S zstd"
   - bash -lc "pacman --needed --noconfirm -S autoconf automake bison flex libtool mingw-w64-x86_64-libtool mingw-w64-i686-libxml2 mingw-w64-x86_64-libxml2 zip"
-  - pip install cibuildwheel==1.1.0
+  - pip install cibuildwheel==1.6.1
 
 before_build:
   - git submodule update --init --recursive
