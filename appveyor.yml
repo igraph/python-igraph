@@ -6,6 +6,7 @@ environment:
     CIBW_BEFORE_BUILD: python setup.py build_c_core
     CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
     IGRAPH_EXTRA_CONFIGURE_ARGS: "--disable-graphml"
+    PYTHON: "C:\\Python37"
 
   matrix:
     - CIBW_BUILD: "*-win32"
@@ -33,7 +34,14 @@ install:
   - bash -lc "pacman --noconfirm -Sy"
   - bash -lc "pacman --needed --noconfirm -S zstd"
   - bash -lc "pacman --needed --noconfirm -S autoconf automake bison flex libtool mingw-w64-x86_64-libtool mingw-w64-i686-libxml2 mingw-w64-x86_64-libxml2 zip"
-  - pip3 install cibuildwheel==1.6.1
+
+  # prepare Python
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "python --version"
+  - "python -m pip install --upgrade pip"
+
+  # install cibuildwheel
+  - pip install cibuildwheel==1.6.1
 
 before_build:
   - git submodule update --init --recursive
