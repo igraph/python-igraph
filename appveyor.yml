@@ -10,12 +10,13 @@ environment:
 
   matrix:
     - CIBW_BUILD: "*-win32"
-      CIBW_SKIP: "cp27-*"
+      CIBW_SKIP: "cp27-* cp35-*"
       MSYSTEM: MINGW32
       PATH: C:\msys64\usr\bin;C:\msys64\mingw32\bin;C:\Windows\System32;C:\Windows;%PATH%
       TARGET_ARCH: "x86"
 
     - CIBW_BUILD: "*-win_amd64"
+      CIBW_SKIP: "cp27-* cp35-*"
       MSYSTEM: MINGW64
       PATH: C:\msys64\usr\bin;C:\msys64\mingw64\bin;C:\Windows\System32;C:\Windows;%PATH%
       TARGET_ARCH: "x64"
