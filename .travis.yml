@@ -34,6 +34,7 @@ jobs:
         - CIBW_BEFORE_BUILD="yum install -y flex bison libxml2-devel zlib-devel && python setup.py build_c_core"
         - CIBW_TEST_COMMAND="cd {project} && python -m unittest"
       install:
+        - wget -qO- https://bootstrap.pypa.io/get-pip.py | sudo python3
         - sudo python3 -m pip install cibuildwheel==1.6.1
       script:
         - python setup.py sdist
