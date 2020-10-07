@@ -37,7 +37,7 @@ jobs:
         - wget -qO- https://bootstrap.pypa.io/get-pip.py | sudo python3
         - sudo python3 -m pip install cibuildwheel==1.6.1
       script:
-        - python setup.py sdist
+        - python setup.py -q sdist
         - python3 -m cibuildwheel --output-dir wheelhouse
       before_deploy: &before_deploy_releases
         - git config --local user.name "ntamas"
