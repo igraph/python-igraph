@@ -29,10 +29,7 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
-# pylint: disable-msg=W0401
-# W0401: wildcard import
-from igraph._igraph import *
-from igraph._igraph import _union, _intersection, _disjoint_union
+from igraph._igraph import GraphBase, _union, _intersection, _disjoint_union
 
 from collections import defaultdict, Counter
 from warnings import warn
