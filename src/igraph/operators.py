@@ -37,6 +37,8 @@ from igraph._igraph import _union, _intersection, _disjoint_union
 from collections import defaultdict, Counter
 from warnings import warn
 
+__all__ = ("disjoint_union", "union", "intersection")
+
 
 def disjoint_union(graphs):
     """Graph disjoint union.
