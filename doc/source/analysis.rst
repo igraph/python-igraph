@@ -1,3 +1,5 @@
+.. include:: include/global.rst
+
 Graph analysis
 ==============
 |igraph| enables analysis of graphs/networks from simple operations such as adding and removing nodes to complex theoretical constructs such as community detection. Read the `API documentation`_ for details on each function and class.

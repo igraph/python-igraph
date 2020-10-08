@@ -1,3 +1,5 @@
+.. include:: include/global.rst
+
 Graph generation
 ================
 
