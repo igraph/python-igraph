@@ -300,7 +300,7 @@ class IgraphCCoreBuilder(object):
             os.chdir(build_folder)
 
             print("Configuring igraph...")
-            configure_args = ["--disable-tls"]
+            configure_args = ["--disable-tls", "--enable-silent-rules"]
             if "IGRAPH_EXTRA_CONFIGURE_ARGS" in os.environ:
                 configure_args.extend(os.environ["IGRAPH_EXTRA_CONFIGURE_ARGS"].split(" "))
             retcode = subprocess.call(
