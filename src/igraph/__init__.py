@@ -267,7 +267,7 @@ class Graph(GraphBase):
         @param es: the list of edges to be added. Every edge is represented
           with a tuple containing the vertex IDs or names of the two
           endpoints. Vertices are enumerated from zero.
-        @params attributes: dict of sequences, all of length equal to the
+        @param attributes: dict of sequences, all of length equal to the
           number of edges to be added, containing the attributes of the new
           edges.
         """
@@ -302,23 +302,23 @@ class Graph(GraphBase):
         return vertex
 
     def add_vertices(self, n, attributes=None):
-        """add_vertices(n)
+        """add_vertices(n, attributes=None)
 
         Adds some vertices to the graph.
+
+        Note that if C{n} is a sequence of strings, indicating the names of the
+        new vertices, and attributes has a key C{name}, the two conflict. In
+        that case the attribute will be applied.
 
         @param n: the number of vertices to be added, or the name of a single
           vertex to be added, or a sequence of strings, each corresponding to the
           name of a vertex to be added. Names will be assigned to the C{name}
           vertex attribute.
-        @params attributes: dict of sequences, all of length equal to the
+        @param attributes: dict of sequences, all of length equal to the
           number of vertices to be added, containing the attributes of the new
           vertices. If n is a string (so a single vertex is added), then the
           values of this dict are the attributes themselves, but if n=1 then
           they have to be lists of length 1.
-
-        Note that if n is a sequence of strings, indicating the names of the
-        new vertices, and attributes has a key 'name', the two conflict. In
-        that case the attribute will be applied.
         """
         if isinstance(n, basestring):
             # Adding a single vertex with a name
@@ -639,13 +639,15 @@ class Graph(GraphBase):
         return Matrix(data)
 
     def get_adjacency_sparse(self, attribute=None):
-        """Returns the adjacency matrix of a graph as scipy csr matrix.
+        """Returns the adjacency matrix of a graph as a SciPy CSR matrix.
+
         @param attribute: if C{None}, returns the ordinary adjacency
           matrix. When the name of a valid edge attribute is given
           here, the matrix returned will contain the default value
           at the places where there is no edge or the value of the
           given attribute where there is an edge.
-        @return: the adjacency matrix as a L{scipy.sparse.csr_matrix}."""
+        @return: the adjacency matrix as a C{scipy.sparse.csr_matrix}.
+        """
         try:
             from scipy import sparse
         except ImportError:
@@ -697,7 +699,7 @@ class Graph(GraphBase):
         return self.get_inclist(*args, **kwds)
 
     def get_all_simple_paths(self, v, to=None, cutoff=-1, mode=OUT):
-        """get_all_simple_paths(v, to=None, mode=OUT)
+        """get_all_simple_paths(v, to=None, cutoff=-1, mode=OUT)
 
         Calculates all the simple paths from a given node to some other nodes
         (or all of them) in a graph.
@@ -1869,6 +1871,18 @@ class Graph(GraphBase):
             edge_attributes=None):
         """Converts the graph to graph-tool
 
+        Data types: graph-tool only accepts specific data types. See the
+        following web page for a list:
+
+        https://graph-tool.skewed.de/static/doc/quickstart.html
+
+        Note: because of the restricted data types in graph-tool, vertex and
+        edge attributes require to be type-consistent across all vertices or
+        edges. If you set the property for only some vertices/edges, the other
+        will be tagged as None in python-igraph, so they can only be converted
+        to graph-tool with the type 'object' and any other conversion will
+        fail.
+
         @param graph_attributes: dictionary of graph attributes to transfer.
           Keys are attributes from the graph, values are data types (see
           below). C{None} means no graph attributes are transferred.
@@ -1878,18 +1892,6 @@ class Graph(GraphBase):
         @param edge_attributes: dictionary of edge attributes to transfer.
           Keys are attributes from the edges, values are data types (see
           below). C{None} means no vertex attributes are transferred.
-
-        Data types: graph-tool only accepts specific data types. See the
-        following web page for a list:
-
-        https://graph-tool.skewed.de/static/doc/quickstart.html
-
-        NOTE: because of the restricted data types in graph-tool, vertex and
-        edge attributes require to be type-consistent across all vertices or
-        edges. If you set the property for only some vertices/edges, the other
-        will be tagged as None in python-igraph, so they can only be converted
-        to graph-tool with the type 'object' and any other conversion will
-        fail.
         """
         import graph_tool as gt
 
@@ -3018,7 +3020,7 @@ class Graph(GraphBase):
 
     @classmethod
     def Incidence(klass, *args, **kwds):
-        """Incidence(matrix, directed=False, mode=ALL, multiple=False)
+        """Incidence(matrix, directed=False, mode=ALL, multiple=False, weighted=None)
 
         Creates a bipartite graph from an incidence matrix.
 
@@ -3074,7 +3076,7 @@ class Graph(GraphBase):
 
     @classmethod
     def DataFrame(klass, edges, directed=True, vertices=None):
-        """DataFrame(directed=True, vertices=None)
+        """DataFrame(edges, directed=True, vertices=None)
 
         Generates a graph from one or two dataframes.
 
@@ -3773,44 +3775,42 @@ class Graph(GraphBase):
         return str(GraphSummary(self, verbosity, width, *args, **kwds))
 
     def disjoint_union(self, other):
-        '''disjoint_union(self, other)
+        """disjoint_union(self, other)
 
         Creates the disjoint union of two (or more) graphs.
 
-        @param graphs: graph or list of graphs to be united with
-        the current one.
+        @param other: graph or list of graphs to be united with the current one.
         @return: the disjoint union graph
-        '''
+        """
         if isinstance(other, GraphBase):
             other = [other]
         return disjoint_union([self] + other)
 
     def union(self, other, byname='auto'):
-        '''union(self, other)
+        """union(self, other, byname="auto")
 
         Creates the union of two (or more) graphs.
 
-        @param graphs: graph or list of graphs to be united with
-        the current one.
+        @param other: graph or list of graphs to be united with the current one.
         @param byname: whether to use vertex names instead of ids. See
-        L{igraph.union} for details.
+          L{igraph.union} for details.
         @return: the union graph
-        '''
+        """
         if isinstance(other, GraphBase):
             other = [other]
         return union([self] + other, byname=byname)
 
     def intersection(self, other, byname='auto'):
-        '''intersection(self, other)
+        """intersection(self, other, byname="auto")
 
         Creates the intersection of two (or more) graphs.
 
         @param other: graph or list of graphs to be intersected with
-        the current one.
+          the current one.
         @param byname: whether to use vertex names instead of ids. See
-        L{igraph.intersection} for details.
+          L{igraph.intersection} for details.
         @return: the intersection graph
-        '''
+        """
         if isinstance(other, GraphBase):
             other = [other]
         return intersection([self] + other, byname=byname)

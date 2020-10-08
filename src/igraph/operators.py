@@ -307,8 +307,8 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
       False, ignore vertex names. If True, merge vertices based on names. If
       'auto', use True if all graphs have named vertices and False otherwise
       (in the latter case, a warning is generated too).
-    @keep_all_vertices: bool specifying if vertices that are not present in all
-      graphs should be kept in the intersection.
+    @param keep_all_vertices: bool specifying if vertices that are not present
+      in all graphs should be kept in the intersection.
     @return: the intersection graph
     """
 

@@ -14800,7 +14800,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"isomorphic_bliss", (PyCFunction) igraphmodule_Graph_isomorphic_bliss,
    METH_VARARGS | METH_KEYWORDS,
    "isomorphic_bliss(other, return_mapping_12=False, return_mapping_21=False,\n"
-   "  sh1=\"fm\", sh2=None)\n\n"
+   "  sh1=\"fm\", sh2=None, color1=None, color2=None)\n\n"
    "Checks whether the graph is isomorphic to another graph, using the\n"
    "BLISS isomorphism algorithm.\n\n"
    "See U{http://www.tcs.hut.fi/Software/bliss/index.html} for more information\n"
