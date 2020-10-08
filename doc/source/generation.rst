@@ -55,7 +55,7 @@ If you don't specify a format, |igraph| will try to figure it out or, if that fa
 
 From external libraries
 +++++++++++++++++++++++
-|igraph| can read from and write to `networkx`_ and `graph-tool`_ graph formats:
+|igraph| can read from and write to `networkx` and `graph-tool` graph formats:
 
 >>> g = Graph.from_networkx(nwx)
 

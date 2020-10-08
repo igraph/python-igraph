@@ -260,7 +260,7 @@ class Graph(GraphBase):
         return edge
 
     def add_edges(self, es, attributes=None):
-        """add_edges(es)
+        """add_edges(es, attributes=None)
 
         Adds some edges to the graph.
 
