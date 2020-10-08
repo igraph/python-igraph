@@ -1,14 +1,11 @@
 # vim:ts=4:sw=4:sts=4:et
 # -*- coding: utf-8 -*-
-"""
-IGraph library.
-
-@undocumented: deprecated, _graphmethod, _add_proxy_methods, _layout_method_wrapper,
-               _3d_version_for
-"""
+"""Implementation of union, disjoint union and intersection operators."""
 
 from __future__ import with_statement
 
+__all__ = ("disjoint_union", "union", "intersection")
+__docformat__ = "restructuredtext en"
 __license__ = u"""
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
 Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
@@ -33,8 +30,6 @@ from igraph._igraph import GraphBase, _union, _intersection, _disjoint_union
 
 from collections import defaultdict, Counter
 from warnings import warn
-
-__all__ = ("disjoint_union", "union", "intersection")
 
 
 def disjoint_union(graphs):
