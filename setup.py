@@ -255,9 +255,11 @@ def wait_for_keypress(seconds):
 ###########################################################################
 
 
-class IgraphCCoreBuilder(object):
+class IgraphCCoreAutotoolsBuilder(object):
     """Class responsible for downloading and building the C core of igraph
-    if it is not installed yet."""
+    if it is not installed yet, assuming that the C core uses `configure.ac`
+    and its friends. This used to be the case before igraph 0.9.
+    """
 
     def compile_in(self, build_folder, source_folder=None):
         """Compiles igraph from its source code in the given folder.
@@ -420,6 +422,27 @@ class IgraphCCoreBuilder(object):
             prev = os.environ.get(k)
             env[k] = "{0} {1}".format(prev, v) if prev else v
         return env
+
+
+###########################################################################
+
+
+class IgraphCCoreCMakeBuilder(object):
+    """Class responsible for downloading and building the C core of igraph
+    if it is not installed yet, assuming that the C core uses CMake as the
+    build tool. This is the case from igraph 0.9.
+    """
+
+    def compile_in(self, build_folder, source_folder=None):
+        raise NotImplementedError
+
+    def copy_build_artifacts(
+        self, source_folder, build_folder, install_folder, libraries
+    ):
+        raise NotImplementedError
+
+
+###########################################################################
 
 
 class BuildConfiguration(object):
@@ -591,7 +614,11 @@ class BuildConfiguration(object):
             return True
 
         vendor_source_path = os.path.join("vendor", "source", "igraph")
-        if not os.path.isfile(os.path.join(vendor_source_path, "configure.ac")):
+        if os.path.isfile(os.path.join(vendor_source_path, "configure.ac")):
+            igraph_builder = IgraphCCoreAutotoolsBuilder()
+        elif os.path.isfile(os.path.join(vendor_source_path, "CMakeLists.txt")):
+            igraph_builder = IgraphCCoreCMakeBuilder()
+        else:
             # No git submodule present with vendored source
             print("Cannot find vendored igraph source in " + vendor_source_path)
             print("")
@@ -607,7 +634,6 @@ class BuildConfiguration(object):
         print("  Install folder: %s" % install_folder)
         print("")
 
-        igraph_builder = IgraphCCoreBuilder()
         libraries = igraph_builder.compile_in(build_folder, source_folder=source_folder)
         if not libraries or not igraph_builder.copy_build_artifacts(
             source_folder=source_folder,
