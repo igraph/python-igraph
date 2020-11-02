@@ -66,6 +66,20 @@ def exclude_from_list(items, items_to_exclude):
     return [item for item in items if item not in itemset]
 
 
+def find_executable(name):
+    """Finds an executable with the given name on the system PATH and returns
+    its full path.
+    """
+    try:
+        from shutil import which
+
+        return which(name)  # Python 3.3 and above
+    except ImportError:
+        import distutils.spawn
+
+        return distutils.spawn.find_executable(name)  # Earlier than Python 3.3
+
+
 def find_static_library(library_name, library_path):
     """Given the raw name of a library in `library_name`, tries to find a
     static library with this name in the given `library_path`. `library_path`
@@ -261,120 +275,106 @@ class IgraphCCoreAutotoolsBuilder(object):
     and its friends. This used to be the case before igraph 0.9.
     """
 
-    def compile_in(self, build_folder, source_folder=None):
+    def compile_in(self, source_folder, build_folder, install_folder):
         """Compiles igraph from its source code in the given folder.
 
         source_folder is the name of the folder that contains igraph's source
-        files. If it is `None`, it is assumed that it is the same as the
-        build folder.
+        files. build_folder is the name of the folder where the build should
+        be executed. Both must be absolute paths.
+
+        Returns:
+            False if the build failed or the list of libraries to link to when
+            linking the Python interface to igraph
         """
-        if source_folder is None:
-            source_folder = build_folder
-
-        source_folder = os.path.abspath(source_folder)
-        build_folder = os.path.abspath(build_folder)
-
         build_to_source_folder = os.path.relpath(source_folder, build_folder)
 
-        cwd = os.getcwd()
-        try:
-            os.chdir(source_folder)
+        os.chdir(source_folder)
 
-            # Run the bootstrap script if we have downloaded a tarball from
-            # Github
-            if os.path.isfile("bootstrap.sh") and not os.path.isfile("configure"):
-                print("Bootstrapping igraph...")
-                retcode = subprocess.call("sh bootstrap.sh", shell=True)
-                if retcode:
-                    return False
-
-            # Patch ltmain.sh so it does not freak out when the build directory
-            # contains spaces
-            with open("ltmain.sh") as infp:
-                with open("ltmain.sh.new", "w") as outfp:
-                    for line in infp:
-                        if line.endswith("cd $darwin_orig_dir\n"):
-                            line = line.replace(
-                                "cd $darwin_orig_dir\n", 'cd "$darwin_orig_dir"\n'
-                            )
-                        outfp.write(line)
-            shutil.move("ltmain.sh.new", "ltmain.sh")
-
-            create_dir_unless_exists(build_folder)
-            os.chdir(build_folder)
-
-            print("Configuring igraph...")
-            configure_args = ["--disable-tls", "--enable-silent-rules"]
-            if "IGRAPH_EXTRA_CONFIGURE_ARGS" in os.environ:
-                configure_args.extend(
-                    os.environ["IGRAPH_EXTRA_CONFIGURE_ARGS"].split(" ")
-                )
-            retcode = subprocess.call(
-                "sh {0} {1}".format(
-                    quote_path_for_shell(
-                        os.path.join(build_to_source_folder, "configure")
-                    ),
-                    " ".join(configure_args),
-                ),
-                env=self.enhanced_env(CFLAGS="-fPIC", CXXFLAGS="-fPIC"),
-                shell=True,
-            )
+        # Run the bootstrap script if we have downloaded a tarball from
+        # Github
+        if os.path.isfile("bootstrap.sh") and not os.path.isfile("configure"):
+            print("Bootstrapping igraph...")
+            retcode = subprocess.call("sh bootstrap.sh", shell=True)
             if retcode:
                 return False
 
-            building_on_windows = building_on_windows_msvc()
-
-            if building_on_windows:
-                print("Creating Microsoft Visual Studio project...")
-                retcode = subprocess.call("make msvc", shell=True)
-                if retcode:
-                    return False
-
-            print("Building igraph...")
-            if building_on_windows:
-                msvc_source = find_msvc_source_folder()
-                if not msvc_source:
-                    return False
-
-                devenv = os.environ.get("DEVENV_EXECUTABLE")
-                os.chdir(msvc_source)
-                if devenv is None:
-                    retcode = subprocess.call(
-                        "devenv /upgrade igraph.vcproj", shell=True
-                    )
-                else:
-                    retcode = subprocess.call([devenv, "/upgrade", "igraph.vcproj"])
-                if retcode:
-                    return False
-
-                retcode = subprocess.call(
-                    "msbuild.exe igraph.vcxproj /p:configuration=Release"
-                )
-            else:
-                retcode = subprocess.call("make", shell=True)
-
-            if retcode:
-                return False
-
-            if building_on_windows:
-                libraries = ["igraph"]
-            else:
-                libraries = []
-                for line in open("igraph.pc"):
-                    if line.startswith("Libs: ") or line.startswith("Libs.private: "):
-                        words = line.strip().split()
-                        libraries.extend(
-                            word[2:] for word in words if word.startswith("-l")
+        # Patch ltmain.sh so it does not freak out when the build directory
+        # contains spaces
+        with open("ltmain.sh") as infp:
+            with open("ltmain.sh.new", "w") as outfp:
+                for line in infp:
+                    if line.endswith("cd $darwin_orig_dir\n"):
+                        line = line.replace(
+                            "cd $darwin_orig_dir\n", 'cd "$darwin_orig_dir"\n'
                         )
+                    outfp.write(line)
+        shutil.move("ltmain.sh.new", "ltmain.sh")
 
-                if not libraries:
-                    # Educated guess
-                    libraries = ["igraph"]
+        os.chdir(build_folder)
 
-            return libraries
+        print("Configuring igraph...")
+        configure_args = ["--disable-tls", "--enable-silent-rules"]
+        if "IGRAPH_EXTRA_CONFIGURE_ARGS" in os.environ:
+            configure_args.extend(os.environ["IGRAPH_EXTRA_CONFIGURE_ARGS"].split(" "))
+        retcode = subprocess.call(
+            "sh {0} {1}".format(
+                quote_path_for_shell(os.path.join(build_to_source_folder, "configure")),
+                " ".join(configure_args),
+            ),
+            env=self.enhanced_env(CFLAGS="-fPIC", CXXFLAGS="-fPIC"),
+            shell=True,
+        )
+        if retcode:
+            return False
 
-        finally:
-            os.chdir(cwd)
+        building_on_windows = building_on_windows_msvc()
+
+        if building_on_windows:
+            print("Creating Microsoft Visual Studio project...")
+            retcode = subprocess.call("make msvc", shell=True)
+            if retcode:
+                return False
+
+        print("Building igraph...")
+        if building_on_windows:
+            msvc_source = find_msvc_source_folder()
+            if not msvc_source:
+                return False
+
+            devenv = os.environ.get("DEVENV_EXECUTABLE")
+            os.chdir(msvc_source)
+            if devenv is None:
+                retcode = subprocess.call("devenv /upgrade igraph.vcproj", shell=True)
+            else:
+                retcode = subprocess.call([devenv, "/upgrade", "igraph.vcproj"])
+            if retcode:
+                return False
+
+            retcode = subprocess.call(
+                "msbuild.exe igraph.vcxproj /p:configuration=Release"
+            )
+        else:
+            retcode = subprocess.call("make", shell=True)
+
+        if retcode:
+            return False
+
+        if building_on_windows:
+            libraries = ["igraph"]
+        else:
+            libraries = []
+            for line in open("igraph.pc"):
+                if line.startswith("Libs: ") or line.startswith("Libs.private: "):
+                    words = line.strip().split()
+                    libraries.extend(
+                        word[2:] for word in words if word.startswith("-l")
+                    )
+
+            if not libraries:
+                # Educated guess
+                libraries = ["igraph"]
+
+        return libraries
 
     def copy_build_artifacts(
         self, source_folder, build_folder, install_folder, libraries
@@ -431,10 +431,50 @@ class IgraphCCoreCMakeBuilder(object):
     """Class responsible for downloading and building the C core of igraph
     if it is not installed yet, assuming that the C core uses CMake as the
     build tool. This is the case from igraph 0.9.
+
+    Returns:
+        False if the build failed or the list of libraries to link to when
+        linking the Python interface to igraph
     """
 
-    def compile_in(self, build_folder, source_folder=None):
-        raise NotImplementedError
+    def compile_in(self, source_folder, build_folder, install_folder):
+        """Compiles igraph from its source code in the given folder.
+
+        source_folder is the name of the folder that contains igraph's source
+        files. build_folder is the name of the folder where the build should
+        be executed. Both must be absolute paths.
+        """
+        cmake = find_executable("cmake")
+        if not cmake:
+            print(
+                "igraph uses CMake as the build system. You need to install CMake "
+                "before compiling igraph."
+            )
+            return False
+
+        build_to_source_folder = os.path.relpath(source_folder, build_folder)
+        os.chdir(build_folder)
+
+        print("Configuring build...")
+        args = [cmake, build_to_source_folder]
+        for deps in "ARPACK BLAS CXSPARSE GLPK LAPACK".split():
+            args.append("-DIGRAPH_USE_INTERNAL_" + deps + "=ON")
+
+        retcode = subprocess.call(args)
+        if retcode:
+            return False
+
+        print("Running build...")
+        retcode = subprocess.call(
+            [cmake, "--build", ".", "--parallel", "--config", "Release"]
+        )
+        if retcode:
+            return False
+
+        print("Installing build...")
+        retcode = subprocess.call([cmake, "--install", ".", "--prefix", install_folder])
+        if retcode:
+            return False
 
     def copy_build_artifacts(
         self, source_folder, build_folder, install_folder, libraries
@@ -614,10 +654,10 @@ class BuildConfiguration(object):
             return True
 
         vendor_source_path = os.path.join("vendor", "source", "igraph")
-        if os.path.isfile(os.path.join(vendor_source_path, "configure.ac")):
-            igraph_builder = IgraphCCoreAutotoolsBuilder()
-        elif os.path.isfile(os.path.join(vendor_source_path, "CMakeLists.txt")):
+        if os.path.isfile(os.path.join(vendor_source_path, "CMakeLists.txt")):
             igraph_builder = IgraphCCoreCMakeBuilder()
+        elif os.path.isfile(os.path.join(vendor_source_path, "configure.ac")):
+            igraph_builder = IgraphCCoreAutotoolsBuilder()
         else:
             # No git submodule present with vendored source
             print("Cannot find vendored igraph source in " + vendor_source_path)
@@ -634,7 +674,22 @@ class BuildConfiguration(object):
         print("  Install folder: %s" % install_folder)
         print("")
 
-        libraries = igraph_builder.compile_in(build_folder, source_folder=source_folder)
+        source_folder = os.path.abspath(source_folder)
+        build_folder = os.path.abspath(build_folder)
+        install_folder = os.path.abspath(install_folder)
+
+        create_dir_unless_exists(build_folder)
+
+        cwd = os.getcwd()
+        try:
+            libraries = igraph_builder.compile_in(
+                source_folder=source_folder,
+                build_folder=build_folder,
+                install_folder=install_folder,
+            )
+        finally:
+            os.chdir(cwd)
+
         if not libraries or not igraph_builder.copy_build_artifacts(
             source_folder=source_folder,
             build_folder=build_folder,
