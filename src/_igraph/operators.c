@@ -96,7 +96,7 @@ PyObject *igraphmodule__union(PyObject *self,
 		PyObject *args, PyObject *kwds)
 {
   static char* kwlist[] = { "graphs", "edgemaps", NULL };
-  PyObject *it, *em_list, *graphs, *with_edgemaps_o;
+  PyObject *it, *em_list = 0, *graphs, *with_edgemaps_o;
   int with_edgemaps = 0;
   long int no_of_graphs;
   igraph_vector_ptr_t gs;
@@ -207,7 +207,7 @@ PyObject *igraphmodule__intersection(PyObject *self,
 		PyObject *args, PyObject *kwds)
 {
   static char* kwlist[] = { "graphs", "edgemaps", NULL };
-  PyObject *it, *em_list, *graphs, *with_edgemaps_o;
+  PyObject *it, *em_list = 0, *graphs, *with_edgemaps_o;
   int with_edgemaps = 0;
   long int no_of_graphs;
   igraph_vector_ptr_t gs;
