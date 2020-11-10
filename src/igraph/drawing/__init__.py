@@ -28,7 +28,7 @@ from igraph.compat import property, BytesIO
 from igraph.configuration import Configuration
 from igraph.drawing.colors import Palette, palettes
 from igraph.drawing.graph import DefaultGraphDrawer
-from igraph.drawing.utils import BoundingBox, Point, Rectangle, find_cairo
+from igraph.drawing.utils import BoundingBox, Point, Rectangle, find_cairo, find_matplotlib
 from igraph.utils import _is_running_in_ipython, named_temporary_file
 
 __all__ = ["BoundingBox", "DefaultGraphDrawer", "Plot", "Point", "Rectangle", "plot"]
@@ -36,6 +36,7 @@ __all__ = ["BoundingBox", "DefaultGraphDrawer", "Plot", "Point", "Rectangle", "p
 __license__ = "GPL"
 
 cairo = find_cairo()
+matplotlib, plt = find_matplotlib()
 
 #####################################################################
 
@@ -50,7 +51,7 @@ class Plot(object):
     since C{pycairo} takes care of the actual drawing. Everything that's supported
     by C{pycairo} should be supported by this class as well.
 
-    Current Cairo surfaces that I'm aware of are:
+    Current Cairo surfaces include:
 
       - C{cairo.GlitzSurface} -- OpenGL accelerated surface for the X11
         Window System.
@@ -387,6 +388,103 @@ class Plot(object):
 
 #####################################################################
 
+
+class PlotMatplotlib(object):
+    """Class representing a Matplotlib plot"""
+
+    _shape_dict = {
+        'rectangle': 's',
+        'circle': 'o',
+        'hidden': 'none',
+        'triangle-up': '^',
+        'triangle-down': 'v',
+    }
+
+    def __init__(self, ax=None):
+        """Creates a new plot.
+
+        @param ax: the matplotlib.pyplot.Axes instance to plot the graph into.
+          If this argument is None, a new figure and axes will be created.
+        """
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        self.ax = ax
+
+    def add(self, obj, *args, **kwds):
+        self._objects.append((obj, args, kwds))
+
+    def show(self):
+        import matplotlib.markers as mmarkers
+
+        ax = self.ax
+
+        for obj, args, kwds in self._objects:
+            # FIXME: deal with unnamed *args
+
+            # Get layout
+            layout = kwds.get('layout', obj.layout())
+            if isinstance(layout, str):
+                layout = obj.layout(layout)
+
+            # Vertex coordinates
+            vcoord = layout.coords
+
+            # Edge coordinates
+            ecoord = []
+            for edge in obj.es:
+                src, tgt = edge.source, edge.target
+                src_coord = vcoord[src]
+                tgt_coord = vcoord[tgt]
+                ecoord.append((src_coord, tgt_coord))
+
+            # Vertex properties
+            # NOTE: shapes use slightly different names from Cairo
+            s = kwds.get('vertex_size', None)
+            c = kwds.get('vertex_color', None)
+            label = kwds.get('vertex_label', None)
+            label_size = kwds.get('vertex_label_size', None)
+            zorder = kwds.get('vertex_order')
+            shapes = kwds.get('vertex_shape', None)
+            if shapes is not None:
+                if isinstance(shapes, str):
+                    shapes = self._shape_dict.get(shapes, shapes)
+                elif isinstance(shapes, mmarkers.MarkerStyle):
+                    pass
+
+            # Scatter vertices
+            # NOTE: matplotlib does not support a list of shapes yet
+            x, y = list(zip(*vcoord))
+            ax.scatter(x, y, s=s, c=c, m=shapes, zorder=zorder)
+            if label is not None:
+                for i, lab, lab_size in enumerate(zip(label, label_size)):
+                    xi, yi = x[i], y[i]
+                    ax.text(xi, yi, lab, fs=lab_size)
+
+            # Edge properties
+            edge_width = kwds.get('edge_width', None)
+            arrow_width = kwds.get('arrow_width', None)
+            arrow_length = kwds.get('arrow_size', None)
+            ec = kwds.get('edge_color', None)
+
+            # Plot edges
+            for ((xs, ys), (xt, yt)) in ecoord:
+                if obj.is_directed():
+                    dx = xt - xs
+                    dy = yt - ys
+                    ax.arrow(
+                        xs, ys, dx, dy, length_includes_head=True,
+                        width=edge_width, head_width=arrow_width,
+                        head_length=arrow_length,
+                        color=ec,
+                    )
+                else:
+                    ax.plot([xs, xt], [ys, yt], lw=edge_width, c=ec)
+
+
+#####################################################################
+
+
 def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     """Plots the given object to the given target.
 
@@ -449,6 +547,12 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
 
     @see: Graph.__plot__
     """
+    if (plt is not None) and isinstance(target, plt.Axes):
+        result = PlotMatplotlib(ax=target)
+        result.add(obj, *args, **kwds)
+        result.show()
+        return
+
     if not isinstance(bbox, BoundingBox):
         bbox = BoundingBox(bbox)
 

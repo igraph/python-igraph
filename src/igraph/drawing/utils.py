@@ -418,6 +418,25 @@ def find_cairo():
 
 #####################################################################
 
+def find_matplotlib():
+    """Tries to import the ``cairo`` Python module if it is installed,
+    also trying ``cairocffi`` (a drop-in replacement of ``cairo``).
+    Returns a fake module if everything fails.
+    """
+    module_names = ["matplotlib"]
+    module = FakeModule()
+    pyplot = FakeModule()
+    for module_name in module_names:
+        try:
+            module = __import__(module_name)
+            pyplot = module.pyplot
+            break
+        except ImportError:
+            pass
+    return module, pyplot
+
+#####################################################################
+
 class Point(tuple):
     """Class representing a point on the 2D plane."""
     __slots__ = ()
