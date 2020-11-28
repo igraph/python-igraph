@@ -926,3 +926,126 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
               will be used to encode the JSON objects.
         """
         self.streamer.post(graph, self.connection, encoder=kwds.get("encoder"))
+
+#####################################################################
+
+class MatplotlibGraphDrawer(AbstractGraphDrawer):
+    """Graph drawer that uses a pyplot.Axes as context"""
+
+    _shape_dict = {
+        'rectangle': 's',
+        'circle': 'o',
+        'hidden': 'none',
+        'triangle-up': '^',
+        'triangle-down': 'v',
+    }
+
+
+
+    def __init__(self, ax):
+        """Constructs the graph drawer and associates it with the mpl axes"""
+        self.ax = ax
+
+    def draw(self, graph, *args, **kwds):
+        import matplotlib.markers as mmarkers
+        from matplotlib.path import Path
+        from matplotlib.patches import FancyArrowPatch
+        from matplotlib.patches import ArrowStyle
+
+        ax = self.ax
+
+        # FIXME: deal with unnamed *args
+
+        # Get layout
+        layout = kwds.get('layout', graph.layout())
+        if isinstance(layout, str):
+            layout = graph.layout(layout)
+
+        # Vertex coordinates
+        vcoord = layout.coords
+
+        # Vertex properties
+        # NOTE: shapes use slightly different names from Cairo
+        s = kwds.get('vertex_size', None)
+        c = kwds.get('vertex_color', None)
+        label = kwds.get('vertex_label', None)
+        label_size = kwds.get('vertex_label_size', None)
+        zorder = kwds.get('vertex_order')
+        shapes = kwds.get('vertex_shape', None)
+        if shapes is not None:
+            if isinstance(shapes, str):
+                shapes = self._shape_dict.get(shapes, shapes)
+            elif isinstance(shapes, mmarkers.MarkerStyle):
+                pass
+
+        # Scatter vertices
+        # NOTE: matplotlib does not support a list of shapes yet
+        x, y = list(zip(*vcoord))
+        ax.scatter(x, y, s=s, c=c, m=shapes, zorder=zorder)
+        if label is not None:
+            for i, lab, lab_size in enumerate(zip(label, label_size)):
+                xi, yi = x[i], y[i]
+                ax.text(xi, yi, lab, fs=lab_size)
+
+        # Edge properties
+        edge_width = kwds.get('edge_width', None)
+        arrow_width = kwds.get('arrow_width', 0.2)
+        arrow_length = kwds.get('arrow_size', 0.4)
+        ec = kwds.get('edge_color', None)
+
+        # Decide whether we need to calculate the curvature of edges
+        # automatically -- and calculate them if needed.
+        autocurve = kwds.get("autocurve", None)
+        if autocurve or (autocurve is None and \
+                "edge_curved" not in kwds and "curved" not in graph.edge_attributes() \
+                and graph.ecount() < 10000):
+            from igraph import autocurve
+            default = kwds.get("edge_curved", 0)
+            if default is True:
+                default = 0.5
+            default = float(default)
+            kwds["edge_curved"] = autocurve(graph, attribute=None, default=default)
+
+        # Edge coordinates and curvature
+        ecoord = []
+        has_curved = 'curved' in graph.es.attributes()
+        for edge in graph.es:
+            src, tgt = edge.source, edge.target
+            src_coord = vcoord[src]
+            tgt_coord = vcoord[tgt]
+            curved = edge['curved'] if has_curved else False
+            ecoord.append((src_coord, tgt_coord, curved))
+
+        # Arrow style for directed and undirected graphs
+        if graph.is_directed():
+            arrowstyle = ArrowStyle(
+                'CurveB', head_length=arrow_length, head_width=arrow_width,
+            )
+        else:
+            arrowstyle = '-'
+
+        # Plot edges
+        for ((x1, y1), (x2, y2), curved) in ecoord:
+            if curved:
+                aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), \
+                       (2 * y1 + y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+                aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), \
+                       (y1 + 2 * y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+
+                # TODO: manage shinkage by vertex dot size
+
+                path = Path(
+                    [(x1, y1), aux1, aux2, (x2, y2)],
+                    # Cubic bezier by mpl
+                    codes=[1, 4, 4, 4])
+            else:
+                path = Path(
+                    [(x1, y1), (x2, y2)],
+                    codes=[1, 2])
+
+            arrow = FancyArrowPatch(
+                path=path,
+                arrowstyle=arrowstyle,
+                lw=edge_width,
+                color=ec)
+            ax.add_artist(arrow)

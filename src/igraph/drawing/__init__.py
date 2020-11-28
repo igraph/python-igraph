@@ -27,7 +27,7 @@ import time
 from igraph.compat import property, BytesIO
 from igraph.configuration import Configuration
 from igraph.drawing.colors import Palette, palettes
-from igraph.drawing.graph import DefaultGraphDrawer
+from igraph.drawing.graph import DefaultGraphDrawer, MatplotlibGraphDrawer
 from igraph.drawing.utils import BoundingBox, Point, Rectangle, find_cairo, find_matplotlib
 from igraph.utils import _is_running_in_ipython, named_temporary_file
 
@@ -386,101 +386,6 @@ class Plot(object):
         is drawn"""
         return self.bbox.width
 
-#####################################################################
-
-
-class PlotMatplotlib(object):
-    """Class representing a Matplotlib plot"""
-
-    _shape_dict = {
-        'rectangle': 's',
-        'circle': 'o',
-        'hidden': 'none',
-        'triangle-up': '^',
-        'triangle-down': 'v',
-    }
-
-    def __init__(self, ax=None):
-        """Creates a new plot.
-
-        @param ax: the matplotlib.pyplot.Axes instance to plot the graph into.
-          If this argument is None, a new figure and axes will be created.
-        """
-        if ax is None:
-            fig, ax = plt.subplots()
-
-        self.ax = ax
-
-    def add(self, obj, *args, **kwds):
-        self._objects.append((obj, args, kwds))
-
-    def show(self):
-        import matplotlib.markers as mmarkers
-
-        ax = self.ax
-
-        for obj, args, kwds in self._objects:
-            # FIXME: deal with unnamed *args
-
-            # Get layout
-            layout = kwds.get('layout', obj.layout())
-            if isinstance(layout, str):
-                layout = obj.layout(layout)
-
-            # Vertex coordinates
-            vcoord = layout.coords
-
-            # Edge coordinates
-            ecoord = []
-            for edge in obj.es:
-                src, tgt = edge.source, edge.target
-                src_coord = vcoord[src]
-                tgt_coord = vcoord[tgt]
-                ecoord.append((src_coord, tgt_coord))
-
-            # Vertex properties
-            # NOTE: shapes use slightly different names from Cairo
-            s = kwds.get('vertex_size', None)
-            c = kwds.get('vertex_color', None)
-            label = kwds.get('vertex_label', None)
-            label_size = kwds.get('vertex_label_size', None)
-            zorder = kwds.get('vertex_order')
-            shapes = kwds.get('vertex_shape', None)
-            if shapes is not None:
-                if isinstance(shapes, str):
-                    shapes = self._shape_dict.get(shapes, shapes)
-                elif isinstance(shapes, mmarkers.MarkerStyle):
-                    pass
-
-            # Scatter vertices
-            # NOTE: matplotlib does not support a list of shapes yet
-            x, y = list(zip(*vcoord))
-            ax.scatter(x, y, s=s, c=c, m=shapes, zorder=zorder)
-            if label is not None:
-                for i, lab, lab_size in enumerate(zip(label, label_size)):
-                    xi, yi = x[i], y[i]
-                    ax.text(xi, yi, lab, fs=lab_size)
-
-            # Edge properties
-            edge_width = kwds.get('edge_width', None)
-            arrow_width = kwds.get('arrow_width', None)
-            arrow_length = kwds.get('arrow_size', None)
-            ec = kwds.get('edge_color', None)
-
-            # Plot edges
-            for ((xs, ys), (xt, yt)) in ecoord:
-                if obj.is_directed():
-                    dx = xt - xs
-                    dy = yt - ys
-                    ax.arrow(
-                        xs, ys, dx, dy, length_includes_head=True,
-                        width=edge_width, head_width=arrow_width,
-                        head_length=arrow_length,
-                        color=ec,
-                    )
-                else:
-                    ax.plot([xs, xt], [ys, yt], lw=edge_width, c=ec)
-
 
 #####################################################################
 
@@ -548,9 +453,8 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     @see: Graph.__plot__
     """
     if (plt is not None) and isinstance(target, plt.Axes):
-        result = PlotMatplotlib(ax=target)
-        result.add(obj, *args, **kwds)
-        result.show()
+        result = MatplotlibGraphDrawer(ax=target)
+        result.draw(obj, *args, **kwds)
         return
 
     if not isinstance(bbox, BoundingBox):
@@ -586,7 +490,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     # so just show or save the result
     if target is None:
         result.show()
-    elif isinstance(target, basestring):
+    elif isinstance(target, str):
         result.save()
 
     # Also return the plot itself
