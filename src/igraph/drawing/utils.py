@@ -423,17 +423,19 @@ def find_matplotlib():
     also trying ``cairocffi`` (a drop-in replacement of ``cairo``).
     Returns a fake module if everything fails.
     """
-    module_names = ["matplotlib"]
-    module = FakeModule()
-    pyplot = FakeModule()
-    for module_name in module_names:
-        try:
-            module = __import__(module_name)
-            pyplot = module.pyplot
-            break
-        except ImportError:
-            pass
-    return module, pyplot
+    try:
+        import matplotlib as mpl
+        has_mpl = True
+    except ImportError:
+        mpl = FakeModule()
+        has_mpl = False
+
+    if has_mpl:
+        import matplotlib.pyplot as plt
+    else:
+        plt = FakeModule()
+
+    return mpl, plt
 
 #####################################################################
 

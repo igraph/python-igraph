@@ -576,7 +576,7 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         # Add the vertices
         n = graph.vcount()
         new_vertex = display.new_vertex
-        vertex_ids = [new_vertex() for _ in xrange(n)]
+        vertex_ids = [new_vertex() for _ in range(n)]
 
         # Add the edges
         new_edge = display.new_edge
@@ -674,10 +674,10 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         # Create the nodes
         if "node_ids" in kwds:
             node_ids = kwds["node_ids"]
-            if isinstance(node_ids, basestring):
+            if isinstance(node_ids, str):
                 node_ids = graph.vs[node_ids]
         else:
-            node_ids = xrange(graph.vcount())
+            node_ids = range(graph.vcount())
         node_ids = [str(identifier) for identifier in node_ids]
         cy.createNodes(network_id, node_ids)
 
@@ -967,10 +967,11 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # Vertex properties
         # NOTE: shapes use slightly different names from Cairo
         s = kwds.get('vertex_size', None)
-        c = kwds.get('vertex_color', None)
+        c = kwds.get('vertex_color', 'black')
+        alpha = kwds.get('alpha', 1.0)
         label = kwds.get('vertex_label', None)
         label_size = kwds.get('vertex_label_size', None)
-        zorder = kwds.get('vertex_order')
+        vzorder = kwds.get('vertex_order', 2)
         shapes = kwds.get('vertex_shape', None)
         if shapes is not None:
             if isinstance(shapes, str):
@@ -981,17 +982,25 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # Scatter vertices
         # NOTE: matplotlib does not support a list of shapes yet
         x, y = list(zip(*vcoord))
-        ax.scatter(x, y, s=s, c=c, m=shapes, zorder=zorder)
+        ax.scatter(x, y, s=s, c=c, marker=shapes, zorder=vzorder, alpha=alpha)
         if label is not None:
             for i, lab, lab_size in enumerate(zip(label, label_size)):
                 xi, yi = x[i], y[i]
                 ax.text(xi, yi, lab, fs=lab_size)
 
         # Edge properties
-        edge_width = kwds.get('edge_width', None)
-        arrow_width = kwds.get('arrow_width', 0.2)
-        arrow_length = kwds.get('arrow_size', 0.4)
-        ec = kwds.get('edge_color', None)
+        ne = graph.ecount()
+        ec = kwds.get('edge_color', 'black')
+        edge_width = kwds.get('edge_width', 1)
+        arrow_width = kwds.get('edge_arrow_width', 2)
+        arrow_length = kwds.get('edge_arrow_size', 4)
+        ealpha = kwds.get('edge_alpha', 1.0)
+        ezorder = kwds.get('edge_order', 1.0)
+        try:
+            ezorder = float(ezorder)
+            ezorder = [ezorder] * ne
+        except TypeError:
+            pass
 
         # Decide whether we need to calculate the curvature of edges
         # automatically -- and calculate them if needed.
@@ -1019,13 +1028,13 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # Arrow style for directed and undirected graphs
         if graph.is_directed():
             arrowstyle = ArrowStyle(
-                'CurveB', head_length=arrow_length, head_width=arrow_width,
+                '-|>', head_length=arrow_length, head_width=arrow_width,
             )
         else:
             arrowstyle = '-'
 
         # Plot edges
-        for ((x1, y1), (x2, y2), curved) in ecoord:
+        for ie, ((x1, y1), (x2, y2), curved) in enumerate(ecoord):
             if curved:
                 aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), \
                        (2 * y1 + y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
@@ -1047,5 +1056,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 path=path,
                 arrowstyle=arrowstyle,
                 lw=edge_width,
-                color=ec)
+                color=ec,
+                alpha=ealpha,
+                zorder=ezorder[ie])
             ax.add_artist(arrow)
