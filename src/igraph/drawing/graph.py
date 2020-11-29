@@ -984,9 +984,9 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         x, y = list(zip(*vcoord))
         ax.scatter(x, y, s=s, c=c, marker=shapes, zorder=vzorder, alpha=alpha)
         if label is not None:
-            for i, lab, lab_size in enumerate(zip(label, label_size)):
+            for i, lab in enumerate(label):
                 xi, yi = x[i], y[i]
-                ax.text(xi, yi, lab, fs=lab_size)
+                ax.text(xi, yi, lab, fontsize=label_size)
 
         # Edge properties
         ne = graph.ecount()
