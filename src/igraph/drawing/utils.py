@@ -393,11 +393,11 @@ class FakeModule(object):
     """Fake module that raises an exception for everything"""
 
     def __getattr__(self, _):
-        raise TypeError("plotting not available")
+        raise AttributeError("plotting not available")
     def __call__(self, _):
         raise TypeError("plotting not available")
     def __setattr__(self, key, value):
-        raise TypeError("plotting not available")
+        raise AttributeError("plotting not available")
 
 #####################################################################
 

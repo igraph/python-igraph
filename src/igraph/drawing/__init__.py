@@ -452,7 +452,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
 
     @see: Graph.__plot__
     """
-    if (plt is not None) and isinstance(target, plt.Axes):
+    if hasattr(plt, 'Axes') and isinstance(target, plt.Axes):
         result = MatplotlibGraphDrawer(ax=target)
         result.draw(obj, *args, **kwds)
         return
