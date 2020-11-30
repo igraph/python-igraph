@@ -1015,16 +1015,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
             default = float(default)
             kwds["edge_curved"] = autocurve(graph, attribute=None, default=default)
 
-        # Edge coordinates and curvature
-        ecoord = []
-        has_curved = 'curved' in graph.es.attributes()
-        for edge in graph.es:
-            src, tgt = edge.source, edge.target
-            src_coord = vcoord[src]
-            tgt_coord = vcoord[tgt]
-            curved = edge['curved'] if has_curved else False
-            ecoord.append((src_coord, tgt_coord, curved))
-
         # Arrow style for directed and undirected graphs
         if graph.is_directed():
             arrowstyle = ArrowStyle(
@@ -1033,24 +1023,89 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         else:
             arrowstyle = '-'
 
-        # Plot edges
-        for ie, ((x1, y1), (x2, y2), curved) in enumerate(ecoord):
-            if curved:
-                aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), \
-                       (2 * y1 + y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
-                aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), \
-                       (y1 + 2 * y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+        # Edge coordinates and curvature
+        nloops = [0 for x in range(ne)]
+        has_curved = 'curved' in graph.es.attributes()
+        for ie, edge in enumerate(graph.es):
+            src, tgt = edge.source, edge.target
+            x1, y1 = vcoord[src]
+            x2, y2 = vcoord[tgt]
 
-                # TODO: manage shinkage by vertex dot size
+            # Loops require special treatment
+            if src == tgt:
+                # TODO: loop
+                # Find all non-loop edges
+                nloopstot = 0
+                angles = []
+                for tgtn in graph.neighbors(src):
+                    if tgtn == src:
+                        nloopstot += 1
+                        continue
+                    xn, yn = vcoord[tgtn]
+                    angles.append(180. / pi * atan2(yn - y1, xn - x1) % 360)
+                # with .neighbors(mode=ALL), which is default, loops are double
+                # counted
+                nloopstot //= 2
+                angles = sorted(set(angles))
+
+                # Only loops or one non-loop
+                if len(angles) < 2:
+                    ashift = angles[0] if angles else 270
+                    if nloopstot == 1:
+                        # Only one self loop, use a quadrant only
+                        angles = [(ashift + 135) % 360, (ashift + 225) % 360]
+                    else:
+                        nshift = 360. / nloopstot
+                        angles = [(ashift + nshift * nloops[src]) % 360,
+                                  (ashift + nshift * (nloops[src] + 1)) % 360]
+                    nloops[src] += 1
+                else:
+                    angles.append(angles[0] + 360)
+                    idiff = 0
+                    diff = 0
+                    for i in range(len(angles) - 1):
+                        diffi = abs(angles[i + 1] - angles[i])
+                        if diffi > diff:
+                            idiff = i
+                            diff = diffi
+                    angles = angles[idiff: idiff + 2]
+                    ashift = angles[0]
+                    nshift = (angles[1] - angles[0]) / nloopstot
+                    angles = [(ashift + nshift * nloops[src]),
+                              (ashift + nshift * (nloops[src] + 1))]
+                    nloops[src] += 1
+
+                # FIXME: this is not great, but alright
+                dx = (max(x) - min(x)) / 5
+                dy = (max(y) - min(y)) / 5
+                angmid1 = angles[0] + 0.33 * (angles[1] - angles[0])
+                angmid2 = angles[0] + 0.67 * (angles[1] - angles[0])
+                aux1 = (x1 + dx * cos(pi / 180 * angmid1), y1 + dy * sin(pi / 180 * angmid1))
+                aux2 = (x1 + dx * cos(pi / 180 * angmid2), y1 + dy * sin(pi / 180 * angmid2))
 
                 path = Path(
                     [(x1, y1), aux1, aux2, (x2, y2)],
                     # Cubic bezier by mpl
                     codes=[1, 4, 4, 4])
+
             else:
-                path = Path(
-                    [(x1, y1), (x2, y2)],
-                    codes=[1, 2])
+                curved = edge['curved'] if has_curved else False
+                if curved:
+                    aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), \
+                           (2 * y1 + y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+                    aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), \
+                           (y1 + 2 * y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+
+                    # TODO: manage shinkage by vertex dot size
+
+                    path = Path(
+                        [(x1, y1), aux1, aux2, (x2, y2)],
+                        # Cubic bezier by mpl
+                        codes=[1, 4, 4, 4])
+                else:
+                    path = Path(
+                        [(x1, y1), (x2, y2)],
+                        codes=[1, 2])
 
             arrow = FancyArrowPatch(
                 path=path,
