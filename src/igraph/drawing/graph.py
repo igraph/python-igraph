@@ -15,7 +15,7 @@ network from Cytoscape and convert it to igraph format.
 
 from collections import defaultdict
 from itertools import izip
-from math import atan2, cos, pi, sin, tan
+from math import atan2, cos, pi, sin, tan, sqrt
 from warnings import warn
 
 from igraph._igraph import convex_hull, VertexSeq
@@ -952,6 +952,28 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         from matplotlib.patches import FancyArrowPatch
         from matplotlib.patches import ArrowStyle
 
+        def shrink_vertex(ax, aux, vcoord, vsize_squared):
+            '''Shrink edge by vertex size'''
+            aux_display, vcoord_display = ax.transData.transform([aux, vcoord])
+            d = sqrt(((aux_display - vcoord_display)**2).sum())
+            fr = sqrt(vsize_squared) / d
+            end_display = vcoord_display + fr * (aux_display - vcoord_display)
+            end = ax.transData.inverted().transform(end_display)
+            return end
+
+        def callback_factory(ax, vcoord, vsizes, arrows):
+            def callback_edge_offset(event):
+                for arrow, src, tgt in arrows:
+                    v1, v2 = vcoord[src], vcoord[tgt]
+                    # This covers both cases (curved and straight)
+                    aux1, aux2 = arrow._path_original.vertices[[1, -2]]
+                    start = shrink_vertex(ax, aux1, v1, vsizes[src])
+                    end = shrink_vertex(ax, aux2, v2, vsizes[tgt])
+                    arrow._path_original.vertices[0] = start
+                    arrow._path_original.vertices[-1] = end
+
+            return callback_edge_offset
+
         ax = self.ax
 
         # FIXME: deal with unnamed *args
@@ -965,13 +987,18 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         vcoord = layout.coords
 
         # Vertex properties
-        # NOTE: shapes use slightly different names from Cairo
-        s = kwds.get('vertex_size', None)
+        vsizes = kwds.get('vertex_size', None)
+        # NOTE: ax.scatter uses the *square* of diameter
+        if vsizes is not None:
+            vsizes **= 2
+        if isinstance(vsizes, float) or isinstance(vsizes, int):
+            vsizes = [vsizes] * len(vcoord)
         c = kwds.get('vertex_color', 'black')
         alpha = kwds.get('alpha', 1.0)
         label = kwds.get('vertex_label', None)
         label_size = kwds.get('vertex_label_size', None)
         vzorder = kwds.get('vertex_order', 2)
+        # mpl shapes use slightly different names from Cairo
         shapes = kwds.get('vertex_shape', None)
         if shapes is not None:
             if isinstance(shapes, str):
@@ -982,11 +1009,18 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # Scatter vertices
         # NOTE: matplotlib does not support a list of shapes yet
         x, y = list(zip(*vcoord))
-        ax.scatter(x, y, s=s, c=c, marker=shapes, zorder=vzorder, alpha=alpha)
+        ax.scatter(x, y, s=vsizes, c=c, marker=shapes, zorder=vzorder, alpha=alpha)
+
+        # Vertex labels
         if label is not None:
             for i, lab in enumerate(label):
                 xi, yi = x[i], y[i]
                 ax.text(xi, yi, lab, fontsize=label_size)
+
+        dx = (max(x) - min(x))
+        dy = (max(y) - min(y))
+        ax.set_xlim(min(x) - 0.05 * dx, max(x) + 0.05 * dx)
+        ax.set_ylim(min(y) - 0.05 * dy, max(y) + 0.05 * dy)
 
         # Edge properties
         ne = graph.ecount()
@@ -1026,6 +1060,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # Edge coordinates and curvature
         nloops = [0 for x in range(ne)]
         has_curved = 'curved' in graph.es.attributes()
+        arrows = []
         for ie, edge in enumerate(graph.es):
             src, tgt = edge.source, edge.target
             x1, y1 = vcoord[src]
@@ -1033,7 +1068,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
             # Loops require special treatment
             if src == tgt:
-                # TODO: loop
                 # Find all non-loop edges
                 nloopstot = 0
                 angles = []
@@ -1075,16 +1109,23 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                               (ashift + nshift * (nloops[src] + 1))]
                     nloops[src] += 1
 
-                # FIXME: this is not great, but alright
-                dx = (max(x) - min(x)) / 5
-                dy = (max(y) - min(y)) / 5
-                angmid1 = angles[0] + 0.33 * (angles[1] - angles[0])
-                angmid2 = angles[0] + 0.67 * (angles[1] - angles[0])
-                aux1 = (x1 + dx * cos(pi / 180 * angmid1), y1 + dy * sin(pi / 180 * angmid1))
-                aux2 = (x1 + dx * cos(pi / 180 * angmid2), y1 + dy * sin(pi / 180 * angmid2))
+                # this is not great, but alright
+                angspan = angles[1] - angles[0]
+                if angspan < 180:
+                    angmid1 = angles[0] + 0.1 * angspan
+                    angmid2 = angles[1] - 0.1 * angspan
+                else:
+                    angmid1 = angles[0] + 0.5 * (angspan - 180) + 45
+                    angmid2 = angles[1] - 0.5 * (angspan - 180) - 45
+                aux1 = (x1 + 0.2 * dx * cos(pi / 180 * angmid1),
+                        y1 + 0.2 * dy * sin(pi / 180 * angmid1))
+                aux2 = (x1 + 0.2 * dx * cos(pi / 180 * angmid2),
+                        y1 + 0.2 * dy * sin(pi / 180 * angmid2))
+                start = shrink_vertex(ax, aux1, (x1, y1), vsizes[src])
+                end = shrink_vertex(ax, aux2, (x2, y2), vsizes[tgt])
 
                 path = Path(
-                    [(x1, y1), aux1, aux2, (x2, y2)],
+                    [start, aux1, aux2, end],
                     # Cubic bezier by mpl
                     codes=[1, 4, 4, 4])
 
@@ -1095,17 +1136,18 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                            (2 * y1 + y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
                     aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), \
                            (y1 + 2 * y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
-
-                    # TODO: manage shinkage by vertex dot size
+                    start = shrink_vertex(ax, aux1, (x1, y1), vsizes[src])
+                    end = shrink_vertex(ax, aux2, (x2, y2), vsizes[tgt])
 
                     path = Path(
-                        [(x1, y1), aux1, aux2, (x2, y2)],
+                        [start, aux1, aux2, end],
                         # Cubic bezier by mpl
                         codes=[1, 4, 4, 4])
                 else:
-                    path = Path(
-                        [(x1, y1), (x2, y2)],
-                        codes=[1, 2])
+                    start = shrink_vertex(ax, (x2, y2), (x1, y1), vsizes[src])
+                    end = shrink_vertex(ax, (x1, y1), (x2, y2), vsizes[tgt])
+
+                    path = Path([start, end], codes=[1, 2])
 
             arrow = FancyArrowPatch(
                 path=path,
@@ -1115,3 +1157,12 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 alpha=ealpha,
                 zorder=ezorder[ie])
             ax.add_artist(arrow)
+
+            # Store arrows and their sources and targets for autoscaling
+            arrows.append((arrow, src, tgt))
+
+        # Autoscaling during zoom, figure resize, reset axis limits
+        callback = callback_factory(ax, vcoord, vsizes, arrows)
+        ax.get_figure().canvas.mpl_connect('resize_event', callback)
+        ax.callbacks.connect('xlim_changed', callback)
+        ax.callbacks.connect('ylim_changed', callback)
