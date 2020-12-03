@@ -177,14 +177,12 @@ class GeneratorTests(unittest.TestCase):
         edges = pd.DataFrame(
             [['C', 'A', 0.4], ['A', 'B', 0.1]],
             columns=[0, 1, 'weight'])
-
         g = Graph.DataFrame(edges, directed=False)
         self.assertTrue(g.es["weight"] == [0.4, 0.1])
 
         vertices = pd.DataFrame(
             [['A', 'blue'], ['B', 'yellow'], ['C', 'blue']],
             columns=[0, 'color'])
-
         g = Graph.DataFrame(edges, directed=True, vertices=vertices)
         self.assertTrue(g.vs['name'] == ['A', 'B', 'C'])
         self.assertTrue(g.vs["color"] == ['blue', 'yellow', 'blue'])
@@ -194,7 +192,7 @@ class GeneratorTests(unittest.TestCase):
         edges = pd.DataFrame({'source': [1, 2, 3], 'target': [4, 5, 6]})
         vertices = pd.DataFrame({
             'node': [1, 2, 3, 4, 5, 6],
-            'label':['1', '2', '3', '4', '5', '6'])
+            'label': ['1', '2', '3', '4', '5', '6']})[['node', 'label']]
         g = Graph.DataFrame(
             edges,
             directed=True,
@@ -203,6 +201,14 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(g.vs['name'] == [1, 2, 3, 4, 5, 6])
         self.assertTrue(g.vs['label'] == ['1', '2', '3', '4', '5', '6'])
 
+        # Vertex ids
+        edges = pd.DataFrame({'source': [1, 2, 3], 'target': [4, 5, 6]})
+        g = Graph.DataFrame(edges)
+        self.assertTrue(g.vcount() == 6)
+
+        edges = pd.DataFrame({'source': [1, 2, 3], 'target': [4, 5, 6]})
+        g = Graph.DataFrame(edges, use_vids=True)
+        self.assertTrue(g.vcount() == 7)
 
 def suite():
     generator_suite = unittest.makeSuite(GeneratorTests)
