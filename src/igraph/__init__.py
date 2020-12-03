@@ -3080,14 +3080,24 @@ class Graph(GraphBase):
 
         Generates a graph from one or two dataframes.
 
-        @param edges: pandas DataFrame containing edges and metadata
+        @param edges: pandas DataFrame containing edges and metadata. The first
+          two columns of this DataFrame contain the source and target vertices
+          for each edge. If the argument `vertices` is None, these indicate
+          the vertex ids (integers starting from 0), otherwise these must
+          use the vertex names.
         @param directed: bool setting whether the graph is directed
         @param vertices: None (default) or pandas DataFrame containing vertex
           metadata. The first column must contain the unique ids of the
-          vertices and will be set as attribute 'name'. All other columns
-          will be added as vertex attributes by column name.
+          vertices and will be set as attribute 'name'. Although vertex names
+          are usually strings, they can be any hashable object. All other
+          columns will be added as vertex attributes by column name.
 
         @return: the graph
+
+        Vertex names in either the `edges` or `vertices` arguments that are set
+        to NaN (not a number) will be set to the string "NA". That might lead
+        to unexpected behaviour: fill your NaNs with values before calling this
+        function to mitigate.
         """
         import numpy as np
         import pandas as pd
@@ -3115,7 +3125,7 @@ class Graph(GraphBase):
             if vertices.shape[1] < 1:
                 raise ValueError('vertices has no columns')
 
-            names_vertices = vertices.iloc[:, 0].astype(str)
+            names_vertices = vertices.iloc[:, 0]
 
             if names_vertices.duplicated().any():
                 raise ValueError('Vertex names must be unique')
