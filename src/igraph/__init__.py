@@ -3075,19 +3075,32 @@ class Graph(GraphBase):
         return result
 
     @classmethod
-    def DataFrame(klass, edges, directed=True, vertices=None):
+    def DataFrame(klass, edges, directed=True, vertices=None, use_vids=False):
         """DataFrame(edges, directed=True, vertices=None)
 
         Generates a graph from one or two dataframes.
 
-        @param edges: pandas DataFrame containing edges and metadata
+        @param edges: pandas DataFrame containing edges and metadata. The first
+          two columns of this DataFrame contain the source and target vertices
+          for each edge. These indicate the vertex *names* rather than ids
+          unless `use_vids` is True and these are nonnegative integers.
         @param directed: bool setting whether the graph is directed
         @param vertices: None (default) or pandas DataFrame containing vertex
           metadata. The first column must contain the unique ids of the
-          vertices and will be set as attribute 'name'. All other columns
-          will be added as vertex attributes by column name.
+          vertices and will be set as attribute 'name'. Although vertex names
+          are usually strings, they can be any hashable object. All other
+          columns will be added as vertex attributes by column name.
+        @use_vids: whether to interpret the first two columns of the `edges`
+          argument as vertex ids (0-based integers) instead of vertex names.
+          If this argument is set to True and the first two columns of `edges`
+          are not integers, an error is thrown.
 
         @return: the graph
+
+        Vertex names in either the `edges` or `vertices` arguments that are set
+        to NaN (not a number) will be set to the string "NA". That might lead
+        to unexpected behaviour: fill your NaNs with values before calling this
+        function to mitigate.
         """
         import numpy as np
         import pandas as pd
@@ -3095,11 +3108,21 @@ class Graph(GraphBase):
         if edges.shape[1] < 2:
             raise ValueError("the data frame should contain at least two columns")
 
-        # Handle if some elements are 'NA'
-        if edges.iloc[:, :2].isna().values.any():
-            warn("In 'edges' NA elements were replaced with string \"NA\"")
-            edges = edges.copy()
-            edges.iloc[:, :2].fillna('NA', inplace=True)
+        if use_vids:
+            if str(edges.dtypes[0]).startswith('int') and \
+                    str(edges.dtypes[1]).startswith('int'):
+                names_edges = None
+            else:
+                raise TypeError('vertex ids must be 0-based integers')
+
+        else:
+            # Handle if some elements are 'NA'
+            if edges.iloc[:, :2].isna().values.any():
+                warn("In 'edges' NA elements were replaced with string \"NA\"")
+                edges = edges.copy()
+                edges.iloc[:, :2].fillna('NA', inplace=True)
+
+            names_edges = np.unique(edges.values[:, :2])
 
         if (vertices is not None) and vertices.iloc[:, 0].isna().values.any():
             warn("In the first column of 'vertices' NA elements were replaced "+
@@ -3107,43 +3130,54 @@ class Graph(GraphBase):
             vertices = vertices.copy()
             vertices.iloc[:, 0].fillna('NA', inplace=True)
 
-        names_edges = np.unique(edges.values[:, :2])
-
         if vertices is None:
             names = names_edges
         else:
             if vertices.shape[1] < 1:
                 raise ValueError('vertices has no columns')
 
-            names_vertices = vertices.iloc[:, 0].astype(str)
+            names_vertices = vertices.iloc[:, 0]
 
             if names_vertices.duplicated().any():
                 raise ValueError('Vertex names must be unique')
 
             names_vertices = names_vertices.values
 
-            if len(np.setdiff1d(names_edges, names_vertices)):
+            if (names_edges is not None) and \
+                    len(np.setdiff1d(names_edges, names_vertices)):
                 raise ValueError(
-                    'Some vertices in the edge DataFrame are missing from vertices DataFrame')
+                    'Some vertices in the edge DataFrame are missing from '+
+                    'vertices DataFrame')
 
             names = names_vertices
 
         # create graph
-        g = Graph(n=len(names), directed=directed)
+        if names is not None:
+            nv = len(names)
+        else:
+            nv = edges.iloc[:, :2].values.max() + 1
+        g = Graph(n=nv, directed=directed)
+
+        # vertex names
+        if names is not None:
+            for v, name in zip(g.vs, names):
+                v['name'] = name
 
         # vertex attributes
-        if vertices is not None:
+        if (vertices is not None) and (vertices.shape[1] > 1):
             cols = vertices.columns
             for v, (_, attr) in zip(g.vs, vertices.iterrows()):
-                v['name'] = attr[cols[0]]
-                if len(cols) > 1:
-                    for an in cols[1:]:
-                        v[an] = attr[an]
+                for an in cols[1:]:
+                    v[an] = attr[an]
 
         # create edge list
-        names_idx = pd.Series(index=names, data=np.arange(len(names)))
-        e0 = names_idx[edges.values[:, 0]]
-        e1 = names_idx[edges.values[:, 1]]
+        if names is not None:
+            names_idx = pd.Series(index=names, data=np.arange(len(names)))
+            e0 = names_idx[edges.values[:, 0]]
+            e1 = names_idx[edges.values[:, 1]]
+        else:
+            e0 = edges.values[:, 0]
+            e1 = edges.values[:, 1]
 
         # add the edges
         g.add_edges(zip(e0, e1))
