@@ -393,11 +393,11 @@ class FakeModule(object):
     """Fake module that raises an exception for everything"""
 
     def __getattr__(self, _):
-        raise TypeError("plotting not available")
+        raise AttributeError("plotting not available")
     def __call__(self, _):
         raise TypeError("plotting not available")
     def __setattr__(self, key, value):
-        raise TypeError("plotting not available")
+        raise AttributeError("plotting not available")
 
 #####################################################################
 
@@ -415,6 +415,27 @@ def find_cairo():
         except ImportError:
             pass
     return module
+
+#####################################################################
+
+def find_matplotlib():
+    """Tries to import the ``cairo`` Python module if it is installed,
+    also trying ``cairocffi`` (a drop-in replacement of ``cairo``).
+    Returns a fake module if everything fails.
+    """
+    try:
+        import matplotlib as mpl
+        has_mpl = True
+    except ImportError:
+        mpl = FakeModule()
+        has_mpl = False
+
+    if has_mpl:
+        import matplotlib.pyplot as plt
+    else:
+        plt = FakeModule()
+
+    return mpl, plt
 
 #####################################################################
 

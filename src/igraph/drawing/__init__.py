@@ -27,8 +27,8 @@ import time
 from igraph.compat import property, BytesIO
 from igraph.configuration import Configuration
 from igraph.drawing.colors import Palette, palettes
-from igraph.drawing.graph import DefaultGraphDrawer
-from igraph.drawing.utils import BoundingBox, Point, Rectangle, find_cairo
+from igraph.drawing.graph import DefaultGraphDrawer, MatplotlibGraphDrawer
+from igraph.drawing.utils import BoundingBox, Point, Rectangle, find_cairo, find_matplotlib
 from igraph.utils import _is_running_in_ipython, named_temporary_file
 
 __all__ = ["BoundingBox", "DefaultGraphDrawer", "Plot", "Point", "Rectangle", "plot"]
@@ -36,6 +36,7 @@ __all__ = ["BoundingBox", "DefaultGraphDrawer", "Plot", "Point", "Rectangle", "p
 __license__ = "GPL"
 
 cairo = find_cairo()
+matplotlib, plt = find_matplotlib()
 
 #####################################################################
 
@@ -50,7 +51,7 @@ class Plot(object):
     since C{pycairo} takes care of the actual drawing. Everything that's supported
     by C{pycairo} should be supported by this class as well.
 
-    Current Cairo surfaces that I'm aware of are:
+    Current Cairo surfaces include:
 
       - C{cairo.GlitzSurface} -- OpenGL accelerated surface for the X11
         Window System.
@@ -385,7 +386,9 @@ class Plot(object):
         is drawn"""
         return self.bbox.width
 
+
 #####################################################################
+
 
 def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     """Plots the given object to the given target.
@@ -449,6 +452,11 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
 
     @see: Graph.__plot__
     """
+    if hasattr(plt, 'Axes') and isinstance(target, plt.Axes):
+        result = MatplotlibGraphDrawer(ax=target)
+        result.draw(obj, *args, **kwds)
+        return
+
     if not isinstance(bbox, BoundingBox):
         bbox = BoundingBox(bbox)
 
@@ -482,7 +490,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     # so just show or save the result
     if target is None:
         result.show()
-    elif isinstance(target, basestring):
+    elif isinstance(target, str):
         result.save()
 
     # Also return the plot itself

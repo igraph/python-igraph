@@ -234,7 +234,6 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
             return bezier_cubic(x0,y0, x1,y1, x2,y2, x3,y3, t1)
 
 
-
         # Draw the edge
         ctx.set_source_rgba(*edge.color)
         ctx.set_line_width(edge.width)
@@ -313,14 +312,12 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
         # Draw the edge
         ctx.stroke()
 
-
         # Draw the arrow head
         ctx.move_to(x2, y2)
         ctx.line_to(*aux_points[0])
         ctx.line_to(*aux_points[1])
         ctx.line_to(x2, y2)
         ctx.fill()
-
 
 
 class TaperedEdgeDrawer(AbstractEdgeDrawer):

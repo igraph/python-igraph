@@ -15,7 +15,7 @@ network from Cytoscape and convert it to igraph format.
 
 from collections import defaultdict
 from itertools import izip
-from math import atan2, cos, pi, sin, tan
+from math import atan2, cos, pi, sin, tan, sqrt
 from warnings import warn
 
 from igraph._igraph import convex_hull, VertexSeq
@@ -576,7 +576,7 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         # Add the vertices
         n = graph.vcount()
         new_vertex = display.new_vertex
-        vertex_ids = [new_vertex() for _ in xrange(n)]
+        vertex_ids = [new_vertex() for _ in range(n)]
 
         # Add the edges
         new_edge = display.new_edge
@@ -674,10 +674,10 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         # Create the nodes
         if "node_ids" in kwds:
             node_ids = kwds["node_ids"]
-            if isinstance(node_ids, basestring):
+            if isinstance(node_ids, str):
                 node_ids = graph.vs[node_ids]
         else:
-            node_ids = xrange(graph.vcount())
+            node_ids = range(graph.vcount())
         node_ids = [str(identifier) for identifier in node_ids]
         cy.createNodes(network_id, node_ids)
 
@@ -926,3 +926,243 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
               will be used to encode the JSON objects.
         """
         self.streamer.post(graph, self.connection, encoder=kwds.get("encoder"))
+
+#####################################################################
+
+class MatplotlibGraphDrawer(AbstractGraphDrawer):
+    """Graph drawer that uses a pyplot.Axes as context"""
+
+    _shape_dict = {
+        'rectangle': 's',
+        'circle': 'o',
+        'hidden': 'none',
+        'triangle-up': '^',
+        'triangle-down': 'v',
+    }
+
+
+
+    def __init__(self, ax):
+        """Constructs the graph drawer and associates it with the mpl axes"""
+        self.ax = ax
+
+    def draw(self, graph, *args, **kwds):
+        import matplotlib.markers as mmarkers
+        from matplotlib.path import Path
+        from matplotlib.patches import FancyArrowPatch
+        from matplotlib.patches import ArrowStyle
+
+        def shrink_vertex(ax, aux, vcoord, vsize_squared):
+            '''Shrink edge by vertex size'''
+            aux_display, vcoord_display = ax.transData.transform([aux, vcoord])
+            d = sqrt(((aux_display - vcoord_display)**2).sum())
+            fr = sqrt(vsize_squared) / d
+            end_display = vcoord_display + fr * (aux_display - vcoord_display)
+            end = ax.transData.inverted().transform(end_display)
+            return end
+
+        def callback_factory(ax, vcoord, vsizes, arrows):
+            def callback_edge_offset(event):
+                for arrow, src, tgt in arrows:
+                    v1, v2 = vcoord[src], vcoord[tgt]
+                    # This covers both cases (curved and straight)
+                    aux1, aux2 = arrow._path_original.vertices[[1, -2]]
+                    start = shrink_vertex(ax, aux1, v1, vsizes[src])
+                    end = shrink_vertex(ax, aux2, v2, vsizes[tgt])
+                    arrow._path_original.vertices[0] = start
+                    arrow._path_original.vertices[-1] = end
+
+            return callback_edge_offset
+
+        ax = self.ax
+
+        # FIXME: deal with unnamed *args
+
+        # Get layout
+        layout = kwds.get('layout', graph.layout())
+        if isinstance(layout, str):
+            layout = graph.layout(layout)
+
+        # Vertex coordinates
+        vcoord = layout.coords
+
+        # Vertex properties
+        vsizes = kwds.get('vertex_size', None)
+        # NOTE: ax.scatter uses the *square* of diameter
+        if vsizes is not None:
+            vsizes **= 2
+        if isinstance(vsizes, float) or isinstance(vsizes, int):
+            vsizes = [vsizes] * len(vcoord)
+        c = kwds.get('vertex_color', 'black')
+        alpha = kwds.get('alpha', 1.0)
+        label = kwds.get('vertex_label', None)
+        label_size = kwds.get('vertex_label_size', None)
+        vzorder = kwds.get('vertex_order', 2)
+        # mpl shapes use slightly different names from Cairo
+        shapes = kwds.get('vertex_shape', None)
+        if shapes is not None:
+            if isinstance(shapes, str):
+                shapes = self._shape_dict.get(shapes, shapes)
+            elif isinstance(shapes, mmarkers.MarkerStyle):
+                pass
+
+        # Scatter vertices
+        # NOTE: matplotlib does not support a list of shapes yet
+        x, y = list(zip(*vcoord))
+        ax.scatter(x, y, s=vsizes, c=c, marker=shapes, zorder=vzorder, alpha=alpha)
+
+        # Vertex labels
+        if label is not None:
+            for i, lab in enumerate(label):
+                xi, yi = x[i], y[i]
+                ax.text(xi, yi, lab, fontsize=label_size)
+
+        dx = (max(x) - min(x))
+        dy = (max(y) - min(y))
+        ax.set_xlim(min(x) - 0.05 * dx, max(x) + 0.05 * dx)
+        ax.set_ylim(min(y) - 0.05 * dy, max(y) + 0.05 * dy)
+
+        # Edge properties
+        ne = graph.ecount()
+        ec = kwds.get('edge_color', 'black')
+        edge_width = kwds.get('edge_width', 1)
+        arrow_width = kwds.get('edge_arrow_width', 2)
+        arrow_length = kwds.get('edge_arrow_size', 4)
+        ealpha = kwds.get('edge_alpha', 1.0)
+        ezorder = kwds.get('edge_order', 1.0)
+        try:
+            ezorder = float(ezorder)
+            ezorder = [ezorder] * ne
+        except TypeError:
+            pass
+
+        # Decide whether we need to calculate the curvature of edges
+        # automatically -- and calculate them if needed.
+        autocurve = kwds.get("autocurve", None)
+        if autocurve or (autocurve is None and \
+                "edge_curved" not in kwds and "curved" not in graph.edge_attributes() \
+                and graph.ecount() < 10000):
+            from igraph import autocurve
+            default = kwds.get("edge_curved", 0)
+            if default is True:
+                default = 0.5
+            default = float(default)
+            kwds["edge_curved"] = autocurve(graph, attribute=None, default=default)
+
+        # Arrow style for directed and undirected graphs
+        if graph.is_directed():
+            arrowstyle = ArrowStyle(
+                '-|>', head_length=arrow_length, head_width=arrow_width,
+            )
+        else:
+            arrowstyle = '-'
+
+        # Edge coordinates and curvature
+        nloops = [0 for x in range(ne)]
+        has_curved = 'curved' in graph.es.attributes()
+        arrows = []
+        for ie, edge in enumerate(graph.es):
+            src, tgt = edge.source, edge.target
+            x1, y1 = vcoord[src]
+            x2, y2 = vcoord[tgt]
+
+            # Loops require special treatment
+            if src == tgt:
+                # Find all non-loop edges
+                nloopstot = 0
+                angles = []
+                for tgtn in graph.neighbors(src):
+                    if tgtn == src:
+                        nloopstot += 1
+                        continue
+                    xn, yn = vcoord[tgtn]
+                    angles.append(180. / pi * atan2(yn - y1, xn - x1) % 360)
+                # with .neighbors(mode=ALL), which is default, loops are double
+                # counted
+                nloopstot //= 2
+                angles = sorted(set(angles))
+
+                # Only loops or one non-loop
+                if len(angles) < 2:
+                    ashift = angles[0] if angles else 270
+                    if nloopstot == 1:
+                        # Only one self loop, use a quadrant only
+                        angles = [(ashift + 135) % 360, (ashift + 225) % 360]
+                    else:
+                        nshift = 360. / nloopstot
+                        angles = [(ashift + nshift * nloops[src]) % 360,
+                                  (ashift + nshift * (nloops[src] + 1)) % 360]
+                    nloops[src] += 1
+                else:
+                    angles.append(angles[0] + 360)
+                    idiff = 0
+                    diff = 0
+                    for i in range(len(angles) - 1):
+                        diffi = abs(angles[i + 1] - angles[i])
+                        if diffi > diff:
+                            idiff = i
+                            diff = diffi
+                    angles = angles[idiff: idiff + 2]
+                    ashift = angles[0]
+                    nshift = (angles[1] - angles[0]) / nloopstot
+                    angles = [(ashift + nshift * nloops[src]),
+                              (ashift + nshift * (nloops[src] + 1))]
+                    nloops[src] += 1
+
+                # this is not great, but alright
+                angspan = angles[1] - angles[0]
+                if angspan < 180:
+                    angmid1 = angles[0] + 0.1 * angspan
+                    angmid2 = angles[1] - 0.1 * angspan
+                else:
+                    angmid1 = angles[0] + 0.5 * (angspan - 180) + 45
+                    angmid2 = angles[1] - 0.5 * (angspan - 180) - 45
+                aux1 = (x1 + 0.2 * dx * cos(pi / 180 * angmid1),
+                        y1 + 0.2 * dy * sin(pi / 180 * angmid1))
+                aux2 = (x1 + 0.2 * dx * cos(pi / 180 * angmid2),
+                        y1 + 0.2 * dy * sin(pi / 180 * angmid2))
+                start = shrink_vertex(ax, aux1, (x1, y1), vsizes[src])
+                end = shrink_vertex(ax, aux2, (x2, y2), vsizes[tgt])
+
+                path = Path(
+                    [start, aux1, aux2, end],
+                    # Cubic bezier by mpl
+                    codes=[1, 4, 4, 4])
+
+            else:
+                curved = edge['curved'] if has_curved else False
+                if curved:
+                    aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), \
+                           (2 * y1 + y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+                    aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), \
+                           (y1 + 2 * y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+                    start = shrink_vertex(ax, aux1, (x1, y1), vsizes[src])
+                    end = shrink_vertex(ax, aux2, (x2, y2), vsizes[tgt])
+
+                    path = Path(
+                        [start, aux1, aux2, end],
+                        # Cubic bezier by mpl
+                        codes=[1, 4, 4, 4])
+                else:
+                    start = shrink_vertex(ax, (x2, y2), (x1, y1), vsizes[src])
+                    end = shrink_vertex(ax, (x1, y1), (x2, y2), vsizes[tgt])
+
+                    path = Path([start, end], codes=[1, 2])
+
+            arrow = FancyArrowPatch(
+                path=path,
+                arrowstyle=arrowstyle,
+                lw=edge_width,
+                color=ec,
+                alpha=ealpha,
+                zorder=ezorder[ie])
+            ax.add_artist(arrow)
+
+            # Store arrows and their sources and targets for autoscaling
+            arrows.append((arrow, src, tgt))
+
+        # Autoscaling during zoom, figure resize, reset axis limits
+        callback = callback_factory(ax, vcoord, vsizes, arrows)
+        ax.get_figure().canvas.mpl_connect('resize_event', callback)
+        ax.callbacks.connect('xlim_changed', callback)
+        ax.callbacks.connect('ylim_changed', callback)
