@@ -37,7 +37,7 @@ and methods:
 
 Indexing and slicing can be performed and returns the coordinates of the requested vertices:
 
->>> coords_subgraph = layout[:2]  # Coordinate of the first vertex
+>>> coords_subgraph = layout[:2]  # Coordinates of the first two vertices
 
 .. note:: The returned object is a list of lists with the coordinates, not an `igraph.layout.Layout`
    object. You can wrap the result into such an object easily:
@@ -110,6 +110,13 @@ In both cases, you can add an argument `layout` to the `plot` function to specif
 
 >>> layout = g.layout("kamada_kawai")
 >>> ig.plot(g, layout=layout)
+
+It is also possible to use the name of the layout algorithm directly:
+
+>>> ig.plot(g, layout="kamada_kawai")
+
+If the layout is left unspecified, igraph uses the dedicated `layout_auto()` function, which chooses between one of several
+possible layouts based on the number of vertices and edges.
 
 You can specify additional options such as vertex and edge color, size, and labels via additional arguments, e.g.:
 
