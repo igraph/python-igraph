@@ -92,16 +92,16 @@ Graph plotting
 Once the layout of a graph has been computed, |igraph| can assist with the plotting itself. Plotting happens within a single
 function, `igraph.plot`.
 
-Open default image viewer
-++++++++++++++++++++++++++++
+Plotting with the default image viewer
+++++++++++++++++++++++++++++++++++++++
 A naked call to `igraph.plot` generates a temporary file and opens it with the default image viewer:
 
 >>> ig.plot(g)
 
 (see below if you are using this in a `Jupyter`_ notebook). This uses the `Cairo`_ library behind the scenes.
 
-Save to file
-++++++++++++
+Saving a plot to a file
++++++++++++++++++++++++
 A call to `igraph.plot` with a `target` argument stores the graph image in the specified file and does *not*
 open it automatically. Based on the filename extension, any of the following output formats can be chosen:
 PNG, PDF, SVG and PostScript:
@@ -111,8 +111,8 @@ PNG, PDF, SVG and PostScript:
 .. note:: PNG is a raster image format while PDF, SVG, and Postscript are vector image formats. Choose one of the last three
    formats if you are planning on refining the image with a vector image editor such as Inkscape or Illustrator.
 
-Matplotlib plots
-++++++++++++++++++++++++++++
+Plotting graphs within Matplotlib figures
++++++++++++++++++++++++++++++++++++++++++
 If the target argument is a `matplotlib`_ axes, the graph will be plotted inside that axes:
 
 >>> import matplotlib.pyplot as plt
@@ -123,8 +123,8 @@ You can then further manipulate the axes and figure however you like via the `ax
 called them). This variant does not use `Cairo`_ directly and might be lacking some features that are available in the
 `Cairo`_ backend: please open an issue on Github to request specific features.
 
-Jupyter notebooks
-+++++++++++++++++++++
+Plotting graphs in Jupyter notebooks
+++++++++++++++++++++++++++++++++++++
 |igraph| supports inline plots within a `Jupyter`_ notebook via both the `Cairo`_ and `matplotlib`_ backend. If you are
 calling `igraph.plot` from a notebook cell without a `matplotlib`_ axes, the image will be shown inline in the corresponding
 output cell. Use the `bbox` argument to scale the image while preserving the size of the vertices, text, and other artists.
