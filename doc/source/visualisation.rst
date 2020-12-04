@@ -90,23 +90,74 @@ More might be added in the future, based on request.
 Graph plotting
 ==============
 Once the layout of a graph has been computed, |igraph| can assist with the plotting itself. Plotting happens within a single
-function, `igraph.plot`. This function can be called in two ways:
+function, `igraph.plot`.
 
-1. without a filename argument: this generates a temporary file and opens it with the default image viewer:
+Open default image viewer
+++++++++++++++++++++++++++++
+A naked call to `igraph.plot` generates a temporary file and opens it with the default image viewer:
 
 >>> ig.plot(g)
 
-(see below if you are using this in a `Jupyter`_ notebook).
+(see below if you are using this in a `Jupyter`_ notebook). This uses the `Cairo`_ library behind the scenes.
 
-2. with a filename argument: this stores the graph image in the specified file and does *not* open it automatically. Based on
-   the filename extension, any of the following output formats can be chosen: PNG, PDF, SVG and PostScript:
+Save to file
+++++++++++++
+A call to `igraph.plot` with a `target` argument stores the graph image in the specified file and does *not*
+open it automatically. Based on the filename extension, any of the following output formats can be chosen:
+PNG, PDF, SVG and PostScript:
 
->>> ig.plot(g, 'myfile.pdf')
+>>> ig.plot(g, target='myfile.pdf')
 
 .. note:: PNG is a raster image format while PDF, SVG, and Postscript are vector image formats. Choose one of the last three
    formats if you are planning on refining the image with a vector image editor such as Inkscape or Illustrator.
 
-In both cases, you can add an argument `layout` to the `plot` function to specify a precomputed layout, e.g.:
+Matplotlib plots
+++++++++++++++++++++++++++++
+If the target argument is a `matplotlib`_ axes, the graph will be plotted inside that axes:
+
+>>> import matplotlib.pyplot as plt
+>>> fig, ax = plt.subplots()
+>>> ig.plot(g, target=ax)
+
+You can then further manipulate the axes and figure however you like via the `ax` and `fig` variables (or whatever you
+called them). This variant does not use `Cairo`_ directly and might be lacking some features that are available in the
+`Cairo`_ backend: please open an issue on Github to request specific features.
+
+Jupyter notebooks
++++++++++++++++++++++
+|igraph| supports inline plots within a `Jupyter`_ notebook via both the `Cairo`_ and `matplotlib`_ backend. If you are
+calling `igraph.plot` from a notebook cell without a `matplotlib`_ axes, the image will be shown inline in the corresponding
+output cell. Use the `bbox` argument to scale the image while preserving the size of the vertices, text, and other artists.
+For instance, to get a compact plot:
+
+>>> ig.plot(g, bbox=(0, 0, 100, 100))
+
+These inline plots can be either in PNG or SVG format. There is currently an open bug that makes SVG fail if more than one graph
+per notebook is plotted: we are working on a fix for that. In the meanwhile, you can use PNG representation.
+
+If you want to use the `matplotlib`_ engine in a Jupyter notebook, you can use the recipe above. First create an axes, then
+tell `igraph.plot` about it via the `target` argument:
+
+>>> import matplotlib.pyplot as plt
+>>> fig, ax = plt.subplots()
+>>> ig.plot(g, target=ax)
+
+Exporting to other graph formats
+++++++++++++++++++++++++++++++++++
+If igraph is missing a certain plotting feature and you cannot wait for us to include it, you can always export your graph
+to a number of formats and use an external graph plotting tool. We support both conversion to file (e.g. DOT format used by
+`graphviz`_) and to popular graph libraries such as `networkx`_ and `graph-tool`_:
+
+>>> dot = g.write('/myfolder/myfile.dot')
+>>> n = g.to_networkx()
+>>> gt = g.to_graph_tool()
+
+You do not need to have any libraries installed if you export to file, but you do need them to convert directly to external
+Python objects (`networkx`_, `graph-tool`_).
+
+Plotting options
+====================
+You can add an argument `layout` to the `plot` function to specify a precomputed layout, e.g.:
 
 >>> layout = g.layout("kamada_kawai")
 >>> ig.plot(g, layout=layout)
@@ -118,7 +169,7 @@ It is also possible to use the name of the layout algorithm directly:
 If the layout is left unspecified, igraph uses the dedicated `layout_auto()` function, which chooses between one of several
 possible layouts based on the number of vertices and edges.
 
-You can specify additional options such as vertex and edge color, size, and labels via additional arguments, e.g.:
+You can also specify vertex and edge color, size, and labels - and more - via additional arguments, e.g.:
 
 >>> ig.plot(g,
 >>>         vertex_size=20,
@@ -130,23 +181,11 @@ You can specify additional options such as vertex and edge color, size, and labe
 
 See the `tutorial`_ for examples and a full list of options.
 
-Jupyter notebook
-++++++++++++++++
-|igraph| supports inline plots within a `Jupyter`_ notebook. If you are calling `igraph.plot` from a notebook cell, the image
-will be shown inline in the corresponding output cell. Use the `bbox` argument to scale the image while preserving the size
-of the vertices, text, and other artists. For instance, to get a compact plot:
-
->>> ig.plot(g, bbox=(0, 0, 100, 100))
-
-These inline plots can be either in PNG or SVG format. There is currently an open bug that makes SVG fail if more than one graph
-per notebook is plotted: we are working on a fix for that. In the meanwhile, you can use PNG representation.
-
-Matplotlib interactive plots
-++++++++++++++++++++++++++++
-We are currently working on extending this functionality to play nicely with `matplotlib`_ for interactive graphs. Stay tuned.
-
-
 .. _API documentation: https://igraph.org/python/doc/igraph-module.html
 .. _matplotlib: https://matplotlib.org
 .. _Jupyter: https://jupyter.org/
 .. _tutorial: https://igraph.org/python/doc/tutorial/tutorial.html#layouts-and-plotting
+.. _Cairo: https://www.cairographics.org
+.. _graphviz: http://www.graphviz.org
+.. _networkx: https://networkx.org/
+.. _graph-tool: https://graph-tool.skewed.de/
