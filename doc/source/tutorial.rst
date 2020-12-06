@@ -40,7 +40,7 @@ following:
 
 Another way to make use of |igraph| is to import all its objects and methods into the main
 Python namespace (so you do not have to type the namespace-qualification every time).
-This is fine as long as none of your own objects and methods do not conflict with the ones
+This is fine as long as your own objects and methods do not conflict with the ones
 provided by |igraph|:
 
 >>> from igraph import *
@@ -665,7 +665,7 @@ the screen or to a PDF, PNG or SVG file using the `Cairo library <http://www.cai
 Layout algorithms
 ^^^^^^^^^^^^^^^^^
 
-The layout methods in |igraph| are to be found in the :class:`Graph` object, and their
+The layout methods in |igraph| are to be found in the :class:`Graph` object, and they
 always start with ``layout_``. The following table summarises them:
 
 ==================================== =============== =============================================
