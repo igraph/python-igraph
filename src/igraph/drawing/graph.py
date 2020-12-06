@@ -947,10 +947,13 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         self.ax = ax
 
     def draw(self, graph, *args, **kwds):
+        # NOTE: matplotlib has numpy as a dependency, so we can use it in here
+        import matplotlib as mpl
         import matplotlib.markers as mmarkers
         from matplotlib.path import Path
         from matplotlib.patches import FancyArrowPatch
         from matplotlib.patches import ArrowStyle
+        import numpy as np
 
         def shrink_vertex(ax, aux, vcoord, vsize_squared):
             '''Shrink edge by vertex size'''
@@ -987,19 +990,38 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         vcoord = layout.coords
 
         # Vertex properties
-        vsizes = kwds.get('vertex_size', None)
-        # NOTE: ax.scatter uses the *square* of diameter
-        if vsizes is not None:
-            vsizes **= 2
-        if isinstance(vsizes, float) or isinstance(vsizes, int):
-            vsizes = [vsizes] * len(vcoord)
-        c = kwds.get('vertex_color', 'black')
+        nv = graph.vcount()
+
+        # Vertex size
+        vsizes = kwds.get('vertex_size', 5)
+        # Enforce numpy array for sizes, because (1) we need the square and (2)
+        # they are needed to calculate autoshrinking of edges
+        if np.isscalar(vsizes):
+            vsizes = np.repeat(vsizes, nv)
+        else:
+            vsizes = np.asarray(vsizes)
+        # ax.scatter uses the *square* of diameter
+        vsizes **= 2
+
+        # Vertex color
+        c = kwds.get('vertex_color', 'steelblue')
+
+        # Vertex opacity
         alpha = kwds.get('alpha', 1.0)
+
+        # Vertex labels
         label = kwds.get('vertex_label', None)
-        label_size = kwds.get('vertex_label_size', None)
+
+        # Vertex label size
+        label_size = kwds.get('vertex_label_size', mpl.rcParams['font.size'])
+
+        # Vertex zorder
         vzorder = kwds.get('vertex_order', 2)
-        # mpl shapes use slightly different names from Cairo
-        shapes = kwds.get('vertex_shape', None)
+
+        # Vertex shapes
+        # mpl shapes use slightly different names from Cairo, but we want the
+        # API to feel consistent, so we use a conversion dictionary
+        shapes = kwds.get('vertex_shape', 'o')
         if shapes is not None:
             if isinstance(shapes, str):
                 shapes = self._shape_dict.get(shapes, shapes)
@@ -1007,7 +1029,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 pass
 
         # Scatter vertices
-        # NOTE: matplotlib does not support a list of shapes yet
         x, y = list(zip(*vcoord))
         ax.scatter(x, y, s=vsizes, c=c, marker=shapes, zorder=vzorder, alpha=alpha)
 
