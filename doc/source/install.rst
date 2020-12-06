@@ -137,7 +137,52 @@ Package Index <http://pypi.python.org/pypi/python-igraph>`_ instead to get a mor
 release (see `Installing igraph from the Python Package Index`_).
 
 
-Compiling |igraph| from source
-==============================
+Compiling |python-igraph| from source
+========================================
 
-TODO
+|python-igraph| has C Python binding into the main |igraph| library, so you'll need both a C compiler
+and the library itself. If you do not have the C |igraph| library on your system, the installer
+will try to download and compile it on the fly, however dynamic linking against an existing library
+is preferred if available. Generally speaking, it's best not to compile a recent |python-igraph|
+version against a much older |igraph| C library as both are under active development.
+
+|igraph| library
+----------------
+To install the |igraph| C library, you would generally follow the official `documentation <https://igraph.org/c/>`,
+however on many linux distributions a precompiled |igraph| binary is available through your
+package manager, e.g. on Arch linux:
+
+  $ pacman -S igraph
+
+(you need root privileges to install packages on most systems).
+
+Download |python-igraph| source code
+------------------------------------
+If you are looking for the latest release, you can find it on `Pypi <https://pypi.org/project/python-igraph/#files>`
+or `Github <https://github.com/igraph/python-igraph/releases/>` and decompress it. If you are looking for the latest git
+master branch, clone the repo:
+
+  $ git clone https://github.com/igraph/python-igraph.git
+
+Then go into the folder:
+
+  $ cd python-igraph
+
+(it might have a slightly different name depending on the release).
+
+Installing using pip
+--------------------
+Run from inside the folder:
+
+  $ pip install .
+
+Compiling using setup.py
+------------------------
+Run from inside the folder:
+
+  $ python setup.py build
+
+The compiled library will be in the folder `build/lib.<your system>-<your Python version>`. You can add that folder to
+your `PYTHONPATH` or, if you prefer to install the library properly:
+
+  $ python setup.py install
