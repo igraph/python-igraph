@@ -11,7 +11,7 @@ it at least once if you are new to |igraph|. I assume that you have already inst
 you did not, see :ref:`installing-igraph` first. Familiarity with the Python language is also
 assumed; if this is the first time you are trying to use Python, there are many good Python
 tutorials on the Internet to get you started. If this is the first time you ever try to use a
-programming language, `A Byte of Python <http://swaroopch.com/notes/Python>`_ is a good place to
+programming language, `A Byte of Python <https://python.swaroopch.com/>`_ is a good place to
 start out. If you already have a stable programming background in other languages and you just want
 a quick overview of Python, `Learn Python in 10 minutes <https://www.stavros.io/tutorials/python/>`_
 is probably your best bet.
@@ -40,7 +40,7 @@ following:
 
 Another way to make use of |igraph| is to import all its objects and methods into the main
 Python namespace (so you do not have to type the namespace-qualification every time).
-This is fine as long as none of your own objects and methods do not conflict with the ones
+This is fine as long as your own objects and methods do not conflict with the ones
 provided by |igraph|:
 
 >>> from igraph import *
@@ -665,7 +665,7 @@ the screen or to a PDF, PNG or SVG file using the `Cairo library <http://www.cai
 Layout algorithms
 ^^^^^^^^^^^^^^^^^
 
-The layout methods in |igraph| are to be found in the :class:`Graph` object, and their
+The layout methods in |igraph| are to be found in the :class:`Graph` object, and they
 always start with ``layout_``. The following table summarises them:
 
 ==================================== =============== =============================================
