@@ -40,6 +40,11 @@ and macOS. Currently there are binary packages for Python 2.7, and Python 3.5 th
 note that support for Python 2.7 will be discontinued with the version 0.9.0 release of
 |igraph|'s Python interface.
 
+To install |python-igraph| globally, use the followig command (you probably need
+administrator/root priviledges):
+
+  $ pip install python-igraph
+
 Many users like to install packages into a project-specific `virtual environment
 <https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments>`_.
 A variation of the following commands should work on most platforms:
@@ -131,58 +136,82 @@ If Cairo was successfully installed, this will display a Petersen graph.
 -----------------
 
 |igraph|'s Python interface and its dependencies have been packaged for most popular Linux
-distributions, including Arch Linux, Debian, Fedora, GNU Guix, NixOS, and Ubuntu. Because
-distribution packages are often outdated, you may choose to install |igraph| from the `Python
-Package Index <http://pypi.python.org/pypi/python-igraph>`_ instead to get a more recent
-release (see `Installing igraph from the Python Package Index`_).
+distributions, including Arch Linux, Debian, Fedora, GNU Guix, NixOS, and Ubuntu.
+|python-igraph| and its underlying |igraph| C core are usually in two different packages, but
+your package manager should take care of that dependency for you.
 
+.. note:: Distribution packages can be outdated: if you find that's the case for you, you may
+   choose to install |igraph| from the `Python Package Index <http://pypi.python.org/pypi/python-igraph>`_
+   instead to get a more recent release (see `Installing igraph from the Python Package Index`_).
 
 Compiling |python-igraph| from source
 ========================================
 
 |python-igraph| has C Python binding into the main |igraph| library, so you'll need both a C compiler
-and the library itself. If you do not have the C |igraph| library on your system, the installer
-will try to download and compile it on the fly, however dynamic linking against an existing library
-is preferred if available. Generally speaking, it's best not to compile a recent |python-igraph|
-version against a much older |igraph| C library as both are under active development.
+and the library itself. However, the |python-igraph| installer is able to fetch and compile the |igraph|
+C library on the fly.
 
-|igraph| library
-----------------
-To install the |igraph| C library, you would generally follow the official `documentation <https://igraph.org/c/>`,
-however on many linux distributions a precompiled |igraph| binary is available through your
-package manager, e.g. on Arch linux:
+There are two common scenarios to compile |python-igraph| from source:
 
-  $ pacman -S igraph
+1. Your would like to use the latest development version from Github, usually to try out some recently
+   added features
+2. The Pypi repository does not include precompiled binaries for your system. This can happen if your operating
+   system is not covered by our continuous development.
 
-(you need root privileges to install packages on most systems).
+Both will be covered in the next sections.
 
-Download |python-igraph| source code
-------------------------------------
-If you are looking for the latest release, you can find it on `Pypi <https://pypi.org/project/python-igraph/#files>`
-or `Github <https://github.com/igraph/python-igraph/releases/>` and decompress it. If you are looking for the latest git
-master branch, clone the repo:
+Compiling using pip
+-------------------
+If you want the development version of |python-igraph|, call:
+
+  $ pip install git+https://github.com/igraph/python-igraph
+
+Pip is smart enough to download the sources from Github, initialize the submodule for the |igraph| C core,
+compile it, and then compile |python-igraph| against it and install it. As above, a virtual environment is
+a commonly used sandbox to test experimental packages.
+
+If you want the latest release from Pypi but prefer to (or have to) install from source, call:
+
+  $ pip install --no-binary ':all:' python-igraph
+
+.. note:: If there is no binary for your system anyway, you can just try without the `--no-binary` option and
+   obtain the same result.
+
+Compiling step by step
+----------------------
+This section should be rarely used in practice but explains how to compile and install |python-igraph| step
+by step without pip.
+
+First, obtain the source code either from Github:
 
   $ git clone https://github.com/igraph/python-igraph.git
 
-Then go into the folder:
+or from `Pypi <https://pypi.org/project/python-igraph/#files>` or
+`Github <https://github.com/igraph/python-igraph/releases/>`. In the latter case, decompress the archive.
+
+Second, go into the folder:
 
   $ cd python-igraph
 
 (it might have a slightly different name depending on the release).
 
-Installing using pip
---------------------
-Run from inside the folder:
+Third, initialze the git submodule for the |igraph| C core:
 
-  $ pip install .
+  $ git submodule update --init
 
-Compiling using setup.py
-------------------------
-Run from inside the folder:
+.. note:: If you prefer to compile and link |python-igraph| against an existing |igraph| C core, for instance
+   one you installed with your package manager, you can skip this step (git submodule) and proceed to the
+   next step.
+
+Fourth, call the standard python `setup.py` script, e.g. for compiling:
 
   $ python setup.py build
 
-The compiled library will be in the folder `build/lib.<your system>-<your Python version>`. You can add that folder to
-your `PYTHONPATH` or, if you prefer to install the library properly:
+(press Enter when prompted). That will compile the |python-igraph| package in a subfolder called
+`build/lib.<your system-your Python version>`, e.g. `build/lib.linux-x86_64-3.8`. You can add
+that folder to your `PYTHONPATH` if you want to import directly from it, or you can call the `setup.py`
+script to install it from there:
 
   $ python setup.py install
+
+.. note:: The `setup.py` script takes a number of options to customize the install location.
