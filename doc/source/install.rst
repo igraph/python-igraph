@@ -40,7 +40,7 @@ and macOS. Currently there are binary packages for Python 2.7, and Python 3.5 th
 note that support for Python 2.7 will be discontinued with the version 0.9.0 release of
 |igraph|'s Python interface.
 
-To install |python-igraph| globally, use the followig command (you probably need
+To install |python-igraph| globally, use the following command (you probably need
 administrator/root priviledges):
 
   $ pip install python-igraph
@@ -53,14 +53,20 @@ A variation of the following commands should work on most platforms:
   $ source venv/bin/activate
   $ pip install python-igraph
 
-To test the installed package, launch Python within the virtual environment and run the
-following:
+Alternatively, if you do not want to activate the virtualenv, you can call the `pip` executable
+in it directly:
 
-  >>> import igraph.test
-  >>> igraph.test.run_tests()
+  $ python -m venv venv
+  $ venv/bin/pip install python-igraph
 
-The above commands run the bundled test cases to ensure that everything is fine with your
-|igraph| installation.
+The unit tests of `python-igraph` are implemented with the standard `unittest` module so you can
+run them like this from your virtualenv:
+
+  $ python -m unittest discover
+  
+As usual, you can also do this without activating the virtualenv:
+
+  $ venv/bin/python -m unittest discover
 
 Installing |igraph| via Conda
 -----------------------------
@@ -82,7 +88,7 @@ The above commands run the bundled test cases to ensure that everything is fine 
 |igraph| on Windows
 -------------------
 
-There is a Windows installer for |igraph|'s Python interface on the `Python Package Index
+Precompiled Windows wheels for |igraph|'s Python interface are available on the `Python Package Index
 <http://pypi.python.org/pypi/python-igraph>`_ (see `Installing igraph from the Python Package
 Index`_).
 
@@ -109,11 +115,9 @@ If PyCairo was successfully installed, this will display a Petersen graph.
 |igraph| on macOS
 -----------------
 
-The Mac installer for |igraph|'s Python interface on the `Python Package Index
-<http://pypi.python.org/pypi/python-igraph>`_ works for Intel-based Macs only. PowerPC
-users should compile the package themselves (see `Compiling igraph from source`_).
-
-TODO: Check if PyCairo on Mac still requires using Brew
+Precompiled macOS wheels for |igraph|'s Python interface are available on the `Python Package Index
+<http://pypi.python.org/pypi/python-igraph>`_  (see `Installing igraph from the Python Package
+Index`_).
 
 Graph plotting in |igraph| is implemented using a third-party package called `Cairo
 <http://www.cairographics.org>`_. If you want to create publication-quality plots in |igraph|
@@ -145,17 +149,18 @@ your package manager should take care of that dependency for you.
    instead to get a more recent release (see `Installing igraph from the Python Package Index`_).
 
 Compiling |python-igraph| from source
-========================================
+=====================================
 
-|python-igraph| has C Python binding into the main |igraph| library, so you'll need both a C compiler
-and the library itself. However, the |python-igraph| installer is able to fetch and compile the |igraph|
-C library on the fly.
+|python-igraph| binds itself into the main |igraph| library using some glue code written in C, so you'll need
+both a C compiler and the library itself. Source tarballs of |python-igraph| obtained from PyPI already
+contain a matching version of the C core of |igraph|.
 
 There are two common scenarios to compile |python-igraph| from source:
 
 1. Your would like to use the latest development version from Github, usually to try out some recently
    added features
-2. The Pypi repository does not include precompiled binaries for your system. This can happen if your operating
+
+2. The PyPI repository does not include precompiled binaries for your system. This can happen if your operating
    system is not covered by our continuous development.
 
 Both will be covered in the next sections.
@@ -166,11 +171,11 @@ If you want the development version of |python-igraph|, call:
 
   $ pip install git+https://github.com/igraph/python-igraph
 
-Pip is smart enough to download the sources from Github, initialize the submodule for the |igraph| C core,
+`pip` is smart enough to download the sources from Github, initialize the submodule for the |igraph| C core,
 compile it, and then compile |python-igraph| against it and install it. As above, a virtual environment is
 a commonly used sandbox to test experimental packages.
 
-If you want the latest release from Pypi but prefer to (or have to) install from source, call:
+If you want the latest release from PyPI but prefer to (or have to) install from source, call:
 
   $ pip install --no-binary ':all:' python-igraph
 
@@ -180,14 +185,15 @@ If you want the latest release from Pypi but prefer to (or have to) install from
 Compiling step by step
 ----------------------
 This section should be rarely used in practice but explains how to compile and install |python-igraph| step
-by step without pip.
+by step without `pip`.
 
-First, obtain the source code either from Github:
+First, obtain the bleeding-edge source code from Github:
 
   $ git clone https://github.com/igraph/python-igraph.git
 
-or from `Pypi <https://pypi.org/project/python-igraph/#files>` or
-`Github <https://github.com/igraph/python-igraph/releases/>`. In the latter case, decompress the archive.
+or download a recent release from `PyPI <https://pypi.org/project/python-igraph/#files>` or from the
+`Github releases page <https://github.com/igraph/python-igraph/releases/>`. Decompress the archive if
+needed.
 
 Second, go into the folder:
 
@@ -195,15 +201,18 @@ Second, go into the folder:
 
 (it might have a slightly different name depending on the release).
 
-Third, initialze the git submodule for the |igraph| C core:
+Third, if you cloned the source from Github, initialize the `git` submodule for the |igraph| C core:
 
   $ git submodule update --init
 
 .. note:: If you prefer to compile and link |python-igraph| against an existing |igraph| C core, for instance
-   one you installed with your package manager, you can skip this step (git submodule) and proceed to the
-   next step.
+   the one you installed with your package manager, you can skip the `git` submodule initialization step. If you
+   downloaded a tarball, you also need to remove the `vendor/source/igraph` folder because the setup script
+   will look for the vendored |igraph| copy first. However, a particular version of |python-igraph| is guaranteed
+   to work only with the version of the C core that is bundled with it (or with the revision that the `git`
+   submodule points to).
 
-Fourth, call the standard python `setup.py` script, e.g. for compiling:
+Fourth, call the standard Python `setup.py` script, e.g. for compiling:
 
   $ python setup.py build
 
