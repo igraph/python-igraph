@@ -52,7 +52,7 @@ class EdgeTests(unittest.TestCase):
         output = repr(self.g.es[0])
         self.assertEqual(output, "igraph.Edge(%r, 0, {})" % self.g)
 
-        self.g.es["weight"] = range(10, 0, -1)
+        self.g.es["weight"] = list(range(10, 0, -1))
         output = repr(self.g.es[3])
         self.assertEqual(output, "igraph.Edge(%r, 3, {'weight': 7})" % self.g)
 
@@ -128,7 +128,7 @@ class EdgeSeqTests(unittest.TestCase):
 
     def setUp(self):
         self.g = Graph.Full(10)
-        self.g.es["test"] = range(45)
+        self.g.es["test"] = list(range(45))
 
     def testCreation(self):
         self.assertTrue(len(EdgeSeq(self.g)) == 45)
@@ -176,7 +176,7 @@ class EdgeSeqTests(unittest.TestCase):
         expected = [[0, i][i % 2] for i in range(self.g.ecount())]
         self.assertTrue(self.g.es["test"] == expected)
 
-        only_even["test2"] = range(23)
+        only_even["test2"] = list(range(23))
         expected = [[i // 2, None][i % 2] for i in range(self.g.ecount())]
         self.assertTrue(self.g.es["test2"] == expected)
 
@@ -255,7 +255,7 @@ class EdgeSeqTests(unittest.TestCase):
         self.assertTrue(subset["test"] == [2, 3, 4, 2])
 
     def testIterableFilteringSelect(self):
-        subset = self.g.es.select(range(5, 8))
+        subset = self.g.es.select(list(range(5, 8)))
         self.assertTrue(len(subset) == 3)
         self.assertTrue(subset["test"] == [5, 6, 7])
 

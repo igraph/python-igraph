@@ -2,6 +2,7 @@
 import unittest
 from igraph import *
 
+
 class GraphAdjacencyMatrixLikeIndexingTests(unittest.TestCase):
     def testSingleEdgeRetrieval(self):
         g = Graph.Famous("krackhardt_kite")
@@ -18,7 +19,7 @@ class GraphAdjacencyMatrixLikeIndexingTests(unittest.TestCase):
 
     def testSingleEdgeRetrievalWeights(self):
         g = Graph.Famous("krackhardt_kite")
-        g.es["weight"] = range(g.ecount())
+        g.es["weight"] = list(range(g.ecount()))
         for idx, (v1, v2) in enumerate(g.get_edgelist()):
             self.assertEqual(g[v1, v2], idx)
             self.assertEqual(g[v2, v1], idx)
@@ -29,10 +30,10 @@ class GraphAdjacencyMatrixLikeIndexingTests(unittest.TestCase):
 
     def testSingleEdgeRetrievalAttrName(self):
         g = Graph.Famous("krackhardt_kite")
-        g.es["value"] = range(20, g.ecount()+20)
+        g.es["value"] = list(range(20, g.ecount() + 20))
         for idx, (v1, v2) in enumerate(g.get_edgelist()):
-            self.assertEqual(g[v1, v2, "value"], idx+20)
-            self.assertEqual(g[v2, v1, "value"], idx+20)
+            self.assertEqual(g[v1, v2, "value"], idx + 20)
+            self.assertEqual(g[v2, v1, "value"], idx + 20)
         for v1 in range(g.vcount()):
             for v2 in set(range(g.vcount())) - set(g.neighbors(v1)):
                 self.assertEqual(g[v1, v2, "value"], 0)
@@ -43,9 +44,11 @@ def suite():
     adjacency_suite = unittest.makeSuite(GraphAdjacencyMatrixLikeIndexingTests)
     return unittest.TestSuite([adjacency_suite])
 
+
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
+
 if __name__ == "__main__":
     test()

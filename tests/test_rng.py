@@ -16,6 +16,7 @@ class FakeRNG(object):
     def gauss(mu, sigma):
         return 0.3
 
+
 class InvalidRNG(object):
     pass
 
@@ -30,8 +31,7 @@ class RandomNumberGeneratorTests(unittest.TestCase):
         self.assertEqual(graph.vs["x"], [0.1] * 10)
         self.assertEqual(graph.vs["y"], [0.1] * 10)
 
-        self.assertRaises(AttributeError, set_random_number_generator,
-                InvalidRNG)
+        self.assertRaises(AttributeError, set_random_number_generator, InvalidRNG)
 
     def testSeeding(self):
         state = random.getstate()
@@ -45,10 +45,11 @@ def suite():
     random_suite = unittest.makeSuite(RandomNumberGeneratorTests)
     return unittest.TestSuite([random_suite])
 
+
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
+
 if __name__ == "__main__":
     test()
-

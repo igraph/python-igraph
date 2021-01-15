@@ -1,6 +1,7 @@
 import unittest
 from igraph import *
 
+
 class IteratorTests(unittest.TestCase):
     def testBFS(self):
         g = Graph.Tree(10, 2)
@@ -16,9 +17,18 @@ class IteratorTests(unittest.TestCase):
         vs = [(v, d, p.index) for v, d, p in vs if p is not None]
         self.assertEqual(
             vs,
-            [(1, 1, 0), (2, 1, 0), (3, 2, 1),
-             (4, 2, 1), (5, 2, 2), (6, 2, 2),
-             (7, 3, 3), (8, 3, 3), (9, 3, 4)])
+            [
+                (1, 1, 0),
+                (2, 1, 0),
+                (3, 2, 1),
+                (4, 2, 1),
+                (5, 2, 2),
+                (6, 2, 2),
+                (7, 3, 3),
+                (8, 3, 3),
+                (9, 3, 4),
+            ],
+        )
 
     def testDFS(self):
         g = Graph.Tree(10, 2)
@@ -34,18 +44,29 @@ class IteratorTests(unittest.TestCase):
         vs = [(v, d, p.index) for v, d, p in vs if p is not None]
         self.assertEqual(
             vs,
-            [(1, 1, 0), (3, 2, 1), (7, 3, 3),
-             (8, 3, 3), (4, 2, 1), (9, 3, 4),
-             (2, 1, 0), (5, 2, 2), (6, 2, 2)])
+            [
+                (1, 1, 0),
+                (3, 2, 1),
+                (7, 3, 3),
+                (8, 3, 3),
+                (4, 2, 1),
+                (9, 3, 4),
+                (2, 1, 0),
+                (5, 2, 2),
+                (6, 2, 2),
+            ],
+        )
 
 
 def suite():
     iterator_suite = unittest.makeSuite(IteratorTests)
     return unittest.TestSuite([iterator_suite])
 
+
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
+
 
 if __name__ == "__main__":
     test()

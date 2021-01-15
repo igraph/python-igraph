@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import unittest
 
 from igraph import *
@@ -9,48 +7,89 @@ from .utils import is_pypy, skipIf, temporary_file
 
 class CliqueTests(unittest.TestCase):
     def setUp(self):
-        self.g=Graph.Full(6)
+        self.g = Graph.Full(6)
         self.g.delete_edges([(0, 1), (0, 2), (3, 5)])
 
     def testCliques(self):
-        tests = {(4, -1): [[1, 2, 3, 4], [1, 2, 4, 5]],
-                 (2, 2): [[0, 3], [0, 4], [0, 5],
-                          [1, 2], [1, 3], [1, 4], [1, 5],
-                          [2, 3], [2, 4], [2, 5], [3, 4], [4, 5]],
-                 (-1, -1): [[0], [1], [2], [3], [4], [5],
-                            [0, 3], [0, 4], [0, 5],
-                            [1, 2], [1, 3], [1, 4], [1, 5],
-                            [2, 3], [2, 4], [2, 5], [3, 4], [4, 5],
-                            [0, 3, 4], [0, 4, 5],
-                            [1, 2, 3], [1, 2, 4], [1, 2, 5],
-                            [1, 3, 4], [1, 4, 5], [2, 3, 4], [2, 4, 5],
-                            [1, 2, 3, 4], [1, 2, 4, 5]]}
-        for (lo, hi), exp in tests.items():
+        tests = {
+            (4, -1): [[1, 2, 3, 4], [1, 2, 4, 5]],
+            (2, 2): [
+                [0, 3],
+                [0, 4],
+                [0, 5],
+                [1, 2],
+                [1, 3],
+                [1, 4],
+                [1, 5],
+                [2, 3],
+                [2, 4],
+                [2, 5],
+                [3, 4],
+                [4, 5],
+            ],
+            (-1, -1): [
+                [0],
+                [1],
+                [2],
+                [3],
+                [4],
+                [5],
+                [0, 3],
+                [0, 4],
+                [0, 5],
+                [1, 2],
+                [1, 3],
+                [1, 4],
+                [1, 5],
+                [2, 3],
+                [2, 4],
+                [2, 5],
+                [3, 4],
+                [4, 5],
+                [0, 3, 4],
+                [0, 4, 5],
+                [1, 2, 3],
+                [1, 2, 4],
+                [1, 2, 5],
+                [1, 3, 4],
+                [1, 4, 5],
+                [2, 3, 4],
+                [2, 4, 5],
+                [1, 2, 3, 4],
+                [1, 2, 4, 5],
+            ],
+        }
+        for (lo, hi), exp in list(tests.items()):
             self.assertEqual(sorted(exp), sorted(map(sorted, self.g.cliques(lo, hi))))
 
     def testLargestCliques(self):
-        self.assertEqual(sorted(map(sorted, self.g.largest_cliques())),
-                         [[1, 2, 3, 4], [1, 2, 4, 5]])
+        self.assertEqual(
+            sorted(map(sorted, self.g.largest_cliques())), [[1, 2, 3, 4], [1, 2, 4, 5]]
+        )
 
     def testMaximalCliques(self):
-        self.assertEqual(sorted(map(sorted, self.g.maximal_cliques())),
-                         [[0, 3, 4], [0, 4, 5],
-                          [1, 2, 3, 4], [1, 2, 4, 5]])
-        self.assertEqual(sorted(map(sorted, self.g.maximal_cliques(min=4))),
-                         [[1, 2, 3, 4], [1, 2, 4, 5]])
-        self.assertEqual(sorted(map(sorted, self.g.maximal_cliques(max=3))),
-                         [[0, 3, 4], [0, 4, 5]])
+        self.assertEqual(
+            sorted(map(sorted, self.g.maximal_cliques())),
+            [[0, 3, 4], [0, 4, 5], [1, 2, 3, 4], [1, 2, 4, 5]],
+        )
+        self.assertEqual(
+            sorted(map(sorted, self.g.maximal_cliques(min=4))),
+            [[1, 2, 3, 4], [1, 2, 4, 5]],
+        )
+        self.assertEqual(
+            sorted(map(sorted, self.g.maximal_cliques(max=3))), [[0, 3, 4], [0, 4, 5]]
+        )
 
     def testMaximalCliquesFile(self):
         def read_cliques(fname):
             with open(fname) as fp:
-                return sorted(sorted(int(item) for item in line.split())
-                                for line in fp)
+                return sorted(sorted(int(item) for item in line.split()) for line in fp)
 
         with temporary_file() as fname:
             self.g.maximal_cliques(file=fname)
-            self.assertEqual([[0, 3, 4], [0, 4, 5], [1, 2, 3, 4], [1, 2, 4, 5]],
-                             read_cliques(fname))
+            self.assertEqual(
+                [[0, 3, 4], [0, 4, 5], [1, 2, 3, 4], [1, 2, 4, 5]], read_cliques(fname)
+            )
 
         with temporary_file() as fname:
             self.g.maximal_cliques(min=4, file=fname)
@@ -67,28 +106,52 @@ class CliqueTests(unittest.TestCase):
 
 class IndependentVertexSetTests(unittest.TestCase):
     def setUp(self):
-        self.g1=Graph.Tree(5, 2, TREE_UNDIRECTED)
-        self.g2=Graph.Tree(10, 2, TREE_UNDIRECTED)
+        self.g1 = Graph.Tree(5, 2, TREE_UNDIRECTED)
+        self.g2 = Graph.Tree(10, 2, TREE_UNDIRECTED)
 
     def testIndependentVertexSets(self):
-        tests = {(4, -1): [],
-                 (2, 2): [(0, 3), (0, 4), (1, 2), (2, 3), (2, 4), (3, 4)],
-                 (-1, -1): [(0,), (1,), (2,), (3,), (4,),
-                            (0, 3), (0, 4), (1, 2), (2, 3), (2, 4),
-                            (3, 4), (0, 3, 4), (2, 3, 4)]}
-        for (lo, hi), exp in tests.items():
+        tests = {
+            (4, -1): [],
+            (2, 2): [(0, 3), (0, 4), (1, 2), (2, 3), (2, 4), (3, 4)],
+            (-1, -1): [
+                (0,),
+                (1,),
+                (2,),
+                (3,),
+                (4,),
+                (0, 3),
+                (0, 4),
+                (1, 2),
+                (2, 3),
+                (2, 4),
+                (3, 4),
+                (0, 3, 4),
+                (2, 3, 4),
+            ],
+        }
+        for (lo, hi), exp in list(tests.items()):
             self.assertEqual(exp, self.g1.independent_vertex_sets(lo, hi))
 
     def testLargestIndependentVertexSets(self):
-        self.assertEqual(self.g1.largest_independent_vertex_sets(),
-                         [(0, 3, 4), (2, 3, 4)])
+        self.assertEqual(
+            self.g1.largest_independent_vertex_sets(), [(0, 3, 4), (2, 3, 4)]
+        )
 
     def testMaximalIndependentVertexSets(self):
-        self.assertEqual(self.g2.maximal_independent_vertex_sets(),
-                         [(0, 3, 4, 5, 6), (0, 3, 5, 6, 9),
-                          (0, 4, 5, 6, 7, 8), (0, 5, 6, 7, 8, 9),
-                          (1, 2, 7, 8, 9), (1, 5, 6, 7, 8, 9),
-                          (2, 3, 4), (2, 3, 9), (2, 4, 7, 8)])
+        self.assertEqual(
+            self.g2.maximal_independent_vertex_sets(),
+            [
+                (0, 3, 4, 5, 6),
+                (0, 3, 5, 6, 9),
+                (0, 4, 5, 6, 7, 8),
+                (0, 5, 6, 7, 8, 9),
+                (1, 2, 7, 8, 9),
+                (1, 5, 6, 7, 8, 9),
+                (2, 3, 4),
+                (2, 3, 9),
+                (2, 4, 7, 8),
+            ],
+        )
 
     def testIndependenceNumber(self):
         self.assertEqual(self.g2.independence_number(), 6)
@@ -122,12 +185,13 @@ class MotifTests(unittest.TestCase):
         tc = self.g.triad_census()
         accessors = ["003", "012", "021d", "030C"]
         for a in accessors:
-            self.assertTrue(isinstance(getattr(tc, "t"+a), int))
+            self.assertTrue(isinstance(getattr(tc, "t" + a), int))
             self.assertTrue(isinstance(tc[a], int))
         self.assertTrue(isinstance(list(tc), list))
         self.assertTrue(isinstance(tuple(tc), tuple))
         self.assertTrue(len(list(tc)) == 16)
         self.assertTrue(len(tuple(tc)) == 16)
+
 
 class CliqueBenchmark(object):
     """This is a benchmark, not a real test case. You can run it
@@ -140,6 +204,7 @@ class CliqueBenchmark(object):
     def __init__(self):
         from time import time
         import gc
+
         self.time = time
         self.gc_collect = gc.collect
 
@@ -163,15 +228,17 @@ class CliqueBenchmark(object):
         cl = g.maximal_cliques()
         end = self.time()
         self.gc_collect()
-        return len(cl), mid-start, end-mid
+        return len(cl), mid - start, end - mid
 
     def testRandom(self):
-        np = {100: [0.6, 0.7],
-              300: [0.1, 0.2, 0.3, 0.4],
-              500: [0.1, 0.2, 0.3],
-              700: [0.1, 0.2],
-              1000:[0.1, 0.2],
-              10000: [0.001, 0.003, 0.005, 0.01, 0.02]}
+        np = {
+            100: [0.6, 0.7],
+            300: [0.1, 0.2, 0.3, 0.4],
+            500: [0.1, 0.2, 0.3],
+            700: [0.1, 0.2],
+            1000: [0.1, 0.2],
+            10000: [0.001, 0.003, 0.005, 0.01, 0.02],
+        }
 
         print()
         print("Erdos-Renyi random graphs")
@@ -189,12 +256,19 @@ class CliqueBenchmark(object):
         print("Moon-Moser graphs")
         print("       n exp_clqs #cliques        t1        t2")
         for n in ns:
-            n3 = n/3
-            types = range(n3) * 3
-            el = [(i, j) for i in range(n) for j in range(i+1,n) if types[i] != types[j]]
+            n3 = n / 3
+            types = list(range(n3)) * 3
+            el = [
+                (i, j)
+                for i in range(n)
+                for j in range(i + 1, n)
+                if types[i] != types[j]
+            ]
             g = Graph(n, el)
             result = self.timeit(g)
-            print("%8d %8d %8d %8.4fs %8.4fs" % tuple([n, (3**(n/3))] + list(result)))
+            print(
+                "%8d %8d %8d %8.4fs %8.4fs" % tuple([n, (3 ** (n / 3))] + list(result))
+            )
 
     def testGRG(self):
         ns = [100, 1000, 5000, 10000, 25000, 50000]
@@ -203,7 +277,7 @@ class CliqueBenchmark(object):
         print("Geometric random graphs")
         print("       n        d #cliques        t1        t2")
         for n in ns:
-            d = 2. / (n ** 0.5)
+            d = 2.0 / (n ** 0.5)
             g = Graph.GRG(n, d)
             result = self.timeit(g)
             print("%8d %8.3f %8d %8.4fs %8.4fs" % tuple([n, d] + list(result)))
@@ -215,10 +289,11 @@ def suite():
     motif_suite = unittest.makeSuite(MotifTests)
     return unittest.TestSuite([clique_suite, indvset_suite, motif_suite])
 
+
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
 
+
 if __name__ == "__main__":
     test()
-

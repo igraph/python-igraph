@@ -11,25 +11,25 @@ except ImportError:
 
 class GeneratorTests(unittest.TestCase):
     def testStar(self):
-        g=Graph.Star(5, "in")
-        el=[(1,0),(2,0),(3,0),(4,0)]
+        g = Graph.Star(5, "in")
+        el = [(1, 0), (2, 0), (3, 0), (4, 0)]
         self.assertTrue(g.is_directed())
         self.assertTrue(g.get_edgelist() == el)
-        g=Graph.Star(5, "out", center=2)
-        el=[(2,0),(2,1),(2,3),(2,4)]
+        g = Graph.Star(5, "out", center=2)
+        el = [(2, 0), (2, 1), (2, 3), (2, 4)]
         self.assertTrue(g.is_directed())
         self.assertTrue(g.get_edgelist() == el)
-        g=Graph.Star(5, "mutual", center=2)
-        el=[(0,2),(1,2),(2,0),(2,1),(2,3),(2,4),(3,2),(4,2)]
+        g = Graph.Star(5, "mutual", center=2)
+        el = [(0, 2), (1, 2), (2, 0), (2, 1), (2, 3), (2, 4), (3, 2), (4, 2)]
         self.assertTrue(g.is_directed())
         self.assertTrue(sorted(g.get_edgelist()) == el)
-        g=Graph.Star(5, center=3)
-        el=[(0,3),(1,3),(2,3),(3,4)]
+        g = Graph.Star(5, center=3)
+        el = [(0, 3), (1, 3), (2, 3), (3, 4)]
         self.assertTrue(not g.is_directed())
         self.assertTrue(sorted(g.get_edgelist()) == el)
 
     def testFamous(self):
-        g=Graph.Famous("tutte")
+        g = Graph.Famous("tutte")
         self.assertTrue(g.vcount() == 46 and g.ecount() == 69)
         self.assertRaises(InternalError, Graph.Famous, "unknown")
 
@@ -40,43 +40,56 @@ class GeneratorTests(unittest.TestCase):
             ("A", ["A"], []),
             ("A-B", ["A", "B"], [(0, 1)]),
             ("A --- B", ["A", "B"], [(0, 1)]),
-            ("A--B, C--D, E--F, G--H, I, J, K",
+            (
+                "A--B, C--D, E--F, G--H, I, J, K",
                 ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"],
-                [(0,1), (2,3), (4,5), (6,7)]
+                [(0, 1), (2, 3), (4, 5), (6, 7)],
             ),
-            ("A:B:C:D -- A:B:C:D",
+            (
+                "A:B:C:D -- A:B:C:D",
                 ["A", "B", "C", "D"],
-                [(0,1), (0,2), (0,3), (1,2), (1,3), (2,3)]
+                [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)],
             ),
-            ("A -> B -> C", ["A", "B", "C"], [(0,1), (1,2)]),
-            ("A <- B -> C", ["A", "B", "C"], [(1,0), (1,2)]),
-            ("A <- B -- C", ["A", "B", "C"], [(1,0)]),
-            ("A <-> B <---> C <> D", ["A", "B", "C", "D"],
-                [(0,1), (1,0), (1,2), (2,1), (2,3), (3,2)]),
-            ("'this is' <- 'a silly' -> 'graph here'",
-                ["this is", "a silly", "graph here"], [(1,0), (1,2)]),
-            ("Alice-Bob-Cecil-Alice, Daniel-Cecil-Eugene, Cecil-Gordon",
+            ("A -> B -> C", ["A", "B", "C"], [(0, 1), (1, 2)]),
+            ("A <- B -> C", ["A", "B", "C"], [(1, 0), (1, 2)]),
+            ("A <- B -- C", ["A", "B", "C"], [(1, 0)]),
+            (
+                "A <-> B <---> C <> D",
+                ["A", "B", "C", "D"],
+                [(0, 1), (1, 0), (1, 2), (2, 1), (2, 3), (3, 2)],
+            ),
+            (
+                "'this is' <- 'a silly' -> 'graph here'",
+                ["this is", "a silly", "graph here"],
+                [(1, 0), (1, 2)],
+            ),
+            (
+                "Alice-Bob-Cecil-Alice, Daniel-Cecil-Eugene, Cecil-Gordon",
                 ["Alice", "Bob", "Cecil", "Daniel", "Eugene", "Gordon"],
-                [(0,1),(1,2),(0,2),(2,3),(2,4),(2,5)]
+                [(0, 1), (1, 2), (0, 2), (2, 3), (2, 4), (2, 5)],
             ),
-            ("Alice-Bob:Cecil:Daniel, Cecil:Daniel-Eugene:Gordon",
+            (
+                "Alice-Bob:Cecil:Daniel, Cecil:Daniel-Eugene:Gordon",
                 ["Alice", "Bob", "Cecil", "Daniel", "Eugene", "Gordon"],
-                [(0,1),(0,2),(0,3),(2,4),(2,5),(3,4),(3,5)]
+                [(0, 1), (0, 2), (0, 3), (2, 4), (2, 5), (3, 4), (3, 5)],
             ),
-            ("Alice <-> Bob --> Cecil <-- Daniel, Eugene --> Gordon:Helen",
+            (
+                "Alice <-> Bob --> Cecil <-- Daniel, Eugene --> Gordon:Helen",
                 ["Alice", "Bob", "Cecil", "Daniel", "Eugene", "Gordon", "Helen"],
-                [(0,1),(1,0),(1,2),(3,2),(4,5),(4,6)]
+                [(0, 1), (1, 0), (1, 2), (3, 2), (4, 5), (4, 6)],
             ),
-            ("Alice -- Bob -- Daniel, Cecil:Gordon, Helen",
+            (
+                "Alice -- Bob -- Daniel, Cecil:Gordon, Helen",
                 ["Alice", "Bob", "Daniel", "Cecil", "Gordon", "Helen"],
-                [(0,1),(1,2)]
+                [(0, 1), (1, 2)],
             ),
-            ('"+" -- "-", "*" -- "/", "%%" -- "%/%"',
+            (
+                '"+" -- "-", "*" -- "/", "%%" -- "%/%"',
                 ["+", "-", "*", "/", "%%", "%/%"],
-                [(0,1),(2,3),(4,5)]
+                [(0, 1), (2, 3), (4, 5)],
             ),
-            ("A-B-C\nC-D", ["A", "B", "C", "D"], [(0,1),(1,2),(2,3)]),
-            ("A-B-C\n    C-D", ["A", "B", "C", "D"], [(0,1),(1,2),(2,3)])
+            ("A-B-C\nC-D", ["A", "B", "C", "D"], [(0, 1), (1, 2), (2, 3)]),
+            ("A-B-C\n    C-D", ["A", "B", "C", "D"], [(0, 1), (1, 2), (2, 3)]),
         ]
         for formula, names, edges in tests:
             g = Graph.Formula(formula)
@@ -84,20 +97,22 @@ class GeneratorTests(unittest.TestCase):
             self.assertEqual(g.get_edgelist(), sorted(edges))
 
     def testFull(self):
-        g=Graph.Full(20, directed=True)
-        el=g.get_edgelist()
+        g = Graph.Full(20, directed=True)
+        el = g.get_edgelist()
         el.sort()
-        self.assertTrue(g.get_edgelist() == [(x, y) for x in range(20) for y in range(20) if x!=y])
+        self.assertTrue(
+            g.get_edgelist() == [(x, y) for x in range(20) for y in range(20) if x != y]
+        )
 
     def testFullCitation(self):
-        g=Graph.Full_Citation(20)
-        el=g.get_edgelist()
+        g = Graph.Full_Citation(20)
+        el = g.get_edgelist()
         el.sort()
         self.assertTrue(not g.is_directed())
-        self.assertTrue(el == [(x, y) for x in range(19) for y in range(x+1, 20)])
+        self.assertTrue(el == [(x, y) for x in range(19) for y in range(x + 1, 20)])
 
-        g=Graph.Full_Citation(20, True)
-        el=g.get_edgelist()
+        g = Graph.Full_Citation(20, True)
+        el = g.get_edgelist()
         el.sort()
         self.assertTrue(g.is_directed())
         self.assertTrue(el == [(x, y) for x in range(1, 20) for y in range(x)])
@@ -105,24 +120,24 @@ class GeneratorTests(unittest.TestCase):
         self.assertRaises(InternalError, Graph.Full_Citation, -2)
 
     def testLCF(self):
-        g1=Graph.LCF(12, (5, -5), 6)
-        g2=Graph.Famous("Franklin")
+        g1 = Graph.LCF(12, (5, -5), 6)
+        g2 = Graph.Famous("Franklin")
         self.assertTrue(g1.isomorphic(g2))
         self.assertRaises(InternalError, Graph.LCF, 12, (5, -5), -3)
 
     def testKautz(self):
-        g=Graph.Kautz(2, 2)
-        deg_in=g.degree(mode=IN)
-        deg_out=g.degree(mode=OUT)
+        g = Graph.Kautz(2, 2)
+        deg_in = g.degree(mode=IN)
+        deg_out = g.degree(mode=OUT)
         # This is not a proper test, but should spot most errors
-        self.assertTrue(g.is_directed() and deg_in==[2]*12 and deg_out==[2]*12)
+        self.assertTrue(g.is_directed() and deg_in == [2] * 12 and deg_out == [2] * 12)
 
     def testDeBruijn(self):
-        g=Graph.De_Bruijn(2, 3)
-        deg_in=g.degree(mode=IN, loops=True)
-        deg_out=g.degree(mode=OUT, loops=True)
+        g = Graph.De_Bruijn(2, 3)
+        deg_in = g.degree(mode=IN, loops=True)
+        deg_out = g.degree(mode=OUT, loops=True)
         # This is not a proper test, but should spot most errors
-        self.assertTrue(g.is_directed() and deg_in==[2]*8 and deg_out==[2]*8)
+        self.assertTrue(g.is_directed() and deg_in == [2] * 8 and deg_out == [2] * 8)
 
     def testSBM(self):
         pref_matrix = [[0.5, 0, 0], [0, 0, 0.5], [0, 0.5, 0]]
@@ -133,8 +148,8 @@ class GeneratorTests(unittest.TestCase):
         # Simple smoke tests for the expected structure of the graph
         self.assertTrue(g.is_simple())
         self.assertFalse(g.is_directed())
-        self.assertEqual([0]*20 + [1]*40, g.clusters().membership)
-        g2 = g.subgraph(range(20, 60))
+        self.assertEqual([0] * 20 + [1] * 40, g.clusters().membership)
+        g2 = g.subgraph(list(range(20, 60)))
         self.assertTrue(not any(e.source // 20 == e.target // 20 for e in g2.es))
 
         # Check loops argument
@@ -159,65 +174,67 @@ class GeneratorTests(unittest.TestCase):
 
         g = Graph.Weighted_Adjacency(mat, attr="w0")
         el = g.get_edgelist()
-        self.assertTrue(el == [(0,1), (0,2), (1,0), (2,2), (3,1)])
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (2, 2), (3, 1)])
         self.assertTrue(g.es["w0"] == [1, 2, 2, 2.5, 1])
 
         g = Graph.Weighted_Adjacency(mat, mode="plus")
         el = g.get_edgelist()
-        self.assertTrue(el == [(0,1), (0,2), (1,3), (2,2)])
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 3), (2, 2)])
         self.assertTrue(g.es["weight"] == [3, 2, 1, 2.5])
 
         g = Graph.Weighted_Adjacency(mat, attr="w0", loops=False)
         el = g.get_edgelist()
-        self.assertTrue(el == [(0,1), (0,2), (1,0), (3,1)])
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (3, 1)])
         self.assertTrue(g.es["w0"] == [1, 2, 2, 1])
 
     @unittest.skipIf((np is None) or (pd is None), "test case depends on NumPy/Pandas")
     def testDataFrame(self):
         edges = pd.DataFrame(
-            [['C', 'A', 0.4], ['A', 'B', 0.1]],
-            columns=[0, 1, 'weight'])
+            [["C", "A", 0.4], ["A", "B", 0.1]], columns=[0, 1, "weight"]
+        )
         g = Graph.DataFrame(edges, directed=False)
         self.assertTrue(g.es["weight"] == [0.4, 0.1])
 
         vertices = pd.DataFrame(
-            [['A', 'blue'], ['B', 'yellow'], ['C', 'blue']],
-            columns=[0, 'color'])
+            [["A", "blue"], ["B", "yellow"], ["C", "blue"]], columns=[0, "color"]
+        )
         g = Graph.DataFrame(edges, directed=True, vertices=vertices)
-        self.assertTrue(g.vs['name'] == ['A', 'B', 'C'])
-        self.assertTrue(g.vs["color"] == ['blue', 'yellow', 'blue'])
+        self.assertTrue(g.vs["name"] == ["A", "B", "C"])
+        self.assertTrue(g.vs["color"] == ["blue", "yellow", "blue"])
         self.assertTrue(g.es["weight"] == [0.4, 0.1])
 
         # Issue #347
-        edges = pd.DataFrame({'source': [1, 2, 3], 'target': [4, 5, 6]})
-        vertices = pd.DataFrame({
-            'node': [1, 2, 3, 4, 5, 6],
-            'label': ['1', '2', '3', '4', '5', '6']})[['node', 'label']]
+        edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
+        vertices = pd.DataFrame(
+            {"node": [1, 2, 3, 4, 5, 6], "label": ["1", "2", "3", "4", "5", "6"]}
+        )[["node", "label"]]
         g = Graph.DataFrame(
             edges,
             directed=True,
             vertices=vertices,
-            )
-        self.assertTrue(g.vs['name'] == [1, 2, 3, 4, 5, 6])
-        self.assertTrue(g.vs['label'] == ['1', '2', '3', '4', '5', '6'])
+        )
+        self.assertTrue(g.vs["name"] == [1, 2, 3, 4, 5, 6])
+        self.assertTrue(g.vs["label"] == ["1", "2", "3", "4", "5", "6"])
 
         # Vertex ids
-        edges = pd.DataFrame({'source': [1, 2, 3], 'target': [4, 5, 6]})
+        edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
         g = Graph.DataFrame(edges)
         self.assertTrue(g.vcount() == 6)
 
-        edges = pd.DataFrame({'source': [1, 2, 3], 'target': [4, 5, 6]})
+        edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
         g = Graph.DataFrame(edges, use_vids=True)
         self.assertTrue(g.vcount() == 7)
+
 
 def suite():
     generator_suite = unittest.makeSuite(GeneratorTests)
     return unittest.TestSuite([generator_suite])
 
+
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
+
 if __name__ == "__main__":
     test()
-
