@@ -6,6 +6,7 @@
 """
 
 from contextlib import contextmanager
+
 try:
     from collections.abc import MutableMapping
 except ImportError:
@@ -17,13 +18,17 @@ import os
 import tempfile
 
 __all__ = (
-    "dbl_epsilon", "multidict", "named_temporary_file",
-    "numpy_to_contiguous_memoryview", "rescale",
-    "safemin", "safemax"
+    "dbl_epsilon",
+    "multidict",
+    "named_temporary_file",
+    "numpy_to_contiguous_memoryview",
+    "rescale",
+    "safemin",
+    "safemax",
 )
 
 __docformat__ = "restructuredtext en"
-__license__ = u"""\
+__license__ = """\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
 Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
 
@@ -49,6 +54,7 @@ def _is_running_in_ipython():
     IPython or not."""
     try:
         from IPython import get_ipython
+
         return get_ipython() is not None
     except ImportError:
         return False
@@ -91,8 +97,7 @@ def numpy_to_contiguous_memoryview(obj):
     return memoryview(require(obj, dtype=dtype, requirements="AC"))
 
 
-def rescale(values, out_range=(0., 1.), in_range=None, clamp=False,
-            scale=None):
+def rescale(values, out_range=(0.0, 1.0), in_range=None, clamp=False, scale=None):
     """Rescales a list of numbers into a given range.
 
     `out_range` gives the range of the output values; by default, the minimum
@@ -148,9 +153,9 @@ def rescale(values, out_range=(0., 1.), in_range=None, clamp=False,
 
     ratio = float(ma - mi)
     if not ratio:
-        return [(out_range[0] + out_range[1]) / 2.] * len(values)
+        return [(out_range[0] + out_range[1]) / 2.0] * len(values)
 
-    min_out, max_out = map(float, out_range)
+    min_out, max_out = list(map(float, out_range))
     ratio = (max_out - min_out) / ratio
     result = [(x - mi) * ratio + min_out for x in values]
 
@@ -160,9 +165,7 @@ def rescale(values, out_range=(0., 1.), in_range=None, clamp=False,
         return result
 
 
-def str_to_orientation(
-    value, reversed_horizontal=False, reversed_vertical=False
-):
+def str_to_orientation(value, reversed_horizontal=False, reversed_vertical=False):
     """Tries to interpret a string as an orientation value.
 
     The following basic values are understood: ``left-right``, ``bottom-top``,
@@ -186,9 +189,16 @@ def str_to_orientation(
     """
 
     aliases = {
-        "left-right": "lr", "right-left": "rl", "top-bottom": "tb",
-        "bottom-top": "bt", "top-down": "tb", "bottom-up": "bt",
-        "top-bottom": "tb", "bottom-top": "bt", "td": "tb", "bu": "bt"
+        "left-right": "lr",
+        "right-left": "rl",
+        "top-bottom": "tb",
+        "bottom-top": "bt",
+        "top-down": "tb",
+        "bottom-up": "bt",
+        "top-bottom": "tb",
+        "bottom-top": "bt",
+        "td": "tb",
+        "bu": "bt",
     }
 
     dir = ["lr", "rl"][reversed_horizontal]
@@ -227,7 +237,7 @@ def consecutive_pairs(iterable, circular=False):
     it = iter(iterable)
 
     try:
-        prev = it.next()
+        prev = next(it)
     except StopIteration:
         return
     first = prev
@@ -257,8 +267,8 @@ class multidict(MutableMapping):
         self._dict = {}
         if len(args) > 1:
             raise ValueError(
-                "%r expected at most 1 argument, got %d" %
-                (self.__class__.__name__, len(args))
+                "%r expected at most 1 argument, got %d"
+                % (self.__class__.__name__, len(args))
             )
         if args:
             args = args[0]
@@ -356,21 +366,21 @@ class multidict(MutableMapping):
     def iterlists(self):
         """Iterates over ``(key, values)`` pairs where ``values`` is the list
         of values associated with ``key``."""
-        return self._dict.iteritems()
+        return iter(self._dict.items())
 
     def lists(self):
         """Returns a list of ``(key, values)`` pairs where ``values`` is the list
         of values associated with ``key``."""
-        return self._dict.items()
+        return list(self._dict.items())
 
     def update(self, arg, **kwds):
         if hasattr(arg, "keys") and callable(arg.keys):
-            for key in arg.keys():
+            for key in list(arg.keys()):
                 self.add(key, arg[key])
         else:
             for key, value in arg:
                 self.add(key, value)
-        for key, value in kwds.iteritems():
+        for key, value in kwds.items():
             self.add(key, value)
 
 
@@ -389,7 +399,7 @@ def safemax(iterable, default=0):
     """
     it = iter(iterable)
     try:
-        first = it.next()
+        first = next(it)
     except StopIteration:
         return default
     else:
@@ -411,7 +421,7 @@ def safemin(iterable, default=0):
     """
     it = iter(iterable)
     try:
-        first = it.next()
+        first = next(it)
     except StopIteration:
         return default
     else:

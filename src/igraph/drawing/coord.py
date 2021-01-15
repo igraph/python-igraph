@@ -10,6 +10,7 @@ __license__ = "GPL"
 
 #####################################################################
 
+
 # pylint: disable-msg=R0922
 # R0922: Abstract class is only referenced 1 times
 class CoordinateSystem(AbstractCairoDrawer):
@@ -42,7 +43,7 @@ class CoordinateSystem(AbstractCairoDrawer):
     def local_to_context(self, x, y):
         """Converts local coordinates to the context coordinate system (given
         by the bounding box).
-        
+
         This method must be overridden in derived classes."""
         raise NotImplementedError("abstract class")
 
@@ -105,15 +106,17 @@ class DescartesCoordinateSystem(CoordinateSystem):
         """Draws the coordinate system."""
         # Draw the frame
         coords = self.bbox.coords
-        self.context.set_source_rgb(0., 0., 0.)
+        self.context.set_source_rgb(0.0, 0.0, 0.0)
         self.context.set_line_width(1)
-        self.context.rectangle(coords[0], coords[1], \
-            coords[2]-coords[0], coords[3]-coords[1])
+        self.context.rectangle(
+            coords[0], coords[1], coords[2] - coords[0], coords[3] - coords[1]
+        )
         self.context.stroke()
 
     def local_to_context(self, x, y):
         """Converts local coordinates to the context coordinate system (given
         by the bounding box).
         """
-        return (x-self._ox)*self._sx+self._ox2, self._oy2-(y-self._oy)*self._sy
-
+        return (x - self._ox) * self._sx + self._ox2, self._oy2 - (
+            y - self._oy
+        ) * self._sy

@@ -25,18 +25,17 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 """
 
 from copy import deepcopy
-from itertools import izip
 from math import pi
-from cStringIO import StringIO
+from io import StringIO
 
 from igraph import community_to_membership
-from igraph.compat import property
 from igraph.configuration import Configuration
 from igraph.datatypes import UniqueIdGenerator
 from igraph.drawing.colors import ClusterColoringPalette
 from igraph.statistics import Histogram
 from igraph.summary import _get_wrapper_for_width
 from igraph.utils import str_to_orientation
+
 
 class Clustering(object):
     """Class representing a clustering of an arbitrary ordered set.
@@ -80,7 +79,7 @@ class Clustering(object):
     @undocumented: _formatted_cluster_iterator
     """
 
-    def __init__(self, membership, params = None):
+    def __init__(self, membership, params=None):
         """Constructor.
 
         @param membership: the membership list -- that is, the cluster
@@ -88,8 +87,8 @@ class Clustering(object):
         @param params: additional parameters to be stored in this
           object's dictionary."""
         self._membership = list(membership)
-        if len(self._membership)>0:
-            self._len = max(m for m in self._membership if m is not None)+1
+        if len(self._membership) > 0:
+            self._len = max(m for m in self._membership if m is not None) + 1
         else:
             self._len = 0
 
@@ -111,7 +110,7 @@ class Clustering(object):
 
         This method will return a generator that generates the clusters
         one by one."""
-        clusters = [[] for _ in xrange(self._len)]
+        clusters = [[] for _ in range(self._len)]
         for idx, cluster in enumerate(self._membership):
             clusters[cluster].append(idx)
         return iter(clusters)
@@ -171,7 +170,7 @@ class Clustering(object):
 
         return counts
 
-    def size_histogram(self, bin_width = 1):
+    def size_histogram(self, bin_width=1):
         """Returns the histogram of cluster sizes.
 
         @param bin_width: the bin width of the histogram
@@ -190,19 +189,24 @@ class Clustering(object):
         @return: the summary of the clustering as a string.
         """
         out = StringIO()
-        print >>out, "Clustering with %d elements and %d clusters" % \
-                (len(self._membership), len(self))
+        print(
+            "Clustering with %d elements and %d clusters"
+            % (
+                len(self._membership),
+                len(self),
+            ),
+            file=out,
+        )
 
         if verbosity < 1:
             return out.getvalue().strip()
 
         ndigits = len(str(len(self)))
-        wrapper = _get_wrapper_for_width(width,
-                subsequent_indent = " " * (ndigits+3))
+        wrapper = _get_wrapper_for_width(width, subsequent_indent=" " * (ndigits + 3))
 
         for idx, cluster in enumerate(self._formatted_cluster_iterator()):
             wrapper.initial_indent = "[%*d] " % (ndigits, idx)
-            print >>out, "\n".join(wrapper.wrap(cluster))
+            print("\n".join(wrapper.wrap(cluster)), file=out)
 
         return out.getvalue().strip()
 
@@ -231,8 +235,14 @@ class VertexClustering(Clustering):
     # Allow None to be passed to __plot__ as the "palette" keyword argument
     _default_palette = None
 
-    def __init__(self, graph, membership = None, modularity = None, \
-                 params = None, modularity_params = None):
+    def __init__(
+        self,
+        graph,
+        membership=None,
+        modularity=None,
+        params=None,
+        modularity_params=None,
+    ):
         """Creates a clustering object for a given graph.
 
         @param graph: the graph that will be associated to the clustering
@@ -248,7 +258,7 @@ class VertexClustering(Clustering):
           containing a C{weight} key with the appropriate value here.
         """
         if membership is None:
-            Clustering.__init__(self, [0]*graph.vcount(), params)
+            Clustering.__init__(self, [0] * graph.vcount(), params)
         else:
             if len(membership) != graph.vcount():
                 raise ValueError("membership list has invalid length")
@@ -355,8 +365,9 @@ class VertexClustering(Clustering):
         """Returns a boolean vector where element M{i} is C{True} iff edge
         M{i} lies between clusters, C{False} otherwise."""
         membership = self.membership
-        return [membership[v1] != membership[v2] \
-                for v1, v2 in self.graph.get_edgelist()]
+        return [
+            membership[v1] != membership[v2] for v1, v2 in self.graph.get_edgelist()
+        ]
 
     @property
     def modularity(self):
@@ -364,6 +375,7 @@ class VertexClustering(Clustering):
         if self._modularity_dirty:
             return self._recalculate_modularity_safe()
         return self._modularity
+
     q = modularity
 
     @property
@@ -381,8 +393,9 @@ class VertexClustering(Clustering):
 
         @return: the new modularity score
         """
-        self._modularity = self._graph.modularity(self._membership,
-                **self._modularity_params)
+        self._modularity = self._graph.modularity(
+            self._membership, **self._modularity_params
+        )
         self._modularity_dirty = False
         return self._modularity
 
@@ -410,7 +423,6 @@ class VertexClustering(Clustering):
         """
         return self._graph.subgraph(self[idx])
 
-
     def subgraphs(self):
         """Gets all the subgraphs belonging to each of the clusters.
 
@@ -419,7 +431,6 @@ class VertexClustering(Clustering):
           the moment the clustering was constructed.
         """
         return [self._graph.subgraph(cl) for cl in self]
-
 
     def giant(self):
         """Returns the largest cluster of the clustered graph.
@@ -491,8 +502,9 @@ class VertexClustering(Clustering):
         if "edge_color" not in kwds and "color" not in self.graph.edge_attributes():
             # Set up a default edge coloring based on internal vs external edges
             colors = ["grey20", "grey80"]
-            kwds["edge_color"] = [colors[is_crossing]
-                                  for is_crossing in self.crossing()]
+            kwds["edge_color"] = [
+                colors[is_crossing] for is_crossing in self.crossing()
+            ]
 
         if palette is None:
             palette = ClusterColoringPalette(len(self))
@@ -502,7 +514,8 @@ class VertexClustering(Clustering):
                 kwds["mark_groups"] = self
         else:
             kwds["mark_groups"] = _handle_mark_groups_arg_for_clustering(
-                    kwds["mark_groups"], self)
+                kwds["mark_groups"], self
+            )
 
         if "vertex_color" not in kwds:
             kwds["vertex_color"] = self.membership
@@ -522,6 +535,7 @@ class VertexClustering(Clustering):
 
 
 ###############################################################################
+
 
 class Dendrogram(object):
     """The hierarchical clustering (dendrogram) of some dataset.
@@ -563,7 +577,7 @@ class Dendrogram(object):
         self._merges = [tuple(pair) for pair in merges]
         self._nmerges = len(self._merges)
         if self._nmerges:
-            self._nitems = max(self._merges[-1])-self._nmerges+2
+            self._nitems = max(self._merges[-1]) - self._nmerges + 2
         else:
             self._nitems = 0
         self._names = None
@@ -577,7 +591,7 @@ class Dendrogram(object):
         @return: the tuple representation of the clustering
         """
         if n is None:
-            n = len(merges)+1
+            n = len(merges) + 1
         tuple_repr = range(n)
         idxs = range(n)
         for rowidx, row in enumerate(merges):
@@ -587,8 +601,10 @@ class Dendrogram(object):
                 tuple_repr[idxi] = (tuple_repr[idxi], tuple_repr[idxj])
                 tuple_repr[idxj] = None
             except IndexError:
-                raise ValueError("malformed matrix, subgroup referenced "+
-                                 "before being created in step %d" % rowidx)
+                raise ValueError(
+                    "malformed matrix, subgroup referenced "
+                    + "before being created in step %d" % rowidx
+                )
             idxs.append(j)
         return [x for x in tuple_repr if x is not None]
 
@@ -602,7 +618,7 @@ class Dendrogram(object):
         result = []
         seen_nodes = set()
 
-        for node_index in reversed(xrange(self._nitems+self._nmerges)):
+        for node_index in reversed(range(self._nitems + self._nmerges)):
             if node_index in seen_nodes:
                 continue
 
@@ -617,7 +633,7 @@ class Dendrogram(object):
                 else:
                     # 'last' is a merge node, so let us proceed with the entry
                     # where this merge node was created
-                    stack.extend(self._merges[last-self._nitems])
+                    stack.extend(self._merges[last - self._nitems])
 
         return result
 
@@ -645,7 +661,7 @@ class Dendrogram(object):
             else:
                 nodes = list(self._names)
             if len(nodes) < n:
-                nodes.extend("" for _ in xrange(n - len(nodes)))
+                nodes.extend("" for _ in range(n - len(nodes)))
             for k, (i, j) in enumerate(self._merges, self._nitems):
                 nodes[k] = "(%s,%s)%s" % (nodes[i], nodes[j], nodes[k])
                 nodes[i] = nodes[j] = None
@@ -668,13 +684,15 @@ class Dendrogram(object):
         @return: the summary of the dendrogram as a string.
         """
         out = StringIO()
-        print >>out, "Dendrogram, %d elements, %d merges" % \
-                (self._nitems, self._nmerges)
+        print("Dendrogram, %d elements, %d merges" % (
+            self._nitems,
+            self._nmerges,
+        ), file=out)
 
         if self._nitems == 0 or verbosity < 1 or self._nitems > max_leaf_count:
             return out.getvalue().strip()
 
-        print >>out
+        print('', file=out)
 
         positions = [None] * self._nitems
         inorder = self._traverse_inorder()
@@ -684,12 +702,12 @@ class Dendrogram(object):
         for idx, element in enumerate(inorder):
             positions[element] = nextp
             inorder[idx] = str(element)
-            nextp += max(distance, len(inorder[idx])+1)
+            nextp += max(distance, len(inorder[idx]) + 1)
 
-        width = max(positions)+1
+        width = max(positions) + 1
 
         # Print the nodes on the lowest level
-        print >>out, (" " * (distance-1)).join(inorder)
+        print((" " * (distance - 1)).join(inorder), file=out)
         midx = 0
         max_community_idx = self._nitems
         while midx < self._nmerges:
@@ -698,8 +716,8 @@ class Dendrogram(object):
                 if position >= 0:
                     char_array[position] = "|"
             char_str = "".join(char_array)
-            for _ in xrange(level_distance-1):
-                print >>out, char_str # Print the lines
+            for _ in range(level_distance - 1):
+                print(char_str, file=out)  # Print the lines
 
             cidx_incr = 0
             while midx < self._nmerges:
@@ -713,16 +731,16 @@ class Dendrogram(object):
 
                 if pos1 > pos2:
                     pos1, pos2 = pos2, pos1
-                positions.append((pos1+pos2) // 2)
+                positions.append((pos1 + pos2) // 2)
 
                 dashes = "-" * (pos2 - pos1 - 1)
-                char_array[pos1:(pos2+1)] = "`%s'" % dashes
+                char_array[pos1 : (pos2 + 1)] = "`%s'" % dashes
 
                 cidx_incr += 1
 
             max_community_idx += cidx_incr
 
-            print >>out, "".join(char_array)
+            print("".join(char_array), file=out)
 
         return out.getvalue().strip()
 
@@ -732,7 +750,9 @@ class Dendrogram(object):
         if self._names is None or self._names[idx] is None:
             x_bearing, _, _, height, x_advance, _ = context.text_extents("")
         else:
-            x_bearing, _, _, height, x_advance, _ = context.text_extents(str(self._names[idx]))
+            x_bearing, _, _, height, x_advance, _ = context.text_extents(
+                str(self._names[idx])
+            )
 
         if horiz:
             return x_advance - x_bearing, height
@@ -753,12 +773,12 @@ class Dendrogram(object):
 
         height = self._item_box_size(context, True, idx)[1]
         if horiz:
-            context.move_to(x, y+height)
+            context.move_to(x, y + height)
             context.show_text(str(self._names[idx]))
         else:
             context.save()
             context.translate(x, y)
-            context.rotate(-pi/2.)
+            context.rotate(-pi / 2.0)
             context.move_to(0, height)
             context.show_text(str(self._names[idx]))
             context.restore()
@@ -783,10 +803,11 @@ class Dendrogram(object):
         from igraph.layout import Layout
 
         if self._names is None:
-            self._names = [str(x) for x in xrange(self._nitems)]
+            self._names = [str(x) for x in range(self._nitems)]
 
-        orientation = str_to_orientation(kwds.get("orientation", "lr"),
-                reversed_vertical=True)
+        orientation = str_to_orientation(
+            kwds.get("orientation", "lr"), reversed_vertical=True
+        )
         horiz = orientation in ("lr", "rl")
 
         # Get the font height
@@ -794,14 +815,15 @@ class Dendrogram(object):
 
         # Calculate space needed for individual items at the
         # bottom of the dendrogram
-        item_boxes = [self._item_box_size(context, horiz, idx) \
-          for idx in xrange(self._nitems)]
+        item_boxes = [
+            self._item_box_size(context, horiz, idx) for idx in range(self._nitems)
+        ]
 
         # Small correction for cases when the right edge of the labels is
         # aligned with the tips of the dendrogram branches
         ygap = 2 if orientation == "bt" else 0
         xgap = 2 if orientation == "lr" else 0
-        item_boxes = [(x+xgap, y+ygap) for x, y in item_boxes]
+        item_boxes = [(x + xgap, y + ygap) for x, y in item_boxes]
 
         # Calculate coordinates
         layout = Layout([(0, 0)] * self._nitems, dim=2)
@@ -814,7 +836,7 @@ class Dendrogram(object):
 
             for id1, id2 in self._merges:
                 y += 1
-                layout.append(((layout[id1][0]+layout[id2][0])/2., y))
+                layout.append(((layout[id1][0] + layout[id2][0]) / 2.0, y))
 
             # Mirror or rotate the layout if necessary
             if orientation == "bt":
@@ -827,7 +849,7 @@ class Dendrogram(object):
 
             for id1, id2 in self._merges:
                 x += 1
-                layout.append((x, (layout[id1][1]+layout[id2][1])/2.))
+                layout.append((x, (layout[id1][1] + layout[id2][1]) / 2.0))
 
             # Mirror or rotate the layout if necessary
             if orientation == "rl":
@@ -852,29 +874,31 @@ class Dendrogram(object):
                 delta_y = maxh
 
         if horiz:
-            delta_y += font_height / 2.
+            delta_y += font_height / 2.0
         else:
-            delta_x += font_height / 2.
-        layout.fit_into((delta_x, delta_y, width - delta_x, height - delta_y),
-                        keep_aspect_ratio=False)
+            delta_x += font_height / 2.0
+        layout.fit_into(
+            (delta_x, delta_y, width - delta_x, height - delta_y),
+            keep_aspect_ratio=False,
+        )
 
         context.save()
 
         context.translate(bbox.left, bbox.top)
-        context.set_source_rgb(0., 0., 0.)
+        context.set_source_rgb(0.0, 0.0, 0.0)
         context.set_line_width(1)
 
         # Draw items
         if horiz:
             sgn = 0 if orientation == "rl" else -1
-            for idx in xrange(self._nitems):
+            for idx in range(self._nitems):
                 x = layout[idx][0] + sgn * item_boxes[idx][0]
-                y = layout[idx][1] - item_boxes[idx][1]/2.
+                y = layout[idx][1] - item_boxes[idx][1] / 2.0
                 self._plot_item(context, horiz, idx, x, y)
         else:
             sgn = 1 if orientation == "bt" else 0
-            for idx in xrange(self._nitems):
-                x = layout[idx][0] - item_boxes[idx][0]/2.
+            for idx in range(self._nitems):
+                x = layout[idx][0] - item_boxes[idx][0] / 2.0
                 y = layout[idx][1] + sgn * item_boxes[idx][1]
                 self._plot_item(context, horiz, idx, x, y)
 
@@ -926,15 +950,16 @@ class Dendrogram(object):
         n = self._nitems + self._nmerges
         self._names = items[:n]
         if len(self._names) < n:
-            self._names.extend("" for _ in xrange(n-len(self._names)))
+            self._names.extend("" for _ in range(n - len(self._names)))
 
 
 class VertexDendrogram(Dendrogram):
     """The dendrogram resulting from the hierarchical clustering of the
     vertex set of a graph."""
 
-    def __init__(self, graph, merges, optimal_count = None, params = None,
-            modularity_params = None):
+    def __init__(
+        self, graph, merges, optimal_count=None, params=None, modularity_params=None
+    ):
         """Creates a dendrogram object for a given graph.
 
         @param graph: the graph that will be associated to the clustering
@@ -974,11 +999,11 @@ class VertexDendrogram(Dendrogram):
             n = self.optimal_count
         num_elts = self._graph.vcount()
         idgen = UniqueIdGenerator()
-        membership = community_to_membership(self._merges, num_elts, \
-                                             num_elts - n)
+        membership = community_to_membership(self._merges, num_elts, num_elts - n)
         membership = [idgen[m] for m in membership]
-        return VertexClustering(self._graph, membership,
-                modularity_params=self._modularity_params)
+        return VertexClustering(
+            self._graph, membership, modularity_params=self._modularity_params
+        )
 
     @property
     def optimal_count(self):
@@ -994,11 +1019,11 @@ class VertexDendrogram(Dendrogram):
 
         n = self._graph.vcount()
         max_q, optimal_count = 0, 1
-        for step in xrange(min(n-1, len(self._merges))):
+        for step in range(min(n - 1, len(self._merges))):
             membs = community_to_membership(self._merges, n, step)
             q = self._graph.modularity(membs, **self._modularity_params)
             if q > max_q:
-                optimal_count = n-step
+                optimal_count = n - step
                 max_q = q
         self._optimal_count = optimal_count
         return optimal_count
@@ -1020,15 +1045,18 @@ class VertexDendrogram(Dendrogram):
 
         builder = VisualVertexBuilder(self._graph.vs, kwds)
         self._names = [vertex.label for vertex in builder]
-        self._names = [name if name is not None else str(idx)
-                       for idx, name in enumerate(self._names)]
-        result = Dendrogram.__plot__(self, context, bbox, palette, \
-                *args, **kwds)
+        self._names = [
+            name if name is not None else str(idx)
+            for idx, name in enumerate(self._names)
+        ]
+        result = Dendrogram.__plot__(self, context, bbox, palette, *args, **kwds)
         del self._names
 
         return result
 
+
 ###############################################################################
+
 
 class Cover(object):
     """Class representing a cover of an arbitrary ordered set.
@@ -1107,7 +1135,7 @@ class Cover(object):
 
         self._clusters = [list(cluster) for cluster in clusters]
         try:
-            self._n = max(max(cluster)+1 for cluster in self._clusters if cluster)
+            self._n = max(max(cluster) + 1 for cluster in self._clusters if cluster)
         except ValueError:
             self._n = 0
         self._n = max(n, self._n)
@@ -1136,7 +1164,7 @@ class Cover(object):
         length I{n}, where element I{i} contains the cluster indices of the
         I{i}th item.
         """
-        result = [[] for _ in xrange(self._n)]
+        result = [[] for _ in range(self._n)]
         for idx, cluster in enumerate(self):
             for item in cluster:
                 result[item].append(idx)
@@ -1164,7 +1192,7 @@ class Cover(object):
             return [len(self._clusters[idx]) for idx in args]
         return [len(cluster) for cluster in self]
 
-    def size_histogram(self, bin_width = 1):
+    def size_histogram(self, bin_width=1):
         """Returns the histogram of cluster sizes.
 
         @param bin_width: the bin width of the histogram
@@ -1183,18 +1211,17 @@ class Cover(object):
         @return: the summary of the cover as a string.
         """
         out = StringIO()
-        print >>out, "Cover with %d clusters" % len(self)
+        print("Cover with %d clusters" % len(self), file=out)
 
         if verbosity < 1:
             return out.getvalue().strip()
 
         ndigits = len(str(len(self)))
-        wrapper = _get_wrapper_for_width(width,
-                subsequent_indent = " " * (ndigits+3))
+        wrapper = _get_wrapper_for_width(width, subsequent_indent=" " * (ndigits + 3))
 
         for idx, cluster in enumerate(self._formatted_cluster_iterator()):
             wrapper.initial_indent = "[%*d] " % (ndigits, idx)
-            print >>out, "\n".join(wrapper.wrap(cluster))
+            print("\n".join(wrapper.wrap(cluster)), file=out)
 
         return out.getvalue().strip()
 
@@ -1219,7 +1246,7 @@ class VertexCover(Cover):
     @undocumented: _formatted_cluster_iterator
     """
 
-    def __init__(self, graph, clusters = None):
+    def __init__(self, graph, clusters=None):
         """Creates a cover object for a given graph.
 
         @param graph: the graph that will be associated to the cover
@@ -1229,10 +1256,12 @@ class VertexCover(Cover):
         if clusters is None:
             clusters = [range(graph.vcount())]
 
-        Cover.__init__(self, clusters, n = graph.vcount())
+        Cover.__init__(self, clusters, n=graph.vcount())
         if self._n > graph.vcount():
-            raise ValueError("cluster list contains vertex ID larger than the "
-                             "number of vertices in the graph")
+            raise ValueError(
+                "cluster list contains vertex ID larger than the "
+                "number of vertices in the graph"
+            )
 
         self._graph = graph
 
@@ -1240,8 +1269,10 @@ class VertexCover(Cover):
         """Returns a boolean vector where element M{i} is C{True} iff edge
         M{i} lies between clusters, C{False} otherwise."""
         membership = [frozenset(cluster) for cluster in self.membership]
-        return [membership[v1].isdisjoint(membership[v2]) \
-                for v1, v2 in self.graph.get_edgelist()]
+        return [
+            membership[v1].isdisjoint(membership[v2])
+            for v1, v2 in self.graph.get_edgelist()
+        ]
 
     @property
     def graph(self):
@@ -1318,8 +1349,9 @@ class VertexCover(Cover):
         if "edge_color" not in kwds and "color" not in self.graph.edge_attributes():
             # Set up a default edge coloring based on internal vs external edges
             colors = ["grey20", "grey80"]
-            kwds["edge_color"] = [colors[is_crossing]
-                                  for is_crossing in self.crossing()]
+            kwds["edge_color"] = [
+                colors[is_crossing] for is_crossing in self.crossing()
+            ]
 
         if "palette" in kwds:
             palette = kwds["palette"]
@@ -1331,7 +1363,8 @@ class VertexCover(Cover):
                 kwds["mark_groups"] = self
         else:
             kwds["mark_groups"] = _handle_mark_groups_arg_for_clustering(
-                    kwds["mark_groups"], self)
+                kwds["mark_groups"], self
+            )
 
         return self._graph.__plot__(context, bbox, palette, *args, **kwds)
 
@@ -1358,7 +1391,7 @@ class CohesiveBlocks(VertexCover):
     block structures easier.
     """
 
-    def __init__(self, graph, blocks = None, cohesion = None, parent = None):
+    def __init__(self, graph, blocks=None, cohesion=None, parent=None):
         """Constructs a new cohesive block structure for the given graph.
 
         If any of I{blocks}, I{cohesion} or I{parent} is C{None}, all the
@@ -1406,15 +1439,17 @@ class CohesiveBlocks(VertexCover):
         In other words, the edges point downwards.
         """
         from igraph import Graph
-        edges = [pair for pair in izip(self._parent, xrange(len(self)))
-                 if pair[0] is not None]
+
+        edges = [
+            pair for pair in zip(self._parent, range(len(self))) if pair[0] is not None
+        ]
         return Graph(edges, directed=True)
 
     def max_cohesion(self, idx):
         """Finds the maximum cohesion score among all the groups that contain
         the given vertex."""
         result = 0
-        for cohesion, cluster in izip(self._cohesion, self._clusters):
+        for cohesion, cluster in zip(self._cohesion, self._clusters):
             if idx in cluster:
                 result = max(result, cohesion)
         return result
@@ -1423,7 +1458,7 @@ class CohesiveBlocks(VertexCover):
         """For each vertex in the graph, returns the maximum cohesion score
         among all the groups that contain the vertex."""
         result = [0] * self._graph.vcount()
-        for cohesion, cluster in izip(self._cohesion, self._clusters):
+        for cohesion, cluster in zip(self._cohesion, self._clusters):
             for idx in cluster:
                 result[idx] = max(result[idx], cohesion)
         return result
@@ -1458,14 +1493,14 @@ class CohesiveBlocks(VertexCover):
             prepare_groups = True
 
         if prepare_groups:
-            colors = [pair for pair in enumerate(self.cohesions())
-                if pair[1] > 1]
+            colors = [pair for pair in enumerate(self.cohesions()) if pair[1] > 1]
             kwds["mark_groups"] = colors
 
         if "vertex_color" not in kwds:
             kwds["vertex_color"] = self.max_cohesions()
 
         return VertexCover.__plot__(self, context, bbox, palette, *args, **kwds)
+
 
 def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):
     """Handles the mark_groups=... keyword argument in plotting methods of
@@ -1496,8 +1531,7 @@ def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):
             if isinstance(first, (int, long)):
                 # Yes. Seems like we have a list of cluster indices.
                 # Assign color indices automatically.
-                group_iter = ((group, color)
-                        for color, group in enumerate(mark_groups))
+                group_iter = ((group, color) for color, group in enumerate(mark_groups))
             else:
                 # No. Seems like we have good ol' group-color pairs.
                 group_iter = mark_groups
@@ -1517,7 +1551,9 @@ def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):
 
     return cluster_index_resolver()
 
+
 ##############################################################
+
 
 def _prepare_community_comparison(comm1, comm2, remove_none=False):
     """Auxiliary method that takes two community structures either as
@@ -1536,6 +1572,7 @@ def _prepare_community_comparison(comm1, comm2, remove_none=False):
       C{None} values are filtered away and only the remaining lists are
       compared.
     """
+
     def _ensure_list(obj):
         if isinstance(obj, Clustering):
             return obj.membership
@@ -1546,8 +1583,9 @@ def _prepare_community_comparison(comm1, comm2, remove_none=False):
         raise ValueError("the two membership vectors must be equal in length")
 
     if remove_none and (None in vec1 or None in vec2):
-        idxs_to_remove = [i for i in xrange(len(vec1)) \
-                if vec1[i] is None or vec2[i] is None]
+        idxs_to_remove = [
+            i for i in range(len(vec1)) if vec1[i] is None or vec2[i] is None
+        ]
         idxs_to_remove.reverse()
         n = len(vec1)
         for i in idxs_to_remove:
@@ -1601,6 +1639,7 @@ def compare_communities(comm1, comm2, method="vi", remove_none=False):
           Classification 2:193-218, 1985.
     """
     import igraph._igraph
+
     vec1, vec2 = _prepare_community_comparison(comm1, comm2, remove_none)
     return igraph._igraph._compare_communities(vec1, vec2, method)
 
@@ -1656,5 +1695,6 @@ def split_join_distance(comm1, comm2, remove_none=False):
       sum of them.
     """
     import igraph._igraph
+
     vec1, vec2 = _prepare_community_comparison(comm1, comm2, remove_none)
     return igraph._igraph._split_join_distance(vec1, vec2)

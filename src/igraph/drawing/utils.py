@@ -2,8 +2,7 @@
 Utility classes for drawing routines.
 """
 
-from igraph.compat import property
-from itertools import izip
+
 from math import atan2, cos, sin
 from operator import itemgetter
 
@@ -11,6 +10,7 @@ __all__ = ["BoundingBox", "FakeModule", "Point", "Rectangle"]
 __license__ = "GPL"
 
 #####################################################################
+
 
 class Rectangle(object):
     """Class representing a rectangle."""
@@ -174,13 +174,13 @@ class Rectangle(object):
             margins = [float(margins)] * 4
         if len(margins) != 4:
             raise ValueError("margins must be a 4-tuple or a single number")
-        nx1, ny1 = self._left+margins[0], self._top+margins[1]
-        nx2, ny2 = self._right-margins[2], self._bottom-margins[3]
+        nx1, ny1 = self._left + margins[0], self._top + margins[1]
+        nx2, ny2 = self._right - margins[2], self._bottom - margins[3]
         if nx1 > nx2:
-            nx1 = (nx1+nx2)/2.
+            nx1 = (nx1 + nx2) / 2.0
             nx2 = nx1
         if ny1 > ny2:
-            ny1 = (ny1+ny2)/2.
+            ny1 = (ny1 + ny2) / 2.0
             ny2 = ny1
         return self.__class__(nx1, ny1, nx2, ny2)
 
@@ -210,8 +210,12 @@ class Rectangle(object):
             >>> r3.isdisjoint(r1)
             True
         """
-        return self._left > other._right or self._right < other._left \
-                or self._top > other._bottom or self._bottom < other._top
+        return (
+            self._left > other._right
+            or self._right < other._left
+            or self._top > other._bottom
+            or self._bottom < other._top
+        )
 
     def isempty(self):
         """Returns ``True`` if the rectangle is empty (i.e. it has zero
@@ -249,10 +253,13 @@ class Rectangle(object):
         """
         if self.isdisjoint(other):
             return Rectangle(0, 0, 0, 0)
-        return Rectangle(max(self._left, other._left),
-                max(self._top, other._top),
-                min(self._right, other._right),
-                min(self._bottom, other._bottom))
+        return Rectangle(
+            max(self._left, other._left),
+            max(self._top, other._top),
+            min(self._right, other._right),
+            min(self._bottom, other._bottom),
+        )
+
     __and__ = intersection
 
     def translate(self, dx, dy):
@@ -293,10 +300,13 @@ class Rectangle(object):
             >>> r1.union(r3)
             Rectangle(10.0, 10.0, 90.0, 90.0)
         """
-        return Rectangle(min(self._left, other._left),
-                min(self._top, other._top),
-                max(self._right, other._right),
-                max(self._bottom, other._bottom))
+        return Rectangle(
+            min(self._left, other._left),
+            min(self._top, other._top),
+            max(self._right, other._right),
+            max(self._bottom, other._bottom),
+        )
+
     __or__ = union
 
     def __ior__(self, other):
@@ -315,15 +325,20 @@ class Rectangle(object):
             >>> r1
             Rectangle(10.0, 10.0, 90.0, 90.0)
         """
-        self._left   = min(self._left,   other._left)
-        self._top    = min(self._top,    other._top)
-        self._right  = max(self._right,  other._right)
+        self._left = min(self._left, other._left)
+        self._top = min(self._top, other._top)
+        self._right = max(self._right, other._right)
         self._bottom = max(self._bottom, other._bottom)
         return self
 
     def __repr__(self):
-        return "%s(%s, %s, %s, %s)" % (self.__class__.__name__, \
-            self._left, self._top, self._right, self._bottom)
+        return "%s(%s, %s, %s, %s)" % (
+            self.__class__.__name__,
+            self._left,
+            self._top,
+            self._right,
+            self._bottom,
+        )
 
     def __eq__(self, other):
         return self.coords == other.coords
@@ -334,13 +349,12 @@ class Rectangle(object):
     def __bool__(self):
         return self._left != self._right or self._top != self._bottom
 
-    def __nonzero__(self):
-        return self._left != self._right or self._top != self._bottom
-
     def __hash__(self):
         return hash(self.coords)
 
+
 #####################################################################
+
 
 class BoundingBox(Rectangle):
     """Class representing a bounding box (a rectangular area) that
@@ -358,9 +372,9 @@ class BoundingBox(Rectangle):
             >>> print(box1)
             BoundingBox(10.0, 20.0, 100.0, 90.0)
         """
-        self._left   = min(self._left, other._left)
-        self._top    = min(self._top, other._top)
-        self._right  = max(self._right, other._right)
+        self._left = min(self._left, other._left)
+        self._top = min(self._top, other._top)
+        self._right = max(self._right, other._right)
         self._bottom = max(self._bottom, other._bottom)
         return self
 
@@ -378,10 +392,10 @@ class BoundingBox(Rectangle):
             BoundingBox(10.0, 20.0, 100.0, 90.0)
         """
         return self.__class__(
-                       min(self._left, other._left),
-                       min(self._top, other._top),
-                       max(self._right, other._right),
-                       max(self._bottom, other._bottom)
+            min(self._left, other._left),
+            min(self._top, other._top),
+            max(self._right, other._right),
+            max(self._bottom, other._bottom),
         )
 
 
@@ -394,12 +408,16 @@ class FakeModule(object):
 
     def __getattr__(self, _):
         raise AttributeError("plotting not available")
+
     def __call__(self, _):
         raise TypeError("plotting not available")
+
     def __setattr__(self, key, value):
         raise AttributeError("plotting not available")
 
+
 #####################################################################
+
 
 def find_cairo():
     """Tries to import the ``cairo`` Python module if it is installed,
@@ -416,7 +434,9 @@ def find_cairo():
             pass
     return module
 
+
 #####################################################################
+
 
 def find_matplotlib():
     """Tries to import the ``cairo`` Python module if it is installed,
@@ -425,6 +445,7 @@ def find_matplotlib():
     """
     try:
         import matplotlib as mpl
+
         has_mpl = True
     except ImportError:
         mpl = FakeModule()
@@ -437,12 +458,15 @@ def find_matplotlib():
 
     return mpl, plt
 
+
 #####################################################################
+
 
 class Point(tuple):
     """Class representing a point on the 2D plane."""
+
     __slots__ = ()
-    _fields = ('x', 'y')
+    _fields = ("x", "y")
 
     def __new__(cls, x, y):
         """Creates a new point with the given coordinates"""
@@ -451,16 +475,16 @@ class Point(tuple):
     # pylint: disable-msg=W0622
     # W0622: redefining built-in 'len'
     @classmethod
-    def _make(cls, iterable, new = tuple.__new__, len = len):
+    def _make(cls, iterable, new=tuple.__new__, len=len):
         """Creates a new point from a sequence or iterable"""
         result = new(cls, iterable)
         if len(result) != 2:
-            raise TypeError('Expected 2 arguments, got %d' % len(result))
+            raise TypeError("Expected 2 arguments, got %d" % len(result))
         return result
 
     def __repr__(self):
         """Returns a nicely formatted representation of the point"""
-        return 'Point(x=%r, y=%r)' % self
+        return "Point(x=%r, y=%r)" % self
 
     def _asdict(self):
         """Returns a new dict which maps field names to their values"""
@@ -471,9 +495,9 @@ class Point(tuple):
     def _replace(self, **kwds):
         """Returns a new point object replacing specified fields with new
         values"""
-        result = self._make(map(kwds.pop, ('x', 'y'), self))
+        result = self._make(map(kwds.pop, ("x", "y"), self))
         if kwds:
-            raise ValueError('Got unexpected field names: %r' % kwds.keys())
+            raise ValueError("Got unexpected field names: %r" % list(kwds.keys()))
         return result
 
     def __getnewargs__(self):
@@ -485,20 +509,21 @@ class Point(tuple):
 
     def __add__(self, other):
         """Adds the coordinates of a point to another one"""
-        return self.__class__(x = self.x + other.x, y = self.y + other.y)
+        return self.__class__(x=self.x + other.x, y=self.y + other.y)
 
     def __sub__(self, other):
         """Subtracts the coordinates of a point to another one"""
-        return self.__class__(x = self.x - other.x, y = self.y - other.y)
+        return self.__class__(x=self.x - other.x, y=self.y - other.y)
 
     def __mul__(self, scalar):
         """Multiplies the coordinates by a scalar"""
-        return self.__class__(x = self.x * scalar, y = self.y * scalar)
+        return self.__class__(x=self.x * scalar, y=self.y * scalar)
+
     __rmul__ = __mul__
 
     def __div__(self, scalar):
         """Divides the coordinates by a scalar"""
-        return self.__class__(x = self.x / scalar, y = self.y / scalar)
+        return self.__class__(x=self.x / scalar, y=self.y / scalar)
 
     def as_polar(self):
         """Returns the polar coordinate representation of the point.
@@ -520,7 +545,7 @@ class Point(tuple):
         dx, dy = self.x - other.x, self.y - other.y
         return (dx * dx + dy * dy) ** 0.5
 
-    def interpolate(self, other, ratio = 0.5):
+    def interpolate(self, other, ratio=0.5):
         """Linearly interpolates between the coordinates of this point and
         another one.
 
@@ -529,8 +554,10 @@ class Point(tuple):
           return this point, 1 will return the other point.
         """
         ratio = float(ratio)
-        return Point(x = self.x * (1.0 - ratio) + other.x * ratio, \
-                     y = self.y * (1.0 - ratio) + other.y * ratio)
+        return Point(
+            x=self.x * (1.0 - ratio) + other.x * ratio,
+            y=self.y * (1.0 - ratio) + other.y * ratio,
+        )
 
     def length(self):
         """Returns the length of the vector pointing from the origin to this
@@ -542,23 +569,22 @@ class Point(tuple):
         after normalization. Returns the normalized point."""
         len = self.length()
         if len == 0:
-            return Point(x = self.x, y = self.y)
-        return Point(x = self.x / len, y = self.y / len)
+            return Point(x=self.x, y=self.y)
+        return Point(x=self.x / len, y=self.y / len)
 
     def sq_length(self):
         """Returns the squared length of the vector pointing from the origin
         to this point."""
-        return (self.x ** 2 + self.y ** 2)
+        return self.x ** 2 + self.y ** 2
 
-    def towards(self, other, distance = 0):
+    def towards(self, other, distance=0):
         """Returns the point that is at a given distance from this point
         towards another one."""
         if not distance:
             return self
 
         angle = atan2(other.y - self.y, other.x - self.x)
-        return Point(self.x + distance * cos(angle),
-                     self.y + distance * sin(angle))
+        return Point(self.x + distance * cos(angle), self.y + distance * sin(angle))
 
     @classmethod
     def FromPolar(cls, radius, angle):
@@ -569,4 +595,3 @@ class Point(tuple):
         the origin.
         """
         return cls(radius * cos(angle), radius * sin(angle))
-

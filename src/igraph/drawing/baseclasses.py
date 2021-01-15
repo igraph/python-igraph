@@ -2,11 +2,11 @@
 Abstract base classes for the drawing routines.
 """
 
-from igraph.compat import property
 from igraph.drawing.utils import BoundingBox
 from math import pi
 
 #####################################################################
+
 
 # pylint: disable-msg=R0903
 # R0903: too few public methods
@@ -18,14 +18,16 @@ class AbstractDrawer(object):
         """Abstract method, must be implemented in derived classes."""
         raise NotImplementedError("abstract class")
 
+
 #####################################################################
+
 
 # pylint: disable-msg=R0903
 # R0903: too few public methods
 class AbstractCairoDrawer(AbstractDrawer):
     """Abstract class that serves as a base class for anything that
     draws on a Cairo context within a given bounding box.
-    
+
     A subclass of L{AbstractCairoDrawer} is guaranteed to have an
     attribute named C{context} that represents the Cairo context
     to draw on, and an attribute named C{bbox} for the L{BoundingBox}
@@ -78,20 +80,21 @@ class AbstractCairoDrawer(AbstractDrawer):
         @param size: the diameter of the marker.
         """
         if isinstance(color, int):
-            colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0),
-                    (0, 1, 1), (1, 0, 1)]
+            colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (0, 1, 1), (1, 0, 1)]
             color = colors[color % len(colors)]
         if len(color) == 3:
-            color += (0.5, )
+            color += (0.5,)
 
         ctx = self.context
         ctx.save()
         ctx.set_source_rgba(*color)
-        ctx.arc(x, y, size / 2.0, 0, 2*pi)
+        ctx.arc(x, y, size / 2.0, 0, 2 * pi)
         ctx.fill()
         ctx.restore()
 
+
 #####################################################################
+
 
 class AbstractXMLRPCDrawer(AbstractDrawer):
     """Abstract drawer that uses a remote service via XML-RPC
@@ -101,7 +104,7 @@ class AbstractXMLRPCDrawer(AbstractDrawer):
     def __init__(self, url, service=None):
         """Constructs an abstract drawer using the XML-RPC service
         at the given URL.
-        
+
         @param url: the URL where the XML-RPC calls for the service should
           be addressed to.
         @param service: the name of the service at the XML-RPC address. If
@@ -109,9 +112,10 @@ class AbstractXMLRPCDrawer(AbstractDrawer):
           constructed by C{xmlrpclib.ServerProxy}; if not C{None}, the
           given attribute will be looked up in the server proxy object.
         """
-        import xmlrpclib
+        import xmlrpc.client
+
         url = self._resolve_hostname(url)
-        self.server = xmlrpclib.ServerProxy(url)
+        self.server = xmlrpc.client.ServerProxy(url)
         if service is None:
             self.service = self.server
         else:
@@ -123,7 +127,7 @@ class AbstractXMLRPCDrawer(AbstractDrawer):
         and returns a new URL with the resolved IP address. This speeds
         up things big time on Mac OS X where an IP lookup would be
         performed for every XML-RPC call otherwise."""
-        from urlparse import urlparse, urlunparse
+        from urllib.parse import urlparse, urlunparse
         import re
 
         url_parts = urlparse(url)
@@ -133,12 +137,12 @@ class AbstractXMLRPCDrawer(AbstractDrawer):
             return url
 
         from socket import gethostbyname
+
         if ":" in hostname:
-            hostname = hostname[0:hostname.index(":")]
+            hostname = hostname[0 : hostname.index(":")]
         hostname = gethostbyname(hostname)
         if url_parts.port is not None:
             hostname = "%s:%d" % (hostname, url_parts.port)
         url_parts = list(url_parts)
         url_parts[1] = hostname
         return urlunparse(url_parts)
-

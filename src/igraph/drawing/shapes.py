@@ -16,11 +16,10 @@ L{ShapeDrawerDirectory} manually if you wish to refer to it by a
 name in the C{shape} attribute of vertices.
 """
 
-from __future__ import division
 
 __all__ = ["ShapeDrawerDirectory"]
 
-__license__ = u"""\
+__license__ = """\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
 Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
 
@@ -47,9 +46,10 @@ from igraph.drawing.baseclasses import AbstractCairoDrawer
 from igraph.drawing.utils import Point
 from igraph.utils import consecutive_pairs
 
+
 class ShapeDrawer(object):
     """Static class, the ancestor of all vertex shape drawer classes.
-    
+
     Custom shapes must implement at least the C{draw_path} method of the class.
     The method I{must not} stroke or fill, it should just set up the current
     Cairo path appropriately."""
@@ -72,8 +72,7 @@ class ShapeDrawer(object):
 
     # pylint: disable-msg=W0613
     @staticmethod
-    def intersection_point(center_x, center_y, source_x, source_y, \
-            width, height=None):
+    def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
         """Determines where the shape centered at (center_x, center_y)
         intersects with a line drawn from (source_x, source_y) to
         (center_x, center_y).
@@ -94,6 +93,7 @@ class NullDrawer(ShapeDrawer):
     """Static drawer class which draws nothing.
 
     This class is used for graph vertices with unknown shapes"""
+
     names = ["null", "none", "empty", "hidden", ""]
 
     @staticmethod
@@ -104,6 +104,7 @@ class NullDrawer(ShapeDrawer):
 
 class RectangleDrawer(ShapeDrawer):
     """Static class which draws rectangular vertices"""
+
     names = "rectangle rect rectangular square box"
 
     @staticmethod
@@ -112,62 +113,61 @@ class RectangleDrawer(ShapeDrawer):
         or filling it.
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        ctx.rectangle(center_x - width/2, center_y - height/2,
-                width, height)
+        ctx.rectangle(center_x - width / 2, center_y - height / 2, width, height)
 
     # pylint: disable-msg=C0103, R0911
     # R0911: too many return statements
     @staticmethod
-    def intersection_point(center_x, center_y, source_x, source_y, \
-            width, height=None):
+    def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
         """Determines where the rectangle centered at (center_x, center_y)
         having the given width and height intersects with a line drawn from
         (source_x, source_y) to (center_x, center_y).
 
         @see: ShapeDrawer.intersection_point"""
         height = height or width
-        delta_x, delta_y = center_x-source_x, center_y-source_y
+        delta_x, delta_y = center_x - source_x, center_y - source_y
 
         if delta_x == 0 and delta_y == 0:
             return center_x, center_y
 
         if delta_y > 0 and delta_x <= delta_y and delta_x >= -delta_y:
             # this is the top edge
-            ry = center_y - height/2
-            ratio = (height/2) / delta_y
-            return center_x-ratio*delta_x, ry
+            ry = center_y - height / 2
+            ratio = (height / 2) / delta_y
+            return center_x - ratio * delta_x, ry
 
         if delta_y < 0 and delta_x <= -delta_y and delta_x >= delta_y:
             # this is the bottom edge
-            ry = center_y + height/2
-            ratio = (height/2) / -delta_y
-            return center_x-ratio*delta_x, ry
+            ry = center_y + height / 2
+            ratio = (height / 2) / -delta_y
+            return center_x - ratio * delta_x, ry
 
         if delta_x > 0 and delta_y <= delta_x and delta_y >= -delta_x:
             # this is the left edge
-            rx = center_x - width/2
-            ratio = (width/2) / delta_x
-            return rx, center_y-ratio*delta_y
+            rx = center_x - width / 2
+            ratio = (width / 2) / delta_x
+            return rx, center_y - ratio * delta_y
 
         if delta_x < 0 and delta_y <= -delta_x and delta_y >= delta_x:
             # this is the right edge
-            rx = center_x + width/2
-            ratio = (width/2) / -delta_x
-            return rx, center_y-ratio*delta_y
+            rx = center_x + width / 2
+            ratio = (width / 2) / -delta_x
+            return rx, center_y - ratio * delta_y
 
         if delta_x == 0:
             if delta_y > 0:
-                return center_x, center_y - height/2
-            return center_x, center_y + height/2
+                return center_x, center_y - height / 2
+            return center_x, center_y + height / 2
 
         if delta_y == 0:
             if delta_x > 0:
-                return center_x - width/2, center_y
-            return center_x + width/2, center_y
+                return center_x - width / 2, center_y
+            return center_x + width / 2, center_y
 
 
 class CircleDrawer(ShapeDrawer):
     """Static class which draws circular vertices"""
+
     names = "circle circular"
 
     @staticmethod
@@ -178,41 +178,39 @@ class CircleDrawer(ShapeDrawer):
         Height is ignored, it is the width that determines the diameter of the circle.
 
         @see: ShapeDrawer.draw_path"""
-        ctx.arc(center_x, center_y, width/2, 0, 2*pi)
+        ctx.arc(center_x, center_y, width / 2, 0, 2 * pi)
 
     @staticmethod
-    def intersection_point(center_x, center_y, source_x, source_y, \
-            width, height=None):
+    def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
         """Determines where the circle centered at (center_x, center_y)
         intersects with a line drawn from (source_x, source_y) to
         (center_x, center_y).
 
         @see: ShapeDrawer.intersection_point"""
         height = height or width
-        angle = atan2(center_y-source_y, center_x-source_x)
-        return center_x-width/2 * cos(angle), \
-               center_y-height/2* sin(angle)
+        angle = atan2(center_y - source_y, center_x - source_x)
+        return center_x - width / 2 * cos(angle), center_y - height / 2 * sin(angle)
 
 
 class UpTriangleDrawer(ShapeDrawer):
     """Static class which draws upright triangles"""
+
     names = "triangle triangle-up up-triangle arrow arrow-up up-arrow"
 
     @staticmethod
     def draw_path(ctx, center_x, center_y, width, height=None):
         """Draws an upright triangle on the Cairo context without stroking or
         filling it.
-        
+
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        ctx.move_to(center_x-width/2, center_y+height/2)
-        ctx.line_to(center_x, center_y-height/2)
-        ctx.line_to(center_x+width/2, center_y+height/2)
+        ctx.move_to(center_x - width / 2, center_y + height / 2)
+        ctx.line_to(center_x, center_y - height / 2)
+        ctx.line_to(center_x + width / 2, center_y + height / 2)
         ctx.close_path()
 
     @staticmethod
-    def intersection_point(center_x, center_y, source_x, source_y, \
-            width, height=None):
+    def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
         """Determines where the triangle centered at (center_x, center_y)
         intersects with a line drawn from (source_x, source_y) to
         (center_x, center_y).
@@ -222,25 +220,26 @@ class UpTriangleDrawer(ShapeDrawer):
         height = height or width
         return center_x, center_y
 
+
 class DownTriangleDrawer(ShapeDrawer):
     """Static class which draws triangles pointing down"""
+
     names = "down-triangle triangle-down arrow-down down-arrow"
 
     @staticmethod
     def draw_path(ctx, center_x, center_y, width, height=None):
         """Draws a triangle on the Cairo context without stroking or
         filling it.
-        
+
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        ctx.move_to(center_x-width/2, center_y-height/2)
-        ctx.line_to(center_x, center_y+height/2)
-        ctx.line_to(center_x+width/2, center_y-height/2)
+        ctx.move_to(center_x - width / 2, center_y - height / 2)
+        ctx.line_to(center_x, center_y + height / 2)
+        ctx.line_to(center_x + width / 2, center_y - height / 2)
         ctx.close_path()
 
     @staticmethod
-    def intersection_point(center_x, center_y, source_x, source_y, \
-            width, height=None):
+    def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
         """Determines where the triangle centered at (center_x, center_y)
         intersects with a line drawn from (source_x, source_y) to
         (center_x, center_y).
@@ -250,26 +249,27 @@ class DownTriangleDrawer(ShapeDrawer):
         height = height or width
         return center_x, center_y
 
+
 class DiamondDrawer(ShapeDrawer):
     """Static class which draws diamonds (i.e. rhombuses)"""
+
     names = "diamond rhombus"
 
     @staticmethod
     def draw_path(ctx, center_x, center_y, width, height=None):
         """Draws a rhombus on the Cairo context without stroking or
         filling it.
-        
+
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        ctx.move_to(center_x-width/2, center_y)
-        ctx.line_to(center_x, center_y+height/2)
-        ctx.line_to(center_x+width/2, center_y)
-        ctx.line_to(center_x, center_y-height/2)
+        ctx.move_to(center_x - width / 2, center_y)
+        ctx.line_to(center_x, center_y + height / 2)
+        ctx.line_to(center_x + width / 2, center_y)
+        ctx.line_to(center_x, center_y - height / 2)
         ctx.close_path()
 
     @staticmethod
-    def intersection_point(center_x, center_y, source_x, source_y, \
-            width, height=None):
+    def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
         """Determines where the rhombus centered at (center_x, center_y)
         intersects with a line drawn from (source_x, source_y) to
         (center_x, center_y).
@@ -293,20 +293,22 @@ class DiamondDrawer(ShapeDrawer):
         height = copysign(height, delta_y)
 
         f = height / (height + width * delta_y / delta_x)
-        return center_x + f * width / 2, center_y + (1-f) * height / 2
+        return center_x + f * width / 2, center_y + (1 - f) * height / 2
+
 
 #####################################################################
 
+
 class PolygonDrawer(AbstractCairoDrawer):
     """Class that is used to draw polygons.
-    
+
     The corner points of the polygon can be set by the C{points}
     property of the drawer, or passed at construction time. Most
     drawing methods in this class also have an extra C{points}
     argument that can be used to override the set of points in the
     C{points} property."""
 
-    def __init__(self, context, bbox=(1, 1), points = []):
+    def __init__(self, context, bbox=(1, 1), points=[]):
         """Constructs a new polygon drawer that draws on the given
         Cairo context.
 
@@ -354,13 +356,12 @@ class PolygonDrawer(AbstractCairoDrawer):
         # is the smaller of the radii on the two sides adjacent to
         # the corner.
         points = [Point(*point) for point in points]
-        side_vecs = [v-u for u, v in consecutive_pairs(points, circular=True)]
+        side_vecs = [v - u for u, v in consecutive_pairs(points, circular=True)]
         half_side_lengths = [side.length() / 2 for side in side_vecs]
         corner_radii = [corner_radius] * len(points)
-        for idx in xrange(len(corner_radii)):
+        for idx in range(len(corner_radii)):
             prev_idx = -1 if idx == 0 else idx - 1
-            radii = [corner_radius, half_side_lengths[prev_idx],
-                     half_side_lengths[idx]]
+            radii = [corner_radius, half_side_lengths[prev_idx], half_side_lengths[idx]]
             corner_radii[idx] = min(radii)
 
         # Okay, move to the last corner, adjusted by corner_radii[-1]
@@ -375,8 +376,9 @@ class PolygonDrawer(AbstractCairoDrawer):
             ctx.line_to(*v.towards(u, radius))
             aux1 = v.towards(u, radius / 2)
             aux2 = v.towards(w, radius / 2)
-            ctx.curve_to(aux1.x, aux1.y, aux2.x, aux2.y,
-                         *v.towards(w, corner_radii[idx]))
+            ctx.curve_to(
+                aux1.x, aux1.y, aux2.x, aux2.y, *v.towards(w, corner_radii[idx])
+            )
             u = v
 
     def draw(self, points=None):
@@ -389,12 +391,14 @@ class PolygonDrawer(AbstractCairoDrawer):
         self.draw_path(points)
         self.context.stroke()
 
+
 #####################################################################
+
 
 class ShapeDrawerDirectory(object):
     """Static class that resolves shape names to their corresponding
     shape drawer classes.
-        
+
     Classes that are derived from L{ShapeDrawer} in this module are
     automatically registered by L{ShapeDrawerDirectory} when the module
     is loaded for the first time.
@@ -409,7 +413,7 @@ class ShapeDrawerDirectory(object):
         @param drawer_class: the shape drawer class to be registered
         """
         names = drawer_class.names
-        if isinstance(names, (str, unicode)):
+        if isinstance(names, str):
             names = names.split()
 
         for name in names:
@@ -420,7 +424,7 @@ class ShapeDrawerDirectory(object):
         """Registers all L{ShapeDrawer} classes in the given namespace
 
         @param namespace: a Python dict mapping names to Python objects."""
-        for name, value in namespace.iteritems():
+        for name, value in namespace.items():
             if name.startswith("__"):
                 continue
             if isinstance(value, type):
@@ -430,7 +434,7 @@ class ShapeDrawerDirectory(object):
     @classmethod
     def resolve(cls, shape):
         """Given a shape name, returns the corresponding shape drawer class
-        
+
         @param shape: the name of the shape
         @return: the corresponding shape drawer class
 
@@ -445,7 +449,7 @@ class ShapeDrawerDirectory(object):
     def resolve_default(cls, shape, default=NullDrawer):
         """Given a shape name, returns the corresponding shape drawer class
         or the given default shape drawer if the shape name is unknown.
-        
+
         @param shape: the name of the shape
         @param default: the default shape drawer to return when the shape
           is unknown
@@ -454,5 +458,5 @@ class ShapeDrawerDirectory(object):
         """
         return cls.known_shapes.get(shape, default)
 
-ShapeDrawerDirectory.register_namespace(sys.modules[__name__].__dict__)
 
+ShapeDrawerDirectory.register_namespace(sys.modules[__name__].__dict__)

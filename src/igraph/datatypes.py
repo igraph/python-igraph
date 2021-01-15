@@ -24,6 +24,7 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
+
 class Matrix(object):
     """Simple matrix data type.
 
@@ -63,7 +64,7 @@ class Matrix(object):
                 height, width = int(args[0]), int(args[0])
         else:
             height, width = int(args[0]), int(args[1])
-        mtrx = [[value]*width for _ in xrange(height)]
+        mtrx = [[value] * width for _ in range(height)]
         return cls(mtrx)
 
     # pylint: disable-msg=C0103
@@ -89,7 +90,7 @@ class Matrix(object):
         """
         # pylint: disable-msg=W0212
         result = cls.Fill(0, *args)
-        for i in xrange(min(result.shape)):
+        for i in range(min(result.shape)):
             result._data[i][i] = 1
         return result
 
@@ -104,11 +105,12 @@ class Matrix(object):
                 self._ncol = 0
             for row in self._data:
                 if len(row) < self._ncol:
-                    row.extend([0]*(self._ncol-len(row)))
+                    row.extend([0] * (self._ncol - len(row)))
 
     def _get_data(self):
         """Returns the data stored in the matrix as a list of lists"""
         return [list(row) for row in self._data]
+
     data = property(_get_data, _set_data)
 
     @property
@@ -127,20 +129,23 @@ class Matrix(object):
         if isinstance(other, Matrix):
             if self.shape != other.shape:
                 raise ValueError("matrix shapes do not match")
-            return self.__class__([
-                [a+b for a, b in izip(row_a, row_b)]
-                for row_a, row_b in izip(self, other)
-            ])
+            return self.__class__(
+                [
+                    [a + b for a, b in zip(row_a, row_b)]
+                    for row_a, row_b in zip(self, other)
+                ]
+            )
         else:
-            return self.__class__([
-                [item+other for item in row] for row in self])
+            return self.__class__([[item + other for item in row] for row in self])
 
     def __eq__(self, other):
         """Checks whether a given matrix is equal to another one"""
-        return isinstance(other, Matrix) and \
-                self._nrow == other._nrow and \
-                self._ncol == other._ncol and \
-                self._data == other._data
+        return (
+            isinstance(other, Matrix)
+            and self._nrow == other._nrow
+            and self._ncol == other._ncol
+            and self._data == other._data
+        )
 
     def __getitem__(self, i):
         """Returns a single item, a row or a column of the matrix
@@ -181,12 +186,12 @@ class Matrix(object):
         if isinstance(other, Matrix):
             if self.shape != other.shape:
                 raise ValueError("matrix shapes do not match")
-            for row_a, row_b in izip(self._data, other):
-                for i in xrange(len(row_a)):
+            for row_a, row_b in zip(self._data, other):
+                for i in range(len(row_a)):
                     row_a[i] += row_b[i]
         else:
             for row in self._data:
-                for i in xrange(len(row)):
+                for i in range(len(row)):
                     row[i] += other
         return self
 
@@ -195,12 +200,12 @@ class Matrix(object):
         if isinstance(other, Matrix):
             if self.shape != other.shape:
                 raise ValueError("matrix shapes do not match")
-            for row_a, row_b in izip(self._data, other):
-                for i in xrange(len(row_a)):
+            for row_a, row_b in zip(self._data, other):
+                for i in range(len(row_a)):
                     row_a[i] -= row_b[i]
         else:
             for row in self._data:
-                for i in xrange(len(row)):
+                for i in range(len(row)):
                     row[i] -= other
         return self
 
@@ -227,8 +232,7 @@ class Matrix(object):
             if len(value) != len(self._data[i]):
                 raise ValueError("new value must have %d items" % self._ncol)
             if any(len(row) != self._ncol for row in value):
-                raise ValueError("rows of new value must have %d items" % \
-                        self._ncol)
+                raise ValueError("rows of new value must have %d items" % self._ncol)
             self._data[i] = [list(row) for row in value]
         elif isinstance(i, tuple):
             try:
@@ -263,13 +267,14 @@ class Matrix(object):
         if isinstance(other, Matrix):
             if self.shape != other.shape:
                 raise ValueError("matrix shapes do not match")
-            return self.__class__([
-                [a-b for a, b in izip(row_a, row_b)]
-                for row_a, row_b in izip(self, other)
-            ])
+            return self.__class__(
+                [
+                    [a - b for a, b in zip(row_a, row_b)]
+                    for row_a, row_b in zip(self, other)
+                ]
+            )
         else:
-            return self.__class__([
-                [item-other for item in row] for row in self])
+            return self.__class__([[item - other for item in row] for row in self])
 
     def __repr__(self):
         class_name = self.__class__.__name__
@@ -343,8 +348,8 @@ class Matrix(object):
         """
         # pylint: disable-msg=W0142
         # pylint: disable-msg=C0103
-        grid_width = float(kwds.get("grid_width", 1.))
-        border_width = float(kwds.get("border_width", 1.))
+        grid_width = float(kwds.get("grid_width", 1.0))
+        border_width = float(kwds.get("border_width", 1.0))
         style = kwds.get("style", "boolean")
         row_names = kwds.get("row_names")
         col_names = kwds.get("col_names", row_names)
@@ -361,11 +366,11 @@ class Matrix(object):
         if row_names is not None:
             row_names = [str(name) for name in islice(row_names, self._nrow)]
             if len(row_names) < self._nrow:
-                row_names.extend([""]*(self._nrow-len(row_names)))
+                row_names.extend([""] * (self._nrow - len(row_names)))
         if col_names is not None:
             col_names = [str(name) for name in islice(col_names, self._ncol)]
             if len(col_names) < self._ncol:
-                col_names.extend([""]*(self._ncol-len(col_names)))
+                col_names.extend([""] * (self._ncol - len(col_names)))
         if values == False:
             values = None
         if values == True:
@@ -381,19 +386,19 @@ class Matrix(object):
         if row_names is not None or col_names is not None:
             te = context.text_extents
             space_width = te(" ")[4]
-            max_row_name_width = max([te(s)[4] for s in row_names])+space_width
-            max_col_name_width = max([te(s)[4] for s in col_names])+space_width
+            max_row_name_width = max([te(s)[4] for s in row_names]) + space_width
+            max_col_name_width = max([te(s)[4] for s in col_names]) + space_width
         else:
             max_row_name_width, max_col_name_width = 0, 0
 
         # Calculate sizes
-        total_width = float(bbox.width)-max_row_name_width
-        total_height = float(bbox.height)-max_col_name_width
+        total_width = float(bbox.width) - max_row_name_width
+        total_height = float(bbox.height) - max_col_name_width
         dx = total_width / self.shape[1]
         dy = total_height / self.shape[0]
         if kwds.get("square", True):
             dx, dy = min(dx, dy), min(dx, dy)
-        total_width, total_height = dx*self.shape[1], dy*self.shape[0]
+        total_width, total_height = dx * self.shape[1], dy * self.shape[0]
         ox = bbox.left + (bbox.width - total_width - max_row_name_width) / 2.0
         oy = bbox.top + (bbox.height - total_height - max_col_name_width) / 2.0
         ox += max_row_name_width
@@ -403,11 +408,11 @@ class Matrix(object):
         if style == "palette":
             mi, ma = self.min(), self.max()
             color_offset = mi
-            color_ratio = (len(palette)-1) / float(ma-mi)
+            color_ratio = (len(palette) - 1) / float(ma - mi)
 
         # Validate grid width
-        if dx < 3*grid_width or dy < 3*grid_width:
-            grid_width = 0.
+        if dx < 3 * grid_width or dy < 3 * grid_width:
+            grid_width = 0.0
         if grid_width > 0:
             context.set_line_width(grid_width)
         else:
@@ -418,12 +423,12 @@ class Matrix(object):
             context.set_line_width(1)
 
         # Draw row names (if any)
-        context.set_source_rgb(0., 0., 0.)
+        context.set_source_rgb(0.0, 0.0, 0.0)
         if row_names is not None:
-            x, y = ox, oy 
+            x, y = ox, oy
             for heading in row_names:
                 _, _, _, h, xa, _ = context.text_extents(heading)
-                context.move_to(x-xa-space_width, y + (dy+h)/2.)
+                context.move_to(x - xa - space_width, y + (dy + h) / 2.0)
                 context.show_text(heading)
                 y += dy
 
@@ -431,11 +436,11 @@ class Matrix(object):
         if col_names is not None:
             context.save()
             context.translate(ox, oy)
-            context.rotate(-1.5707963285)   # pi/2
-            x, y = 0., 0.
+            context.rotate(-1.5707963285)  # pi/2
+            x, y = 0.0, 0.0
             for heading in col_names:
                 _, _, _, h, _, _ = context.text_extents(heading)
-                context.move_to(x+space_width, y + (dx+h)/2.)
+                context.move_to(x + space_width, y + (dx + h) / 2.0)
                 context.show_text(heading)
                 y += dx
             context.restore()
@@ -453,11 +458,11 @@ class Matrix(object):
                     continue
                 if style == "boolean":
                     if item:
-                        context.set_source_rgb(0., 0., 0.)
+                        context.set_source_rgb(0.0, 0.0, 0.0)
                     else:
-                        context.set_source_rgb(1., 1., 1.)
+                        context.set_source_rgb(1.0, 1.0, 1.0)
                 elif style == "palette":
-                    cidx = int((item-color_offset)*color_ratio)
+                    cidx = int((item - color_offset) * color_ratio)
                     if cidx < 0:
                         cidx = 0
                     context.set_source_rgba(*palette.get(cidx))
@@ -470,12 +475,12 @@ class Matrix(object):
                     fill()
                     context.stroke()
                 x += dx
-            x, y = ox, y+dy
+            x, y = ox, y + dy
 
         # Draw cell values
         if values is not None:
             x, y = ox, oy
-            context.set_source_rgb(0., 0., 0.)
+            context.set_source_rgb(0.0, 0.0, 0.0)
             for row in values.data:
                 if hasattr(value_format, "__call__"):
                     values = [value_format(item) for item in row]
@@ -483,18 +488,17 @@ class Matrix(object):
                     values = [value_format % item for item in row]
                 for item in values:
                     th, tw = context.text_extents(item)[3:5]
-                    context.move_to(x+(dx-tw)/2., y+(dy+th)/2.)
+                    context.move_to(x + (dx - tw) / 2.0, y + (dy + th) / 2.0)
                     context.show_text(item)
                     x += dx
-                x, y = ox, y+dy
+                x, y = ox, y + dy
 
         # Draw borders
         if border_width > 0:
             context.set_line_width(border_width)
-            context.set_source_rgb(0., 0., 0.)
-            context.rectangle(ox, oy, dx*self.shape[1], dy*self.shape[0])
+            context.set_source_rgb(0.0, 0.0, 0.0)
+            context.rectangle(ox, oy, dx * self.shape[1], dy * self.shape[0])
             context.stroke()
-
 
     def min(self, dim=None):
         """Returns the minimum of the matrix along the given dimension
@@ -506,8 +510,7 @@ class Matrix(object):
         if dim == 1:
             return [min(row) for row in self._data]
         if dim == 0:
-            return [min(row[idx] for row in self._data) \
-                        for idx in xrange(self._ncol)]
+            return [min(row[idx] for row in self._data) for idx in range(self._ncol)]
         return min(min(row) for row in self._data)
 
     def max(self, dim=None):
@@ -520,8 +523,7 @@ class Matrix(object):
         if dim == 1:
             return [max(row) for row in self._data]
         if dim == 0:
-            return [max(row[idx] for row in self._data) \
-                        for idx in xrange(self._ncol)]
+            return [max(row[idx] for row in self._data) for idx in range(self._ncol)]
         return max(max(row) for row in self._data)
 
 
@@ -548,8 +550,18 @@ class DyadCensus(tuple):
 
     @undocumented: _remap
     """
-    _remap = {"mutual": 0, "mut": 0, "sym": 0, "symm": 0,
-        "asy": 1, "asym": 1, "asymm": 1, "asymmetric": 1, "null": 2}
+
+    _remap = {
+        "mutual": 0,
+        "mut": 0,
+        "sym": 0,
+        "symm": 0,
+        "asy": 1,
+        "asym": 1,
+        "asymm": 1,
+        "asymmetric": 1,
+        "null": 2,
+    }
 
     def __getitem__(self, idx):
         return tuple.__getitem__(self, self._remap.get(idx, idx))
@@ -608,18 +620,33 @@ class TriadCensus(tuple):
       >>> print tc["030C"]                  #doctest:+SKIP
       1206
     """
-    _remap = {"003": 0, "012": 1, "102": 2, "021D": 3, "021U": 4, "021C": 5, \
-        "111D": 6, "111U": 7, "030T": 8, "030C": 9, "201": 10, "120D": 11, \
-        "120U": 12, "120C": 13, "210": 14, "300": 15}
+
+    _remap = {
+        "003": 0,
+        "012": 1,
+        "102": 2,
+        "021D": 3,
+        "021U": 4,
+        "021C": 5,
+        "111D": 6,
+        "111U": 7,
+        "030T": 8,
+        "030C": 9,
+        "201": 10,
+        "120D": 11,
+        "120U": 12,
+        "120C": 13,
+        "210": 14,
+        "300": 15,
+    }
 
     def __getitem__(self, idx):
-        if isinstance(idx, basestring):
+        if isinstance(idx, str):
             idx = idx.upper()
         return tuple.__getitem__(self, self._remap.get(idx, idx))
 
     def __getattr__(self, attr):
-        if isinstance(attr, basestring) and attr[0] == 't' \
-                and attr[1:].upper() in self._remap:
+        if isinstance(attr, str) and attr[0] == "t" and attr[1:].upper() in self._remap:
             return tuple.__getitem__(self, self._remap[attr[1:].upper()])
         raise AttributeError("no such attribute: %s" % attr)
 
@@ -637,14 +664,16 @@ class TriadCensus(tuple):
         if rowcount * colcount < maxidx:
             rowcount += 1
 
-        invmap = dict((v, k) for k, v in self._remap.iteritems())
+        invmap = dict((v, k) for k, v in self._remap.items())
         result, row, idx = [], [], 0
-        for _ in xrange(rowcount):
-            for _ in xrange(colcount):
+        for _ in range(rowcount):
+            for _ in range(colcount):
                 if idx >= maxidx:
-                    break 
-                row.append("%-*s: %*d" % (captionwidth, invmap.get(idx, ""),
-                  numwidth, self[idx]))
+                    break
+                row.append(
+                    "%-*s: %*d"
+                    % (captionwidth, invmap.get(idx, ""), numwidth, self[idx])
+                )
                 idx += 1
             result.append(" | ".join(row))
             row = []
@@ -657,7 +686,7 @@ class UniqueIdGenerator(object):
     names (say, vertex names).
 
     Usage:
-    
+
     >>> gen = UniqueIdGenerator()
     >>> gen["A"]
     0
@@ -688,6 +717,7 @@ class UniqueIdGenerator(object):
             id_generator = 0
         if isinstance(id_generator, int):
             import itertools
+
             self._generator = itertools.count(id_generator)
         else:
             self._generator = id_generator
@@ -706,7 +736,7 @@ class UniqueIdGenerator(object):
         try:
             return self._ids[item]
         except KeyError:
-            self._ids[item] = self._generator.next()
+            self._ids[item] = next(self._generator)
             return self._ids[item]
 
     def __setitem__(self, item, value):
@@ -720,15 +750,13 @@ class UniqueIdGenerator(object):
     def reverse_dict(self):
         """Returns the reverse mapping, i.e., the one that maps from generated
         IDs to their corresponding objects"""
-        return dict((v, k) for k, v in self._ids.iteritems())
+        return dict((v, k) for k, v in self._ids.items())
 
     def values(self):
         """Returns the values stored so far. If the generator generates items
         according to the standard sorting order, the values returned will be
         exactly in the order they were added. This holds for integer IDs for
         instance (but for many other ID generators as well)."""
-        return sorted(self._ids.keys(), key = self._ids.__getitem__)
+        return sorted(list(self._ids.keys()), key=self._ids.__getitem__)
 
     add = __getitem__
-
-

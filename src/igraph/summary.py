@@ -13,7 +13,7 @@ from textwrap import TextWrapper
 
 __all__ = ["GraphSummary"]
 
-__license__ = u"""\
+__license__ = """\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
 Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
 
@@ -33,6 +33,7 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
+
 class FakeWrapper(object):
     """Object whose interface is compatible with C{textwrap.TextWrapper}
     but does no wrapping."""
@@ -46,6 +47,7 @@ class FakeWrapper(object):
     def wrap(self, text):
         return [text]
 
+
 def _get_wrapper_for_width(width, *args, **kwds):
     """Returns a text wrapper that wraps text for the given width.
 
@@ -55,6 +57,7 @@ def _get_wrapper_for_width(width, *args, **kwds):
     if width is None:
         return FakeWrapper(*args, **kwds)
     return TextWrapper(width=width, *args, **kwds)
+
 
 class GraphSummary(object):
     """Summary representation of a graph.
@@ -87,14 +90,18 @@ class GraphSummary(object):
       _infer_column_alignment, _new_table, _vertex_attribute_iterator
     """
 
-
-    def __init__(self, graph, verbosity=0, width=78,
-            edge_list_format="auto",
-            max_rows=99999,
-            print_graph_attributes=False,
-            print_vertex_attributes=False,
-            print_edge_attributes=False,
-            full=False):
+    def __init__(
+        self,
+        graph,
+        verbosity=0,
+        width=78,
+        edge_list_format="auto",
+        max_rows=99999,
+        print_graph_attributes=False,
+        print_vertex_attributes=False,
+        print_edge_attributes=False,
+        full=False,
+    ):
         """Constructs a summary representation of a graph.
 
         @param verbosity: the verbosity of the summary. If zero, only
@@ -131,8 +138,7 @@ class GraphSummary(object):
         self.print_edge_attributes = print_edge_attributes
         self.verbosity = verbosity
         self.width = width
-        self.wrapper = _get_wrapper_for_width(self.width,
-                break_on_hyphens=False)
+        self.wrapper = _get_wrapper_for_width(self.width, break_on_hyphens=False)
 
         if self._graph.is_named():
             self._edges_header = "+ edges (vertex names):"
@@ -162,7 +168,7 @@ class GraphSummary(object):
             maxlen = len(str(self._graph.vcount()))
             num_format = "%%%dd" % maxlen
             format_str = "%s %s %%s" % (num_format, self._arrow)
-            for v1 in xrange(self._graph.vcount()):
+            for v1 in range(self._graph.vcount()):
                 neis = self._graph.successors(v1)
                 neis = " ".join(num_format % v2 for v2 in neis)
                 result.append(format_str % (v1, neis))
@@ -175,7 +181,7 @@ class GraphSummary(object):
                 # Rewrap to multiple columns
                 nrows = len(result) - 1
                 colheight = int(ceil(nrows / float(colcount)))
-                newrows = [[] for _ in xrange(colheight)]
+                newrows = [[] for _ in range(colheight)]
                 for i, row in enumerate(result[1:]):
                     newrows[i % colheight].append(row.ljust(maxlen))
                 result[1:] = ["   ".join(row) for row in newrows]
@@ -190,8 +196,10 @@ class GraphSummary(object):
 
         if self._graph.is_named():
             names = self._graph.vs["name"]
-            edges = ", ".join(arrow % (names[edge.source], names[edge.target])
-                for edge in self._graph.es)
+            edges = ", ".join(
+                arrow % (names[edge.source], names[edge.target])
+                for edge in self._graph.es
+            )
         else:
             edges = " ".join(arrow % edge.tuple for edge in self._graph.es)
 
@@ -204,9 +212,12 @@ class GraphSummary(object):
         attrs = sorted(self._graph.edge_attributes())
 
         table = self._new_table(headers=["", "edge"] + attrs)
-        table.add_rows(islice(self._edge_attribute_iterator(attrs), 0, self.max_rows),
-                header=False)
-        table.set_cols_align(["l", "l"] + self._infer_column_alignment(edge_attrs=attrs))
+        table.add_rows(
+            islice(self._edge_attribute_iterator(attrs), 0, self.max_rows), header=False
+        )
+        table.set_cols_align(
+            ["l", "l"] + self._infer_column_alignment(edge_attrs=attrs)
+        )
 
         result = [self._edges_header]
         result.extend(table.draw().split("\n"))
@@ -222,7 +233,7 @@ class GraphSummary(object):
         result = ["+ graph attributes:"]
         attrs.sort()
         for attr in attrs:
-            result.append("[[%s]]" % (attr, ))
+            result.append("[[%s]]" % (attr,))
             result.append(str(self._graph[attr]))
         return result
 
@@ -233,8 +244,10 @@ class GraphSummary(object):
             return []
 
         table = self._new_table(headers=[""] + attrs)
-        table.add_rows(islice(self._vertex_attribute_iterator(attrs), 0, self.max_rows),
-                header=False)
+        table.add_rows(
+            islice(self._vertex_attribute_iterator(attrs), 0, self.max_rows),
+            header=False,
+        )
         table.set_cols_align(["l"] + self._infer_column_alignment(vertex_attrs=attrs))
 
         result = ["+ vertex attributes:"]
@@ -246,29 +259,31 @@ class GraphSummary(object):
         """Constructs the header part of the summary."""
         graph = self._graph
         params = dict(
-                directed="UD"[graph.is_directed()],
-                named="-N"[graph.is_named()],
-                weighted="-W"[graph.is_weighted()],
-                typed="-T"["type" in graph.vertex_attributes()],
-                vcount=graph.vcount(),
-                ecount=graph.ecount(),
+            directed="UD"[graph.is_directed()],
+            named="-N"[graph.is_named()],
+            weighted="-W"[graph.is_weighted()],
+            typed="-T"["type" in graph.vertex_attributes()],
+            vcount=graph.vcount(),
+            ecount=graph.ecount(),
         )
         if "name" in graph.attributes():
             params["name"] = graph["name"]
         else:
             params["name"] = ""
-        result = ["IGRAPH %(directed)s%(named)s%(weighted)s%(typed)s "\
-                  "%(vcount)d %(ecount)d -- %(name)s" % params]
+        result = [
+            "IGRAPH %(directed)s%(named)s%(weighted)s%(typed)s "
+            "%(vcount)d %(ecount)d -- %(name)s" % params
+        ]
 
-        attrs = ["%s (g)" % (name, ) for name in sorted(graph.attributes())]
-        attrs.extend("%s (v)" % (name, ) for name in sorted(graph.vertex_attributes()))
-        attrs.extend("%s (e)" % (name, ) for name in sorted(graph.edge_attributes()))
+        attrs = ["%s (g)" % (name,) for name in sorted(graph.attributes())]
+        attrs.extend("%s (v)" % (name,) for name in sorted(graph.vertex_attributes()))
+        attrs.extend("%s (e)" % (name,) for name in sorted(graph.edge_attributes()))
         if attrs:
             result.append("+ attr: %s" % ", ".join(attrs))
             if self.wrapper is not None:
-                self.wrapper.subsequent_indent = '  '
+                self.wrapper.subsequent_indent = "  "
                 result[-1:] = self.wrapper.wrap(result[-1])
-                self.wrapper.subsequent_indent = ''
+                self.wrapper.subsequent_indent = ""
 
         return result
 
@@ -282,13 +297,15 @@ class GraphSummary(object):
             names = self._graph.vs["name"]
             for edge in self._graph.es:
                 formatted_edge = arrow % (names[edge.source], names[edge.target])
-                yield ["[%d]" % edge.index, formatted_edge] + \
-                        [edge[attr] for attr in attribute_order]
+                yield ["[%d]" % edge.index, formatted_edge] + [
+                    edge[attr] for attr in attribute_order
+                ]
         else:
             for edge in self._graph.es:
                 formatted_edge = arrow % edge.tuple
-                yield ["[%d]" % edge.index, formatted_edge] + \
-                        [edge[attr] for attr in attribute_order]
+                yield ["[%d]" % edge.index, formatted_edge] + [
+                    edge[attr] for attr in attribute_order
+                ]
 
     def _infer_column_alignment(self, vertex_attrs=None, edge_attrs=None):
         """Infers the preferred alignment for the given vertex and edge attributes
@@ -347,7 +364,7 @@ class GraphSummary(object):
         if self._graph.ecount() > 0:
             # Add the edge list
             if self.edge_list_format == "auto":
-                if (self.print_edge_attributes and self._graph.edge_attributes()):
+                if self.print_edge_attributes and self._graph.edge_attributes():
                     format = "edgelist"
                 elif median(self._graph.degree(mode="out")) < 3:
                     format = "compressed"
@@ -364,4 +381,3 @@ class GraphSummary(object):
             return "\n".join("\n".join(self.wrapper.wrap(line)) for line in output)
 
         return "\n".join(output)
-

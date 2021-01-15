@@ -14,15 +14,17 @@ network from Cytoscape and convert it to igraph format.
 """
 
 from collections import defaultdict
-from itertools import izip
+
 from math import atan2, cos, pi, sin, tan, sqrt
 from warnings import warn
 
 from igraph._igraph import convex_hull, VertexSeq
-from igraph.compat import property
 from igraph.configuration import Configuration
-from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer, \
-                                       AbstractXMLRPCDrawer
+from igraph.drawing.baseclasses import (
+    AbstractDrawer,
+    AbstractCairoDrawer,
+    AbstractXMLRPCDrawer,
+)
 from igraph.drawing.colors import color_to_html_format, color_name_to_rgb
 from igraph.drawing.edge import ArrowEdgeDrawer
 from igraph.drawing.text import TextAlignment, TextDrawer
@@ -39,6 +41,7 @@ cairo = find_cairo()
 
 #####################################################################
 
+
 # pylint: disable-msg=R0903
 # R0903: too few public methods
 class AbstractGraphDrawer(AbstractDrawer):
@@ -52,7 +55,7 @@ class AbstractGraphDrawer(AbstractDrawer):
         """Abstract method, must be implemented in derived classes."""
         raise NotImplementedError("abstract class")
 
-    def ensure_layout(self, layout, graph = None):
+    def ensure_layout(self, layout, graph=None):
         """Helper method that ensures that I{layout} is an instance
         of L{Layout}. If it is not, the method will try to convert
         it to a L{Layout} according to the following rules:
@@ -84,11 +87,12 @@ class AbstractGraphDrawer(AbstractDrawer):
             layout = Layout(layout)
         return layout
 
+
 #####################################################################
 
+
 class AbstractCairoGraphDrawer(AbstractGraphDrawer, AbstractCairoDrawer):
-    """Abstract base class for graph drawers that draw on a Cairo canvas.
-    """
+    """Abstract base class for graph drawers that draw on a Cairo canvas."""
 
     def __init__(self, context, bbox):
         """Constructs the graph drawer and associates it to the given
@@ -103,7 +107,9 @@ class AbstractCairoGraphDrawer(AbstractGraphDrawer, AbstractCairoDrawer):
         AbstractCairoDrawer.__init__(self, context, bbox)
         AbstractGraphDrawer.__init__(self)
 
+
 #####################################################################
+
 
 class DefaultGraphDrawer(AbstractCairoGraphDrawer):
     """Class implementing the default visualisation of a graph.
@@ -116,10 +122,14 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
     See L{Graph.__plot__()} for the keyword arguments understood by
     this drawer."""
 
-    def __init__(self, context, bbox, \
-                 vertex_drawer_factory = DefaultVertexDrawer,
-                 edge_drawer_factory = ArrowEdgeDrawer,
-                 label_drawer_factory = TextDrawer):
+    def __init__(
+        self,
+        context,
+        bbox,
+        vertex_drawer_factory=DefaultVertexDrawer,
+        edge_drawer_factory=ArrowEdgeDrawer,
+        label_drawer_factory=TextDrawer,
+    ):
         """Constructs the graph drawer and associates it to the given
         Cairo context and the given L{BoundingBox}.
 
@@ -175,11 +185,12 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         reverse = False
         if isinstance(edge_order_by, tuple):
             edge_order_by, reverse = edge_order_by
-            if isinstance(reverse, basestring):
+            if isinstance(reverse, str):
                 reverse = reverse.lower().startswith("desc")
         attrs = graph.es[edge_order_by]
-        edge_order = sorted(range(len(attrs)), key=attrs.__getitem__,
-                reverse=bool(reverse))
+        edge_order = sorted(
+            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
+        )
 
         return edge_order
 
@@ -203,11 +214,12 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         reverse = False
         if isinstance(vertex_order_by, tuple):
             vertex_order_by, reverse = vertex_order_by
-            if isinstance(reverse, basestring):
+            if isinstance(reverse, str):
                 reverse = reverse.lower().startswith("desc")
         attrs = graph.vs[vertex_order_by]
-        vertex_order = sorted(range(len(attrs)), key=attrs.__getitem__,
-                reverse=bool(reverse))
+        vertex_order = sorted(
+            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
+        )
 
         return vertex_order
 
@@ -229,7 +241,7 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
             margin = list(margin)
         except TypeError:
             margin = [margin]
-        while len(margin)<4:
+        while len(margin) < 4:
             margin.extend(margin)
 
         # Contract the drawing area by the margin and fit the layout
@@ -239,10 +251,14 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         # Decide whether we need to calculate the curvature of edges
         # automatically -- and calculate them if needed.
         autocurve = kwds.get("autocurve", None)
-        if autocurve or (autocurve is None and \
-                "edge_curved" not in kwds and "curved" not in graph.edge_attributes() \
-                and graph.ecount() < 10000):
+        if autocurve or (
+            autocurve is None
+            and "edge_curved" not in kwds
+            and "curved" not in graph.edge_attributes()
+            and graph.ecount() < 10000
+        ):
             from igraph import autocurve
+
             default = kwds.get("edge_curved", 0)
             if default is True:
                 default = 0.5
@@ -261,7 +277,7 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
 
         # Determine the order in which we will draw the vertices and edges
         vertex_order = self._determine_vertex_order(graph, kwds)
-        edge_order   = self._determine_edge_order(graph, kwds)
+        edge_order = self._determine_edge_order(graph, kwds)
 
         # Draw the highlighted groups (if any)
         if "mark_groups" in kwds:
@@ -275,18 +291,16 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
             if isinstance(mark_groups, dict):
                 # Dictionary mapping vertex indices or tuples of vertex
                 # indices to colors
-                group_iter = mark_groups.iteritems()
+                group_iter = iter(mark_groups.items())
             elif isinstance(mark_groups, (VertexClustering, VertexCover)):
                 # Vertex clustering
-                group_iter = (
-                    (group, color) for color, group in enumerate(mark_groups)
-                )
+                group_iter = ((group, color) for color, group in enumerate(mark_groups))
             elif hasattr(mark_groups, "__iter__"):
                 # Lists, tuples, iterators etc
                 group_iter = iter(mark_groups)
             else:
                 # False
-                group_iter = {}.iteritems()
+                group_iter = iter({}.items())
 
             # We will need a polygon drawer to draw the convex hulls
             polygon_drawer = PolygonDrawer(context, bbox)
@@ -315,19 +329,21 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
                 if len(polygon) == 2:
                     # Expand the polygon (which is a flat line otherwise)
                     a, b = Point(*polygon[0]), Point(*polygon[1])
-                    c = corner_radius * (a-b).normalized()
+                    c = corner_radius * (a - b).normalized()
                     n = Point(-c[1], c[0])
                     polygon = [a + n, b + n, b - c, b - n, a - n, a + c]
                 else:
                     # Expand the polygon around its center of mass
-                    center = Point(*[sum(coords) / float(len(coords))
-                                      for coords in zip(*polygon)])
-                    polygon = [Point(*point).towards(center, -corner_radius)
-                               for point in polygon]
+                    center = Point(
+                        *[sum(coords) / float(len(coords)) for coords in zip(*polygon)]
+                    )
+                    polygon = [
+                        Point(*point).towards(center, -corner_radius)
+                        for point in polygon
+                    ]
 
                 # Draw the hull
-                context.set_source_rgba(color[0], color[1], color[2],
-                                        color[3]*0.25)
+                context.set_source_rgba(color[0], color[1], color[2], color[3] * 0.25)
                 polygon_drawer.draw_path(polygon, corner_radius=corner_radius)
                 context.fill_preserve()
                 context.set_source_rgba(*color)
@@ -337,7 +353,7 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         es = graph.es
         if edge_order is None:
             # Default edge order
-            edge_coord_iter = izip(es, edge_builder)
+            edge_coord_iter = zip(es, edge_builder)
         else:
             # Specified edge order
             edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
@@ -356,11 +372,12 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         vs = graph.vs
         if vertex_order is None:
             # Default vertex order
-            vertex_coord_iter = izip(vs, vertex_builder, layout)
+            vertex_coord_iter = zip(vs, vertex_builder, layout)
         else:
             # Specified vertex order
-            vertex_coord_iter = ((vs[i], vertex_builder[i], layout[i])
-                    for i in vertex_order)
+            vertex_coord_iter = (
+                (vs[i], vertex_builder[i], layout[i]) for i in vertex_order
+            )
 
         # Draw the vertices
         drawer_method = vertex_drawer.draw
@@ -377,11 +394,10 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         # Construct the iterator that we will use to draw the vertex labels
         if vertex_order is None:
             # Default vertex order
-            vertex_coord_iter = izip(vertex_builder, layout)
+            vertex_coord_iter = zip(vertex_builder, layout)
         else:
             # Specified vertex order
-            vertex_coord_iter = ((vertex_builder[i], layout[i])
-                    for i in vertex_order)
+            vertex_coord_iter = ((vertex_builder[i], layout[i]) for i in vertex_order)
 
         # Draw the vertex labels
         for vertex, coords in vertex_coord_iter:
@@ -389,8 +405,9 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
                 continue
 
             # Set the font family, size, color and text
-            context.select_font_face(vertex.font, \
-                cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+            context.select_font_face(
+                vertex.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL
+            )
             context.set_font_size(vertex.label_size)
             context.set_source_rgba(*vertex.label_color)
             label_drawer.text = vertex.label
@@ -398,26 +415,26 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
             if vertex.label_dist:
                 # Label is displaced from the center of the vertex.
                 _, yb, w, h, _, _ = label_drawer.text_extents()
-                w, h = w/2.0, h/2.0
-                radius = vertex.label_dist * vertex.size / 2.
+                w, h = w / 2.0, h / 2.0
+                radius = vertex.label_dist * vertex.size / 2.0
                 # First we find the reference point that is at distance `radius'
                 # from the vertex in the direction given by `label_angle'.
                 # Then we place the label in a way that the line connecting the
                 # center of the bounding box of the label with the center of the
                 # vertex goes through the reference point and the reference
                 # point lies exactly on the bounding box of the vertex.
-                alpha = vertex.label_angle % (2*pi)
+                alpha = vertex.label_angle % (2 * pi)
                 cx = coords[0] + radius * cos(alpha)
                 cy = coords[1] - radius * sin(alpha)
                 # Now we have the reference point. We have to decide which side
                 # of the label box will intersect with the line that connects
                 # the center of the label with the center of the vertex.
                 if w > 0:
-                    beta = atan2(h, w) % (2*pi)
+                    beta = atan2(h, w) % (2 * pi)
                 else:
-                    beta = pi/2.
+                    beta = pi / 2.0
                 gamma = pi - beta
-                if alpha > 2*pi-beta or alpha <= beta:
+                if alpha > 2 * pi - beta or alpha <= beta:
                     # Intersection at left edge of label
                     cx += w
                     cy -= tan(alpha) * w
@@ -426,9 +443,9 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
                     try:
                         cx += h / tan(alpha)
                     except:
-                        pass    # tan(alpha) == inf
+                        pass  # tan(alpha) == inf
                     cy -= h
-                elif alpha > gamma and alpha <= gamma + 2*beta:
+                elif alpha > gamma and alpha <= gamma + 2 * beta:
                     # Intersection at right edge of label
                     cx -= w
                     cy += tan(alpha) * w
@@ -437,23 +454,27 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
                     try:
                         cx -= h / tan(alpha)
                     except:
-                        pass    # tan(alpha) == inf
+                        pass  # tan(alpha) == inf
                     cy += h
                 # Draw the label
-                label_drawer.draw_at(cx-w, cy-h-yb, wrap=wrap)
+                label_drawer.draw_at(cx - w, cy - h - yb, wrap=wrap)
             else:
                 # Label is exactly in the center of the vertex
                 cx, cy = coords
-                half_size = vertex.size / 2.
-                label_drawer.bbox = (cx - half_size, cy - half_size,
-                                     cx + half_size, cy + half_size)
+                half_size = vertex.size / 2.0
+                label_drawer.bbox = (
+                    cx - half_size,
+                    cy - half_size,
+                    cx + half_size,
+                    cy + half_size,
+                )
                 label_drawer.draw(wrap=wrap)
 
         # Construct the iterator that we will use to draw the edge labels
         es = graph.es
         if edge_order is None:
             # Default edge order
-            edge_coord_iter = izip(es, edge_builder)
+            edge_coord_iter = zip(es, edge_builder)
         else:
             # Specified edge order
             edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
@@ -464,8 +485,9 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
                 continue
 
             # Set the font family, size, color and text
-            context.select_font_face(visual_edge.font, \
-                cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+            context.select_font_face(
+                visual_edge.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL
+            )
             context.set_font_size(visual_edge.label_size)
             context.set_source_rgba(*visual_edge.label_color)
             label_drawer.text = visual_edge.label
@@ -473,8 +495,9 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
             # Ask the edge drawer to propose an anchor point for the label
             src, dest = edge.tuple
             src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
-            (x, y), (halign, valign) = \
-                    edge_drawer.get_label_position(edge, src_vertex, dest_vertex)
+            (x, y), (halign, valign) = edge_drawer.get_label_position(
+                edge, src_vertex, dest_vertex
+            )
 
             # Measure the text
             _, yb, w, h, _, _ = label_drawer.text_extents()
@@ -494,11 +517,12 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
             # Draw the edge label
             label_drawer.halign = halign
             label_drawer.valign = valign
-            label_drawer.bbox = (x-w, y-h, x+w, y+h)
+            label_drawer.bbox = (x - w, y - h, x + w, y + h)
             label_drawer.draw(wrap=wrap)
 
 
 #####################################################################
+
 
 class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
     """Graph drawer that draws a given graph on an UbiGraph display
@@ -524,15 +548,8 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         """Constructs an UbiGraph drawer using the display at the given
         URL."""
         super(UbiGraphDrawer, self).__init__(url, "ubigraph")
-        self.vertex_defaults = dict(
-            color="#ff0000",
-            shape="cube",
-            size=1.0
-        )
-        self.edge_defaults = dict(
-            color="#ffffff",
-            width=1.0
-        )
+        self.vertex_defaults = dict(color="#ff0000", shape="cube", size=1.0)
+        self.edge_defaults = dict(color="#ffffff", width=1.0)
 
     def draw(self, graph, *args, **kwds):
         """Draws the given graph on an UbiGraph display.
@@ -545,9 +562,9 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         if kwds.get("clear", True):
             display.clear()
 
-            for k, v in self.vertex_defaults.iteritems():
+            for k, v in self.vertex_defaults.items():
                 display.set_vertex_style_attribute(0, k, str(v))
-            for k, v in self.edge_defaults.iteritems():
+            for k, v in self.edge_defaults.items():
                 display.set_edge_style_attribute(0, k, str(v))
 
         # Custom color converter function
@@ -557,14 +574,16 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         # Construct the visual vertex/edge builders
         class VisualVertexBuilder(AttributeCollectorBase):
             """Collects some visual properties of a vertex for drawing"""
+
             _kwds_prefix = "vertex_"
             color = (str(self.vertex_defaults["color"]), color_conv)
             label = None
             shape = str(self.vertex_defaults["shape"])
-            size  = float(self.vertex_defaults["size"])
+            size = float(self.vertex_defaults["size"])
 
         class VisualEdgeBuilder(AttributeCollectorBase):
             """Collects some visual properties of an edge for drawing"""
+
             _kwds_prefix = "edge_"
             color = (str(self.edge_defaults["color"]), color_conv)
             label = None
@@ -580,8 +599,10 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
 
         # Add the edges
         new_edge = display.new_edge
-        eids = [new_edge(vertex_ids[edge.source], vertex_ids[edge.target]) \
-                for edge in graph.es]
+        eids = [
+            new_edge(vertex_ids[edge.source], vertex_ids[edge.target])
+            for edge in graph.es
+        ]
 
         # Add arrowheads if needed
         if graph.is_directed():
@@ -590,7 +611,7 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         # Set the vertex attributes
         set_attr = display.set_vertex_attribute
         vertex_defaults = self.vertex_defaults
-        for vertex_id, vertex in izip(vertex_ids, vertex_builder):
+        for vertex_id, vertex in zip(vertex_ids, vertex_builder):
             if vertex.color != vertex_defaults["color"]:
                 set_attr(vertex_id, "color", vertex.color)
             if vertex.label:
@@ -603,7 +624,7 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         # Set the edge attributes
         set_attr = display.set_edge_attribute
         edge_defaults = self.edge_defaults
-        for edge_id, edge in izip(eids, edge_builder):
+        for edge_id, edge in zip(eids, edge_builder):
             if edge.color != edge_defaults["color"]:
                 set_attr(edge_id, "color", edge.color)
             if edge.label:
@@ -611,7 +632,9 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
             if edge.width != edge_defaults["width"]:
                 set_attr(edge_id, "width", str(edge.width))
 
+
 #####################################################################
+
 
 class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
     """Graph drawer that sends/receives graphs to/from Cytoscape using
@@ -643,8 +666,7 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         super(CytoscapeGraphDrawer, self).__init__(url, "Cytoscape")
         self.network_id = None
 
-    def draw(self, graph, name="Network from igraph", create_view=True,
-            *args, **kwds):
+    def draw(self, graph, name="Network from igraph", create_view=True, *args, **kwds):
         """Sends the given graph to Cytoscape as a new network.
 
         @param name: the name of the network in Cytoscape.
@@ -655,7 +677,7 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
           vertex attribute or a list specifying the identifiers, one
           for each node in the graph. The default is C{None}, which
           simply uses the vertex index for each vertex."""
-        from xmlrpclib import Fault
+        from xmlrpc.client import Fault
 
         cy = self.service
 
@@ -664,8 +686,10 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
             try:
                 network_id = cy.createNetwork(name, False)
             except Fault:
-                warn("CytoscapeRPC too old, cannot create network without view."
-                    " Consider upgrading CytoscapeRPC to use this feature.")
+                warn(
+                    "CytoscapeRPC too old, cannot create network without view."
+                    " Consider upgrading CytoscapeRPC to use this feature."
+                )
                 network_id = cy.createNetwork(name)
         else:
             network_id = cy.createNetwork(name)
@@ -677,7 +701,7 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
             if isinstance(node_ids, str):
                 node_ids = graph.vs[node_ids]
         else:
-            node_ids = range(graph.vcount())
+            node_ids = list(range(graph.vcount()))
         node_ids = [str(identifier) for identifier in node_ids]
         cy.createNodes(network_id, node_ids)
 
@@ -686,11 +710,13 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         for v1, v2 in graph.get_edgelist():
             edgelists[0].append(node_ids[v1])
             edgelists[1].append(node_ids[v2])
-        edge_ids = cy.createEdges(network_id,
-                edgelists[0], edgelists[1],
-                ["unknown"] * graph.ecount(),
-                [graph.is_directed()] * graph.ecount(),
-                False
+        edge_ids = cy.createEdges(
+            network_id,
+            edgelists[0],
+            edgelists[1],
+            ["unknown"] * graph.ecount(),
+            [graph.is_directed()] * graph.ecount(),
+            False,
         )
 
         if "layout" in kwds:
@@ -698,9 +724,8 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
             layout = self.ensure_layout(kwds["layout"], graph)
             size = 100 * graph.vcount() ** 0.5
             layout.fit_into((size, size), keep_aspect_ratio=True)
-            layout.translate(-size/2., -size/2.)
-            cy.setNodesPositions(network_id,
-                    node_ids, *zip(*list(layout)))
+            layout.translate(-size / 2.0, -size / 2.0)
+            cy.setNodesPositions(network_id, node_ids, *list(zip(*list(layout))))
         else:
             # Ask Cytoscape to perform the default layout so the user can
             # at least see something in Cytoscape while the attributes are
@@ -717,8 +742,9 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
 
             # Resolve type conflicts (if any)
             try:
-                while attr in attr_names and \
-                      cy.getNetworkAttributeType(attr) != cy_type:
+                while (
+                    attr in attr_names and cy.getNetworkAttributeType(attr) != cy_type
+                ):
                     attr += "_"
             except Fault:
                 # getNetworkAttributeType is not available in some older versions
@@ -730,11 +756,9 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         attr_names = set(cy.getNodeAttributeNames())
         for attr in graph.vertex_attributes():
             cy_type, values = self.infer_cytoscape_type(graph.vs[attr])
-            values = dict(pair for pair in izip(node_ids, values)
-                    if pair[1] is not None)
+            values = dict(pair for pair in zip(node_ids, values) if pair[1] is not None)
             # Resolve type conflicts (if any)
-            while attr in attr_names and \
-                  cy.getNodeAttributeType(attr) != cy_type:
+            while attr in attr_names and cy.getNodeAttributeType(attr) != cy_type:
                 attr += "_"
             # Send the attribute values
             cy.addNodeAttributes(attr, cy_type, values, True)
@@ -743,16 +767,14 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         attr_names = set(cy.getEdgeAttributeNames())
         for attr in graph.edge_attributes():
             cy_type, values = self.infer_cytoscape_type(graph.es[attr])
-            values = dict(pair for pair in izip(edge_ids, values)
-                    if pair[1] is not None)
+            values = dict(pair for pair in zip(edge_ids, values) if pair[1] is not None)
             # Resolve type conflicts (if any)
-            while attr in attr_names and \
-                  cy.getEdgeAttributeType(attr) != cy_type:
+            while attr in attr_names and cy.getEdgeAttributeType(attr) != cy_type:
                 attr += "_"
             # Send the attribute values
             cy.addEdgeAttributes(attr, cy_type, values)
 
-    def fetch(self, name = None, directed = False, keep_canonical_names = False):
+    def fetch(self, name=None, directed=False, keep_canonical_names=False):
         """Fetches the network with the given name from Cytoscape.
 
         When fetching networks from Cytoscape, the C{canonicalName} attributes
@@ -774,15 +796,15 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
             version = version.split(" ")[0]
         version = tuple(map(int, version.split(".")[:2]))
         if version < (1, 3):
-            raise NotImplementedError("CytoscapeGraphDrawer requires "
-                                      "Cytoscape-RPC 1.3 or newer")
+            raise NotImplementedError(
+                "CytoscapeGraphDrawer requires " "Cytoscape-RPC 1.3 or newer"
+            )
 
         # Find out the ID of the network we are interested in
         if name is None:
             network_id = cy.getNetworkID()
         else:
-            network_id = [k for k, v in cy.getNetworkList().iteritems()
-                          if v == name]
+            network_id = [k for k, v in cy.getNetworkList().items() if v == name]
             if not network_id:
                 raise ValueError("no such network: %r" % name)
             elif len(network_id) > 1:
@@ -805,11 +827,11 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
                 continue
             has_attr = cy.nodesHaveAttribute(attr_name, vertices)
             filtered = [idx for idx, ok in enumerate(has_attr) if ok]
-            values = cy.getNodesAttributes(attr_name,
-                    [name for name, ok in izip(vertices, has_attr) if ok]
+            values = cy.getNodesAttributes(
+                attr_name, [name for name, ok in zip(vertices, has_attr) if ok]
             )
             attrs = [None] * n
-            for idx, value in izip(filtered, values):
+            for idx, value in zip(filtered, values):
                 attrs[idx] = value
             vertex_attrs[attr_name] = attrs
 
@@ -821,11 +843,11 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
                 continue
             has_attr = cy.edgesHaveAttribute(attr_name, edges)
             filtered = [idx for idx, ok in enumerate(has_attr) if ok]
-            values = cy.getEdgesAttributes(attr_name,
-                    [name for name, ok in izip(edges, has_attr) if ok]
+            values = cy.getEdgesAttributes(
+                attr_name, [name for name, ok in zip(edges, has_attr) if ok]
             )
             attrs = [None] * m
-            for idx, value in izip(filtered, values):
+            for idx, value in zip(filtered, values):
                 attrs[idx] = value
             edge_attrs[attr_name] = attrs
 
@@ -840,9 +862,14 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
             edge_list.append((vertex_name_index[parts[0]], vertex_name_index[parts[2]]))
         del edges
 
-        return Graph(n, edge_list, directed=directed,
-                graph_attrs=graph_attrs, vertex_attrs=vertex_attrs,
-                edge_attrs=edge_attrs)
+        return Graph(
+            n,
+            edge_list,
+            directed=directed,
+            graph_attrs=graph_attrs,
+            vertex_attrs=vertex_attrs,
+            edge_attrs=edge_attrs,
+        )
 
     @staticmethod
     def infer_cytoscape_type(values):
@@ -858,16 +885,17 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         types = [type(value) for value in values if value is not None]
         if all(t == bool for t in types):
             return "BOOLEAN", values
-        if all(issubclass(t, (int, long)) for t in types):
+        if all(issubclass(t, (int, int)) for t in types):
             return "INTEGER", values
         if all(issubclass(t, float) for t in types):
             return "FLOATING", values
         return "STRING", [
-                str(value) if not isinstance(value, basestring) else value
-                for value in values
+            str(value) if not isinstance(value, str) else value for value in values
         ]
 
+
 #####################################################################
+
 
 class GephiGraphStreamingDrawer(AbstractGraphDrawer):
     """Graph drawer that sends a graph to a file-like object (e.g., socket, URL
@@ -913,6 +941,7 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
         super(GephiGraphStreamingDrawer, self).__init__()
 
         from igraph.remote.gephi import GephiGraphStreamer, GephiConnection
+
         self.connection = conn or GephiConnection(*args, **kwds)
         self.streamer = GephiGraphStreamer()
 
@@ -927,20 +956,20 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
         """
         self.streamer.post(graph, self.connection, encoder=kwds.get("encoder"))
 
+
 #####################################################################
+
 
 class MatplotlibGraphDrawer(AbstractGraphDrawer):
     """Graph drawer that uses a pyplot.Axes as context"""
 
     _shape_dict = {
-        'rectangle': 's',
-        'circle': 'o',
-        'hidden': 'none',
-        'triangle-up': '^',
-        'triangle-down': 'v',
+        "rectangle": "s",
+        "circle": "o",
+        "hidden": "none",
+        "triangle-up": "^",
+        "triangle-down": "v",
     }
-
-
 
     def __init__(self, ax):
         """Constructs the graph drawer and associates it with the mpl axes"""
@@ -956,9 +985,9 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         import numpy as np
 
         def shrink_vertex(ax, aux, vcoord, vsize_squared):
-            '''Shrink edge by vertex size'''
+            """Shrink edge by vertex size"""
             aux_display, vcoord_display = ax.transData.transform([aux, vcoord])
-            d = sqrt(((aux_display - vcoord_display)**2).sum())
+            d = sqrt(((aux_display - vcoord_display) ** 2).sum())
             fr = sqrt(vsize_squared) / d
             end_display = vcoord_display + fr * (aux_display - vcoord_display)
             end = ax.transData.inverted().transform(end_display)
@@ -982,7 +1011,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # FIXME: deal with unnamed *args
 
         # Get layout
-        layout = kwds.get('layout', graph.layout())
+        layout = kwds.get("layout", graph.layout())
         if isinstance(layout, str):
             layout = graph.layout(layout)
 
@@ -993,7 +1022,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         nv = graph.vcount()
 
         # Vertex size
-        vsizes = kwds.get('vertex_size', 5)
+        vsizes = kwds.get("vertex_size", 5)
         # Enforce numpy array for sizes, because (1) we need the square and (2)
         # they are needed to calculate autoshrinking of edges
         if np.isscalar(vsizes):
@@ -1004,24 +1033,24 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         vsizes **= 2
 
         # Vertex color
-        c = kwds.get('vertex_color', 'steelblue')
+        c = kwds.get("vertex_color", "steelblue")
 
         # Vertex opacity
-        alpha = kwds.get('alpha', 1.0)
+        alpha = kwds.get("alpha", 1.0)
 
         # Vertex labels
-        label = kwds.get('vertex_label', None)
+        label = kwds.get("vertex_label", None)
 
         # Vertex label size
-        label_size = kwds.get('vertex_label_size', mpl.rcParams['font.size'])
+        label_size = kwds.get("vertex_label_size", mpl.rcParams["font.size"])
 
         # Vertex zorder
-        vzorder = kwds.get('vertex_order', 2)
+        vzorder = kwds.get("vertex_order", 2)
 
         # Vertex shapes
         # mpl shapes use slightly different names from Cairo, but we want the
         # API to feel consistent, so we use a conversion dictionary
-        shapes = kwds.get('vertex_shape', 'o')
+        shapes = kwds.get("vertex_shape", "o")
         if shapes is not None:
             if isinstance(shapes, str):
                 shapes = self._shape_dict.get(shapes, shapes)
@@ -1038,19 +1067,19 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 xi, yi = x[i], y[i]
                 ax.text(xi, yi, lab, fontsize=label_size)
 
-        dx = (max(x) - min(x))
-        dy = (max(y) - min(y))
+        dx = max(x) - min(x)
+        dy = max(y) - min(y)
         ax.set_xlim(min(x) - 0.05 * dx, max(x) + 0.05 * dx)
         ax.set_ylim(min(y) - 0.05 * dy, max(y) + 0.05 * dy)
 
         # Edge properties
         ne = graph.ecount()
-        ec = kwds.get('edge_color', 'black')
-        edge_width = kwds.get('edge_width', 1)
-        arrow_width = kwds.get('edge_arrow_width', 2)
-        arrow_length = kwds.get('edge_arrow_size', 4)
-        ealpha = kwds.get('edge_alpha', 1.0)
-        ezorder = kwds.get('edge_order', 1.0)
+        ec = kwds.get("edge_color", "black")
+        edge_width = kwds.get("edge_width", 1)
+        arrow_width = kwds.get("edge_arrow_width", 2)
+        arrow_length = kwds.get("edge_arrow_size", 4)
+        ealpha = kwds.get("edge_alpha", 1.0)
+        ezorder = kwds.get("edge_order", 1.0)
         try:
             ezorder = float(ezorder)
             ezorder = [ezorder] * ne
@@ -1060,10 +1089,14 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # Decide whether we need to calculate the curvature of edges
         # automatically -- and calculate them if needed.
         autocurve = kwds.get("autocurve", None)
-        if autocurve or (autocurve is None and \
-                "edge_curved" not in kwds and "curved" not in graph.edge_attributes() \
-                and graph.ecount() < 10000):
+        if autocurve or (
+            autocurve is None
+            and "edge_curved" not in kwds
+            and "curved" not in graph.edge_attributes()
+            and graph.ecount() < 10000
+        ):
             from igraph import autocurve
+
             default = kwds.get("edge_curved", 0)
             if default is True:
                 default = 0.5
@@ -1073,14 +1106,16 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # Arrow style for directed and undirected graphs
         if graph.is_directed():
             arrowstyle = ArrowStyle(
-                '-|>', head_length=arrow_length, head_width=arrow_width,
+                "-|>",
+                head_length=arrow_length,
+                head_width=arrow_width,
             )
         else:
-            arrowstyle = '-'
+            arrowstyle = "-"
 
         # Edge coordinates and curvature
         nloops = [0 for x in range(ne)]
-        has_curved = 'curved' in graph.es.attributes()
+        has_curved = "curved" in graph.es.attributes()
         arrows = []
         for ie, edge in enumerate(graph.es):
             src, tgt = edge.source, edge.target
@@ -1097,7 +1132,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                         nloopstot += 1
                         continue
                     xn, yn = vcoord[tgtn]
-                    angles.append(180. / pi * atan2(yn - y1, xn - x1) % 360)
+                    angles.append(180.0 / pi * atan2(yn - y1, xn - x1) % 360)
                 # with .neighbors(mode=ALL), which is default, loops are double
                 # counted
                 nloopstot //= 2
@@ -1110,9 +1145,11 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                         # Only one self loop, use a quadrant only
                         angles = [(ashift + 135) % 360, (ashift + 225) % 360]
                     else:
-                        nshift = 360. / nloopstot
-                        angles = [(ashift + nshift * nloops[src]) % 360,
-                                  (ashift + nshift * (nloops[src] + 1)) % 360]
+                        nshift = 360.0 / nloopstot
+                        angles = [
+                            (ashift + nshift * nloops[src]) % 360,
+                            (ashift + nshift * (nloops[src] + 1)) % 360,
+                        ]
                     nloops[src] += 1
                 else:
                     angles.append(angles[0] + 360)
@@ -1123,11 +1160,13 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                         if diffi > diff:
                             idiff = i
                             diff = diffi
-                    angles = angles[idiff: idiff + 2]
+                    angles = angles[idiff : idiff + 2]
                     ashift = angles[0]
                     nshift = (angles[1] - angles[0]) / nloopstot
-                    angles = [(ashift + nshift * nloops[src]),
-                              (ashift + nshift * (nloops[src] + 1))]
+                    angles = [
+                        (ashift + nshift * nloops[src]),
+                        (ashift + nshift * (nloops[src] + 1)),
+                    ]
                     nloops[src] += 1
 
                 # this is not great, but alright
@@ -1138,32 +1177,40 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 else:
                     angmid1 = angles[0] + 0.5 * (angspan - 180) + 45
                     angmid2 = angles[1] - 0.5 * (angspan - 180) - 45
-                aux1 = (x1 + 0.2 * dx * cos(pi / 180 * angmid1),
-                        y1 + 0.2 * dy * sin(pi / 180 * angmid1))
-                aux2 = (x1 + 0.2 * dx * cos(pi / 180 * angmid2),
-                        y1 + 0.2 * dy * sin(pi / 180 * angmid2))
+                aux1 = (
+                    x1 + 0.2 * dx * cos(pi / 180 * angmid1),
+                    y1 + 0.2 * dy * sin(pi / 180 * angmid1),
+                )
+                aux2 = (
+                    x1 + 0.2 * dx * cos(pi / 180 * angmid2),
+                    y1 + 0.2 * dy * sin(pi / 180 * angmid2),
+                )
                 start = shrink_vertex(ax, aux1, (x1, y1), vsizes[src])
                 end = shrink_vertex(ax, aux2, (x2, y2), vsizes[tgt])
 
                 path = Path(
                     [start, aux1, aux2, end],
                     # Cubic bezier by mpl
-                    codes=[1, 4, 4, 4])
+                    codes=[1, 4, 4, 4],
+                )
 
             else:
-                curved = edge['curved'] if has_curved else False
+                curved = edge["curved"] if has_curved else False
                 if curved:
-                    aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), \
-                           (2 * y1 + y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
-                    aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), \
-                           (y1 + 2 * y2) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+                    aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
+                        2 * y1 + y2
+                    ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+                    aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
+                        y1 + 2 * y2
+                    ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
                     start = shrink_vertex(ax, aux1, (x1, y1), vsizes[src])
                     end = shrink_vertex(ax, aux2, (x2, y2), vsizes[tgt])
 
                     path = Path(
                         [start, aux1, aux2, end],
                         # Cubic bezier by mpl
-                        codes=[1, 4, 4, 4])
+                        codes=[1, 4, 4, 4],
+                    )
                 else:
                     start = shrink_vertex(ax, (x2, y2), (x1, y1), vsizes[src])
                     end = shrink_vertex(ax, (x1, y1), (x2, y2), vsizes[tgt])
@@ -1176,7 +1223,8 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 lw=edge_width,
                 color=ec,
                 alpha=ealpha,
-                zorder=ezorder[ie])
+                zorder=ezorder[ie],
+            )
             ax.add_artist(arrow)
 
             # Store arrows and their sources and targets for autoscaling
@@ -1184,6 +1232,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
         # Autoscaling during zoom, figure resize, reset axis limits
         callback = callback_factory(ax, vcoord, vsizes, arrows)
-        ax.get_figure().canvas.mpl_connect('resize_event', callback)
-        ax.callbacks.connect('xlim_changed', callback)
-        ax.callbacks.connect('ylim_changed', callback)
+        ax.get_figure().canvas.mpl_connect("resize_event", callback)
+        ax.callbacks.connect("xlim_changed", callback)
+        ax.callbacks.connect("ylim_changed", callback)

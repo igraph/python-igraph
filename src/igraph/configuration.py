@@ -29,8 +29,9 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 """
 
 import sys
+
 if sys.version_info < (3, 2):
-    from ConfigParser import SafeConfigParser as ConfigParser
+    from configparser import SafeConfigParser as ConfigParser
 else:
     from configparser import ConfigParser
 
@@ -46,9 +47,21 @@ def get_platform_image_viewer():
         return "open"
     elif plat == "Linux":
         # Linux has a whole lot of choices, try to find one
-        choices = ["eog", "gthumb", "gqview", "kuickshow", "xnview", "display",
-                   "gpicview", "gwenview", "qiv", "gimv", "ristretto",
-                   "geeqie", "eom"]
+        choices = [
+            "eog",
+            "gthumb",
+            "gqview",
+            "kuickshow",
+            "xnview",
+            "display",
+            "gpicview",
+            "gwenview",
+            "qiv",
+            "gimv",
+            "ristretto",
+            "geeqie",
+            "eom",
+        ]
         paths = ["/usr/bin", "/bin"]
         for path in paths:
             for choice in choices:
@@ -58,9 +71,19 @@ def get_platform_image_viewer():
         return ""
     elif plat == "FreeBSD":
         # FreeBSD also has a whole lot of choices, try to find one
-        choices = ["eog", "gthumb", "geeqie", "display",
-                   "gpicview", "gwenview", "qiv", "gimv", "ristretto",
-                   "geeqie", "eom"]
+        choices = [
+            "eog",
+            "gthumb",
+            "geeqie",
+            "display",
+            "gpicview",
+            "gwenview",
+            "qiv",
+            "gimv",
+            "ristretto",
+            "geeqie",
+            "eom",
+        ]
         paths = ["%%LOCALBASE%%/bin"]
         for path in paths:
             for choice in choices:
@@ -68,7 +91,7 @@ def get_platform_image_viewer():
                 if os.path.isfile(full_path):
                     return full_path
         return ""
-    elif plat == "Windows" or plat == "Microsoft":    # Thanks to Dale Hunscher
+    elif plat == "Windows" or plat == "Microsoft":  # Thanks to Dale Hunscher
         # Use the built-in Windows image viewer, if available
         return "start"
     else:
@@ -232,53 +255,21 @@ class Configuration(object):
             obj.set(section, key, str(float(value)))
 
     _types = {
-        "boolean": {
-            "getter": ConfigParser.getboolean,
-            "setter": Types.setboolean
-        },
-        "int": {
-            "getter": ConfigParser.getint,
-            "setter": Types.setint
-        },
-        "float": {
-            "getter": ConfigParser.getfloat,
-            "setter": Types.setfloat
-        }
+        "boolean": {"getter": ConfigParser.getboolean, "setter": Types.setboolean},
+        "int": {"getter": ConfigParser.getint, "setter": Types.setint},
+        "float": {"getter": ConfigParser.getfloat, "setter": Types.setfloat},
     }
 
     _sections = ("general", "apps", "plotting", "remote", "shell")
     _definitions = {
-        "general.shells": {
-            "default": "IPythonShell,ClassicPythonShell"
-        },
-        "general.verbose": {
-            "default": True,
-            "type": "boolean"
-        },
-
-        "apps.image_viewer": {
-            "default": get_platform_image_viewer()
-        },
-
-        "plotting.layout": {
-            "default": "auto"
-        },
-        "plotting.mark_groups": {
-            "default": False,
-            "type": "boolean"
-        },
-        "plotting.palette": {
-            "default": "gray"
-        },
-        "plotting.wrap_labels": {
-            "default": False,
-            "type": "boolean"
-        },
-
-        "shell.ipython.inlining.Plot": {
-            "default": True,
-            "type": "boolean"
-        }
+        "general.shells": {"default": "IPythonShell,ClassicPythonShell"},
+        "general.verbose": {"default": True, "type": "boolean"},
+        "apps.image_viewer": {"default": get_platform_image_viewer()},
+        "plotting.layout": {"default": "auto"},
+        "plotting.mark_groups": {"default": False, "type": "boolean"},
+        "plotting.palette": {"default": "gray"},
+        "plotting.wrap_labels": {"default": False, "type": "boolean"},
+        "shell.ipython.inlining.Plot": {"default": True, "type": "boolean"},
     }
 
     # The singleton instance we are using throughout other modules
@@ -296,7 +287,7 @@ class Configuration(object):
         for sec in self._sections:
             self._config.add_section(sec)
         # Create default values
-        for name, definition in self._definitions.iteritems():
+        for name, definition in self._definitions.items():
             if "default" in definition:
                 self[name] = definition["default"]
 
@@ -410,7 +401,7 @@ class Configuration(object):
           loaded.
         """
         stream = stream or get_user_config_file()
-        if isinstance(stream, basestring):
+        if isinstance(stream, str):
             stream = open(stream, "r")
             file_was_open = True
         self._config.readfp(stream)
@@ -464,4 +455,3 @@ def init():
 
     @return: the L{Configuration} object loaded or created."""
     return Configuration.instance()
-

@@ -5,7 +5,7 @@ import unittest
 import warnings
 
 from igraph import *
-from igraph.compat import isnan
+from math import isnan
 
 class SimplePropertiesTests(unittest.TestCase):
     gfull  = Graph.Full(10)

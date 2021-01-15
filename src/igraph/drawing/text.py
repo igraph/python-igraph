@@ -6,7 +6,6 @@ Drawers for labels on plots.
 
 import re
 
-from igraph.compat import property
 from igraph.drawing.baseclasses import AbstractCairoDrawer
 from warnings import warn
 
@@ -17,13 +16,16 @@ __docformat__ = "restructuredtext en"
 
 #####################################################################
 
+
 class TextAlignment(object):
     """Text alignment constants."""
 
     LEFT, CENTER, RIGHT = "left", "center", "right"
     TOP, BOTTOM = "top", "bottom"
 
+
 #####################################################################
+
 
 class TextDrawer(AbstractCairoDrawer):
     """Class that draws text on a Cairo context.
@@ -70,7 +72,7 @@ class TextDrawer(AbstractCairoDrawer):
             dy = bbox.height - total_height - yb + font_descent
         elif self.valign == self.CENTER:
             # Centered vertical alignment
-            dy = (bbox.height - total_height - yb + font_descent + line_height) / 2.
+            dy = (bbox.height - total_height - yb + font_descent + line_height) / 2.0
         else:
             # Top vertical alignment
             dy = line_height
@@ -80,7 +82,7 @@ class TextDrawer(AbstractCairoDrawer):
             ctx.show_text(line)
         ctx.new_path()
 
-    def get_text_layout(self, x = None, y = None, width = None, wrap = False):
+    def get_text_layout(self, x=None, y=None, width=None, wrap=False):
         """Calculates the layout of the current text. `x` and `y` denote the
         coordinates where the drawing should start. If they are both ``None``,
         the current position of the context will be used.
@@ -131,7 +133,7 @@ class TextDrawer(AbstractCairoDrawer):
             if width is None:
                 width = self.text_extents()[2]
             for line, line_width, x_bearing in iterlines:
-                result.append((x + (width-line_width)/2. - x_bearing, y, line))
+                result.append((x + (width - line_width) / 2.0 - x_bearing, y, line))
                 y += line_height
 
         elif self.halign == self.RIGHT:
@@ -146,12 +148,12 @@ class TextDrawer(AbstractCairoDrawer):
         else:
             # Left alignment
             for line, _, x_bearing in iterlines:
-                result.append((x-x_bearing, y, line))
+                result.append((x - x_bearing, y, line))
                 y += line_height
 
         return result
 
-    def draw_at(self, x = None, y = None, width = None, wrap = False):
+    def draw_at(self, x=None, y=None, width=None, wrap=False):
         """Draws the text by setting up an appropriate path on the Cairo
         context and filling it. `x` and `y` denote the coordinates where the
         drawing should start. If they are both ``None``, the current position
@@ -263,8 +265,14 @@ class TextDrawer(AbstractCairoDrawer):
         if len(lines) <= 1:
             return self.context.text_extents(self.text)
 
-        x_bearing, y_bearing, width, height, x_advance, y_advance = \
-            self.context.text_extents(lines[0])
+        (
+            x_bearing,
+            y_bearing,
+            width,
+            height,
+            x_advance,
+            y_advance,
+        ) = self.context.text_extents(lines[0])
 
         line_height = self.context.font_extents()[2]
         for line in lines[1:]:
@@ -275,10 +283,12 @@ class TextDrawer(AbstractCairoDrawer):
 
         return x_bearing, y_bearing, width, height, x_advance, y_advance
 
+
 def test():
     """Testing routine for L{TextDrawer}"""
     import math
     from igraph.drawing.utils import find_cairo
+
     cairo = find_cairo()
 
     text = "The quick brown fox\njumps over a\nlazy dog"
@@ -289,7 +299,7 @@ def test():
     drawer = TextDrawer(context, text)
 
     context.set_source_rgb(1, 1, 1)
-    context.set_font_size(16.)
+    context.set_font_size(16.0)
     context.rectangle(0, 0, width, height)
     context.fill()
 
@@ -344,15 +354,17 @@ def test():
             context.set_source_rgb(0, 0, 0)
             drawer.halign = halign
             drawer.valign = valign
-            drawer.bbox = (i*200, j*200+200, i*200+200, j*200+400)
+            drawer.bbox = (i * 200, j * 200 + 200, i * 200 + 200, j * 200 + 400)
             drawer.draw()
             # Mark the new reference point
             mark_point(1, 0, 0)
 
     # Testing TextDrawer.wrap()
-    drawer.text = "Jackdaws love my big sphinx of quartz. Yay, wrapping! " + \
-                  "Jackdaws love my big sphinx of quartz.\n\n" + \
-                  "Jackdaws  love  my  big  sphinx  of  quartz."
+    drawer.text = (
+        "Jackdaws love my big sphinx of quartz. Yay, wrapping! "
+        + "Jackdaws love my big sphinx of quartz.\n\n"
+        + "Jackdaws  love  my  big  sphinx  of  quartz."
+    )
     drawer.valign = TextDrawer.TOP
     for i, halign in enumerate(("left", "center", "right")):
         context.move_to(i * 200, 840)
@@ -370,6 +382,6 @@ def test():
 
     surface.write_to_png("test.png")
 
+
 if __name__ == "__main__":
     test()
-

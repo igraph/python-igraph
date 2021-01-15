@@ -10,9 +10,9 @@ from igraph.drawing.metamagic import AttributeCollectorBase
 from igraph.drawing.shapes import ShapeDrawerDirectory
 from math import pi
 
-__all__ = ["AbstractVertexDrawer", "AbstractCairoVertexDrawer", \
-        "DefaultVertexDrawer"]
+__all__ = ["AbstractVertexDrawer", "AbstractCairoVertexDrawer", "DefaultVertexDrawer"]
 __license__ = "GPL"
+
 
 class AbstractVertexDrawer(AbstractDrawer):
     """Abstract vertex drawer object from which all concrete vertex drawer
@@ -31,7 +31,7 @@ class AbstractVertexDrawer(AbstractDrawer):
 
     def draw(self, visual_vertex, vertex, coords):
         """Draws the given vertex.
-        
+
         @param visual_vertex: object specifying the visual properties of the
             vertex. Its structure is defined by the VisualVertexBuilder of the
             L{DefaultGraphDrawer}; see its source code.
@@ -40,6 +40,7 @@ class AbstractVertexDrawer(AbstractDrawer):
             layout algorithm, scaled into the bounding box.
         """
         raise NotImplementedError("abstract class")
+
 
 class AbstractCairoVertexDrawer(AbstractVertexDrawer, AbstractCairoDrawer):
     """Abstract base class for vertex drawers that draw on a Cairo canvas."""
@@ -60,6 +61,7 @@ class AbstractCairoVertexDrawer(AbstractVertexDrawer, AbstractCairoDrawer):
         AbstractCairoDrawer.__init__(self, context, bbox)
         AbstractVertexDrawer.__init__(self, palette, layout)
 
+
 class DefaultVertexDrawer(AbstractCairoVertexDrawer):
     """The default vertex drawer implementation of igraph."""
 
@@ -70,28 +72,38 @@ class DefaultVertexDrawer(AbstractCairoVertexDrawer):
     def _construct_visual_vertex_builder(self):
         class VisualVertexBuilder(AttributeCollectorBase):
             """Collects some visual properties of a vertex for drawing"""
+
             _kwds_prefix = "vertex_"
             color = ("red", self.palette.get)
             frame_color = ("black", self.palette.get)
             frame_width = 1.0
             label = None
-            label_angle = -pi/2
-            label_dist  = 0.0
+            label_angle = -pi / 2
+            label_dist = 0.0
             label_color = ("black", self.palette.get)
-            font = 'sans-serif'
-            label_size  = 14.0
+            font = "sans-serif"
+            label_size = 14.0
             position = dict(func=self.layout.__getitem__)
             shape = ("circle", ShapeDrawerDirectory.resolve_default)
             size = 20.0
             width = None
             height = None
+
         return VisualVertexBuilder
 
     def draw(self, visual_vertex, vertex, coords):
         context = self.context
 
-        width = visual_vertex.width if visual_vertex.width is not None else visual_vertex.size
-        height = visual_vertex.height if visual_vertex.height is not None else visual_vertex.size
+        width = (
+            visual_vertex.width
+            if visual_vertex.width is not None
+            else visual_vertex.size
+        )
+        height = (
+            visual_vertex.height
+            if visual_vertex.height is not None
+            else visual_vertex.size
+        )
 
         visual_vertex.shape.draw_path(context, coords[0], coords[1], width, height)
         context.set_source_rgba(*visual_vertex.color)
@@ -99,5 +111,3 @@ class DefaultVertexDrawer(AbstractCairoVertexDrawer):
         context.set_source_rgba(*visual_vertex.frame_color)
         context.set_line_width(visual_vertex.frame_width)
         context.stroke()
-
-

@@ -19,7 +19,6 @@ unless explicitly stated by C{global.shells}, since Linux and
 Mac OS X users are likely to invoke igraph from the command line.
 """
 
-from __future__ import print_function
 
 import re
 import sys
@@ -72,40 +71,41 @@ class TerminalController:
 
     @author: Edward Loper
     """
+
     # Cursor movement:
-    BOL = ''             #: Move the cursor to the beginning of the line
-    UP = ''              #: Move the cursor up one line
-    DOWN = ''            #: Move the cursor down one line
-    LEFT = ''            #: Move the cursor left one char
-    RIGHT = ''           #: Move the cursor right one char
+    BOL = ""  #: Move the cursor to the beginning of the line
+    UP = ""  #: Move the cursor up one line
+    DOWN = ""  #: Move the cursor down one line
+    LEFT = ""  #: Move the cursor left one char
+    RIGHT = ""  #: Move the cursor right one char
 
     # Deletion:
-    CLEAR_SCREEN = ''    #: Clear the screen and move to home position
-    CLEAR_EOL = ''       #: Clear to the end of the line.
-    CLEAR_BOL = ''       #: Clear to the beginning of the line.
-    CLEAR_EOS = ''       #: Clear to the end of the screen
+    CLEAR_SCREEN = ""  #: Clear the screen and move to home position
+    CLEAR_EOL = ""  #: Clear to the end of the line.
+    CLEAR_BOL = ""  #: Clear to the beginning of the line.
+    CLEAR_EOS = ""  #: Clear to the end of the screen
 
     # Output modes:
-    BOLD = ''            #: Turn on bold mode
-    BLINK = ''           #: Turn on blink mode
-    DIM = ''             #: Turn on half-bright mode
-    REVERSE = ''         #: Turn on reverse-video mode
-    NORMAL = ''          #: Turn off all modes
+    BOLD = ""  #: Turn on bold mode
+    BLINK = ""  #: Turn on blink mode
+    DIM = ""  #: Turn on half-bright mode
+    REVERSE = ""  #: Turn on reverse-video mode
+    NORMAL = ""  #: Turn off all modes
 
     # Cursor display:
-    HIDE_CURSOR = ''     #: Make the cursor invisible
-    SHOW_CURSOR = ''     #: Make the cursor visible
+    HIDE_CURSOR = ""  #: Make the cursor invisible
+    SHOW_CURSOR = ""  #: Make the cursor visible
 
     # Terminal size:
-    COLS = None          #: Width of the terminal (None for unknown)
-    LINES = None         #: Height of the terminal (None for unknown)
+    COLS = None  #: Width of the terminal (None for unknown)
+    LINES = None  #: Height of the terminal (None for unknown)
 
     # Foreground colors:
-    BLACK = BLUE = GREEN = CYAN = RED = MAGENTA = YELLOW = WHITE = ''
+    BLACK = BLUE = GREEN = CYAN = RED = MAGENTA = YELLOW = WHITE = ""
 
     # Background colors:
-    BG_BLACK = BG_BLUE = BG_GREEN = BG_CYAN = ''
-    BG_RED = BG_MAGENTA = BG_YELLOW = BG_WHITE = ''
+    BG_BLACK = BG_BLUE = BG_GREEN = BG_CYAN = ""
+    BG_RED = BG_MAGENTA = BG_YELLOW = BG_WHITE = ""
 
     _STRING_CAPABILITIES = """
     BOL=cr UP=cuu1 DOWN=cud1 LEFT=cub1 RIGHT=cuf1
@@ -137,35 +137,35 @@ class TerminalController:
         # terminal has no capabilities.
         try:
             curses.setupterm()
-        except StandardError:
+        except Exception:
             return
 
         # Look up numeric capabilities.
-        self.COLS = curses.tigetnum('cols')
-        self.LINES = curses.tigetnum('lines')
+        self.COLS = curses.tigetnum("cols")
+        self.LINES = curses.tigetnum("lines")
 
         # Look up string capabilities.
         for capability in self._STRING_CAPABILITIES:
-            (attrib, cap_name) = capability.split('=')
-            setattr(self, attrib, self._tigetstr(cap_name) or '')
+            (attrib, cap_name) = capability.split("=")
+            setattr(self, attrib, self._tigetstr(cap_name) or "")
 
         # Colors
-        set_fg = self._tigetstr('setf')
+        set_fg = self._tigetstr("setf")
         if set_fg:
             for i, color in zip(range(len(self._COLORS)), self._COLORS):
-                setattr(self, color, self._tparm(set_fg, i) or '')
-        set_fg_ansi = self._tigetstr('setaf')
+                setattr(self, color, self._tparm(set_fg, i) or "")
+        set_fg_ansi = self._tigetstr("setaf")
         if set_fg_ansi:
             for i, color in zip(range(len(self._ANSICOLORS)), self._ANSICOLORS):
-                setattr(self, color, self._tparm(set_fg_ansi, i) or '')
-        set_bg = self._tigetstr('setb')
+                setattr(self, color, self._tparm(set_fg_ansi, i) or "")
+        set_bg = self._tigetstr("setb")
         if set_bg:
             for i, color in zip(range(len(self._COLORS)), self._COLORS):
-                setattr(self, 'BG_'+color, self._tparm(set_bg, i) or '')
-        set_bg_ansi = self._tigetstr('setab')
+                setattr(self, "BG_" + color, self._tparm(set_bg, i) or "")
+        set_bg_ansi = self._tigetstr("setab")
         if set_bg_ansi:
             for i, color in zip(range(len(self._ANSICOLORS)), self._ANSICOLORS):
-                setattr(self, 'BG_'+color, self._tparm(set_bg_ansi, i) or '')
+                setattr(self, "BG_" + color, self._tparm(set_bg_ansi, i) or "")
 
     @staticmethod
     def _tigetstr(cap_name):
@@ -175,14 +175,16 @@ class TerminalController:
         # For any modern terminal, we should be able to just ignore
         # these, so strip them out.
         import curses
-        cap = curses.tigetstr(cap_name) or b''
+
+        cap = curses.tigetstr(cap_name) or b""
         cap = cap.decode("latin-1")
-        return re.sub(r'\$<\d+>[/*]?', '', cap)
+        return re.sub(r"\$<\d+>[/*]?", "", cap)
 
     @staticmethod
     def _tparm(cap_name, param):
         import curses
-        cap = curses.tparm(cap_name.encode("latin-1"), param) or b''
+
+        cap = curses.tparm(cap_name.encode("latin-1"), param) or b""
         return cap.decode("latin-1")
 
     def render(self, template):
@@ -191,12 +193,12 @@ class TerminalController:
         the corresponding terminal control string (if it's defined) or
         '' (if it's not).
         """
-        return re.sub('r\$\$|\${\w+}', self._render_sub, template)
+        return re.sub("r\$\$|\${\w+}", self._render_sub, template)
 
     def _render_sub(self, match):
         """Helper function for L{render}"""
         s = match.group()
-        if s == '$$':
+        if s == "$$":
             return s
         else:
             return getattr(self, s[2:-1])
@@ -212,18 +214,21 @@ class ProgressBar:
     The progress bar is colored, if the terminal supports color
     output; and adjusts to the width of the terminal.
     """
-    BAR = '%3d%% ${GREEN}[${BOLD}%s%s${NORMAL}${GREEN}]${NORMAL}'
-    HEADER = '${BOLD}${CYAN}%s${NORMAL}\n'
+
+    BAR = "%3d%% ${GREEN}[${BOLD}%s%s${NORMAL}${GREEN}]${NORMAL}"
+    HEADER = "${BOLD}${CYAN}%s${NORMAL}\n"
 
     def __init__(self, term):
         self.term = term
         if not (self.term.CLEAR_EOL and self.term.UP and self.term.BOL):
-            raise ValueError("Terminal isn't capable enough -- you "
-                             "should use a simpler progress display.")
+            raise ValueError(
+                "Terminal isn't capable enough -- you "
+                "should use a simpler progress display."
+            )
         self.width = self.term.COLS or 75
         self.progress_bar = term.render(self.BAR)
         self.header = self.term.render(self.HEADER % "".center(self.width))
-        self.cleared = True     #: true if we haven't drawn the bar yet.
+        self.cleared = True  #: true if we haven't drawn the bar yet.
 
         self.last_percent = 0
         self.last_message = ""
@@ -237,7 +242,7 @@ class ProgressBar:
           C{None}, the previous message will be used.
         """
         if self.cleared:
-            sys.stdout.write("\n"+self.header)
+            sys.stdout.write("\n" + self.header)
             self.cleared = False
 
         if message is None:
@@ -250,12 +255,16 @@ class ProgressBar:
         else:
             self.last_percent = percent
 
-        n = int((self.width-10)*(percent/100.0))
+        n = int((self.width - 10) * (percent / 100.0))
         sys.stdout.write(
-            self.term.BOL + self.term.UP + self.term.UP + self.term.CLEAR_EOL +
-            self.term.render(self.HEADER % message.center(self.width)) +
-            (self.progress_bar % (percent, '='*n, '-'*(self.width-10-n))) + "\n"
-            )
+            self.term.BOL
+            + self.term.UP
+            + self.term.UP
+            + self.term.CLEAR_EOL
+            + self.term.render(self.HEADER % message.center(self.width))
+            + (self.progress_bar % (percent, "=" * n, "-" * (self.width - 10 - n)))
+            + "\n"
+        )
 
     def update_message(self, message):
         """Updates the message of the progress bar.
@@ -267,9 +276,14 @@ class ProgressBar:
     def clear(self):
         """Clears the progress bar (i.e. removes it from the screen)"""
         if not self.cleared:
-            sys.stdout.write(self.term.BOL + self.term.CLEAR_EOL +
-                             self.term.UP + self.term.CLEAR_EOL +
-                             self.term.UP + self.term.CLEAR_EOL)
+            sys.stdout.write(
+                self.term.BOL
+                + self.term.CLEAR_EOL
+                + self.term.UP
+                + self.term.CLEAR_EOL
+                + self.term.UP
+                + self.term.CLEAR_EOL
+            )
             self.cleared = True
             self.last_percent = 0
             self.last_message = ""
@@ -336,7 +350,7 @@ class IDLEShell(Shell):
         try:
             sys.ps1
         except AttributeError:
-            sys.ps1 = '>>> '
+            sys.ps1 = ">>> "
 
         root = idlelib.PyShell.Tk(className="Idle")
         idlelib.PyShell.fixwordbreaks(root)
@@ -421,6 +435,7 @@ class IPythonShell(Shell, ConsoleProgressBarMixin):
         import sys
 
         from IPython import __version__ as ipython_version
+
         self.ipython_version = ipython_version
 
         try:
@@ -434,6 +449,7 @@ class IPythonShell(Shell, ConsoleProgressBarMixin):
         except ImportError:
             # IPython 0.10 and earlier
             import IPython.Shell
+
             self._shell = IPython.Shell.start()
             self._shell.IP.runsource("from igraph import *")
             sys.argv.append("-nosep")
@@ -466,6 +482,7 @@ class ClassicPythonShell(Shell, ConsoleProgressBarMixin):
         """Starts the embedded shell."""
         if self._shell is None:
             from code import InteractiveConsole
+
             self._shell = InteractiveConsole()
             print("igraph %s running inside " % __version__, end="", file=sys.stderr)
             self._shell.runsource("from igraph import *")
@@ -483,11 +500,16 @@ def main():
     else:
         print("No configuration file, using defaults", file=sys.stderr)
 
-    if config.has_key("shells"):
+    if "shells" in config:
         parts = [part.strip() for part in config["shells"].split(",")]
         shell_classes = []
-        available_classes = dict([(k, v) for k, v in globals().iteritems()
-                                  if isinstance(v, type) and issubclass(v, Shell)])
+        available_classes = dict(
+            [
+                (k, v)
+                for k, v in globals().items()
+                if isinstance(v, type) and issubclass(v, Shell)
+            ]
+        )
         for part in parts:
             klass = available_classes.get(part, None)
             if klass is None:
@@ -497,6 +519,7 @@ def main():
     else:
         shell_classes = [IPythonShell, ClassicPythonShell]
         import platform
+
         if platform.system() == "Windows":
             shell_classes.insert(0, IDLEShell)
 
@@ -507,7 +530,7 @@ def main():
         try:
             shell = shell_class()
             break
-        except StandardError:
+        except Exception:
             # Try the next one
             if "Classic" in str(shell_class):
                 raise
@@ -524,5 +547,6 @@ def main():
         print("No suitable Python shell was found.", file=sys.stderr)
         print("Check configuration variable `general.shells'.", file=sys.stderr)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(main())

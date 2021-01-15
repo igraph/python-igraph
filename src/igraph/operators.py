@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 """Implementation of union, disjoint union and intersection operators."""
 
-from __future__ import with_statement
 
 __all__ = ("disjoint_union", "union", "intersection")
 __docformat__ = "restructuredtext en"
-__license__ = u"""
+__license__ = """
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
 Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
 
@@ -28,7 +27,6 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 
 from igraph._igraph import GraphBase, _union, _intersection, _disjoint_union
 
-from collections import defaultdict, Counter
 from warnings import warn
 
 
@@ -49,7 +47,7 @@ def disjoint_union(graphs):
     @return: the disjoint union graph
     """
     if any(not isinstance(g, GraphBase) for g in graphs):
-        raise TypeError('Not all elements are graphs')
+        raise TypeError("Not all elements are graphs")
 
     ngr = len(graphs)
     # Trivial cases
@@ -81,16 +79,15 @@ def disjoint_union(graphs):
                 # New conflict
                 a_conflict.add(a_name)
                 igf = a_first_graph[a_name]
-                graph_union['{:}_{:}'.format(a_name, igf)] = \
-                    graph_union.pop(a_name)
-            graph_union['{:}_{:}'.format(a_name, ig)] = a_value
+                graph_union["{:}_{:}".format(a_name, igf)] = graph_union.pop(a_name)
+            graph_union["{:}_{:}".format(a_name, ig)] = a_value
 
     # Vertex attributes
     i = 0
     for g in graphs:
         nv = g.vcount()
         for attr in g.vertex_attributes():
-            graph_union.vs[i: i + nv][attr] = g.vs[attr]
+            graph_union.vs[i : i + nv][attr] = g.vs[attr]
         i += nv
 
     # Edge attributes
@@ -98,13 +95,13 @@ def disjoint_union(graphs):
     for g in graphs:
         ne = g.ecount()
         for attr in g.edge_attributes():
-            graph_union.es[i: i + ne][attr] = g.es[attr]
+            graph_union.es[i : i + ne][attr] = g.es[attr]
         i += ne
 
     return graph_union
 
 
-def union(graphs, byname='auto'):
+def union(graphs, byname="auto"):
     """Graph union.
 
     The union of two or more graphs is created. The graphs may have identical
@@ -133,14 +130,14 @@ def union(graphs, byname='auto'):
     """
 
     if any(not isinstance(g, GraphBase) for g in graphs):
-        raise TypeError('Not all elements are graphs')
+        raise TypeError("Not all elements are graphs")
 
-    if byname not in (True, False, 'auto'):
+    if byname not in (True, False, "auto"):
         raise ValueError('"byname" should be a bool or "auto"')
 
     ngr = len(graphs)
     n_named = sum(g.is_named() for g in graphs)
-    if byname == 'auto':
+    if byname == "auto":
         byname = n_named == ngr
         if n_named not in (0, ngr):
             warn("Some, but not all graphs are named, not using vertex names")
@@ -156,7 +153,7 @@ def union(graphs, byname='auto'):
     # Now there are at least two graphs
 
     if byname:
-        allnames = [g.vs['name'] for g in graphs]
+        allnames = [g.vs["name"] for g in graphs]
         uninames = list(set.union(*(set(vns) for vns in allnames)))
         permutation_map = {x: i for i, x in enumerate(uninames)}
         nve = len(uninames)
@@ -171,7 +168,7 @@ def union(graphs, byname='auto'):
 
             # Reorder vertices to match uninames
             # vertex k -> p[k]
-            permutation = [permutation_map[x] for x in ng.vs['name']]
+            permutation = [permutation_map[x] for x in ng.vs["name"]]
             ng = ng.permute_vertices(permutation)
 
             newgraphs.append(ng)
@@ -182,8 +179,8 @@ def union(graphs, byname='auto'):
     edgemaps = any(len(g.edge_attributes()) for g in graphs)
     res = _union(newgraphs, edgemaps)
     if edgemaps:
-        graph_union = res['graph']
-        edgemaps = res['edgemaps']
+        graph_union = res["graph"]
+        edgemaps = res["edgemaps"]
     else:
         graph_union = res
 
@@ -205,14 +202,13 @@ def union(graphs, byname='auto'):
                 # New conflict
                 a_conflict.add(a_name)
                 igf = a_first_graph[a_name]
-                graph_union['{:}_{:}'.format(a_name, igf)] = \
-                    graph_union.pop(a_name)
-            graph_union['{:}_{:}'.format(a_name, ig)] = a_value
+                graph_union["{:}_{:}".format(a_name, igf)] = graph_union.pop(a_name)
+            graph_union["{:}_{:}".format(a_name, ig)] = a_value
 
     # Vertex attributes
     if byname:
-        graph_union.vs['name'] = uninames
-    attrs = set.union(*(set(g.vertex_attributes()) for g in newgraphs)) - set(['name'])
+        graph_union.vs["name"] = uninames
+    attrs = set.union(*(set(g.vertex_attributes()) for g in newgraphs)) - set(["name"])
     nve = graph_union.vcount()
     for a_name in attrs:
         # Check for conflicts at at least one vertex
@@ -239,7 +235,7 @@ def union(graphs, byname='auto'):
         # There is a conflict, name after the graph number
         for ig, g in enumerate(newgraphs, 1):
             if a_name in g.vertex_attributes():
-                graph_union.vs['{:}_{:}'.format(a_name, ig)] = g.vs[a_name]
+                graph_union.vs["{:}_{:}".format(a_name, ig)] = g.vs[a_name]
 
     # Edge attributes
     if edgemaps:
@@ -259,7 +255,7 @@ def union(graphs, byname='auto'):
                         vals[iu] = a_value
                         continue
                     if vals[iu] != a_value:
-                        print(g, g.vs['name'], emap, a_value, iu, vals[iu])
+                        print(g, g.vs["name"], emap, a_value, iu, vals[iu])
                         conflict = True
                         break
                 if conflict:
@@ -277,12 +273,12 @@ def union(graphs, byname='auto'):
                 vals = [None for i in range(ne)]
                 for iu, a_value in zip(emap, g.es[a_name]):
                     vals[iu] = a_value
-                graph_union.es['{:}_{:}'.format(a_name, ig)] = vals
+                graph_union.es["{:}_{:}".format(a_name, ig)] = vals
 
     return graph_union
 
 
-def intersection(graphs, byname='auto', keep_all_vertices=True):
+def intersection(graphs, byname="auto", keep_all_vertices=True):
     """Graph intersection.
 
     The intersection of two or more graphs is created. The graphs may have
@@ -313,14 +309,14 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
     """
 
     if any(not isinstance(g, GraphBase) for g in graphs):
-        raise TypeError('Not all elements are graphs')
+        raise TypeError("Not all elements are graphs")
 
-    if byname not in (True, False, 'auto'):
+    if byname not in (True, False, "auto"):
         raise ValueError('"byname" should be a bool or "auto"')
 
     ngr = len(graphs)
     n_named = sum(g.is_named() for g in graphs)
-    if byname == 'auto':
+    if byname == "auto":
         byname = n_named == ngr
         if n_named not in (0, ngr):
             warn("Some, but not all graphs are named, not using vertex names")
@@ -336,7 +332,7 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
     # Now there are at least two graphs
 
     if byname:
-        allnames = [g.vs['name'] for g in graphs]
+        allnames = [g.vs["name"] for g in graphs]
 
         if keep_all_vertices:
             uninames = list(set.union(*(set(vns) for vns in allnames)))
@@ -361,7 +357,7 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
 
             # Reorder vertices to match uninames
             # vertex k -> p[k]
-            permutation = [permutation_map[x] for x in ng.vs['name']]
+            permutation = [permutation_map[x] for x in ng.vs["name"]]
             ng = ng.permute_vertices(permutation)
 
             newgraphs.append(ng)
@@ -372,8 +368,8 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
     edgemaps = any(len(g.edge_attributes()) for g in graphs)
     res = _intersection(newgraphs, edgemaps)
     if edgemaps:
-        graph_intsec = res['graph']
-        edgemaps = res['edgemaps']
+        graph_intsec = res["graph"]
+        edgemaps = res["edgemaps"]
     else:
         graph_intsec = res
 
@@ -395,14 +391,13 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
                 # New conflict
                 a_conflict.add(a_name)
                 igf = a_first_graph[a_name]
-                graph_intsec['{:}_{:}'.format(a_name, igf)] = \
-                    graph_intsec.pop(a_name)
-            graph_intsec['{:}_{:}'.format(a_name, ig)] = a_value
+                graph_intsec["{:}_{:}".format(a_name, igf)] = graph_intsec.pop(a_name)
+            graph_intsec["{:}_{:}".format(a_name, ig)] = a_value
 
     # Vertex attributes
     if byname:
-        graph_intsec.vs['name'] = uninames
-    attrs = set.union(*(set(g.vertex_attributes()) for g in newgraphs)) - set(['name'])
+        graph_intsec.vs["name"] = uninames
+    attrs = set.union(*(set(g.vertex_attributes()) for g in newgraphs)) - set(["name"])
     nv = graph_intsec.vcount()
     for a_name in attrs:
         # Check for conflicts at at least one vertex
@@ -430,7 +425,7 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
         # There is a conflict, name after the graph number
         for ig, g in enumerate(newgraphs, 1):
             if a_name in g.vertex_attributes():
-                graph_intsec.vs['{:}_{:}'.format(a_name, ig)] = g.vs[a_name]
+                graph_intsec.vs["{:}_{:}".format(a_name, ig)] = g.vs[a_name]
 
     # Edge attributes
     if edgemaps:
@@ -471,6 +466,6 @@ def intersection(graphs, byname='auto', keep_all_vertices=True):
                     if iu == -1:
                         continue
                     vals[iu] = a_value
-                graph_intsec.es['{:}_{:}'.format(a_name, ig)] = vals
+                graph_intsec.es["{:}_{:}".format(a_name, ig)] = vals
 
     return graph_intsec
