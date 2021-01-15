@@ -7,8 +7,8 @@ import sys
 ###########################################################################
 
 # Check Python's version info and exit early if it is too old
-if sys.version_info < (2, 7):
-    print("This module requires Python >= 2.7")
+if sys.version_info < (3, 5):
+    print("This module requires Python >= 3.5")
     sys.exit(0)
 
 # Check whether we are compiling for PyPy. Headers will not be installed
@@ -913,7 +913,6 @@ options = dict(
         "Operating System :: OS Independent",
         "Programming Language :: C",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
@@ -931,11 +930,5 @@ options = dict(
         "sdist": buildcfg.sdist,
     },
 )
-
-if sys.version_info <= (2, 7):
-    options["requires"] = options.pop("install_requires")
-
-if sys.version_info > (3, 0):
-    options["use_2to3"] = True
 
 setup(**options)

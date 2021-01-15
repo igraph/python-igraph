@@ -24,13 +24,14 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
+
 class Cut(VertexClustering):
     """A cut of a given graph.
 
     This is a simple class used to represent cuts returned by
     L{Graph.mincut()}, L{Graph.all_st_cuts()} and other functions
     that calculate cuts.
-    
+
     A cut is a special vertex clustering with only two clusters.
     Besides the usual L{VertexClustering} methods, it also has the
     following attributes:
@@ -66,8 +67,7 @@ class Cut(VertexClustering):
     """
 
     # pylint: disable-msg=R0913
-    def __init__(self, graph, value=None, cut=None, partition=None,
-            partition2=None):
+    def __init__(self, graph, value=None, cut=None, partition=None, partition2=None):
         """Initializes the cut.
 
         This should not be called directly, everything is taken care of by
@@ -92,14 +92,21 @@ class Cut(VertexClustering):
         self._cut = cut
 
     def __repr__(self):
-        return "%s(%r, %r, %r, %r)" % \
-          (self.__class__.__name__, self._graph, \
-           self._value, self._cut, self._partition)
+        return "%s(%r, %r, %r, %r)" % (
+            self.__class__.__name__,
+            self._graph,
+            self._value,
+            self._cut,
+            self._partition,
+        )
 
     def __str__(self):
-        return "Graph cut (%d edges, %d vs %d vertices, value=%.4f)" % \
-          (len(self._cut), len(self._partition),
-          self._graph.vcount() - len(self._partition), self._value)
+        return "Graph cut (%d edges, %d vs %d vertices, value=%.4f)" % (
+            len(self._cut),
+            len(self._partition),
+            self._graph.vcount() - len(self._partition),
+            self._value,
+        )
 
     # pylint: disable-msg=C0103
     @property
@@ -131,7 +138,7 @@ class Flow(Cut):
 
       - C{graph} - the graph on which this flow is defined
 
-      - C{value} - the value (capacity) of the flow 
+      - C{value} - the value (capacity) of the flow
 
       - C{flow} - the flow values on each edge. For directed graphs,
         this is simply a list where element M{i} corresponds to the
@@ -174,19 +181,27 @@ class Flow(Cut):
         self._flow = flow
 
     def __repr__(self):
-        return "%s(%r, %r, %r, %r, %r)" % \
-          (self.__class__.__name__, self._graph, \
-           self._value, self._flow, self._cut, self._partition)
+        return "%s(%r, %r, %r, %r, %r)" % (
+            self.__class__.__name__,
+            self._graph,
+            self._value,
+            self._flow,
+            self._cut,
+            self._partition,
+        )
 
     def __str__(self):
-        return "Graph flow (%d edges, %d vs %d vertices, value=%.4f)" % \
-          (len(self._cut), len(self._partition),
-          self._graph.vcount() - len(self._partition), self._value)
+        return "Graph flow (%d edges, %d vs %d vertices, value=%.4f)" % (
+            len(self._cut),
+            len(self._partition),
+            self._graph.vcount() - len(self._partition),
+            self._value,
+        )
 
     @property
     def flow(self):
         """Returns the flow values for each edge.
-        
+
         For directed graphs, this is simply a list where element M{i}
         corresponds to the flow on edge M{i}. For undirected graphs, the
         direction of the flow is not constrained (since the edges are
@@ -195,6 +210,3 @@ class Flow(Cut):
         larger vertex ID to the smaller.
         """
         return self._flow
-
-
-

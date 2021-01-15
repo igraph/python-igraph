@@ -3,7 +3,7 @@
 """Classes that help igraph communicate with Gephi (http://www.gephi.org)."""
 
 from igraph.compat import property
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 try:
     # JSON is optional so we don't blow up with Python < 2.6
@@ -15,11 +15,12 @@ except ImportError:
     except ImportError:
         # No simplejson either
         from igraph.drawing.utils import FakeModule
+
         json = FakeModule()
 
 __all__ = ["GephiConnection", "GephiGraphStreamer", "GephiGraphStreamingAPIFormat"]
 __docformat__ = "restructuredtext en"
-__license__ = u"""\
+__license__ = """\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
 Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
 
@@ -66,7 +67,7 @@ class GephiConnection(object):
     def __del__(self):
         try:
             self.close()
-        except urllib2.URLError:
+        except urllib.error.URLError:
             # Happens when Gephi is closed before the connection is destroyed
             pass
 
@@ -83,7 +84,7 @@ class GephiConnection(object):
         single request."""
         data = b"".join(self._pending_operations)
         self._pending_operations = []
-        conn = urllib2.urlopen(self._update_url, data=data)
+        conn = urllib.request.urlopen(self._update_url, data=data)
         return conn.read()
 
     @property
@@ -241,7 +242,7 @@ class GephiGraphStreamer(object):
         to the destination."""
 
         # Construct a unique ID prefix
-        id_prefix = "igraph:%s" % (hex(id(graph)), )
+        id_prefix = "igraph:%s" % (hex(id(graph)),)
 
         # Add the vertices
         add_node = self.format.get_add_node_event
@@ -252,10 +253,13 @@ class GephiGraphStreamer(object):
         add_edge = self.format.get_add_edge_event
         directed = graph.is_directed()
         for edge in graph.es:
-            yield add_edge("%s:e:%d:%d" % (id_prefix, edge.source, edge.target),
-                    "%s:v:%d" % (id_prefix, edge.source),
-                    "%s:v:%d" % (id_prefix, edge.target),
-                    directed, edge.attributes())
+            yield add_edge(
+                "%s:e:%d:%d" % (id_prefix, edge.source, edge.target),
+                "%s:v:%d" % (id_prefix, edge.source),
+                "%s:v:%d" % (id_prefix, edge.target),
+                directed,
+                edge.attributes(),
+            )
 
     def post(self, graph, destination, encoder=None):
         """Posts the given graph to the destination of the streamer using the
@@ -285,4 +289,3 @@ class GephiGraphStreamer(object):
         destination.write(b"\r\n")
         if flush:
             destination.flush()
-

@@ -6,13 +6,13 @@ Layout-related code in the IGraph library.
 This package contains the implementation of the L{Layout} object.
 """
 
-from itertools import izip
+
 from math import sin, cos, pi
 
 from igraph.drawing.utils import BoundingBox
 from igraph.statistics import RunningMean
 
-__license__ = u"""\
+__license__ = """\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
 Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
 
@@ -31,6 +31,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
 02110-1301 USA
 """
+
 
 class Layout(object):
     """Represents the layout of a graph.
@@ -64,7 +65,7 @@ class Layout(object):
         >>> print layout[1]
         [0, 3]
     """
-    
+
     def __init__(self, coords=None, dim=None):
         """Constructor.
 
@@ -90,8 +91,10 @@ class Layout(object):
             self._dim = int(dim)
             for row in self._coords:
                 if len(row) != self._dim:
-                    raise ValueError("all items in the coordinate list "+
-                                     "must have a length of %d" % self._dim)
+                    raise ValueError(
+                        "all items in the coordinate list "
+                        + "must have a length of %d" % self._dim
+                    )
 
     def __len__(self):
         return len(self._coords)
@@ -121,8 +124,11 @@ class Layout(object):
             dim_count = "1 dimension"
         else:
             dim_count = "%d dimensions" % self.dim
-        return "<%s with %s and %s>" % (self.__class__.__name__,
-                vertex_count, dim_count)
+        return "<%s with %s and %s>" % (
+            self.__class__.__name__,
+            vertex_count,
+            dim_count,
+        )
 
     @property
     def dim(self):
@@ -138,7 +144,7 @@ class Layout(object):
         """Appends a new point to the layout"""
         if len(value) < self._dim:
             raise ValueError("appended item must have %d elements" % self._dim)
-        self._coords.append([float(coord) for coord in value[0:self._dim]])
+        self._coords.append([float(coord) for coord in value[0 : self._dim]])
 
     def mirror(self, dim):
         """Mirrors the layout along the given dimension(s)
@@ -154,7 +160,6 @@ class Layout(object):
             for row in self._coords:
                 row[current_dim] *= -1
 
-
     def rotate(self, angle, dim1=0, dim2=1, **kwds):
         """Rotates the layout by the given degrees on the plane defined by
         the given two dimensions.
@@ -166,18 +171,17 @@ class Layout(object):
           origin will be the origin of the coordinate system.
         """
 
-        origin = list(kwds.get("origin", [0.]*self._dim))
+        origin = list(kwds.get("origin", [0.0] * self._dim))
         if len(origin) != self._dim:
             raise ValueError("origin must have %d dimensions" % self._dim)
 
-        radian = angle * pi / 180.
+        radian = angle * pi / 180.0
         cos_alpha, sin_alpha = cos(radian), sin(radian)
-        
-        for idx, row in enumerate(self._coords): 
-            x, y = row[dim1] - origin[dim1], row[dim2] - origin[dim2]
-            row[dim1] = cos_alpha*x - sin_alpha*y + origin[dim1]
-            row[dim2] = sin_alpha*x + cos_alpha*y + origin[dim2]
 
+        for idx, row in enumerate(self._coords):
+            x, y = row[dim1] - origin[dim1], row[dim2] - origin[dim2]
+            row[dim1] = cos_alpha * x - sin_alpha * y + origin[dim1]
+            row[dim2] = sin_alpha * x + cos_alpha * y + origin[dim2]
 
     def scale(self, *args, **kwds):
         """Scales the layout.
@@ -194,7 +198,7 @@ class Layout(object):
         @keyword origin: the origin of scaling (this point will stay in place).
           Optional, defaults to the origin of the coordinate system being used.
         """
-        origin = list(kwds.get("origin", [0.]*self._dim))
+        origin = list(kwds.get("origin", [0.0] * self._dim))
         if len(origin) != self._dim:
             raise ValueError("origin must have %d dimensions" % self._dim)
 
@@ -205,16 +209,16 @@ class Layout(object):
             raise ValueError("scaling factor must be given")
         elif len(scaling) == 1:
             if type(scaling[0]) == int or type(scaling[0]) == float:
-                scaling = scaling*self._dim
+                scaling = scaling * self._dim
             else:
                 scaling = scaling[0]
         if len(scaling) != self._dim:
-            raise ValueError("scaling factor list must have %d elements" \
-                    % self._dim)
+            raise ValueError("scaling factor list must have %d elements" % self._dim)
 
         for idx, row in enumerate(self._coords):
-            self._coords[idx] = [(row[d]-origin[d])*scaling[d]+origin[d] \
-                                 for d in xrange(self._dim)]
+            self._coords[idx] = [
+                (row[d] - origin[d]) * scaling[d] + origin[d] for d in range(self._dim)
+            ]
 
     def translate(self, *args, **kwds):
         """Translates the layout.
@@ -233,15 +237,12 @@ class Layout(object):
         elif len(v) == 1 and type(v[0]) != int and type(v[0]) != float:
             v = v[0]
         if len(v) != self._dim:
-            raise ValueError("translation vector must have %d dimensions" \
-                    % self._dim)
+            raise ValueError("translation vector must have %d dimensions" % self._dim)
 
         for idx, row in enumerate(self._coords):
-            self._coords[idx] = [row[d]+v[d] for d in xrange(self._dim)]
+            self._coords[idx] = [row[d] + v[d] for d in range(self._dim)]
 
-
-    def to_radial(self, min_angle = 100, max_angle = 80, \
-        min_radius=0.0, max_radius=1.0):
+    def to_radial(self, min_angle=100, max_angle=80, min_radius=0.0, max_radius=1.0):
         """Converts a planar layout to a radial one
 
         This method applies only to 2D layouts. The X coordinate of the
@@ -279,14 +280,13 @@ class Layout(object):
             max_angle += 360
 
         ratio_x = (max_angle - min_angle) / bbox.width
-        ratio_x *= pi / 180.
-        min_angle *= pi / 180.
+        ratio_x *= pi / 180.0
+        min_angle *= pi / 180.0
         ratio_y = (max_radius - min_radius) / bbox.height
         for idx, (x, y) in enumerate(self._coords):
-            alpha  = (x-bbox.left) * ratio_x + min_angle
-            radius = (y-bbox.top) * ratio_y + min_radius
-            self._coords[idx] = [cos(alpha)*radius, -sin(alpha)*radius]
-
+            alpha = (x - bbox.left) * ratio_x + min_angle
+            radius = (y - bbox.top) * ratio_y + min_radius
+            self._coords[idx] = [cos(alpha) * radius, -sin(alpha) * radius]
 
     def transform(self, function, *args, **kwds):
         """Performs an arbitrary transformation on the layout
@@ -297,20 +297,20 @@ class Layout(object):
         @param function: a function which receives the coordinates as a
           tuple and returns the transformed tuple.
         """
-        self._coords = [list(function(tuple(row), *args, **kwds)) \
-            for row in self._coords]
-
+        self._coords = [
+            list(function(tuple(row), *args, **kwds)) for row in self._coords
+        ]
 
     def centroid(self):
         """Returns the centroid of the layout.
 
         The centroid of the layout is the arithmetic mean of the points in
         the layout.
-        
+
         @return: the centroid as a list of floats"""
-        centroid = [RunningMean() for _ in xrange(self._dim)]
+        centroid = [RunningMean() for _ in range(self._dim)]
         for row in self._coords:
-            for dim in xrange(self._dim):
+            for dim in range(self._dim):
                 centroid[dim].add(row[dim])
         return [rm.mean for rm in centroid]
 
@@ -332,12 +332,12 @@ class Layout(object):
             raise ValueError("layout contains no layout items")
 
         mins, maxs = [], []
-        for dim in xrange(self._dim):
+        for dim in range(self._dim):
             col = [row[dim] for row in self._coords]
-            mins.append(min(col)-border)
-            maxs.append(max(col)+border)
+            mins.append(min(col) - border)
+            maxs.append(max(col) + border)
         return mins, maxs
-        
+
     def bounding_box(self, border=0):
         """Returns the bounding box of the layout.
 
@@ -360,7 +360,6 @@ class Layout(object):
         except ValueError:
             return BoundingBox(0, 0, 0, 0)
 
-
     def center(self, *args, **kwds):
         """Centers the layout around the given point.
 
@@ -373,17 +372,14 @@ class Layout(object):
           the operation."""
         center = kwds.get("p") or args
         if len(center) == 0:
-            center = [0.] * self._dim
-        elif len(center) == 1 and type(center[0]) != int \
-            and type(center[0]) != float:
+            center = [0.0] * self._dim
+        elif len(center) == 1 and type(center[0]) != int and type(center[0]) != float:
             center = center[0]
         if len(center) != self._dim:
-            raise ValueError("the given point must have %d dimensions" \
-                    % self._dim)
+            raise ValueError("the given point must have %d dimensions" % self._dim)
         centroid = self.centroid()
-        vec = [center[d]-centroid[d] for d in xrange(self._dim)]
+        vec = [center[d] - centroid[d] for d in range(self._dim)]
         self.translate(vec)
-
 
     def copy(self):
         """Creates an exact copy of the layout."""
@@ -409,20 +405,21 @@ class Layout(object):
                 raise TypeError("bounding boxes work for 2D layouts only")
             corner, target_sizes = [bbox.left, bbox.top], [bbox.width, bbox.height]
         elif len(bbox) == self._dim:
-            corner, target_sizes = [0.] * self._dim, list(bbox)
+            corner, target_sizes = [0.0] * self._dim, list(bbox)
         elif len(bbox) == 2 * self._dim:
-            corner, opposite_corner = list(bbox[0:self._dim]), list(bbox[self._dim:])
-            for i in xrange(self._dim):
+            corner, opposite_corner = list(bbox[0 : self._dim]), list(bbox[self._dim :])
+            for i in range(self._dim):
                 if corner[i] > opposite_corner[i]:
                     corner[i], opposite_corner[i] = opposite_corner[i], corner[i]
-            target_sizes = [max_val-min_val \
-                    for min_val, max_val in izip(corner, opposite_corner)]
+            target_sizes = [
+                max_val - min_val for min_val, max_val in zip(corner, opposite_corner)
+            ]
 
         try:
             mins, maxs = self.boundaries()
         except ValueError:
             mins, maxs = [0.0] * self._dim, [0.0] * self._dim
-        sizes = [max_val - min_val for min_val, max_val in izip(mins, maxs)]
+        sizes = [max_val - min_val for min_val, max_val in zip(mins, maxs)]
 
         for i, size in enumerate(sizes):
             if size == 0:
@@ -430,18 +427,19 @@ class Layout(object):
                 mins[i] -= 1
                 maxs[i] += 1
 
-        ratios = [float(target_size) / current_size \
-                  for current_size, target_size in izip(sizes, target_sizes)]
+        ratios = [
+            float(target_size) / current_size
+            for current_size, target_size in zip(sizes, target_sizes)
+        ]
         if keep_aspect_ratio:
             min_ratio = min(ratios)
             ratios = [min_ratio] * self._dim
 
         translations = []
-        for i in xrange(self._dim):
-            trans = (target_sizes[i] - ratios[i] * sizes[i]) / 2.
+        for i in range(self._dim):
+            trans = (target_sizes[i] - ratios[i] * sizes[i]) / 2.0
             trans -= mins[i] * ratios[i] - corner[i]
             translations.append(trans)
 
         self.scale(*ratios)
         self.translate(*translations)
-

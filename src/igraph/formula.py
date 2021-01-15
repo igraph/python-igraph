@@ -8,7 +8,7 @@ to do so. In almost all cases, you are better off with calling
 `igraph.Graph.Formula()`.
 """
 
-from cStringIO import StringIO
+from io import StringIO
 from igraph.datatypes import UniqueIdGenerator
 
 import re
@@ -17,7 +17,7 @@ import token
 
 __all__ = ["construct_graph_from_formula"]
 
-__license__ = u"""\
+__license__ = """\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
 Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
 
@@ -37,13 +37,14 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
+
 def generate_edges(formula):
     """Parses an edge specification from the head of the given
     formula part and yields the following:
-    
+
       - startpoint(s) of the edge by vertex names
       - endpoint(s) of the edge by names or an empty list if the vertices are isolated
-      - a pair of bools to denote whether we had arrowheads at the start and end vertices 
+      - a pair of bools to denote whether we had arrowheads at the start and end vertices
     """
     if formula == "":
         yield [], [""], [False, False]
@@ -55,7 +56,7 @@ def generate_edges(formula):
     parsing_vertices = True
 
     # Tokenize the formula
-    token_gen = tokenize.generate_tokens(StringIO(formula).next)
+    token_gen = tokenize.generate_tokens(StringIO(formula).__next__)
     for token_info in token_gen:
         # Do the state transitions
         token_type, tok, _, _, _ = token_info
@@ -90,7 +91,10 @@ def generate_edges(formula):
                 # End markers are fine
                 pass
             else:
-                msg = "invalid token found in edge specification: %s; token_type=%r; tok=%r" % (formula, token_type, tok)
+                msg = (
+                    "invalid token found in edge specification: %s; token_type=%r; tok=%r"
+                    % (formula, token_type, tok)
+                )
                 raise SyntaxError(msg)
         else:
             # We are parsing an edge operator
@@ -111,10 +115,9 @@ def generate_edges(formula):
     yield start_names, end_names, arrowheads
 
 
-def construct_graph_from_formula(cls, formula = None, attr = "name",
-        simplify = True):
+def construct_graph_from_formula(cls, formula=None, attr="name", simplify=True):
     """Graph.Formula(formula = None, attr = "name", simplify = True)
-    
+
     Generates a graph from a graph formula
 
     A graph formula is a simple string representation of a graph.
@@ -167,7 +170,7 @@ def construct_graph_from_formula(cls, formula = None, attr = "name",
       + attr: name (v)
       + edges (vertex names):
       A->B
-      
+
     If you have may disconnected componnets, you can separate them
     with commas. You can also specify isolated vertices:
 
@@ -199,10 +202,10 @@ def construct_graph_from_formula(cls, formula = None, attr = "name",
     @param simplify: whether the simplify the constructed graph
     @return: the constructed graph:
     """
-    
+
     # If we have no formula, return an empty graph
     if formula is None:
-        return cls(0, vertex_attrs = {attr: []})
+        return cls(0, vertex_attrs={attr: []})
 
     vertex_ids, edges, directed = UniqueIdGenerator(), [], False
     # Loop over each part in the formula
@@ -212,26 +215,23 @@ def construct_graph_from_formula(cls, formula = None, attr = "name",
         # Parse the first vertex specification from the formula
         for start_names, end_names, arrowheads in generate_edges(part):
             start_ids = [vertex_ids[name] for name in start_names]
-            end_ids   = [vertex_ids[name] for name in end_names]
+            end_ids = [vertex_ids[name] for name in end_names]
             if not arrowheads[0] and not arrowheads[1]:
                 # This is an undirected edge. Do we have a directed graph?
                 if not directed:
                     # Nope, add the edge
-                    edges.extend((id1, id2) for id1 in start_ids \
-                                 for id2 in end_ids)
+                    edges.extend((id1, id2) for id1 in start_ids for id2 in end_ids)
             else:
                 # This is a directed edge
                 directed = True
                 if arrowheads[1]:
-                    edges.extend((id1, id2) for id1 in start_ids \
-                                 for id2 in end_ids)
+                    edges.extend((id1, id2) for id1 in start_ids for id2 in end_ids)
                 if arrowheads[0]:
-                    edges.extend((id2, id1) for id1 in start_ids \
-                                 for id2 in end_ids)
+                    edges.extend((id2, id1) for id1 in start_ids for id2 in end_ids)
 
     # Grab the vertex names into a list
     vertex_attrs = {}
-    vertex_attrs[attr] = vertex_ids.values()
+    vertex_attrs[attr] = list(vertex_ids.values())
     # Construct and return the graph
     result = cls(len(vertex_ids), edges, directed, vertex_attrs=vertex_attrs)
     if simplify:

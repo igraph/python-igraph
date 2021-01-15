@@ -15,20 +15,25 @@ Whenever the documentation refers to the C{pycairo} library, you can safely
 replace it with C{cairocffi} as the two are API-compatible.
 """
 
-from __future__ import with_statement
 
-from cStringIO import StringIO
+from io import StringIO
 from warnings import warn
 
 import os
 import platform
 import time
 
-from igraph.compat import property, BytesIO
+from io import BytesIO
 from igraph.configuration import Configuration
 from igraph.drawing.colors import Palette, palettes
 from igraph.drawing.graph import DefaultGraphDrawer, MatplotlibGraphDrawer
-from igraph.drawing.utils import BoundingBox, Point, Rectangle, find_cairo, find_matplotlib
+from igraph.drawing.utils import (
+    BoundingBox,
+    Point,
+    Rectangle,
+    find_cairo,
+    find_matplotlib,
+)
 from igraph.utils import _is_running_in_ipython, named_temporary_file
 
 __all__ = ["BoundingBox", "DefaultGraphDrawer", "Plot", "Point", "Rectangle", "plot"]
@@ -39,6 +44,7 @@ cairo = find_cairo()
 matplotlib, plt = find_matplotlib()
 
 #####################################################################
+
 
 class Plot(object):
     """Class representing an arbitrary plot
@@ -141,8 +147,9 @@ class Plot(object):
 
         if target is None:
             self._need_tmpfile = True
-            self._surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, \
-                int(self.bbox.width), int(self.bbox.height))
+            self._surface = cairo.ImageSurface(
+                cairo.FORMAT_ARGB32, int(self.bbox.width), int(self.bbox.height)
+            )
         elif isinstance(target, cairo.Surface):
             self._surface = target
         else:
@@ -150,17 +157,21 @@ class Plot(object):
             _, ext = os.path.splitext(target)
             ext = ext.lower()
             if ext == ".pdf":
-                self._surface = cairo.PDFSurface(target, self.bbox.width, \
-                                                 self.bbox.height)
+                self._surface = cairo.PDFSurface(
+                    target, self.bbox.width, self.bbox.height
+                )
             elif ext == ".ps" or ext == ".eps":
-                self._surface = cairo.PSSurface(target, self.bbox.width, \
-                                                self.bbox.height)
+                self._surface = cairo.PSSurface(
+                    target, self.bbox.width, self.bbox.height
+                )
             elif ext == ".png":
-                self._surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, \
-                    int(self.bbox.width), int(self.bbox.height))
+                self._surface = cairo.ImageSurface(
+                    cairo.FORMAT_ARGB32, int(self.bbox.width), int(self.bbox.height)
+                )
             elif ext == ".svg":
-                self._surface = cairo.SVGSurface(target, self.bbox.width, \
-                                                 self.bbox.height)
+                self._surface = cairo.SVGSurface(
+                    target, self.bbox.width, self.bbox.height
+                )
             else:
                 raise ValueError("image format not handled by Cairo: %s" % ext)
 
@@ -235,12 +246,12 @@ class Plot(object):
           C{False} if the object was not on the plot at all or M{idx}
           was larger than the count of occurrences
         """
-        for i in xrange(len(self._objects)):
+        for i in range(len(self._objects)):
             current_obj, current_bbox = self._objects[i][0:2]
             if current_obj is obj and (bbox is None or current_bbox == bbox):
                 idx -= 1
                 if idx == 0:
-                    self._objects[i:(i+1)] = []
+                    self._objects[i : (i + 1)] = []
                     self.mark_dirty()
                     return True
         return False
@@ -264,7 +275,7 @@ class Plot(object):
                 palette = getattr(obj, "_default_palette", self._palette)
             plotter = getattr(obj, "__plot__", None)
             if plotter is None:
-                warn("%s does not support plotting" % (obj, ))
+                warn("%s does not support plotting" % (obj,))
             else:
                 if opacity < 1.0:
                     ctx.push_group()
@@ -293,10 +304,11 @@ class Plot(object):
                     self._surface.write_to_png(fname)
                     return None
 
-            fname  = fname or self._filename
+            fname = fname or self._filename
             if fname is None:
-                raise ValueError("no file name is known for the surface " + \
-                                 "and none given")
+                raise ValueError(
+                    "no file name is known for the surface " + "and none given"
+                )
             return self._surface.write_to_png(fname)
 
         if fname is not None:
@@ -305,12 +317,12 @@ class Plot(object):
         self._ctx.show_page()
         self._surface.finish()
 
-
     def show(self):
         """Saves the plot to a temporary file and shows it."""
         if not isinstance(self._surface, cairo.ImageSurface):
-            sur = cairo.ImageSurface(cairo.FORMAT_ARGB32,
-                    int(self.bbox.width), int(self.bbox.height))
+            sur = cairo.ImageSurface(
+                cairo.FORMAT_ARGB32, int(self.bbox.width), int(self.bbox.height)
+            )
             ctx = cairo.Context(sur)
             self.redraw(ctx)
         else:
@@ -327,8 +339,9 @@ class Plot(object):
                 # No image viewer was given and none was detected. This
                 # should only happen on unknown platforms.
                 plat = platform.system()
-                raise NotImplementedError("showing plots is not implemented " + \
-                                          "on this platform: %s" % plat)
+                raise NotImplementedError(
+                    "showing plots is not implemented " + "on this platform: %s" % plat
+                )
             else:
                 os.system("%s %s" % (imgviewer, tmpfile))
                 if platform.system() == "Darwin" or self._windows_hacks:
@@ -357,11 +370,11 @@ class Plot(object):
         # Return the raw SVG representation
         result = io.getvalue()
         if hasattr(result, "encode"):
-            result = result.encode("utf-8")   # for Python 2.x
+            result = result.encode("utf-8")  # for Python 2.x
         else:
-            result = result.decode("utf-8")   # for Python 3.x
+            result = result.decode("utf-8")  # for Python 3.x
 
-        return result, {'isolated': True}  # put it inside an iframe
+        return result, {"isolated": True}  # put it inside an iframe
 
     @property
     def bounding_box(self):
@@ -452,7 +465,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
 
     @see: Graph.__plot__
     """
-    if hasattr(plt, 'Axes') and isinstance(target, plt.Axes):
+    if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
         result = MatplotlibGraphDrawer(ax=target)
         result.draw(obj, *args, **kwds)
         return
@@ -496,5 +509,5 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     # Also return the plot itself
     return result
 
-#####################################################################
 
+#####################################################################

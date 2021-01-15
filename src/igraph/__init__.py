@@ -7,9 +7,8 @@ IGraph library.
                _3d_version_for
 """
 
-from __future__ import with_statement
 
-__license__ = u"""
+__license__ = """
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
 Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
 
@@ -54,14 +53,16 @@ import sys
 import operator
 
 from collections import defaultdict
-from itertools import izip
+
 from shutil import copyfileobj
 from warnings import warn
+
 
 def deprecated(message):
     """Prints a warning message related to the deprecation of some igraph
     feature."""
     warn(message, DeprecationWarning, stacklevel=3)
+
 
 # pylint: disable-msg=E1101
 class Graph(GraphBase):
@@ -167,8 +168,12 @@ class Graph(GraphBase):
         # Set up default values for the parameters. This should match the order
         # in *args
         kwd_order = (
-            "n", "edges", "directed", "graph_attrs", "vertex_attrs",
-            "edge_attrs"
+            "n",
+            "edges",
+            "directed",
+            "graph_attrs",
+            "vertex_attrs",
+            "edge_attrs",
         )
         params = [0, [], False, {}, {}, {}]
 
@@ -177,9 +182,11 @@ class Graph(GraphBase):
         unknown_kwds = set(kwds.keys())
         unknown_kwds.difference_update(kwd_order)
         if unknown_kwds:
-            raise TypeError("{0}.__init__ got an unexpected keyword argument {1!r}".format(
-                self.__class__.__name__, unknown_kwds.pop()
-            ))
+            raise TypeError(
+                "{0}.__init__ got an unexpected keyword argument {1!r}".format(
+                    self.__class__.__name__, unknown_kwds.pop()
+                )
+            )
 
         # If the first argument is a list or any other iterable, assume that
         # the number of vertices were omitted
@@ -188,7 +195,7 @@ class Graph(GraphBase):
             args.insert(0, params[0])
 
         # Override default parameters from args
-        params[:len(args)] = args
+        params[: len(args)] = args
 
         # Override default parameters from keywords
         for idx, k in enumerate(kwd_order):
@@ -210,6 +217,7 @@ class Graph(GraphBase):
         # as the lower-level C API works with memoryviews only
         try:
             from numpy import ndarray, matrix
+
             if isinstance(edges, (ndarray, matrix)):
                 edges = numpy_to_contiguous_memoryview(edges)
         except ImportError:
@@ -222,18 +230,18 @@ class Graph(GraphBase):
             GraphBase.__init__(self, nverts, edges, directed)
 
         # Set the graph attributes
-        for key, value in graph_attrs.iteritems():
-            if isinstance(key, (int, long)):
+        for key, value in graph_attrs.items():
+            if isinstance(key, int):
                 key = str(key)
             self[key] = value
         # Set the vertex attributes
-        for key, value in vertex_attrs.iteritems():
-            if isinstance(key, (int, long)):
+        for key, value in vertex_attrs.items():
+            if isinstance(key, int):
                 key = str(key)
             self.vs[key] = value
         # Set the edge attributes
-        for key, value in edge_attrs.iteritems():
-            if isinstance(key, (int, long)):
+        for key, value in edge_attrs.items():
+            if isinstance(key, int):
                 key = str(key)
             self.es[key] = value
 
@@ -255,7 +263,7 @@ class Graph(GraphBase):
         eid = self.ecount()
         self.add_edges([(source, target)])
         edge = self.es[eid]
-        for key, value in kwds.iteritems():
+        for key, value in kwds.items():
             edge[key] = value
         return edge
 
@@ -275,7 +283,7 @@ class Graph(GraphBase):
         res = GraphBase.add_edges(self, es)
         n = self.ecount() - eid
         if (attributes is not None) and (n > 0):
-            for key, val in attributes.items():
+            for key, val in list(attributes.items()):
                 self.es[eid:][key] = val
         return res
 
@@ -295,7 +303,7 @@ class Graph(GraphBase):
         vid = self.vcount()
         self.add_vertices(1)
         vertex = self.vs[vid]
-        for key, value in kwds.iteritems():
+        for key, value in kwds.items():
             vertex[key] = value
         if name is not None:
             vertex["name"] = name
@@ -320,13 +328,13 @@ class Graph(GraphBase):
           values of this dict are the attributes themselves, but if n=1 then
           they have to be lists of length 1.
         """
-        if isinstance(n, basestring):
+        if isinstance(n, str):
             # Adding a single vertex with a name
             m = self.vcount()
             result = GraphBase.add_vertices(self, 1)
             self.vs[m]["name"] = n
             if attributes is not None:
-                for key, val in attributes.items():
+                for key, val in list(attributes.items()):
                     self.vs[m][key] = val
         elif hasattr(n, "__iter__"):
             m = self.vcount()
@@ -338,13 +346,13 @@ class Graph(GraphBase):
             if len(names) > 0:
                 self.vs[m:]["name"] = names
                 if attributes is not None:
-                    for key, val in attributes.items():
+                    for key, val in list(attributes.items()):
                         self.vs[m:][key] = val
         else:
             result = GraphBase.add_vertices(self, n)
             if (attributes is not None) and (n > 0):
                 m = self.vcount() - n
-                for key, val in attributes.items():
+                for key, val in list(attributes.items()):
                     self.vs[m:][key] = val
         return result
 
@@ -355,8 +363,10 @@ class Graph(GraphBase):
 
         @deprecated: replaced by L{Graph.incident()} since igraph 0.6
         """
-        deprecated("Graph.adjacent() is deprecated since igraph 0.6, please use "
-                   "Graph.incident() instead")
+        deprecated(
+            "Graph.adjacent() is deprecated since igraph 0.6, please use "
+            "Graph.incident() instead"
+        )
         return self.incident(*args, **kwds)
 
     def as_directed(self, *args, **kwds):
@@ -414,7 +424,7 @@ class Graph(GraphBase):
 
         See L{degree} for possible arguments.
         """
-        kwds['mode'] = IN
+        kwds["mode"] = IN
         return self.degree(*args, **kwds)
 
     def outdegree(self, *args, **kwds):
@@ -422,7 +432,7 @@ class Graph(GraphBase):
 
         See L{degree} for possible arguments.
         """
-        kwds['mode'] = OUT
+        kwds["mode"] = OUT
         return self.degree(*args, **kwds)
 
     def all_st_cuts(self, source, target):
@@ -441,8 +451,10 @@ class Graph(GraphBase):
         @ref: JS Provan and DR Shier: A paradigm for listing (s,t)-cuts in
           graphs. Algorithmica 15, 351--372, 1996.
         """
-        return [Cut(self, cut=cut, partition=part)
-                for cut, part in izip(*GraphBase.all_st_cuts(self, source, target))]
+        return [
+            Cut(self, cut=cut, partition=part)
+            for cut, part in zip(*GraphBase.all_st_cuts(self, source, target))
+        ]
 
     def all_st_mincuts(self, source, target, capacity=None):
         """\
@@ -463,8 +475,9 @@ class Graph(GraphBase):
           graphs. Algorithmica 15, 351--372, 1996.
         """
         value, cuts, parts = GraphBase.all_st_mincuts(self, source, target, capacity)
-        return [Cut(self, value, cut=cut, partition=part)
-                for cut, part in izip(cuts, parts)]
+        return [
+            Cut(self, value, cut=cut, partition=part) for cut, part in zip(cuts, parts)
+        ]
 
     def biconnected_components(self, return_articulation_points=False):
         """\
@@ -495,6 +508,7 @@ class Graph(GraphBase):
             return clustering, aps
         else:
             return clustering
+
     blocks = biconnected_components
 
     def clear(self):
@@ -538,9 +552,10 @@ class Graph(GraphBase):
           clusters being sought. Optional, defaults to C{STRONG}.
         @return: a L{VertexClustering} object"""
         return VertexClustering(self, GraphBase.clusters(self, mode))
+
     components = clusters
 
-    def degree_distribution(self, bin_width = 1, *args, **kwds):
+    def degree_distribution(self, bin_width=1, *args, **kwds):
         """degree_distribution(bin_width=1, ...)
 
         Calculates the degree distribution of the graph.
@@ -573,8 +588,9 @@ class Graph(GraphBase):
         """
         return DyadCensus(GraphBase.dyad_census(self, *args, **kwds))
 
-    def get_adjacency(self, type=GET_ADJACENCY_BOTH, attribute=None, \
-            default=0, eids=False):
+    def get_adjacency(
+        self, type=GET_ADJACENCY_BOTH, attribute=None, default=0, eids=False
+    ):
         """Returns the adjacency matrix of a graph.
 
         @param type: either C{GET_ADJACENCY_LOWER} (uses the lower
@@ -599,8 +615,11 @@ class Graph(GraphBase):
           in the matrix for each vertex pair.
         @return: the adjacency matrix as a L{Matrix}.
         """
-        if type != GET_ADJACENCY_LOWER and type != GET_ADJACENCY_UPPER and \
-          type != GET_ADJACENCY_BOTH:
+        if (
+            type != GET_ADJACENCY_LOWER
+            and type != GET_ADJACENCY_UPPER
+            and type != GET_ADJACENCY_BOTH
+        ):
             # Maybe it was called with the first argument as the attribute name
             type, attribute = attribute, type
             if type is None:
@@ -617,7 +636,7 @@ class Graph(GraphBase):
         if attribute not in self.es.attribute_names():
             raise ValueError("Attribute does not exist")
 
-        data = [[default] * self.vcount() for _ in xrange(self.vcount())]
+        data = [[default] * self.vcount() for _ in range(self.vcount())]
 
         if self.is_directed():
             for edge in self.es:
@@ -651,7 +670,9 @@ class Graph(GraphBase):
         try:
             from scipy import sparse
         except ImportError:
-            raise ImportError('You should install scipy package in order to use this function')
+            raise ImportError(
+                "You should install scipy package in order to use this function"
+            )
         import numpy as np
 
         edges = self.get_edgelist()
@@ -664,7 +685,7 @@ class Graph(GraphBase):
             weights = self.es[attribute]
 
         N = self.vcount()
-        mtx = sparse.csr_matrix((weights, zip(*edges)), shape=(N, N))
+        mtx = sparse.csr_matrix((weights, list(zip(*edges))), shape=(N, N))
 
         if not self.is_directed():
             mtx = mtx + sparse.triu(mtx, 1).T + sparse.tril(mtx, -1).T
@@ -684,7 +705,7 @@ class Graph(GraphBase):
           the predecessors and the successors will be returned. Ignored
           for undirected graphs.
         """
-        return [self.neighbors(idx, mode) for idx in xrange(self.vcount())]
+        return [self.neighbors(idx, mode) for idx in range(self.vcount())]
 
     def get_adjedgelist(self, *args, **kwds):
         """get_adjedgelist(mode=OUT)
@@ -694,8 +715,10 @@ class Graph(GraphBase):
         @deprecated: replaced by L{Graph.get_inclist()} since igraph 0.6
         @see: Graph.get_inclist()
         """
-        deprecated("Graph.get_adjedgelist() is deprecated since igraph 0.6, "
-                   "please use Graph.get_inclist() instead")
+        deprecated(
+            "Graph.get_adjedgelist() is deprecated since igraph 0.6, "
+            "please use Graph.get_inclist() instead"
+        )
         return self.get_inclist(*args, **kwds)
 
     def get_all_simple_paths(self, v, to=None, cutoff=-1, mode=OUT):
@@ -731,7 +754,7 @@ class Graph(GraphBase):
         for index, item in enumerate(paths):
             if item < 0:
                 result.append(paths[prev:index])
-                prev = index+1
+                prev = index + 1
         return result
 
     def get_inclist(self, mode=OUT):
@@ -749,7 +772,7 @@ class Graph(GraphBase):
           the predecessors and the successors will be returned. Ignored
           for undirected graphs.
         """
-        return [self.incident(idx, mode) for idx in xrange(self.vcount())]
+        return [self.incident(idx, mode) for idx in range(self.vcount())]
 
     def gomory_hu_tree(self, capacity=None, flow="flow"):
         """gomory_hu_tree(capacity=None, flow="flow")
@@ -917,13 +940,21 @@ class Graph(GraphBase):
         data, unconn = GraphBase.path_length_hist(self, directed)
         hist = Histogram(bin_width=1)
         for i, length in enumerate(data):
-            hist.add(i+1, length)
-        hist.unconnected = long(unconn)
+            hist.add(i + 1, length)
+        hist.unconnected = int(unconn)
         return hist
 
-    def pagerank(self, vertices=None, directed=True, damping=0.85,
-                 weights=None, arpack_options=None, implementation="prpack",
-                 niter=1000, eps=0.001):
+    def pagerank(
+        self,
+        vertices=None,
+        directed=True,
+        damping=0.85,
+        weights=None,
+        arpack_options=None,
+        implementation="prpack",
+        niter=1000,
+        eps=0.001,
+    ):
         """Calculates the Google PageRank values of a graph.
 
         @param vertices: the indices of the vertices being queried.
@@ -957,9 +988,18 @@ class Graph(GraphBase):
           vertices."""
         if arpack_options is None:
             arpack_options = _igraph.arpack_options
-        return self.personalized_pagerank(vertices, directed, damping, None,\
-                                          None, weights, arpack_options, \
-                                          implementation, niter, eps)
+        return self.personalized_pagerank(
+            vertices,
+            directed,
+            damping,
+            None,
+            None,
+            weights,
+            arpack_options,
+            implementation,
+            niter,
+            eps,
+        )
 
     def spanning_tree(self, weights=None, return_tree=True):
         """Calculates a minimum spanning tree for a graph.
@@ -1037,8 +1077,9 @@ class Graph(GraphBase):
         return TriadCensus(GraphBase.triad_census(self, *args, **kwds))
 
     # Automorphisms
-    def count_automorphisms_vf2(self, color=None, edge_color=None,
-            node_compat_fn=None, edge_compat_fn=None):
+    def count_automorphisms_vf2(
+        self, color=None, edge_color=None, node_compat_fn=None, edge_compat_fn=None
+    ):
         """Returns the number of automorphisms of the graph.
 
         This function simply calls C{count_isomorphisms_vf2} with the graph
@@ -1048,12 +1089,19 @@ class Graph(GraphBase):
         @return: the number of automorphisms of the graph
         @see: Graph.count_isomorphisms_vf2
         """
-        return self.count_isomorphisms_vf2(self, color1=color, color2=color,
-                edge_color1=edge_color, edge_color2=edge_color,
-                node_compat_fn=node_compat_fn, edge_compat_fn=edge_compat_fn)
+        return self.count_isomorphisms_vf2(
+            self,
+            color1=color,
+            color2=color,
+            edge_color1=edge_color,
+            edge_color2=edge_color,
+            node_compat_fn=node_compat_fn,
+            edge_compat_fn=edge_compat_fn,
+        )
 
-    def get_automorphisms_vf2(self, color=None, edge_color=None,
-            node_compat_fn=None, edge_compat_fn=None):
+    def get_automorphisms_vf2(
+        self, color=None, edge_color=None, node_compat_fn=None, edge_compat_fn=None
+    ):
         """Returns all the automorphisms of the graph
 
         This function simply calls C{get_isomorphisms_vf2} with the graph
@@ -1064,9 +1112,15 @@ class Graph(GraphBase):
           of the graph vertices to itself according to the automorphism
         @see: Graph.get_isomorphisms_vf2
         """
-        return self.get_isomorphisms_vf2(self, color1=color, color2=color,
-                edge_color1=edge_color, edge_color2=edge_color,
-                node_compat_fn=node_compat_fn, edge_compat_fn=edge_compat_fn)
+        return self.get_isomorphisms_vf2(
+            self,
+            color1=color,
+            color2=color,
+            edge_color1=edge_color,
+            edge_color2=edge_color,
+            node_compat_fn=node_compat_fn,
+            edge_compat_fn=edge_compat_fn,
+        )
 
     # Various clustering algorithms -- mostly wrappers around GraphBase
     def community_fastgreedy(self, weights=None):
@@ -1098,8 +1152,9 @@ class Graph(GraphBase):
         else:
             optimal_count = diff
 
-        return VertexDendrogram(self, merges, optimal_count,
-                modularity_params=dict(weights=weights))
+        return VertexDendrogram(
+            self, merges, optimal_count, modularity_params=dict(weights=weights)
+        )
 
     def community_infomap(self, edge_weights=None, vertex_weights=None, trials=10):
         """Finds the community structure of the network according to the Infomap
@@ -1124,14 +1179,17 @@ class Graph(GraphBase):
           U{http://dx.doi.org/10.1140/epjst/e2010-01179-1},
           U{http://arxiv.org/abs/0906.1405}.
         """
-        membership, codelength = \
-              GraphBase.community_infomap(self, edge_weights, vertex_weights, trials)
-        return VertexClustering(self, membership, \
-                                params={"codelength": codelength}, \
-                                modularity_params={"weights": edge_weights} )
+        membership, codelength = GraphBase.community_infomap(
+            self, edge_weights, vertex_weights, trials
+        )
+        return VertexClustering(
+            self,
+            membership,
+            params={"codelength": codelength},
+            modularity_params={"weights": edge_weights},
+        )
 
-    def community_leading_eigenvector_naive(self, clusters = None, \
-            return_merges = False):
+    def community_leading_eigenvector_naive(self, clusters=None, return_merges=False):
         """community_leading_eigenvector_naive(clusters=None,
         return_merges=False)
 
@@ -1158,16 +1216,17 @@ class Graph(GraphBase):
         eigenvectors of matrices, arXiv:physics/0605087"""
         if clusters is None:
             clusters = -1
-        cl, merges, q = GraphBase.community_leading_eigenvector_naive(self, \
-                clusters, return_merges)
+        cl, merges, q = GraphBase.community_leading_eigenvector_naive(
+            self, clusters, return_merges
+        )
         if merges is None:
-            return VertexClustering(self, cl, modularity = q)
+            return VertexClustering(self, cl, modularity=q)
         else:
-            return VertexDendrogram(self, merges, safemax(cl)+1)
+            return VertexDendrogram(self, merges, safemax(cl) + 1)
 
-
-    def community_leading_eigenvector(self, clusters=None, weights=None, \
-            arpack_options=None):
+    def community_leading_eigenvector(
+        self, clusters=None, weights=None, arpack_options=None
+    ):
         """community_leading_eigenvector(clusters=None, weights=None,
           arpack_options=None)
 
@@ -1198,12 +1257,12 @@ class Graph(GraphBase):
         if arpack_options is not None:
             kwds["arpack_options"] = arpack_options
 
-        membership, _, q = GraphBase.community_leading_eigenvector(self, clusters, **kwds)
-        return VertexClustering(self, membership, modularity = q)
+        membership, _, q = GraphBase.community_leading_eigenvector(
+            self, clusters, **kwds
+        )
+        return VertexClustering(self, membership, modularity=q)
 
-
-    def community_label_propagation(self, weights = None, initial = None, \
-            fixed = None):
+    def community_label_propagation(self, weights=None, initial=None, fixed=None):
         """community_label_propagation(weights=None, initial=None, fixed=None)
 
         Finds the community structure of the graph according to the label
@@ -1236,13 +1295,10 @@ class Graph(GraphBase):
           networks. Phys Rev E 76:036106, 2007.
           U{http://arxiv.org/abs/0709.2938}.
         """
-        if isinstance(fixed, basestring):
+        if isinstance(fixed, str):
             fixed = [bool(o) for o in g.vs[fixed]]
-        cl = GraphBase.community_label_propagation(self, \
-                weights, initial, fixed)
-        return VertexClustering(self, cl,
-                modularity_params=dict(weights=weights))
-
+        cl = GraphBase.community_label_propagation(self, weights, initial, fixed)
+        return VertexClustering(self, cl, modularity_params=dict(weights=weights))
 
     def community_multilevel(self, weights=None, return_levels=False):
         """Community structure based on the multilevel algorithm of
@@ -1281,12 +1337,16 @@ class Graph(GraphBase):
             levels, qs = GraphBase.community_multilevel(self, weights, True)
             result = []
             for level, q in zip(levels, qs):
-                result.append(VertexClustering(self, level, q,
-                    modularity_params=dict(weights=weights)))
+                result.append(
+                    VertexClustering(
+                        self, level, q, modularity_params=dict(weights=weights)
+                    )
+                )
         else:
             membership = GraphBase.community_multilevel(self, weights, False)
-            result = VertexClustering(self, membership,
-                    modularity_params=dict(weights=weights))
+            result = VertexClustering(
+                self, membership, modularity_params=dict(weights=weights)
+            )
         return result
 
     def community_optimal_modularity(self, *args, **kwds):
@@ -1302,12 +1362,12 @@ class Graph(GraphBase):
 
         @return: the calculated membership vector and the corresponding
           modularity in a tuple."""
-        membership, modularity = \
-                GraphBase.community_optimal_modularity(self, *args, **kwds)
+        membership, modularity = GraphBase.community_optimal_modularity(
+            self, *args, **kwds
+        )
         return VertexClustering(self, membership, modularity)
 
-    def community_edge_betweenness(self, clusters=None, directed=True,
-            weights=None):
+    def community_edge_betweenness(self, clusters=None, directed=True, weights=None):
         """Community structure based on the betweenness of the edges in the
         network.
 
@@ -1338,11 +1398,12 @@ class Graph(GraphBase):
             qs.reverse()
         if clusters is None:
             if qs:
-                clusters = qs.index(max(qs))+1
+                clusters = qs.index(max(qs)) + 1
             else:
                 clusters = 1
-        return VertexDendrogram(self, merges, clusters,
-                modularity_params=dict(weights=weights))
+        return VertexDendrogram(
+            self, merges, clusters, modularity_params=dict(weights=weights)
+        )
 
     def community_spinglass(self, *args, **kwds):
         """community_spinglass(weights=None, spins=25, parupdate=False,
@@ -1397,11 +1458,10 @@ class Graph(GraphBase):
         """
         membership = GraphBase.community_spinglass(self, *args, **kwds)
         if "weights" in kwds:
-            modularity_params=dict(weights=kwds["weights"])
+            modularity_params = dict(weights=kwds["weights"])
         else:
-            modularity_params={}
-        return VertexClustering(self, membership,
-                modularity_params=modularity_params)
+            modularity_params = {}
+        return VertexClustering(self, membership, modularity_params=modularity_params)
 
     def community_walktrap(self, weights=None, steps=4):
         """Community detection algorithm of Latapy & Pons, based on random
@@ -1425,11 +1485,12 @@ class Graph(GraphBase):
         merges, qs = GraphBase.community_walktrap(self, weights, steps)
         qs.reverse()
         if qs:
-            optimal_count = qs.index(max(qs))+1
+            optimal_count = qs.index(max(qs)) + 1
         else:
             optimal_count = 1
-        return VertexDendrogram(self, merges, optimal_count,
-                modularity_params=dict(weights=weights))
+        return VertexDendrogram(
+            self, merges, optimal_count, modularity_params=dict(weights=weights)
+        )
 
     def k_core(self, *args):
         """Returns some k-cores of the graph.
@@ -1443,7 +1504,7 @@ class Graph(GraphBase):
         all M{k}-cores in increasing order of M{k}.
         """
         if len(args) == 0:
-            indices = xrange(self.vcount())
+            indices = range(self.vcount())
             return_single = False
         else:
             return_single = True
@@ -1454,22 +1515,30 @@ class Graph(GraphBase):
                 except:
                     indices.append(arg)
 
-        if len(indices)>1 or hasattr(args[0], "__iter__"):
+        if len(indices) > 1 or hasattr(args[0], "__iter__"):
             return_single = False
 
         corenesses = self.coreness()
         result = []
-        vidxs = xrange(self.vcount())
+        vidxs = range(self.vcount())
         for idx in indices:
             core_idxs = [vidx for vidx in vidxs if corenesses[vidx] >= idx]
             result.append(self.subgraph(core_idxs))
 
-        if return_single: return result[0]
+        if return_single:
+            return result[0]
         return result
 
-    def community_leiden(self, objective_function="CPM", weights=None,
-        resolution_parameter=1.0, beta=0.01, initial_membership=None,
-        n_iterations=2, node_weights=None):
+    def community_leiden(
+        self,
+        objective_function="CPM",
+        weights=None,
+        resolution_parameter=1.0,
+        beta=0.01,
+        initial_membership=None,
+        n_iterations=2,
+        node_weights=None,
+    ):
         """community_leiden(objective_function=CPM, weights=None,
         resolution_parameter=1.0, beta=0.01, initial_membership=None,
         n_iterations=2, node_weights=None)
@@ -1506,20 +1575,24 @@ class Graph(GraphBase):
           reports, 9(1), 5233. doi: 10.1038/s41598-019-41695-z
         """
         if objective_function.lower() not in ("cpm", "modularity"):
-          raise ValueError("objective_function must be \"CPM\" or \"modularity\".")
+            raise ValueError('objective_function must be "CPM" or "modularity".')
 
-        membership = GraphBase.community_leiden(self,
-          edge_weights=weights, node_weights=node_weights,
-          resolution_parameter=resolution_parameter,
-          normalize_resolution=(objective_function == "modularity"),
-          beta=beta, initial_membership=initial_membership, n_iterations=n_iterations)
+        membership = GraphBase.community_leiden(
+            self,
+            edge_weights=weights,
+            node_weights=node_weights,
+            resolution_parameter=resolution_parameter,
+            normalize_resolution=(objective_function == "modularity"),
+            beta=beta,
+            initial_membership=initial_membership,
+            n_iterations=n_iterations,
+        )
 
         if weights is not None:
-            modularity_params=dict(weights=weights)
+            modularity_params = dict(weights=weights)
         else:
-            modularity_params={}
-        return VertexClustering(self, membership,
-                modularity_params=modularity_params)
+            modularity_params = {}
+        return VertexClustering(self, membership, modularity_params=modularity_params)
 
     def layout(self, layout=None, *args, **kwds):
         """Returns the layout of the graph according to a layout algorithm.
@@ -1668,9 +1741,9 @@ class Graph(GraphBase):
         vattrs = self.vertex_attributes()
         if "x" in vattrs and "y" in vattrs:
             if dim == 3 and "z" in vattrs:
-                return Layout(zip(self.vs["x"], self.vs["y"], self.vs["z"]))
+                return Layout(list(zip(self.vs["x"], self.vs["y"], self.vs["z"])))
             else:
-                return Layout(zip(self.vs["x"], self.vs["y"]))
+                return Layout(list(zip(self.vs["x"], self.vs["y"])))
 
         if self.vcount() <= 100 and self.is_connected():
             algo = "kk"
@@ -1688,13 +1761,22 @@ class Graph(GraphBase):
 
         @see: Graph.layout_fruchterman_reingold()
         """
-        deprecated("Graph.layout_grid_fruchterman_reingold() is deprecated since "\
-            "igraph 0.8, please use Graph.layout_fruchterman_reingold(grid=True) instead")
+        deprecated(
+            "Graph.layout_grid_fruchterman_reingold() is deprecated since "
+            "igraph 0.8, please use Graph.layout_fruchterman_reingold(grid=True) instead"
+        )
         kwds["grid"] = True
         return self.layout_fruchterman_reingold(*args, **kwds)
 
-    def layout_sugiyama(self, layers=None, weights=None, hgap=1, vgap=1,
-            maxiter=100, return_extended_graph=False):
+    def layout_sugiyama(
+        self,
+        layers=None,
+        weights=None,
+        hgap=1,
+        vgap=1,
+        maxiter=100,
+        return_extended_graph=False,
+    ):
         """layout_sugiyama(layers=None, weights=None, hgap=1, vgap=1, maxiter=100,
                         return_extended_graph=False)
 
@@ -1751,12 +1833,15 @@ class Graph(GraphBase):
           feedback arc set problem. Information Processing Letters 47:319-323, 1993.
         """
         if not return_extended_graph:
-            return Layout(GraphBase._layout_sugiyama(self, layers, weights, hgap,
-                    vgap, maxiter, return_extended_graph))
+            return Layout(
+                GraphBase._layout_sugiyama(
+                    self, layers, weights, hgap, vgap, maxiter, return_extended_graph
+                )
+            )
 
-        layout, extd_graph, extd_to_orig_eids = \
-                GraphBase._layout_sugiyama(self, layers, weights, hgap,
-                        vgap, maxiter, return_extended_graph)
+        layout, extd_graph, extd_to_orig_eids = GraphBase._layout_sugiyama(
+            self, layers, weights, hgap, vgap, maxiter, return_extended_graph
+        )
         extd_graph.es["_original_eid"] = extd_to_orig_eids
         return Layout(layout), extd_graph
 
@@ -1836,21 +1921,19 @@ class Graph(GraphBase):
 
         # Nodes
         vnames = list(g.nodes)
-        vattr = {'_nx_name': vnames}
+        vattr = {"_nx_name": vnames}
         vcount = len(vnames)
         vd = {v: i for i, v in enumerate(vnames)}
 
         # NOTE: we do not need a special class for multigraphs, it is taken
         # care for at the edge level rather than at the graph level.
         graph = klass(
-            n=vcount,
-            directed=g.is_directed(),
-            graph_attrs=gattr,
-            vertex_attrs=vattr)
+            n=vcount, directed=g.is_directed(), graph_attrs=gattr, vertex_attrs=vattr
+        )
 
         # Node attributes
         for v, datum in g.nodes.data():
-            for key, val in datum.items():
+            for key, val in list(datum.items()):
                 graph.vs[vd[v]][key] = val
 
         # Edges and edge attributes
@@ -1859,16 +1942,14 @@ class Graph(GraphBase):
         # third element is the "color" of the edge)
         for e, (_, _, datum) in zip(g.edges, g.edges.data()):
             eid = graph.add_edge(vd[e[0]], vd[e[1]])
-            for key, val in datum.items():
+            for key, val in list(datum.items()):
                 eid[key] = val
 
         return graph
 
     def to_graph_tool(
-            self,
-            graph_attributes=None,
-            vertex_attributes=None,
-            edge_attributes=None):
+        self, graph_attributes=None, vertex_attributes=None, edge_attributes=None
+    ):
         """Converts the graph to graph-tool
 
         Data types: graph-tool only accepts specific data types. See the
@@ -1904,7 +1985,7 @@ class Graph(GraphBase):
 
         # Graph attributes
         if graph_attributes is not None:
-            for x, dtype in graph_attributes.items():
+            for x, dtype in list(graph_attributes.items()):
                 # Strange syntax for setting internal properties
                 gprop = g.new_graph_property(str(dtype))
                 g.graph_properties[x] = gprop
@@ -1912,7 +1993,7 @@ class Graph(GraphBase):
 
         # Vertex attributes
         if vertex_attributes is not None:
-            for x, dtype in vertex_attributes.items():
+            for x, dtype in list(vertex_attributes.items()):
                 # Create a new vertex property
                 g.vertex_properties[x] = g.new_vertex_property(str(dtype))
                 # Fill the values from the igraph.Graph
@@ -1921,12 +2002,12 @@ class Graph(GraphBase):
 
         # Edges and edge attributes
         if edge_attributes is not None:
-            for x, dtype in edge_attributes.items():
+            for x, dtype in list(edge_attributes.items()):
                 g.edge_properties[x] = g.new_edge_property(str(dtype))
         for edge in self.es:
             e = g.add_edge(edge.source, edge.target)
             if edge_attributes is not None:
-                for x, dtype in edge_attributes.items():
+                for x, dtype in list(edge_attributes.items()):
                     prop = edge.attributes().get(x, None)
                     g.edge_properties[x][e] = prop
 
@@ -1945,13 +2026,10 @@ class Graph(GraphBase):
         vcount = g.num_vertices()
 
         # Graph
-        graph = klass(
-            n=vcount,
-            directed=g.is_directed(),
-            graph_attrs=gattr)
+        graph = klass(n=vcount, directed=g.is_directed(), graph_attrs=gattr)
 
         # Node attributes
-        for key, val in g.vertex_properties.items():
+        for key, val in list(g.vertex_properties.items()):
             prop = val.get_array()
             for i in range(vcount):
                 graph.vs[i][key] = prop[i]
@@ -1961,7 +2039,7 @@ class Graph(GraphBase):
         # attributes later on
         for e in g.edges():
             edge = graph.add_edge(int(e.source()), int(e.target()))
-            for key, val in g.edge_properties.items():
+            for key, val in list(g.edge_properties.items()):
                 edge[key] = val[e]
 
         return graph
@@ -1978,7 +2056,7 @@ class Graph(GraphBase):
           note that igraph is able to read back the written adjacency matrix
           if and only if this is a single newline character
         """
-        if isinstance(f, basestring):
+        if isinstance(f, str):
             f = open(f, "w")
         matrix = self.get_adjacency(*args, **kwds)
         for row in matrix:
@@ -1987,8 +2065,9 @@ class Graph(GraphBase):
         f.close()
 
     @classmethod
-    def Read_Adjacency(klass, f, sep=None, comment_char = "#", attribute=None,
-        *args, **kwds):
+    def Read_Adjacency(
+        klass, f, sep=None, comment_char="#", attribute=None, *args, **kwds
+    ):
         """Constructs a graph based on an adjacency matrix from the given file
 
         Additional positional and keyword arguments not mentioned here are
@@ -2004,13 +2083,15 @@ class Graph(GraphBase):
           no weights are stored, values larger than 1 are considered as
           edge multiplicities.
         @return: the created graph"""
-        if isinstance(f, basestring):
+        if isinstance(f, str):
             f = open(f)
         matrix, ri, weights = [], 0, {}
         for line in f:
             line = line.strip()
-            if len(line) == 0: continue
-            if line.startswith(comment_char): continue
+            if len(line) == 0:
+                continue
+            if line.startswith(comment_char):
+                continue
             row = [float(x) for x in line.split(sep)]
             matrix.append(row)
             ri += 1
@@ -2018,10 +2099,10 @@ class Graph(GraphBase):
         f.close()
 
         if attribute is None:
-            graph=klass.Adjacency(matrix, *args, **kwds)
+            graph = klass.Adjacency(matrix, *args, **kwds)
         else:
             kwds["attr"] = attribute
-            graph=klass.Weighted_Adjacency(matrix, *args, **kwds)
+            graph = klass.Weighted_Adjacency(matrix, *args, **kwds)
 
         return graph
 
@@ -2043,7 +2124,8 @@ class Graph(GraphBase):
             except KeyError:
                 raise ValueError(
                     "source vertex must be provided in the 'source' graph "
-                    "attribute or in the 'source' argument of write_dimacs()")
+                    "attribute or in the 'source' argument of write_dimacs()"
+                )
 
         if target is None:
             try:
@@ -2051,10 +2133,10 @@ class Graph(GraphBase):
             except KeyError:
                 raise ValueError(
                     "target vertex must be provided in the 'target' graph "
-                    "attribute or in the 'target' argument of write_dimacs()")
+                    "attribute or in the 'target' argument of write_dimacs()"
+                )
 
-        if isinstance(capacity, basestring) and \
-                capacity not in self.edge_attributes():
+        if isinstance(capacity, str) and capacity not in self.edge_attributes():
             warn("'%s' edge attribute does not exist" % capacity)
             capacity = [1] * self.ecount()
 
@@ -2077,6 +2159,7 @@ class Graph(GraphBase):
           produces the least compression, and 9 is slowest and produces
           the most compression."""
         from igraph.utils import named_temporary_file
+
         with named_temporary_file() as tmpfile:
             self.write_graphml(tmpfile)
             outf = gzip.GzipFile(f, "wb", compresslevel)
@@ -2129,6 +2212,7 @@ class Graph(GraphBase):
           specify 0 here.
         @return: the loaded graph object"""
         from igraph.utils import named_temporary_file
+
         with named_temporary_file() as tmpfile:
             outf = open(tmpfile, "wb")
             copyfileobj(gzip.GzipFile(f, "rb"), outf)
@@ -2145,15 +2229,16 @@ class Graph(GraphBase):
         @return: C{None} if the graph was saved successfully to the
           given file, or a string if C{fname} was C{None}.
         """
-        import cPickle as pickle
+        import pickle as pickle
+
         if fname is None:
             return pickle.dumps(self, version)
         if not hasattr(fname, "write"):
             file_was_opened = True
-            fname = open(fname, 'wb')
+            fname = open(fname, "wb")
         else:
-            file_was_opened=False
-        result=pickle.dump(self, fname, version)
+            file_was_opened = False
+        result = pickle.dump(self, fname, version)
         if file_was_opened:
             fname.close()
         return result
@@ -2172,7 +2257,8 @@ class Graph(GraphBase):
         @return: C{None} if the graph was saved successfully to the
           given file.
         """
-        import cPickle as pickle
+        import pickle as pickle
+
         if not hasattr(fname, "write"):
             file_was_opened = True
             fname = gzip.open(fname, "wb")
@@ -2194,7 +2280,8 @@ class Graph(GraphBase):
           a string containing the pickled data.
         @return: the created graph object.
         """
-        import cPickle as pickle
+        import pickle as pickle
+
         if hasattr(fname, "read"):
             # Probably a file or a file-like object
             result = pickle.load(fname)
@@ -2209,13 +2296,17 @@ class Graph(GraphBase):
                     # directly.
                     result = pickle.loads(fname)
                 except TypeError:
-                    raise IOError('Cannot load file. If fname is a file name, that filename may be incorrect.')
+                    raise IOError(
+                        "Cannot load file. If fname is a file name, that filename may be incorrect."
+                    )
             except IOError:
                 try:
                     # No file with the given name, try unpickling directly.
                     result = pickle.loads(fname)
                 except TypeError:
-                    raise IOError('Cannot load file. If fname is a file name, that filename may be incorrect.')
+                    raise IOError(
+                        "Cannot load file. If fname is a file name, that filename may be incorrect."
+                    )
             if fp is not None:
                 result = pickle.load(fp)
                 fp.close()
@@ -2229,7 +2320,8 @@ class Graph(GraphBase):
         @param fname: the name of the file or a stream to read from.
         @return: the created graph object.
         """
-        import cPickle as pickle
+        import pickle as pickle
+
         if hasattr(fname, "read"):
             # Probably a file or a file-like object
             if isinstance(fname, gzip.GzipFile):
@@ -2248,7 +2340,8 @@ class Graph(GraphBase):
         @param fname: the name of the file or a stream to read from.
         @return: the created graph object.
         """
-        import cPickle as pickle
+        import pickle as pickle
+
         if hasattr(fname, "read"):
             # Probably a file or a file-like object
             if isinstance(fname, gzip.GzipFile):
@@ -2264,11 +2357,22 @@ class Graph(GraphBase):
     # pylint: disable-msg=C0301,C0323
     # C0301: line too long.
     # C0323: operator not followed by a space - well, print >>f looks OK
-    def write_svg(self, fname, layout="auto", width=None, height=None, \
-                  labels="label", colors="color", shapes="shape", \
-                  vertex_size=10, edge_colors="color", \
-                  edge_stroke_widths="width", \
-                  font_size=16, *args, **kwds):
+    def write_svg(
+        self,
+        fname,
+        layout="auto",
+        width=None,
+        height=None,
+        labels="label",
+        colors="color",
+        shapes="shape",
+        vertex_size=10,
+        edge_colors="color",
+        edge_stroke_widths="width",
+        font_size=16,
+        *args,
+        **kwds
+    ):
         """Saves the graph as an SVG (Scalable Vector Graphics) file
 
         The file will be Inkscape (http://inkscape.org) compatible.
@@ -2327,7 +2431,7 @@ class Graph(GraphBase):
             try:
                 labels = self.vs.get_attribute_values(labels)
             except KeyError:
-                labels = [x+1 for x in xrange(self.vcount())]
+                labels = [x + 1 for x in range(self.vcount())]
         elif labels is None:
             labels = [""] * self.vcount()
 
@@ -2362,10 +2466,10 @@ class Graph(GraphBase):
                 raise ValueError("font size can't contain a semicolon")
 
         vcount = self.vcount()
-        labels.extend(str(i+1) for i in xrange(len(labels), vcount))
+        labels.extend(str(i + 1) for i in range(len(labels), vcount))
         colors.extend(["red"] * (vcount - len(colors)))
 
-        if isinstance(fname, basestring):
+        if isinstance(fname, str):
             f = open(fname, "w")
             our_file = True
         else:
@@ -2374,7 +2478,7 @@ class Graph(GraphBase):
 
         bbox = BoundingBox(layout.bounding_box())
 
-        sizes = [width-2*vertex_size, height-2*vertex_size]
+        sizes = [width - 2 * vertex_size, height - 2 * vertex_size]
         w, h = bbox.width, bbox.height
 
         ratios = []
@@ -2387,21 +2491,30 @@ class Graph(GraphBase):
         else:
             ratios.append(sizes[1] / h)
 
-        layout = [[(row[0] - bbox.left) * ratios[0] + vertex_size, \
-                  (row[1] - bbox.top) * ratios[1] + vertex_size] \
-                  for row in layout]
+        layout = [
+            [
+                (row[0] - bbox.left) * ratios[0] + vertex_size,
+                (row[1] - bbox.top) * ratios[1] + vertex_size,
+            ]
+            for row in layout
+        ]
 
         directed = self.is_directed()
 
-        print >> f, '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
-        print >> f, '<!-- Created by igraph (http://igraph.org/) for use in Inkscape (http://www.inkscape.org/) -->'
-        print >> f
-        print >> f, '<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"'
-        print >> f, 'width="{0}px" height="{1}px">'.format(width, height),
-
+        print('<?xml version="1.0" encoding="UTF-8" standalone="no"?>', file=f)
+        print(
+            "<!-- Created by igraph (http://igraph.org/) for use in Inkscape (http://www.inkscape.org/) -->",
+            file=f,
+        )
+        print(file=f)
+        print(
+            '<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"',
+            file=f,
+        )
+        print('width="{0}px" height="{1}px">'.format(width, height), end=" ", file=f)
 
         edge_color_dict = {}
-        print >> f, '<defs id="defs3">'
+        print('<defs id="defs3">', file=f)
         for e_col in set(edge_colors):
             if e_col == "#000000":
                 marker_index = ""
@@ -2409,23 +2522,34 @@ class Graph(GraphBase):
                 marker_index = str(len(edge_color_dict))
             # Print an arrow marker for each possible line color
             # This is a copy of Inkscape's standard Arrow 2 marker
-            print >> f, '<marker'
-            print >> f, '   inkscape:stockid="Arrow2Lend{0}"'.format(marker_index)
-            print >> f, '   orient="auto"'
-            print >> f, '   refY="0.0"'
-            print >> f, '   refX="0.0"'
-            print >> f, '   id="Arrow2Lend{0}"'.format(marker_index)
-            print >> f, '   style="overflow:visible;">'
-            print >> f, '  <path'
-            print >> f, '     id="pathArrow{0}"'.format(marker_index)
-            print >> f, '     style="font-size:12.0;fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;fill:{0}"'.format(e_col)
-            print >> f, '     d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "'
-            print >> f, '     transform="scale(1.1) rotate(180) translate(1,0)" />'
-            print >> f, '</marker>'
+            print("<marker", file=f)
+            print('   inkscape:stockid="Arrow2Lend{0}"'.format(marker_index), file=f)
+            print('   orient="auto"', file=f)
+            print('   refY="0.0"', file=f)
+            print('   refX="0.0"', file=f)
+            print('   id="Arrow2Lend{0}"'.format(marker_index), file=f)
+            print('   style="overflow:visible;">', file=f)
+            print("  <path", file=f)
+            print('     id="pathArrow{0}"'.format(marker_index), file=f)
+            print(
+                '     style="font-size:12.0;fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;fill:{0}"'.format(
+                    e_col
+                ),
+                file=f,
+            )
+            print(
+                '     d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "',
+                file=f,
+            )
+            print('     transform="scale(1.1) rotate(180) translate(1,0)" />', file=f)
+            print("</marker>", file=f)
 
             edge_color_dict[e_col] = "Arrow2Lend{0}".format(marker_index)
-        print >> f, '</defs>'
-        print >> f, '<g inkscape:groupmode="layer" id="layer2" inkscape:label="Lines" sodipodi:insensitive="true">'
+        print("</defs>", file=f)
+        print(
+            '<g inkscape:groupmode="layer" id="layer2" inkscape:label="Lines" sodipodi:insensitive="true">',
+            file=f,
+        )
 
         for eidx, edge in enumerate(self.es):
             vidxs = edge.tuple
@@ -2437,32 +2561,41 @@ class Graph(GraphBase):
             x2 = x2 - vertex_size * math.cos(angle)
             y2 = y2 - vertex_size * math.sin(angle)
 
-            print >> f, '<path'
-            print >> f, '    style="fill:none;stroke:{0};stroke-width:{2};stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none{1}"'\
-                        .format(edge_colors[eidx], ";marker-end:url(#{0})".\
-                                format(edge_color_dict[edge_colors[eidx]]) \
-                                if directed else "", edge_stroke_widths[eidx])
-            print >> f, '    d="M {0},{1} {2},{3}"'.format(x1, y1, x2, y2)
-            print >> f, '    id="path{0}"'.format(eidx)
-            print >> f, '    inkscape:connector-type="polyline"'
-            print >> f, '    inkscape:connector-curvature="0"'
-            print >> f, '    inkscape:connection-start="#g{0}"'.format(edge.source)
-            print >> f, '    inkscape:connection-start-point="d4"'
-            print >> f, '    inkscape:connection-end="#g{0}"'.format(edge.target)
-            print >> f, '    inkscape:connection-end-point="d4" />'
+            print("<path", file=f)
+            print(
+                '    style="fill:none;stroke:{0};stroke-width:{2};stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none{1}"'.format(
+                    edge_colors[eidx],
+                    ";marker-end:url(#{0})".format(edge_color_dict[edge_colors[eidx]])
+                    if directed
+                    else "",
+                    edge_stroke_widths[eidx],
+                ),
+                file=f,
+            )
+            print('    d="M {0},{1} {2},{3}"'.format(x1, y1, x2, y2), file=f)
+            print('    id="path{0}"'.format(eidx), file=f)
+            print('    inkscape:connector-type="polyline"', file=f)
+            print('    inkscape:connector-curvature="0"', file=f)
+            print('    inkscape:connection-start="#g{0}"'.format(edge.source), file=f)
+            print('    inkscape:connection-start-point="d4"', file=f)
+            print('    inkscape:connection-end="#g{0}"'.format(edge.target), file=f)
+            print('    inkscape:connection-end-point="d4" />', file=f)
 
-        print >> f, "  </g>"
-        print >> f
+        print("  </g>", file=f)
+        print(file=f)
 
-        print >> f, '  <g inkscape:label="Nodes" \
-                    inkscape:groupmode="layer" id="layer1">'
-        print >> f, '  <!-- Vertices -->'
+        print(
+            '  <g inkscape:label="Nodes" \
+                    inkscape:groupmode="layer" id="layer1">',
+            file=f,
+        )
+        print("  <!-- Vertices -->", file=f)
 
         if any(x == 3 for x in shapes):
             # Only import tkFont if we really need it. Unfortunately, this will
             # flash up an unneccesary Tk window in some cases
-            import tkFont
-            import Tkinter as tk
+            import tkinter.font
+            import tkinter as tk
 
             # This allows us to dynamically size the width of the nodes.
             # Unfortunately this works only with font sizes specified in pixels.
@@ -2472,53 +2605,102 @@ class Graph(GraphBase):
                 try:
                     font_size_in_pixels = int(font_size)
                 except:
-                    raise ValueError("font sizes must be specified in pixels "
-                                     "when any of the nodes has shape=3 (i.e. "
-                                     "node size determined by text size)")
+                    raise ValueError(
+                        "font sizes must be specified in pixels "
+                        "when any of the nodes has shape=3 (i.e. "
+                        "node size determined by text size)"
+                    )
             tk_window = tk.Tk()
-            font = tkFont.Font(root=tk_window, font=("Sans", font_size_in_pixels, tkFont.NORMAL))
+            font = tkinter.font.Font(
+                root=tk_window, font=("Sans", font_size_in_pixels, tkinter.font.NORMAL)
+            )
         else:
             tk_window = None
 
         for vidx in range(self.vcount()):
-            print >> f, '    <g id="g{0}" transform="translate({1},{2})">'.\
-                        format(vidx, layout[vidx][0], layout[vidx][1])
+            print(
+                '    <g id="g{0}" transform="translate({1},{2})">'.format(
+                    vidx, layout[vidx][0], layout[vidx][1]
+                ),
+                file=f,
+            )
             if shapes[vidx] == 1:
                 # Undocumented feature: can handle two colors but only for circles
                 c = str(colors[vidx])
                 if " " in c:
                     c = c.split(" ")
                     vs = str(vertex_size)
-                    print >> f, '     <path d="M -{0},0 A{0},{0} 0 0,0 {0},0 L \
-                                -{0},0" fill="{1}"/>'.format(vs, c[0])
-                    print >> f, '     <path d="M -{0},0 A{0},{0} 0 0,1 {0},0 L \
-                                -{0},0" fill="{1}"/>'.format(vs, c[1])
-                    print >> f, '     <circle cx="0" cy="0" r="{0}" fill="none"/>'\
-                                .format(vs)
+                    print(
+                        '     <path d="M -{0},0 A{0},{0} 0 0,0 {0},0 L \
+                                -{0},0" fill="{1}"/>'.format(
+                            vs, c[0]
+                        ),
+                        file=f,
+                    )
+                    print(
+                        '     <path d="M -{0},0 A{0},{0} 0 0,1 {0},0 L \
+                                -{0},0" fill="{1}"/>'.format(
+                            vs, c[1]
+                        ),
+                        file=f,
+                    )
+                    print(
+                        '     <circle cx="0" cy="0" r="{0}" fill="none"/>'.format(vs),
+                        file=f,
+                    )
                 else:
-                    print >> f, '     <circle cx="0" cy="0" r="{0}" fill="{1}"/>'.\
-                        format(str(vertex_size), str(colors[vidx]))
+                    print(
+                        '     <circle cx="0" cy="0" r="{0}" fill="{1}"/>'.format(
+                            str(vertex_size), str(colors[vidx])
+                        ),
+                        file=f,
+                    )
             elif shapes[vidx] == 2:
-                print >> f, '      <rect x="-{0}" y="-{0}" width="{1}" height="{1}" id="rect{2}" style="fill:{3};fill-opacity:1" />'.\
-                    format(vertex_size, vertex_size * 2, vidx, colors[vidx])
+                print(
+                    '      <rect x="-{0}" y="-{0}" width="{1}" height="{1}" id="rect{2}" style="fill:{3};fill-opacity:1" />'.format(
+                        vertex_size, vertex_size * 2, vidx, colors[vidx]
+                    ),
+                    file=f,
+                )
             elif shapes[vidx] == 3:
-                (vertex_width, vertex_height) = (font.measure(str(labels[vidx])) + 2, font.metrics("linespace") + 2)
-                print >> f, '      <rect ry="5" rx="5" x="-{0}" y="-{1}" width="{2}" height="{3}" id="rect{4}" style="fill:{5};fill-opacity:1" />'.\
-                    format(vertex_width / 2., vertex_height / 2., vertex_width, vertex_height, vidx, colors[vidx])
+                (vertex_width, vertex_height) = (
+                    font.measure(str(labels[vidx])) + 2,
+                    font.metrics("linespace") + 2,
+                )
+                print(
+                    '      <rect ry="5" rx="5" x="-{0}" y="-{1}" width="{2}" height="{3}" id="rect{4}" style="fill:{5};fill-opacity:1" />'.format(
+                        vertex_width / 2.0,
+                        vertex_height / 2.0,
+                        vertex_width,
+                        vertex_height,
+                        vidx,
+                        colors[vidx],
+                    ),
+                    file=f,
+                )
 
-            print >> f, '      <text sodipodi:linespacing="125%" y="{0}" x="0" id="text{1}" style="font-size:{2};font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans">'.format(vertex_size / 2.,vidx, font_size)
-            print >> f, '<tspan y="{0}" x="0" id="tspan{1}" sodipodi:role="line">{2}</tspan></text>'.format(vertex_size / 2.,vidx, str(labels[vidx]))
-            print >> f, '    </g>'
+            print(
+                '      <text sodipodi:linespacing="125%" y="{0}" x="0" id="text{1}" style="font-size:{2};font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans">'.format(
+                    vertex_size / 2.0, vidx, font_size
+                ),
+                file=f,
+            )
+            print(
+                '<tspan y="{0}" x="0" id="tspan{1}" sodipodi:role="line">{2}</tspan></text>'.format(
+                    vertex_size / 2.0, vidx, str(labels[vidx])
+                ),
+                file=f,
+            )
+            print("    </g>", file=f)
 
-        print >> f, '</g>'
-        print >> f
-        print >> f, '</svg>'
+        print("</g>", file=f)
+        print(file=f)
+        print("</svg>", file=f)
 
         if our_file:
             f.close()
         if tk_window:
             tk_window.destroy()
-
 
     @classmethod
     def _identify_format(klass, filename):
@@ -2537,10 +2719,11 @@ class Graph(GraphBase):
         @return: the format of the file as a string.
         """
         import os.path
+
         if hasattr(filename, "name") and hasattr(filename, "read"):
             # It is most likely a file
             try:
-                filename=filename.name
+                filename = filename.name
             except:
                 return None
 
@@ -2555,9 +2738,25 @@ class Graph(GraphBase):
             elif ext2 == ".graphml":
                 return "graphmlz"
 
-        if ext in [".graphml", ".graphmlz", ".lgl", ".ncol", ".pajek",
-            ".gml", ".dimacs", ".edgelist", ".edges", ".edge", ".net",
-            ".pickle", ".picklez", ".dot", ".gw", ".lgr", ".dl"]:
+        if ext in [
+            ".graphml",
+            ".graphmlz",
+            ".lgl",
+            ".ncol",
+            ".pajek",
+            ".gml",
+            ".dimacs",
+            ".edgelist",
+            ".edges",
+            ".edge",
+            ".net",
+            ".pickle",
+            ".picklez",
+            ".dot",
+            ".gw",
+            ".lgr",
+            ".dl",
+        ]:
             return ext[1:]
 
         if ext == ".txt" or ext == ".dat":
@@ -2623,8 +2822,8 @@ class Graph(GraphBase):
             raise IOError("no reader method for file format: %s" % str(format))
         reader = getattr(klass, reader)
         return reader(f, *args, **kwds)
-    Load = Read
 
+    Load = Read
 
     def write(self, f, format=None, *args, **kwds):
         """Unified writing function for graphs.
@@ -2680,15 +2879,22 @@ class Graph(GraphBase):
             raise IOError("no writer method for file format: %s" % str(format))
         writer = getattr(self, writer)
         return writer(f, *args, **kwds)
+
     save = write
 
     #####################################################
     # Constructor for dict-like representation of graphs
 
     @classmethod
-    def DictList(klass, vertices, edges, directed=False, \
-            vertex_name_attr="name", edge_foreign_keys=("source", "target"), \
-            iterative=False):
+    def DictList(
+        klass,
+        vertices,
+        edges,
+        directed=False,
+        vertex_name_attr="name",
+        edge_foreign_keys=("source", "target"),
+        iterative=False,
+    ):
         """Constructs a graph from a list-of-dictionaries representation.
 
         This representation assumes that vertices and edges are encoded in
@@ -2721,6 +2927,7 @@ class Graph(GraphBase):
           add the edges in a batch from an edge list.
         @return: the graph that was constructed
         """
+
         def create_list_from_indices(l, n):
             result = [None] * n
             for i, v in l:
@@ -2731,13 +2938,13 @@ class Graph(GraphBase):
         vertex_attrs, n = {}, 0
         if vertices:
             for idx, vertex_data in enumerate(vertices):
-                for k, v in vertex_data.iteritems():
+                for k, v in vertex_data.items():
                     try:
                         vertex_attrs[k].append((idx, v))
                     except KeyError:
                         vertex_attrs[k] = [(idx, v)]
                 n += 1
-            for k, v in vertex_attrs.iteritems():
+            for k, v in vertex_attrs.items():
                 vertex_attrs[k] = create_list_from_indices(v, n)
         else:
             vertex_attrs[vertex_name_attr] = []
@@ -2747,7 +2954,7 @@ class Graph(GraphBase):
         if len(vertex_names) != len(set(vertex_names)):
             raise ValueError("vertex names are not unique")
         # Create a reverse mapping from vertex names to indices
-        vertex_name_map = UniqueIdGenerator(initial = vertex_names)
+        vertex_name_map = UniqueIdGenerator(initial=vertex_names)
 
         # Construct the edges
         efk_src, efk_dest = edge_foreign_keys
@@ -2766,7 +2973,7 @@ class Graph(GraphBase):
                     g.vs[n][vertex_name_attr] = dst_name
                     n += 1
                 g.add_edge(v1, v2)
-                for k, v in edge_data.iteritems():
+                for k, v in edge_data.items():
                     g.es[idx][k] = v
 
             return g
@@ -2777,13 +2984,13 @@ class Graph(GraphBase):
                 v2 = vertex_name_map[edge_data[efk_dest]]
 
                 edge_list.append((v1, v2))
-                for k, v in edge_data.iteritems():
+                for k, v in edge_data.items():
                     try:
                         edge_attrs[k].append((idx, v))
                     except KeyError:
                         edge_attrs[k] = [(idx, v)]
                 m += 1
-            for k, v in edge_attrs.iteritems():
+            for k, v in edge_attrs.items():
                 edge_attrs[k] = create_list_from_indices(v, m)
 
             # It may have happened that some vertices were added during
@@ -2791,8 +2998,9 @@ class Graph(GraphBase):
             if len(vertex_name_map) > n:
                 diff = len(vertex_name_map) - n
                 more = [None] * diff
-                for k, v in vertex_attrs.iteritems(): v.extend(more)
-                vertex_attrs[vertex_name_attr] = vertex_name_map.values()
+                for k, v in vertex_attrs.items():
+                    v.extend(more)
+                vertex_attrs[vertex_name_attr] = list(vertex_name_map.values())
                 n = len(vertex_name_map)
 
             # Create the graph
@@ -2802,8 +3010,14 @@ class Graph(GraphBase):
     # Constructor for tuple-like representation of graphs
 
     @classmethod
-    def TupleList(klass, edges, directed=False, \
-            vertex_name_attr="name", edge_attrs=None, weights=False):
+    def TupleList(
+        klass,
+        edges,
+        directed=False,
+        vertex_name_attr="name",
+        edge_attrs=None,
+        weights=False,
+    ):
         """Constructs a graph from a list-of-tuples representation.
 
         This representation assumes that the edges of the graph are encoded
@@ -2851,15 +3065,16 @@ class Graph(GraphBase):
             if not weights:
                 edge_attrs = ()
             else:
-                if not isinstance(weights, basestring):
+                if not isinstance(weights, str):
                     weights = "weight"
                 edge_attrs = [weights]
         else:
             if weights:
-                raise ValueError("`weights` must be False if `edge_attrs` is "
-                        "not None")
+                raise ValueError(
+                    "`weights` must be False if `edge_attrs` is " "not None"
+                )
 
-        if isinstance(edge_attrs, basestring):
+        if isinstance(edge_attrs, str):
             edge_attrs = [edge_attrs]
 
         # Set up a vertex ID generator
@@ -2881,7 +3096,7 @@ class Graph(GraphBase):
 
         # Set up the "name" vertex attribute
         vertex_attributes = {}
-        vertex_attributes[vertex_name_attr] = idgen.values()
+        vertex_attributes[vertex_name_attr] = list(idgen.values())
         n = len(idgen)
 
         # Construct the graph
@@ -2889,7 +3104,7 @@ class Graph(GraphBase):
 
     #################################
     # Constructor for graph formulae
-    Formula=classmethod(construct_graph_from_formula)
+    Formula = classmethod(construct_graph_from_formula)
 
     ###########################
     # Vertex and edge sequence
@@ -3109,45 +3324,50 @@ class Graph(GraphBase):
             raise ValueError("the data frame should contain at least two columns")
 
         if use_vids:
-            if str(edges.dtypes[0]).startswith('int') and \
-                    str(edges.dtypes[1]).startswith('int'):
+            if str(edges.dtypes[0]).startswith("int") and str(
+                edges.dtypes[1]
+            ).startswith("int"):
                 names_edges = None
             else:
-                raise TypeError('vertex ids must be 0-based integers')
+                raise TypeError("vertex ids must be 0-based integers")
 
         else:
             # Handle if some elements are 'NA'
             if edges.iloc[:, :2].isna().values.any():
                 warn("In 'edges' NA elements were replaced with string \"NA\"")
                 edges = edges.copy()
-                edges.iloc[:, :2].fillna('NA', inplace=True)
+                edges.iloc[:, :2].fillna("NA", inplace=True)
 
             names_edges = np.unique(edges.values[:, :2])
 
         if (vertices is not None) and vertices.iloc[:, 0].isna().values.any():
-            warn("In the first column of 'vertices' NA elements were replaced "+
-                 "with string \"NA\"")
+            warn(
+                "In the first column of 'vertices' NA elements were replaced "
+                + 'with string "NA"'
+            )
             vertices = vertices.copy()
-            vertices.iloc[:, 0].fillna('NA', inplace=True)
+            vertices.iloc[:, 0].fillna("NA", inplace=True)
 
         if vertices is None:
             names = names_edges
         else:
             if vertices.shape[1] < 1:
-                raise ValueError('vertices has no columns')
+                raise ValueError("vertices has no columns")
 
             names_vertices = vertices.iloc[:, 0]
 
             if names_vertices.duplicated().any():
-                raise ValueError('Vertex names must be unique')
+                raise ValueError("Vertex names must be unique")
 
             names_vertices = names_vertices.values
 
-            if (names_edges is not None) and \
-                    len(np.setdiff1d(names_edges, names_vertices)):
+            if (names_edges is not None) and len(
+                np.setdiff1d(names_edges, names_vertices)
+            ):
                 raise ValueError(
-                    'Some vertices in the edge DataFrame are missing from '+
-                    'vertices DataFrame')
+                    "Some vertices in the edge DataFrame are missing from "
+                    + "vertices DataFrame"
+                )
 
             names = names_vertices
 
@@ -3161,7 +3381,7 @@ class Graph(GraphBase):
         # vertex names
         if names is not None:
             for v, name in zip(g.vs, names):
-                v['name'] = name
+                v["name"] = name
 
         # vertex attributes
         if (vertices is not None) and (vertices.shape[1] > 1):
@@ -3180,18 +3400,19 @@ class Graph(GraphBase):
             e1 = edges.values[:, 1]
 
         # add the edges
-        g.add_edges(zip(e0, e1))
+        g.add_edges(list(zip(e0, e1)))
 
         # edge attributes
         if edges.shape[1] > 2:
             for e, (_, attr) in zip(g.es, edges.iloc[:, 2:].iterrows()):
-                for a_name, a_value in attr.items():
+                for a_name, a_value in list(attr.items()):
                     e[a_name] = a_value
 
         return g
 
-    def bipartite_projection(self, types="type", multiplicity=True, probe1=-1,
-            which="both"):
+    def bipartite_projection(
+        self, types="type", multiplicity=True, probe1=-1, which="both"
+    ):
         """Projects a bipartite graph into two one-mode graphs. Edge directions
         are ignored while projecting.
 
@@ -3276,8 +3497,7 @@ class Graph(GraphBase):
           first projection, followed by the number of vertices and edges in the
           second projection.
         """
-        return super(Graph, self).bipartite_projection_size(types, \
-                *args, **kwds)
+        return super(Graph, self).bipartite_projection_size(types, *args, **kwds)
 
     def get_incidence(self, types="type", *args, **kwds):
         """get_incidence(self, types="type")
@@ -3355,7 +3575,7 @@ class Graph(GraphBase):
 
         @see: L{__add__}
         """
-        if isinstance(other, (int, basestring)):
+        if isinstance(other, (int, str)):
             self.add_vertices(other)
             return self
         elif isinstance(other, tuple) and len(other) == 2:
@@ -3367,11 +3587,10 @@ class Graph(GraphBase):
             if isinstance(other[0], tuple):
                 self.add_edges(other)
                 return self
-            if isinstance(other[0], basestring):
+            if isinstance(other[0], str):
                 self.add_vertices(other)
                 return self
         return NotImplemented
-
 
     def __add__(self, other):
         """Copies the graph and extends the copy depending on the type of
@@ -3385,18 +3604,18 @@ class Graph(GraphBase):
           is extended by multiple edges. If it is a L{Graph}, a disjoint
           union is performed.
         """
-        if isinstance(other, (int, basestring)):
+        if isinstance(other, (int, str)):
             g = self.copy()
             g.add_vertices(other)
         elif isinstance(other, tuple) and len(other) == 2:
             g = self.copy()
             g.add_edges([other])
         elif isinstance(other, list):
-            if len(other)>0:
+            if len(other) > 0:
                 if isinstance(other[0], tuple):
                     g = self.copy()
                     g.add_edges(other)
-                elif isinstance(other[0], basestring):
+                elif isinstance(other[0], str):
                     g = self.copy()
                     g.add_vertices(other)
                 elif isinstance(other[0], Graph):
@@ -3413,7 +3632,6 @@ class Graph(GraphBase):
 
         return g
 
-
     def __and__(self, other):
         """Graph intersection operator.
 
@@ -3424,7 +3642,6 @@ class Graph(GraphBase):
             return self.intersection(other)
         else:
             return NotImplemented
-
 
     def __isub__(self, other):
         """In-place subtraction (difference).
@@ -3438,7 +3655,7 @@ class Graph(GraphBase):
             if len(other) > 0:
                 if isinstance(other[0], tuple):
                     self.delete_edges(other)
-                elif isinstance(other[0], (int, long, basestring)):
+                elif isinstance(other[0], (int, str)):
                     self.delete_vertices(other)
                 else:
                     return NotImplemented
@@ -3454,7 +3671,6 @@ class Graph(GraphBase):
             return NotImplemented
         return self
 
-
     def __sub__(self, other):
         """Removes the given object(s) from the graph
 
@@ -3469,7 +3685,7 @@ class Graph(GraphBase):
             return self.difference(other)
 
         result = self.copy()
-        if isinstance(other, (int, long, basestring)):
+        if isinstance(other, (int, str)):
             result.delete_vertices([other])
         elif isinstance(other, tuple) and len(other) == 2:
             result.delete_edges([other])
@@ -3477,7 +3693,7 @@ class Graph(GraphBase):
             if len(other) > 0:
                 if isinstance(other[0], tuple):
                     result.delete_edges(other)
-                elif isinstance(other[0], (int, long, basestring)):
+                elif isinstance(other[0], (int, str)):
                     result.delete_vertices(other)
                 else:
                     return NotImplemented
@@ -3516,9 +3732,8 @@ class Graph(GraphBase):
 
         return NotImplemented
 
-    def __nonzero__(self):
-        """Returns True if the graph has at least one vertex, False otherwise.
-        """
+    def __bool__(self):
+        """Returns True if the graph has at least one vertex, False otherwise."""
         return self.vcount() > 0
 
     def __or__(self, other):
@@ -3532,14 +3747,13 @@ class Graph(GraphBase):
         else:
             return NotImplemented
 
-
     def __coerce__(self, other):
         """Coercion rules.
 
         This method is needed to allow the graph to react to additions
         with lists, tuples, integers, strings, vertices, edges and so on.
         """
-        if isinstance(other, (int, tuple, list, basestring)):
+        if isinstance(other, (int, tuple, list, str)):
             return self, other
         if isinstance(other, _igraph.Vertex):
             return self, other
@@ -3571,12 +3785,18 @@ class Graph(GraphBase):
             vattrs[attr] = self.vs[attr]
         for attr in self.es.attribute_names():
             eattrs[attr] = self.es[attr]
-        parameters = (self.vcount(), self.get_edgelist(), \
-            self.is_directed(), gattrs, vattrs, eattrs)
+        parameters = (
+            self.vcount(),
+            self.get_edgelist(),
+            self.is_directed(),
+            gattrs,
+            vattrs,
+            eattrs,
+        )
         return (constructor, parameters, self.__dict__)
 
-    __iter__ = None                # needed for PyPy
-    __hash__ = None                # needed for PyPy
+    __iter__ = None  # needed for PyPy
+    __hash__ = None  # needed for PyPy
 
     def __plot__(self, context, bbox, palette, *args, **kwds):
         """Plots the graph to the given Cairo context in the given bounding box
@@ -3780,11 +4000,11 @@ class Graph(GraphBase):
         output.
         """
         params = dict(
-                verbosity=1,
-                width=78,
-                print_graph_attributes=False,
-                print_vertex_attributes=False,
-                print_edge_attributes=False
+            verbosity=1,
+            width=78,
+            print_graph_attributes=False,
+            print_vertex_attributes=False,
+            print_edge_attributes=False,
         )
         return self.summary(**params)
 
@@ -3820,7 +4040,7 @@ class Graph(GraphBase):
             other = [other]
         return disjoint_union([self] + other)
 
-    def union(self, other, byname='auto'):
+    def union(self, other, byname="auto"):
         """union(self, other, byname="auto")
 
         Creates the union of two (or more) graphs.
@@ -3834,7 +4054,7 @@ class Graph(GraphBase):
             other = [other]
         return union([self] + other, byname=byname)
 
-    def intersection(self, other, byname='auto'):
+    def intersection(self, other, byname="auto"):
         """intersection(self, other, byname="auto")
 
         Creates the intersection of two (or more) graphs.
@@ -3850,29 +4070,29 @@ class Graph(GraphBase):
         return intersection([self] + other, byname=byname)
 
     _format_mapping = {
-          "ncol":       ("Read_Ncol", "write_ncol"),
-          "lgl":        ("Read_Lgl", "write_lgl"),
-          "graphdb":    ("Read_GraphDB", None),
-          "graphmlz":   ("Read_GraphMLz", "write_graphmlz"),
-          "graphml":    ("Read_GraphML", "write_graphml"),
-          "gml":        ("Read_GML", "write_gml"),
-          "dot":		(None, "write_dot"),
-          "graphviz":	(None, "write_dot"),
-          "net":        ("Read_Pajek", "write_pajek"),
-          "pajek":      ("Read_Pajek", "write_pajek"),
-          "dimacs":     ("Read_DIMACS", "write_dimacs"),
-          "adjacency":  ("Read_Adjacency", "write_adjacency"),
-          "adj":        ("Read_Adjacency", "write_adjacency"),
-          "edgelist":   ("Read_Edgelist", "write_edgelist"),
-          "edge":       ("Read_Edgelist", "write_edgelist"),
-          "edges":      ("Read_Edgelist", "write_edgelist"),
-          "pickle":     ("Read_Pickle", "write_pickle"),
-          "picklez":    ("Read_Picklez", "write_picklez"),
-          "svg":        (None, "write_svg"),
-          "gw":         (None, "write_leda"),
-          "leda":       (None, "write_leda"),
-          "lgr":        (None, "write_leda"),
-          "dl":         ("Read_DL", None)
+        "ncol": ("Read_Ncol", "write_ncol"),
+        "lgl": ("Read_Lgl", "write_lgl"),
+        "graphdb": ("Read_GraphDB", None),
+        "graphmlz": ("Read_GraphMLz", "write_graphmlz"),
+        "graphml": ("Read_GraphML", "write_graphml"),
+        "gml": ("Read_GML", "write_gml"),
+        "dot": (None, "write_dot"),
+        "graphviz": (None, "write_dot"),
+        "net": ("Read_Pajek", "write_pajek"),
+        "pajek": ("Read_Pajek", "write_pajek"),
+        "dimacs": ("Read_DIMACS", "write_dimacs"),
+        "adjacency": ("Read_Adjacency", "write_adjacency"),
+        "adj": ("Read_Adjacency", "write_adjacency"),
+        "edgelist": ("Read_Edgelist", "write_edgelist"),
+        "edge": ("Read_Edgelist", "write_edgelist"),
+        "edges": ("Read_Edgelist", "write_edgelist"),
+        "pickle": ("Read_Pickle", "write_pickle"),
+        "picklez": ("Read_Picklez", "write_picklez"),
+        "svg": (None, "write_svg"),
+        "gw": (None, "write_leda"),
+        "leda": (None, "write_leda"),
+        "lgr": (None, "write_leda"),
+        "dl": ("Read_DL", None),
     }
 
     _layout_mapping = {
@@ -3912,7 +4132,9 @@ class Graph(GraphBase):
     # After adjusting something here, don't forget to update the docstring
     # of Graph.layout if necessary!
 
+
 ##############################################################
+
 
 class VertexSeq(_igraph.VertexSeq):
     """Class representing a sequence of vertices in the graph.
@@ -4014,7 +4236,7 @@ class VertexSeq(_igraph.VertexSeq):
             else:
                 name = None
 
-            if name is not None and isinstance(name, (str, unicode)):
+            if name is not None and isinstance(name, str):
                 args = [name]
 
         if args:
@@ -4139,15 +4361,16 @@ class VertexSeq(_igraph.VertexSeq):
         vs = _igraph.VertexSeq.select(self, *args)
 
         operators = {
-            "lt": operator.lt, \
-            "gt": operator.gt, \
-            "le": operator.le, \
-            "ge": operator.ge, \
-            "eq": operator.eq, \
-            "ne": operator.ne, \
-            "in": lambda a, b: a in b, \
-            "notin": lambda a, b: a not in b }
-        for keyword, value in kwds.iteritems():
+            "lt": operator.lt,
+            "gt": operator.gt,
+            "le": operator.le,
+            "ge": operator.ge,
+            "eq": operator.eq,
+            "ne": operator.ne,
+            "in": lambda a, b: a in b,
+            "notin": lambda a, b: a not in b,
+        }
+        for keyword, value in kwds.items():
             if "_" not in keyword or keyword.rindex("_") == 0:
                 keyword = keyword + "_eq"
             attr, _, op = keyword.rpartition("_")
@@ -4157,12 +4380,12 @@ class VertexSeq(_igraph.VertexSeq):
                 # No such operator, assume that it's part of the attribute name
                 attr, op, func = keyword, "eq", operators["eq"]
 
-            if attr[0] == '_':
+            if attr[0] == "_":
                 # Method call, not an attribute
                 values = getattr(vs.graph, attr[1:])(vs)
             else:
                 values = vs[attr]
-            filtered_idxs=[i for i, v in enumerate(values) if func(v, value)]
+            filtered_idxs = [i for i, v in enumerate(values) if func(v, value)]
             vs = vs.select(filtered_idxs)
 
         return vs
@@ -4174,7 +4397,9 @@ class VertexSeq(_igraph.VertexSeq):
         """
         return self.select(*args, **kwds)
 
+
 ##############################################################
+
 
 class EdgeSeq(_igraph.EdgeSeq):
     """Class representing a sequence of edges in the graph.
@@ -4433,14 +4658,15 @@ class EdgeSeq(_igraph.EdgeSeq):
             return value
 
         operators = {
-            "lt": operator.lt, \
-            "gt": operator.gt, \
-            "le": operator.le, \
-            "ge": operator.ge, \
-            "eq": operator.eq, \
-            "ne": operator.ne, \
-            "in": lambda a, b: a in b, \
-            "notin": lambda a, b: a not in b }
+            "lt": operator.lt,
+            "gt": operator.gt,
+            "le": operator.le,
+            "ge": operator.ge,
+            "eq": operator.eq,
+            "ne": operator.ne,
+            "in": lambda a, b: a in b,
+            "notin": lambda a, b: a not in b,
+        }
 
         # TODO(ntamas): some keyword arguments should be prioritized over
         # others; for instance, we have optimized code paths for _source and
@@ -4448,18 +4674,18 @@ class EdgeSeq(_igraph.EdgeSeq):
         # these should be executed first. This matters only if there are
         # multiple keyword arguments and es.is_all() is True.
 
-        for keyword, value in kwds.iteritems():
+        for keyword, value in kwds.items():
             if "_" not in keyword or keyword.rindex("_") == 0:
                 keyword = keyword + "_eq"
             pos = keyword.rindex("_")
-            attr, op = keyword[0:pos], keyword[pos+1:]
+            attr, op = keyword[0:pos], keyword[pos + 1 :]
             try:
                 func = operators[op]
             except KeyError:
                 # No such operator, assume that it's part of the attribute name
                 attr, op, func = keyword, "eq", operators["eq"]
 
-            if attr[0] == '_':
+            if attr[0] == "_":
                 if attr in ("_source", "_from", "_target", "_to") and not is_directed:
                     if op not in ("eq", "in"):
                         raise RuntimeError("unsupported for undirected graphs")
@@ -4467,7 +4693,7 @@ class EdgeSeq(_igraph.EdgeSeq):
                     # translate to _incident to avoid confusion
                     attr = "_incident"
                     if func == operators["eq"]:
-                        if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):
+                        if hasattr(value, "__iter__") and not isinstance(value, str):
                             value = set(value)
                         else:
                             value = set([value])
@@ -4497,7 +4723,7 @@ class EdgeSeq(_igraph.EdgeSeq):
                             value = _ensure_set(value)
 
                 elif attr == "_incident":
-                    func = None          # ignoring function, filtering here
+                    func = None  # ignoring function, filtering here
                     value = _ensure_set(value)
 
                     # Fetch all the edges that are incident on at least one of
@@ -4508,13 +4734,15 @@ class EdgeSeq(_igraph.EdgeSeq):
 
                     if not es.is_all():
                         # Find those that are in the current edge sequence
-                        filtered_idxs = [i for i, e in enumerate(es) if e.index in candidates]
+                        filtered_idxs = [
+                            i for i, e in enumerate(es) if e.index in candidates
+                        ]
                     else:
                         # We are done, the filtered indexes are in the candidates set
                         filtered_idxs = sorted(candidates)
 
                 elif attr == "_within":
-                    func = None          # ignoring function, filtering here
+                    func = None  # ignoring function, filtering here
                     value = _ensure_set(value)
 
                     # Fetch all the edges that are incident on at least one of
@@ -4525,18 +4753,28 @@ class EdgeSeq(_igraph.EdgeSeq):
 
                     if not es.is_all():
                         # Find those where both endpoints are OK
-                        filtered_idxs = [i for i, e in enumerate(es) if e.index in candidates
-                                and e.source in value and e.target in value]
+                        filtered_idxs = [
+                            i
+                            for i, e in enumerate(es)
+                            if e.index in candidates
+                            and e.source in value
+                            and e.target in value
+                        ]
                     else:
                         # Optimized version when the edge sequence contains all the edges
                         # exactly once in increasing order of edge IDs
-                        filtered_idxs = [i for i in candidates
-                                if es[i].source in value and es[i].target in value]
+                        filtered_idxs = [
+                            i
+                            for i in candidates
+                            if es[i].source in value and es[i].target in value
+                        ]
 
                 elif attr == "_between":
                     if len(value) != 2:
-                        raise ValueError("_between selector requires two vertex ID lists")
-                    func = None          # ignoring function, filtering here
+                        raise ValueError(
+                            "_between selector requires two vertex ID lists"
+                        )
+                    func = None  # ignoring function, filtering here
                     set1 = _ensure_set(value[0])
                     set2 = _ensure_set(value[1])
 
@@ -4550,15 +4788,21 @@ class EdgeSeq(_igraph.EdgeSeq):
 
                     if not es.is_all():
                         # Find those where both endpoints are OK
-                        filtered_idxs = [i for i, e in enumerate(es)
-                                if (e.source in set1 and e.target in set2) or
-                                (e.target in set1 and e.source in set2)]
+                        filtered_idxs = [
+                            i
+                            for i, e in enumerate(es)
+                            if (e.source in set1 and e.target in set2)
+                            or (e.target in set1 and e.source in set2)
+                        ]
                     else:
                         # Optimized version when the edge sequence contains all the edges
                         # exactly once in increasing order of edge IDs
-                        filtered_idxs = [i for i in candidates
-                                if (es[i].source in set1 and es[i].target in set2) or
-                                (es[i].target in set1 and es[i].source in set2)]
+                        filtered_idxs = [
+                            i
+                            for i in candidates
+                            if (es[i].source in set1 and es[i].target in set2)
+                            or (es[i].target in set1 and es[i].source in set2)
+                        ]
 
                 else:
                     # Method call, not an attribute
@@ -4575,7 +4819,6 @@ class EdgeSeq(_igraph.EdgeSeq):
 
         return es
 
-
     def __call__(self, *args, **kwds):
         """Shorthand notation to select()
 
@@ -4583,8 +4826,10 @@ class EdgeSeq(_igraph.EdgeSeq):
         """
         return self.select(*args, **kwds)
 
+
 ##############################################################
 # Additional methods of VertexSeq and EdgeSeq that call Graph methods
+
 
 def _graphmethod(func=None, name=None):
     """Auxiliary decorator
@@ -4604,10 +4849,13 @@ def _graphmethod(func=None, name=None):
     method = getattr(Graph, name)
 
     if hasattr(func, "__call__"):
+
         def decorated(*args, **kwds):
             self = args[0].graph
             return func(args[0], method(self, *args, **kwds))
+
     else:
+
         def decorated(*args, **kwds):
             self = args[0].graph
             return method(self, *args, **kwds)
@@ -4619,9 +4867,12 @@ This method calls the C{%(name)s()} method of the L{Graph} class
 restricted to this sequence, and returns the result.
 
 @see: Graph.%(name)s() for details.
-""" % { "name": name }
+""" % {
+        "name": name
+    }
 
     return decorated
+
 
 def _add_proxy_methods():
 
@@ -4631,37 +4882,62 @@ def _add_proxy_methods():
     # the C source whenever you add a proxy method here if that makes sense for
     # an individual vertex or edge
     decorated_methods = {}
-    decorated_methods[VertexSeq] = \
-        ["degree", "betweenness", "bibcoupling", "closeness", "cocitation",
-        "constraint", "diversity", "eccentricity", "get_shortest_paths", "maxdegree",
-        "pagerank", "personalized_pagerank", "shortest_paths", "similarity_dice",
-        "similarity_jaccard", "subgraph", "indegree", "outdegree", "isoclass",
-        "delete_vertices", "is_separator", "is_minimal_separator"]
-    decorated_methods[EdgeSeq] = \
-        ["count_multiple", "delete_edges", "is_loop", "is_multiple",
-        "is_mutual", "subgraph_edges"]
+    decorated_methods[VertexSeq] = [
+        "degree",
+        "betweenness",
+        "bibcoupling",
+        "closeness",
+        "cocitation",
+        "constraint",
+        "diversity",
+        "eccentricity",
+        "get_shortest_paths",
+        "maxdegree",
+        "pagerank",
+        "personalized_pagerank",
+        "shortest_paths",
+        "similarity_dice",
+        "similarity_jaccard",
+        "subgraph",
+        "indegree",
+        "outdegree",
+        "isoclass",
+        "delete_vertices",
+        "is_separator",
+        "is_minimal_separator",
+    ]
+    decorated_methods[EdgeSeq] = [
+        "count_multiple",
+        "delete_edges",
+        "is_loop",
+        "is_multiple",
+        "is_mutual",
+        "subgraph_edges",
+    ]
 
     rename_methods = {}
-    rename_methods[VertexSeq] = {
-        "delete_vertices": "delete"
-    }
-    rename_methods[EdgeSeq] = {
-        "delete_edges": "delete",
-        "subgraph_edges": "subgraph"
-    }
+    rename_methods[VertexSeq] = {"delete_vertices": "delete"}
+    rename_methods[EdgeSeq] = {"delete_edges": "delete", "subgraph_edges": "subgraph"}
 
-    for klass, methods in decorated_methods.iteritems():
+    for klass, methods in decorated_methods.items():
         for method in methods:
             new_method_name = rename_methods[klass].get(method, method)
             setattr(klass, new_method_name, _graphmethod(None, method))
 
-    setattr(EdgeSeq, "edge_betweenness", _graphmethod( \
-      lambda self, result: [result[i] for i in self.indices], "edge_betweenness"))
+    setattr(
+        EdgeSeq,
+        "edge_betweenness",
+        _graphmethod(
+            lambda self, result: [result[i] for i in self.indices], "edge_betweenness"
+        ),
+    )
+
 
 _add_proxy_methods()
 
 ##############################################################
 # Making sure that layout methods always return a Layout
+
 
 def _layout_method_wrapper(func):
     """Wraps an existing layout method to ensure that it returns a Layout
@@ -4670,14 +4946,17 @@ def _layout_method_wrapper(func):
     @param func: the method to wrap. Must be a method of the Graph object.
     @return: a new method
     """
+
     def result(*args, **kwds):
         layout = func(*args, **kwds)
         if not isinstance(layout, Layout):
             layout = Layout(layout)
         return layout
+
     result.__name__ = func.__name__
-    result.__doc__  = func.__doc__
+    result.__doc__ = func.__doc__
     return result
+
 
 for name in dir(Graph):
     if not name.startswith("layout_"):
@@ -4689,6 +4968,7 @@ for name in dir(Graph):
 ##############################################################
 # Adding aliases for the 3D versions of the layout methods
 
+
 def _3d_version_for(func):
     """Creates an alias for the 3D version of the given layout algoritm.
 
@@ -4698,21 +4978,29 @@ def _3d_version_for(func):
     @param func: must be a method of the Graph object.
     @return: a new method
     """
+
     def result(*args, **kwds):
         kwds["dim"] = 3
         return func(*args, **kwds)
+
     result.__name__ = "%s_3d" % func.__name__
-    result.__doc__ = """Alias for L{%s()} with dim=3.\n\n@see: Graph.%s()""" \
-            % (func.__name__, func.__name__)
+    result.__doc__ = """Alias for L{%s()} with dim=3.\n\n@see: Graph.%s()""" % (
+        func.__name__,
+        func.__name__,
+    )
     return result
 
-Graph.layout_fruchterman_reingold_3d=_3d_version_for(Graph.layout_fruchterman_reingold)
-Graph.layout_kamada_kawai_3d=_3d_version_for(Graph.layout_kamada_kawai)
-Graph.layout_random_3d=_3d_version_for(Graph.layout_random)
-Graph.layout_grid_3d=_3d_version_for(Graph.layout_grid)
-Graph.layout_sphere=_3d_version_for(Graph.layout_circle)
+
+Graph.layout_fruchterman_reingold_3d = _3d_version_for(
+    Graph.layout_fruchterman_reingold
+)
+Graph.layout_kamada_kawai_3d = _3d_version_for(Graph.layout_kamada_kawai)
+Graph.layout_random_3d = _3d_version_for(Graph.layout_random)
+Graph.layout_grid_3d = _3d_version_for(Graph.layout_grid)
+Graph.layout_sphere = _3d_version_for(Graph.layout_circle)
 
 ##############################################################
+
 
 def autocurve(graph, attribute="curved", default=0):
     """Calculates curvature values for each of the edges in the graph to make
@@ -4749,7 +5037,7 @@ def autocurve(graph, attribute="curved", default=0):
             multiplicities[u, v].append(edge.index)
 
     result = [default] * graph.ecount()
-    for pair, eids in multiplicities.iteritems():
+    for pair, eids in multiplicities.items():
         # Is it a single edge?
         if len(eids) < 2:
             continue
@@ -4764,9 +5052,9 @@ def autocurve(graph, attribute="curved", default=0):
         for idx, eid in enumerate(eids):
             edge = graph.es[eid]
             if edge.source > edge.target:
-                result[eid] = -sign*curve
+                result[eid] = -sign * curve
             else:
-                result[eid] = sign*curve
+                result[eid] = sign * curve
             if idx % 2 == 1:
                 curve += dcurve
             sign *= -1
@@ -4781,14 +5069,18 @@ def get_include():
     """Returns the folder that contains the C API headers of the Python
     interface of igraph."""
     import igraph
+
     paths = [
         # The following path works if python-igraph is installed already
-        os.path.join(sys.prefix, "include",
-                     "python{0}.{1}".format(*sys.version_info),
-                     "python-igraph"),
+        os.path.join(
+            sys.prefix,
+            "include",
+            "python{0}.{1}".format(*sys.version_info),
+            "python-igraph",
+        ),
         # Fallback for cases when python-igraph is not installed but
         # imported directly from the source tree
-        os.path.join(os.path.dirname(igraph.__file__), "..", "src")
+        os.path.join(os.path.dirname(igraph.__file__), "..", "src"),
     ]
     for path in paths:
         if os.path.exists(os.path.join(path, "igraphmodule_api.h")):
@@ -4805,7 +5097,10 @@ def read(filename, *args, **kwds):
     @param filename: the name of the file to be loaded
     """
     return Graph.Read(filename, *args, **kwds)
-load=read
+
+
+load = read
+
 
 def write(graph, filename, *args, **kwds):
     """Saves a graph to the given file.
@@ -4817,7 +5112,10 @@ def write(graph, filename, *args, **kwds):
     @param filename: the name of the file to be written
     """
     return graph.write(filename, *args, **kwds)
-save=write
+
+
+save = write
+
 
 def summary(obj, stream=None, *args, **kwds):
     """Prints a summary of object o to a given stream
@@ -4836,6 +5134,7 @@ def summary(obj, stream=None, *args, **kwds):
     else:
         stream.write(str(obj))
     stream.write("\n")
+
 
 config = configuration.init()
 del construct_graph_from_formula

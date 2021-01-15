@@ -60,8 +60,8 @@ this is inferred from the type of the default value itself.
 @see: AttributeCollectorMeta, AttributeCollectorBase
 """
 
-from ConfigParser import NoOptionError
-from itertools import izip
+from configparser import NoOptionError
+
 
 from igraph.configuration import Configuration
 
@@ -72,21 +72,21 @@ __all__ = ["AttributeSpecification", "AttributeCollectorBase"]
 class AttributeSpecification(object):
     """Class that describes how the value of a given attribute should be
     retrieved.
-    
+
     The class contains the following members:
-        
+
         - C{name}: the name of the attribute. This is also used when we
           are trying to get its value from a vertex/edge attribute of a
           graph.
-          
+
         - C{alt_name}: alternative name of the attribute. This is used
           when we are trying to get its value from a Python dict or an
           L{igraph.Configuration} object. If omitted at construction time,
           it will be equal to C{name}.
-          
+
         - C{default}: the default value of the attribute when none of
           the sources we try can provide a meaningful value.
-          
+
         - C{transform}: optional transformation to be performed on the
           attribute value. If C{None} or omitted, it defaults to the
           type of the default value.
@@ -95,11 +95,9 @@ class AttributeSpecification(object):
           index in order to derive the value of the attribute.
     """
 
-    __slots__ = ("name", "alt_name", "default", "transform", "accessor",
-                 "func")
+    __slots__ = ("name", "alt_name", "default", "transform", "accessor", "func")
 
-    def __init__(self, name, default=None, alt_name=None, transform=None,
-                 func=None):
+    def __init__(self, name, default=None, alt_name=None, transform=None, func=None):
         if isinstance(default, tuple):
             default, transform = default
 
@@ -111,7 +109,7 @@ class AttributeSpecification(object):
         self.accessor = None
 
         if self.transform and not hasattr(self.transform, "__call__"):
-            raise TypeError, "transform must be callable"
+            raise TypeError("transform must be callable")
 
         if self.transform is None and self.default is not None:
             self.transform = type(self.default)
@@ -119,7 +117,7 @@ class AttributeSpecification(object):
 
 class AttributeCollectorMeta(type):
     """Metaclass for attribute collector classes
-    
+
     Classes that use this metaclass are intended to collect vertex/edge
     attributes from various sources (a Python dict, a vertex/edge sequence,
     default values from the igraph configuration and such) in a given
@@ -154,7 +152,7 @@ class AttributeCollectorMeta(type):
 
     def __new__(mcs, name, bases, attrs):
         attr_specs = []
-        for attr, value in attrs.iteritems():
+        for attr, value in attrs.items():
             if attr.startswith("_") or hasattr(value, "__call__"):
                 continue
             if isinstance(value, AttributeSpecification):
@@ -173,37 +171,37 @@ class AttributeCollectorMeta(type):
 
         attrs["_attributes"] = attr_specs
         attrs["Element"] = mcs.record_generator(
-                "%s.Element" % name,
-                (attr_spec.name for attr_spec in attr_specs)
+            "%s.Element" % name, (attr_spec.name for attr_spec in attr_specs)
         )
 
-        return super(AttributeCollectorMeta, mcs).__new__(mcs, \
-                name, bases, attrs)
+        return super(AttributeCollectorMeta, mcs).__new__(mcs, name, bases, attrs)
 
     @classmethod
     def record_generator(mcs, name, slots):
         """Generates a simple class that has the given slots and nothing else"""
+
         class Element(object):
             """A simple class that holds the attributes collected by the
             attribute collector"""
+
             __slots__ = tuple(slots)
+
             def __init__(self, attrs=()):
                 for attr, value in attrs:
                     setattr(self, attr, value)
+
         Element.__name__ = name
         return Element
 
 
-class AttributeCollectorBase(object):
+class AttributeCollectorBase(object, metaclass=AttributeCollectorMeta):
     """Base class for attribute collector subclasses. Classes that inherit
     this class may use a declarative syntax to specify which vertex or edge
     attributes they intend to collect. See L{AttributeCollectorMeta} for
     the details.
     """
 
-    __metaclass__ = AttributeCollectorMeta
-
-    def __init__(self, seq, kwds = None):
+    def __init__(self, seq, kwds=None):
         """Constructs a new attribute collector that uses the given
         vertex/edge sequence and the given dict as data sources.
 
@@ -213,15 +211,15 @@ class AttributeCollectorBase(object):
           attributes collected from I{seq} if necessary.
         """
         elt = self.__class__.Element
-        self._cache = [elt() for _ in xrange(len(seq))]
+        self._cache = [elt() for _ in range(len(seq))]
 
         self.seq = seq
         self.kwds = kwds or {}
 
         for attr_spec in self._attributes:
-            values = self._collect_attributes(attr_spec) 
+            values = self._collect_attributes(attr_spec)
             attr_name = attr_spec.name
-            for cache_elt, val in izip(self._cache, values):
+            for cache_elt, val in zip(self._cache, values):
                 setattr(cache_elt, attr_name, val)
 
     def _collect_attributes(self, attr_spec, config=None):
@@ -260,7 +258,7 @@ class AttributeCollectorBase(object):
 
         n = len(seq)
 
-        # Special case if the attribute name is "label" 
+        # Special case if the attribute name is "label"
         if attr_spec.name == "label":
             if attr_spec.alt_name in kwds and kwds[attr_spec.alt_name] is None:
                 return [None] * n
@@ -269,7 +267,7 @@ class AttributeCollectorBase(object):
         # values, call it and store the results
         if attr_spec.func is not None:
             func = attr_spec.func
-            result = [func(i) for i in xrange(n)]
+            result = [func(i) for i in range(n)]
             return result
 
         # Get the configuration object
@@ -294,8 +292,7 @@ class AttributeCollectorBase(object):
                     len(result)
                 except TypeError:
                     result = [result] * n
-                result = [result[idx] or attrs[idx] \
-                          for idx in xrange(len(result))]
+                result = [result[idx] or attrs[idx] for idx in range(len(result))]
 
         # Special case for string overrides, strings are not treated
         # as sequences here
@@ -314,10 +311,10 @@ class AttributeCollectorBase(object):
 
         # Ensure that the length is n
         while len(result) < n:
-            if len(result) <= n/2:
+            if len(result) <= n / 2:
                 result.extend(result)
             else:
-                result.extend(result[0:(n-len(result))])
+                result.extend(result[0 : (n - len(result))])
 
         # By now, the length of the result vector should be n as requested
         # Get the configuration defaults
@@ -330,7 +327,7 @@ class AttributeCollectorBase(object):
             default = attr_spec.default
 
         # Fill the None values with the default values
-        for idx in xrange(len(result)):
+        for idx in range(len(result)):
             if result[idx] is None:
                 result[idx] = default
 
@@ -341,7 +338,6 @@ class AttributeCollectorBase(object):
 
         return result
 
-
     def __getitem__(self, index):
         """Returns the collected attributes of the vertex/edge with the
         given index."""
@@ -351,6 +347,3 @@ class AttributeCollectorBase(object):
 
     def __len__(self):
         return len(self.seq)
-
-
-

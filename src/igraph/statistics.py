@@ -4,7 +4,7 @@
 Statistics related stuff in igraph
 """
 
-__license__ = u"""\
+__license__ = """\
 Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
 Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
 
@@ -26,8 +26,16 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 
 import math
 
-__all__ = ["FittedPowerLaw", "Histogram", "RunningMean", "mean", "median", \
-        "percentile", "quantile", "power_law_fit"]
+__all__ = [
+    "FittedPowerLaw",
+    "Histogram",
+    "RunningMean",
+    "mean",
+    "median",
+    "percentile",
+    "quantile",
+    "power_law_fit",
+]
 
 
 class FittedPowerLaw(object):
@@ -38,7 +46,7 @@ class FittedPowerLaw(object):
         >>> result = power_law_fit([1, 2, 3, 4, 5, 6])
         >>> result                   # doctest:+ELLIPSIS
         FittedPowerLaw(continuous=False, alpha=2.425828..., xmin=3.0, L=-7.54633..., D=0.2138..., p=0.99311...)
-        >>> print result             # doctest:+ELLIPSIS
+        >>> print(result)            # doctest:+ELLIPSIS
         Fitted power-law distribution on discrete data
         <BLANKLINE>
         Exponent (alpha)  = 2.425828
@@ -69,9 +77,15 @@ class FittedPowerLaw(object):
         self.p = p
 
     def __repr__(self):
-        return "%s(continuous=%r, alpha=%r, xmin=%r, L=%r, D=%r, p=%r)" % \
-                (self.__class__.__name__, self.continuous, self.alpha, \
-                self.xmin, self.L, self.D, self.p)
+        return "%s(continuous=%r, alpha=%r, xmin=%r, L=%r, D=%r, p=%r)" % (
+            self.__class__.__name__,
+            self.continuous,
+            self.alpha,
+            self.xmin,
+            self.L,
+            self.D,
+            self.p,
+        )
 
     def __str__(self):
         return self.summary(significance=0.05)
@@ -84,8 +98,10 @@ class FittedPowerLaw(object):
           distribution
         @return: the summary as a string
         """
-        result = ["Fitted power-law distribution on %s data" % \
-                ("discrete", "continuous")[bool(self.continuous)]]
+        result = [
+            "Fitted power-law distribution on %s data"
+            % ("discrete", "continuous")[bool(self.continuous)]
+        ]
         result.append("")
         result.append("Exponent (alpha)  = %f" % self.alpha)
         result.append("Cutoff (xmin)     = %f" % self.xmin)
@@ -98,29 +114,29 @@ class FittedPowerLaw(object):
         result.append("p-value           = %f" % self.p)
         result.append("")
         if self.p < significance:
-            result.append("H0 rejected at significance level %g" \
-                    % significance)
+            result.append("H0 rejected at significance level %g" % significance)
         else:
-            result.append("H0 could not be rejected at significance "\
-                    "level %g" % significance)
+            result.append(
+                "H0 could not be rejected at significance " "level %g" % significance
+            )
 
         return "\n".join(result)
 
 
 class Histogram(object):
     """Generic histogram class for real numbers
-    
+
     Example:
-        
+
         >>> h = Histogram(5)     # Initializing, bin width = 5
         >>> h << [2,3,2,7,8,5,5,0,7,9]     # Adding more items
-        >>> print h
+        >>> print(h)
         N = 10, mean +- sd: 4.8000 +- 2.9740
         [ 0,  5): **** (4)
         [ 5, 10): ****** (6)
     """
 
-    def __init__(self, bin_width = 1, data = None):
+    def __init__(self, bin_width=1, data=None):
         """Initializes the histogram with the given data set.
 
         @param bin_width: the bin width of the histogram.
@@ -135,7 +151,7 @@ class Histogram(object):
         if data:
             self.add_many(data)
 
-    def _get_bin(self, num, create = False):
+    def _get_bin(self, num, create=False):
         """Returns the bin index corresponding to the given number.
 
         @param num: the number for which the bin is being sought
@@ -145,31 +161,31 @@ class Histogram(object):
         if len(self._bins) == 0:
             if not create:
                 result = None
-            else: 
-                self._min = int(num/self._bin_width)*self._bin_width
-                self._max = self._min+self._bin_width
+            else:
+                self._min = int(num / self._bin_width) * self._bin_width
+                self._max = self._min + self._bin_width
                 self._bins = [0]
                 result = 0
             return result
 
         if num >= self._min:
-            binidx = int((num-self._min)/self._bin_width)
+            binidx = int((num - self._min) / self._bin_width)
             if binidx < len(self._bins):
                 return binidx
             if not create:
                 return None
-            extra_bins = binidx-len(self._bins)+1
-            self._bins.extend([0]*extra_bins)
-            self._max = self._min + len(self._bins)*self._bin_width
+            extra_bins = binidx - len(self._bins) + 1
+            self._bins.extend([0] * extra_bins)
+            self._max = self._min + len(self._bins) * self._bin_width
             return binidx
 
         if not create:
             return None
 
-        extra_bins = int(math.ceil((self._min-num)/self._bin_width))
-        self._bins[0:0] = [0]*extra_bins
-        self._min -= extra_bins*self._bin_width
-        self._max = self._min + len(self._bins)*self._bin_width
+        extra_bins = int(math.ceil((self._min - num) / self._bin_width))
+        self._bins[0:0] = [0] * extra_bins
+        self._min -= extra_bins * self._bin_width
+        self._max = self._min + len(self._bins) * self._bin_width
         return 0
 
     @property
@@ -196,13 +212,13 @@ class Histogram(object):
 
     def add(self, num, repeat=1):
         """Adds a single number to the histogram.
-        
+
         @param num: the number to be added
         @param repeat: number of repeated additions
         """
         num = float(num)
         binidx = self._get_bin(num, True)
-        self._bins[binidx] += repeat 
+        self._bins[binidx] += repeat
         self._running_mean.add(num, repeat)
 
     def add_many(self, data):
@@ -215,6 +231,7 @@ class Histogram(object):
             iterator = iter([data])
         for x in iterator:
             self.add(x)
+
     __lshift__ = add_many
 
     def clear(self):
@@ -225,33 +242,43 @@ class Histogram(object):
 
     def bins(self):
         """Generator returning the bins of the histogram in increasing order
-        
+
         @return: a tuple with the following elements: left bound, right bound,
           number of elements in the bin"""
         x = self._min
         for elem in self._bins:
-            yield (x, x+self._bin_width, elem)
+            yield (x, x + self._bin_width, elem)
             x += self._bin_width
 
     def __plot__(self, context, bbox, _, **kwds):
         """Plotting support"""
         from igraph.drawing.coord import DescartesCoordinateSystem
-        coord_system = DescartesCoordinateSystem(context, bbox, \
-            (kwds.get("min", self._min), 0, \
-             kwds.get("max", self._max), kwds.get("max_value", max(self._bins))
-            ))
+
+        coord_system = DescartesCoordinateSystem(
+            context,
+            bbox,
+            (
+                kwds.get("min", self._min),
+                0,
+                kwds.get("max", self._max),
+                kwds.get("max_value", max(self._bins)),
+            ),
+        )
 
         # Draw the boxes
         context.set_line_width(1)
-        context.set_source_rgb(1., 0., 0.)
+        context.set_source_rgb(1.0, 0.0, 0.0)
         x = self._min
         for value in self._bins:
             top_left_x, top_left_y = coord_system.local_to_context(x, value)
             x += self._bin_width
             bottom_right_x, bottom_right_y = coord_system.local_to_context(x, 0)
-            context.rectangle(top_left_x, top_left_y, \
-                              bottom_right_x - top_left_x, \
-                              bottom_right_y - top_left_y)
+            context.rectangle(
+                top_left_x,
+                top_left_y,
+                bottom_right_x - top_left_x,
+                bottom_right_y - top_left_y,
+            )
             context.fill()
 
         # Draw the axes
@@ -277,8 +304,7 @@ class Histogram(object):
             number_format = "%d"
         else:
             number_format = "%.3f"
-        num_length = max(len(number_format % self._min), \
-                         len(number_format % self._max))
+        num_length = max(len(number_format % self._min), len(number_format % self._max))
         number_format = "%" + str(num_length) + number_format[1:]
         format_string = "[%s, %s): %%s" % (number_format, number_format)
 
@@ -287,13 +313,12 @@ class Histogram(object):
             maxval = max(self._bins)
             if show_counts:
                 maxval_length = len(str(maxval))
-                scale = maxval // (max_width-2*num_length-maxval_length-9)
+                scale = maxval // (max_width - 2 * num_length - maxval_length - 9)
             else:
-                scale = maxval // (max_width-2*num_length-6)
+                scale = maxval // (max_width - 2 * num_length - 6)
             scale = max(scale, 1)
 
-        result = ["N = %d, mean +- sd: %.4f +- %.4f" % \
-            (self.n, self.mean, self.sd)]
+        result = ["N = %d, mean +- sd: %.4f +- %.4f" % (self.n, self.mean, self.sd)]
 
         if show_bars:
             # Print the bars
@@ -302,10 +327,12 @@ class Histogram(object):
             if show_counts:
                 format_string += " (%d)"
                 for left, right, cnt in self.bins():
-                    result.append(format_string % (left, right, '*'*(cnt//scale), cnt))
+                    result.append(
+                        format_string % (left, right, "*" * (cnt // scale), cnt)
+                    )
             else:
                 for left, right, cnt in self.bins():
-                    result.append(format_string % (left, right, '*'*(cnt//scale)))
+                    result.append(format_string % (left, right, "*" * (cnt // scale)))
         elif show_counts:
             # Print the counts only
             for left, right, cnt in self.bins():
@@ -317,10 +344,9 @@ class Histogram(object):
         return self.to_string()
 
 
-
 class RunningMean(object):
     """Running mean calculator.
-    
+
     This class can be used to calculate the mean of elements from a
     list, tuple, iterable or any other data source. The mean is
     calculated on the fly without explicitly summing the values,
@@ -332,9 +358,9 @@ class RunningMean(object):
     # pylint: disable-msg=C0103
     def __init__(self, items=None, n=0.0, mean=0.0, sd=0.0):
         """RunningMean(items=None, n=0.0, mean=0.0, sd=0.0)
-        
+
         Initializes the running mean calculator.
-        
+
         There are two possible ways to initialize the calculator.
         First, one can provide an iterable of items; alternatively,
         one can specify the number of items, the mean and the
@@ -359,15 +385,15 @@ class RunningMean(object):
             self._nitems = float(n)
             self._mean = float(mean)
             if n > 1:
-                self._sqdiff = float(sd) ** 2 * float(n-1)
+                self._sqdiff = float(sd) ** 2 * float(n - 1)
                 self._sd = float(sd)
             else:
                 self._sqdiff = 0.0
                 self._sd = 0.0
-        
+
     def add(self, value, repeat=1):
         """RunningMean.add(value, repeat=1)
-        
+
         Adds the given value to the elements from which we calculate
         the mean and the standard deviation.
 
@@ -377,24 +403,24 @@ class RunningMean(object):
         repeat = int(repeat)
         self._nitems += repeat
         delta = value - self._mean
-        self._mean += (repeat*delta / self._nitems)
-        self._sqdiff += (repeat*delta) * (value - self._mean)
+        self._mean += repeat * delta / self._nitems
+        self._sqdiff += (repeat * delta) * (value - self._mean)
         if self._nitems > 1:
-            self._sd = (self._sqdiff / (self._nitems-1)) ** 0.5
+            self._sd = (self._sqdiff / (self._nitems - 1)) ** 0.5
 
     def add_many(self, values):
         """RunningMean.add(values)
-        
+
         Adds the values in the given iterable to the elements from
         which we calculate the mean. Can also accept a single number.
         The left shift (C{<<}) operator is aliased to this function,
         so you can use it to add elements as well:
-            
+
           >>> rm=RunningMean()
-          >>> rm << [1,2,3,4] 
+          >>> rm << [1,2,3,4]
           >>> rm.result               # doctest:+ELLIPSIS
           (2.5, 1.290994...)
-        
+
         @param values: the element(s) to be added
         @type values: iterable"""
         try:
@@ -430,16 +456,18 @@ class RunningMean(object):
         return self._sd ** 2
 
     def __repr__(self):
-        return "%s(n=%r, mean=%r, sd=%r)" % \
-                (self.__class__.__name__, int(self._nitems),
-                        self._mean, self._sd)
+        return "%s(n=%r, mean=%r, sd=%r)" % (
+            self.__class__.__name__,
+            int(self._nitems),
+            self._mean,
+            self._sd,
+        )
 
     def __str__(self):
-        return "Running mean (N=%d, %f +- %f)" % \
-            (self._nitems, self._mean, self._sd)
-    
+        return "Running mean (N=%d, %f +- %f)" % (self._nitems, self._mean, self._sd)
+
     __lshift__ = add_many
-    
+
     def __float__(self):
         return float(self._mean)
 
@@ -447,7 +475,7 @@ class RunningMean(object):
         return int(self._mean)
 
     def __long__(self):
-        return long(self._mean)
+        return int(self._mean)
 
     def __complex__(self):
         return complex(self._mean)
@@ -471,6 +499,7 @@ def mean(xs):
     """
     return RunningMean(xs).mean
 
+
 def median(xs, sort=True):
     """Returns the median of an unsorted or sorted numeric vector.
 
@@ -485,9 +514,10 @@ def median(xs, sort=True):
 
     mid = int(len(xs) / 2)
     if 2 * mid == len(xs):
-        return float(xs[mid-1] + xs[mid]) / 2
+        return float(xs[mid - 1] + xs[mid]) / 2
     else:
         return float(xs[mid])
+
 
 def percentile(xs, p=(25, 50, 75), sort=True):
     """Returns the pth percentile of an unsorted or sorted numeric vector.
@@ -500,7 +530,7 @@ def percentile(xs, p=(25, 50, 75), sort=True):
         >>> round(percentile([15, 20, 40, 35, 50], 40), 2)
         26.0
         >>> for perc in percentile([15, 20, 40, 35, 50], (0, 25, 50, 75, 100)):
-        ...     print "%.2f" % perc
+        ...     print("%.2f" % perc)
         ...
         15.00
         17.50
@@ -519,8 +549,9 @@ def percentile(xs, p=(25, 50, 75), sort=True):
       list containing the percentiles for each item in the list.
     """
     if hasattr(p, "__iter__"):
-        return quantile(xs, (x/100.0 for x in p), sort)
-    return quantile(xs, p/100.0, sort)
+        return quantile(xs, (x / 100.0 for x in p), sort)
+    return quantile(xs, p / 100.0, sort)
+
 
 def power_law_fit(data, xmin=None, method="auto", return_alpha_only=False):
     """Fitting a power-law distribution to empirical data
@@ -554,7 +585,7 @@ def power_law_fit(data, xmin=None, method="auto", return_alpha_only=False):
     @return: a L{FittedPowerLaw} object. The fitted C{xmin} value and the
       power-law exponent can be queried from the C{xmin} and C{alpha}
       properties of the returned object.
-    
+
     @newfield ref: Reference
     @ref: MEJ Newman: Power laws, Pareto distributions and Zipf's law.
       Contemporary Physics 46, 323-351 (2005)
@@ -573,11 +604,15 @@ def power_law_fit(data, xmin=None, method="auto", return_alpha_only=False):
     fit = FittedPowerLaw(*_power_law_fit(data, xmin, force_continuous))
     if return_alpha_only:
         from igraph import deprecated
-        deprecated("The return_alpha_only keyword argument of power_law_fit is "\
-                "deprecated from igraph 0.7 and will be removed in igraph 0.8")
+
+        deprecated(
+            "The return_alpha_only keyword argument of power_law_fit is "
+            "deprecated from igraph 0.7 and will be removed in igraph 0.8"
+        )
         return fit.alpha
     else:
         return fit
+
 
 def quantile(xs, q=(0.25, 0.5, 0.75), sort=True):
     """Returns the qth quantile of an unsorted or sorted numeric vector.
@@ -622,17 +657,18 @@ def quantile(xs, q=(0.25, 0.5, 0.75), sort=True):
     for q in qs:
         if q < 0 or q > 1:
             raise ValueError("q must be between 0 and 1")
-        n = float(q) * (len(xs)+1)
-        k, d = int(n), n-int(n)
+        n = float(q) * (len(xs) + 1)
+        k, d = int(n), n - int(n)
         if k >= len(xs):
             result.append(xs[-1])
         elif k < 1:
             result.append(xs[0])
         else:
-            result.append((1-d) * xs[k-1] + d * xs[k])
+            result.append((1 - d) * xs[k - 1] + d * xs[k])
     if return_single:
         result = result[0]
     return result
+
 
 def sd(xs):
     """Returns the standard deviation of an iterable.
@@ -648,6 +684,7 @@ def sd(xs):
     @see: RunningMean() if you also need the mean
     """
     return RunningMean(xs).sd
+
 
 def var(xs):
     """Returns the variance of an iterable.

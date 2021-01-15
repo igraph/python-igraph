@@ -5,7 +5,7 @@
 from igraph.clustering import VertexClustering
 from igraph._igraph import Vertex
 
-__license__ = u"""\
+__license__ = """\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
 Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
 
@@ -24,6 +24,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
 02110-1301 USA
 """
+
 
 class Matching(object):
     """A matching of vertices in a graph.
@@ -65,7 +66,7 @@ class Matching(object):
         self._num_matched = 0
         self._types = None
 
-        if isinstance(types, basestring):
+        if isinstance(types, str):
             types = graph.vs[types]
 
         self.types = types
@@ -76,11 +77,14 @@ class Matching(object):
 
     def __repr__(self):
         if self._types is not None:
-            return "%s(%r,%r,types=%r)" % \
-              (self.__class__.__name__, self._graph, self._matching, self._types)
+            return "%s(%r,%r,types=%r)" % (
+                self.__class__.__name__,
+                self._graph,
+                self._matching,
+                self._types,
+            )
         else:
-            return "%s(%r,%r)" % \
-              (self.__class__.__name__, self._graph, self._matching)
+            return "%s(%r,%r)" % (self.__class__.__name__, self._graph, self._matching)
 
     def __str__(self):
         if self._types is not None:
@@ -95,8 +99,11 @@ class Matching(object):
         of them will be returned.
         """
         get_eid = self._graph.get_eid
-        eidxs = [get_eid(u, v, directed=False) \
-                for u, v in enumerate(self._matching) if v != -1 and u <= v]
+        eidxs = [
+            get_eid(u, v, directed=False)
+            for u, v in enumerate(self._matching)
+            if v != -1 and u <= v
+        ]
         return self._graph.es[eidxs]
 
     @property
@@ -121,7 +128,7 @@ class Matching(object):
 
     def match_of(self, vertex):
         """Returns the vertex a given vertex is matched to.
-        
+
         @param vertex: the vertex we are interested in; either an integer index
           or an instance of L{Vertex}.
         @return: the index of the vertex matched to the given vertex, either as
