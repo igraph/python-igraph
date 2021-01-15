@@ -7,8 +7,8 @@ import sys
 ###########################################################################
 
 # Check Python's version info and exit early if it is too old
-if sys.version_info < (3, 5):
-    print("This module requires Python >= 3.5")
+if sys.version_info < (3, 6):
+    print("This module requires Python >= 3.6")
     sys.exit(0)
 
 # Check whether we are compiling for PyPy. Headers will not be installed
@@ -913,10 +913,10 @@ options = dict(
         "Operating System :: OS Independent",
         "Programming Language :: C",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Information Analysis",
         "Topic :: Scientific/Engineering :: Mathematics",
