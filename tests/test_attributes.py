@@ -3,6 +3,7 @@ import sys
 import unittest
 from igraph import *
 
+
 class AttributeTests(unittest.TestCase):
     def testGraphAttributes(self):
         g = Graph.Full(5)
@@ -45,23 +46,23 @@ class AttributeTests(unittest.TestCase):
         g = Graph.Full(5)
         g.vs.set_attribute_values("name", list(range(5)))
         self.assertTrue(g.vs.get_attribute_values("name") == list(range(5)))
-        g.vs["name"] = list(range(5,10))
-        self.assertTrue(g.vs["name"] == list(range(5,10)))
-        g.vs["name2"] = (1,2,3,4,6) 
-        self.assertTrue(g.vs["name2"] == [1,2,3,4,6])
+        g.vs["name"] = list(range(5, 10))
+        self.assertTrue(g.vs["name"] == list(range(5, 10)))
+        g.vs["name2"] = (1, 2, 3, 4, 6)
+        self.assertTrue(g.vs["name2"] == [1, 2, 3, 4, 6])
         g.vs.set_attribute_values("name", [2])
-        self.assertTrue(g.vs["name"] == [2]*5)
+        self.assertTrue(g.vs["name"] == [2] * 5)
 
     def testMassEdgeAttributeAssignment(self):
         g = Graph.Full(5)
         g.es.set_attribute_values("name", list(range(10)))
         self.assertTrue(g.es.get_attribute_values("name") == list(range(10)))
-        g.es["name"] = list(range(10,20))
-        self.assertTrue(g.es["name"] == list(range(10,20)))
-        g.es["name2"] = (1,2,3,4,6,1,2,3,4,6) 
-        self.assertTrue(g.es["name2"] == [1,2,3,4,6,1,2,3,4,6])
+        g.es["name"] = list(range(10, 20))
+        self.assertTrue(g.es["name"] == list(range(10, 20)))
+        g.es["name2"] = (1, 2, 3, 4, 6, 1, 2, 3, 4, 6)
+        self.assertTrue(g.es["name2"] == [1, 2, 3, 4, 6, 1, 2, 3, 4, 6])
         g.es.set_attribute_values("name", [2])
-        self.assertTrue(g.es["name"] == [2]*10)
+        self.assertTrue(g.es["name"] == [2] * 10)
 
     def testVertexNameIndexing(self):
         g = Graph.Famous("bull")
@@ -71,10 +72,10 @@ class AttributeTests(unittest.TestCase):
         g.vs[2]["name"] = "quack"
         self.assertRaises(ValueError, g.degree, "baz")
         self.assertTrue(g.degree("quack") == 3)
-        self.assertTrue(g.degree(u"quack") == 3)
-        self.assertTrue(g.degree([u"bar", u"thud", 0]) == [3, 1, 2])
+        self.assertTrue(g.degree("quack") == 3)
+        self.assertTrue(g.degree(["bar", "thud", 0]) == [3, 1, 2])
         del g.vs["name"]
-        self.assertRaises(ValueError, g.degree, [u"bar", u"thud", 0])
+        self.assertRaises(ValueError, g.degree, ["bar", "thud", 0])
 
     def testVertexNameIndexingBytes(self):
         g = Graph.Famous("bull")
@@ -91,7 +92,7 @@ class AttributeTests(unittest.TestCase):
         g = Graph.Famous("bull")
         g.vs["name"] = [str(x) for x in range(4)]
 
-        value = "this is not hashable".split() 
+        value = "this is not hashable".split()
         g.vs[2]["name"] = value
 
         # Trigger an indexing by doing a lookup by name
@@ -108,7 +109,7 @@ class AttributeTests(unittest.TestCase):
 
     def testVertexNameIndexingBug196(self):
         g = Graph()
-        a, b = b'a', b'b'
+        a, b = b"a", b"b"
         g.add_vertices([a, b])
         g.add_edges([(a, b)])
         self.assertEqual(g.ecount(), 1)
@@ -126,9 +127,10 @@ class AttributeTests(unittest.TestCase):
             self.assertRaises(TypeError, g.es[0].__setitem__, attr_name, "foo")
             self.assertRaises(TypeError, g.es[0].__getitem__, attr_name, "foo")
 
+
 class AttributeCombinationTests(unittest.TestCase):
     def setUp(self):
-        el = [(0,1), (1,0), (1,2), (2,3), (2,3), (2,3), (3,3)] 
+        el = [(0, 1), (1, 0), (1, 2), (2, 3), (2, 3), (2, 3), (3, 3)]
         self.g = Graph(el)
         self.g.es["weight"] = [1, 2, 3, 4, 5, 6, 7]
         self.g.es["weight2"] = [1, 2, 3, 4, 5, 6, 7]
@@ -267,20 +269,23 @@ class AttributeCombinationTests(unittest.TestCase):
 class UnicodeAttributeTests(unittest.TestCase):
     def testUnicodeAttributeNameCombination(self):
         g = Graph.Erdos_Renyi(n=9, m=20)
-        g.es[u"test"] = 1
-        g.contract_vertices([0,0,0,1,1,1,2,2,2])
+        g.es["test"] = 1
+        g.contract_vertices([0, 0, 0, 1, 1, 1, 2, 2, 2])
 
 
 def suite():
     attribute_suite = unittest.makeSuite(AttributeTests)
     attribute_combination_suite = unittest.makeSuite(AttributeCombinationTests)
     unicode_attributes_suite = unittest.makeSuite(UnicodeAttributeTests)
-    return unittest.TestSuite([attribute_suite, attribute_combination_suite,
-        unicode_attributes_suite])
+    return unittest.TestSuite(
+        [attribute_suite, attribute_combination_suite, unicode_attributes_suite]
+    )
+
 
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
+
 if __name__ == "__main__":
     test()

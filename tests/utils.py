@@ -16,14 +16,17 @@ __all__ = ["skip", "skipIf", "temporary_file"]
 def _id(obj):
     return obj
 
+
 try:
     from unittest import skip
 except ImportError:
     # Provide basic replacement for unittest.skip
     def skip(reason):
         """Unconditionally skip a test."""
+
         def decorator(test_item):
-            if not isinstance(test_item, (type, types.ClassType)):
+            if not isinstance(test_item, type):
+
                 @functools.wraps(test_item)
                 def skip_wrapper(*args, **kwds):
                     if reason:
@@ -31,9 +34,12 @@ except ImportError:
                     else:
                         sys.stderr.write("skipped, ")
                     return
+
                 test_item = skip_wrapper
             return test_item
+
         return decorator
+
 
 try:
     from unittest import skipIf
@@ -69,4 +75,4 @@ def temporary_file(content=None, mode=None, binary=False):
     os.unlink(tmpfname)
 
 
-is_pypy = (platform.python_implementation() == "PyPy")
+is_pypy = platform.python_implementation() == "PyPy"

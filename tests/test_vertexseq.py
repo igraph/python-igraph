@@ -77,7 +77,7 @@ class VertexTests(unittest.TestCase):
 
         for i in range(g.vcount()):
             vertex = g.vs[i]
-            for mode, method_name in method_table.items():
+            for mode, method_name in list(method_table.items()):
                 method = getattr(vertex, method_name)
                 self.assertEqual(
                     g.incident(i, mode=mode),
@@ -156,7 +156,7 @@ class VertexTests(unittest.TestCase):
 class VertexSeqTests(unittest.TestCase):
     def setUp(self):
         self.g = Graph.Full(10)
-        self.g.vs["test"] = range(10)
+        self.g.vs["test"] = list(range(10))
         self.g.vs["name"] = list("ABCDEFGHIJ")
 
     def testCreation(self):
@@ -204,7 +204,7 @@ class VertexSeqTests(unittest.TestCase):
         only_even = self.g.vs.select(lambda v: (v.index % 2 == 0))
         only_even["test"] = [0] * len(only_even)
         self.assertTrue(self.g.vs["test"] == [0, 1, 0, 3, 0, 5, 0, 7, 0, 9])
-        only_even["test2"] = range(5)
+        only_even["test2"] = list(range(5))
         self.assertTrue(
             self.g.vs["test2"] == [0, None, 1, None, 2, None, 3, None, 4, None]
         )
@@ -293,7 +293,7 @@ class VertexSeqTests(unittest.TestCase):
         self.assertRaises(ValueError, self.g.vs.find, "NoSuchName")
 
     def testIterableFilteringSelect(self):
-        subset = self.g.vs.select(range(5, 8))
+        subset = self.g.vs.select(list(range(5, 8)))
         self.assertTrue(len(subset) == 3)
         self.assertTrue(subset["test"] == [5, 6, 7])
 

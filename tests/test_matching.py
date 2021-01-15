@@ -2,6 +2,7 @@ import unittest
 
 from igraph import *
 
+
 def powerset(iterable):
     items_powers = [(item, 1 << i) for i, item in enumerate(iterable)]
     for i in range(1 << len(items_powers)):
@@ -10,17 +11,37 @@ def powerset(iterable):
                 yield item
 
 
-leda_graph = Graph([
-    (0,8),(0,12),(0,14),(1,9),(1,10),(1,13),
-    (2,8),(2,9),(3,10),(3,11),(3,13),(4,9),(4,14),
-    (5,14),(6,9),(6,14),(7,8),(7,12),(7,14)])
-leda_graph.vs["type"] = [0]*8+[1]*7
+leda_graph = Graph(
+    [
+        (0, 8),
+        (0, 12),
+        (0, 14),
+        (1, 9),
+        (1, 10),
+        (1, 13),
+        (2, 8),
+        (2, 9),
+        (3, 10),
+        (3, 11),
+        (3, 13),
+        (4, 9),
+        (4, 14),
+        (5, 14),
+        (6, 9),
+        (6, 14),
+        (7, 8),
+        (7, 12),
+        (7, 14),
+    ]
+)
+leda_graph.vs["type"] = [0] * 8 + [1] * 7
+
 
 class MatchingTests(unittest.TestCase):
     def setUp(self):
-        self.matching = Matching(leda_graph,
-                [12, 10, 8, 13, -1, 14, 9, -1, 2, 6, 1, -1, 0, 3, 5],
-                "type")
+        self.matching = Matching(
+            leda_graph, [12, 10, 8, 13, -1, 14, 9, -1, 2, 6, 1, -1, 0, 3, 5], "type"
+        )
 
     def testIsMaximal(self):
         self.assertTrue(self.matching.is_maximal())
@@ -38,8 +59,10 @@ class MatchingTests(unittest.TestCase):
             else:
                 self.assertTrue(self.matching.is_matched(i))
                 self.assertEqual(self.matching.match_of(i), mate)
-                self.assertEqual(self.matching.match_of(
-                    leda_graph.vs[i]).index, leda_graph.vs[mate].index)
+                self.assertEqual(
+                    self.matching.match_of(leda_graph.vs[i]).index,
+                    leda_graph.vs[mate].index,
+                )
 
 
 class MaximumBipartiteMatchingTests(unittest.TestCase):
@@ -57,12 +80,12 @@ class MaximumBipartiteMatchingTests(unittest.TestCase):
     def testBipartiteMatchingErrors(self):
         # Type vector too short
         g = Graph([(0, 1), (1, 2), (2, 3)])
-        self.assertRaises(InternalError, g.maximum_bipartite_matching,
-                types=[0,1,0])
+        self.assertRaises(InternalError, g.maximum_bipartite_matching, types=[0, 1, 0])
 
         # Graph not bipartite
-        self.assertRaises(InternalError, g.maximum_bipartite_matching,
-                types=[0,1,1,1])
+        self.assertRaises(
+            InternalError, g.maximum_bipartite_matching, types=[0, 1, 1, 1]
+        )
 
 
 def suite():
@@ -70,10 +93,11 @@ def suite():
     bipartite_unweighted_suite = unittest.makeSuite(MaximumBipartiteMatchingTests)
     return unittest.TestSuite([matching_suite, bipartite_unweighted_suite])
 
+
 def test():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
+
 if __name__ == "__main__":
     test()
-

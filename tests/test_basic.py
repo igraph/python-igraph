@@ -1,8 +1,13 @@
 import unittest
 
 from igraph import (
-    ALL, Graph, IN, InternalError, is_degree_sequence,
-    is_graphical_degree_sequence, Matrix
+    ALL,
+    Graph,
+    IN,
+    InternalError,
+    is_degree_sequence,
+    is_graphical_degree_sequence,
+    Matrix,
 )
 
 try:
@@ -15,32 +20,35 @@ class BasicTests(unittest.TestCase):
     def testGraphCreation(self):
         g = Graph()
         self.assertTrue(isinstance(g, Graph))
-        self.assertTrue(
-            g.vcount() == 0 and g.ecount() == 0 and not g.is_directed()
-        )
+        self.assertTrue(g.vcount() == 0 and g.ecount() == 0 and not g.is_directed())
 
         g = Graph(3, [(0, 1), (1, 2), (2, 0)])
         self.assertTrue(
-            g.vcount() == 3 and g.ecount() == 3 and not g.is_directed() and
-            g.is_simple()
+            g.vcount() == 3
+            and g.ecount() == 3
+            and not g.is_directed()
+            and g.is_simple()
         )
 
         g = Graph(2, [(0, 1), (1, 2), (2, 3)], True)
         self.assertTrue(
-            g.vcount() == 4 and g.ecount() == 3 and g.is_directed() and
-            g.is_simple()
+            g.vcount() == 4 and g.ecount() == 3 and g.is_directed() and g.is_simple()
         )
 
         g = Graph([(0, 1), (1, 2), (2, 1)])
         self.assertTrue(
-            g.vcount() == 3 and g.ecount() == 3 and not g.is_directed() and
-            not g.is_simple()
+            g.vcount() == 3
+            and g.ecount() == 3
+            and not g.is_directed()
+            and not g.is_simple()
         )
 
         g = Graph(((0, 1), (0, 0), (1, 2)))
         self.assertTrue(
-            g.vcount() == 3 and g.ecount() == 3 and not g.is_directed() and
-            not g.is_simple()
+            g.vcount() == 3
+            and g.ecount() == 3
+            and not g.is_directed()
+            and not g.is_simple()
         )
 
         g = Graph(8, None)
@@ -61,8 +69,7 @@ class BasicTests(unittest.TestCase):
         arr = np.array([(0, 1), (1, 2), (2, 3)])
         g = Graph(arr, directed=True)
         self.assertTrue(
-            g.vcount() == 4 and g.ecount() == 3 and g.is_directed() and
-            g.is_simple()
+            g.vcount() == 4 and g.ecount() == 3 and g.is_directed() and g.is_simple()
         )
 
         # Sliced NumPy array -- the sliced array is non-contiguous but we
@@ -70,8 +77,7 @@ class BasicTests(unittest.TestCase):
         arr = np.array([(0, 1), (10, 11), (1, 2), (11, 12), (2, 3), (12, 13)])
         g = Graph(arr[::2, :], directed=True)
         self.assertTrue(
-            g.vcount() == 4 and g.ecount() == 3 and g.is_directed() and
-            g.is_simple()
+            g.vcount() == 4 and g.ecount() == 3 and g.is_directed() and g.is_simple()
         )
 
         # 1D NumPy array -- should raise a TypeError because we need a 2D array
@@ -79,9 +85,7 @@ class BasicTests(unittest.TestCase):
         self.assertRaises(TypeError, Graph, arr)
 
         # 3D NumPy array -- should raise a TypeError because we need a 2D array
-        arr = np.array(
-            [([0, 1], [10, 11]), ([1, 2], [11, 12]), ([2, 3], [12, 13])]
-        )
+        arr = np.array([([0, 1], [10, 11]), ([1, 2], [11, 12]), ([2, 3], [12, 13])])
         self.assertRaises(TypeError, Graph, arr)
 
         # NumPy array with strings -- should be a casting error
@@ -117,9 +121,7 @@ class BasicTests(unittest.TestCase):
         vertex = g.add_vertex(name="frob", spam="cheese", ham=42)
         self.assertTrue(g.vcount() == 5 and g.ecount() == 0)
         self.assertEqual(4, vertex.index)
-        self.assertEqual(
-            sorted(g.vertex_attributes()), ["ham", "name", "spam"]
-        )
+        self.assertEqual(sorted(g.vertex_attributes()), ["ham", "name", "spam"])
         self.assertEqual(g.vs["spam"], [None] * 4 + ["cheese"])
         self.assertEqual(g.vs["ham"], [None] * 4 + [42])
 
@@ -136,7 +138,7 @@ class BasicTests(unittest.TestCase):
         self.assertTrue(g.vcount() == 5 and g.ecount() == 0)
         self.assertEqual(g.vs[2:]["name"], ["spam", "bacon", "eggs"])
 
-        g.add_vertices(2, attributes={'color': ['k', 'b']})
+        g.add_vertices(2, attributes={"color": ["k", "b"]})
         self.assertEqual(g.vs[2:]["name"], ["spam", "bacon", "eggs", None, None])
         self.assertEqual(g.vs[5:]["color"], ["k", "b"])
 
@@ -214,17 +216,25 @@ class BasicTests(unittest.TestCase):
 
         g.add_edges([("spam", "eggs"), ("spam", "ham")])
         self.assertEqual(g.vcount(), 4)
-        self.assertEqual(g.get_edgelist(), [
-            (0, 1), (1, 2), (2, 3), (1, 3), (0, 2), (0, 3)
-        ])
-
-        g.add_edges([(0, 0), (1, 1)], attributes={'color': ['k', 'b']})
-        self.assertEqual(g.get_edgelist(), [
-            (0, 1), (1, 2), (2, 3), (1, 3), (0, 2), (0, 3), (0, 0), (1, 1),
-        ])
         self.assertEqual(
-            g.es['color'],
-            [None, None, None, None, None, None, 'k', 'b'])
+            g.get_edgelist(), [(0, 1), (1, 2), (2, 3), (1, 3), (0, 2), (0, 3)]
+        )
+
+        g.add_edges([(0, 0), (1, 1)], attributes={"color": ["k", "b"]})
+        self.assertEqual(
+            g.get_edgelist(),
+            [
+                (0, 1),
+                (1, 2),
+                (2, 3),
+                (1, 3),
+                (0, 2),
+                (0, 3),
+                (0, 0),
+                (1, 1),
+            ],
+        )
+        self.assertEqual(g.es["color"], [None, None, None, None, None, None, "k", "b"])
 
     def testDeleteEdges(self):
         g = Graph.Famous("petersen")
@@ -297,7 +307,7 @@ class BasicTests(unittest.TestCase):
         g = Graph.Famous("petersen")
         g.vs["name"] = list("ABCDEFGHIJ")
         edges_to_ids = dict((v, k) for k, v in enumerate(g.get_edgelist()))
-        for (source, target), edge_id in edges_to_ids.items():
+        for (source, target), edge_id in list(edges_to_ids.items()):
             source_name, target_name = g.vs[(source, target)]["name"]
             self.assertEqual(edge_id, g.get_eid(source, target))
             self.assertEqual(edge_id, g.get_eid(source_name, target_name))
@@ -343,28 +353,38 @@ class BasicTests(unittest.TestCase):
         g.add_edges([(0, 1), (7, 7), (6, 6), (6, 6), (6, 6)])
 
         # is_loop
-        self.assertTrue(g.is_loop() == [
-            False, False, False, False, False, False, False,
-            True, True, True, True
-        ])
-        self.assertTrue(g.is_loop(g.ecount()-2))
-        self.assertTrue(g.is_loop(range(6, 8)) == [False, True])
+        self.assertTrue(
+            g.is_loop()
+            == [False, False, False, False, False, False, False, True, True, True, True]
+        )
+        self.assertTrue(g.is_loop(g.ecount() - 2))
+        self.assertTrue(g.is_loop(list(range(6, 8))) == [False, True])
 
         # is_multiple
-        self.assertTrue(g.is_multiple() == [
-            False, False, False, False, False, False, True,
-            False, False, True, True
-        ])
+        self.assertTrue(
+            g.is_multiple()
+            == [
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                True,
+                False,
+                False,
+                True,
+                True,
+            ]
+        )
 
         # has_multiple
         self.assertTrue(g.has_multiple())
 
         # count_multiple
-        self.assertTrue(
-            g.count_multiple() == [2, 1, 1, 1, 1, 1, 2, 1, 3, 3, 3]
-        )
-        self.assertTrue(g.count_multiple(g.ecount()-1) == 3)
-        self.assertTrue(g.count_multiple(range(2, 5)) == [1, 1, 1])
+        self.assertTrue(g.count_multiple() == [2, 1, 1, 1, 1, 1, 2, 1, 3, 3, 3])
+        self.assertTrue(g.count_multiple(g.ecount() - 1) == 3)
+        self.assertTrue(g.count_multiple(list(range(2, 5))) == [1, 1, 1])
 
         # check if a mutual directed edge pair is reported as multiple
         g = Graph(2, [(0, 1), (1, 0)], directed=True)
@@ -372,6 +392,7 @@ class BasicTests(unittest.TestCase):
 
     def testPickling(self):
         import pickle
+
         g = Graph([(0, 1), (1, 2)])
         g["data"] = "abcdef"
         g.vs["data"] = [3, 4, 5]
@@ -448,22 +469,16 @@ class GraphDictListTests(unittest.TestCase):
     def setUp(self):
         self.vertices = [
             {"name": "Alice", "age": 48, "gender": "F"},
-            {"name": "Bob",   "age": 33, "gender": "M"},
+            {"name": "Bob", "age": 33, "gender": "M"},
             {"name": "Cecil", "age": 45, "gender": "F"},
-            {"name": "David", "age": 34, "gender": "M"}
+            {"name": "David", "age": 34, "gender": "M"},
         ]
         self.edges = [
             {"source": "Alice", "target": "Bob", "friendship": 4, "advice": 4},
             {"source": "Cecil", "target": "Bob", "friendship": 5, "advice": 5},
-            {
-                "source": "Cecil", "target": "Alice",
-                "friendship": 5, "advice": 5
-            },
-            {
-                "source": "David", "target": "Alice",
-                "friendship": 2, "advice": 4
-            },
-            {"source": "David", "target": "Bob", "friendship": 1, "advice": 2}
+            {"source": "Cecil", "target": "Alice", "friendship": 5, "advice": 5},
+            {"source": "David", "target": "Alice", "friendship": 2, "advice": 4},
+            {"source": "David", "target": "Bob", "friendship": 1, "advice": 2},
         ]
 
     def testGraphFromDictList(self):
@@ -475,9 +490,7 @@ class GraphDictListTests(unittest.TestCase):
     def testGraphFromDictIterator(self):
         g = Graph.DictList(iter(self.vertices), iter(self.edges))
         self.checkIfOK(g, "name")
-        g = Graph.DictList(
-            iter(self.vertices), iter(self.edges), iterative=True
-        )
+        g = Graph.DictList(iter(self.vertices), iter(self.edges), iterative=True)
         self.checkIfOK(g, "name")
 
     def testGraphFromDictIteratorNoVertices(self):
@@ -487,19 +500,15 @@ class GraphDictListTests(unittest.TestCase):
         self.checkIfOK(g, "name", check_vertex_attrs=False)
 
     def testGraphFromDictListExtraVertexName(self):
-        del self.vertices[2:]      # No data for "Cecil" and "David"
+        del self.vertices[2:]  # No data for "Cecil" and "David"
         g = Graph.DictList(self.vertices, self.edges)
-        self.assertTrue(
-            g.vcount() == 4 and g.ecount() == 5 and not g.is_directed()
-        )
+        self.assertTrue(g.vcount() == 4 and g.ecount() == 5 and not g.is_directed())
         self.assertTrue(g.vs["name"] == ["Alice", "Bob", "Cecil", "David"])
         self.assertTrue(g.vs["age"] == [48, 33, None, None])
         self.assertTrue(g.vs["gender"] == ["F", "M", None, None])
         self.assertTrue(g.es["friendship"] == [4, 5, 5, 2, 1])
         self.assertTrue(g.es["advice"] == [4, 5, 5, 4, 2])
-        self.assertTrue(g.get_edgelist() == [
-            (0, 1), (1, 2), (0, 2), (0, 3), (1, 3)
-        ])
+        self.assertTrue(g.get_edgelist() == [(0, 1), (1, 2), (0, 2), (0, 3), (1, 3)])
 
     def testGraphFromDictListAlternativeName(self):
         for vdata in self.vertices:
@@ -510,18 +519,16 @@ class GraphDictListTests(unittest.TestCase):
         )
         self.checkIfOK(g, "name_alternative")
         g = Graph.DictList(
-            self.vertices, self.edges, vertex_name_attr="name_alternative",
-            iterative=True
+            self.vertices,
+            self.edges,
+            vertex_name_attr="name_alternative",
+            iterative=True,
         )
         self.checkIfOK(g, "name_alternative")
 
     def checkIfOK(self, g, name_attr, check_vertex_attrs=True):
-        self.assertTrue(
-            g.vcount() == 4 and g.ecount() == 5 and not g.is_directed()
-        )
-        self.assertTrue(g.get_edgelist() == [
-            (0, 1), (1, 2), (0, 2), (0, 3), (1, 3)
-        ])
+        self.assertTrue(g.vcount() == 4 and g.ecount() == 5 and not g.is_directed())
+        self.assertTrue(g.get_edgelist() == [(0, 1), (1, 2), (0, 2), (0, 3), (1, 3)])
         self.assertTrue(g.vs[name_attr] == ["Alice", "Bob", "Cecil", "David"])
         if check_vertex_attrs:
             self.assertTrue(g.vs["age"] == [48, 33, 45, 34])
@@ -537,7 +544,7 @@ class GraphTupleListTests(unittest.TestCase):
             ("Cecil", "Bob", 5, 5),
             ("Cecil", "Alice", 5, 5),
             ("David", "Alice", 2, 4),
-            ("David", "Bob", 1, 2)
+            ("David", "Bob", 1, 2),
         ]
 
     def testGraphFromTupleList(self):
@@ -547,10 +554,10 @@ class GraphTupleListTests(unittest.TestCase):
     def testGraphFromTupleListWithEdgeAttributes(self):
         g = Graph.TupleList(self.edges, edge_attrs=("friendship", "advice"))
         self.checkIfOK(g, "name", ("friendship", "advice"))
-        g = Graph.TupleList(self.edges, edge_attrs=("friendship", ))
-        self.checkIfOK(g, "name", ("friendship", ))
+        g = Graph.TupleList(self.edges, edge_attrs=("friendship",))
+        self.checkIfOK(g, "name", ("friendship",))
         g = Graph.TupleList(self.edges, edge_attrs="friendship")
-        self.checkIfOK(g, "name", ("friendship", ))
+        self.checkIfOK(g, "name", ("friendship",))
 
     def testGraphFromTupleListWithDifferentNameAttribute(self):
         g = Graph.TupleList(self.edges, vertex_name_attr="spam")
@@ -558,29 +565,26 @@ class GraphTupleListTests(unittest.TestCase):
 
     def testGraphFromTupleListWithWeights(self):
         g = Graph.TupleList(self.edges, weights=True)
-        self.checkIfOK(g, "name", ("weight", ))
+        self.checkIfOK(g, "name", ("weight",))
         g = Graph.TupleList(self.edges, weights="friendship")
-        self.checkIfOK(g, "name", ("friendship", ))
+        self.checkIfOK(g, "name", ("friendship",))
         g = Graph.TupleList(self.edges, weights=False)
         self.checkIfOK(g, "name", ())
         self.assertRaises(
-            ValueError, Graph.TupleList, [self.edges], weights=True,
-            edge_attrs="friendship"
+            ValueError,
+            Graph.TupleList,
+            [self.edges],
+            weights=True,
+            edge_attrs="friendship",
         )
 
     def testNoneForMissingAttributes(self):
-        g = Graph.TupleList(
-            self.edges, edge_attrs=("friendship", "advice", "spam")
-        )
+        g = Graph.TupleList(self.edges, edge_attrs=("friendship", "advice", "spam"))
         self.checkIfOK(g, "name", ("friendship", "advice", "spam"))
 
     def checkIfOK(self, g, name_attr, edge_attrs):
-        self.assertTrue(
-            g.vcount() == 4 and g.ecount() == 5 and not g.is_directed()
-        )
-        self.assertTrue(g.get_edgelist() == [
-            (0, 1), (1, 2), (0, 2), (0, 3), (1, 3)
-        ])
+        self.assertTrue(g.vcount() == 4 and g.ecount() == 5 and not g.is_directed())
+        self.assertTrue(g.get_edgelist() == [(0, 1), (1, 2), (0, 2), (0, 3), (1, 3)])
         self.assertTrue(g.attributes() == [])
         self.assertTrue(g.vertex_attributes() == [name_attr])
         self.assertTrue(g.vs[name_attr] == ["Alice", "Bob", "Cecil", "David"])
@@ -609,14 +613,13 @@ class DegreeSequenceTests(unittest.TestCase):
         self.assertFalse(is_degree_sequence([2, 1, -2]))
         self.assertFalse(is_degree_sequence([2, 1, 1, 1], [1, 1, 1, -2]))
         self.assertTrue(is_degree_sequence([3, 3, 3, 3, 3, 3, 3, 3, 3, 3]))
-        self.assertTrue(is_degree_sequence(
-            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3], None
-        ))
+        self.assertTrue(is_degree_sequence([3, 3, 3, 3, 3, 3, 3, 3, 3, 3], None))
         self.assertFalse(is_degree_sequence([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]))
-        self.assertTrue(is_degree_sequence(
-            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
-            [4, 3, 2, 3, 4, 4, 2, 2, 4, 2]
-        ))
+        self.assertTrue(
+            is_degree_sequence(
+                [3, 3, 3, 3, 3, 3, 3, 3, 3, 3], [4, 3, 2, 3, 4, 4, 2, 2, 4, 2]
+            )
+        )
 
     def testIsGraphicalSequence(self):
         self.assertTrue(is_graphical_degree_sequence([]))
@@ -627,26 +630,21 @@ class DegreeSequenceTests(unittest.TestCase):
         self.assertFalse(is_graphical_degree_sequence([1], [1]))
         self.assertFalse(is_graphical_degree_sequence([2]))
         self.assertFalse(is_graphical_degree_sequence([2, 1, 1, 1]))
-        self.assertTrue(is_graphical_degree_sequence(
-            [2, 1, 1, 1], [1, 1, 1, 2]
-        ))
+        self.assertTrue(is_graphical_degree_sequence([2, 1, 1, 1], [1, 1, 1, 2]))
         self.assertFalse(is_graphical_degree_sequence([2, 1, -2]))
-        self.assertFalse(is_graphical_degree_sequence(
-            [2, 1, 1, 1], [1, 1, 1, -2]
-        ))
-        self.assertTrue(is_graphical_degree_sequence(
-            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
-        ))
-        self.assertTrue(is_graphical_degree_sequence(
-            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3], None
-        ))
-        self.assertFalse(is_graphical_degree_sequence(
-            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
-        ))
-        self.assertTrue(is_graphical_degree_sequence(
-            [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
-            [4, 3, 2, 3, 4, 4, 2, 2, 4, 2]
-        ))
+        self.assertFalse(is_graphical_degree_sequence([2, 1, 1, 1], [1, 1, 1, -2]))
+        self.assertTrue(is_graphical_degree_sequence([3, 3, 3, 3, 3, 3, 3, 3, 3, 3]))
+        self.assertTrue(
+            is_graphical_degree_sequence([3, 3, 3, 3, 3, 3, 3, 3, 3, 3], None)
+        )
+        self.assertFalse(
+            is_graphical_degree_sequence([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3])
+        )
+        self.assertTrue(
+            is_graphical_degree_sequence(
+                [3, 3, 3, 3, 3, 3, 3, 3, 3, 3], [4, 3, 2, 3, 4, 4, 2, 2, 4, 2]
+            )
+        )
         self.assertTrue(is_graphical_degree_sequence([3, 3, 3, 3, 4]))
 
 
@@ -686,10 +684,16 @@ def suite():
     graph_tuple_list_suite = unittest.makeSuite(GraphTupleListTests)
     degree_sequence_suite = unittest.makeSuite(DegreeSequenceTests)
     inheritance_suite = unittest.makeSuite(InheritanceTests)
-    return unittest.TestSuite([
-        basic_suite, datatype_suite, graph_dict_list_suite,
-        graph_tuple_list_suite, degree_sequence_suite, inheritance_suite
-    ])
+    return unittest.TestSuite(
+        [
+            basic_suite,
+            datatype_suite,
+            graph_dict_list_suite,
+            graph_tuple_list_suite,
+            degree_sequence_suite,
+            inheritance_suite,
+        ]
+    )
 
 
 def test():
