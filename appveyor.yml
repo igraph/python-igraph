@@ -33,7 +33,6 @@ install:
   # update msys2
   - bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"
   - bash -lc "pacman --noconfirm -Sy"
-  - bash -lc "pacman --needed --noconfirm -S zstd"
   - bash -lc "pacman --needed --noconfirm -S autoconf automake bison flex libtool mingw-w64-x86_64-libtool mingw-w64-i686-libxml2 mingw-w64-x86_64-libxml2 zip"
 
   # prepare Python
