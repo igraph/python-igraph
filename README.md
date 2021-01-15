@@ -163,9 +163,7 @@ of the non-EOL Python versions.
 Continuous integration tests are regularly executed on all non-EOL Python
 branches.
 
-As for Python 2.x, the latest branch of `python-igraph` that supports Python 2
-is the 0.8.x series. Python 2 support will be dropped with the release of
-`python-igraph` 0.9.
+Python 2 support has been dropped with the release of `python-igraph` 0.9.
 
 ### PyPy
 
