@@ -38,6 +38,9 @@ install:
   # install cibuildwheel
   - pip install cibuildwheel==1.6.1
 
+  # install pandas (optional)
+  - pip install pandas
+
 before_build:
   - git submodule update --init --recursive
 
