@@ -2107,7 +2107,7 @@ class Graph(GraphBase):
         return graph
 
     @classmethod
-    def Adjacency(klass, matrix, mode=ADJ_DIRECTED):
+    def Adjacency(klass, matrix, mode=ADJ_DIRECTED, *args, **kwargs):
         """Generates a graph from its adjacency matrix.
 
         @param matrix: the adjacency matrix. Possible types are:
@@ -2148,7 +2148,7 @@ class Graph(GraphBase):
         if (np is not None) and isinstance(matrix, np.ndarray):
             matrix = matrix.tolist()
 
-        return GraphBase.Adjacency(klass, matrix, mode=mode)
+        return klass._Adjacency(matrix, mode=mode)
 
     def write_dimacs(self, f, source=None, target=None, capacity="capacity"):
         """Writes the graph in DIMACS format to the given file.
