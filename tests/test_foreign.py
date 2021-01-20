@@ -4,7 +4,12 @@ import warnings
 
 from igraph import *
 
-from .utils import temporary_file
+from .utils import temporary_file, skipIf
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 
 class ForeignTests(unittest.TestCase):
