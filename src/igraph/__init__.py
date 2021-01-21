@@ -53,7 +53,6 @@ import sys
 import operator
 
 from collections import defaultdict
-
 from shutil import copyfileobj
 from warnings import warn
 
@@ -3409,6 +3408,76 @@ class Graph(GraphBase):
                     e[a_name] = a_value
 
         return g
+
+    def get_vertex_dataframe(self):
+        """Export vertices with attributes to pandas.DataFrame
+
+        @return: a pandas.DataFrame representing vertices and their attributes.
+          The index uses vertex IDs, from 0 to N - 1 where N is the number of
+          vertices.
+
+        If you want to use vertex names as index, you can do:
+
+        >>> df = graph.get_vertex_dataframe()
+        >>> df.set_index('name', inplace=True)
+
+        """
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError("You should install pandas in order to use this function")
+
+        df = pd.DataFrame(
+            {attr: self.vs[attr] for attr in self.vertex_attributes()},
+            index=list(range(self.vcount())),
+        )
+        df.index.name = "vertex ID"
+
+        return df
+
+    def get_edge_dataframe(self):
+        """Export edges with attributes to pandas.DataFrame
+
+        @return: a pandas.DataFrame representing edges and their attributes.
+          The index uses edge IDs, from 0 to M - 1 where M is the number of
+          edges. The first two columns of the dataframe represent the IDs of
+          source and target vertices for each edge. These columns have names
+          "source" and "target". If your edges have attributes with the same
+          names, they will be present in the dataframe, but not in the first
+          two columns.
+
+        If you want to use source and target vertex IDs as index, you can do:
+
+        >>> df = graph.get_edge_dataframe()
+        >>> df.set_index(['source', 'target'], inplace=True)
+
+        The index will be a pandas.MultiIndex. You can use the `drop=False`
+        option to keep the `source` and `target` columns.
+
+        If you want to use vertex names in the source and target columns:
+
+        >>> df = graph.get_edge_dataframe()
+        >>> df_vert = graph.get_vertex_dataframe()
+        >>> df['source'].replace(df_vert['name'], inplace=True)
+        >>> df['target'].replace(df_vert['name'], inplace=True)
+        >>> df_vert.set_index('name', inplace=True)  # Optional
+
+        """
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError("You should install pandas in order to use this function")
+
+        df = pd.DataFrame(
+            {attr: self.es[attr] for attr in self.edge_attributes()},
+            index=list(range(self.ecount())),
+        )
+        df.index.name = "edge ID"
+
+        df.insert(0, "source", [e.source for e in self.es], allow_duplicates=True)
+        df.insert(1, "target", [e.target for e in self.es], allow_duplicates=True)
+
+        return df
 
     def bipartite_projection(
         self, types="type", multiplicity=True, probe1=-1, which="both"
