@@ -335,6 +335,84 @@ class ForeignTests(unittest.TestCase):
             self.assertTrue(g.vcount() == 3 and g.ecount() == 1 and not g.is_directed())
             g.write_pickle(tmpfname)
 
+    @skipIf(pd is None, "test case depends on Pandas")
+    def testVertexDataFrames(self):
+        g = Graph([(0, 1), (0, 2), (0, 3), (1, 2), (2, 4)])
+
+        # No vertex names, no attributes
+        df = g.get_vertex_dataframe()
+        self.assertEqual(df.shape, (5, 0))
+        self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
+
+        # Vertex names, no attributes
+        g.vs["name"] = ["eggs", "spam", "ham", "bacon", "yello"]
+        df = g.get_vertex_dataframe()
+        self.assertEqual(df.shape, (5, 1))
+        self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
+        self.assertEqual(list(df["name"]), g.vs["name"])
+        self.assertEqual(list(df.columns), ["name"])
+
+        # Vertex names and attributes (common case)
+        g.vs["weight"] = [0, 5, 1, 4, 42]
+        df = g.get_vertex_dataframe()
+        self.assertEqual(df.shape, (5, 2))
+        self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
+        self.assertEqual(list(df["name"]), g.vs["name"])
+        self.assertEqual(set(df.columns), set(["name", "weight"]))
+        self.assertEqual(list(df["weight"]), g.vs["weight"])
+
+        # No vertex names, with attributes (common case)
+        g = Graph([(0, 1), (0, 2), (0, 3), (1, 2), (2, 4)])
+        g.vs["weight"] = [0, 5, 1, 4, 42]
+        df = g.get_vertex_dataframe()
+        self.assertEqual(df.shape, (5, 1))
+        self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
+        self.assertEqual(list(df.columns), ["weight"])
+        self.assertEqual(list(df["weight"]), g.vs["weight"])
+
+    @skipIf(pd is None, "test case depends on Pandas")
+    def testEdgeDataFrames(self):
+        g = Graph([(0, 1), (0, 2), (0, 3), (1, 2), (2, 4)])
+
+        # No edge names, no attributes
+        df = g.get_edge_dataframe()
+        self.assertEqual(df.shape, (5, 2))
+        self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
+        self.assertEqual(list(df.columns), ["source", "target"])
+
+        # Edge names, no attributes
+        g.es["name"] = ["my", "list", "of", "five", "edges"]
+        df = g.get_edge_dataframe()
+        self.assertEqual(df.shape, (5, 3))
+        self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
+        self.assertEqual(list(df["name"]), g.es["name"])
+        self.assertEqual(set(df.columns), set(["source", "target", "name"]))
+
+        # No edge names, with attributes
+        g = Graph([(0, 1), (0, 2), (0, 3), (1, 2), (2, 4)])
+        g.es["weight"] = [6, -0.4, 0, 1, 3]
+        df = g.get_edge_dataframe()
+        self.assertEqual(df.shape, (5, 3))
+        self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
+        self.assertEqual(set(df.columns), set(["source", "target", "weight"]))
+        self.assertEqual(list(df["weight"]), g.es["weight"])
+
+        # Edge names, with weird attributes
+        g.es["name"] = ["my", "list", "of", "five", "edges"]
+        g.es["weight"] = [6, -0.4, 0, 1, 3]
+        g.es["source"] = ["this", "is", "a", "little", "tricky"]
+        df = g.get_edge_dataframe()
+        self.assertEqual(df.shape, (5, 5))
+        self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
+        self.assertEqual(
+            set(df.columns), set(["source", "target", "name", "source", "weight"])
+        )
+        self.assertEqual(list(df["name"]), g.es["name"])
+        self.assertEqual(list(df["weight"]), g.es["weight"])
+
+        i = 2 + list(df.columns[2:]).index("source")
+        self.assertEqual(list(df.iloc[:, i]), g.es["source"])
+
 
 def suite():
     foreign_suite = unittest.makeSuite(ForeignTests)
