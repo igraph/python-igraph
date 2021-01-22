@@ -8318,7 +8318,7 @@ PyObject *igraphmodule_Graph_canonical_permutation(
   PyObject *sh_o = Py_None;
   PyObject *color_o = Py_None;
   PyObject *list;
-  igraph_bliss_sh_t sh = IGRAPH_BLISS_FM;
+  igraph_bliss_sh_t sh = IGRAPH_BLISS_FL;
   igraph_vector_t labeling;
   igraph_vector_int_t *color = 0;
   int retval;
@@ -8444,7 +8444,7 @@ PyObject *igraphmodule_Graph_isomorphic_bliss(igraphmodule_GraphObject * self,
   PyObject *color1_o=Py_None, *color2_o=Py_None;
   igraphmodule_GraphObject *other;
   igraph_vector_t mapping_12, mapping_21, *map12=0, *map21=0;
-  igraph_bliss_sh_t sh1=IGRAPH_BLISS_FM, sh2=IGRAPH_BLISS_FM;
+  igraph_bliss_sh_t sh1=IGRAPH_BLISS_FL, sh2=IGRAPH_BLISS_FL;
   igraph_vector_int_t *color1=0, *color2=0;
   int retval;
 
@@ -14745,7 +14745,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"canonical_permutation",
    (PyCFunction) igraphmodule_Graph_canonical_permutation,
    METH_VARARGS | METH_KEYWORDS,
-   "canonical_permutation(sh=\"fm\", color=None)\n\n"
+   "canonical_permutation(sh=\"fl\", color=None)\n\n"
    "Calculates the canonical permutation of a graph using the BLISS isomorphism\n"
    "algorithm.\n\n"
    "Passing the permutation returned here to L{Graph.permute_vertices()} will\n"
@@ -14800,7 +14800,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"isomorphic_bliss", (PyCFunction) igraphmodule_Graph_isomorphic_bliss,
    METH_VARARGS | METH_KEYWORDS,
    "isomorphic_bliss(other, return_mapping_12=False, return_mapping_21=False,\n"
-   "  sh1=\"fm\", sh2=None, color1=None, color2=None)\n\n"
+   "  sh1=\"fl\", sh2=None, color1=None, color2=None)\n\n"
    "Checks whether the graph is isomorphic to another graph, using the\n"
    "BLISS isomorphism algorithm.\n\n"
    "See U{http://www.tcs.hut.fi/Software/bliss/index.html} for more information\n"
