@@ -18,6 +18,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Install C core submodule
+      run: git submodule update --init
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
@@ -44,6 +46,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Install C core submodule
+      run: git submodule update --init
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
