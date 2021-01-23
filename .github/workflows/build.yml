@@ -129,8 +129,5 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          asset_paths: '["wheelhouse/*.whl", "dist/python-igraph-*.tar.gz"]'
+        asset_paths: '["wheelhouse/*.whl", "dist/python-igraph-*.tar.gz"]'
 
