@@ -1,0 +1,136 @@
+name: "Build and deploy"
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+        - 3.6
+        - 3.7
+        - 3.8
+        - 3.9
+        - pypy-3.7
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install OS dependencies
+      run:
+        sudo apt-get install gfortran flex bison
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox tox-gh-actions
+    - name: Test with tox
+      run: tox
+
+  build_osx:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version:
+        - 3.6
+        - 3.7
+        - 3.8
+        - 3.9
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox tox-gh-actions
+    - name: Test with tox
+      run: tox
+
+  wheels_linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+        - 3.6
+        - 3.7
+        - 3.8
+        - 3.9
+        - pypy-3.7
+    needs: build_linux
+    if: startsWith(${{ github.ref }}, 'refs/tags')
+    steps:
+    - name: Wheels (linux)
+      env:
+        - CIBW_BEFORE_BUILD="yum install -y flex bison libxml2-devel zlib-devel && python setup.py build_c_core"
+        - CIBW_TEST_COMMAND="cd {project} && python -m unittest"
+        - CIBW_SKIP="cp35-*"
+      run: |
+        wget -qO- https://bootstrap.pypa.io/get-pip.py | sudo python3
+        sudo python3 -m pip install cibuildwheel==1.6.1
+        python setup.py -q sdist
+        python3 -m cibuildwheel --output-dir wheelhouse
+
+  wheels_osx:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version:
+        - 3.6
+        - 3.7
+        - 3.8
+        - 3.9
+
+    needs: build_osx
+    if: startsWith(${{ github.ref }}, 'refs/tags')
+    steps:
+    - name: Wheels (OSX)
+      run: |
+        python3 -m pip install cibuildwheel==1.6.1
+        python3 -m cibuildwheel --output-dir wheelhouse
+      env:
+        - CIBW_BEFORE_BUILD="python setup.py build_c_core"
+        - CIBW_TEST_COMMAND="cd {project} && python -m unittest"
+
+  create_release:
+    runs-on: ubuntu-latest
+    needs:
+    - wheels_linux
+    - wheels_osx
+    if: startsWith(${{ github.ref }}, 'refs/tags')
+    steps:
+    - name: Config deploy
+      run: |
+        git config --local user.name "ntamas"
+        git config --local user.email "ntamas@gmail.com"
+
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: true
+        prerelease: false
+
+    - name: Upload binaries and source
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          asset_paths: '["wheelhouse/*.whl", "dist/python-igraph-*.tar.gz"]'
+
