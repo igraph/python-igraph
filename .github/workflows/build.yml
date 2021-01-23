@@ -70,9 +70,9 @@ jobs:
     steps:
     - name: Wheels (linux)
       env:
-        - CIBW_BEFORE_BUILD="yum install -y flex bison libxml2-devel zlib-devel && python setup.py build_c_core"
-        - CIBW_TEST_COMMAND="cd {project} && python -m unittest"
-        - CIBW_SKIP="cp35-*"
+        CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && python setup.py build_c_core"
+        CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
+        CIBW_SKIP: "cp35-*"
       run: |
         wget -qO- https://bootstrap.pypa.io/get-pip.py | sudo python3
         sudo python3 -m pip install cibuildwheel==1.6.1
@@ -97,8 +97,8 @@ jobs:
         python3 -m pip install cibuildwheel==1.6.1
         python3 -m cibuildwheel --output-dir wheelhouse
       env:
-        - CIBW_BEFORE_BUILD="python setup.py build_c_core"
-        - CIBW_TEST_COMMAND="cd {project} && python -m unittest"
+        CIBW_BEFORE_BUILD: "python setup.py build_c_core"
+        CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
 
   create_release:
     runs-on: ubuntu-latest
