@@ -7073,7 +7073,6 @@ PyObject *igraphmodule_Graph_layout_mds(igraphmodule_GraphObject * self,
   igraph_matrix_t m;
   igraph_matrix_t *dist = 0;
   long int dim = 2;
-  igraphmodule_ARPACKOptionsObject *arpack_options;
   PyObject *dist_o = Py_None;
   PyObject *arpack_options_o = igraphmodule_arpack_options_default;
   PyObject *result;

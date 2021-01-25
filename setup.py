@@ -40,6 +40,9 @@ LIBIGRAPH_FALLBACK_LIBRARY_DIRS = []
 ###########################################################################
 
 
+is_windows = platform.system() == "windows"
+
+
 def building_on_windows_msvc():
     """Returns True when using the non-MinGW CPython interpreter on Windows"""
     return platform.system() == "Windows" and sysconfig.get_platform() != "mingw"
@@ -232,7 +235,7 @@ def wait_for_keypress(seconds):
     """Wait for a keypress or until the given number of seconds have passed,
     whichever happens first.
     """
-    is_windows = platform.system() == "windows"
+    global is_windows
 
     while seconds > 0:
         if seconds > 1:
@@ -410,10 +413,11 @@ class IgraphCCoreAutotoolsBuilder(object):
             ):
                 shutil.copy(fname, os.path.join(install_folder, "lib"))
 
+        return True
+
+    def create_build_config_file(self, install_folder, libraries):
         with open(os.path.join(install_folder, "build.cfg"), "w") as f:
             f.write(repr(libraries))
-
-        return True
 
     @staticmethod
     def enhanced_env(**kwargs):
@@ -444,6 +448,8 @@ class IgraphCCoreCMakeBuilder(object):
         files. build_folder is the name of the folder where the build should
         be executed. Both must be absolute paths.
         """
+        global is_windows
+
         cmake = find_executable("cmake")
         if not cmake:
             print(
@@ -476,13 +482,17 @@ class IgraphCCoreCMakeBuilder(object):
         if retcode:
             return False
 
-        return []
+        return ["igraph"]
 
     def copy_build_artifacts(
         self, source_folder, build_folder, install_folder, libraries
     ):
         # Nothing to do; we already installed stuff in the compilation step
         return True
+
+    def create_build_config_file(self, install_folder, libraries):
+        with open(os.path.join(install_folder, "build.cfg"), "w") as f:
+            f.write(repr(libraries))
 
 
 ###########################################################################
@@ -702,6 +712,8 @@ class BuildConfiguration(object):
             print("Could not compile the C core of igraph.")
             print("")
             sys.exit(1)
+
+        igraph_builder.create_build_config_file(install_folder, libraries)
 
         self.use_vendored_igraph()
         return True
