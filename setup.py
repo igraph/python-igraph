@@ -645,7 +645,7 @@ class BuildConfiguration(object):
         return custom_sdist
 
     def compile_igraph_from_vendor_source(self):
-        """Compiles igraph from the vendored source code inside `vendor/igraph/source`.
+        """Compiles igraph from the vendored source code inside `vendor/source/igraph`.
         This folder typically comes from a git submodule.
         """
         if os.path.exists(os.path.join("vendor", "install", "igraph")):
