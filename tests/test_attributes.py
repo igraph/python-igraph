@@ -1,7 +1,8 @@
 # vim:ts=4 sw=4 sts=4:
 import sys
 import unittest
-from igraph import *
+
+from igraph import Graph
 
 
 class AttributeTests(unittest.TestCase):
@@ -181,13 +182,6 @@ class AttributeCombinationTests(unittest.TestCase):
         self.assertTrue(g.es["weight"] == [2, 3, 120])
         self.assertTrue(g.es["weight2"] == [2, 3, 120])
 
-    def testCombinationMedian(self):
-        g = self.g
-        g.es["weight2"] = [1, 0, 2, 4, 8, 6, 7]
-        g.simplify(combine_edges="median")
-        self.assertTrue(g.es["weight"] == [1.5, 3, 5])
-        self.assertTrue(g.es["weight2"] == [0.5, 2, 6])
-
     def testCombinationFirst(self):
         g = self.g
         g.es["weight2"] = [1, 0, 2, 6, 8, 4, 7]
@@ -229,8 +223,8 @@ class AttributeCombinationTests(unittest.TestCase):
     def testCombinationFunction(self):
         g = self.g
 
-        def join_dash(l):
-            return "-".join(l)
+        def join_dash(items):
+            return "-".join(items)
 
         g.es["name"] = list("ABCDEFG")
         g.simplify(combine_edges={"weight": max, "name": join_dash})

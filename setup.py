@@ -808,7 +808,7 @@ class BuildConfiguration(object):
         the include and library paths and the library names accordingly."""
         building_on_windows = building_on_windows_msvc()
 
-        buildcfg.include_dirs = [os.path.join("vendor", "install", "igraph", "include")]
+        buildcfg.include_dirs = [os.path.join("vendor", "install", "igraph", "include", "igraph")]
         buildcfg.library_dirs = [os.path.join("vendor", "install", "igraph", "lib")]
         if not buildcfg.static_extension:
             buildcfg.static_extension = "only_igraph"

@@ -3047,7 +3047,6 @@ int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o,
   static igraphmodule_enum_translation_table_entry_t pagerank_algo_tt[] = {
         {"prpack", IGRAPH_PAGERANK_ALGO_PRPACK},
         {"arpack", IGRAPH_PAGERANK_ALGO_ARPACK},
-        {"power",  IGRAPH_PAGERANK_ALGO_POWER},
         {0,0}
     };
 

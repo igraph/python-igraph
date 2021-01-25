@@ -1563,7 +1563,7 @@ PyObject *igraphmodule_Graph_diameter(igraphmodule_GraphObject * self,
     igraph_vector_destroy(weights); free(weights);
     return PyFloat_FromDouble((double)i);
   } else {
-    igraph_integer_t i;
+    igraph_real_t i;
     if (igraph_diameter(&self->g, &i, 0, 0, 0, PyObject_IsTrue(dir),
                         PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
@@ -1628,8 +1628,8 @@ PyObject *igraphmodule_Graph_farthest_points(igraphmodule_GraphObject * self,
   PyObject *dir = Py_True, *vcount_if_unconnected = Py_True;
   PyObject *weights_o = Py_None;
   igraph_vector_t *weights = 0;
-  igraph_integer_t from, to, len;
-  igraph_real_t len_real;
+  igraph_integer_t from, to;
+  igraph_real_t len;
 
   static char *kwlist[] = { "directed", "unconn", "weights", NULL };
 
@@ -1642,7 +1642,7 @@ PyObject *igraphmodule_Graph_farthest_points(igraphmodule_GraphObject * self,
 	  ATTRIBUTE_TYPE_EDGE)) return NULL;
 
   if (weights) {
-    if (igraph_diameter_dijkstra(&self->g, weights, &len_real, &from, &to, 0,
+    if (igraph_diameter_dijkstra(&self->g, weights, &len, &from, &to, 0,
           PyObject_IsTrue(dir), PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
       igraph_vector_destroy(weights); free(weights);
@@ -1650,8 +1650,8 @@ PyObject *igraphmodule_Graph_farthest_points(igraphmodule_GraphObject * self,
     }
     igraph_vector_destroy(weights); free(weights);
     if (from >= 0)
-      return Py_BuildValue("lld", (long)from, (long)to, (double)len_real);
-    return Py_BuildValue("OOd", Py_None, Py_None, (double)len_real);
+      return Py_BuildValue("lld", (long)from, (long)to, (double)len);
+    return Py_BuildValue("OOd", Py_None, Py_None, (double)len);
   } else {
     if (igraph_diameter(&self->g, &len, &from, &to, 0, PyObject_IsTrue(dir),
                         PyObject_IsTrue(vcount_if_unconnected))) {
@@ -3657,7 +3657,7 @@ PyObject *igraphmodule_Graph_average_path_length(igraphmodule_GraphObject *
                                    &PyBool_Type, &unconn))
     return NULL;
 
-  if (igraph_average_path_length(&self->g, &res, (directed == Py_True),
+  if (igraph_average_path_length(&self->g, &res, 0, (directed == Py_True),
                                  (unconn == Py_True))) {
     igraphmodule_handle_igraph_error();
     return NULL;
@@ -5092,7 +5092,6 @@ PyObject *igraphmodule_Graph_personalized_pagerank(igraphmodule_GraphObject *sel
   PyObject *algo_o = Py_None;
   long niter=1000;
   float eps=0.001f;
-  igraph_pagerank_power_options_t popts;
   void *opts;
   int retval;
 
@@ -5150,11 +5149,7 @@ PyObject *igraphmodule_Graph_personalized_pagerank(igraphmodule_GraphObject *sel
   if (igraphmodule_PyObject_to_pagerank_algo_t(algo_o, &algo))
     return NULL;
 
-  popts.niter = (igraph_integer_t) niter; popts.eps = eps;
-
-  if (algo == IGRAPH_PAGERANK_ALGO_POWER) {
-    opts = &popts;
-  } else if (algo == IGRAPH_PAGERANK_ALGO_ARPACK) {
+  if (algo == IGRAPH_PAGERANK_ALGO_ARPACK) {
     opts = igraphmodule_ARPACKOptions_get(arpack_options);
   } else {
     opts = 0;
@@ -11030,13 +11025,15 @@ PyObject *igraphmodule_Graph_coreness(igraphmodule_GraphObject * self,
  */
 PyObject *igraphmodule_Graph_modularity(igraphmodule_GraphObject *self,
   PyObject *args, PyObject *kwds) {
-  static char *kwlist[] = {"membership", "weights", 0};
+  static char *kwlist[] = {"membership", "weights", "resolution", "directed", 0};
   igraph_vector_t membership;
   igraph_vector_t *weights=0;
+  double resolution;
   igraph_real_t modularity;
   PyObject *mvec, *wvec=Py_None;
+  PyObject *directed = Py_True;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &mvec, &wvec))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OdO", kwlist, &mvec, &wvec, &resolution, &directed))
     return NULL;
 
   if (igraphmodule_PyObject_to_vector_t(mvec, &membership, 1))
@@ -11046,13 +11043,20 @@ PyObject *igraphmodule_Graph_modularity(igraphmodule_GraphObject *self,
     igraph_vector_destroy(&membership);
     return NULL;
   }
-  if (igraph_modularity(&self->g, &membership, &modularity, weights)) {
+
+  if (igraph_modularity(&self->g, &membership, weights, resolution, PyObject_IsTrue(directed), &modularity)) {
     igraph_vector_destroy(&membership);
-    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    if (weights) {
+      igraph_vector_destroy(weights); free(weights);
+    }
     return NULL;
   }
+
   igraph_vector_destroy(&membership);
-  if (weights) { igraph_vector_destroy(weights); free(weights); }
+  if (weights) {
+    igraph_vector_destroy(weights); free(weights);
+  }
+
   return Py_BuildValue("d", (double)modularity);
 }
 
@@ -11397,14 +11401,15 @@ PyObject *igraphmodule_Graph_community_label_propagation(
 PyObject *igraphmodule_Graph_community_multilevel(igraphmodule_GraphObject *self,
   PyObject *args, PyObject *kwds)
 {
-  static char *kwlist[] = { "weights", "return_levels", NULL };
+  static char *kwlist[] = { "weights", "return_levels", "resolution", NULL };
   PyObject *return_levels = Py_False;
   PyObject *mss, *qs, *res, *weights = Py_None;
   igraph_matrix_t memberships;
   igraph_vector_t membership, modularity;
+  double resolution;
   igraph_vector_t *ws;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &weights, &return_levels)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOd", kwlist, &weights, &return_levels, &resolution)) {
     return NULL;
   }
 
@@ -11415,7 +11420,7 @@ PyObject *igraphmodule_Graph_community_multilevel(igraphmodule_GraphObject *self
   igraph_vector_init(&membership, 0);
   igraph_vector_init(&modularity, 0);
 
-  if (igraph_community_multilevel(&self->g, ws, &membership, &memberships,
+  if (igraph_community_multilevel(&self->g, ws, resolution, &membership, &memberships,
         &modularity)) {
     if (ws) { igraph_vector_destroy(ws); free(ws); }
     igraph_vector_destroy(&membership);
@@ -15474,16 +15479,17 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /*********************************/
   {"modularity", (PyCFunction) igraphmodule_Graph_modularity,
    METH_VARARGS | METH_KEYWORDS,
-   "modularity(membership, weights=None)\n\n"
+   "modularity(membership, weights=None, resolution=1, directed=True)\n\n"
    "Calculates the modularity of the graph with respect to some vertex types.\n\n"
    "The modularity of a graph w.r.t. some division measures how good the\n"
    "division is, or how separated are the different vertex types from each\n"
-   "other. It is defined as M{Q=1/(2m) * sum(Aij-ki*kj/(2m)delta(ci,cj),i,j)}.\n"
+   "other. It is defined as M{Q=1/(2m) * sum(Aij-gamma*ki*kj/(2m)delta(ci,cj),i,j)}.\n"
    "M{m} is the number of edges, M{Aij} is the element of the M{A} adjacency\n"
    "matrix in row M{i} and column M{j}, M{ki} is the degree of node M{i},\n"
-   "M{kj} is the degree of node M{j}, and M{Ci} and C{cj} are the types of\n"
-   "the two vertices (M{i} and M{j}). M{delta(x,y)} is one iff M{x=y}, 0\n"
-   "otherwise.\n\n"
+   "M{kj} is the degree of node M{j}, M{Ci} and C{cj} are the types of\n"
+   "the two vertices (M{i} and M{j}), and M{gamma} is a resolution parameter\n"
+   "that defaults to 1 for the classical definition of modularity. M{delta(x,y)}\n"
+   "is one iff M{x=y}, 0 otherwise.\n\n"
    "If edge weights are given, the definition of modularity is modified as\n"
    "follows: M{Aij} becomes the weight of the corresponding edge, M{ki}\n"
    "is the total weight of edges incident on vertex M{i}, M{kj} is the\n"
@@ -15496,6 +15502,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  each vertex.\n"
    "@param weights: optional edge weights or C{None} if all edges are weighed\n"
    "  equally.\n"
+   "@param resolution: the resolution parameter I{gamma} in the formula above.\n"
+   "  The classical definition of modularity is retrieved when the resolution\n"
+   "  parameter is set to 1.\n"
+   "@param directed: whether to consider edge directions if the graph is directed.\n"
+   "  C{True} will use the directed variant of the modularity measure where the\n"
+   "  in- and out-degrees of nodes are treated separately; C{False} will treat\n"
+   "  directed graphs as undirected.\n"
    "@return: the modularity score. Score larger than 0.3 usually indicates\n"
    "  strong community structure.\n"
    "@newfield ref: Reference\n"
@@ -15623,7 +15636,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_multilevel",
    (PyCFunction) igraphmodule_Graph_community_multilevel,
    METH_VARARGS | METH_KEYWORDS,
-   "community_multilevel(weights=None, return_levels=True)\n\n"
+   "community_multilevel(weights=None, return_levels=True, resolution=1)\n\n"
    "Finds the community structure of the graph according to the multilevel\n"
    "algorithm of Blondel et al. This is a bottom-up algorithm: initially\n"
    "every vertex belongs to a separate community, and vertices are moved\n"
@@ -15641,6 +15654,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param return_levels: if C{True}, returns the multilevel result. If\n"
    "  C{False}, only the best level (corresponding to the best modularity)\n"
    "  is returned.\n"
+   "@param resolution: the resolution parameter to use in the modularity measure.\n"
+   "  Smaller values result in a smaller number of larger clusters, while higher\n"
+   "  values yield a large number of small clusters. The classical modularity\n"
+   "  measure assumes a resolution parameter of 1.\n"
    "@return: either a single list describing the community membership of each\n"
    "  vertex (if C{return_levels} is C{False}), or a list of community membership\n"
    "  vectors, one corresponding to each level and a list of corresponding\n"
