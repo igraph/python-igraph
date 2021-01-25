@@ -40,7 +40,10 @@ jobs:
 
   wheels_manylinux:
     runs-on: ubuntu-latest
-    python-version: 3.8
+    strategy:
+      matrix:
+        python-version:
+        - 3.8
     if: startsWith(${{ github.ref }}, "refs/tags")
     needs: build_linux
     steps:
@@ -109,7 +112,10 @@ jobs:
 
   wheels_osx:
     runs-on: macos-latest
-    python-version: 3.8
+    strategy:
+      matrix:
+        python-version:
+        - 3.8
     if: startsWith(${{ github.ref }}, "refs/tags")
     needs: build_osx
     steps:
