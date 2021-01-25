@@ -3685,6 +3685,8 @@ PyObject *igraphmodule_Graph_betweenness(igraphmodule_GraphObject * self,
   igraph_bool_t return_single = 0;
   igraph_vs_t vs;
 
+  /* nobigint is now unused but we kept here for sake of backwards compatibility */
+
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOOO", kwlist,
                                    &vobj, &directed, &cutoff, &weights_o,
                                    &nobigint)) {
@@ -3707,8 +3709,7 @@ PyObject *igraphmodule_Graph_betweenness(igraphmodule_GraphObject * self,
   }
 
   if (cutoff == Py_None) {
-    if (igraph_betweenness(&self->g, &res, vs, PyObject_IsTrue(directed),
-          weights, PyObject_IsTrue(nobigint))) {
+    if (igraph_betweenness(&self->g, &res, vs, PyObject_IsTrue(directed), weights)) {
       igraph_vs_destroy(&vs);
       igraph_vector_destroy(&res);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -3724,8 +3725,7 @@ PyObject *igraphmodule_Graph_betweenness(igraphmodule_GraphObject * self,
       return NULL;
     }
     if (igraph_betweenness_estimate(&self->g, &res, vs, PyObject_IsTrue(directed),
-        (igraph_real_t)PyFloat_AsDouble(cutoff_num), weights,
-        PyObject_IsTrue(nobigint))) {
+        (igraph_real_t)PyFloat_AsDouble(cutoff_num), weights)) {
       igraph_vs_destroy(&vs);
       igraph_vector_destroy(&res);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -7078,6 +7078,9 @@ PyObject *igraphmodule_Graph_layout_mds(igraphmodule_GraphObject * self,
   PyObject *arpack_options_o = igraphmodule_arpack_options_default;
   PyObject *result;
 
+  /* arpack_options_o is now unused but we kept here for sake of backwards
+   * compatibility */
+
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OlO!", kwlist, &dist_o,
                                    &dim, &igraphmodule_ARPACKOptionsType,
                                    &arpack_options_o))
@@ -7103,9 +7106,7 @@ PyObject *igraphmodule_Graph_layout_mds(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  arpack_options = (igraphmodule_ARPACKOptionsObject*)arpack_options_o;
-  if (igraph_layout_mds(&self->g, &m, dist, dim,
-                        igraphmodule_ARPACKOptions_get(arpack_options))) {
+  if (igraph_layout_mds(&self->g, &m, dist, dim)) {
     if (dist) {
       igraph_matrix_destroy(dist); free(dist);
     }
@@ -12798,7 +12799,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_betweenness[_estimate] */
   {"betweenness", (PyCFunction) igraphmodule_Graph_betweenness,
    METH_VARARGS | METH_KEYWORDS,
-   "betweenness(vertices=None, directed=True, cutoff=None, weights=None, nobigint=True)\n\n"
+   "betweenness(vertices=None, directed=True, cutoff=None, weights=None)\n\n"
    "Calculates or estimates the betweenness of vertices in a graph.\n\n"
    "Keyword arguments:\n"
    "@param vertices: the vertices for which the betweennesses must be returned.\n"
@@ -12810,12 +12811,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  returned.\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name.\n"
-   "@param nobigint: if C{True}, igraph uses the longest available integer\n"
-   "  type on the current platform to count shortest paths. For some large\n"
-   "  networks that have a specific structure, the counters may overflow.\n"
-   "  To prevent this, use C{nobigint=False}, which forces igraph to use\n"
-   "  arbitrary precision integers at the expense of increased computation\n"
-   "  time.\n"
    "@return: the (possibly estimated) betweenness of the given vertices in a list\n"},
 
   /* interface to biconnected_components */

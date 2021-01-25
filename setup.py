@@ -476,10 +476,13 @@ class IgraphCCoreCMakeBuilder(object):
         if retcode:
             return False
 
+        return []
+
     def copy_build_artifacts(
         self, source_folder, build_folder, install_folder, libraries
     ):
-        raise NotImplementedError
+        # Nothing to do; we already installed stuff in the compilation step
+        return True
 
 
 ###########################################################################
@@ -690,7 +693,7 @@ class BuildConfiguration(object):
         finally:
             os.chdir(cwd)
 
-        if not libraries or not igraph_builder.copy_build_artifacts(
+        if not igraph_builder.copy_build_artifacts(
             source_folder=source_folder,
             build_folder=build_folder,
             install_folder=install_folder,
