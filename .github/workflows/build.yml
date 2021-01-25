@@ -42,7 +42,7 @@ jobs:
       env:
         CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && python setup.py build_c_core"
         CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
-        CIBW_SKIP: "cp35-*"
+        CIBW_SKIP: "cp27-* pp27-* cp35-*"
       run: |
         python setup.py -q sdist
         python -m cibuildwheel --output-dir wheelhouse
