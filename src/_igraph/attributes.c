@@ -994,10 +994,7 @@ static PyObject* igraphmodule_i_ac_first(PyObject* values,
     igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
     long int n = igraph_vector_size(v);
 
-    if (n == 0)
-      continue;
-
-    item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[0]);
+    item = n > 0 ? PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[0]) : Py_None;
     Py_INCREF(item);
     PyList_SET_ITEM(res, i, item);   /* reference to item stolen */
   }
@@ -1032,19 +1029,20 @@ static PyObject* igraphmodule_i_ac_random(PyObject* values,
     igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
     long int n = igraph_vector_size(v);
 
-    if (n == 0)
-      continue;
-
-    num = PyObject_CallObject(random_func, 0);
-    if (num == 0) {
-      Py_DECREF(random_func);
-      Py_DECREF(res);
-      return 0;
+    if (n == 0) {
+      num = PyObject_CallObject(random_func, 0);
+      if (num == 0) {
+        Py_DECREF(random_func);
+        Py_DECREF(res);
+        return 0;
+      }
+      item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[(long int)(n*PyFloat_AsDouble(num))]);
+      Py_DECREF(num);
+    } else {
+      item = Py_None;
     }
 
-    item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[(long int)(n*PyFloat_AsDouble(num))]);
     Py_INCREF(item);
-    Py_DECREF(num);
     PyList_SET_ITEM(res, i, item);   /* reference to item stolen */
   }
 
@@ -1069,10 +1067,7 @@ static PyObject* igraphmodule_i_ac_last(PyObject* values,
     igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
     long int n = igraph_vector_size(v);
 
-    if (n == 0)
-      continue;
-
-    item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[n-1]);
+    item = (n > 0) ? PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[n-1]) : Py_None;
     Py_INCREF(item);
     PyList_SET_ITEM(res, i, item);   /* reference to item stolen */
   }
@@ -1143,8 +1138,12 @@ static PyObject* igraphmodule_i_ac_median(PyObject* values,
       Py_DECREF(res);
       return 0;
     }
-    if (n % 2 == 1) {
+    if (n == 0) {
+      item = Py_None;
+      Py_INCREF(item);
+    } else if (n % 2 == 1) {
       item = PyList_GET_ITEM(list, n / 2);
+      Py_INCREF(item);
     } else {
       igraph_real_t num1, num2;
       item = PyList_GET_ITEM(list, n / 2 - 1);
