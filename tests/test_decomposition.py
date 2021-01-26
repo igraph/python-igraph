@@ -1,15 +1,20 @@
+import math
 import random
 import unittest
-import math
 
-from igraph import *
-
-try:
-    set, frozenset
-except NameError:
-    import sets
-
-    set, frozenset = sets.Set, sets.ImmutableSet
+from igraph import (
+    Clustering,
+    CohesiveBlocks,
+    Cover,
+    Graph,
+    Histogram,
+    InternalError,
+    UniqueIdGenerator,
+    VertexClustering,
+    compare_communities,
+    split_join_distance,
+    set_random_number_generator,
+)
 
 
 class SubgraphTests(unittest.TestCase):
@@ -63,9 +68,9 @@ class DecompositionTests(unittest.TestCase):
         self.assertTrue(g.coreness() == [3, 3, 3, 3, 1, 1, 1, 2, 1, 2, 2])
         self.assertTrue(g.shell_index() == g.coreness())
 
-        l = g.k_core(3).get_edgelist()
-        l.sort()
-        self.assertTrue(l == [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)])
+        edgelist = g.k_core(3).get_edgelist()
+        edgelist.sort()
+        self.assertTrue(edgelist == [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)])
 
 
 class ClusteringTests(unittest.TestCase):

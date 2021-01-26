@@ -2,8 +2,8 @@ import math
 import unittest
 import warnings
 
-from igraph import *
-from math import isnan
+from igraph import Graph, InternalError, IN, OUT, ALL, TREE_IN
+from math import inf, isnan
 
 
 class SimplePropertiesTests(unittest.TestCase):
@@ -26,8 +26,8 @@ class SimplePropertiesTests(unittest.TestCase):
 
     def testDiameter(self):
         self.assertTrue(self.gfull.diameter() == 1)
-        self.assertTrue(self.gempty.diameter(unconn=False) == 10)
-        self.assertTrue(self.gempty.diameter(unconn=False, weights=[]) == float("inf"))
+        self.assertTrue(isnan(self.gempty.diameter(unconn=False)))
+        self.assertTrue(isnan(self.gempty.diameter(unconn=False, weights=[])))
         self.assertTrue(self.g.diameter() == 2)
         self.assertTrue(self.gdir.diameter(False) == 2)
         self.assertTrue(self.gdir.diameter() == 3)
@@ -78,11 +78,11 @@ class SimplePropertiesTests(unittest.TestCase):
             == [0.0] * self.tree.vcount()
         )
 
-        l = self.g.transitivity_local_undirected(mode="zero")
-        self.assertAlmostEqual(2 / 3, l[0], places=4)
-        self.assertAlmostEqual(2 / 3, l[1], places=4)
-        self.assertEqual(1, l[2])
-        self.assertEqual(1, l[3])
+        transitivity = self.g.transitivity_local_undirected(mode="zero")
+        self.assertAlmostEqual(2 / 3, transitivity[0], places=4)
+        self.assertAlmostEqual(2 / 3, transitivity[1], places=4)
+        self.assertEqual(1, transitivity[2])
+        self.assertEqual(1, transitivity[3])
 
         g = Graph.Full(4) + 1 + [(0, 4)]
         g.es["weight"] = [1, 1, 1, 1, 1, 1, 5]
@@ -269,7 +269,7 @@ class CentralityTests(unittest.TestCase):
         g = Graph.Star(5)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            cl = g.closeness(cutoff=1)
+            cl = g.closeness(cutoff=0.9)
         cl2 = [1.0, 0.25, 0.25, 0.25, 0.25]
         for idx in range(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
@@ -285,7 +285,7 @@ class CentralityTests(unittest.TestCase):
         g = Graph.Star(5)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            cl = g.closeness(cutoff=1, weights=weights)
+            cl = g.closeness(cutoff=0.9, weights=weights)
         cl2 = [1.0, 0.25, 0.25, 0.25, 0.25]
         for idx in range(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
@@ -389,17 +389,17 @@ class CentralityTests(unittest.TestCase):
         g = Graph.Tree(15, 2, TREE_IN)
         asc = g.authority_score()
         self.assertAlmostEqual(max(asc), 1.0, places=3)
-        asc, ev = g.hub_score(scale=False, return_eigenvalue=True)
-        if asc[0] < 0:
-            hs = [-x for x in asc]
+
+        # Smoke testing
+        g.authority_score(scale=False, return_eigenvalue=True)
 
     def testHubScore(self):
         g = Graph.Tree(15, 2, TREE_IN)
         hsc = g.hub_score()
         self.assertAlmostEqual(max(hsc), 1.0, places=3)
-        hsc, ev = g.hub_score(scale=False, return_eigenvalue=True)
-        if hsc[0] < 0:
-            hsc = [-x for x in hsc]
+
+        # Smoke testing
+        g.hub_score(scale=False, return_eigenvalue=True)
 
     def testCoreness(self):
         g = Graph.Full(4) + Graph(4) + [(0, 4), (1, 5), (2, 6), (3, 7)]
@@ -540,7 +540,6 @@ class PathTests(unittest.TestCase):
         )
         ws = [0, 2, 1, 0, 5, 2, 1, 1, 0, 2, 2, 8, 1, 1, 3, 1, 1, 4, 2, 1]
         g.es["weight"] = ws
-        inf = float("inf")
         expected = [
             [0, 0, 0, 1, 5, 2, 1, 13, 3, 5],
             [inf, 0, 0, 1, 5, 2, 1, 13, 3, 5],
@@ -673,7 +672,7 @@ class PathTests(unittest.TestCase):
         h = g.path_length_hist()
         self.assertTrue(h.unconnected == 0)
         self.assertTrue(
-            [(int(l), x) for l, _, x in h.bins()]
+            [(int(value), x) for value, _, x in h.bins()]
             == [(1, 14), (2, 19), (3, 20), (4, 20), (5, 16), (6, 16)]
         )
         g = Graph.Full(5) + Graph.Full(4)

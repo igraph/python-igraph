@@ -1,4 +1,7 @@
 import unittest
+import warnings
+
+from functools import partial
 
 from igraph import (
     ALL,
@@ -6,6 +9,7 @@ from igraph import (
     IN,
     InternalError,
     is_degree_sequence,
+    is_graphical,
     is_graphical_degree_sequence,
     Matrix,
 )
@@ -601,6 +605,65 @@ class GraphTupleListTests(unittest.TestCase):
 
 class DegreeSequenceTests(unittest.TestCase):
     def testIsDegreeSequence(self):
+        # Catch and suppress warnings because is_degree_sequence() is now
+        # deprecated
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.assertTrue(is_degree_sequence([]))
+            self.assertTrue(is_degree_sequence([], []))
+            self.assertTrue(is_degree_sequence([0]))
+            self.assertTrue(is_degree_sequence([0], [0]))
+            self.assertFalse(is_degree_sequence([1]))
+            self.assertTrue(is_degree_sequence([1], [1]))
+            self.assertTrue(is_degree_sequence([2]))
+            self.assertFalse(is_degree_sequence([2, 1, 1, 1]))
+            self.assertTrue(is_degree_sequence([2, 1, 1, 1], [1, 1, 1, 2]))
+            self.assertFalse(is_degree_sequence([2, 1, -2]))
+            self.assertFalse(is_degree_sequence([2, 1, 1, 1], [1, 1, 1, -2]))
+            self.assertTrue(is_degree_sequence([3, 3, 3, 3, 3, 3, 3, 3, 3, 3]))
+            self.assertTrue(is_degree_sequence([3, 3, 3, 3, 3, 3, 3, 3, 3, 3], None))
+            self.assertFalse(is_degree_sequence([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]))
+            self.assertTrue(
+                is_degree_sequence(
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3], [4, 3, 2, 3, 4, 4, 2, 2, 4, 2]
+                )
+            )
+
+    def testIsGraphicalSequence(self):
+        # Catch and suppress warnings because is_graphical_degree_sequence() is now
+        # deprecated
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.assertTrue(is_graphical_degree_sequence([]))
+            self.assertTrue(is_graphical_degree_sequence([], []))
+            self.assertTrue(is_graphical_degree_sequence([0]))
+            self.assertTrue(is_graphical_degree_sequence([0], [0]))
+            self.assertFalse(is_graphical_degree_sequence([1]))
+            self.assertFalse(is_graphical_degree_sequence([1], [1]))
+            self.assertFalse(is_graphical_degree_sequence([2]))
+            self.assertFalse(is_graphical_degree_sequence([2, 1, 1, 1]))
+            self.assertTrue(is_graphical_degree_sequence([2, 1, 1, 1], [1, 1, 1, 2]))
+            self.assertFalse(is_graphical_degree_sequence([2, 1, -2]))
+            self.assertFalse(is_graphical_degree_sequence([2, 1, 1, 1], [1, 1, 1, -2]))
+            self.assertTrue(
+                is_graphical_degree_sequence([3, 3, 3, 3, 3, 3, 3, 3, 3, 3])
+            )
+            self.assertTrue(
+                is_graphical_degree_sequence([3, 3, 3, 3, 3, 3, 3, 3, 3, 3], None)
+            )
+            self.assertFalse(
+                is_graphical_degree_sequence([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3])
+            )
+            self.assertTrue(
+                is_graphical_degree_sequence(
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3], [4, 3, 2, 3, 4, 4, 2, 2, 4, 2]
+                )
+            )
+            self.assertTrue(is_graphical_degree_sequence([3, 3, 3, 3, 4]))
+
+    def testIsGraphicalNonSimple(self):
+        # Same as testIsDegreeSequence, but using is_graphical()
+        is_degree_sequence = partial(is_graphical, loops=True, multiple=True)
         self.assertTrue(is_degree_sequence([]))
         self.assertTrue(is_degree_sequence([], []))
         self.assertTrue(is_degree_sequence([0]))
@@ -621,7 +684,11 @@ class DegreeSequenceTests(unittest.TestCase):
             )
         )
 
-    def testIsGraphicalSequence(self):
+    def testIsGraphicalSimple(self):
+        # Same as testIsGraphicalDegreeSequence, but using is_graphical()
+        is_graphical_degree_sequence = partial(
+            is_graphical, loops=False, multiple=False
+        )
         self.assertTrue(is_graphical_degree_sequence([]))
         self.assertTrue(is_graphical_degree_sequence([], []))
         self.assertTrue(is_graphical_degree_sequence([0]))

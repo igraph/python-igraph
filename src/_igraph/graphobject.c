@@ -1539,6 +1539,7 @@ PyObject *igraphmodule_Graph_diameter(igraphmodule_GraphObject * self,
   PyObject *dir = Py_True, *vcount_if_unconnected = Py_True;
   PyObject *weights_o = Py_None;
   igraph_vector_t *weights = 0;
+  igraph_real_t diameter;
 
   static char *kwlist[] = {
     "directed", "unconn", "weights", NULL
@@ -1553,23 +1554,28 @@ PyObject *igraphmodule_Graph_diameter(igraphmodule_GraphObject * self,
 	  ATTRIBUTE_TYPE_EDGE)) return NULL;
 
   if (weights) {
-    igraph_real_t i;
-    if (igraph_diameter_dijkstra(&self->g, weights, &i, 0, 0, 0,
+    if (igraph_diameter_dijkstra(&self->g, weights, &diameter, 0, 0, 0,
           PyObject_IsTrue(dir), PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
       igraph_vector_destroy(weights); free(weights);
       return NULL;
     }
     igraph_vector_destroy(weights); free(weights);
-    return PyFloat_FromDouble((double)i);
+    return PyFloat_FromDouble((double)diameter);
   } else {
-    igraph_real_t i;
-    if (igraph_diameter(&self->g, &i, 0, 0, 0, PyObject_IsTrue(dir),
+    if (igraph_diameter(&self->g, &diameter, 0, 0, 0, PyObject_IsTrue(dir),
                         PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
       return NULL;
     }
-    return PyInt_FromLong((long)i);
+
+    /* The diameter is integer in this case, except if igraph_diameter()
+     * returned NaN or infinity for some reason */
+    if (ceilf(diameter) == diameter && isfinite(diameter)) {
+      return PyInt_FromLong((long)diameter);
+    } else {
+      return PyFloat_FromDouble((double)diameter);
+    }
   }
 }
 
@@ -3724,8 +3730,8 @@ PyObject *igraphmodule_Graph_betweenness(igraphmodule_GraphObject * self,
       if (weights) { igraph_vector_destroy(weights); free(weights); }
       return NULL;
     }
-    if (igraph_betweenness_estimate(&self->g, &res, vs, PyObject_IsTrue(directed),
-        (igraph_real_t)PyFloat_AsDouble(cutoff_num), weights)) {
+    if (igraph_betweenness_cutoff(&self->g, &res, vs, PyObject_IsTrue(directed),
+        weights, (igraph_real_t)PyFloat_AsDouble(cutoff_num))) {
       igraph_vs_destroy(&vs);
       igraph_vector_destroy(&res);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -4072,9 +4078,8 @@ PyObject *igraphmodule_Graph_closeness(igraphmodule_GraphObject * self,
       igraph_vs_destroy(&vs); igraph_vector_destroy(&res);
       return NULL;
     }
-    if (igraph_closeness_estimate(&self->g, &res, vs, mode,
-        (igraph_real_t)PyFloat_AsDouble(cutoff_num), weights,
-	PyObject_IsTrue(normalized_o))) {
+    if (igraph_closeness_cutoff(&self->g, &res, vs, mode, weights,
+        (igraph_real_t)PyFloat_AsDouble(cutoff_num), PyObject_IsTrue(normalized_o))) {
       igraph_vs_destroy(&vs);
       igraph_vector_destroy(&res);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -4457,8 +4462,8 @@ PyObject *igraphmodule_Graph_edge_betweenness(igraphmodule_GraphObject * self,
       if (weights) { igraph_vector_destroy(weights); free(weights); }
       igraph_vector_destroy(&res); return NULL;
     }
-    if (igraph_edge_betweenness_estimate(&self->g, &res, PyObject_IsTrue(directed),
-        (igraph_real_t)PyFloat_AsDouble(cutoff_num), weights)) {
+    if (igraph_edge_betweenness_cutoff(&self->g, &res, PyObject_IsTrue(directed),
+        weights, (igraph_real_t)PyFloat_AsDouble(cutoff_num))) {
       igraphmodule_handle_igraph_error();
       igraph_vector_destroy(&res);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -11028,7 +11033,7 @@ PyObject *igraphmodule_Graph_modularity(igraphmodule_GraphObject *self,
   static char *kwlist[] = {"membership", "weights", "resolution", "directed", 0};
   igraph_vector_t membership;
   igraph_vector_t *weights=0;
-  double resolution;
+  double resolution = 1;
   igraph_real_t modularity;
   PyObject *mvec, *wvec=Py_None;
   PyObject *directed = Py_True;
@@ -11406,7 +11411,7 @@ PyObject *igraphmodule_Graph_community_multilevel(igraphmodule_GraphObject *self
   PyObject *mss, *qs, *res, *weights = Py_None;
   igraph_matrix_t memberships;
   igraph_vector_t membership, modularity;
-  double resolution;
+  double resolution = 1;
   igraph_vector_t *ws;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOd", kwlist, &weights, &return_levels, &resolution)) {

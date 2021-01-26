@@ -272,7 +272,38 @@ def wait_for_keypress(seconds):
 ###########################################################################
 
 
-class IgraphCCoreAutotoolsBuilder(object):
+class IgraphCCoreBuilder(object):
+    """Superclass for classes responsible for downloading and building the
+    C core of igraph if it is not installed yet.
+    """
+
+    def create_build_config_file(self, install_folder, libraries):
+        with open(os.path.join(install_folder, "build.cfg"), "w") as f:
+            f.write(repr(libraries))
+
+    def parse_pkgconfig_file(self, filename):
+        building_on_windows = building_on_windows_msvc()
+
+        if building_on_windows:
+            libraries = ["igraph"]
+        else:
+            libraries = []
+            with open(filename, "r") as fp:
+                for line in fp:
+                    if line.startswith("Libs: ") or line.startswith("Libs.private: "):
+                        words = line.strip().split()
+                        libraries.extend(
+                            word[2:] for word in words if word.startswith("-l")
+                        )
+
+            if not libraries:
+                # Educated guess
+                libraries = ["igraph"]
+
+        return libraries
+
+
+class IgraphCCoreAutotoolsBuilder(IgraphCCoreBuilder):
     """Class responsible for downloading and building the C core of igraph
     if it is not installed yet, assuming that the C core uses `configure.ac`
     and its friends. This used to be the case before igraph 0.9.
@@ -362,20 +393,7 @@ class IgraphCCoreAutotoolsBuilder(object):
         if retcode:
             return False
 
-        if building_on_windows:
-            libraries = ["igraph"]
-        else:
-            libraries = []
-            for line in open("igraph.pc"):
-                if line.startswith("Libs: ") or line.startswith("Libs.private: "):
-                    words = line.strip().split()
-                    libraries.extend(
-                        word[2:] for word in words if word.startswith("-l")
-                    )
-
-            if not libraries:
-                # Educated guess
-                libraries = ["igraph"]
+        libraries = self.parse_pkgconfig_file("igraph.pc")
 
         return libraries
 
@@ -415,10 +433,6 @@ class IgraphCCoreAutotoolsBuilder(object):
 
         return True
 
-    def create_build_config_file(self, install_folder, libraries):
-        with open(os.path.join(install_folder, "build.cfg"), "w") as f:
-            f.write(repr(libraries))
-
     @staticmethod
     def enhanced_env(**kwargs):
         env = os.environ.copy()
@@ -431,7 +445,7 @@ class IgraphCCoreAutotoolsBuilder(object):
 ###########################################################################
 
 
-class IgraphCCoreCMakeBuilder(object):
+class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
     """Class responsible for downloading and building the C core of igraph
     if it is not installed yet, assuming that the C core uses CMake as the
     build tool. This is the case from igraph 0.9.
@@ -482,17 +496,13 @@ class IgraphCCoreCMakeBuilder(object):
         if retcode:
             return False
 
-        return ["igraph"]
+        return self.parse_pkgconfig_file(os.path.join(install_folder, "lib", "pkgconfig", "igraph.pc"))
 
     def copy_build_artifacts(
         self, source_folder, build_folder, install_folder, libraries
     ):
         # Nothing to do; we already installed stuff in the compilation step
         return True
-
-    def create_build_config_file(self, install_folder, libraries):
-        with open(os.path.join(install_folder, "build.cfg"), "w") as f:
-            f.write(repr(libraries))
 
 
 ###########################################################################

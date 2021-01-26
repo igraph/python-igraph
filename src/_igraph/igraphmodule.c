@@ -494,6 +494,57 @@ PyObject* igraphmodule_is_graphical_degree_sequence(PyObject *self,
 }
 
 
+PyObject* igraphmodule_is_graphical(PyObject *self, PyObject *args, PyObject *kwds) {
+  static char* kwlist[] = { "out_deg", "in_deg", "loops", "multiple", NULL };
+  PyObject *out_deg_o = 0, *in_deg_o = 0;
+  PyObject *loops = Py_False, *multiple = Py_False;
+  igraph_vector_t out_deg, in_deg;
+  igraph_bool_t is_directed, result;
+  int allowed_edge_types;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist,
+      &out_deg_o, &in_deg_o, &loops, &multiple))
+    return NULL;
+
+  is_directed = (in_deg_o != 0 && in_deg_o != Py_None);
+
+  if (igraphmodule_PyObject_to_vector_t(out_deg_o, &out_deg, 0))
+    return NULL;
+
+  if (is_directed && igraphmodule_PyObject_to_vector_t(in_deg_o, &in_deg, 0)) {
+    igraph_vector_destroy(&out_deg);
+    return NULL;
+  }
+
+  allowed_edge_types = IGRAPH_SIMPLE_SW;
+  if (PyObject_IsTrue(loops)) {
+    allowed_edge_types |= IGRAPH_LOOPS_SW;
+  }
+  if (PyObject_IsTrue(multiple)) {
+    allowed_edge_types |= IGRAPH_MULTI_SW;
+  }
+
+  if (igraph_is_graphical(&out_deg, is_directed ? &in_deg : 0, allowed_edge_types, &result)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_destroy(&out_deg);
+    if (is_directed) {
+      igraph_vector_destroy(&in_deg);
+    }
+    return NULL;
+  }
+
+  igraph_vector_destroy(&out_deg);
+  if (is_directed) {
+    igraph_vector_destroy(&in_deg);
+  }
+
+  if (result)
+    Py_RETURN_TRUE;
+  else
+    Py_RETURN_FALSE;
+}
+
+
 PyObject* igraphmodule_power_law_fit(PyObject *self, PyObject *args, PyObject *kwds) {
   static char* kwlist[] = { "data", "xmin", "force_continuous", NULL };
   PyObject *data_o, *force_continuous_o = Py_False;
@@ -582,6 +633,7 @@ static PyMethodDef igraphmodule_methods[] =
   {"is_degree_sequence", (PyCFunction)igraphmodule_is_degree_sequence,
     METH_VARARGS | METH_KEYWORDS,
     "is_degree_sequence(out_deg, in_deg=None)\n\n"
+    "Deprecated since 0.9 in favour of L{is_graphical()}.\n\n"
     "Returns whether a list of degrees can be a degree sequence of some graph.\n\n"
     "Note that it is not required for the graph to be simple; in other words,\n"
     "this function may return C{True} for degree sequences that can be realized\n"
@@ -596,13 +648,27 @@ static PyMethodDef igraphmodule_methods[] =
     "@param in_deg: the list of in-degrees for directed graphs. This parameter\n"
     "  must be C{None} for undirected graphs.\n"
     "@return: C{True} if there exists some graph that can realize the given degree\n"
-    "  sequence, C{False} otherwise."
-    "@see: L{is_graphical_degree_sequence()} if you do not want to allow multiple\n"
-    "  or loop edges.\n"
+    "  sequence, C{False} otherwise.\n"
+  },
+  {"is_graphical", (PyCFunction)igraphmodule_is_graphical,
+    METH_VARARGS | METH_KEYWORDS,
+    "is_graphical(out_deg, in_deg=None, loops=False, multiple=False)\n\n"
+    "Returns whether a list of degrees can be a degree sequence of some graph,\n"
+    "with or without multiple and loop edges, depending on the allowed edge types\n"
+    "in the remaining arguments.\n\n"
+    "@param out_deg: the list of degrees. For directed graphs, this list must\n"
+    "  contain the out-degrees of the vertices.\n"
+    "@param in_deg: the list of in-degrees for directed graphs. This parameter\n"
+    "  must be C{None} for undirected graphs.\n"
+    "@param loops: whether loop edges are allowed.\n"
+    "@param multiple: whether multiple edges are allowed.\n"
+    "@return: C{True} if there exists some graph that can realize the given\n"
+    "  degree sequence with the given edge types, C{False} otherwise.\n"
   },
   {"is_graphical_degree_sequence", (PyCFunction)igraphmodule_is_graphical_degree_sequence,
     METH_VARARGS | METH_KEYWORDS,
     "is_graphical_degree_sequence(out_deg, in_deg=None)\n\n"
+    "Deprecated since 0.9 in favour of L{is_graphical()}.\n\n"
     "Returns whether a list of degrees can be a degree sequence of some simple graph.\n\n"
     "Note that it is required for the graph to be simple; in other words,\n"
     "this function will return C{False} for degree sequences that cannot be realized\n"
@@ -613,7 +679,6 @@ static PyMethodDef igraphmodule_methods[] =
     "  must be C{None} for undirected graphs.\n"
     "@return: C{True} if there exists some simple graph that can realize the given\n"
     "  degree sequence, C{False} otherwise.\n"
-    "@see: L{is_degree_sequence()} if you want to allow multiple or loop edges.\n"
   },
   {"set_progress_handler", igraphmodule_set_progress_handler, METH_O,
       "set_progress_handler(handler)\n\n"
@@ -856,6 +921,10 @@ extern PyObject* igraphmodule_arpack_options_default;
 
   PyModule_AddIntConstant(m, "TRANSITIVITY_NAN", IGRAPH_TRANSITIVITY_NAN);
   PyModule_AddIntConstant(m, "TRANSITIVITY_ZERO", IGRAPH_TRANSITIVITY_ZERO);
+
+  PyModule_AddIntConstant(m, "SIMPLE_SW", IGRAPH_SIMPLE_SW);
+  PyModule_AddIntConstant(m, "LOOPS_SW", IGRAPH_LOOPS_SW);
+  PyModule_AddIntConstant(m, "MULTI_SW", IGRAPH_MULTI_SW);
 
   /* More useful constants */
   {
