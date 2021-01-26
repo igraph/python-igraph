@@ -26,8 +26,8 @@ class SimplePropertiesTests(unittest.TestCase):
 
     def testDiameter(self):
         self.assertTrue(self.gfull.diameter() == 1)
-        self.assertTrue(isnan(self.gempty.diameter(unconn=False)))
-        self.assertTrue(isnan(self.gempty.diameter(unconn=False, weights=[])))
+        self.assertTrue(self.gempty.diameter(unconn=False) == inf)
+        self.assertTrue(self.gempty.diameter(unconn=False) == inf)
         self.assertTrue(self.g.diameter() == 2)
         self.assertTrue(self.gdir.diameter(False) == 2)
         self.assertTrue(self.gdir.diameter() == 3)
@@ -35,7 +35,7 @@ class SimplePropertiesTests(unittest.TestCase):
 
         s, t, d = self.tree.farthest_points()
         self.assertTrue((s == 13 or t == 13) and d == 5)
-        self.assertTrue(self.gempty.farthest_points(unconn=False) == (None, None, 10))
+        self.assertTrue(self.gempty.farthest_points(unconn=False) == (None, None, inf))
 
         d = self.tree.get_diameter()
         self.assertTrue(d[0] == 13 or d[-1] == 13)
@@ -262,7 +262,7 @@ class CentralityTests(unittest.TestCase):
     def testClosenessCentrality(self):
         g = Graph.Star(5)
         cl = g.closeness()
-        cl2 = [1.0, 0.57142, 0.57142, 0.57142, 0.57142]
+        cl2 = [1.0, 4 / 7.0, 4 / 7.0, 4 / 7.0, 4 / 7.0]
         for idx in range(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
 
