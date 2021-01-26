@@ -1349,12 +1349,12 @@ static int igraphmodule_i_attribute_combine_edges(const igraph_t *graph,
 
 /* Getting attribute names and types */
 static int igraphmodule_i_attribute_get_info(const igraph_t *graph,
-					     igraph_strvector_t *gnames,
-					     igraph_vector_t *gtypes,
-					     igraph_strvector_t *vnames,
-					     igraph_vector_t *vtypes,
-					     igraph_strvector_t *enames,
-					     igraph_vector_t *etypes) {
+                                             igraph_strvector_t *gnames,
+                                             igraph_vector_t *gtypes,
+                                             igraph_strvector_t *vnames,
+                                             igraph_vector_t *vtypes,
+                                             igraph_strvector_t *enames,
+                                             igraph_vector_t *etypes) {
   igraph_strvector_t *names[3] = { gnames, vnames, enames };
   igraph_vector_t *types[3] = { gtypes, vtypes, etypes };
   int retval;
@@ -1427,8 +1427,8 @@ static int igraphmodule_i_attribute_get_info(const igraph_t *graph,
 
 /* Checks whether the graph has a graph/vertex/edge attribute with the given name */
 igraph_bool_t igraphmodule_i_attribute_has_attr(const igraph_t *graph,
-						igraph_attribute_elemtype_t type,
-						const char* name) {
+                                                igraph_attribute_elemtype_t type,
+                                                const char* name) {
   switch (type) {
   case IGRAPH_ATTRIBUTE_GRAPH:
     return igraphmodule_has_graph_attribute(graph, name);
@@ -1443,9 +1443,9 @@ igraph_bool_t igraphmodule_i_attribute_has_attr(const igraph_t *graph,
 
 /* Returns the type of a given attribute */
 int igraphmodule_i_attribute_get_type(const igraph_t *graph,
-				      igraph_attribute_type_t *type,
-				      igraph_attribute_elemtype_t elemtype,
-				      const char *name) {
+                                      igraph_attribute_type_t *type,
+                                      igraph_attribute_elemtype_t elemtype,
+                                      const char *name) {
   long int attrnum, i, j;
   int is_numeric, is_string, is_boolean;
   PyObject *o, *dict;
@@ -1511,7 +1511,7 @@ int igraphmodule_i_attribute_get_type(const igraph_t *graph,
 
 /* Getting Boolean graph attributes */
 int igraphmodule_i_get_boolean_graph_attr(const igraph_t *graph,
-					  const char *name, igraph_vector_bool_t *value) {
+                                          const char *name, igraph_vector_bool_t *value) {
   PyObject *dict, *o;
   dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_GRAPH];
   /* No error checking, if we get here, the type has already been checked by previous
@@ -1526,7 +1526,7 @@ int igraphmodule_i_get_boolean_graph_attr(const igraph_t *graph,
 
 /* Getting numeric graph attributes */
 int igraphmodule_i_get_numeric_graph_attr(const igraph_t *graph,
-					  const char *name, igraph_vector_t *value) {
+                                          const char *name, igraph_vector_t *value) {
   PyObject *dict, *o, *result;
   dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_GRAPH];
   /* No error checking, if we get here, the type has already been checked by previous
@@ -1549,7 +1549,7 @@ int igraphmodule_i_get_numeric_graph_attr(const igraph_t *graph,
 
 /* Getting string graph attributes */
 int igraphmodule_i_get_string_graph_attr(const igraph_t *graph,
-					 const char *name, igraph_strvector_t *value) {
+                                         const char *name, igraph_strvector_t *value) {
   PyObject *dict, *o, *str = 0;
   const char* c_str;
 
@@ -1603,9 +1603,9 @@ int igraphmodule_i_get_string_graph_attr(const igraph_t *graph,
 
 /* Getting numeric vertex attributes */
 int igraphmodule_i_get_numeric_vertex_attr(const igraph_t *graph,
-					   const char *name,
-					   igraph_vs_t vs,
-					   igraph_vector_t *value) {
+                                           const char *name,
+                                           igraph_vs_t vs,
+                                           igraph_vector_t *value) {
   PyObject *dict, *list, *result, *o;
   igraph_vector_t newvalue;
 
@@ -1643,9 +1643,9 @@ int igraphmodule_i_get_numeric_vertex_attr(const igraph_t *graph,
 
 /* Getting string vertex attributes */
 int igraphmodule_i_get_string_vertex_attr(const igraph_t *graph,
-					  const char *name,
-					  igraph_vs_t vs,
-					  igraph_strvector_t *value) {
+                                          const char *name,
+                                          igraph_vs_t vs,
+                                          igraph_strvector_t *value) {
   PyObject *dict, *list, *result;
   igraph_strvector_t newvalue;
 
@@ -1697,9 +1697,9 @@ int igraphmodule_i_get_string_vertex_attr(const igraph_t *graph,
 
 /* Getting boolean vertex attributes */
 int igraphmodule_i_get_boolean_vertex_attr(const igraph_t *graph,
-					   const char *name,
-					   igraph_vs_t vs,
-					   igraph_vector_bool_t *value) {
+                                           const char *name,
+                                           igraph_vs_t vs,
+                                           igraph_vector_bool_t *value) {
   PyObject *dict, *list, *o;
   igraph_vector_bool_t newvalue;
 
@@ -1733,9 +1733,9 @@ int igraphmodule_i_get_boolean_vertex_attr(const igraph_t *graph,
 
 /* Getting numeric edge attributes */
 int igraphmodule_i_get_numeric_edge_attr(const igraph_t *graph,
-					 const char *name,
-					 igraph_es_t es,
-					 igraph_vector_t *value) {
+                                         const char *name,
+                                         igraph_es_t es,
+                                         igraph_vector_t *value) {
   PyObject *dict, *list, *result, *o;
   igraph_vector_t newvalue;
 
@@ -1773,9 +1773,9 @@ int igraphmodule_i_get_numeric_edge_attr(const igraph_t *graph,
 
 /* Getting string edge attributes */
 int igraphmodule_i_get_string_edge_attr(const igraph_t *graph,
-					const char *name,
-					igraph_es_t es,
-					igraph_strvector_t *value) {
+                                        const char *name,
+                                        igraph_es_t es,
+                                        igraph_strvector_t *value) {
   PyObject *dict, *list, *result;
   igraph_strvector_t newvalue;
 
@@ -1825,9 +1825,9 @@ int igraphmodule_i_get_string_edge_attr(const igraph_t *graph,
 
 /* Getting boolean edge attributes */
 int igraphmodule_i_get_boolean_edge_attr(const igraph_t *graph,
-					 const char *name,
-					 igraph_es_t es,
-					 igraph_vector_bool_t *value) {
+                                         const char *name,
+                                         igraph_es_t es,
+                                         igraph_vector_bool_t *value) {
   PyObject *dict, *list, *o;
   igraph_vector_bool_t newvalue;
 
