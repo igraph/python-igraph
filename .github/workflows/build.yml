@@ -1,8 +1,14 @@
 name: "Build and test with tox"
 
 on:
-  - push
-  - pull_request
+  push:
+    tags-ignore:
+      - '*.*.*'
+  pull_request:
+    tags-ignore:
+      - '*.*.*'
+
+
 
 jobs:
   build_linux:
