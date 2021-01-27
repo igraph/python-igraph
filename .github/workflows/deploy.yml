@@ -5,6 +5,8 @@ on:
     tags:
       - '*.*.*'
 
+  workflow_dispatch:
+
 jobs:
   wheels_manylinux:
     runs-on: ubuntu-latest
