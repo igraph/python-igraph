@@ -1,11 +1,14 @@
 name: "Build wheels and deploy"
 
+# To trigger manually, make yourself an auth token including "workflow" scope and run:
+# curl -X POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token <token>" https://api.github.com/repos/igraph/python-igraph/actions/workflows/deploy.yml/dispatches -d '{"ref":"master"}'
+# If you want to release from another branch and not "master", change the last string.
+
 on:
   push:
     tags:
       - '*.*.*'
 
-  repository_dispatch:
   workflow_dispatch:
 
 jobs:
