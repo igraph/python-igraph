@@ -1,9 +1,11 @@
 name: "Build wheels and deploy"
 
 on:
-  push:
-    tags:
-      - '*.*.*'
+  #FIXME: for testing, remove comments
+  - push
+  #push:
+  #  tags:
+  #    - '*.*.*'
 
 jobs:
   wheels_manylinux:
@@ -108,11 +110,36 @@ jobs:
         draft: true
         prerelease: false
 
-    - name: Upload binaries and source
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+    - name: Download artifacts: source dist
+      uses: actions/download-artifact@v2
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_paths: '["wheelhouse/*.whl", "dist/python-igraph-*.tar.gz"]'
+        name: source-dist
+        path: dist
+
+    - name: Download artifacts: linux wheels
+      uses: actions/download-artifact@v2
+      with:
+        name: linux-wheels
+        path: wheelhouse
+
+    - name: Download artifacts: OSX wheels
+      uses: actions/download-artifact@v2
+      with:
+        name: OSX-wheels
+        path: wheelhouse
+
+    - name: List contents of artifact folders
+      run: |
+        echo "dist folder:"
+        ls -lh dist
+        echo "wheelhouse folder:"
+        ls -lh wheelhouse
+
+          #- name: Upload binaries and source
+          #  uses: actions/upload-release-asset@v1
+          #  env:
+          #    GITHUB_TOKEN: ${{ github.token }}
+          #  with:
+          #    upload_url: ${{ steps.create_release.outputs.upload_url }}
+          #    asset_paths: '["wheelhouse/*.whl", "dist/python-igraph-*.tar.gz"]'
 
