@@ -1,11 +1,9 @@
 name: "Build wheels and deploy"
 
 on:
-  #FIXME: for testing, remove comments
-  - push
-  #push:
-  #  tags:
-  #    - '*.*.*'
+  push:
+    tags:
+      - '*.*.*'
 
 jobs:
   wheels_manylinux:
@@ -116,10 +114,10 @@ jobs:
         draft: true
         prerelease: false
 
-    #- name: Upload binaries and source
-    #  uses: alexellis/upload-assets@0.2.2
-    #  env:
-    #    GITHUB_TOKEN: ${{ github.token }}
-    #  with:
-    #    asset_paths: '["wheelhouse/*.whl", "dist/python-igraph-*.tar.gz"]'
+    - name: Upload binaries and source
+      uses: alexellis/upload-assets@0.2.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        asset_paths: '["wheelhouse/*.whl", "dist/python-igraph-*.tar.gz"]'
 
