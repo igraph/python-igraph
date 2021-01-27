@@ -110,25 +110,25 @@ jobs:
         draft: true
         prerelease: false
 
-    - name: Download artifacts: source dist
+    - name: "Download artifacts: source dist"
       uses: actions/download-artifact@v2
       with:
         name: source-dist
         path: dist
 
-    - name: Download artifacts: linux wheels
+    - name: "Download artifacts: linux wheels"
       uses: actions/download-artifact@v2
       with:
         name: linux-wheels
         path: wheelhouse
 
-    - name: Download artifacts: OSX wheels
+    - name: "Download artifacts: OSX wheels"
       uses: actions/download-artifact@v2
       with:
         name: OSX-wheels
         path: wheelhouse
 
-    - name: List contents of artifact folders
+    - name: "List contents of artifact folders"
       run: |
         echo "dist folder:"
         ls -lh dist
