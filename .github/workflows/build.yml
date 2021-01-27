@@ -27,7 +27,7 @@ jobs:
     - name: Install OS dependencies
       run:
         sudo apt-get install gfortran flex bison
-    - name: Install dependencies
+    - name: Install Python dependencies
       run: |
         # Pypi has no pip by default, and ubuntu blocks python -m ensurepip
         # However, Github runners are supposed to have pip installed by default
@@ -56,7 +56,10 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: Install OS dependencies
+      run:
+        brew install autoconf automake libtool
+    - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install tox tox-gh-actions
