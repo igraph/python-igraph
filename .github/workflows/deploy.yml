@@ -115,9 +115,7 @@ jobs:
         prerelease: false
 
     - name: Upload binaries and source
-      uses: alexellis/upload-assets@0.2.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      uses: AButler/upload-release-assets@v2.0
       with:
-        asset_paths: '["wheelhouse/*.whl", "dist/python-igraph-*.tar.gz"]'
-
+        files: 'wheelhouse/*.whl;dist/python-igraph-*.tar.gz'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
