@@ -67,6 +67,7 @@ jobs:
       env:
         CIBW_BEFORE_BUILD: "python setup.py build_c_core"
         CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
+        CIBW_SKIP: "cp27-* pp27-* cp35-*"
     - name: Upload linux wheels
       uses: actions/upload-artifact@v2
       with:
