@@ -10,18 +10,12 @@ on:
 jobs:
   wheels_manylinux:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version:
-        - 3.8
     steps:
     - uses: actions/checkout@v1
     - name: Init C core submodule
       run: git submodule update --init
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
     - name: Install OS dependencies
       run:
         sudo apt-get install gfortran flex bison
@@ -54,27 +48,20 @@ jobs:
 
   wheels_osx:
     runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version:
-        - 3.8
     steps:
     - uses: actions/checkout@v1
     - name: Init C core submodule
       run: git submodule update --init
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
     - name: Install OS dependencies
       run:
         brew install autoconf automake libtool
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install cibuildwheels
+        pip install cibuildwheel
     - name: Wheels (OSX)
-      if: startsWith(${{ github.ref }}, "refs/tags")
       run: |
         python -m cibuildwheel --output-dir wheelhouse
       env:
@@ -133,11 +120,10 @@ jobs:
         echo "wheelhouse folder:"
         ls -lh wheelhouse
 
-          #- name: Upload binaries and source
-          #  uses: actions/upload-release-asset@v1
-          #  env:
-          #    GITHUB_TOKEN: ${{ github.token }}
-          #  with:
-          #    upload_url: ${{ steps.create_release.outputs.upload_url }}
-          #    asset_paths: '["wheelhouse/*.whl", "dist/python-igraph-*.tar.gz"]'
+    #- name: Upload binaries and source
+    #  uses: alexellis/upload-assets@0.2.2
+    #  env:
+    #    GITHUB_TOKEN: ${{ github.token }}
+    #  with:
+    #    asset_paths: '["wheelhouse/*.whl", "dist/python-igraph-*.tar.gz"]'
 
