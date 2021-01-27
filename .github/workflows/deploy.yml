@@ -6,6 +6,9 @@ on:
       - '*.*.*'
 
   workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Test wheels and deploy'
 
 jobs:
   wheels_manylinux:
