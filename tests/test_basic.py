@@ -725,23 +725,38 @@ class InheritedGraph(Graph):
         result.new_called = True
         return result
 
+    @classmethod
+    def Adjacency(cls, *args, **kwds):
+        result = super(InheritedGraph, cls).Adjacency(*args, **kwds)
+        result.adjacency_called = True
+        return result
+
 
 class InheritanceTests(unittest.TestCase):
     def testInitCalledProperly(self):
         g = InheritedGraph()
+        self.assertTrue(isinstance(g, InheritedGraph))
         self.assertTrue(getattr(g, "init_called", False))
 
     def testNewCalledProperly(self):
         g = InheritedGraph()
+        self.assertTrue(isinstance(g, InheritedGraph))
         self.assertTrue(getattr(g, "new_called", False))
 
     def testInitCalledProperlyWithClassMethod(self):
         g = InheritedGraph.Tree(3, 2)
+        self.assertTrue(isinstance(g, InheritedGraph))
         self.assertTrue(getattr(g, "init_called", False))
 
     def testNewCalledProperlyWithClassMethod(self):
         g = InheritedGraph.Tree(3, 2)
+        self.assertTrue(isinstance(g, InheritedGraph))
         self.assertTrue(getattr(g, "new_called", False))
+
+    def testCallingClassMethodInSuperclass(self):
+        g = InheritedGraph.Adjacency([[0, 1, 1], [1, 0, 0], [1, 0, 0]])
+        self.assertTrue(isinstance(g, InheritedGraph))
+        self.assertTrue(getattr(g, "adjacency_called", True))
 
 
 def suite():
