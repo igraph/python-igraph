@@ -109,7 +109,7 @@ jobs:
         echo "wheelhouse folder:"
         ls -lh wheelhouse
 
-    - name: Figure out version
+    - name: Store igraph version
       id: get_version
       run: |
         echo "igraph_version=$(fn=$(ls dist); fn=${fn##*-}; echo ${fn%.tar.gz})" >> GITHUB_ENV
