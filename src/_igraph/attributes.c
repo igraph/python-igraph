@@ -1029,7 +1029,7 @@ static PyObject* igraphmodule_i_ac_random(PyObject* values,
     igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
     long int n = igraph_vector_size(v);
 
-    if (n == 0) {
+    if (n > 0) {
       num = PyObject_CallObject(random_func, 0);
       if (num == 0) {
         Py_DECREF(random_func);
