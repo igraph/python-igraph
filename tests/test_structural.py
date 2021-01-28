@@ -269,7 +269,7 @@ class CentralityTests(unittest.TestCase):
         g = Graph.Star(5)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            cl = g.closeness(cutoff=0.9)
+            cl = g.closeness(cutoff=1.0)
         cl2 = [1.0, 0.25, 0.25, 0.25, 0.25]
         for idx in range(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
@@ -285,7 +285,7 @@ class CentralityTests(unittest.TestCase):
         g = Graph.Star(5)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            cl = g.closeness(cutoff=0.9, weights=weights)
+            cl = g.closeness(cutoff=1.0, weights=weights)
         cl2 = [1.0, 0.25, 0.25, 0.25, 0.25]
         for idx in range(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
