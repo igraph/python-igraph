@@ -5,11 +5,11 @@ name: "Build wheels and deploy"
 # If you want to release from another branch and not "master", change the last string.
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - '*.*.*'
 
-  workflow_dispatch:
 
 jobs:
   wheels_manylinux:
@@ -109,14 +109,19 @@ jobs:
         echo "wheelhouse folder:"
         ls -lh wheelhouse
 
+    - name: Figure out version
+      id: get_version
+      run: |
+        echo "igraph_version=$(fn=$(ls dist); fn=${fn##*-}; echo ${fn%.tar.gz})" >> GITHUB_ENV
+
     - name: Create release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ env.igraph_version }}
+        release_name: Release ${{ env.igraph_version }}
         draft: true
         prerelease: false
 
@@ -125,3 +130,4 @@ jobs:
       with:
         files: 'wheelhouse/*.whl;dist/python-igraph-*.tar.gz'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+        release-tag: ${{ env.igraph_version }}
