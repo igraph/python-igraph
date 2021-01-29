@@ -126,9 +126,33 @@ jobs:
         draft: true
         prerelease: false
 
+          #- name: Upload binaries and source
+          #  uses: AButler/upload-release-assets@v2.0
+          #  with:
+          #    files: 'wheelhouse/*.whl;dist/python-igraph-*.tar.gz'
+          #    repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Move artifacts into one folder
+      run: |
+        mkdir upload
+        mv dist/* upload/
+        mv wheelhouse/* upload/
+        ls upload
+
     - name: Upload binaries and source
-      uses: AButler/upload-release-assets@v2.0
+      uses: actions/github-script@v3
       with:
-        files: 'wheelhouse/*.whl;dist/python-igraph-*.tar.gz'
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        release-tag: ${{ env.igraph_version }}
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const path = require('path');
+          const fs = require('fs');
+          const release_id = '${{ needs.create_release.outputs.id }}';
+          for (let file of await fs.readdirSync('./upload/')) {
+            console.log('uploadReleaseAsset', file);
+            await github.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: release_id,
+              name: file,
+              data: await fs.readFileSync(`./${file}`)
+            });
+          }
