@@ -112,7 +112,7 @@ jobs:
     - name: Store igraph version
       id: get_version
       run: |
-        echo "igraph_version=$(fn=$(ls dist); fn=${fn##*-}; echo ${fn%.tar.gz})" >> GITHUB_ENV
+        echo "igraph_version=$(fn=$(ls dist); fn=${fn##*-}; echo ${fn%.tar.gz})" >> $GITHUB_ENV
         tail -n 1 $GITHUB_ENV
 
     - name: Create release
