@@ -46,9 +46,9 @@ from igraph.summary import *
 from igraph.utils import *
 from igraph.version import __version__, __version_info__
 from igraph.sparse_matrix import (
-        _graph_from_sparse_matrix,
-        _graph_from_weighted_sparse_matrix,
-        )
+    _graph_from_sparse_matrix,
+    _graph_from_weighted_sparse_matrix,
+)
 
 import os
 import math
@@ -2195,14 +2195,20 @@ class Graph(GraphBase):
 
         if (sparse is not None) and isinstance(matrix, sparse.spmatrix):
             return _graph_from_weighted_sparse_matrix(
-                klass, matrix, mode=mode, attr=attr,
+                klass,
+                matrix,
+                mode=mode,
+                attr=attr,
             )
 
         if (np is not None) and isinstance(matrix, np.ndarray):
             matrix = matrix.tolist()
 
         return super().WeightedAdjacency(
-            matrix, mode=mode, attr=attr, loops=loops,
+            matrix,
+            mode=mode,
+            attr=attr,
+            loops=loops,
         )
 
     def write_dimacs(self, f, source=None, target=None, capacity="capacity"):

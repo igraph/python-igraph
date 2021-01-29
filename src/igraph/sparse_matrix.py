@@ -40,7 +40,7 @@ from igraph._igraph import (
 # Logic to get graph from scipy sparse matrix. This would be simple if there
 # weren't so many modes.
 def _graph_from_sparse_matrix(klass, matrix, mode=ADJ_DIRECTED):
-    '''Construct graph from sparse matrix, unweighted'''
+    """Construct graph from sparse matrix, unweighted"""
     # This function assumes there is scipy and the matrix is a scipy sparse
     # matrix. The caller should make sure those conditions are met.
     from scipy import sparse
@@ -111,12 +111,12 @@ def _graph_from_sparse_matrix(klass, matrix, mode=ADJ_DIRECTED):
     )
 
 
-def _graph_from_weighted_sparse_matrix(klass, matrix, mode=ADJ_DIRECTED, attr='weight'):
-    '''Construct graph from sparse matrix, weighted
+def _graph_from_weighted_sparse_matrix(klass, matrix, mode=ADJ_DIRECTED, attr="weight"):
+    """Construct graph from sparse matrix, weighted
 
     NOTE: Of course, you cannot emcompass a fully general weighted multigraph
     with a single adjacency matrix, so we don't try to do it here either.
-    '''
+    """
     # This function assumes there is scipy and the matrix is a scipy sparse
     # matrix. The caller should make sure those conditions are met.
     from scipy import sparse
