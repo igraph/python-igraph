@@ -153,6 +153,6 @@ jobs:
               repo: context.repo.repo,
               release_id: release_id,
               name: file,
-              data: await fs.readFileSync(`./${file}`)
+              data: await fs.readFileSync(`./upload/${file}`)
             });
           }
