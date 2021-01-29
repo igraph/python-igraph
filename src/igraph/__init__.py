@@ -2148,7 +2148,7 @@ class Graph(GraphBase):
         if (np is not None) and isinstance(matrix, np.ndarray):
             matrix = matrix.tolist()
 
-        return klass._Adjacency(matrix, mode=mode)
+        return super().Adjacency(matrix, mode=mode)
 
     def write_dimacs(self, f, source=None, target=None, capacity="capacity"):
         """Writes the graph in DIMACS format to the given file.

@@ -4,7 +4,7 @@
 
 from __future__ import with_statement
 
-__all__ = ()
+__all__ = ['_graph_from_sparse_matrix']
 __docformat__ = "restructuredtext en"
 __license__ = u"""
 Copyright (C) 2021  igraph development team

@@ -77,7 +77,6 @@ PyObject* igraphmodule_Graph_predecessors(igraphmodule_GraphObject *self, PyObje
 PyObject* igraphmodule_Graph_get_eid(igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds);
 
 PyObject* igraphmodule_Graph_Adjacency(PyTypeObject *type, PyObject *args, PyObject *kwds);
-PyObject* igraphmodule_Graph__Adjacency(PyTypeObject *type, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_Asymmetric_Preference(PyTypeObject *type, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_Atlas(PyTypeObject *type, PyObject *args);
 PyObject* igraphmodule_Graph_Barabasi(PyTypeObject *type, PyObject *args, PyObject *kwds);
