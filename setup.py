@@ -480,6 +480,10 @@ class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
         for deps in "ARPACK BLAS CXSPARSE GLPK LAPACK".split():
             args.append("-DIGRAPH_USE_INTERNAL_" + deps + "=ON")
 
+        # -fPIC is needed on Linux so we can link to a static igraph lib from a
+        # Python shared library
+        args.append("-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+
         retcode = subprocess.call(args)
         if retcode:
             return False
