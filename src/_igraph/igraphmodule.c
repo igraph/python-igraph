@@ -42,8 +42,6 @@
 #define IGRAPH_MODULE
 #include "igraphmodule_api.h"
 
-extern double igraph_i_fdiv(double, double);
-
 /**
  * \defgroup python_interface Python module implementation
  * \brief Functions implementing a Python interface to \a igraph
