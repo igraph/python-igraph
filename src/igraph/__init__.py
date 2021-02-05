@@ -28,22 +28,114 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
-# pylint: disable-msg=W0401
-# W0401: wildcard import
-from igraph._igraph import *
-from igraph.clustering import *
-from igraph.cut import *
+from igraph._igraph import (
+    ADJ_DIRECTED,
+    ADJ_LOWER,
+    ADJ_MAX,
+    ADJ_MIN,
+    ADJ_PLUS,
+    ADJ_UNDIRECTED,
+    ADJ_UPPER,
+    ALL,
+    ARPACKOptions,
+    BFSIter,
+    BLISS_F,
+    BLISS_FL,
+    BLISS_FLM,
+    BLISS_FM,
+    BLISS_FS,
+    BLISS_FSM,
+    DFSIter,
+    Edge,
+    EdgeSeq,
+    GET_ADJACENCY_BOTH,
+    GET_ADJACENCY_LOWER,
+    GET_ADJACENCY_UPPER,
+    GraphBase,
+    IN,
+    InternalError,
+    OUT,
+    REWIRING_SIMPLE,
+    REWIRING_SIMPLE_LOOPS,
+    STAR_IN,
+    STAR_MUTUAL,
+    STAR_OUT,
+    STAR_UNDIRECTED,
+    STRONG,
+    TRANSITIVITY_NAN,
+    TRANSITIVITY_ZERO,
+    TREE_IN,
+    TREE_OUT,
+    TREE_UNDIRECTED,
+    Vertex,
+    VertexSeq,
+    WEAK,
+    arpack_options,
+    community_to_membership,
+    convex_hull,
+    is_degree_sequence,
+    is_graphical_degree_sequence,
+    set_progress_handler,
+    set_random_number_generator,
+    set_status_handler,
+)
+from igraph.clustering import (
+    Clustering,
+    VertexClustering,
+    Dendrogram,
+    VertexDendrogram,
+    Cover,
+    VertexCover,
+    CohesiveBlocks,
+)
+from igraph.cut import Cut, Flow
 from igraph.configuration import Configuration
-from igraph.drawing import *
-from igraph.drawing.colors import *
-from igraph.datatypes import *
-from igraph.formula import *
-from igraph.layout import *
-from igraph.matching import *
-from igraph.operators import *
-from igraph.statistics import *
-from igraph.summary import *
-from igraph.utils import *
+from igraph.drawing import BoundingBox, DefaultGraphDrawer, Plot, Point, Rectangle, plot
+from igraph.drawing.colors import (
+    Palette,
+    GradientPalette,
+    AdvancedGradientPalette,
+    RainbowPalette,
+    PrecalculatedPalette,
+    ClusterColoringPalette,
+    color_name_to_rgb,
+    color_name_to_rgba,
+    hsv_to_rgb,
+    hsva_to_rgba,
+    hsl_to_rgb,
+    hsla_to_rgba,
+    rgb_to_hsv,
+    rgba_to_hsva,
+    rgb_to_hsl,
+    rgba_to_hsla,
+    palettes,
+    known_colors,
+)
+from igraph.datatypes import Matrix, DyadCensus, TriadCensus, UniqueIdGenerator
+from igraph.formula import construct_graph_from_formula
+from igraph.layout import Layout
+from igraph.matching import Matching
+from igraph.operators import disjoint_union, union, intersection
+from igraph.statistics import (
+    FittedPowerLaw,
+    Histogram,
+    RunningMean,
+    mean,
+    median,
+    percentile,
+    quantile,
+    power_law_fit,
+)
+from igraph.summary import GraphSummary
+from igraph.utils import (
+    dbl_epsilon,
+    multidict,
+    named_temporary_file,
+    numpy_to_contiguous_memoryview,
+    rescale,
+    safemin,
+    safemax,
+)
 from igraph.version import __version__, __version_info__
 
 import os

@@ -1,8 +1,9 @@
+import sys
 import io
 import unittest
 import warnings
 
-from igraph import *
+from igraph import Graph, InternalError
 from igraph.test.utils import temporary_file
 
 

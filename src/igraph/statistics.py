@@ -26,7 +26,7 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 
 import math
 
-__all__ = [
+__all__ = (
     "FittedPowerLaw",
     "Histogram",
     "RunningMean",
@@ -35,7 +35,7 @@ __all__ = [
     "percentile",
     "quantile",
     "power_law_fit",
-]
+    )
 
 
 class FittedPowerLaw(object):
