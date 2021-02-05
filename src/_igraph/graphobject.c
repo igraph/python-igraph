@@ -4119,6 +4119,85 @@ PyObject *igraphmodule_Graph_closeness(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
+ * \brief Calculates the harmonic centrality of some vertices in a graph.
+ * \return the harmonic centralities as a list (or a single float)
+ * \sa igraph_closeness
+ */
+PyObject *igraphmodule_Graph_harmonic_centrality(igraphmodule_GraphObject * self,
+                                       PyObject * args, PyObject * kwds)
+{
+  static char *kwlist[] = { "vertices", "mode", "cutoff", "weights",
+                "normalized", NULL };
+  PyObject *vobj = Py_None, *list = NULL, *cutoff = Py_None,
+           *mode_o = Py_None, *weights_o = Py_None, *normalized_o = Py_True;
+  igraph_vector_t res, *weights = 0;
+  igraph_neimode_t mode = IGRAPH_ALL;
+  int return_single = 0;
+  igraph_vs_t vs;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOOO", kwlist, &vobj,
+      &mode_o, &cutoff, &weights_o, &normalized_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) return NULL;
+  if (igraphmodule_PyObject_to_vs_t(vobj, &vs, &self->g, &return_single, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_vector_init(&res, 0)) {
+    igraph_vs_destroy(&vs);
+    return igraphmodule_handle_igraph_error();
+  }
+
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
+      ATTRIBUTE_TYPE_EDGE)) {
+    igraph_vs_destroy(&vs);
+    igraph_vector_destroy(&res);
+    return NULL;
+  }
+
+  if (cutoff == Py_None) {
+    if (igraph_harmonic_centrality(&self->g, &res, 0, 0, vs, mode, weights,
+             PyObject_IsTrue(normalized_o))) {
+      igraph_vs_destroy(&vs);
+      igraph_vector_destroy(&res);
+      if (weights) { igraph_vector_destroy(weights); free(weights); }
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
+  } else if (PyNumber_Check(cutoff)) {
+    PyObject *cutoff_num = PyNumber_Float(cutoff);
+    if (cutoff_num == NULL) {
+      igraph_vs_destroy(&vs); igraph_vector_destroy(&res);
+      return NULL;
+    }
+    if (igraph_harmonic_centrality_cutoff(&self->g, &res, 0, 0, vs, mode, weights,
+        (igraph_real_t)PyFloat_AsDouble(cutoff_num), PyObject_IsTrue(normalized_o))) {
+      igraph_vs_destroy(&vs);
+      igraph_vector_destroy(&res);
+      if (weights) { igraph_vector_destroy(weights); free(weights); }
+      igraphmodule_handle_igraph_error();
+      Py_DECREF(cutoff_num);
+      return NULL;
+    }
+    Py_DECREF(cutoff_num);
+  }
+
+  if (weights) { igraph_vector_destroy(weights); free(weights); }
+
+  if (!return_single)
+    list = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT);
+  else
+    list = PyFloat_FromDouble(VECTOR(res)[0]);
+
+  igraph_vector_destroy(&res);
+  igraph_vs_destroy(&vs);
+
+  return list;
+}
+
+/** \ingroup python_interface_graph
  * \brief Calculates the (weakly or strongly) connected components in a graph.
  * \return a list containing the cluster ID for every vertex in the graph
  * \sa igraph_clusters
@@ -12878,7 +12957,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "The closeness centerality of a vertex measures how easily other\n"
    "vertices can be reached from it (or the other way: how easily it\n"
    "can be reached from the other vertices). It is defined as the\n"
-   "number of the number of vertices minus one divided by the sum of\n"
+   "number of vertices minus one divided by the sum of\n"
    "the lengths of all geodesics from/to the given vertex.\n\n"
    "If the graph is not connected, and there is no path between two\n"
    "vertices, the number of vertices is used instead the length of\n"
@@ -12901,6 +12980,39 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param normalized: Whether to normalize the raw closeness scores by\n"
    "  multiplying by the number of vertices minus one.\n"
    "@return: the calculated closenesses in a list\n"},
+
+  /* interface to igraph_harmonic_centrality */
+  {"harmonic_centrality", (PyCFunction) igraphmodule_Graph_harmonic_centrality,
+   METH_VARARGS | METH_KEYWORDS,
+   "harmonic_centrality(vertices=None, mode=ALL, cutoff=None, weights=None,\n"
+   "          normalized=True)\n\n"
+   "Calculates the harmonic centralities of given vertices in a graph.\n\n"
+   "The harmonic centerality of a vertex measures how easily other\n"
+   "vertices can be reached from it (or the other way: how easily it\n"
+   "can be reached from the other vertices). It is defined as the\n"
+   "number of vertices minus one times the sum of one divided by \n"
+   "the length of each geodesic from/to the given vertex.\n\n"
+   "If the graph is not connected, and there is no path between two\n"
+   "vertices, the number of vertices is used instead the length of\n"
+   "the geodesic. This is always longer than the longest possible\n"
+   "geodesic.\n\n"
+   "@param vertices: the vertices for which the harmonic centrality must\n"
+   "  be returned. If C{None}, uses all of the vertices in the graph.\n"
+   "@param mode: must be one of L{IN}, L{OUT} and L{ALL}. L{IN} means\n"
+   "  that the length of the incoming paths, L{OUT} means that the\n"
+   "  length of the outgoing paths must be calculated. L{ALL} means\n"
+   "  that both of them must be calculated.\n"
+   "@param cutoff: if it is an integer, only paths less than or equal to this\n"
+   "  length are considered, effectively resulting in an estimation of the\n"
+   "  harmonic centrality for the given vertices (which is always an underestimation of the\n"
+   "  real centrality, since some vertex pairs will appear as disconnected even\n"
+   "  though they are connected).. If C{None}, the exact centrality is\n"
+   "  returned.\n"
+   "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
+   "  even an edge attribute name.\n"
+   "@param normalized: Whether to normalize the raw centrality scores by\n"
+   "  multiplying by the number of vertices minus one.\n"
+   "@return: the calculated harmonic centrality in a list\n"},
 
   /* interface to igraph_clusters */
   {"clusters", (PyCFunction) igraphmodule_Graph_clusters,
