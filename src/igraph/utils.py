@@ -7,10 +7,7 @@
 
 from contextlib import contextmanager
 
-try:
-    from collections.abc import MutableMapping
-except ImportError:
-    from collections import MutableMapping
+from collections.abc import MutableMapping
 from ctypes import c_double, sizeof
 from itertools import chain
 

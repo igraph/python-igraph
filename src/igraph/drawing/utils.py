@@ -6,7 +6,7 @@ Utility classes for drawing routines.
 from math import atan2, cos, sin
 from operator import itemgetter
 
-__all__ = ["BoundingBox", "FakeModule", "Point", "Rectangle"]
+__all__ = ("BoundingBox", "FakeModule", "Point", "Rectangle")
 __license__ = "GPL"
 
 #####################################################################

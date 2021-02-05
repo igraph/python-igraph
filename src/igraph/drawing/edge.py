@@ -2,14 +2,14 @@
 Drawers for various edge styles in graph plots.
 """
 
-__all__ = [
+__all__ = (
     "AbstractEdgeDrawer",
     "AlphaVaryingEdgeDrawer",
     "ArrowEdgeDrawer",
     "DarkToLightEdgeDrawer",
     "LightToDarkEdgeDrawer",
     "TaperedEdgeDrawer",
-]
+)
 
 __license__ = "GPL"
 

@@ -17,7 +17,7 @@ name in the C{shape} attribute of vertices.
 """
 
 
-__all__ = ["ShapeDrawerDirectory"]
+__all__ = ("ShapeDrawerDirectory",)
 
 __license__ = """\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>

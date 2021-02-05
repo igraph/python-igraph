@@ -9,7 +9,7 @@ import re
 from igraph.drawing.baseclasses import AbstractCairoDrawer
 from warnings import warn
 
-__all__ = ["TextAlignment", "TextDrawer"]
+__all__ = ("TextAlignment", "TextDrawer")
 __license__ = "GPL"
 
 __docformat__ = "restructuredtext en"

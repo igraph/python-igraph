@@ -34,7 +34,7 @@ from igraph.drawing.utils import find_cairo, Point
 from igraph.drawing.vertex import DefaultVertexDrawer
 from igraph.layout import Layout
 
-__all__ = ["DefaultGraphDrawer", "UbiGraphDrawer", "CytoscapeGraphDrawer"]
+__all__ = ("DefaultGraphDrawer", "UbiGraphDrawer", "CytoscapeGraphDrawer")
 __license__ = "GPL"
 
 cairo = find_cairo()

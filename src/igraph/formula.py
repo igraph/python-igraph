@@ -15,7 +15,7 @@ import re
 import tokenize
 import token
 
-__all__ = ["construct_graph_from_formula"]
+__all__ = ("construct_graph_from_formula",)
 
 __license__ = """\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>

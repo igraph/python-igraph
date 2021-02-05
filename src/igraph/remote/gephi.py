@@ -18,7 +18,7 @@ except ImportError:
 
         json = FakeModule()
 
-__all__ = ["GephiConnection", "GephiGraphStreamer", "GephiGraphStreamingAPIFormat"]
+__all__ = ("GephiConnection", "GephiGraphStreamer", "GephiGraphStreamingAPIFormat")
 __docformat__ = "restructuredtext en"
 __license__ = """\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>

@@ -28,7 +28,7 @@ from igraph.datatypes import Matrix
 from igraph.utils import str_to_orientation
 from math import ceil
 
-__all__ = [
+__all__ = (
     "Palette",
     "GradientPalette",
     "AdvancedGradientPalette",
@@ -47,7 +47,7 @@ __all__ = [
     "rgba_to_hsla",
     "palettes",
     "known_colors",
-]
+    )
 
 
 class Palette(object):

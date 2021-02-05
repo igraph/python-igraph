@@ -11,7 +11,7 @@ from math import ceil
 from texttable import Texttable
 from textwrap import TextWrapper
 
-__all__ = ["GraphSummary"]
+__all__ = ("GraphSummary",)
 
 __license__ = """\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
