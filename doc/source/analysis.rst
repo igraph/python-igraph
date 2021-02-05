@@ -289,6 +289,7 @@ Structural:
 - :meth:`Graph.betweenness`
 - :meth:`Graph.bibcoupling`
 - :meth:`Graph.closeness`
+- :meth:`Graph.harmonic_centrality`
 - :meth:`Graph.constraint`
 - :meth:`Graph.cocitation`
 - :meth:`Graph.coreness` (aka :meth:`Graph.shell_index`)

@@ -355,6 +355,37 @@ class CentralityTests(unittest.TestCase):
         for obs, exp in zip(cl, expected_cl):
             self.assertAlmostEqual(obs, exp, places=4)
 
+    def testHarmonicCentrality(self):
+        g = Graph.Star(5)
+        cl = g.harmonic_centrality()
+        cl2 = [1.0] + [(1.0 + 1 / 2 * 3) / 4] * 4
+        for idx in range(g.vcount()):
+            self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
+
+        g = Graph.Star(5)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            cl = g.harmonic_centrality(cutoff=1.0)
+        cl2 = [1.0, 1.0, 1.0, 1.0, 1.0]
+        for idx in range(g.vcount()):
+            self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
+
+        weights = [1] * 4
+
+        g = Graph.Star(5)
+        cl = g.harmonic_centrality(weights=weights)
+        cl2 = [1.0] + [0.625] * 4
+        for idx in range(g.vcount()):
+            self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
+
+        g = Graph.Star(5)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            cl = g.harmonic_centrality(cutoff=1.0, weights=weights)
+        cl2 = [1.0, 1.0, 1.0, 1.0, 1.0]
+        for idx in range(g.vcount()):
+            self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
+
     def testPageRank(self):
         g = Graph.Star(11)
         cent = g.pagerank()
