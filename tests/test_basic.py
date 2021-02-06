@@ -338,14 +338,14 @@ class BasicTests(unittest.TestCase):
         self.assertTrue(g.get_adjlist(IN) == [[2], [0], [1], [2]])
         self.assertTrue(g.get_adjlist(ALL) == [[1, 2], [0, 2], [0, 1, 3], [2]])
 
-    def testEdgeIncidency(self):
+    def testEdgeIncidence(self):
         g = Graph(4, [(0, 1), (1, 2), (2, 0), (2, 3)], directed=True)
         self.assertTrue(g.incident(2) == [2, 3])
         self.assertTrue(g.incident(2, IN) == [1])
-        self.assertTrue(g.incident(2, ALL) == [2, 3, 1])
+        self.assertTrue(g.incident(2, ALL) == [2, 1, 3])
         self.assertTrue(g.get_inclist() == [[0], [1], [2, 3], []])
         self.assertTrue(g.get_inclist(IN) == [[2], [0], [1], [3]])
-        self.assertTrue(g.get_inclist(ALL) == [[0, 2], [1, 0], [2, 3, 1], [3]])
+        self.assertTrue(g.get_inclist(ALL) == [[0, 2], [0, 1], [2, 1, 3], [3]])
 
     def testMultiplesLoops(self):
         g = Graph.Tree(7, 2)

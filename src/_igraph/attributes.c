@@ -1884,7 +1884,7 @@ static igraph_attribute_table_t igraphmodule_attribute_table = {
 };
 
 void igraphmodule_initialize_attribute_handler(void) {
-  igraph_i_set_attribute_table(&igraphmodule_attribute_table);
+  igraph_set_attribute_table(&igraphmodule_attribute_table);
 }
 
 /**
