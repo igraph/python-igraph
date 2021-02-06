@@ -24,7 +24,7 @@ are often called *binary packages*, while the raw source code is usually referre
 In general, you should almost always opt for the binary package unless a binary package is
 not available for your platform or you have some local modifications that you want to
 incorporate into |igraph|'s source. `Installation from a binary package`_ tells you how to
-install |igraph| from a precompiled binary package on various platforms. `Compiling igraph
+install |igraph| from a precompiled binary package on various platforms. `Compiling python-igraph
 from source`_ tells you how to compile |igraph| from the source package.
 
 Installation from a binary package
