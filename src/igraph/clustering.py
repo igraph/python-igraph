@@ -684,15 +684,19 @@ class Dendrogram(object):
         @return: the summary of the dendrogram as a string.
         """
         out = StringIO()
-        print("Dendrogram, %d elements, %d merges" % (
-            self._nitems,
-            self._nmerges,
-        ), file=out)
+        print(
+            "Dendrogram, %d elements, %d merges"
+            % (
+                self._nitems,
+                self._nmerges,
+            ),
+            file=out,
+        )
 
         if self._nitems == 0 or verbosity < 1 or self._nitems > max_leaf_count:
             return out.getvalue().strip()
 
-        print('', file=out)
+        print("", file=out)
 
         positions = [None] * self._nitems
         inorder = self._traverse_inorder()

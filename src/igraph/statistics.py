@@ -35,7 +35,7 @@ __all__ = (
     "percentile",
     "quantile",
     "power_law_fit",
-    )
+)
 
 
 class FittedPowerLaw(object):

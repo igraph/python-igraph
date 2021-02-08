@@ -47,7 +47,7 @@ __all__ = (
     "rgba_to_hsla",
     "palettes",
     "known_colors",
-    )
+)
 
 
 class Palette(object):
