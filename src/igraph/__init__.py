@@ -74,6 +74,7 @@ from igraph._igraph import (
     community_to_membership,
     convex_hull,
     is_degree_sequence,
+    is_graphical,
     is_graphical_degree_sequence,
     set_progress_handler,
     set_random_number_generator,
@@ -87,6 +88,7 @@ from igraph.clustering import (
     Cover,
     VertexCover,
     CohesiveBlocks,
+    compare_communities,
 )
 from igraph.cut import Cut, Flow
 from igraph.configuration import Configuration
