@@ -89,6 +89,7 @@ from igraph.clustering import (
     VertexCover,
     CohesiveBlocks,
     compare_communities,
+    split_join_distance,
 )
 from igraph.cut import Cut, Flow
 from igraph.configuration import Configuration
