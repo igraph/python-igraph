@@ -366,7 +366,7 @@ class CentralityTests(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             cl = g.harmonic_centrality(cutoff=1.0)
-        cl2 = [1.0, 1.0, 1.0, 1.0, 1.0]
+        cl2 = [1.0, 0.25, 0.25, 0.25, 0.25]
         for idx in range(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
 
@@ -382,7 +382,7 @@ class CentralityTests(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             cl = g.harmonic_centrality(cutoff=1.0, weights=weights)
-        cl2 = [1.0, 1.0, 1.0, 1.0, 1.0]
+        cl2 = [1.0, 0.25, 0.25, 0.25, 0.25]
         for idx in range(g.vcount()):
             self.assertAlmostEqual(cl[idx], cl2[idx], places=3)
 
