@@ -4091,6 +4091,7 @@ PyObject *igraphmodule_Graph_closeness(igraphmodule_GraphObject * self,
     PyObject *cutoff_num = PyNumber_Float(cutoff);
     if (cutoff_num == NULL) {
       igraph_vs_destroy(&vs); igraph_vector_destroy(&res);
+      if (weights) { igraph_vector_destroy(weights); free(weights); }
       return NULL;
     }
     if (igraph_closeness_cutoff(&self->g, &res, 0, 0, vs, mode, weights,
@@ -4170,6 +4171,7 @@ PyObject *igraphmodule_Graph_harmonic_centrality(igraphmodule_GraphObject * self
     PyObject *cutoff_num = PyNumber_Float(cutoff);
     if (cutoff_num == NULL) {
       igraph_vs_destroy(&vs); igraph_vector_destroy(&res);
+      if (weights) { igraph_vector_destroy(weights); free(weights); }
       return NULL;
     }
     if (igraph_harmonic_centrality_cutoff(&self->g, &res, vs, mode, weights,
