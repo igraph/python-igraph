@@ -12999,15 +12999,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  that the length of the incoming paths, L{OUT} means that the\n"
    "  length of the outgoing paths must be calculated. L{ALL} means\n"
    "  that both of them must be calculated.\n"
-   "@param cutoff: if it is an integer, only paths less than or equal to this\n"
+   "@param cutoff: if it is not C{None}, only paths less than or equal to this\n"
    "  length are considered.\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name.\n"
-   "@param normalized: Whether to normalize the result. If True, the \n"
-   "  result is the mean inverse path length to other vertices, i.e. it \n"
-   "  is normalized by the number of vertices minus one. If False, the \n"
+   "@param normalized: Whether to normalize the result. If True, the\n"
+   "  result is the mean inverse path length to other vertices, i.e. it\n"
+   "  is normalized by the number of vertices minus one. If False, the\n"
    "  result is the sum of inverse path lengths to other vertices.\n"
-   "@return: the calculated harmonic centrality in a list\n"},
+   "@return: the calculated harmonic centralities in a list\n"},
 
   /* interface to igraph_clusters */
   {"clusters", (PyCFunction) igraphmodule_Graph_clusters,
