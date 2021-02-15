@@ -341,13 +341,22 @@ class VertexSeqTests(unittest.TestCase):
     def testBug73(self):
         # This is a regression test for igraph/python-igraph#73
         g = Graph()
-        g.add_vertices(2)
+        g.add_vertices(3)
         g.vs[0]["name"] = 1
         g.vs[1]["name"] = "h"
+        g.vs[2]["name"] = 17
 
         self.assertEqual(1, g.vs.find("h").index)
         self.assertEqual(1, g.vs.find(1).index)
         self.assertEqual(0, g.vs.find(name=1).index)
+        self.assertEqual(2, g.vs.find(name=17).index)
+
+    def testBug367(self):
+        # This is a regression test for igraph/python-igraph#367
+        g = Graph()
+        g.add_vertices([1, 2, 5])
+        self.assertEqual([1, 2, 5], g.vs["name"])
+        self.assertEqual(2, g.vs.find(name=5).index)
 
 
 def suite():

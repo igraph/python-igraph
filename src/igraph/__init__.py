@@ -4400,8 +4400,12 @@ class VertexSeq(_igraph.VertexSeq):
             else:
                 name = None
 
-            if name is not None and isinstance(name, str):
-                args = [name]
+            if name is not None:
+                if isinstance(name, str):
+                    args = [name]
+                else:
+                    # put back what we popped
+                    kwds["name"] = name
 
         if args:
             # Selecting first based on positional arguments, then checking
