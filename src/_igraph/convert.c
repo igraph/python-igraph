@@ -1266,7 +1266,7 @@ int igraphmodule_PyObject_to_vector_bool_t(PyObject *list,
     item=PySequence_GetItem(list, i);
     if (item) {
       VECTOR(*v)[i]=PyObject_IsTrue(item);
-	  Py_DECREF(item);
+      Py_DECREF(item);
     } else {
       /* this should not happen, but we return anyway.
        * an IndexError exception was set by PySequence_GetItem
@@ -1322,10 +1322,11 @@ PyObject* igraphmodule_vector_t_to_PyList(const igraph_vector_t *v,
   list=PyList_New(n);
   for (i=0; i<n; i++) {
     if (type == IGRAPHMODULE_TYPE_INT) {
-	  if (!igraph_finite(VECTOR(*v)[i]))
-		item=PyFloat_FromDouble((double)VECTOR(*v)[i]);
-	  else
-        item=PyInt_FromLong((long)VECTOR(*v)[i]);
+      if (!igraph_finite(VECTOR(*v)[i])) {
+        item = PyFloat_FromDouble((double)VECTOR(*v)[i]);
+      } else {
+        item = PyInt_FromLong((long)VECTOR(*v)[i]);
+      }
     } else if (type == IGRAPHMODULE_TYPE_FLOAT) {
       item=PyFloat_FromDouble((double)VECTOR(*v)[i]);
     } else {
@@ -2098,9 +2099,23 @@ PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
 int igraphmodule_PyList_to_matrix_t(PyObject* o, igraph_matrix_t *m) {
+  return igraphmodule_PyList_to_matrix_t_with_minimum_column_count(o, m, 0);
+}
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts a Python list of lists to an \c igraph_matrix_t, ensuring
+ * that the matrix has at least the given number of columns
+ *
+ * \param o the Python object representing the list of lists
+ * \param m the address of an uninitialized \c igraph_matrix_t
+ * \param num_cols the minimum number of columns in the matrix
+ * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
+ */
+int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igraph_matrix_t *m, int min_cols) {
   Py_ssize_t nr, nc, n, i, j;
   PyObject *row, *item;
-  int was_warned=0;
+  int was_warned = 0;
 
   /* calculate the matrix dimensions */
   if (!PySequence_Check(o) || PyString_Check(o)) {
@@ -2109,25 +2124,27 @@ int igraphmodule_PyList_to_matrix_t(PyObject* o, igraph_matrix_t *m) {
   }
 
   nr = PySequence_Size(o);
-  nc = 0;
-  for (i=0; i<nr; i++) {
-    row=PySequence_GetItem(o, i);
+  nc = min_cols > 0 ? min_cols : 0;
+  for (i = 0; i < nr; i++) {
+    row = PySequence_GetItem(o, i);
     if (!PySequence_Check(row)) {
       Py_DECREF(row);
       PyErr_SetString(PyExc_TypeError, "matrix expected (list of sequences)");
       return 1;
     }
-    n=PySequence_Size(row);
+    n = PySequence_Size(row);
     Py_DECREF(row);
-    if (n>nc) nc=n;
+    if (n > nc) {
+      nc = n;
+    }
   }
 
   igraph_matrix_init(m, nr, nc);
-  for (i=0; i<nr; i++) {
-    row=PySequence_GetItem(o, i);
-    n=PySequence_Size(row);
-    for (j=0; j<n; j++) {
-      item=PySequence_GetItem(row, j);
+  for (i = 0; i < nr; i++) {
+    row = PySequence_GetItem(o, i);
+    n = PySequence_Size(row);
+    for (j = 0; j < n; j++) {
+      item = PySequence_GetItem(row, j);
       if (PyInt_Check(item)) {
         MATRIX(*m, i, j) = (igraph_real_t)PyInt_AsLong(item);
       } else if (PyLong_Check(item)) {
@@ -2896,10 +2913,10 @@ int igraphmodule_PyObject_to_drl_options_t(PyObject *obj,
       Py_XDECREF(o1); \
     } while (0)
 #define CONVERT_DRL_OPTION_BLOCK(NAME) do { \
-	  CONVERT_DRL_OPTION(NAME##_iterations, integer); \
-	  CONVERT_DRL_OPTION(NAME##_temperature, real); \
-	  CONVERT_DRL_OPTION(NAME##_attraction, real); \
-	  CONVERT_DRL_OPTION(NAME##_damping_mult, real); \
+    CONVERT_DRL_OPTION(NAME##_iterations, integer); \
+    CONVERT_DRL_OPTION(NAME##_temperature, real); \
+    CONVERT_DRL_OPTION(NAME##_attraction, real); \
+    CONVERT_DRL_OPTION(NAME##_damping_mult, real); \
     } while (0)
 
     if (!retval) {
@@ -3042,8 +3059,7 @@ int igraphmodule_PyObject_to_attribute_combination_t(PyObject* object,
  * \ingroup python_interface_conversion
  * \brief Converts a Python object to an igraph \c igraph_pagerank_algo_t
  */
-int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o,
-					     igraph_pagerank_algo_t *result) {
+int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o, igraph_pagerank_algo_t *result) {
   static igraphmodule_enum_translation_table_entry_t pagerank_algo_tt[] = {
         {"prpack", IGRAPH_PAGERANK_ALGO_PRPACK},
         {"arpack", IGRAPH_PAGERANK_ALGO_ARPACK},

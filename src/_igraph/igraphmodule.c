@@ -339,7 +339,7 @@ PyObject* igraphmodule_community_to_membership(PyObject *self,
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!ll|O", kwlist,
       &PyList_Type, &merges_o, &nodes, &steps, &return_csize)) return NULL;
 
-  if (igraphmodule_PyList_to_matrix_t(merges_o, &merges)) return NULL;
+  if (igraphmodule_PyList_to_matrix_t_with_minimum_column_count(merges_o, &merges, 2)) return NULL;
 
   if (igraph_vector_init(&result, nodes)) {
     igraphmodule_handle_igraph_error();
