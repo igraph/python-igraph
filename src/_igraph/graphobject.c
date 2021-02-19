@@ -2273,7 +2273,7 @@ PyObject *igraphmodule_Graph_Establishment(PyTypeObject * type,
   if (igraph_establishment_game(&g, (igraph_integer_t) n,
                                 (igraph_integer_t) types,
                                 (igraph_integer_t) k, &td, &pm,
-                                PyObject_IsTrue(directed))) {
+                                PyObject_IsTrue(directed), 0)) {
     igraphmodule_handle_igraph_error();
     igraph_matrix_destroy(&pm);
     igraph_vector_destroy(&td);
@@ -2894,7 +2894,7 @@ PyObject *igraphmodule_Graph_Asymmetric_Preference(PyTypeObject * type,
 {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  long n, types;
+  long n, in_types, out_types;
   PyObject *type_dist_matrix, *pref_matrix;
   PyObject *loops = Py_False;
   igraph_matrix_t pm;
@@ -2913,12 +2913,14 @@ PyObject *igraphmodule_Graph_Asymmetric_Preference(PyTypeObject * type,
                                    &attribute_key, &loops))
     return NULL;
 
-  types = PyList_Size(type_dist_matrix);
   if (igraphmodule_PyList_to_matrix_t(pref_matrix, &pm)) return NULL;
   if (igraphmodule_PyList_to_matrix_t(type_dist_matrix, &td)) {
     igraph_matrix_destroy(&pm);
     return NULL;
   }
+
+  in_types = igraph_matrix_nrow(&pm);
+  out_types = igraph_matrix_ncol(&pm);
 
   store_attribs = (attribute_key && attribute_key != Py_None);
   if (store_attribs) {
@@ -2938,7 +2940,9 @@ PyObject *igraphmodule_Graph_Asymmetric_Preference(PyTypeObject * type,
   }
 
   if (igraph_asymmetric_preference_game(&g, (igraph_integer_t) n,
-                                        (igraph_integer_t) types, &td, &pm,
+                                        (igraph_integer_t) in_types,
+                                        (igraph_integer_t) out_types,
+                                        &td, &pm,
                                         store_attribs ? &in_type_vec : 0,
                                         store_attribs ? &out_type_vec : 0,
                                         PyObject_IsTrue(loops))) {
