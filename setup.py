@@ -21,14 +21,15 @@ SKIP_HEADER_INSTALL = (platform.python_implementation() == "PyPy") or (
 
 from setuptools import setup, Command, Extension
 
-import distutils.ccompiler
 import glob
 import shutil
 import subprocess
 import sys
 import sysconfig
 
+from pathlib import Path
 from select import select
+from shutil import which
 from time import sleep
 
 ###########################################################################
@@ -48,39 +49,11 @@ def building_on_windows_msvc():
     return platform.system() == "Windows" and sysconfig.get_platform() != "mingw"
 
 
-def create_dir_unless_exists(*args):
-    """Creates a directory unless it exists already."""
-    path = os.path.join(*args)
-    if not os.path.isdir(path):
-        os.makedirs(path)
-
-
-def ensure_dir_does_not_exist(*args):
-    """Ensures that the given directory does not exist."""
-    path = os.path.join(*args)
-    if os.path.isdir(path):
-        shutil.rmtree(path)
-
-
 def exclude_from_list(items, items_to_exclude):
     """Excludes certain items from a list, keeping the original order of
     the remaining items."""
     itemset = set(items_to_exclude)
     return [item for item in items if item not in itemset]
-
-
-def find_executable(name):
-    """Finds an executable with the given name on the system PATH and returns
-    its full path.
-    """
-    try:
-        from shutil import which
-
-        return which(name)  # Python 3.3 and above
-    except ImportError:
-        import distutils.spawn
-
-        return distutils.spawn.find_executable(name)  # Earlier than Python 3.3
 
 
 def find_static_library(library_name, library_path):
@@ -161,76 +134,6 @@ def is_unix_like(platform=None):
     )
 
 
-def find_msvc_source_folder(folder=".", requires_built=False):
-    """Finds the folder that contains the MSVC-specific source of igraph if there
-    is any. Returns `None` if no such folder is found. Prints a warning if the
-    choice is ambiguous.
-    """
-    all_msvc_dirs = glob.glob(os.path.join(folder, "igraph-*-msvc"))
-    if len(all_msvc_dirs) > 0:
-        if len(all_msvc_dirs) > 1:
-            print("More than one MSVC build directory (..\\..\\igraph-*-msvc) found!")
-            print(
-                "It could happen that setup.py uses the wrong one! Please remove all but the right one!\n\n"
-            )
-
-        msvc_builddir = all_msvc_dirs[-1]
-        if requires_built and not os.path.exists(
-            os.path.join(msvc_builddir, "Release")
-        ):
-            print(
-                "There is no 'Release' dir in the MSVC build directory\n(%s)"
-                % msvc_builddir
-            )
-            print("Please build the MSVC build first!\n")
-            return None
-
-        return msvc_builddir
-    else:
-        return None
-
-
-def preprocess_fallback_config():
-    """Preprocesses the fallback include and library paths depending on the
-    platform."""
-    global LIBIGRAPH_FALLBACK_INCLUDE_DIRS
-    global LIBIGRAPH_FALLBACK_LIBRARY_DIRS
-    global LIBIGRAPH_FALLBACK_LIBRARIES
-
-    if (
-        platform.system() == "Windows"
-        and distutils.ccompiler.get_default_compiler() == "msvc"
-    ):
-        # if this setup is run in the source checkout *and* the igraph msvc was build,
-        # this code adds the right library and include dir
-        msvc_builddir = find_msvc_source_folder(
-            os.path.join("..", ".."), requires_built=True
-        )
-
-        if msvc_builddir is not None:
-            print("Using MSVC build dir: %s\n\n" % msvc_builddir)
-            LIBIGRAPH_FALLBACK_INCLUDE_DIRS = [os.path.join(msvc_builddir, "include")]
-            LIBIGRAPH_FALLBACK_LIBRARY_DIRS = [os.path.join(msvc_builddir, "Release")]
-            return True
-        else:
-            return False
-
-    else:
-        return True
-
-
-def quote_path_for_shell(s):
-    # On MinGW / MSYS, we need to use forward slash style and remove unsafe
-    # characters in order not to trip up the configure script
-    if "MSYSTEM" in os.environ:
-        s = s.replace("\\", "/")
-        if s[1:3] == ":/":
-            s = "/" + s[0] + s[2:]
-
-    # Now the proper quoting
-    return "'" + s.replace("'", "'\\''") + "'"
-
-
 def wait_for_keypress(seconds):
     """Wait for a keypress or until the given number of seconds have passed,
     whichever happens first.
@@ -278,8 +181,8 @@ class IgraphCCoreBuilder(object):
     """
 
     def create_build_config_file(self, install_folder, libraries):
-        with open(os.path.join(install_folder, "build.cfg"), "w") as f:
-            f.write(repr(libraries))
+        with (install_folder / "build.cfg").open("w") as fp:
+            fp.write(repr(libraries))
 
     def parse_pkgconfig_file(self, filename):
         building_on_windows = building_on_windows_msvc()
@@ -288,7 +191,7 @@ class IgraphCCoreBuilder(object):
             libraries = ["igraph"]
         else:
             libraries = []
-            with open(filename, "r") as fp:
+            with filename.open("r") as fp:
                 for line in fp:
                     if line.startswith("Libs: ") or line.startswith("Libs.private: "):
                         words = line.strip().split()
@@ -301,145 +204,6 @@ class IgraphCCoreBuilder(object):
                 libraries = ["igraph"]
 
         return libraries
-
-
-class IgraphCCoreAutotoolsBuilder(IgraphCCoreBuilder):
-    """Class responsible for downloading and building the C core of igraph
-    if it is not installed yet, assuming that the C core uses `configure.ac`
-    and its friends. This used to be the case before igraph 0.9.
-    """
-
-    def compile_in(self, source_folder, build_folder, install_folder):
-        """Compiles igraph from its source code in the given folder.
-
-        source_folder is the name of the folder that contains igraph's source
-        files. build_folder is the name of the folder where the build should
-        be executed. Both must be absolute paths.
-
-        Returns:
-            False if the build failed or the list of libraries to link to when
-            linking the Python interface to igraph
-        """
-        build_to_source_folder = os.path.relpath(source_folder, build_folder)
-
-        os.chdir(source_folder)
-
-        # Run the bootstrap script if we have downloaded a tarball from
-        # Github
-        if os.path.isfile("bootstrap.sh") and not os.path.isfile("configure"):
-            print("Bootstrapping igraph...")
-            retcode = subprocess.call("sh bootstrap.sh", shell=True)
-            if retcode:
-                return False
-
-        # Patch ltmain.sh so it does not freak out when the build directory
-        # contains spaces
-        with open("ltmain.sh") as infp:
-            with open("ltmain.sh.new", "w") as outfp:
-                for line in infp:
-                    if line.endswith("cd $darwin_orig_dir\n"):
-                        line = line.replace(
-                            "cd $darwin_orig_dir\n", 'cd "$darwin_orig_dir"\n'
-                        )
-                    outfp.write(line)
-        shutil.move("ltmain.sh.new", "ltmain.sh")
-
-        os.chdir(build_folder)
-
-        print("Configuring igraph...")
-        configure_args = ["--disable-tls", "--enable-silent-rules"]
-        if "IGRAPH_EXTRA_CONFIGURE_ARGS" in os.environ:
-            configure_args.extend(os.environ["IGRAPH_EXTRA_CONFIGURE_ARGS"].split(" "))
-        retcode = subprocess.call(
-            "sh {0} {1}".format(
-                quote_path_for_shell(os.path.join(build_to_source_folder, "configure")),
-                " ".join(configure_args),
-            ),
-            env=self.enhanced_env(CFLAGS="-fPIC", CXXFLAGS="-fPIC"),
-            shell=True,
-        )
-        if retcode:
-            return False
-
-        building_on_windows = building_on_windows_msvc()
-
-        if building_on_windows:
-            print("Creating Microsoft Visual Studio project...")
-            retcode = subprocess.call("make msvc", shell=True)
-            if retcode:
-                return False
-
-        print("Building igraph...")
-        if building_on_windows:
-            msvc_source = find_msvc_source_folder()
-            if not msvc_source:
-                return False
-
-            devenv = os.environ.get("DEVENV_EXECUTABLE")
-            os.chdir(msvc_source)
-            if devenv is None:
-                retcode = subprocess.call("devenv /upgrade igraph.vcproj", shell=True)
-            else:
-                retcode = subprocess.call([devenv, "/upgrade", "igraph.vcproj"])
-            if retcode:
-                return False
-
-            retcode = subprocess.call(
-                "msbuild.exe igraph.vcxproj /p:configuration=Release"
-            )
-        else:
-            retcode = subprocess.call("make", shell=True)
-
-        if retcode:
-            return False
-
-        libraries = self.parse_pkgconfig_file("igraph.pc")
-
-        return libraries
-
-    def copy_build_artifacts(
-        self, source_folder, build_folder, install_folder, libraries
-    ):
-        building_on_windows = building_on_windows_msvc()
-
-        create_dir_unless_exists(install_folder)
-
-        ensure_dir_does_not_exist(install_folder, "include")
-        ensure_dir_does_not_exist(install_folder, "lib")
-
-        shutil.copytree(
-            os.path.join(source_folder, "include"),
-            os.path.join(install_folder, "include"),
-        )
-        create_dir_unless_exists(install_folder, "lib")
-
-        for fname in glob.glob(os.path.join(build_folder, "include", "*.h")):
-            shutil.copy(fname, os.path.join(install_folder, "include"))
-
-        if building_on_windows:
-            msvc_builddir = find_msvc_source_folder(build_folder, requires_built=True)
-            if msvc_builddir is not None:
-                print("Using MSVC build dir: %s\n\n" % msvc_builddir)
-                for fname in glob.glob(os.path.join(msvc_builddir, "Release", "*.lib")):
-                    shutil.copy(fname, os.path.join(install_folder, "lib"))
-            else:
-                print("Cannot find MSVC build dir in %s\n\n" % build_folder)
-                return False
-        else:
-            for fname in glob.glob(
-                os.path.join(build_folder, "src", ".libs", "libigraph.*")
-            ):
-                shutil.copy(fname, os.path.join(install_folder, "lib"))
-
-        return True
-
-    @staticmethod
-    def enhanced_env(**kwargs):
-        env = os.environ.copy()
-        for k, v in kwargs.items():
-            prev = os.environ.get(k)
-            env[k] = "{0} {1}".format(prev, v) if prev else v
-        return env
 
 
 ###########################################################################
@@ -464,7 +228,7 @@ class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
         """
         global is_windows
 
-        cmake = find_executable("cmake")
+        cmake = which("cmake")
         if not cmake:
             print(
                 "igraph uses CMake as the build system. You need to install CMake "
@@ -476,7 +240,7 @@ class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
         os.chdir(build_folder)
 
         print("Configuring build...")
-        args = [cmake, build_to_source_folder]
+        args = [cmake, str(build_to_source_folder)]
         for deps in "ARPACK BLAS CXSPARSE GLPK LAPACK".split():
             args.append("-DIGRAPH_USE_INTERNAL_" + deps + "=ON")
 
@@ -496,17 +260,11 @@ class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
             return False
 
         print("Installing build...")
-        retcode = subprocess.call([cmake, "--install", ".", "--prefix", install_folder])
+        retcode = subprocess.call([cmake, "--install", ".", "--prefix", str(install_folder)])
         if retcode:
             return False
 
-        return self.parse_pkgconfig_file(os.path.join(install_folder, "lib", "pkgconfig", "igraph.pc"))
-
-    def copy_build_artifacts(
-        self, source_folder, build_folder, install_folder, libraries
-    ):
-        # Nothing to do; we already installed stuff in the compilation step
-        return True
+        return self.parse_pkgconfig_file(install_folder / "lib" / "pkgconfig" / "igraph.pc")
 
 
 ###########################################################################
@@ -675,37 +433,34 @@ class BuildConfiguration(object):
         """Compiles igraph from the vendored source code inside `vendor/source/igraph`.
         This folder typically comes from a git submodule.
         """
-        if os.path.exists(os.path.join("vendor", "install", "igraph")):
+        vendor_folder = Path("vendor")
+        source_folder = vendor_folder / "source" / "igraph"
+        build_folder = vendor_folder / "build" / "igraph"
+        install_folder = vendor_folder / "install" / "igraph"
+
+        if install_folder.exists():
             # Vendored igraph already compiled and installed, just use it
             self.use_vendored_igraph()
             return True
 
-        vendor_source_path = os.path.join("vendor", "source", "igraph")
-        if os.path.isfile(os.path.join(vendor_source_path, "CMakeLists.txt")):
+        if (source_folder / "CMakeLists.txt").exists():
             igraph_builder = IgraphCCoreCMakeBuilder()
-        elif os.path.isfile(os.path.join(vendor_source_path, "configure.ac")):
-            igraph_builder = IgraphCCoreAutotoolsBuilder()
         else:
-            # No git submodule present with vendored source
-            print("Cannot find vendored igraph source in " + vendor_source_path)
+            print("Cannot find vendored igraph source in {0}".format(source_folder))
             print("")
             return False
 
-        source_folder = os.path.join("vendor", "source", "igraph")
-        build_folder = os.path.join("vendor", "build", "igraph")
-        install_folder = os.path.join("vendor", "install", "igraph")
-
         print("We are going to build the C core of igraph.")
-        print("  Source folder: %s" % source_folder)
-        print("  Build folder: %s" % build_folder)
-        print("  Install folder: %s" % install_folder)
+        print("  Source folder: {0}".format(source_folder))
+        print("  Build folder: {0}".format(build_folder))
+        print("  Install folder: {0}".format(install_folder))
         print("")
 
-        source_folder = os.path.abspath(source_folder)
-        build_folder = os.path.abspath(build_folder)
-        install_folder = os.path.abspath(install_folder)
+        source_folder = source_folder.resolve()
+        build_folder = build_folder.resolve()
+        install_folder = install_folder.resolve()
 
-        create_dir_unless_exists(build_folder)
+        Path(build_folder).mkdir(parents=True, exist_ok=True)
 
         cwd = os.getcwd()
         try:
@@ -716,16 +471,6 @@ class BuildConfiguration(object):
             )
         finally:
             os.chdir(cwd)
-
-        if not igraph_builder.copy_build_artifacts(
-            source_folder=source_folder,
-            build_folder=build_folder,
-            install_folder=install_folder,
-            libraries=libraries,
-        ):
-            print("Could not compile the C core of igraph.")
-            print("")
-            sys.exit(1)
 
         igraph_builder.create_build_config_file(install_folder, libraries)
 
@@ -851,8 +596,6 @@ class BuildConfiguration(object):
     def use_educated_guess(self):
         """Tries to guess the proper library names, include and library paths
         if everything else failed."""
-
-        preprocess_fallback_config()
 
         global LIBIGRAPH_FALLBACK_LIBRARIES
         global LIBIGRAPH_FALLBACK_INCLUDE_DIRS
