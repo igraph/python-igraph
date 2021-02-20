@@ -6866,6 +6866,12 @@ PyObject* igraphmodule_Graph_layout_drl(igraphmodule_GraphObject *self,
     return NULL;
 
   if (fixed_o != 0 && fixed_o != Py_None) {
+    /* Apparently the "fixed" argument does not do anything in the DrL
+     * implementation so we throw a warning if the user tries to use it */
+    PyErr_Warn(PyExc_DeprecationWarning, "The fixed=... argument of the DrL "
+               "layout is ignored; it is kept only for sake of backwards "
+               "compatibility. The DrL layout algorithm does not support "
+               "permanently fixed nodes.");
     fixed = (igraph_vector_bool_t*)malloc(sizeof(igraph_vector_bool_t));
     if (!fixed) {
       PyErr_NoMemory();
@@ -14299,11 +14305,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param seed: if C{None}, uses a random starting layout for the\n"
    "  algorithm. If a matrix (list of lists), uses the given matrix\n"
    "  as the starting position.\n"
-   "@param fixed: if a seed is given, you can specify some vertices to be\n"
-   "  kept fixed at their original position in the seed by passing an\n"
-   "  appropriate list here. The list must have exactly as many items as\n"
-   "  the number of vertices in the graph. Items of the list that evaluate\n"
-   "  to C{True} denote vertices that will not be moved.\n"
+   "@param fixed: ignored. We used to assume that the DrL layout supports\n"
+   "  fixed nodes, but later it turned out that the argument has no effect\n"
+   "  in the original DrL code. We kept the argument for sake of backwards\n"
+   "  compatibility, but it will have no effect on the final layout.\n"
    "@param options: if you give a string argument here, you can select from\n"
    "  five default preset parameterisations: C{default}, C{coarsen} for a\n"
    "  coarser layout, C{coarsest} for an even coarser layout, C{refine} for\n"
