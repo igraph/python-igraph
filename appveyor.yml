@@ -5,18 +5,19 @@ environment:
   global:
     CIBW_BEFORE_BUILD: python setup.py build_c_core
     CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
-    IGRAPH_EXTRA_CONFIGURE_ARGS: "--disable-graphml"
     PYTHON: "C:\\Python37"
 
   matrix:
     - CIBW_BUILD: "*-win32"
       CIBW_SKIP: "pp27-* cp27-* cp35-*"
+      IGRAPH_EXTRA_CMAKE_ARGS: "-A Win32"
       MSYSTEM: MINGW32
       PATH: C:\msys64\usr\bin;C:\msys64\mingw32\bin;C:\Windows\System32;C:\Windows;%PATH%
       TARGET_ARCH: "x86"
 
     - CIBW_BUILD: "*-win_amd64"
       CIBW_SKIP: "pp27-* cp27-* cp35-*"
+      IGRAPH_EXTRA_CMAKE_ARGS: "-A x64"
       MSYSTEM: MINGW64
       PATH: C:\msys64\usr\bin;C:\msys64\mingw64\bin;C:\Windows\System32;C:\Windows;%PATH%
       TARGET_ARCH: "x64"
