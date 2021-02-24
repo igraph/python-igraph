@@ -22,6 +22,7 @@ SKIP_HEADER_INSTALL = (platform.python_implementation() == "PyPy") or (
 from setuptools import setup, Command, Extension
 
 import glob
+import shlex
 import shutil
 import subprocess
 import sys
@@ -240,13 +241,22 @@ class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
         os.chdir(build_folder)
 
         print("Configuring build...")
-        args = [cmake, str(build_to_source_folder)]
+        args = [cmake]
+
+        # Add any extra CMake args from environment variables
+        if "IGRAPH_CMAKE_EXTRA_ARGS" in os.environ:
+            args.extend(shlex.split(os.environ["IGRAPH_CMAKE_EXTRA_ARGS"]))
+
+        # Build the Python interface with vendored libraries
         for deps in "ARPACK BLAS CXSPARSE GLPK LAPACK".split():
             args.append("-DIGRAPH_USE_INTERNAL_" + deps + "=ON")
 
         # -fPIC is needed on Linux so we can link to a static igraph lib from a
         # Python shared library
         args.append("-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+
+        # Finally, add the source folder path
+        args.append(str(build_to_source_folder))
 
         retcode = subprocess.call(args)
         if retcode:
