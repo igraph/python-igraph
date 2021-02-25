@@ -51,7 +51,7 @@
 
 * Wildcard imports were removed from the codebase.
 
-* CI tests were moved to Azure Pipelines from Travis.
+* CI tests were moved to Github Actions from Travis.
 
 * The core C library is now built with `-fPIC` on Linux to allow linking to the
   Python interface.
