@@ -600,16 +600,27 @@ class BuildConfiguration(object):
         the include and library paths and the library names accordingly."""
         building_on_windows = building_on_windows_msvc()
 
-        buildcfg.include_dirs = [os.path.join("vendor", "install", "igraph", "include", "igraph")]
-        buildcfg.library_dirs = [os.path.join("vendor", "install", "igraph", "lib")]
+        vendor_dir = Path("vendor") / "install" / "igraph"
+
+        buildcfg.include_dirs = [str(vendor_dir / "include" / "igraph")]
+        buildcfg.library_dirs = []
+
+        for candidate in ("lib", "lib64"):
+            candidate = vendor_dir / candidate
+            if candidate.exists():
+                buildcfg.library_dirs.append(str(candidate))
+                break
+        else:
+            raise RuntimeError("cannot detect igraph library dir within " + str(vendor_dir))
+
         if not buildcfg.static_extension:
             buildcfg.static_extension = "only_igraph"
             if building_on_windows:
                 buildcfg.define_macros.append(("IGRAPH_STATIC", "1"))
 
-        buildcfg_file = os.path.join("vendor", "install", "igraph", "build.cfg")
-        if os.path.exists(buildcfg_file):
-            buildcfg.libraries = eval(open(buildcfg_file).read())
+        buildcfg_file = vendor_dir / "build.cfg"
+        if buildcfg_file.exists():
+            buildcfg.libraries = eval(buildcfg_file.open("r").read())
 
     def use_educated_guess(self):
         """Tries to guess the proper library names, include and library paths
