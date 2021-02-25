@@ -23,15 +23,15 @@ jobs:
     - name: Install OS dependencies
       run:
         sudo apt-get install gfortran flex bison
-    - name: Install Python dependencies
+    - name: Install CMake and cibuildwheel
       run: |
         # Pypi has no pip by default, and ubuntu blocks python -m ensurepip
         # However, Github runners are supposed to have pip installed by default
         # https://docs.github.com/en/actions/guides/building-and-testing-python
         #wget -qO- https://bootstrap.pypa.io/get-pip.py | python
         python -m pip install --upgrade pip
-        pip install cibuildwheel
-    - name: Wheels (linux)
+        pip install cmake cibuildwheel
+    - name: Wheels (Linux)
       env:
         CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && python setup.py build_c_core"
         CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
@@ -44,7 +44,7 @@ jobs:
       with:
         name: source-dist
         path: dist/python-igraph-*.tar.gz
-    - name: Upload linux wheels
+    - name: Upload Linux wheels
       uses: actions/upload-artifact@v2
       with:
         name: linux-wheels
@@ -72,7 +72,7 @@ jobs:
         CIBW_BEFORE_BUILD: "python setup.py build_c_core"
         CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
         CIBW_SKIP: "cp27-* pp27-* cp35-*"
-    - name: Upload linux wheels
+    - name: Upload Linux wheels
       uses: actions/upload-artifact@v2
       with:
         name: OSX-wheels
@@ -90,7 +90,7 @@ jobs:
         name: source-dist
         path: dist
 
-    - name: "Download artifacts: linux wheels"
+    - name: "Download artifacts: Linux wheels"
       uses: actions/download-artifact@v2
       with:
         name: linux-wheels
