@@ -222,7 +222,7 @@ class Plot(object):
         """Sets the background color of the plot. C{None} means a
         transparent background. You can use any color specification here
         that is understood by the C{get} method of the current palette
-        or by L{igraph.colors.color_name_to_rgb}.
+        or by L{igraph.drawing.colors.color_name_to_rgb}.
         """
         if color is None:
             self._background = None

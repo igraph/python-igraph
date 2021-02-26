@@ -3513,6 +3513,9 @@ class Graph(GraphBase):
 
         If you want to use vertex names as index, you can do:
 
+        >>> from string import ascii_letters
+        >>> graph = Graph.GRG(25, 0.4)
+        >>> graph.vs["name"] = ascii_letters[:graph.vcount()]
         >>> df = graph.get_vertex_dataframe()
         >>> df.set_index('name', inplace=True)
 
@@ -3543,6 +3546,9 @@ class Graph(GraphBase):
 
         If you want to use source and target vertex IDs as index, you can do:
 
+        >>> from string import ascii_letters
+        >>> graph = Graph.GRG(25, 0.4)
+        >>> graph.vs["name"] = ascii_letters[:graph.vcount()]
         >>> df = graph.get_edge_dataframe()
         >>> df.set_index(['source', 'target'], inplace=True)
 
@@ -4591,7 +4597,7 @@ class EdgeSeq(_igraph.EdgeSeq):
 
       >>> g=Graph.Full(3)
       >>> for e in g.es:
-      ...   print e.tuple
+      ...   print(e.tuple)
       ...
       (0, 1)
       (0, 2)

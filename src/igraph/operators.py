@@ -43,7 +43,7 @@ def disjoint_union(graphs):
     An error is generated if some input graphs are directed and others are
     undirected.
 
-    @param graph: list of graphs. A lazy sequence is not acceptable.
+    @param graphs: list of graphs. A lazy sequence is not acceptable.
     @return: the disjoint union graph
     """
     if any(not isinstance(g, GraphBase) for g in graphs):
@@ -120,7 +120,7 @@ def union(graphs, byname="auto"):
     An error is generated if some input graphs are directed and others are
     undirected.
 
-    @param graph: list of graphs. A lazy sequence is not acceptable.
+    @param graphs: list of graphs. A lazy sequence is not acceptable.
     @param byname: bool or 'auto' specifying the function behaviour with
       respect to names vertices (i.e. vertices with the 'name' attribute). If
       False, ignore vertex names. If True, merge vertices based on names. If
@@ -297,7 +297,7 @@ def intersection(graphs, byname="auto", keep_all_vertices=True):
     An error is generated if some input graphs are directed and others are
     undirected.
 
-    @param graph: list of graphs. A lazy sequence is not acceptable.
+    @param graphs: list of graphs. A lazy sequence is not acceptable.
     @param byname: bool or 'auto' specifying the function behaviour with
       respect to names vertices (i.e. vertices with the 'name' attribute). If
       False, ignore vertex names. If True, merge vertices based on names. If

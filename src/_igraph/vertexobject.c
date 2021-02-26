@@ -873,7 +873,7 @@ PyTypeObject igraphmodule_VertexType =
   "The attributes of the vertex can be accessed by using the vertex\n"
   "as a hash:\n\n"
   "  >>> v[\"color\"] = \"red\"                  #doctest: +SKIP\n"
-  "  >>> print v[\"color\"]                      #doctest: +SKIP\n"
+  "  >>> print(v[\"color\"])                     #doctest: +SKIP\n"
   "  red\n", /* tp_doc */
   0,                                          /* tp_traverse */
   0,                                          /* tp_clear */

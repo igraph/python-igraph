@@ -59,9 +59,9 @@ class Cut(VertexClustering):
       >>> from igraph import Graph
       >>> g = Graph.Ring(20)
       >>> mc = g.mincut()
-      >>> print mc.value
+      >>> print(mc.value)
       2.0
-      >>> print min(map(len, mc))
+      >>> print(min(len(x) for x in mc))
       1
       >>> mc.es["color"] = "red"
     """
@@ -165,7 +165,7 @@ class Flow(Cut):
       >>> from igraph import Graph
       >>> g = Graph.Ring(20)
       >>> mf = g.maxflow(0, 10)
-      >>> print mf.value
+      >>> print(mf.value)
       2.0
       >>> mf.es["color"] = "red"
     """

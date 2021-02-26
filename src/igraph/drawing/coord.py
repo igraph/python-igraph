@@ -2,7 +2,6 @@
 Coordinate systems and related plotting routines
 """
 
-from igraph.compat import property
 from igraph.drawing.baseclasses import AbstractCairoDrawer
 from igraph.drawing.utils import BoundingBox
 

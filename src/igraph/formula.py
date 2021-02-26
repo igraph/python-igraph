@@ -146,13 +146,13 @@ def construct_graph_from_formula(cls, formula=None, attr="name", simplify=True):
     Some simple examples:
 
       >>> from igraph import Graph
-      >>> print Graph.Formula()           # empty graph
+      >>> print(Graph.Formula())          # empty graph
       IGRAPH UN-- 0 0 --
       + attr: name (v)
       >>> g = Graph.Formula("A-B")        # undirected graph
       >>> g.vs["name"]
       ['A', 'B']
-      >>> print g
+      >>> print(g)
       IGRAPH UN-- 2 1 --
       + attr: name (v)
       + edges (vertex names):
@@ -165,7 +165,7 @@ def construct_graph_from_formula(cls, formula=None, attr="name", simplify=True):
       >>> g = Graph.Formula("A  --->  B") # directed graph
       >>> g.vs["name"]
       ['A', 'B']
-      >>> print g
+      >>> print(g)
       IGRAPH DN-- 2 1 --
       + attr: name (v)
       + edges (vertex names):
@@ -175,7 +175,7 @@ def construct_graph_from_formula(cls, formula=None, attr="name", simplify=True):
     with commas. You can also specify isolated vertices:
 
       >>> g = Graph.Formula("A--B, C--D, E--F, G--H, I, J, K")
-      >>> print ", ".join(g.vs["name"])
+      >>> print(", ".join(g.vs["name"]))
       A, B, C, D, E, F, G, H, I, J, K
       >>> g.clusters().membership
       [0, 0, 1, 1, 2, 2, 3, 3, 4, 5, 6]

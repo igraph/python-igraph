@@ -1,9 +1,6 @@
 # vim:ts=4:sw=4:sts=4:et
 # -*- coding: utf-8 -*-
-"""Utility functions that cannot be categorised anywhere else.
-
-@undocumented: _is_running_in_ipython
-"""
+"""Utility functions that cannot be categorised anywhere else."""
 
 from contextlib import contextmanager
 

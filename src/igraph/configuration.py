@@ -109,9 +109,9 @@ class Configuration(object):
     This object provides an interface to the configuration data using the
     syntax known from dict:
 
-      >>> c=Configuration()
+      >>> c = Configuration()
       >>> c["general.verbose"] = True
-      >>> print c["general.verbose"]
+      >>> print(c["general.verbose"])
       True
 
     Configuration keys are organized into sections, and the name to be used
@@ -121,9 +121,9 @@ class Configuration(object):
     If the name of the section is omitted, it defaults to C{general}, so
     C{general.verbose} can be referred to as C{verbose}:
 
-      >>> c=Configuration()
+      >>> c = Configuration()
       >>> c["verbose"] = True
-      >>> print c["general.verbose"]
+      >>> print(c["general.verbose"])
       True
 
     User-level configuration is stored in C{~/.igraphrc} per default on Linux
@@ -195,8 +195,6 @@ class Configuration(object):
 
         - B{ipython.inlining.Plot}: whether to show instances of the L{Plot} class
           inline in IPython's console if the console supports it. Default: C{True}
-
-    @undocumented: _item_to_section_key, _types, _sections, _definitions, _instance
     """
 
     # pylint: disable-msg=R0903

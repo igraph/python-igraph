@@ -43,14 +43,14 @@ class TerminalController:
     output to the terminal:
 
         >>> term = TerminalController()
-        >>> print 'This is '+term.GREEN+'green'+term.NORMAL
+        >>> print('This is '+term.GREEN+'green'+term.NORMAL)
         This is green
 
     Alternatively, the `render()` method can used, which replaces
     '${action}' with the string required to perform 'action':
 
         >>> term = TerminalController()
-        >>> print term.render('This is ${GREEN}green${NORMAL}')
+        >>> print(term.render('This is ${GREEN}green${NORMAL}'))
         This is green
 
     If the terminal doesn't support a given action, then the value of

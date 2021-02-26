@@ -45,23 +45,23 @@ class FittedPowerLaw(object):
 
         >>> result = power_law_fit([1, 2, 3, 4, 5, 6])
         >>> result                   # doctest:+ELLIPSIS
-        FittedPowerLaw(continuous=False, alpha=2.425828..., xmin=3.0, L=-7.54633..., D=0.2138..., p=0.99311...)
+        FittedPowerLaw(continuous=False, alpha=2.42..., xmin=3.0, L=-7.54..., D=0.21..., p=0.993...)
         >>> print(result)            # doctest:+ELLIPSIS
         Fitted power-law distribution on discrete data
         <BLANKLINE>
-        Exponent (alpha)  = 2.425828
+        Exponent (alpha)  = 2.42...
         Cutoff (xmin)     = 3.000000
         <BLANKLINE>
-        Log-likelihood    = -7.546337
+        Log-likelihood    = -7.54...
         <BLANKLINE>
         H0: data was drawn from the fitted distribution
         <BLANKLINE>
-        KS test statistic = 0.213817
-        p-value           = 0.993111
+        KS test statistic = 0.21...
+        p-value           = 0.993...
         <BLANKLINE>
         H0 could not be rejected at significance level 0.05
         >>> result.alpha             # doctest:+ELLIPSIS
-        2.425828...
+        2.42...
         >>> result.xmin
         3.0
         >>> result.continuous

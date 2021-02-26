@@ -1,8 +1,6 @@
 # vim:ts=4:sw=4:sts=4:et
 # -*- coding: utf-8 -*-
-"""Classes related to graph clustering.
-
-@undocumented: _handle_mark_groups_arg_for_clustering, _prepare_community_comparison"""
+"""Classes related to graph clustering."""
 
 __license__ = u"""
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
@@ -63,7 +61,7 @@ class Clustering(object):
     of clusters:
 
       >>> for cluster in cl:
-      ...     print " ".join(str(idx) for idx in cluster)
+      ...     print(" ".join(str(idx) for idx in cluster))
       ...
       0 1 2 3
       4 5 6
@@ -73,7 +71,7 @@ class Clustering(object):
     the clustering object to a list:
 
       >>> cluster_list = list(cl)
-      >>> print cluster_list
+      >>> print(cluster_list)
       [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9, 10]]
 
     @undocumented: _formatted_cluster_iterator
@@ -347,7 +345,7 @@ class VertexClustering(Clustering):
           See L{Graph.contract_vertices()} for more details.
         @param combine_edges: specifies how to derive the attributes of the
           edges in the new graph from the attributes of the old ones. See
-          L{Graph.simplify()} for more details. If you specify C{False}
+          L{igraph.Graph.simplify()} for more details. If you specify C{False}
           here, edges will not be combined, and the number of edges between
           the vertices representing the original clusters will be equal to
           the number of edges between the members of those clusters in the
@@ -416,19 +414,21 @@ class VertexClustering(Clustering):
     def subgraph(self, idx):
         """Get the subgraph belonging to a given cluster.
 
+        Precondition: the vertex set of the graph hasn't been modified since the
+        moment the cover was constructed.
+
         @param idx: the cluster index
         @return: a copy of the subgraph
-        @precondition: the vertex set of the graph hasn't been modified since
-          the moment the clustering was constructed.
         """
         return self._graph.subgraph(self[idx])
 
     def subgraphs(self):
         """Gets all the subgraphs belonging to each of the clusters.
 
+        Precondition: the vertex set of the graph hasn't been modified since the
+        moment the cover was constructed.
+
         @return: a list containing copies of the subgraphs
-        @precondition: the vertex set of the graph hasn't been modified since
-          the moment the clustering was constructed.
         """
         return [self._graph.subgraph(cl) for cl in self]
 
@@ -439,12 +439,13 @@ class VertexClustering(Clustering):
         the clustering. It may also be known as the I{giant community} if the
         clustering represents the result of a community detection function.
 
+        Precondition: the vertex set of the graph hasn't been modified since the
+        moment the cover was constructed.
+
         @note: there can be multiple largest clusters, this method will return
           the copy of an arbitrary one if there are multiple largest clusters.
 
         @return: a copy of the largest cluster.
-        @precondition: the vertex set of the graph hasn't been modified since
-          the moment the clustering was constructed.
         """
         ss = self.sizes()
         max_size = max(ss)
@@ -657,7 +658,7 @@ class Dendrogram(object):
         if format == "newick":
             n = self._nitems + self._nmerges
             if self._names is None:
-                nodes = range(n)
+                nodes = list(range(n))
             else:
                 nodes = list(self._names)
             if len(nodes) < n:
@@ -1098,7 +1099,7 @@ class Cover(object):
     clusters:
 
       >>> for cluster in cl:
-      ...     print " ".join(str(idx) for idx in cluster)
+      ...     print(" ".join(str(idx) for idx in cluster))
       ...
       0 1 2 3
       2 3 4
@@ -1108,7 +1109,7 @@ class Cover(object):
     the cover to a list:
 
       >>> cluster_list = list(cl)
-      >>> print cluster_list
+      >>> print(cluster_list)
       [[0, 1, 2, 3], [2, 3, 4], [0, 1, 6]]
 
     L{Clustering} objects can readily be converted to L{Cover} objects
@@ -1286,19 +1287,21 @@ class VertexCover(Cover):
     def subgraph(self, idx):
         """Get the subgraph belonging to a given cluster.
 
+        Precondition: the vertex set of the graph hasn't been modified since the
+        moment the cover was constructed.
+
         @param idx: the cluster index
         @return: a copy of the subgraph
-        @precondition: the vertex set of the graph hasn't been modified since
-          the moment the cover was constructed.
         """
         return self._graph.subgraph(self[idx])
 
     def subgraphs(self):
         """Gets all the subgraphs belonging to each of the clusters.
 
+        Precondition: the vertex set of the graph hasn't been modified since the
+        moment the cover was constructed.
+
         @return: a list containing copies of the subgraphs
-        @precondition: the vertex set of the graph hasn't been modified since
-          the moment the cover was constructed.
         """
         return [self._graph.subgraph(cl) for cl in self]
 

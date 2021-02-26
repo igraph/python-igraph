@@ -1,7 +1,5 @@
 """
 Drawers for labels on plots.
-
-@undocumented: test
 """
 
 import re
@@ -51,10 +49,8 @@ class TextDrawer(AbstractCairoDrawer):
         has an attribute named ``bbox`` which will be used as a bounding
         box.
 
-        :Parameters:
-          wrap : boolean
-            whether to allow re-wrapping of the text if it does not fit
-            within the bounding box horizontally.
+        @param wrap: whether to allow re-wrapping of the text if it does not
+            fit within the bounding box horizontally.
         """
         ctx = self.context
         bbox = self.bbox
@@ -90,26 +86,20 @@ class TextDrawer(AbstractCairoDrawer):
         Vertical alignment settings are not taken into account in this method
         as the text is not drawn within a box.
 
-        :Parameters:
-          x : float or ``None``
-            The X coordinate of the reference point where the layout should
+        @param x: The X coordinate of the reference point where the layout should
             start.
-          y : float or ``None``
-            The Y coordinate of the reference point where the layout should
+        @param y: The Y coordinate of the reference point where the layout should
             start.
-          width : float or ``None``
-            The width of the box in which the text will be fitted. It matters
-            only when the text is right-aligned or centered. The text will
-            overflow the box if any of the lines is longer than the box width
-            and `wrap` is ``False``.
-          wrap : boolean
-            whether to allow re-wrapping of the text if it does not fit
-            within the given width.
+        @param width: The width of the box in which the text will be fitted. It
+            matters only when the text is right-aligned or centered. The text
+            will overflow the box if any of the lines is longer than the box
+            width and `wrap` is ``False``.
+        @param wrap: whether to allow re-wrapping of the text if it does not
+            fit within the given width.
 
-        :Returns:
-          a list consisting of ``(x, y, line)`` tuples where ``x`` and ``y``
-          refer to reference points on the Cairo canvas and ``line`` refers
-          to the corresponding text that should be plotted there.
+        @return: a list consisting of ``(x, y, line)`` tuples where ``x`` and
+            ``y`` refer to reference points on the Cairo canvas and ``line``
+            refers to the corresponding text that should be plotted there.
         """
         ctx = self.context
 
@@ -162,20 +152,16 @@ class TextDrawer(AbstractCairoDrawer):
         Vertical alignment settings are not taken into account in this method
         as the text is not drawn within a box.
 
-        :Parameters:
-          x : float or ``None``
-            The X coordinate of the reference point where the drawing should
+        @param x: The X coordinate of the reference point where the layout should
             start.
-          y : float or ``None``
-            The Y coordinate of the reference point where the drawing should
+        @param y: The Y coordinate of the reference point where the layout should
             start.
-          width : float or ``None``
-            The width of the box in which the text will be fitted. It matters
-            only when the text is right-aligned or centered. The text will
-            overflow the box if any of the lines is longer than the box width.
-          wrap : boolean
-            whether to allow re-wrapping of the text if it does not fit
-            within the given width.
+        @param width: The width of the box in which the text will be fitted. It
+            matters only when the text is right-aligned or centered. The text
+            will overflow the box if any of the lines is longer than the box
+            width and `wrap` is ``False``.
+        @param wrap: whether to allow re-wrapping of the text if it does not
+            fit within the given width.
         """
         ctx = self.context
         for ref_x, ref_y, line in self.get_text_layout(x, y, width, wrap):
@@ -200,10 +186,8 @@ class TextDrawer(AbstractCairoDrawer):
         The difference between this method and `_iterlines()` is that this
         method is allowed to re-wrap the line if necessary.
 
-        :Parameters:
-          width : float or ``None``
-            The width of the box in which the text will be fitted. Lines will
-            be wrapped if they are wider than this width.
+        @param width: The width of the box in which the text will be fitted.
+            Lines will be wrapped if they are wider than this width.
         """
         ctx = self.context
         for line in self._text.split("\n"):

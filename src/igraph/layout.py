@@ -56,13 +56,13 @@ class Layout(object):
 
         >>> layout = Layout([(0, 1), (0, 2)])
         >>> coords = layout[1]
-        >>> print coords
+        >>> print(coords)
         [0, 2]
         >>> coords = (0, 3)
-        >>> print layout[1]
+        >>> print(layout[1])
         [0, 2]
         >>> layout[1] = coords
-        >>> print layout[1]
+        >>> print(layout[1])
         [0, 3]
     """
 

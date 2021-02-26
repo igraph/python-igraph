@@ -2,21 +2,8 @@
 # -*- coding: utf-8 -*-
 """Classes that help igraph communicate with Gephi (http://www.gephi.org)."""
 
-from igraph.compat import property
+import json
 import urllib.request, urllib.error, urllib.parse
-
-try:
-    # JSON is optional so we don't blow up with Python < 2.6
-    import json
-except ImportError:
-    try:
-        # Try with simplejson for Python < 2.6
-        import simplejson as json
-    except ImportError:
-        # No simplejson either
-        from igraph.drawing.utils import FakeModule
-
-        json = FakeModule()
 
 __all__ = ("GephiConnection", "GephiGraphStreamer", "GephiGraphStreamingAPIFormat")
 __docformat__ = "restructuredtext en"
@@ -202,7 +189,7 @@ class GephiGraphStreamer(object):
 
     The Gephi graph streaming format is a simple JSON-based format that can be used
     to post mutations to a graph (i.e. node and edge additions, removals and updates)
-    to a remote component. For instance, one can open up Gephi (http://www.gephi.org}),
+    to a remote component. For instance, one can open up Gephi (http://www.gephi.org),
     install the Gephi graph streaming plugin and then send a graph from igraph
     straight into the Gephi window by using `GephiGraphStreamer` with the
     appropriate URL where Gephi is listening.
@@ -215,7 +202,7 @@ class GephiGraphStreamer(object):
         >>> streamer = GephiGraphStreamer()
         >>> graph = Graph.Formula("A --> B, B --> C")
         >>> streamer.post(graph, buf)
-        >>> print buf.getvalue()         # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+        >>> print(buf.getvalue())        # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
         {"an": {"igraph:...:v:0": {"name": "A"}}}
         {"an": {"igraph:...:v:1": {"name": "B"}}}
         {"an": {"igraph:...:v:2": {"name": "C"}}}

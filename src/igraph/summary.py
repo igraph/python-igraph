@@ -1,9 +1,6 @@
 # vim:ts=4:sw=4:sts=4:et
 # -*- coding: utf-8 -*-
-"""Summary representation of a graph.
-
-@undocumented: _get_wrapper_for_width, FakeWrapper
-"""
+"""Summary representation of a graph."""
 
 from igraph.statistics import median
 from itertools import islice
@@ -83,11 +80,6 @@ class GraphSummary(object):
     Edges may be presented as an ordinary edge list or an adjacency
     list. By default, this depends on the number of edges; however,
     you can control it with the appropriate constructor arguments.
-
-    @undocumented: _construct_edgelist_adjlist, _construct_edgelist_compressed,
-      _construct_edgelist_edgelist, _construct_graph_attributes,
-      _construct_vertex_attributes, _construct_header, _edge_attribute_iterator,
-      _infer_column_alignment, _new_table, _vertex_attribute_iterator
     """
 
     def __init__(
