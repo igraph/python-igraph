@@ -142,7 +142,7 @@ code are picked up automatically by Python:
 python setup.py develop
 ```
 
-**NOTE**: Building requires `autotools`, a C compiler, and a few more dependencies.
+**NOTE**: Building requires `CMake`, a C compiler, and a few more dependencies.
 
 Changes that you make to the Python code do not need any extra action. However,
 if you adjust the source code of the C extension, you need to rebuild it by running
