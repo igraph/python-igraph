@@ -243,10 +243,6 @@ class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
         print("Configuring build...")
         args = [cmake]
 
-        # Add any extra CMake args from environment variables
-        if "IGRAPH_CMAKE_EXTRA_ARGS" in os.environ:
-            args.extend(shlex.split(os.environ["IGRAPH_CMAKE_EXTRA_ARGS"]))
-
         # Build the Python interface with vendored libraries
         for deps in "ARPACK BLAS CXSPARSE GLPK GMP LAPACK".split():
             args.append("-DIGRAPH_USE_INTERNAL_" + deps + "=ON")
@@ -254,6 +250,10 @@ class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
         # -fPIC is needed on Linux so we can link to a static igraph lib from a
         # Python shared library
         args.append("-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+
+        # Add any extra CMake args from environment variables
+        if "IGRAPH_CMAKE_EXTRA_ARGS" in os.environ:
+            args.extend(shlex.split(os.environ["IGRAPH_CMAKE_EXTRA_ARGS"]))
 
         # Finally, add the source folder path
         args.append(str(build_to_source_folder))
