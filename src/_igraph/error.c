@@ -41,11 +41,12 @@ PyObject* igraphmodule_InternalError;
  * \c NULL value to their callers until it is propagated to the Python
  * interpreter.
  */
-PyObject* igraphmodule_handle_igraph_error() 
-{
+PyObject* igraphmodule_handle_igraph_error() {
   if (!PyErr_Occurred()) {
-    PyErr_SetString(igraphmodule_InternalError,
-		    "Internal igraph error. Please contact the author!");
+    PyErr_SetString(
+      igraphmodule_InternalError,
+      "Internal igraph error. Please contact the author!"
+    );
   }
 
   return NULL;
@@ -56,7 +57,7 @@ PyObject* igraphmodule_handle_igraph_error()
  * \brief Warning hook for \c igraph
  */
 void igraphmodule_igraph_warning_hook(const char *reason, const char *file,
-				    int line, int igraph_errno) {
+                                      int line, int igraph_errno) {
   char buf[4096];
   snprintf(buf, sizeof(buf), "%s at %s:%i", reason, file, line);
   PyErr_Warn(PyExc_RuntimeWarning, buf);
@@ -67,18 +68,29 @@ void igraphmodule_igraph_warning_hook(const char *reason, const char *file,
  * \brief Error hook for \c igraph
  */
 void igraphmodule_igraph_error_hook(const char *reason, const char *file,
-				    int line, int igraph_errno) {
+                                    int line, int igraph_errno) {
   char buf[4096];
+  char* punctuation = "";
   PyObject *exc = igraphmodule_InternalError;
 
   if (igraph_errno == IGRAPH_UNIMPLEMENTED)
-      exc = PyExc_NotImplementedError;
+    exc = PyExc_NotImplementedError;
 
   if (igraph_errno == IGRAPH_ENOMEM)
-      exc = PyExc_MemoryError;
+    exc = PyExc_MemoryError;
 
-  snprintf(buf, sizeof(buf), "Error at %s:%i: %s, %s", file, line, reason,
-	  igraph_strerror(igraph_errno));
+  /* add a full stop at the end of the error message for nicer formatting */
+  if (reason && strlen(reason) > 1) {
+    char last_char = reason[strlen(reason) - 1];
+    if (last_char != '.' && last_char != '?' && last_char != '!') {
+      punctuation = ".";
+    }
+  }
+
+  snprintf(
+    buf, sizeof(buf), "Error at %s:%i: %s%s -- %s", file, line, reason,
+    punctuation, igraph_strerror(igraph_errno)
+  );
   IGRAPH_FINALLY_FREE();
 
   /* make sure we are not masking already thrown exceptions */
