@@ -1010,6 +1010,22 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
         # FIXME: deal with unnamed *args
 
+        # graph is not necessarily a graph, it can be a VertexClustering
+        # If so, extract the graph and set the coloring unless specified
+        # externally
+        from igraph.clustering import VertexClustering
+        if isinstance(graph, VertexClustering):
+            clustering = graph
+            graph = clustering.graph
+
+            if "vertex_color" not in kwds:
+                clusters = sorted(set(clustering.membership))
+                n_colors = len(clusters)
+                cmap = mpl.cm.get_cmap('viridis')
+                colors = [cmap(1.0 * i / n_colors) for i in range(n_colors)]
+                c = [colors[clusters.index(i)] for i in clustering.membership]
+                kwds["vertex_color"] = c
+
         # Get layout
         layout = kwds.get("layout", graph.layout())
         if isinstance(layout, str):
