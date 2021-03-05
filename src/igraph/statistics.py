@@ -474,9 +474,6 @@ class RunningMean(object):
     def __int__(self):
         return int(self._mean)
 
-    def __long__(self):
-        return int(self._mean)
-
     def __complex__(self):
         return complex(self._mean)
 

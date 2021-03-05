@@ -1535,7 +1535,7 @@ def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):
             first = None
         if first is not None:
             # Okay. Is the first element of the list a single number?
-            if isinstance(first, (int, long)):
+            if isinstance(first, int):
                 # Yes. Seems like we have a list of cluster indices.
                 # Assign color indices automatically.
                 group_iter = ((group, color) for color, group in enumerate(mark_groups))
@@ -1552,7 +1552,7 @@ def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):
 
     def cluster_index_resolver():
         for group, color in group_iter:
-            if isinstance(group, (int, long)):
+            if isinstance(group, int):
                 group = clustering[group]
             yield group, color
 
