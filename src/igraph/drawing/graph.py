@@ -983,6 +983,8 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         from matplotlib.patches import FancyArrowPatch
         from matplotlib.patches import ArrowStyle
         import numpy as np
+        from collections import defaultdict
+        from igraph.clustering import VertexClustering
 
         def shrink_vertex(ax, aux, vcoord, vsize_squared):
             """Shrink edge by vertex size"""
@@ -1010,14 +1012,34 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
         # FIXME: deal with unnamed *args
 
-        # graph is not necessarily a graph, it can be a VertexClustering
-        # If so, extract the graph and set the coloring unless specified
-        # externally
-        from igraph.clustering import VertexClustering
+        # graph is not necessarily a graph, it can be a VertexClustering. If so
+        # extract the graph. The clustering itself can be overridden using
+        # the "mark_groups" option
+        clustering = None
         if isinstance(graph, VertexClustering):
             clustering = graph
             graph = clustering.graph
 
+        # mark groups: the used data structure is eventually the dict option:
+        # tuples of vertex indices as the keys, colors as the values. We
+        # convert other formats into that one here
+        if 'mark_groups' in kwds:
+            if isinstance(kwds['mark_groups'], VertexClustering):
+                if clustering is not None:
+                    raise ValueError(
+                        'mark_groups cannot override a clustering with another'
+                    )
+                else:
+                    clustering = kwds.pop('mark_groups')
+            else:
+                try:
+                    mg_iter = iter(kwds['mark_groups'])
+                except TypeError:
+                    raise TypeError('mark_groups is not in the right format')
+                kwds['mark_groups'] = dict(mg_iter)
+
+        # If a clustering is set, color vertices and mark groups if requested
+        if clustering is not None:
             if "vertex_color" not in kwds:
                 clusters = sorted(set(clustering.membership))
                 n_colors = len(clusters)
@@ -1026,6 +1048,16 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 c = [colors[clusters.index(i)] for i in clustering.membership]
                 kwds["vertex_color"] = c
 
+                # mark_groups if not explicitely marked
+                if 'mark_groups' not in kwds:
+                    mark_groups = defaultdict(list)
+                    for i, color in enumerate(c):
+                        mark_groups[color].append(i)
+
+                    # Invert keys and values
+                    mark_groups = {tuple(v): k for k, v in mark_groups.items()}
+                    kwds['mark_groups'] = mark_groups
+
         # Get layout
         layout = kwds.get("layout", graph.layout())
         if isinstance(layout, str):
@@ -1033,6 +1065,27 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
         # Vertex coordinates
         vcoord = layout.coords
+
+        # Mark groups
+        if 'mark_groups' in kwds:
+            # FIXME: does this generate a new dep?
+            from scipy.spatial import ConvexHull
+            for idx, color in kwds['mark_groups'].items():
+                points = [vcoord[i] for i in idx]
+                ch = ConvexHull(points)
+                vertices = np.array([vcoord[idx[i]] for i in ch.vertices])
+                # 15% expansion
+                vertices += 0.15 * (vertices - vertices.mean(axis=0))
+
+                # NOTE: we could include a corner cutting algorithm close to
+                # the vertices (e.g. Chaikin) for beautification
+                polygon = mpl.patches.Polygon(
+                    vertices,
+                    facecolor=color, alpha=0.3,
+                    zorder=0, edgecolor=color,
+                    lw=2,
+                )
+                ax.add_artist(polygon)
 
         # Vertex properties
         nv = graph.vcount()
