@@ -139,7 +139,6 @@ from igraph.utils import (
     safemin,
     safemax,
 )
-from igraph.transparent_interface import TransparentAPI
 from igraph.version import __version__, __version_info__
 
 import os
@@ -5318,3 +5317,6 @@ def summary(obj, stream=None, *args, **kwds):
 
 config = configuration.init()
 del construct_graph_from_formula
+
+from igraph.transparent_interface import TransparentAPI
+

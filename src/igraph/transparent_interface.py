@@ -113,7 +113,7 @@ class TransparentAPIConverter:
     def convert_input(self, args_struct):
         converted = None
         convert_order = [
-            convert_input_networkx,
+            self.convert_input_networkx,
         ]
         for convert_fun in convert_order:
             try:
@@ -127,9 +127,10 @@ class TransparentAPIConverter:
         return converted
 
     def convert_output_networkx(self, result):
-        ret_type = infer_return_type(self.function)
         def conv_vertex(idx):
-            return self.graph_conv.vs[x]['_nx_name']
+            return self.graph_conv.vs[idx]['_nx_name']
+
+        ret_type = infer_return_type(self.function)
 
         # Floats are never vertex indices and such. This covers many, many cases
         if ret_type == 'passthrough':
@@ -205,7 +206,7 @@ class TransparentAPIConverter:
             args_struct.append(argd)
 
         # Convert graph and args
-        converted = self.convert_input(graph, args_struct)
+        converted = self.convert_input(args_struct)
         self.input_format = converted['input_format']
         self.graph_conv = graph_conv = converted['graph']
         args_conv = []
@@ -216,8 +217,15 @@ class TransparentAPIConverter:
             else:
                 kwargs_conv[argd['kw']] = argd['value']
 
-        # Run function
-        result = self.function(graph_conv, *args_conv, **kwargs_conv)
+        # Run function or method
+        import inspect
+        # Check if the target function is supposed to be a bound method
+        function = api_functions[self.function]['target']
+        if inspect.isfunction(function):
+            result = function(graph_conv, *args_conv, **kwargs_conv)
+        else:
+            # Call bound version of method
+            result = getattr(graph_conv, self.function)(*args_conv, **kwargs_conv)
 
         # Convert output if needed
         result_conv = self.convert_output(result)
@@ -234,6 +242,9 @@ class TransparentAPI:
     >>> print(TransparentAPI.functions)
     """
     functions = list(api_functions.keys())
+
+    def __repr__(self):
+        return str(self.functions)
 
 
 for funcname, dic in api_functions.items():
