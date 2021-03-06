@@ -139,6 +139,7 @@ from igraph.utils import (
     safemin,
     safemax,
 )
+from igraph.transparent_interface import TransparentAPI
 from igraph.version import __version__, __version_info__
 
 import os
@@ -1991,7 +1992,12 @@ class Graph(GraphBase):
 
         # Nodes and node attributes
         for i, v in enumerate(self.vs):
-            g.add_node(i, **v.attributes())
+            vattrs = v.attributes()
+            # This is how we store the vertex name from networkx. If found,
+            # restore it as we found it
+            if '_nx_name' in v.attributes():
+                i = vattrs.pop('_nx_name')
+            g.add_node(i, **vattrs)
 
         # Edges and edge attributes
         for edge in self.es:
