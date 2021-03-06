@@ -1023,40 +1023,40 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # mark groups: the used data structure is eventually the dict option:
         # tuples of vertex indices as the keys, colors as the values. We
         # convert other formats into that one here
-        if 'mark_groups' in kwds:
-            if isinstance(kwds['mark_groups'], VertexClustering):
+        if "mark_groups" in kwds:
+            if isinstance(kwds["mark_groups"], VertexClustering):
                 if clustering is not None:
                     raise ValueError(
-                        'mark_groups cannot override a clustering with another'
+                        "mark_groups cannot override a clustering with another"
                     )
                 else:
-                    clustering = kwds['mark_groups']
+                    clustering = kwds["mark_groups"]
             else:
                 try:
-                    mg_iter = iter(kwds['mark_groups'])
+                    mg_iter = iter(kwds["mark_groups"])
                 except TypeError:
-                    raise TypeError('mark_groups is not in the right format')
-                kwds['mark_groups'] = dict(mg_iter)
+                    raise TypeError("mark_groups is not in the right format")
+                kwds["mark_groups"] = dict(mg_iter)
 
         # If a clustering is set, color vertices and mark groups if requested
         if clustering is not None:
             if "vertex_color" not in kwds:
                 clusters = sorted(set(clustering.membership))
                 n_colors = len(clusters)
-                cmap = mpl.cm.get_cmap('viridis')
+                cmap = mpl.cm.get_cmap("viridis")
                 colors = [cmap(1.0 * i / n_colors) for i in range(n_colors)]
                 c = [colors[clusters.index(i)] for i in clustering.membership]
                 kwds["vertex_color"] = c
 
                 # mark_groups if not explicitely marked
-                if ('mark_groups' in kwds) and (kwds['mark_groups'] == clustering):
+                if ("mark_groups" in kwds) and (kwds["mark_groups"] == clustering):
                     mark_groups = defaultdict(list)
                     for i, color in enumerate(c):
                         mark_groups[color].append(i)
 
                     # Invert keys and values
                     mark_groups = {tuple(v): k for k, v in mark_groups.items()}
-                    kwds['mark_groups'] = mark_groups
+                    kwds["mark_groups"] = mark_groups
 
         # Get layout
         layout = kwds.get("layout", graph.layout())
@@ -1067,10 +1067,15 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         vcoord = layout.coords
 
         # Mark groups
-        if 'mark_groups' in kwds:
-            # FIXME: does this generate a new dep?
-            from scipy.spatial import ConvexHull
-            for idx, color in kwds['mark_groups'].items():
+        if "mark_groups" in kwds:
+            try:
+                from scipy.spatial import ConvexHull
+            except ImportError:
+                raise ImportError(
+                    "You should install scipy package in order to use mark_groups"
+                )
+
+            for idx, color in kwds["mark_groups"].items():
                 points = [vcoord[i] for i in idx]
                 ch = ConvexHull(points)
                 vertices = np.array([vcoord[idx[i]] for i in ch.vertices])
@@ -1081,8 +1086,10 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 # the vertices (e.g. Chaikin) for beautification
                 polygon = mpl.patches.Polygon(
                     vertices,
-                    facecolor=color, alpha=0.3,
-                    zorder=0, edgecolor=color,
+                    facecolor=color,
+                    alpha=0.3,
+                    zorder=0,
+                    edgecolor=color,
                     lw=2,
                 )
                 ax.add_artist(polygon)
