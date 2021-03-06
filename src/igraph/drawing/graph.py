@@ -1030,7 +1030,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                         'mark_groups cannot override a clustering with another'
                     )
                 else:
-                    clustering = kwds.pop('mark_groups')
+                    clustering = kwds['mark_groups']
             else:
                 try:
                     mg_iter = iter(kwds['mark_groups'])
@@ -1049,7 +1049,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 kwds["vertex_color"] = c
 
                 # mark_groups if not explicitely marked
-                if 'mark_groups' not in kwds:
+                if ('mark_groups' in kwds) and (kwds['mark_groups'] == clustering):
                     mark_groups = defaultdict(list)
                     for i, color in enumerate(c):
                         mark_groups[color].append(i)
