@@ -48,7 +48,7 @@ def infer_return_type(function):
         )
 
     # Passthrough is the default
-    return api_functions[function].get('return', 'passthrogh')
+    return api_functions[function].get('return', 'passthrough')
 
 
 def infer_arg_type(function, pos=None, key=None):
@@ -77,10 +77,8 @@ def infer_arg_type(function, pos=None, key=None):
 
 # The main issue is renaming vertices/edges for the function arguments
 class TransparentAPIConverter:
-    def __init__(self, function, args, kwargs):
+    def __init__(self, function):
         self.function = function
-        self.args = args
-        self.kwargs = kwargs
 
     @staticmethod
     def convert_input_networkx(graph, args):
@@ -181,10 +179,12 @@ class TransparentAPIConverter:
 
         return convert_dict[self.input_format](result)
 
-    def run_api_call(self):
+    def run_api_call(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
 
         # For now, the first argument must be a graph
-        self.graph = graph = self.args[0]
+        self.graph = self.args[0]
         args = [] if len(self.args) == 1 else self.args[1:]
 
         # Create args structure
@@ -225,7 +225,8 @@ class TransparentAPIConverter:
             result = function(graph_conv, *args_conv, **kwargs_conv)
         else:
             # Call bound version of method
-            result = getattr(graph_conv, self.function)(*args_conv, **kwargs_conv)
+            function = getattr(graph_conv, self.function)
+            result = function(*args_conv, **kwargs_conv)
 
         # Convert output if needed
         result_conv = self.convert_output(result)
@@ -233,6 +234,15 @@ class TransparentAPIConverter:
         return result_conv
 
 
+
+def wrap_methods(cls):
+    for name in cls.functions:
+        fun = TransparentAPIConverter(name).run_api_call
+        setattr(cls, name, fun)
+    return cls
+
+
+@wrap_methods
 class TransparentAPI:
     """Transparent API to run igraph functions.
 
@@ -245,9 +255,3 @@ class TransparentAPI:
 
     def __repr__(self):
         return str(self.functions)
-
-
-for funcname, dic in api_functions.items():
-    def tmp_function(*args, **kwargs):
-        return TransparentAPIConverter(funcname, args, kwargs).run_api_call()
-    setattr(TransparentAPI, funcname, tmp_function)
