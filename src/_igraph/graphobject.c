@@ -13974,7 +13974,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_similarity_dice */
   {"similarity_dice", (PyCFunction) igraphmodule_Graph_similarity_dice,
    METH_VARARGS | METH_KEYWORDS,
-   "similarity_dice(vertices=None, pairs=None, mode=IGRAPH_ALL, loops=True)\n\n"
+   "similarity_dice(vertices=None, pairs=None, mode=IGRAPH_ALL, loops=True)\n--\n\n"
    "Dice similarity coefficient of vertices.\n\n"
    "The Dice similarity coefficient of two vertices is twice the number of\n"
    "their common neighbors divided by the sum of their degrees. This\n"
@@ -14435,7 +14435,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_mds",
    (PyCFunction) igraphmodule_Graph_layout_mds,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_mds(dist=None, dim=2, arpack_options=None)\n--\n"
+   "layout_mds(dist=None, dim=2, arpack_options=None)\n--\n\n"
    "Places the vertices in an Euclidean space with the given number of\n"
    "dimensions using multidimensional scaling.\n\n"
    "This layout requires a distance matrix, where the intersection of\n"
@@ -14468,7 +14468,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_reingold_tilford",
    (PyCFunction) igraphmodule_Graph_layout_reingold_tilford,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_reingold_tilford(mode=\"out\", root=None, rootlevel=None)\n--\n"
+   "layout_reingold_tilford(mode=\"out\", root=None, rootlevel=None)\n--\n\n"
    "Places the vertices on a 2D plane according to the Reingold-Tilford\n"
    "layout algorithm.\n\n"
    "This is a tree layout. If the given graph is not a tree, a breadth-first\n"
@@ -14498,7 +14498,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_reingold_tilford_circular",
    (PyCFunction) igraphmodule_Graph_layout_reingold_tilford_circular,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_reingold_tilford_circular(mode=\"out\", root=None, rootlevel=None)\n--\n"
+   "layout_reingold_tilford_circular(mode=\"out\", root=None, rootlevel=None)\n--\n\n"
    "Circular Reingold-Tilford layout for trees.\n\n"
    "This layout is similar to the Reingold-Tilford layout, but the vertices\n"
    "are placed in a circular way, with the root vertex in the center.\n\n"
@@ -14512,7 +14512,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_layout_random */
   {"layout_random", (PyCFunction) igraphmodule_Graph_layout_random,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_random(dim=2)\n--\n"
+   "layout_random(dim=2)\n--\n\n"
    "Places the vertices of the graph randomly.\n\n"
    "@param dim: the desired number of dimensions for the layout. dim=2\n"
    "  means a 2D layout, dim=3 means a 3D layout.\n"
@@ -15053,8 +15053,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  number of automorphisms if C{other} is C{None}.\n"},
   {"get_isomorphisms_vf2", (PyCFunction) igraphmodule_Graph_get_isomorphisms_vf2,
    METH_VARARGS | METH_KEYWORDS,
-   "get_isomorphisms_vf2(other=None, color1=None, color2=None, edge_color1=None,\n"
-   "  edge_color2=None, node_compat_fn=None, edge_compat_fn=None)\n\n"
+   "get_isomorphisms_vf2(other=None, color1=None, color2=None, edge_color1=None, "
+   "edge_color2=None, node_compat_fn=None, edge_compat_fn=None)\n--\n\n"
    "Returns all isomorphisms between the graph and another one\n\n"
    "Vertex and edge colors may be used to restrict the isomorphisms, as only\n"
    "vertices and edges with the same color will be allowed to match each other.\n\n"
@@ -15286,10 +15286,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param loops: whether to include loop edges in the complementer.\n"
    "@return: the complementer of the graph\n"},
   {"compose", (PyCFunction) igraphmodule_Graph_compose,
-   METH_O, "compose(other)\n\nReturns the composition of two graphs."},
+   METH_O, "compose(other)\n--\n\nReturns the composition of two graphs."},
   {"difference", (PyCFunction) igraphmodule_Graph_difference,
    METH_O,
-   "difference(other)\n\nSubtracts the given graph from the original"},
+   "difference(other)\n--\n\nSubtracts the given graph from the original"},
 
   /**********************/
   /* DOMINATORS         */
