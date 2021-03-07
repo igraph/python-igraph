@@ -613,17 +613,17 @@ GRAPH_PROXY_METHOD(is_mutual, "is_mutual");
 PyMethodDef igraphmodule_Edge_methods[] = {
   {"attributes", (PyCFunction)igraphmodule_Edge_attributes,
     METH_NOARGS,
-    "attributes() -> dict\n--\n\n"
+    "attributes()\n--\n\n"
     "Returns a dict of attribute names and values for the edge\n"
   },
   {"attribute_names", (PyCFunction)igraphmodule_Edge_attribute_names,
     METH_NOARGS,
-    "attribute_names() -> list\n--\n\n"
+    "attribute_names()\n--\n\n"
     "Returns the list of edge attribute names\n"
   },
   {"update_attributes", (PyCFunction)igraphmodule_Edge_update_attributes,
     METH_VARARGS | METH_KEYWORDS,
-    "update_attributes(E, **F) -> None\n--\n\n"
+    "update_attributes(E, **F)\n--\n\n"
     "Updates the attributes of the edge from dict/iterable E and F.\n\n"
     "If E has a C{keys()} method, it does: C{for k in E: self[k] = E[k]}.\n"
     "If E lacks a C{keys()} method, it does: C{for (k, v) in E: self[k] = v}.\n"
