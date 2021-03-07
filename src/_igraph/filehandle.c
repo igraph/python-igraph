@@ -91,7 +91,7 @@ static int igraphmodule_i_filehandle_init_pypy_3(igraphmodule_filehandle_t* hand
         /* We have received a string; we need to open the file denoted by this
          * string now and mark that we opened the file ourselves (so we need
          * to close it when igraphmodule_filehandle_destroy is invoked). */
-        handle->object = PyFile_FromObject(object, mode);
+        handle->object = igraphmodule_PyFile_FromObject(object, mode);
         if (handle->object == 0) {
             /* Could not open the file; just return an error code because an
              * exception was raised already */
