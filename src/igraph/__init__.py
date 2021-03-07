@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 IGraph library.
-
-@undocumented: deprecated, _graphmethod, _add_proxy_methods, _layout_method_wrapper,
-               _3d_version_for
 """
 
 
@@ -163,7 +160,7 @@ class Graph(GraphBase):
     """Generic graph.
 
     This class is built on top of L{GraphBase}, so the order of the
-    methods in the Epydoc documentation is a little bit obscure:
+    methods in the generated API documentation is a little bit obscure:
     inherited methods come after the ones implemented directly in the
     subclass. L{Graph} provides many functions that L{GraphBase} does not,
     mostly because these functions are not speed critical and they were

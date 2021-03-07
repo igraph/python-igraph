@@ -606,19 +606,19 @@ static PyMethodDef igraphmodule_methods[] =
 {
   {"community_to_membership", (PyCFunction)igraphmodule_community_to_membership,
     METH_VARARGS | METH_KEYWORDS,
-    "community_to_membership(merges, nodes, steps, return_csize=False)"
+    "community_to_membership(merges, nodes, steps, return_csize=False)\n--\n\n"
   },
   {"_compare_communities", (PyCFunction)igraphmodule_compare_communities,
     METH_VARARGS | METH_KEYWORDS,
-    "_compare_communities(comm1, comm2, method=\"vi\")"
+    "_compare_communities(comm1, comm2, method=\"vi\")\n--\n\n"
   },
   {"_power_law_fit", (PyCFunction)igraphmodule_power_law_fit,
     METH_VARARGS | METH_KEYWORDS,
-    "_power_law_fit(data, xmin=-1, force_continuous=False)"
+    "_power_law_fit(data, xmin=-1, force_continuous=False)\n--\n\n"
   },
   {"convex_hull", (PyCFunction)igraphmodule_convex_hull,
     METH_VARARGS | METH_KEYWORDS,
-    "convex_hull(vs, coords=False)\n\n"
+    "convex_hull(vs, coords=False)\n--\n\n"
     "Calculates the convex hull of a given point set.\n\n"
     "@param vs: the point set as a list of lists\n"
     "@param coords: if C{True}, the function returns the\n"
@@ -630,7 +630,7 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"is_degree_sequence", (PyCFunction)igraphmodule_is_degree_sequence,
     METH_VARARGS | METH_KEYWORDS,
-    "is_degree_sequence(out_deg, in_deg=None)\n\n"
+    "is_degree_sequence(out_deg, in_deg=None)\n--\n\n"
     "Deprecated since 0.9 in favour of L{is_graphical()}.\n\n"
     "Returns whether a list of degrees can be a degree sequence of some graph.\n\n"
     "Note that it is not required for the graph to be simple; in other words,\n"
@@ -650,7 +650,7 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"is_graphical", (PyCFunction)igraphmodule_is_graphical,
     METH_VARARGS | METH_KEYWORDS,
-    "is_graphical(out_deg, in_deg=None, loops=False, multiple=False)\n\n"
+    "is_graphical(out_deg, in_deg=None, loops=False, multiple=False)\n--\n\n"
     "Returns whether a list of degrees can be a degree sequence of some graph,\n"
     "with or without multiple and loop edges, depending on the allowed edge types\n"
     "in the remaining arguments.\n\n"
@@ -665,7 +665,7 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"is_graphical_degree_sequence", (PyCFunction)igraphmodule_is_graphical_degree_sequence,
     METH_VARARGS | METH_KEYWORDS,
-    "is_graphical_degree_sequence(out_deg, in_deg=None)\n\n"
+    "is_graphical_degree_sequence(out_deg, in_deg=None)\n--\n\n"
     "Deprecated since 0.9 in favour of L{is_graphical()}.\n\n"
     "Returns whether a list of degrees can be a degree sequence of some simple graph.\n\n"
     "Note that it is required for the graph to be simple; in other words,\n"
@@ -679,7 +679,7 @@ static PyMethodDef igraphmodule_methods[] =
     "  degree sequence, C{False} otherwise.\n"
   },
   {"set_progress_handler", igraphmodule_set_progress_handler, METH_O,
-      "set_progress_handler(handler)\n\n"
+      "set_progress_handler(handler)\n--\n\n"
       "Sets the handler to be called when igraph is performing a long operation.\n"
       "@param handler: the progress handler function. It must accept two\n"
       "  arguments, the first is the message informing the user about\n"
@@ -687,7 +687,7 @@ static PyMethodDef igraphmodule_methods[] =
       "  progress information (a percentage).\n"
   },
   {"set_random_number_generator", igraph_rng_Python_set_generator, METH_O,
-      "set_random_number_generator(generator)\n\n"
+      "set_random_number_generator(generator)\n--\n\n"
       "Sets the random number generator used by igraph.\n"
       "@param generator: the generator to be used. It must be a Python object\n"
       "  with at least three attributes: C{random}, C{randint} and C{gauss}.\n"
@@ -701,7 +701,7 @@ static PyMethodDef igraphmodule_methods[] =
       "  for random numbers, but you cannot set its seed or save its state.\n"
   },
   {"set_status_handler", igraphmodule_set_status_handler, METH_O,
-      "set_status_handler(handler)\n\n"
+      "set_status_handler(handler)\n--\n\n"
       "Sets the handler to be called when igraph tries to display a status\n"
       "message.\n\n"
       "This is used to communicate the progress of some calculations where\n"
@@ -713,28 +713,26 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"_split_join_distance", (PyCFunction)igraphmodule_split_join_distance,
     METH_VARARGS | METH_KEYWORDS,
-    "_split_join_distance(comm1, comm2)"
+    "_split_join_distance(comm1, comm2)\n--\n\n"
   },
   {"_disjoint_union", (PyCFunction)igraphmodule__disjoint_union,
     METH_VARARGS | METH_KEYWORDS,
-    "_disjoint_union(graphs)"
+    "_disjoint_union(graphs)\n--\n\n"
   },
   {"_union", (PyCFunction)igraphmodule__union,
     METH_VARARGS | METH_KEYWORDS,
-    "_union(graphs, edgemaps)"
+    "_union(graphs, edgemaps)\n--\n\n"
   },
   {"_intersection", (PyCFunction)igraphmodule__intersection,
     METH_VARARGS | METH_KEYWORDS,
-    "_intersection(graphs, edgemaps)"
+    "_intersection(graphs, edgemaps)\n--\n\n"
   },
   {NULL, NULL, 0, NULL}
 };
 
 #define MODULE_DOCS \
   "Low-level Python interface for the igraph library. " \
-  "Should not be used directly.\n\n"                    \
-  "@undocumented: community_to_membership, _compare_communities, _power_law_fit, " \
-  "_split_join_distance, _union, _intersection, _disjoint_union"
+  "Should not be used directly.\n"
 
 /**
  * Module definition table (only for Python 3.x)

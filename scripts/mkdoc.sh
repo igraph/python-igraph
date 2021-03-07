@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Creates documentation for igraph's Python interface using epydoc
+# Creates the API documentation for igraph's Python interface using PyDoctor
 #
 # Usage: ./mkdoc.sh [--sync] [directory]
 
@@ -9,41 +9,38 @@ SCRIPTS_FOLDER=`dirname $0`
 cd ${SCRIPTS_FOLDER}/..
 ROOT_FOLDER=`pwd`
 DOC_API_FOLDER=${ROOT_FOLDER}/doc/api
-CONFIG=${ROOT_FOLDER}/scripts/epydoc.cfg
 
 cd ${ROOT_FOLDER}
-mkdir -p ${DOC_API_FOLDER}/pdf
-mkdir -p ${DOC_API_FOLDER}/html
 
-EPYDOC="${ROOT_FOLDER}/scripts/epydoc-patched"
-python -m epydoc.__init__
-if [ $? -gt 0 ]; then
-  echo "Epydoc not installed, exiting..."
+if [ ! -d ".venv" ]; then
+    # Create a virtual environment for pydoctor
+    python3 -m venv .venv
+    .venv/bin/pip install pydoctor
+fi
+
+PYDOCTOR=.venv/bin/pydoctor
+if [ ! -f ${PYDOCTOR} ]; then
+  echo "PyDoctor not installed in the virtualenv of the project, exiting..."
   exit 1
 fi
 
 PWD=`pwd`
 
-echo "Checking symlinked _igraph.so in ${ROOT_FOLDER}/src/igraph..."
-if [ ! -e ${ROOT_FOLDER}/src/igraph/_igraph.so -o ! -L ${ROOT_FOLDER}/src/igraph/_igraph.so ]; then
-	rm -f ${ROOT_FOLDER}/src/igraph/_igraph.so
-	cd ${ROOT_FOLDER}/src/igraph
-	ln -s ../../build/lib*/igraph/_igraph.so .
-	cd ${ROOT_FOLDER}
-fi
-
 echo "Removing existing documentation..."
-rm -rf html
+rm -rf "${DOC_API_FOLDER}/html" "${DOC_API_FOLDER}/pdf"
+
+IGRAPHDIR=`.venv/bin/python3 -c 'import igraph, os; print(os.path.dirname(igraph.__file__))'`
 
 echo "Generating HTML documentation..."
-PYTHONPATH=src ${EPYDOC} --html -v -o ${DOC_API_FOLDER}/html --config ${CONFIG}
+"$PYDOCTOR" \
+    --project-name "python-igraph" \
+    --project-url "https://igraph.org/python" \
+    --introspect-c-modules \
+    --make-html \
+    --html-output "${DOC_API_FOLDER}/html" \
+	${IGRAPHDIR}
 
-PDF=0
-which latex >/dev/null && PDF=1
-
-if [ $PDF -eq 1 ]; then
-  echo "Generating PDF documentation..."
-  PYTHONPATH=src ${EPYDOC} --pdf -v -o ${DOC_API_FOLDER}/pdf --config ${CONFIG}
-fi
+# PDF not supported by PyDoctor
 
 cd "$PWD"
+

@@ -899,17 +899,17 @@ PyObject* igraphmodule_VertexSeq__reindex_names(igraphmodule_VertexSeqObject* se
 PyMethodDef igraphmodule_VertexSeq_methods[] = {
   {"attribute_names", (PyCFunction)igraphmodule_VertexSeq_attribute_names,
    METH_NOARGS,
-   "attribute_names() -> list\n\n"
+   "attribute_names() -> list\n--\n\n"
    "Returns the attribute name list of the graph's vertices\n"
   },
   {"find", (PyCFunction)igraphmodule_VertexSeq_find,
    METH_VARARGS,
-   "find(condition) -> Vertex\n\n"
+   "find(condition) -> Vertex\n--\n\n"
    "For internal use only.\n"
   },
   {"get_attribute_values", (PyCFunction)igraphmodule_VertexSeq_get_attribute_values,
    METH_O,
-   "get_attribute_values(attrname) -> list\n"
+   "get_attribute_values(attrname) -> list\n--\n\n"
    "Returns the value of a given vertex attribute for all vertices in a list.\n\n"
    "The values stored in the list are exactly the same objects that are stored\n"
    "in the vertex attribute, meaning that in the case of mutable objects,\n"
@@ -920,17 +920,18 @@ PyMethodDef igraphmodule_VertexSeq_methods[] = {
   },
   {"set_attribute_values", (PyCFunction)igraphmodule_VertexSeq_set_attribute_values,
    METH_VARARGS | METH_KEYWORDS,
-   "set_attribute_values(attrname, values) -> list\n"
+   "set_attribute_values(attrname, values) -> list\n--\n\n"
    "Sets the value of a given vertex attribute for all vertices\n\n"
    "@param attrname: the name of the attribute\n"
    "@param values: the new attribute values in a list\n"
   },
   {"select", (PyCFunction)igraphmodule_VertexSeq_select,
    METH_VARARGS,
-   "select(...) -> VertexSeq\n\n"
+   "select(...) -> VertexSeq\n--\n\n"
    "For internal use only.\n"
   },
   {"_reindex_names", (PyCFunction)igraphmodule_VertexSeq__reindex_names, METH_NOARGS,
+   "_reindex_names() -> None\n--\n\n"
    "Re-creates the dictionary that maps vertex names to IDs.\n\n"
    "For internal use only.\n"
   },

@@ -280,7 +280,7 @@ PyObject* igraphmodule_Graph_subclass_from_igraph_t(
   PyObject* kwds;
 
   if (!PyType_IsSubtype(type, &igraphmodule_GraphType)) {
-    PyErr_SetString(PyExc_TypeError, "igraph.GraphBase expected");
+    PyErr_SetString(PyExc_TypeError, "igraph._igraph.GraphBase expected");
     return 0;
   }
 
@@ -11998,21 +11998,21 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_vcount
   {"vcount", (PyCFunction) igraphmodule_Graph_vcount,
    METH_NOARGS,
-   "vcount()\n\n"
+   "vcount() -> int\n--\n\n"
    "Counts the number of vertices.\n"
    "@return: the number of vertices in the graph.\n" "@rtype: integer"},
 
   // interface to igraph_ecount
   {"ecount", (PyCFunction) igraphmodule_Graph_ecount,
    METH_NOARGS,
-   "ecount()\n\n"
+   "ecount() -> int\n--\n\n"
    "Counts the number of edges.\n"
    "@return: the number of edges in the graph.\n" "@rtype: integer"},
 
   // interface to igraph_is_dag
   {"is_dag", (PyCFunction) igraphmodule_Graph_is_dag,
    METH_NOARGS,
-   "is_dag()\n\n"
+   "is_dag() -> bool\n--\n\n"
    "Checks whether the graph is a DAG (directed acyclic graph).\n\n"
    "A DAG is a directed graph with no directed cycles.\n\n"
    "@return: C{True} if it is a DAG, C{False} otherwise.\n"
@@ -12021,7 +12021,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_is_directed
   {"is_directed", (PyCFunction) igraphmodule_Graph_is_directed,
    METH_NOARGS,
-   "is_directed()\n\n"
+   "is_directed() -> bool\n--\n\n"
    "Checks whether the graph is directed.\n"
    "@return: C{True} if it is directed, C{False} otherwise.\n"
    "@rtype: boolean"},
@@ -12029,7 +12029,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_is_simple
   {"is_simple", (PyCFunction) igraphmodule_Graph_is_simple,
    METH_NOARGS,
-   "is_simple()\n\n"
+   "is_simple() -> bool\n--\n\n"
    "Checks whether the graph is simple (no loop or multiple edges).\n\n"
    "@return: C{True} if it is simple, C{False} otherwise.\n"
    "@rtype: boolean"},
@@ -12037,14 +12037,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_add_vertices */
   {"add_vertices", (PyCFunction) igraphmodule_Graph_add_vertices,
    METH_VARARGS,
-   "add_vertices(n)\n\n"
+   "add_vertices(n: int) -> None\n--\n\n"
    "Adds vertices to the graph.\n\n"
    "@param n: the number of vertices to be added\n"},
 
   /* interface to igraph_delete_vertices */
   {"delete_vertices", (PyCFunction) igraphmodule_Graph_delete_vertices,
    METH_VARARGS,
-   "delete_vertices(vs)\n\n"
+   "delete_vertices(vs) -> None\n--\n\n"
    "Deletes vertices and all its edges from the graph.\n\n"
    "@param vs: a single vertex ID or the list of vertex IDs\n"
    "  to be deleted. No argument deletes all vertices.\n"},
@@ -12052,7 +12052,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_add_edges */
   {"add_edges", (PyCFunction) igraphmodule_Graph_add_edges,
    METH_VARARGS,
-   "add_edges(es)\n\n"
+   "add_edges(es) -> None\n--\n\n"
    "Adds edges to the graph.\n\n"
    "@param es: the list of edges to be added. Every edge is\n"
    "  represented with a tuple, containing the vertex IDs of the\n"
@@ -12061,7 +12061,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_delete_edges */
   {"delete_edges", (PyCFunction) igraphmodule_Graph_delete_edges,
    METH_VARARGS | METH_KEYWORDS,
-   "delete_edges(es)\n\n"
+   "delete_edges(es) -> None\n--\n\n"
    "Removes edges from the graph.\n\n"
    "All vertices will be kept, even if they lose all their edges.\n"
    "Nonexistent edges will be silently ignored.\n\n"
@@ -12072,7 +12072,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_degree */
   {"degree", (PyCFunction) igraphmodule_Graph_degree,
    METH_VARARGS | METH_KEYWORDS,
-   "degree(vertices, mode=ALL, loops=True)\n\n"
+   "degree(vertices, mode=ALL, loops=True)\n--\n\n"
    "Returns some vertex degrees from the graph.\n\n"
    "This method accepts a single vertex ID or a list of vertex IDs as a\n"
    "parameter, and returns the degree of the given vertices (in the\n"
@@ -12087,7 +12087,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_strength */
   {"strength", (PyCFunction) igraphmodule_Graph_strength,
    METH_VARARGS | METH_KEYWORDS,
-   "strength(vertices, mode=ALL, loops=True, weights=None)\n\n"
+   "strength(vertices, mode=ALL, loops=True, weights=None)\n--\n\n"
    "Returns the strength (weighted degree) of some vertices from the graph\n\n"
    "This method accepts a single vertex ID or a list of vertex IDs as a\n"
    "parameter, and returns the strength (that is, the sum of the weights\n"
@@ -12108,7 +12108,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_loop */
   {"is_loop", (PyCFunction) igraphmodule_Graph_is_loop,
    METH_VARARGS | METH_KEYWORDS,
-   "is_loop(edges=None)\n\n"
+   "is_loop(edges=None) -> List[bool]\n--\n\n"
    "Checks whether a specific set of edges contain loop edges\n\n"
    "@param edges: edge indices which we want to check. If C{None}, all\n"
    "  edges are checked.\n"
@@ -12117,7 +12117,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_multiple */
   {"is_multiple", (PyCFunction) igraphmodule_Graph_is_multiple,
    METH_VARARGS | METH_KEYWORDS,
-   "is_multiple(edges=None)\n\n"
+   "is_multiple(edges=None) -> List[bool]\n--\n\n"
    "Checks whether an edge is a multiple edge.\n\n"
    "Also works for a set of edges -- in this case, every edge is checked\n"
    "one by one. Note that if there are multiple edges going between a\n"
@@ -12132,7 +12132,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_has_multiple */
   {"has_multiple", (PyCFunction) igraphmodule_Graph_has_multiple,
    METH_NOARGS,
-   "has_multiple()\n\n"
+   "has_multiple() -> bool\n--\n\n"
    "Checks whether the graph has multiple edges.\n\n"
    "@return: C{True} if the graph has at least one multiple edge,\n"
    "         C{False} otherwise.\n"
@@ -12141,7 +12141,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_mutual */
   {"is_mutual", (PyCFunction) igraphmodule_Graph_is_mutual,
    METH_VARARGS | METH_KEYWORDS,
-   "is_mutual(edges=None)\n\n"
+   "is_mutual(edges=None) -> Lis[bool]\n--\n\n"
    "Checks whether an edge has an opposite pair.\n\n"
    "Also works for a set of edges -- in this case, every edge is checked\n"
    "one by one. The result will be a list of booleans (or a single boolean\n"
@@ -12160,7 +12160,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_count_multiple */
   {"count_multiple", (PyCFunction) igraphmodule_Graph_count_multiple,
    METH_VARARGS | METH_KEYWORDS,
-   "count_multiple(edges=None)\n\n"
+   "count_multiple(edges=None) -> List[int]\n--\n\n"
    "Counts the multiplicities of the given edges.\n\n"
    "@param edges: edge indices for which we want to count their\n"
    "  multiplicity. If C{None}, all edges are counted.\n"
@@ -12169,7 +12169,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_neighbors */
   {"neighbors", (PyCFunction) igraphmodule_Graph_neighbors,
    METH_VARARGS | METH_KEYWORDS,
-   "neighbors(vertex, mode=ALL)\n\n"
+   "neighbors(vertex, mode=ALL)\n--\n\n"
    "Returns adjacent vertices to a given vertex.\n\n"
    "@param vertex: a vertex ID\n"
    "@param mode: whether to return only successors (L{OUT}),\n"
@@ -12178,20 +12178,20 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
 
   {"successors", (PyCFunction) igraphmodule_Graph_successors,
    METH_VARARGS | METH_KEYWORDS,
-   "successors(vertex)\n\n"
+   "successors(vertex)\n--\n\n"
    "Returns the successors of a given vertex.\n\n"
    "Equivalent to calling the L{Graph.neighbors} method with type=L{OUT}."},
 
   {"predecessors", (PyCFunction) igraphmodule_Graph_predecessors,
    METH_VARARGS | METH_KEYWORDS,
-   "predecessors(vertex)\n\n"
+   "predecessors(vertex)\n--\n\n"
    "Returns the predecessors of a given vertex.\n\n"
    "Equivalent to calling the L{Graph.neighbors} method with type=L{IN}."},
 
   /* interface to igraph_get_eid */
   {"get_eid", (PyCFunction) igraphmodule_Graph_get_eid,
    METH_VARARGS | METH_KEYWORDS,
-   "get_eid(v1, v2, directed=True, error=True)\n\n"
+   "get_eid(v1, v2, directed=True, error=True) -> int\n--\n\n"
    "Returns the edge ID of an arbitrary edge between vertices v1 and v2\n\n"
    "@param v1: the ID or name of the first vertex\n"
    "@param v2: the ID or name of the second vertex\n"
@@ -12206,7 +12206,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_get_eids */
   {"get_eids", (PyCFunction) igraphmodule_Graph_get_eids,
    METH_VARARGS | METH_KEYWORDS,
-   "get_eids(pairs=None, path=None, directed=True, error=True)\n\n"
+   "get_eids(pairs=None, path=None, directed=True, error=True) -> List[int]\n--\n\n"
    "Returns the edge IDs of some edges between some vertices.\n\n"
    "This method can operate in two different modes, depending on which\n"
    "of the keyword arguments C{pairs} and C{path} are given.\n\n"
@@ -12234,7 +12234,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_incident */
   {"incident", (PyCFunction) igraphmodule_Graph_incident,
    METH_VARARGS | METH_KEYWORDS,
-   "incident(vertex, mode=OUT)\n\n"
+   "incident(vertex, mode=OUT)\n--\n\n"
    "Returns the edges a given vertex is incident on.\n\n"
    "@param vertex: a vertex ID\n"
    "@param mode: whether to return only successors (L{OUT}),\n"
@@ -12248,7 +12248,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_adjacency */
   {"Adjacency", (PyCFunction) igraphmodule_Graph_Adjacency,
    METH_CLASS | METH_VARARGS | METH_KEYWORDS,
-   "Adjacency(matrix, mode=ADJ_DIRECTED)\n\n"
+   "Adjacency(matrix, mode=ADJ_DIRECTED)\n--\n\n"
    "Generates a graph from its adjacency matrix.\n\n"
    "@param matrix: the adjacency matrix\n"
    "@param mode: the mode to be used. Possible values are:\n"
@@ -12272,7 +12272,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"Asymmetric_Preference",
    (PyCFunction) igraphmodule_Graph_Asymmetric_Preference,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Asymmetric_Preference(n, type_dist_matrix, pref_matrix, attribute=None, loops=False)\n\n"
+   "Asymmetric_Preference(n, type_dist_matrix, pref_matrix, attribute=None, loops=False)\n--\n\n"
    "Generates a graph based on asymmetric vertex types and connection probabilities.\n\n"
    "This is the asymmetric variant of L{Graph.Preference}.\n"
    "A given number of vertices are generated. Every vertex is assigned to an\n"
@@ -12293,7 +12293,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_atlas
   {"Atlas", (PyCFunction) igraphmodule_Graph_Atlas,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Atlas(idx)\n\n"
+   "Atlas(idx: int)\n--\n\n"
    "Generates a graph from the Graph Atlas.\n\n"
    "@param idx: The index of the graph to be generated.\n"
    "  Indices start from zero, graphs are listed:\n\n"
@@ -12311,7 +12311,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"Barabasi", (PyCFunction) igraphmodule_Graph_Barabasi,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Barabasi(n, m, outpref=False, directed=False, power=1,\n"
-   "         zero_appeal=1, implementation=\"psumtree\", start_from=None)\n\n"
+   "         zero_appeal=1, implementation=\"psumtree\", start_from=None)\n--\n\n"
    "Generates a graph based on the Barabasi-Albert model.\n\n"
    "@param n: the number of vertices\n"
    "@param m: either the number of outgoing edges generated for\n"
@@ -12353,14 +12353,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_create_bipartite */
   {"_Bipartite", (PyCFunction) igraphmodule_Graph_Bipartite,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "_Bipartite(types, edges, directed=False)\n\n"
+   "_Bipartite(types, edges, directed=False)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.Bipartite()\n\n"},
 
   /* interface to igraph_de_bruijn */
   {"De_Bruijn", (PyCFunction) igraphmodule_Graph_De_Bruijn,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "De_Bruijn(m, n)\n\n"
+   "De_Bruijn(m, n)\n--\n\n"
    "Generates a de Bruijn graph with parameters (m, n)\n\n"
    "A de Bruijn graph represents relationships between strings. An alphabet\n"
    "of M{m} letters are used and strings of length M{n} are considered.\n"
@@ -12377,7 +12377,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_establishment_game
   {"Establishment", (PyCFunction) igraphmodule_Graph_Establishment,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Establishment(n, k, type_dist, pref_matrix, directed=False)\n\n"
+   "Establishment(n, k, type_dist, pref_matrix, directed=False)\n--\n\n"
    "Generates a graph based on a simple growing model with vertex types.\n\n"
    "A single vertex is added at each time step. This new vertex tries to\n"
    "connect to k vertices in the graph. The probability that such a\n"
@@ -12393,7 +12393,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_erdos_renyi_game
   {"Erdos_Renyi", (PyCFunction) igraphmodule_Graph_Erdos_Renyi,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Erdos_Renyi(n, p, m, directed=False, loops=False)\n\n"
+   "Erdos_Renyi(n, p, m, directed=False, loops=False)\n--\n\n"
    "Generates a graph based on the Erdos-Renyi model.\n\n"
    "@param n: the number of vertices.\n"
    "@param p: the probability of edges. If given, C{m} must be missing.\n"
@@ -12404,7 +12404,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_famous */
     {"Famous", (PyCFunction) igraphmodule_Graph_Famous,
      METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-     "Famous(name)\n\n"
+     "Famous(name)\n--\n\n"
      "Generates a famous graph based on its name.\n\n"
      "Several famous graphs are known to C{igraph} including (but not limited to)\n"
      "the Chvatal graph, the Petersen graph or the Tutte graph. This method\n"
@@ -12417,7 +12417,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_forest_fire_game */
   {"Forest_Fire", (PyCFunction) igraphmodule_Graph_Forest_Fire,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Forest_Fire(n, fw_prob, bw_factor=0.0, ambs=1, directed=False)\n\n"
+   "Forest_Fire(n, fw_prob, bw_factor=0.0, ambs=1, directed=False)\n--\n\n"
    "Generates a graph based on the forest fire model\n\n"
    "The forest fire model is a growing graph model. In every time step, a new\n"
    "vertex is added to the graph. The new vertex chooses an ambassador (or\n"
@@ -12437,7 +12437,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_full_citation */
   {"Full_Citation", (PyCFunction) igraphmodule_Graph_Full_Citation,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Full_Citation(n, directed=False)\n\n"
+   "Full_Citation(n, directed=False)\n--\n\n"
    "Generates a full citation graph\n\n"
    "A full citation graph is a graph where the vertices are indexed from 0 to\n"
    "M{n-1} and vertex M{i} has a directed edge towards all vertices with an\n"
@@ -12448,7 +12448,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_full */
   {"Full", (PyCFunction) igraphmodule_Graph_Full,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Full(n, directed=False, loops=False)\n\n"
+   "Full(n, directed=False, loops=False)\n--\n\n"
    "Generates a full graph (directed or undirected, with or without loops).\n\n"
    "@param n: the number of vertices.\n"
    "@param directed: whether to generate a directed graph.\n"
@@ -12457,21 +12457,21 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_full_bipartite */
   {"_Full_Bipartite", (PyCFunction) igraphmodule_Graph_Full_Bipartite,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "_Full_Bipartite(n1, n2, directed=False, loops=False)\n\n"
+   "_Full_Bipartite(n1, n2, directed=False, loops=False)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.Full_Bipartite()\n\n"},
 
   /* interface to igraph_grg_game */
   {"_GRG", (PyCFunction) igraphmodule_Graph_GRG,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "_GRG(n, radius, torus=False)\n\n"
+   "_GRG(n, radius, torus=False)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.GRG()\n\n"},
 
   /* interface to igraph_growing_random_game */
   {"Growing_Random", (PyCFunction) igraphmodule_Graph_Growing_Random,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Growing_Random(n, m, directed=False, citation=False)\n\n"
+   "Growing_Random(n, m, directed=False, citation=False)\n--\n\n"
    "Generates a growing random graph.\n\n"
    "@param n: The number of vertices in the graph\n"
    "@param m: The number of edges to add in each step (after adding a new vertex)\n"
@@ -12482,14 +12482,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_incidence */
   {"_Incidence", (PyCFunction) igraphmodule_Graph_Incidence,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "_Incidence(matrix, directed=False, mode=ALL, multiple=False)\n\n"
+   "_Incidence(matrix, directed=False, mode=ALL, multiple=False)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.Incidence()\n\n"},
 
   /* interface to igraph_kautz */
   {"Kautz", (PyCFunction) igraphmodule_Graph_Kautz,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Kautz(m, n)\n\n"
+   "Kautz(m, n)\n--\n\n"
    "Generates a Kautz graph with parameters (m, n)\n\n"
    "A Kautz graph is a labeled graph, vertices are labeled by strings\n"
    "of length M{n+1} above an alphabet with M{m+1} letters, with\n"
@@ -12505,7 +12505,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_k_regular */
   {"K_Regular", (PyCFunction) igraphmodule_Graph_K_Regular,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "K_Regular(n, k, directed=False, multiple=False)\n\n"
+   "K_Regular(n, k, directed=False, multiple=False)\n--\n\n"
    "Generates a k-regular random graph\n\n"
    "A k-regular random graph is a random graph where each vertex has degree k.\n"
    "If the graph is directed, both the in-degree and the out-degree of each vertex\n"
@@ -12520,7 +12520,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_preference_game */
   {"Preference", (PyCFunction) igraphmodule_Graph_Preference,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Preference(n, type_dist, pref_matrix, attribute=None, directed=False, loops=False)\n\n"
+   "Preference(n, type_dist, pref_matrix, attribute=None, directed=False, loops=False)\n--\n\n"
    "Generates a graph based on vertex types and connection probabilities.\n\n"
    "This is practically the nongrowing variant of L{Graph.Establishment}.\n"
    "A given number of vertices are generated. Every vertex is assigned to a\n"
@@ -12539,14 +12539,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_bipartite_game */
   {"_Random_Bipartite", (PyCFunction) igraphmodule_Graph_Random_Bipartite,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "_Random_Bipartite(n1, n2, p=None, m=None, directed=False, neimode=\"all\")\n\n"
+   "_Random_Bipartite(n1, n2, p=None, m=None, directed=False, neimode=\"all\")\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.Random_Bipartite()\n\n"},
 
   /* interface to igraph_recent_degree_game */
   {"Recent_Degree", (PyCFunction) igraphmodule_Graph_Recent_Degree,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Recent_Degree(n, m, window, outpref=False, directed=False, power=1)\n\n"
+   "Recent_Degree(n, m, window, outpref=False, directed=False, power=1)\n--\n\n"
    "Generates a graph based on a stochastic model where the probability\n"
    "of an edge gaining a new node is proportional to the edges gained in\n"
    "a given time window.\n\n"
@@ -12567,7 +12567,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_sbm_game */
   {"SBM", (PyCFunction) igraphmodule_Graph_SBM,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "SBM(n, pref_matrix, block_sizes, directed=False, loops=False)\n\n"
+   "SBM(n, pref_matrix, block_sizes, directed=False, loops=False)\n--\n\n"
    "Generates a graph based on a stochastic blockmodel.\n\n"
    "A given number of vertices are generated. Every vertex is assigned to a\n"
    "vertex type according to the given block sizes. Vertices of the same\n"
@@ -12586,7 +12586,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_star
   {"Star", (PyCFunction) igraphmodule_Graph_Star,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Star(n, mode=\"undirected\", center=0)\n\n"
+   "Star(n, mode=\"undirected\", center=0)\n--\n\n"
    "Generates a star graph.\n\n"
    "@param n: the number of vertices in the graph\n"
    "@param mode: Gives the type of the star graph to create. Should be\n"
@@ -12596,7 +12596,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_lattice
   {"Lattice", (PyCFunction) igraphmodule_Graph_Lattice,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Lattice(dim, nei=1, directed=False, mutual=True, circular=True)\n\n"
+   "Lattice(dim, nei=1, directed=False, mutual=True, circular=True)\n--\n\n"
    "Generates a regular lattice.\n\n"
    "@param dim: list with the dimensions of the lattice\n"
    "@param nei: value giving the distance (number of steps) within which\n"
@@ -12607,25 +12607,25 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param circular: whether the generated lattice is periodic.\n"},
 
   /* interface to igraph_lcf */
-    {"LCF", (PyCFunction) igraphmodule_Graph_LCF,
-     METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-     "LCF(n, shifts, repeats)\n\n"
-     "Generates a graph from LCF notation.\n\n"
-     "LCF is short for Lederberg-Coxeter-Frucht, it is a concise notation\n"
-     "for 3-regular Hamiltonian graphs. It consists of three parameters,\n"
-     "the number of vertices in the graph, a list of shifts giving\n"
-     "additional edges to a cycle backbone and another integer giving how\n"
-     "many times the shifts should be performed. See\n"
-     "U{http://mathworld.wolfram.com/LCFNotation.html} for details.\n\n"
-     "@param n: the number of vertices\n"
-     "@param shifts: the shifts in a list or tuple\n"
-     "@param repeats: the number of repeats\n"
-    },
+  {"LCF", (PyCFunction) igraphmodule_Graph_LCF,
+    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
+    "LCF(n, shifts, repeats)\n--\n\n"
+    "Generates a graph from LCF notation.\n\n"
+    "LCF is short for Lederberg-Coxeter-Frucht, it is a concise notation\n"
+    "for 3-regular Hamiltonian graphs. It consists of three parameters,\n"
+    "the number of vertices in the graph, a list of shifts giving\n"
+    "additional edges to a cycle backbone and another integer giving how\n"
+    "many times the shifts should be performed. See\n"
+    "U{http://mathworld.wolfram.com/LCFNotation.html} for details.\n\n"
+    "@param n: the number of vertices\n"
+    "@param shifts: the shifts in a list or tuple\n"
+    "@param repeats: the number of repeats\n"
+  },
 
   // interface to igraph_ring
   {"Ring", (PyCFunction) igraphmodule_Graph_Ring,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Ring(n, directed=False, mutual=False, circular=True)\n\n"
+   "Ring(n, directed=False, mutual=False, circular=True)\n--\n\n"
    "Generates a ring graph.\n\n"
    "@param n: the number of vertices in the ring\n"
    "@param directed: whether to create a directed ring.\n"
@@ -12635,7 +12635,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_static_fitness_game */
   {"Static_Fitness", (PyCFunction) igraphmodule_Graph_Static_Fitness,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Static_Fitness(m, fitness_out, fitness_in=None, loops=False, multiple=False)\n\n"
+   "Static_Fitness(m, fitness_out, fitness_in=None, loops=False, multiple=False)\n--\n\n"
    "Generates a non-growing graph with edge probabilities proportional to node\n"
    "fitnesses.\n\n"
    "The algorithm randomly selects vertex pairs and connects them until the given\n"
@@ -12659,8 +12659,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_static_power_law_game */
   {"Static_Power_Law", (PyCFunction) igraphmodule_Graph_Static_Power_Law,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Static_Power_Law(n, m, exponent_out, exponent_in=-1, loops=False,\n"
-   "    multiple=False, finite_size_correction=True)\n\n"
+   "Static_Power_Law(n, m, exponent_out, exponent_in=-1, loops=False, "
+   "multiple=False, finite_size_correction=True)\n--\n\n"
    "Generates a non-growing graph with prescribed power-law degree distributions.\n\n"
    "@param n: the number of vertices in the graph\n"
    "@param m: the number of edges in the graph\n"
@@ -12691,7 +12691,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_tree
   {"Tree", (PyCFunction) igraphmodule_Graph_Tree,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Tree(n, children, type=TREE_UNDIRECTED)\n\n"
+   "Tree(n, children, type=TREE_UNDIRECTED)\n--\n\n"
    "Generates a tree in which almost all vertices have the same number of children.\n\n"
    "@param n: the number of vertices in the graph\n"
    "@param children: the number of children of a vertex in the graph\n"
@@ -12702,7 +12702,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_degree_sequence_game */
   {"Degree_Sequence", (PyCFunction) igraphmodule_Graph_Degree_Sequence,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Degree_Sequence(out, in=None, method=\"simple\")\n\n"
+   "Degree_Sequence(out, in=None, method=\"simple\")\n--\n\n"
    "Generates a graph with a given degree sequence.\n\n"
    "@param out: the out-degree sequence for a directed graph. If the\n"
    "  in-degree sequence is omitted, the generated graph\n"
@@ -12736,7 +12736,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_isoclass_create */
   {"Isoclass", (PyCFunction) igraphmodule_Graph_Isoclass,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Isoclass(n, class, directed=False)\n\n"
+   "Isoclass(n, class, directed=False)\n--\n\n"
    "Generates a graph with a given isomorphism class.\n\n"
    "@param n: the number of vertices in the graph (3 or 4)\n"
    "@param class: the isomorphism class\n"
@@ -12745,7 +12745,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_watts_strogatz_game */
   {"Watts_Strogatz", (PyCFunction) igraphmodule_Graph_Watts_Strogatz,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Watts_Strogatz(dim, size, nei, p, loops=False, multiple=False)\n\n"
+   "Watts_Strogatz(dim, size, nei, p, loops=False, multiple=False)\n--\n\n"
    "@param dim: the dimension of the lattice\n"
    "@param size: the size of the lattice along all dimensions\n"
    "@param nei: value giving the distance (number of steps) within which\n"
@@ -12762,7 +12762,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_weighted_adjacency */
   {"Weighted_Adjacency", (PyCFunction) igraphmodule_Graph_Weighted_Adjacency,
    METH_CLASS | METH_VARARGS | METH_KEYWORDS,
-   "Weighted_Adjacency(matrix, mode=ADJ_DIRECTED, attr=\"weight\", loops=True)\n\n"
+   "Weighted_Adjacency(matrix, mode=ADJ_DIRECTED, attr=\"weight\", loops=True)\n--\n\n"
    "Generates a graph from its adjacency matrix.\n\n"
    "@param matrix: the adjacency matrix\n"
    "@param mode: the mode to be used. Possible values are:\n"
@@ -12793,7 +12793,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_are_connected
   {"are_connected", (PyCFunction) igraphmodule_Graph_are_connected,
    METH_VARARGS | METH_KEYWORDS,
-   "are_connected(v1, v2)\n\n"
+   "are_connected(v1, v2) -> bool\n--\n\n"
    "Decides whether two given vertices are directly connected.\n\n"
    "@param v1: the ID or name of the first vertex\n"
    "@param v2: the ID or name of the second vertex\n"
@@ -12803,7 +12803,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_articulation_points */
   {"articulation_points", (PyCFunction)igraphmodule_Graph_articulation_points,
    METH_NOARGS,
-   "articulation_points()\n\n"
+   "articulation_points()\n--\n\n"
    "Returns the list of articulation points in the graph.\n\n"
    "A vertex is an articulation point if its removal increases the number of\n"
    "connected components in the graph.\n"
@@ -12812,7 +12812,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_assortativity */
   {"assortativity", (PyCFunction)igraphmodule_Graph_assortativity,
    METH_VARARGS | METH_KEYWORDS,
-   "assortativity(types1, types2=None, directed=True)\n\n"
+   "assortativity(types1, types2=None, directed=True)\n--\n\n"
    "Returns the assortativity of the graph based on numeric properties\n"
    "of the vertices.\n\n"
    "This coefficient is basically the correlation between the actual\n"
@@ -12842,7 +12842,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_assortativity_degree */
   {"assortativity_degree", (PyCFunction)igraphmodule_Graph_assortativity_degree,
    METH_VARARGS | METH_KEYWORDS,
-   "assortativity_degree(directed=True)\n\n"
+   "assortativity_degree(directed=True)\n--\n\n"
    "Returns the assortativity of a graph based on vertex degrees.\n\n"
    "See L{assortativity()} for the details. L{assortativity_degree()} simply\n"
    "calls L{assortativity()} with the vertex degrees as types.\n\n"
@@ -12855,7 +12855,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_assortativity_nominal */
   {"assortativity_nominal", (PyCFunction)igraphmodule_Graph_assortativity_nominal,
    METH_VARARGS | METH_KEYWORDS,
-   "assortativity_nominal(types, directed=True)\n\n"
+   "assortativity_nominal(types, directed=True)\n--\n\n"
    "Returns the assortativity of the graph based on vertex categories.\n\n"
    "Assuming that the vertices belong to different categories, this\n"
    "function calculates the assortativity coefficient, which specifies\n"
@@ -12878,7 +12878,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"average_path_length",
    (PyCFunction) igraphmodule_Graph_average_path_length,
    METH_VARARGS | METH_KEYWORDS,
-   "average_path_length(directed=True, unconn=True)\n\n"
+   "average_path_length(directed=True, unconn=True)\n--\n\n"
    "Calculates the average path length in a graph.\n\n"
    "@param directed: whether to consider directed paths in case of a\n"
    "  directed graph. Ignored for undirected graphs.\n"
@@ -12891,7 +12891,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_authority_score */
   {"authority_score", (PyCFunction)igraphmodule_Graph_authority_score,
    METH_VARARGS | METH_KEYWORDS,
-   "authority_score(weights=None, scale=True, arpack_options=None, return_eigenvalue=False)\n\n"
+   "authority_score(weights=None, scale=True, arpack_options=None, return_eigenvalue=False)\n--\n\n"
    "Calculates Kleinberg's authority score for the vertices of the graph\n\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name.\n"
@@ -12909,7 +12909,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_betweenness[_estimate] */
   {"betweenness", (PyCFunction) igraphmodule_Graph_betweenness,
    METH_VARARGS | METH_KEYWORDS,
-   "betweenness(vertices=None, directed=True, cutoff=None, weights=None)\n\n"
+   "betweenness(vertices=None, directed=True, cutoff=None, weights=None)\n--\n\n"
    "Calculates or estimates the betweenness of vertices in a graph.\n\n"
    "Keyword arguments:\n"
    "@param vertices: the vertices for which the betweennesses must be returned.\n"
@@ -12926,7 +12926,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to biconnected_components */
   {"biconnected_components", (PyCFunction) igraphmodule_Graph_biconnected_components,
    METH_VARARGS | METH_KEYWORDS,
-   "biconnected_components(return_articulation_points=True)\n\n"
+   "biconnected_components(return_articulation_points=True)\n--\n\n"
    "Calculates the biconnected components of the graph.\n\n"
    "Components containing a single vertex only are not considered as being\n"
    "biconnected.\n\n"
@@ -12940,21 +12940,21 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_bipartite_projection */
   {"bipartite_projection", (PyCFunction) igraphmodule_Graph_bipartite_projection,
    METH_VARARGS | METH_KEYWORDS,
-   "bipartite_projection(types, multiplicity=True, probe1=-1, which=-1)\n\n"
+   "bipartite_projection(types, multiplicity=True, probe1=-1, which=-1)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.bipartite_projection()\n"},
 
   /* interface to igraph_bipartite_projection_size */
   {"bipartite_projection_size", (PyCFunction) igraphmodule_Graph_bipartite_projection_size,
    METH_VARARGS | METH_KEYWORDS,
-   "bipartite_projection_size(types)\n\n"
+   "bipartite_projection_size(types)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.bipartite_projection_size()\n"},
 
   /* interface to igraph_bridges */
   {"bridges", (PyCFunction)igraphmodule_Graph_bridges,
    METH_NOARGS,
-   "bridges()\n\n"
+   "bridges()\n--\n\n"
    "Returns the list of bridges in the graph.\n\n"
    "An edge is a bridge if its removal increases the number of (weakly) connected\n"
    "components in the graph.\n"
@@ -12963,8 +12963,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_closeness */
   {"closeness", (PyCFunction) igraphmodule_Graph_closeness,
    METH_VARARGS | METH_KEYWORDS,
-   "closeness(vertices=None, mode=ALL, cutoff=None, weights=None,\n"
-   "          normalized=True)\n\n"
+   "closeness(vertices=None, mode=ALL, cutoff=None, weights=None, "
+   "normalized=True)\n--\n\n"
    "Calculates the closeness centralities of given vertices in a graph.\n\n"
    "The closeness centerality of a vertex measures how easily other\n"
    "vertices can be reached from it (or the other way: how easily it\n"
@@ -12996,8 +12996,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_harmonic_centrality */
   {"harmonic_centrality", (PyCFunction) igraphmodule_Graph_harmonic_centrality,
    METH_VARARGS | METH_KEYWORDS,
-   "harmonic_centrality(vertices=None, mode=ALL, cutoff=None, weights=None,\n"
-   "          normalized=True)\n\n"
+   "harmonic_centrality(vertices=None, mode=ALL, cutoff=None, weights=None, "
+   "normalized=True)\n--\n\n"
    "Calculates the harmonic centralities of given vertices in a graph.\n\n"
    "The harmonic centerality of a vertex measures how easily other\n"
    "vertices can be reached from it (or the other way: how easily it\n"
@@ -13024,7 +13024,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_clusters */
   {"clusters", (PyCFunction) igraphmodule_Graph_clusters,
    METH_VARARGS | METH_KEYWORDS,
-   "clusters(mode=STRONG)\n\n"
+   "clusters(mode=STRONG)\n--\n\n"
    "Calculates the (strong or weak) clusters for a given graph.\n\n"
    "@attention: this function has a more convenient interface in class\n"
    "  L{Graph} which wraps the result in a L{VertexClustering} object.\n"
@@ -13034,7 +13034,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the component index for every node in the graph.\n"},
   {"copy", (PyCFunction) igraphmodule_Graph_copy,
    METH_NOARGS,
-   "copy()\n\n"
+   "copy()\n--\n\n"
    "Creates a copy of the graph.\n\n"
    "Attributes are copied by reference; in other words, if you use\n"
    "mutable Python objects as attribute values, these objects will still\n"
@@ -13043,7 +13043,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"decompose", (PyCFunction) igraphmodule_Graph_decompose,
    METH_VARARGS | METH_KEYWORDS,
-   "decompose(mode=STRONG, maxcompno=None, minelements=1)\n\n"
+   "decompose(mode=STRONG, maxcompno=None, minelements=1)\n--\n\n"
    "Decomposes the graph into subgraphs.\n\n"
    "@param mode: must be either STRONG or WEAK, depending on the\n"
    "  clusters being sought.\n"
@@ -13057,7 +13057,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_contract_vertices */
   {"contract_vertices", (PyCFunction) igraphmodule_Graph_contract_vertices,
    METH_VARARGS | METH_KEYWORDS,
-   "contract_vertices(mapping, combine_attrs=None)\n\n"
+   "contract_vertices(mapping, combine_attrs=None)\n--\n\n"
    "Contracts some vertices in the graph, i.e. replaces groups of vertices\n"
    "with single vertices. Edges are not affected.\n\n"
    "@param mapping: numeric vector which gives the mapping between old and\n"
@@ -13082,7 +13082,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_constraint */
   {"constraint", (PyCFunction) igraphmodule_Graph_constraint,
    METH_VARARGS | METH_KEYWORDS,
-   "constraint(vertices=None, weights=None)\n\n"
+   "constraint(vertices=None, weights=None)\n--\n\n"
    "Calculates Burt's constraint scores for given vertices in a graph.\n\n"
    "Burt's constraint is higher if ego has less, or mutually stronger\n"
    "related (i.e. more redundant) contacts. Burt's measure of\n"
@@ -13102,7 +13102,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_density */
   {"density", (PyCFunction) igraphmodule_Graph_density,
    METH_VARARGS | METH_KEYWORDS,
-   "density(loops=False)\n\n"
+   "density(loops=False) -> float\n--\n\n"
    "Calculates the density of the graph.\n\n"
    "@param loops: whether to take loops into consideration. If C{True},\n"
    "  the algorithm assumes that there might be some loops in the graph\n"
@@ -13113,7 +13113,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interfaces to igraph_diameter */
   {"diameter", (PyCFunction) igraphmodule_Graph_diameter,
    METH_VARARGS | METH_KEYWORDS,
-   "diameter(directed=True, unconn=True, weights=None)\n\n"
+   "diameter(directed=True, unconn=True, weights=None)\n--\n\n"
    "Calculates the diameter of the graph.\n\n"
    "@param directed: whether to consider directed paths.\n"
    "@param unconn: if C{True} and the graph is unconnected, the\n"
@@ -13126,7 +13126,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the diameter"},
   {"get_diameter", (PyCFunction) igraphmodule_Graph_get_diameter,
    METH_VARARGS | METH_KEYWORDS,
-   "get_diameter(directed=True, unconn=True, weights=None)\n\n"
+   "get_diameter(directed=True, unconn=True, weights=None)\n--\n\n"
    "Returns a path with the actual diameter of the graph.\n\n"
    "If there are many shortest paths with the length of the diameter,\n"
    "it returns the first one it founds.\n\n"
@@ -13141,7 +13141,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the vertices in the path in order."},
   {"farthest_points", (PyCFunction) igraphmodule_Graph_farthest_points,
    METH_VARARGS | METH_KEYWORDS,
-   "farthest_points(directed=True, unconn=True, weights=None)\n\n"
+   "farthest_points(directed=True, unconn=True, weights=None)\n--\n\n"
    "Returns two vertex IDs whose distance equals the actual diameter\n"
    "of the graph.\n\n"
    "If there are many shortest paths with the length of the diameter,\n"
@@ -13161,7 +13161,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_diversity */
   {"diversity", (PyCFunction) igraphmodule_Graph_diversity,
    METH_VARARGS | METH_KEYWORDS,
-   "diversity(vertices=None, weights=None)\n\n"
+   "diversity(vertices=None, weights=None)\n--\n\n"
    "Calculates the structural diversity index of the vertices.\n\n"
    "The structural diversity index of a vertex is simply the (normalized)\n"
    "Shannon entropy of the weights of the edges incident on the vertex.\n\n"
@@ -13181,7 +13181,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_eccentricity */
   {"eccentricity", (PyCFunction) igraphmodule_Graph_eccentricity,
    METH_VARARGS | METH_KEYWORDS,
-   "eccentricity(vertices=None, mode=ALL)\n\n"
+   "eccentricity(vertices=None, mode=ALL)\n--\n\n"
    "Calculates the eccentricities of given vertices in a graph.\n\n"
    "The eccentricity of a vertex is calculated by measuring the\n"
    "shortest distance from (or to) the vertex, to (or from) all other\n"
@@ -13198,7 +13198,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_edge_betweenness[_estimate] */
   {"edge_betweenness", (PyCFunction) igraphmodule_Graph_edge_betweenness,
    METH_VARARGS | METH_KEYWORDS,
-   "edge_betweenness(directed=True, cutoff=None, weights=None)\n\n"
+   "edge_betweenness(directed=True, cutoff=None, weights=None)\n--\n\n"
    "Calculates or estimates the edge betweennesses in a graph.\n\n"
    "@param directed: whether to consider directed paths.\n"
    "@param cutoff: if it is an integer, only paths less than or equal to this\n"
@@ -13217,7 +13217,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_[st_]edge_connectivity */
   {"edge_connectivity", (PyCFunction) igraphmodule_Graph_edge_connectivity,
    METH_VARARGS | METH_KEYWORDS,
-   "edge_connectivity(source=-1, target=-1, checks=True)\n\n"
+   "edge_connectivity(source=-1, target=-1, checks=True)\n--\n\n"
    "Calculates the edge connectivity of the graph or between some vertices.\n\n"
    "The edge connectivity between two given vertices is the number of edges\n"
    "that have to be removed in order to disconnect the two vertices into two\n"
@@ -13243,7 +13243,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"eigenvector_centrality",
    (PyCFunction) igraphmodule_Graph_eigenvector_centrality,
    METH_VARARGS | METH_KEYWORDS,
-   "eigenvector_centrality(directed=True, scale=True, weights=None, return_eigenvalue=False, arpack_options=None)\n\n"
+   "eigenvector_centrality(directed=True, scale=True, weights=None, "
+   "return_eigenvalue=False, arpack_options=None)\n--\n\n"
    "Calculates the eigenvector centralities of the vertices in a graph.\n\n"
    "Eigenvector centrality is a measure of the importance of a node in a\n"
    "network. It assigns relative scores to all nodes in the network based\n"
@@ -13278,7 +13279,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_feedback_arc_set */
   {"feedback_arc_set", (PyCFunction) igraphmodule_Graph_feedback_arc_set,
    METH_VARARGS | METH_KEYWORDS,
-   "feedback_arc_set(weights=None, method=\"eades\")\n\n"
+   "feedback_arc_set(weights=None, method=\"eades\")\n--\n\n"
    "Calculates an approximately or exactly minimal feedback arc set.\n\n"
    "A feedback arc set is a set of edges whose removal makes the graph acyclic.\n"
    "Since this is always possible by removing all the edges, we are in general\n"
@@ -13306,7 +13307,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_get_shortest_paths
   {"get_shortest_paths", (PyCFunction) igraphmodule_Graph_get_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "get_shortest_paths(v, to=None, weights=None, mode=OUT, output=\"vpath\")\n\n"
+   "get_shortest_paths(v, to=None, weights=None, mode=OUT, output=\"vpath\")\n--\n\n"
    "Calculates the shortest paths from/to a given node in a graph.\n\n"
    "@param v: the source/destination for the calculated paths\n"
    "@param to: a vertex selector describing the destination/source for\n"
@@ -13331,7 +13332,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"get_all_shortest_paths",
    (PyCFunction) igraphmodule_Graph_get_all_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "get_all_shortest_paths(v, to=None, weights=None, mode=OUT)\n\n"
+   "get_all_shortest_paths(v, to=None, weights=None, mode=OUT)\n--\n\n"
    "Calculates all of the shortest paths from/to a given node in a graph.\n\n"
    "@param v: the source for the calculated paths\n"
    "@param to: a vertex selector describing the destination for\n"
@@ -13352,7 +13353,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"_get_all_simple_paths",
    (PyCFunction) igraphmodule_Graph_get_all_simple_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "_get_all_simple_paths(v, to=None, cutoff=-1, mode=OUT)\n\n"
+   "_get_all_simple_paths(v, to=None, cutoff=-1, mode=OUT)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.get_all_simple_paths()\n\n"
   },
@@ -13360,7 +13361,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_girth */
   {"girth", (PyCFunction)igraphmodule_Graph_girth,
    METH_VARARGS | METH_KEYWORDS,
-   "girth(return_shortest_circle=False)\n\n"
+   "girth(return_shortest_circle=False)\n--\n\n"
    "Returns the girth of the graph.\n\n"
    "The girth of a graph is the length of the shortest circle in it.\n\n"
    "@param return_shortest_circle: whether to return one of the shortest\n"
@@ -13372,21 +13373,21 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_convergence_degree */
   {"convergence_degree", (PyCFunction)igraphmodule_Graph_convergence_degree,
     METH_NOARGS,
-    "convergence_degree()\n\n"
+    "convergence_degree()\n--\n\n"
     "Undocumented (yet)."
   },
 
   /* interface to igraph_convergence_field_size */
   {"convergence_field_size", (PyCFunction)igraphmodule_Graph_convergence_field_size,
     METH_NOARGS,
-    "convergence_field_size()\n\n"
+    "convergence_field_size()\n--\n\n"
     "Undocumented (yet)."
   },
 
   /* interface to igraph_hub_score */
   {"hub_score", (PyCFunction)igraphmodule_Graph_hub_score,
    METH_VARARGS | METH_KEYWORDS,
-   "hub_score(weights=None, scale=True, arpack_options=None, return_eigenvalue=False)\n\n"
+   "hub_score(weights=None, scale=True, arpack_options=None, return_eigenvalue=False)\n--\n\n"
    "Calculates Kleinberg's hub score for the vertices of the graph\n\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name.\n"
@@ -13404,7 +13405,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_induced_subgraph */
   {"induced_subgraph", (PyCFunction) igraphmodule_Graph_induced_subgraph,
    METH_VARARGS | METH_KEYWORDS,
-   "induced_subgraph(vertices, implementation=\"auto\")\n\n"
+   "induced_subgraph(vertices, implementation=\"auto\")\n--\n\n"
    "Returns a subgraph spanned by the given vertices.\n\n"
    "@param vertices: a list containing the vertex IDs which\n"
    "  should be included in the result.\n"
@@ -13425,7 +13426,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_bipartite */
   {"is_bipartite", (PyCFunction) igraphmodule_Graph_is_bipartite,
    METH_VARARGS | METH_KEYWORDS,
-   "is_bipartite(return_types=False)\n\n"
+   "is_bipartite(return_types=False) -> bool\n--\n\n"
    "Decides whether the graph is bipartite or not.\n\n"
    "Vertices of a bipartite graph can be partitioned into two groups A\n"
    "and B in a way that all edges go between the two groups.\n\n"
@@ -13444,7 +13445,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_avg_nearest_neighbor_degree */
   {"knn", (PyCFunction) igraphmodule_Graph_knn,
    METH_VARARGS | METH_KEYWORDS,
-   "knn(vids=None, weights=None)\n\n"
+   "knn(vids=None, weights=None)\n--\n\n"
    "Calculates the average degree of the neighbors for each vertex, and\n"
    "the same quantity as the function of vertex degree.\n\n"
    "@param vids: the vertices for which the calculation is performed.\n"
@@ -13463,7 +13464,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_connected */
   {"is_connected", (PyCFunction) igraphmodule_Graph_is_connected,
    METH_VARARGS | METH_KEYWORDS,
-   "is_connected(mode=STRONG)\n\n"
+   "is_connected(mode=STRONG) -> bool\n--\n\n"
    "Decides whether the graph is connected.\n\n"
    "@param mode: whether we should calculate strong or weak connectivity.\n"
    "@return: C{True} if the graph is connected, C{False} otherwise.\n"},
@@ -13471,7 +13472,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_linegraph */
   {"linegraph", (PyCFunction) igraphmodule_Graph_linegraph,
    METH_VARARGS | METH_KEYWORDS,
-   "linegraph()\n\n"
+   "linegraph()\n--\n\n"
    "Returns the line graph of the graph.\n\n"
    "The line graph M{L(G)} of an undirected graph is defined as follows:\n"
    "M{L(G)} has one vertex for each edge in G and two vertices in M{L(G)}\n"
@@ -13486,7 +13487,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_maxdegree */
   {"maxdegree", (PyCFunction) igraphmodule_Graph_maxdegree,
    METH_VARARGS | METH_KEYWORDS,
-   "maxdegree(vertices=None, mode=ALL, loops=False)\n\n"
+   "maxdegree(vertices=None, mode=ALL, loops=False)\n--\n\n"
    "Returns the maximum degree of a vertex set in the graph.\n\n"
    "This method accepts a single vertex ID or a list of vertex IDs as a\n"
    "parameter, and returns the degree of the given vertices (in the\n"
@@ -13503,7 +13504,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_neighborhood */
   {"neighborhood", (PyCFunction) igraphmodule_Graph_neighborhood,
    METH_VARARGS | METH_KEYWORDS,
-   "neighborhood(vertices=None, order=1, mode=ALL, mindist=0)\n\n"
+   "neighborhood(vertices=None, order=1, mode=ALL, mindist=0)\n--\n\n"
    "For each vertex specified by I{vertices}, returns the\n"
    "vertices reachable from that vertex in at most I{order} steps. If\n"
    "I{mindist} is larger than zero, vertices that are reachable in less\n"
@@ -13531,7 +13532,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_neighborhood_size */
   {"neighborhood_size", (PyCFunction) igraphmodule_Graph_neighborhood_size,
    METH_VARARGS | METH_KEYWORDS,
-   "neighborhood_size(vertices=None, order=1, mode=ALL, mindist=0)\n\n"
+   "neighborhood_size(vertices=None, order=1, mode=ALL, mindist=0)\n--\n\n"
    "For each vertex specified by I{vertices}, returns the number of\n"
    "vertices reachable from that vertex in at most I{order} steps. If\n"
    "I{mindist} is larger than zero, vertices that are reachable in less\n"
@@ -13562,7 +13563,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "personalized_pagerank(vertices=None, directed=True, damping=0.85,\n"
    "        reset=None, reset_vertices=None, weights=None, \n"
    "        arpack_options=None, implementation=\"prpack\", niter=1000,\n"
-   "        eps=0.001)\n\n"
+   "        eps=0.001)\n--\n\n"
    "Calculates the personalized PageRank values of a graph.\n\n"
    "The personalized PageRank calculation is similar to the PageRank\n"
    "calculation, but the random walk is reset to a non-uniform distribution\n"
@@ -13611,7 +13612,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_path_length_hist */
   {"path_length_hist", (PyCFunction) igraphmodule_Graph_path_length_hist,
    METH_VARARGS | METH_KEYWORDS,
-   "path_length_hist(directed=True)\n\n"
+   "path_length_hist(directed=True)\n--\n\n"
    "Calculates the path length histogram of the graph\n"
    "@attention: this function is wrapped in a more convenient syntax in the\n"
    "  derived class L{Graph}. It is advised to use that instead of this version.\n\n"
@@ -13625,7 +13626,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_permute_vertices */
   {"permute_vertices", (PyCFunction) igraphmodule_Graph_permute_vertices,
    METH_VARARGS | METH_KEYWORDS,
-   "permute_vertices(permutation)\n\n"
+   "permute_vertices(permutation)\n--\n\n"
    "Permutes the vertices of the graph according to the given permutation\n"
    "and returns the new graph.\n\n"
    "Vertex M{k} of the original graph will become vertex M{permutation[k]}\n"
@@ -13637,7 +13638,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interfaces to igraph_radius */
   {"radius", (PyCFunction) igraphmodule_Graph_radius,
    METH_VARARGS | METH_KEYWORDS,
-   "radius(mode=OUT)\n\n"
+   "radius(mode=OUT)\n--\n\n"
    "Calculates the radius of the graph.\n\n"
    "The radius of a graph is defined as the minimum eccentricity of\n"
    "its vertices (see L{eccentricity()}).\n"
@@ -13653,7 +13654,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_reciprocity */
   {"reciprocity", (PyCFunction) igraphmodule_Graph_reciprocity,
    METH_VARARGS | METH_KEYWORDS,
-   "reciprocity(ignore_loops=True, mode=\"default\")\n\n"
+   "reciprocity(ignore_loops=True, mode=\"default\") -> float\n--\n\n"
    "Reciprocity defines the proportion of mutual connections in a\n"
    "directed graph. It is most commonly defined as the probability\n"
    "that the opposite counterpart of a directed edge is also included\n"
@@ -13677,7 +13678,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_rewire */
   {"rewire", (PyCFunction) igraphmodule_Graph_rewire,
    METH_VARARGS | METH_KEYWORDS,
-   "rewire(n=1000, mode=\"simple\")\n\n"
+   "rewire(n=1000, mode=\"simple\")\n--\n\n"
    "Randomly rewires the graph while preserving the degree distribution.\n\n"
    "Please note that the rewiring is done \"in-place\", so the original\n"
    "graph will be modified. If you want to preserve the original graph,\n"
@@ -13690,7 +13691,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_rewire_edges */
   {"rewire_edges", (PyCFunction) igraphmodule_Graph_rewire_edges,
    METH_VARARGS | METH_KEYWORDS,
-   "rewire_edges(prob, loops=False, multiple=False)\n\n"
+   "rewire_edges(prob, loops=False, multiple=False)\n--\n\n"
    "Rewires the edges of a graph with constant probability.\n\n"
    "Each endpoint of each edge of the graph will be rewired with a constant\n"
    "probability, given in the first argument.\n\n"
@@ -13705,7 +13706,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_shortest_paths */
   {"shortest_paths", (PyCFunction) igraphmodule_Graph_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "shortest_paths(source=None, target=None, weights=None, mode=OUT)\n\n"
+   "shortest_paths(source=None, target=None, weights=None, mode=OUT)\n--\n\n"
    "Calculates shortest path lengths for given vertices in a graph.\n\n"
    "The algorithm used for the calculations is selected automatically:\n"
    "a simple BFS is used for unweighted graphs, Dijkstra's algorithm is\n"
@@ -13728,7 +13729,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_simplify */
   {"simplify", (PyCFunction) igraphmodule_Graph_simplify,
    METH_VARARGS | METH_KEYWORDS,
-   "simplify(multiple=True, loops=True, combine_edges=None)\n\n"
+   "simplify(multiple=True, loops=True, combine_edges=None)\n--\n\n"
    "Simplifies a graph by removing self-loops and/or multiple edges.\n\n"
    "\n"
    "For example, suppose you have a graph with an edge attribute named\n"
@@ -13780,14 +13781,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_minimum_spanning_tree */
   {"_spanning_tree", (PyCFunction) igraphmodule_Graph_spanning_tree,
    METH_VARARGS | METH_KEYWORDS,
-   "_spanning_tree(weights=None)\n\n"
+   "_spanning_tree(weights=None)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.spanning_tree()"},
 
   // interface to igraph_subcomponent
   {"subcomponent", (PyCFunction) igraphmodule_Graph_subcomponent,
    METH_VARARGS | METH_KEYWORDS,
-   "subcomponent(v, mode=ALL)\n\n"
+   "subcomponent(v, mode=ALL)\n--\n\n"
    "Determines the indices of vertices which are in the same component as a given vertex.\n\n"
    "@param v: the index of the vertex used as the source/destination\n"
    "@param mode: if equals to L{IN}, returns the vertex IDs from\n"
@@ -13802,7 +13803,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_subgraph_edges */
   {"subgraph_edges", (PyCFunction) igraphmodule_Graph_subgraph_edges,
    METH_VARARGS | METH_KEYWORDS,
-   "subgraph_edges(edges, delete_vertices=True)\n\n"
+   "subgraph_edges(edges, delete_vertices=True)\n--\n\n"
    "Returns a subgraph spanned by the given edges.\n\n"
    "@param edges: a list containing the edge IDs which should\n"
    "  be included in the result.\n"
@@ -13815,7 +13816,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"topological_sorting",
    (PyCFunction) igraphmodule_Graph_topological_sorting,
    METH_VARARGS | METH_KEYWORDS,
-   "topological_sorting(mode=OUT)\n\n"
+   "topological_sorting(mode=OUT)\n--\n\n"
    "Calculates a possible topological sorting of the graph.\n\n"
    "Returns a partial sorting and issues a warning if the graph is not\n"
    "a directed acyclic graph.\n\n"
@@ -13828,7 +13829,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"to_prufer",
    (PyCFunction) igraphmodule_Graph_to_prufer,
    METH_NOARGS,
-   "to_prufer()\n\n"
+   "to_prufer()\n--\n\n"
    "Converts a tree graph into a Prufer sequence.\n\n"
    "@return: the Prufer sequence as a list"
   },
@@ -13837,7 +13838,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"transitivity_undirected",
    (PyCFunction) igraphmodule_Graph_transitivity_undirected,
    METH_VARARGS | METH_KEYWORDS,
-   "transitivity_undirected(mode=\"nan\")\n\n"
+   "transitivity_undirected(mode=\"nan\")\n--\n\n"
    "Calculates the global transitivity (clustering coefficient) of the\n"
    "graph.\n\n"
    "The transitivity measures the probability that two neighbors of a\n"
@@ -13863,7 +13864,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"transitivity_local_undirected",
    (PyCFunction) igraphmodule_Graph_transitivity_local_undirected,
    METH_VARARGS | METH_KEYWORDS,
-   "transitivity_local_undirected(vertices=None, mode=\"nan\", weights=None)\n\n"
+   "transitivity_local_undirected(vertices=None, mode=\"nan\", weights=None)\n--\n\n"
    "Calculates the local transitivity (clustering coefficient) of the\n"
    "given vertices in the graph.\n\n"
    "The transitivity measures the probability that two neighbors of a\n"
@@ -13897,7 +13898,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"transitivity_avglocal_undirected",
    (PyCFunction) igraphmodule_Graph_transitivity_avglocal_undirected,
    METH_VARARGS | METH_KEYWORDS,
-   "transitivity_avglocal_undirected(mode=\"nan\")\n\n"
+   "transitivity_avglocal_undirected(mode=\"nan\")\n--\n\n"
    "Calculates the average of the vertex transitivities of the graph.\n\n"
    "The transitivity measures the probability that two neighbors of a\n"
    "vertex are connected. In case of the average local transitivity,\n"
@@ -13922,7 +13923,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_unfold_tree */
   {"unfold_tree", (PyCFunction) igraphmodule_Graph_unfold_tree,
    METH_VARARGS | METH_KEYWORDS,
-   "unfold_tree(sources=None, mode=OUT)\n\n"
+   "unfold_tree(sources=None, mode=OUT)\n--\n\n"
    "Unfolds the graph using a BFS to a tree by duplicating vertices as necessary.\n\n"
    "@param sources: the source vertices to start the unfolding from. It should be a\n"
    "  list of vertex indices, preferably one vertex from each connected component.\n"
@@ -13938,7 +13939,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_[st_]vertex_connectivity */
   {"vertex_connectivity", (PyCFunction) igraphmodule_Graph_vertex_connectivity,
    METH_VARARGS | METH_KEYWORDS,
-   "vertex_connectivity(source=-1, target=-1, checks=True, neighbors=\"error\")\n\n"
+   "vertex_connectivity(source=-1, target=-1, checks=True, neighbors=\"error\")\n--\n\n"
    "Calculates the vertex connectivity of the graph or between some vertices.\n\n"
    "The vertex connectivity between two given vertices is the number of vertices\n"
    "that have to be removed in order to disconnect the two vertices into two\n"
@@ -13971,7 +13972,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_bibcoupling */
   {"bibcoupling", (PyCFunction) igraphmodule_Graph_bibcoupling,
    METH_VARARGS | METH_KEYWORDS,
-   "bibcoupling(vertices=None)\n\n"
+   "bibcoupling(vertices=None)\n--\n\n"
    "Calculates bibliographic coupling scores for given vertices in a graph.\n\n"
    "@param vertices: the vertices to be analysed. If C{None}, all vertices\n"
    "  will be considered.\n"
@@ -13979,7 +13980,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_cocitation */
   {"cocitation", (PyCFunction) igraphmodule_Graph_cocitation,
    METH_VARARGS | METH_KEYWORDS,
-   "cocitation(vertices=None)\n\n"
+   "cocitation(vertices=None)\n--\n\n"
    "Calculates cocitation scores for given vertices in a graph.\n\n"
    "@param vertices: the vertices to be analysed. If C{None}, all vertices\n"
    "  will be considered.\n"
@@ -14014,7 +14015,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"similarity_inverse_log_weighted",
     (PyCFunction) igraphmodule_Graph_similarity_inverse_log_weighted,
    METH_VARARGS | METH_KEYWORDS,
-   "similarity_inverse_log_weighted(vertices=None, mode=IGRAPH_ALL)\n\n"
+   "similarity_inverse_log_weighted(vertices=None, mode=IGRAPH_ALL)\n--\n\n"
    "Inverse log-weighted similarity coefficient of vertices.\n\n"
    "Each vertex is assigned a weight which is 1 / log(degree). The\n"
    "log-weighted similarity of two vertices is the sum of the weights\n"
@@ -14031,7 +14032,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_similarity_jaccard */
   {"similarity_jaccard", (PyCFunction) igraphmodule_Graph_similarity_jaccard,
    METH_VARARGS | METH_KEYWORDS,
-   "similarity_jaccard(vertices=None, pairs=None, mode=IGRAPH_ALL, loops=True)\n\n"
+   "similarity_jaccard(vertices=None, pairs=None, mode=IGRAPH_ALL, loops=True)\n--\n\n"
    "Jaccard similarity coefficient of vertices.\n\n"
    "The Jaccard similarity coefficient of two vertices is the number of their\n"
    "common neighbors divided by the number of vertices that are adjacent to\n"
@@ -14059,7 +14060,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /******************/
   {"motifs_randesu", (PyCFunction) igraphmodule_Graph_motifs_randesu,
    METH_VARARGS | METH_KEYWORDS,
-   "motifs_randesu(size=3, cut_prob=None, callback=None)\n\n"
+   "motifs_randesu(size=3, cut_prob=None, callback=None)\n--\n\n"
    "Counts the number of motifs in the graph\n\n"
    "Motifs are small subgraphs of a given structure in a graph. It is\n"
    "argued that the motif profile (ie. the number of different motifs in\n"
@@ -14090,7 +14091,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"motifs_randesu_no", (PyCFunction) igraphmodule_Graph_motifs_randesu_no,
    METH_VARARGS | METH_KEYWORDS,
-   "motifs_randesu_no(size=3, cut_prob=None)\n\n"
+   "motifs_randesu_no(size=3, cut_prob=None)\n--\n\n"
    "Counts the total number of motifs in the graph\n\n"
    "Motifs are small subgraphs of a given structure in a graph.\n"
    "This function counts the total number of motifs in a graph without\n"
@@ -14107,7 +14108,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"motifs_randesu_estimate",
    (PyCFunction) igraphmodule_Graph_motifs_randesu_estimate,
    METH_VARARGS | METH_KEYWORDS,
-   "motifs_randesu_estimate(size=3, cut_prob=None, sample)\n\n"
+   "motifs_randesu_estimate(size=3, cut_prob=None, sample)\n--\n\n"
    "Counts the total number of motifs in the graph\n\n"
    "Motifs are small subgraphs of a given structure in a graph.\n"
    "This function estimates the total number of motifs in a graph without\n"
@@ -14126,7 +14127,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"dyad_census", (PyCFunction) igraphmodule_Graph_dyad_census,
    METH_NOARGS,
-   "dyad_census()\n\n"
+   "dyad_census()\n--\n\n"
    "Dyad census, as defined by Holland and Leinhardt\n\n"
    "Dyad census means classifying each pair of vertices of a directed\n"
    "graph into three categories: mutual, there is an edge from I{a} to\n"
@@ -14141,7 +14142,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"triad_census", (PyCFunction) igraphmodule_Graph_triad_census,
    METH_NOARGS,
-   "triad_census()\n\n"
+   "triad_census()\n--\n\n"
    "Triad census, as defined by Davis and Leinhardt\n\n"
    "Calculating the triad census means classifying every triplets of\n"
    "vertices in a directed graph. A triplet can be in one of 16 states,\n"
@@ -14161,7 +14162,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_bipartite",
    (PyCFunction) igraphmodule_Graph_layout_bipartite,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_bipartite(types=\"type\", hgap=1, vgap=1, maxiter=100)\n\n"
+   "layout_bipartite(types=\"type\", hgap=1, vgap=1, maxiter=100)\n--\n\n"
    "Place the vertices of a bipartite graph in two layers.\n\n"
    "The layout is created by placing the vertices in two rows, according\n"
    "to their types. The positions of the vertices within the rows are\n"
@@ -14180,7 +14181,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_layout_circle */
   {"layout_circle", (PyCFunction) igraphmodule_Graph_layout_circle,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_circle(dim=2, order=None)\n\n"
+   "layout_circle(dim=2, order=None)\n--\n\n"
    "Places the vertices of the graph uniformly on a circle or a sphere.\n\n"
    "@param dim: the desired number of dimensions for the layout. dim=2\n"
    "  means a 2D layout, dim=3 means a 3D layout.\n"
@@ -14191,7 +14192,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_layout_grid */
   {"layout_grid", (PyCFunction) igraphmodule_Graph_layout_grid,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_grid(width=0, height=0, dim=2)\n\n"
+   "layout_grid(width=0, height=0, dim=2)\n--\n\n"
    "Places the vertices of a graph in a 2D or 3D grid.\n\n"
    "@param width: the number of vertices in a single row of the layout.\n"
    "  Zero or negative numbers mean that the width should be determined\n"
@@ -14206,7 +14207,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_layout_star */
   {"layout_star", (PyCFunction) igraphmodule_Graph_layout_star,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_star(center=0, order=None)\n\n"
+   "layout_star(center=0, order=None)\n--\n\n"
    "Calculates a star-like layout for the graph.\n\n"
    "@param center: the ID of the vertex to put in the center\n"
    "@param order: a numeric vector giving the order of the vertices\n"
@@ -14219,9 +14220,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_kamada_kawai",
    (PyCFunction) igraphmodule_Graph_layout_kamada_kawai,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_kamada_kawai(maxiter=1000, seed=None, maxiter=1000, epsilon=0, \n"
-   "  kkconst=None, minx=None, maxx=None, miny=None, maxy=None, \n"
-   "  minz=None, maxz=None, dim=2)\n\n"
+   "layout_kamada_kawai(maxiter=1000, seed=None, maxiter=1000, epsilon=0, "
+   "kkconst=None, minx=None, maxx=None, miny=None, maxy=None, "
+   "minz=None, maxz=None, dim=2)\n--\n\n"
    "Places the vertices on a plane according to the Kamada-Kawai algorithm.\n\n"
    "This is a force directed layout, see Kamada, T. and Kawai, S.:\n"
    "An Algorithm for Drawing General Undirected Graphs.\n"
@@ -14253,9 +14254,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_davidson_harel",
    (PyCFunction) igraphmodule_Graph_layout_davidson_harel,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_davidson_harel(seed=None, maxiter=10, fineiter=-1, cool_fact=0.75,\n"
-   "  weight_node_dist=1.0, weight_border=0.0, weight_edge_lengths=-1,\n"
-   "  weight_edge_crossings=-1, weight_node_edge_dist=-1)\n\n"
+   "layout_davidson_harel(seed=None, maxiter=10, fineiter=-1, cool_fact=0.75, "
+   "weight_node_dist=1.0, weight_border=0.0, weight_edge_lengths=-1, "
+   "weight_edge_crossings=-1, weight_node_edge_dist=-1)\n--\n\n"
    "Places the vertices on a 2D plane according to the Davidson-Harel layout\n"
    "algorithm.\n\n"
    "The algorithm uses simulated annealing and a sophisticated energy function,\n"
@@ -14293,7 +14294,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_drl",
    (PyCFunction) igraphmodule_Graph_layout_drl,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_drl(weights=None, fixed=None, seed=None, options=None, dim=2)\n\n"
+   "layout_drl(weights=None, fixed=None, seed=None, options=None, dim=2)\n--\n\n"
    "Places the vertices on a 2D plane or in the 3D space ccording to the DrL\n"
    "layout algorithm.\n\n"
    "This is an algorithm suitable for quite large graphs, but it can be\n"
@@ -14352,9 +14353,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_fruchterman_reingold",
    (PyCFunction) igraphmodule_Graph_layout_fruchterman_reingold,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_fruchterman_reingold(weights=None, niter=500, seed=None, \n"
-   "  start_temp=None, minx=None, maxx=None, miny=None, \n"
-   "  maxy=None, minz=None, maxz=None, grid=\"auto\")\n\n"
+   "layout_fruchterman_reingold(weights=None, niter=500, seed=None, "
+   "start_temp=None, minx=None, maxx=None, miny=None, "
+   "maxy=None, minz=None, maxz=None, grid=\"auto\")\n--\n\n"
    "Places the vertices on a 2D plane according to the\n"
    "Fruchterman-Reingold algorithm.\n\n"
    "This is a force directed layout, see Fruchterman, T. M. J. and Reingold, E. M.:\n"
@@ -14394,7 +14395,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_graphopt",
    (PyCFunction) igraphmodule_Graph_layout_graphopt,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_graphopt(niter=500, node_charge=0.001, node_mass=30, spring_length=0, spring_constant=1, max_sa_movement=5, seed=None)\n\n"
+   "layout_graphopt(niter=500, node_charge=0.001, node_mass=30, "
+   "spring_length=0, spring_constant=1, max_sa_movement=5, seed=None)\n--\n\n"
    "This is a port of the graphopt layout algorithm by Michael Schmuhl.\n"
    "graphopt version 0.4.1 was rewritten in C and the support for layers\n"
    "was removed.\n\n"
@@ -14420,7 +14422,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_layout_lgl */
   {"layout_lgl", (PyCFunction) igraphmodule_Graph_layout_lgl,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_lgl(maxiter=150, maxdelta=-1, area=-1, coolexp=1.5, repulserad=-1, cellsize=-1, root=None)\n\n"
+   "layout_lgl(maxiter=150, maxdelta=-1, area=-1, coolexp=1.5, "
+   "repulserad=-1, cellsize=-1, root=None)\n--\n\n"
    "Places the vertices on a 2D plane according to the Large Graph Layout.\n\n"
    "@param maxiter: the number of iterations to perform.\n"
    "@param maxdelta: the maximum distance to move a vertex in\n"
@@ -14446,7 +14449,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_mds",
    (PyCFunction) igraphmodule_Graph_layout_mds,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_mds(dist=None, dim=2, arpack_options=None)\n"
+   "layout_mds(dist=None, dim=2, arpack_options=None)\n--\n"
    "Places the vertices in an Euclidean space with the given number of\n"
    "dimensions using multidimensional scaling.\n\n"
    "This layout requires a distance matrix, where the intersection of\n"
@@ -14479,7 +14482,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_reingold_tilford",
    (PyCFunction) igraphmodule_Graph_layout_reingold_tilford,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_reingold_tilford(mode=\"out\", root=None, rootlevel=None)\n"
+   "layout_reingold_tilford(mode=\"out\", root=None, rootlevel=None)\n--\n"
    "Places the vertices on a 2D plane according to the Reingold-Tilford\n"
    "layout algorithm.\n\n"
    "This is a tree layout. If the given graph is not a tree, a breadth-first\n"
@@ -14509,7 +14512,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_reingold_tilford_circular",
    (PyCFunction) igraphmodule_Graph_layout_reingold_tilford_circular,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_reingold_tilford_circular(mode=\"out\", root=None, rootlevel=None)\n"
+   "layout_reingold_tilford_circular(mode=\"out\", root=None, rootlevel=None)\n--\n"
    "Circular Reingold-Tilford layout for trees.\n\n"
    "This layout is similar to the Reingold-Tilford layout, but the vertices\n"
    "are placed in a circular way, with the root vertex in the center.\n\n"
@@ -14523,7 +14526,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_layout_random */
   {"layout_random", (PyCFunction) igraphmodule_Graph_layout_random,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_random(dim=2)\n"
+   "layout_random(dim=2)\n--\n"
    "Places the vertices of the graph randomly.\n\n"
    "@param dim: the desired number of dimensions for the layout. dim=2\n"
    "  means a 2D layout, dim=3 means a 3D layout.\n"
@@ -14541,7 +14544,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   ////////////////////////////
   {"bfs", (PyCFunction) igraphmodule_Graph_bfs,
    METH_VARARGS | METH_KEYWORDS,
-   "bfs(vid, mode=OUT)\n\n"
+   "bfs(vid, mode=OUT)\n--\n\n"
    "Conducts a breadth first search (BFS) on the graph.\n\n"
    "@param vid: the root vertex ID\n"
    "@param mode: either L{IN} or L{OUT} or L{ALL}, ignored\n"
@@ -14552,7 +14555,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "   - The parent of every vertex in the BFS\n"},
   {"bfsiter", (PyCFunction) igraphmodule_Graph_bfsiter,
    METH_VARARGS | METH_KEYWORDS,
-   "bfsiter(vid, mode=OUT, advanced=False)\n\n"
+   "bfsiter(vid, mode=OUT, advanced=False)\n--\n\n"
    "Constructs a breadth first search (BFS) iterator of the graph.\n\n"
    "@param vid: the root vertex ID\n"
    "@param mode: either L{IN} or L{OUT} or L{ALL}.\n"
@@ -14563,7 +14566,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the BFS iterator as an L{igraph.BFSIter} object.\n"},
   {"dfsiter", (PyCFunction) igraphmodule_Graph_dfsiter,
    METH_VARARGS | METH_KEYWORDS,
-   "dfsiter(vid, mode=OUT, advanced=False)\n\n"
+   "dfsiter(vid, mode=OUT, advanced=False)\n--\n\n"
    "Constructs a depth first search (DFS) iterator of the graph.\n\n"
    "@param vid: the root vertex ID\n"
    "@param mode: either L{IN} or L{OUT} or L{ALL}.\n"
@@ -14580,7 +14583,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_get_adjacency
   {"get_adjacency", (PyCFunction) igraphmodule_Graph_get_adjacency,
    METH_VARARGS | METH_KEYWORDS,
-   "get_adjacency(type=GET_ADJACENCY_BOTH, eids=False)\n\n"
+   "get_adjacency(type=GET_ADJACENCY_BOTH, eids=False)\n--\n\n"
    "Returns the adjacency matrix of a graph.\n\n"
    "@param type: either C{GET_ADJACENCY_LOWER} (uses the\n"
    "  lower triangle of the matrix) or C{GET_ADJACENCY_UPPER}\n"
@@ -14596,19 +14599,19 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_get_edgelist
   {"get_edgelist", (PyCFunction) igraphmodule_Graph_get_edgelist,
    METH_NOARGS,
-   "get_edgelist()\n\n" "Returns the edge list of a graph."},
+   "get_edgelist()\n--\n\n" "Returns the edge list of a graph."},
 
   /* interface to igraph_get_incidence */
   {"get_incidence", (PyCFunction) igraphmodule_Graph_get_incidence,
    METH_VARARGS | METH_KEYWORDS,
-   "get_incidence(types)\n\n"
+   "get_incidence(types)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.get_incidence()\n\n"},
 
   // interface to igraph_to_directed
   {"to_directed", (PyCFunction) igraphmodule_Graph_to_directed,
    METH_VARARGS | METH_KEYWORDS,
-   "to_directed(mutual=True)\n\n"
+   "to_directed(mutual=True)\n--\n\n"
    "Converts an undirected graph to directed.\n\n"
    "@param mutual: C{True} if mutual directed edges should be\n"
    "  created for every undirected edge. If C{False}, a directed\n"
@@ -14617,7 +14620,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_to_undirected
   {"to_undirected", (PyCFunction) igraphmodule_Graph_to_undirected,
    METH_VARARGS | METH_KEYWORDS,
-   "to_undirected(mode=\"collapse\", combine_edges=None)\n\n"
+   "to_undirected(mode=\"collapse\", combine_edges=None)\n--\n\n"
    "Converts a directed graph to undirected.\n\n"
    "@param mode: specifies what to do with multiple directed edges\n"
    "  going between the same vertex pair. C{True} or C{\"collapse\"}\n"
@@ -14633,7 +14636,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_laplacian */
   {"laplacian", (PyCFunction) igraphmodule_Graph_laplacian,
    METH_VARARGS | METH_KEYWORDS,
-   "laplacian(weights=None, normalized=False)\n\n"
+   "laplacian(weights=None, normalized=False)\n--\n\n"
    "Returns the Laplacian matrix of a graph.\n\n"
    "The Laplacian matrix is similar to the adjacency matrix, but the edges\n"
    "are denoted with -1 and the diagonal contains the node degrees.\n\n"
@@ -14656,7 +14659,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_read_graph_dimacs
   {"Read_DIMACS", (PyCFunction) igraphmodule_Graph_Read_DIMACS,
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
-   "Read_DIMACS(f, directed=False)\n\n"
+   "Read_DIMACS(f, directed=False)\n--\n\n"
    "Reads a graph from a file conforming to the DIMACS minimum-cost flow file format.\n\n"
    "For the exact description of the format, see\n"
    "U{http://lpsolve.sourceforge.net/5.5/DIMACS.htm}\n\n"
@@ -14674,7 +14677,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_read_graph_dl */
   {"Read_DL", (PyCFunction) igraphmodule_Graph_Read_DL,
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
-   "Read_DL(f, directed=True)\n\n"
+   "Read_DL(f, directed=True)\n--\n\n"
    "Reads an UCINET DL file and creates a graph based on it.\n\n"
    "@param f: the name of the file or a Python file handle\n"
    "@param directed: whether the generated graph should be directed.\n"},
@@ -14682,7 +14685,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_read_graph_edgelist */
   {"Read_Edgelist", (PyCFunction) igraphmodule_Graph_Read_Edgelist,
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
-   "Read_Edgelist(f, directed=True)\n\n"
+   "Read_Edgelist(f, directed=True)\n--\n\n"
    "Reads an edge list from a file and creates a graph based on it.\n\n"
    "Please note that the vertex indices are zero-based. A vertex of zero\n"
    "degree will be created for every integer that is in range but does not\n"
@@ -14692,7 +14695,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_read_graph_graphdb */
   {"Read_GraphDB", (PyCFunction) igraphmodule_Graph_Read_GraphDB,
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
-   "Read_GraphDB(f, directed=False)\n\n"
+   "Read_GraphDB(f, directed=False)\n--\n\n"
    "Reads a GraphDB format file and creates a graph based on it.\n\n"
    "GraphDB is a binary format, used in the graph database for\n"
    "isomorphism testing (see U{http://amalfi.dis.unina.it/graph/}).\n\n"
@@ -14701,7 +14704,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_read_graph_graphml */
   {"Read_GraphML", (PyCFunction) igraphmodule_Graph_Read_GraphML,
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
-   "Read_GraphML(f, directed=True, index=0)\n\n"
+   "Read_GraphML(f, directed=True, index=0)\n--\n\n"
    "Reads a GraphML format file and creates a graph based on it.\n\n"
    "@param f: the name of the file or a Python file handle\n"
    "@param index: if the GraphML file contains multiple graphs,\n"
@@ -14711,14 +14714,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_read_graph_gml */
   {"Read_GML", (PyCFunction) igraphmodule_Graph_Read_GML,
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
-   "Read_GML(f)\n\n"
+   "Read_GML(f)\n--\n\n"
    "Reads a GML file and creates a graph based on it.\n\n"
    "@param f: the name of the file or a Python file handle\n"
   },
   /* interface to igraph_read_graph_ncol */
   {"Read_Ncol", (PyCFunction) igraphmodule_Graph_Read_Ncol,
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
-   "Read_Ncol(f, names=True, weights=\"if_present\", directed=True)\n\n"
+   "Read_Ncol(f, names=True, weights=\"if_present\", directed=True)\n--\n\n"
    "Reads an .ncol file used by LGL.\n\n"
    "It is also useful for creating graphs from \"named\" (and\n"
    "optionally weighted) edge lists.\n\n"
@@ -14743,7 +14746,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_read_graph_lgl */
   {"Read_Lgl", (PyCFunction) igraphmodule_Graph_Read_Lgl,
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
-   "Read_Lgl(f, names=True, weights=\"if_present\", directed=True)\n\n"
+   "Read_Lgl(f, names=True, weights=\"if_present\", directed=True)\n--\n\n"
    "Reads an .lgl file used by LGL.\n\n"
    "It is also useful for creating graphs from \"named\" (and\n"
    "optionally weighted) edge lists.\n\n"
@@ -14768,13 +14771,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_read_graph_pajek */
   {"Read_Pajek", (PyCFunction) igraphmodule_Graph_Read_Pajek,
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
-   "Read_Pajek(f)\n\n"
+   "Read_Pajek(f)\n--\n\n"
    "Reads a Pajek format file and creates a graph based on it.\n\n"
    "@param f: the name of the file or a Python file handle\n"},
   /* interface to igraph_write_graph_dimacs */
   {"write_dimacs", (PyCFunction) igraphmodule_Graph_write_dimacs,
    METH_VARARGS | METH_KEYWORDS,
-   "write_dimacs(f, source, target, capacity=None)\n\n"
+   "write_dimacs(f, source, target, capacity=None)\n--\n\n"
    "Writes the graph in DIMACS format to the given file.\n\n"
    "@param f: the name of the file to be written or a Python file handle\n"
    "@param source: the source vertex ID\n"
@@ -14785,7 +14788,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_write_graph_dot */
   {"write_dot", (PyCFunction) igraphmodule_Graph_write_dot,
    METH_VARARGS | METH_KEYWORDS,
-   "write_dot(f)\n\n"
+   "write_dot(f)\n--\n\n"
    "Writes the graph in DOT format to the given file.\n\n"
    "DOT is the format used by the U{GraphViz <http://www.graphviz.org>}\n"
    "software package.\n\n"
@@ -14794,14 +14797,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_write_graph_edgelist */
   {"write_edgelist", (PyCFunction) igraphmodule_Graph_write_edgelist,
    METH_VARARGS | METH_KEYWORDS,
-   "write_edgelist(f)\n\n"
+   "write_edgelist(f)\n--\n\n"
    "Writes the edge list of a graph to a file.\n\n"
    "Directed edges are written in (from, to) order.\n\n"
    "@param f: the name of the file to be written or a Python file handle\n"},
   /* interface to igraph_write_graph_gml */
   {"write_gml", (PyCFunction) igraphmodule_Graph_write_gml,
    METH_VARARGS | METH_KEYWORDS,
-   "write_gml(f, creator=None, ids=None)\n\n"
+   "write_gml(f, creator=None, ids=None)\n--\n\n"
    "Writes the graph in GML format to the given file.\n\n"
    "@param f: the name of the file to be written or a Python file handle\n"
    "@param creator: optional creator information to be written to the file.\n"
@@ -14813,7 +14816,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_write_graph_ncol */
   {"write_ncol", (PyCFunction) igraphmodule_Graph_write_ncol,
    METH_VARARGS | METH_KEYWORDS,
-   "write_ncol(f, names=\"name\", weights=\"weights\")\n\n"
+   "write_ncol(f, names=\"name\", weights=\"weights\")\n--\n\n"
    "Writes the edge list of a graph to a file in .ncol format.\n\n"
    "Note that multiple edges and/or loops break the LGL software,\n"
    "but igraph does not check for this condition. Unless you know\n"
@@ -14829,7 +14832,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_write_graph_lgl */
   {"write_lgl", (PyCFunction) igraphmodule_Graph_write_lgl,
    METH_VARARGS | METH_KEYWORDS,
-   "write_lgl(f, names=\"name\", weights=\"weights\", isolates=True)\n\n"
+   "write_lgl(f, names=\"name\", weights=\"weights\", isolates=True)\n--\n\n"
    "Writes the edge list of a graph to a file in .lgl format.\n\n"
    "Note that multiple edges and/or loops break the LGL software,\n"
    "but igraph does not check for this condition. Unless you know\n"
@@ -14846,21 +14849,21 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_write_graph_pajek */
   {"write_pajek", (PyCFunction) igraphmodule_Graph_write_pajek,
    METH_VARARGS | METH_KEYWORDS,
-   "write_pajek(f)\n\n"
+   "write_pajek(f)\n--\n\n"
    "Writes the graph in Pajek format to the given file.\n\n"
    "@param f: the name of the file to be written or a Python file handle\n"
    },
   /* interface to igraph_write_graph_edgelist */
   {"write_graphml", (PyCFunction) igraphmodule_Graph_write_graphml,
    METH_VARARGS | METH_KEYWORDS,
-   "write_graphml(f)\n\n"
+   "write_graphml(f)\n--\n\n"
    "Writes the graph to a GraphML file.\n\n"
    "@param f: the name of the file to be written or a Python file handle\n"
   },
   /* interface to igraph_write_graph_leda */
   {"write_leda", (PyCFunction) igraphmodule_Graph_write_leda,
    METH_VARARGS | METH_KEYWORDS,
-   "write_leda(f, names=\"name\", weights=\"weights\")\n\n"
+   "write_leda(f, names=\"name\", weights=\"weights\")\n--\n\n"
    "Writes the graph to a file in LEDA native format.\n\n"
    "The LEDA format supports at most one attribute per vertex and edge. You can\n"
    "specify which vertex and edge attribute you want to use. Note that the\n"
@@ -14882,7 +14885,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"canonical_permutation",
    (PyCFunction) igraphmodule_Graph_canonical_permutation,
    METH_VARARGS | METH_KEYWORDS,
-   "canonical_permutation(sh=\"fl\", color=None)\n\n"
+   "canonical_permutation(sh=\"fl\", color=None)\n--\n\n"
    "Calculates the canonical permutation of a graph using the BLISS isomorphism\n"
    "algorithm.\n\n"
    "Passing the permutation returned here to L{Graph.permute_vertices()} will\n"
@@ -14909,7 +14912,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"isoclass", (PyCFunction) igraphmodule_Graph_isoclass,
    METH_VARARGS | METH_KEYWORDS,
-   "isoclass(vertices)\n\n"
+   "isoclass(vertices)\n--\n\n"
    "Returns the isomorphism class of the graph or its subgraph.\n\n"
    "Isomorphy class calculations are implemented only for graphs with\n"
    "3 or 4 vertices.\n\n"
@@ -14919,7 +14922,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the isomorphism class of the (sub)graph\n\n"},
   {"isomorphic", (PyCFunction) igraphmodule_Graph_isomorphic,
    METH_VARARGS | METH_KEYWORDS,
-   "isomorphic(other)\n\n"
+   "isomorphic(other) -> bool\n--\n\n"
    "Checks whether the graph is isomorphic to another graph.\n\n"
    "The algorithm being used is selected using a simple heuristic:\n\n"
    "  - If one graph is directed and the other undirected, an exception\n"
@@ -14937,7 +14940,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"isomorphic_bliss", (PyCFunction) igraphmodule_Graph_isomorphic_bliss,
    METH_VARARGS | METH_KEYWORDS,
    "isomorphic_bliss(other, return_mapping_12=False, return_mapping_21=False,\n"
-   "  sh1=\"fl\", sh2=None, color1=None, color2=None)\n\n"
+   "  sh1=\"fl\", sh2=None, color1=None, color2=None)\n--\n\n"
    "Checks whether the graph is isomorphic to another graph, using the\n"
    "BLISS isomorphism algorithm.\n\n"
    "See U{http://www.tcs.hut.fi/Software/bliss/index.html} for more information\n"
@@ -14977,7 +14980,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "isomorphic_vf2(other=None, color1=None, color2=None, edge_color1=None,\n"
    "  edge_color2=None, return_mapping_12=False, return_mapping_21=False,\n"
-   "  node_compat_fn=None, edge_compat_fn=None, callback=None)\n\n"
+   "  node_compat_fn=None, edge_compat_fn=None, callback=None)\n--\n\n"
    "Checks whether the graph is isomorphic to another graph, using the\n"
    "VF2 isomorphism algorithm.\n\n"
    "Vertex and edge colors may be used to restrict the isomorphisms, as only\n"
@@ -15030,7 +15033,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    (PyCFunction) igraphmodule_Graph_count_isomorphisms_vf2,
    METH_VARARGS | METH_KEYWORDS,
    "count_isomorphisms_vf2(other=None, color1=None, color2=None, edge_color1=None,\n"
-   "  edge_color2=None, node_compat_fn=None, edge_compat_fn=None)\n\n"
+   "  edge_color2=None, node_compat_fn=None, edge_compat_fn=None)\n--\n\n"
    "Determines the number of isomorphisms between the graph and another one\n\n"
    "Vertex and edge colors may be used to restrict the isomorphisms, as only\n"
    "vertices and edges with the same color will be allowed to match each other.\n\n"
@@ -15102,7 +15105,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "subisomorphic_vf2(other, color1=None, color2=None, edge_color1=None,\n"
    "  edge_color2=None, return_mapping_12=False, return_mapping_21=False,\n"
-   "  callback=None, node_compat_fn=None, edge_compat_fn=None)\n\n"
+   "  callback=None, node_compat_fn=None, edge_compat_fn=None)\n--\n\n"
    "Checks whether a subgraph of the graph is isomorphic to another graph.\n\n"
    "Vertex and edge colors may be used to restrict the isomorphisms, as only\n"
    "vertices and edges with the same color will be allowed to match each other.\n\n"
@@ -15156,7 +15159,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "count_subisomorphisms_vf2(other, color1=None, color2=None,\n"
    "  edge_color1=None, edge_color2=None, node_compat_fn=None,\n"
-   "  edge_compat_fn=None)\n\n"
+   "  edge_compat_fn=None)\n--\n\n"
    "Determines the number of subisomorphisms between the graph and another one\n\n"
    "Vertex and edge colors may be used to restrict the isomorphisms, as only\n"
    "vertices and edges with the same color will be allowed to match each other.\n\n"
@@ -15191,7 +15194,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "get_subisomorphisms_vf2(other, color1=None, color2=None,\n"
    "  edge_color1=None, edge_color2=None, node_compat_fn=None,\n"
-   "  edge_compat_fn=None)\n\n"
+   "  edge_compat_fn=None)\n--\n\n"
    "Returns all subisomorphisms between the graph and another one\n\n"
    "Vertex and edge colors may be used to restrict the isomorphisms, as only\n"
    "vertices and edges with the same color will be allowed to match each other.\n\n"
@@ -15226,7 +15229,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"subisomorphic_lad", (PyCFunction) igraphmodule_Graph_subisomorphic_lad,
    METH_VARARGS | METH_KEYWORDS,
    "subisomorphic_lad(other, domains=None, induced=False, time_limit=0, \n"
-   "  return_mapping=False)\n\n"
+   "  return_mapping=False)\n--\n\n"
    "Checks whether a subgraph of the graph is isomorphic to another graph.\n\n"
    "The optional C{domains} argument may be used to restrict vertices that\n"
    "may match each other. You can also specify whether you are interested\n"
@@ -15253,7 +15256,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
 
   {"get_subisomorphisms_lad", (PyCFunction) igraphmodule_Graph_get_subisomorphisms_lad,
    METH_VARARGS | METH_KEYWORDS,
-   "get_subisomorphisms_lad(other, domains=None, induced=False, time_limit=0)\n\n"
+   "get_subisomorphisms_lad(other, domains=None, induced=False, time_limit=0)\n--\n\n"
    "Returns all subisomorphisms between the graph and another one using the LAD\n"
    "algorithm.\n\n"
    "The optional C{domains} argument may be used to restrict vertices that\n"
@@ -15276,14 +15279,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   ////////////////////////
   {"attributes", (PyCFunction) igraphmodule_Graph_attributes,
    METH_NOARGS,
-   "attributes()\n\n" "@return: the attribute name list of the graph\n"},
+   "attributes() -> Sequence[str]\n--\n\n"
+   "@return: the attribute name list of the graph\n"},
   {"vertex_attributes", (PyCFunction) igraphmodule_Graph_vertex_attributes,
    METH_NOARGS,
-   "vertex_attributes()\n\n"
+   "vertex_attributes() -> Sequence[str]\n--\n\n"
    "@return: the attribute name list of the graph's vertices\n"},
   {"edge_attributes", (PyCFunction) igraphmodule_Graph_edge_attributes,
    METH_NOARGS,
-   "edge_attributes()\n\n"
+   "edge_attributes() -> Sequence[str]\n--\n\n"
    "@return: the attribute name list of the graph's edges\n"},
 
   ///////////////
@@ -15291,7 +15295,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   ///////////////
   {"complementer", (PyCFunction) igraphmodule_Graph_complementer,
    METH_VARARGS | METH_KEYWORDS,
-   "complementer(loops=False)\n\n"
+   "complementer(loops=False)\n--\n\n"
    "Returns the complementer of the graph\n\n"
    "@param loops: whether to include loop edges in the complementer.\n"
    "@return: the complementer of the graph\n"},
@@ -15306,7 +15310,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /**********************/
   {"dominator", (PyCFunction) igraphmodule_Graph_dominator,
    METH_VARARGS | METH_KEYWORDS,
-   "dominator(vid, mode=)\n\n"
+   "dominator(vid, mode=)\n--\n\n"
    "Returns the dominator tree from the given root node"
    "@param vid: the root vertex ID\n"
    "@param mode: either L{IN} or L{OUT}\n"
@@ -15318,7 +15322,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /*****************/
   {"maxflow_value", (PyCFunction) igraphmodule_Graph_maxflow_value,
    METH_VARARGS | METH_KEYWORDS,
-   "maxflow_value(source, target, capacity=None)\n\n"
+   "maxflow_value(source, target, capacity=None)\n--\n\n"
    "Returns the value of the maximum flow between the source and target vertices.\n\n"
    "@param source: the source vertex ID\n"
    "@param target: the target vertex ID\n"
@@ -15329,7 +15333,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
 
   {"maxflow", (PyCFunction) igraphmodule_Graph_maxflow,
    METH_VARARGS | METH_KEYWORDS,
-   "maxflow(source, target, capacity=None)\n\n"
+   "maxflow(source, target, capacity=None)\n--\n\n"
    "Returns the maximum flow between the source and target vertices.\n\n"
    "@attention: this function has a more convenient interface in class\n"
    "  L{Graph} which wraps the result in a L{Flow} object. It is advised\n"
@@ -15353,7 +15357,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /**********************/
   {"all_st_cuts", (PyCFunction) igraphmodule_Graph_all_st_cuts,
    METH_VARARGS | METH_KEYWORDS,
-   "all_st_cuts(source, target)\n\n"
+   "all_st_cuts(source, target)\n--\n\n"
    "Returns all the cuts between the source and target vertices in a\n"
    "directed graph.\n\n"
    "This function lists all edge-cuts between a source and a target vertex.\n"
@@ -15369,7 +15373,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"all_st_mincuts", (PyCFunction) igraphmodule_Graph_all_st_mincuts,
    METH_VARARGS | METH_KEYWORDS,
-   "all_st_mincuts(source, target)\n\n"
+   "all_st_mincuts(source, target)\n--\n\n"
    "Returns all minimum cuts between the source and target vertices in a\n"
    "directed graph.\n\n"
    "@param source: the source vertex ID\n"
@@ -15380,7 +15384,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"mincut_value", (PyCFunction) igraphmodule_Graph_mincut_value,
    METH_VARARGS | METH_KEYWORDS,
-   "mincut_value(source=-1, target=-1, capacity=None)\n\n"
+   "mincut_value(source=-1, target=-1, capacity=None)\n--\n\n"
    "Returns the minimum cut between the source and target vertices or within\n"
    "the whole graph.\n\n"
    "@param source: the source vertex ID. If negative, the calculation is\n"
@@ -15394,7 +15398,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
 
   {"mincut", (PyCFunction) igraphmodule_Graph_mincut,
    METH_VARARGS | METH_KEYWORDS,
-   "mincut(source=None, target=None, capacity=None)\n\n"
+   "mincut(source=None, target=None, capacity=None)\n--\n\n"
    "Calculates the minimum cut between the source and target vertices or\n"
    "within the whole graph.\n\n"
    "The minimum cut is the minimum set of edges that needs to be removed\n"
@@ -15429,7 +15433,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
 
   {"st_mincut", (PyCFunction) igraphmodule_Graph_st_mincut,
    METH_VARARGS | METH_KEYWORDS,
-   "st_mincut(source, target, capacity=None)\n\n"
+   "st_mincut(source, target, capacity=None)\n--\n\n"
    "Calculates the minimum cut between the source and target vertices in a\n"
    "graph.\n\n"
    "@param source: the source vertex ID\n"
@@ -15447,7 +15451,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
 
   {"gomory_hu_tree", (PyCFunction) igraphmodule_Graph_gomory_hu_tree,
    METH_VARARGS | METH_KEYWORDS,
-   "gomory_hu_tree(capacity=None)\n\n"
+   "gomory_hu_tree(capacity=None)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.gomory_hu_tree()\n\n"
   },
@@ -15457,7 +15461,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /*********************/
   {"all_minimal_st_separators",
    (PyCFunction) igraphmodule_Graph_all_minimal_st_separators, METH_NOARGS,
-   "all_minimal_st_separators()\n\n"
+   "all_minimal_st_separators()\n--\n\n"
    "Returns a list containing all the minimal s-t separators of a graph.\n\n"
    "A minimal separator is a set of vertices whose removal disconnects the graph,\n"
    "while the removal of any subset of the set keeps the graph connected.\n\n"
@@ -15471,7 +15475,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
 
   {"is_minimal_separator", (PyCFunction) igraphmodule_Graph_is_minimal_separator,
    METH_VARARGS | METH_KEYWORDS,
-   "is_minimal_separator(vertices)\n\n"
+   "is_minimal_separator(vertices)\n--\n\n"
    "Decides whether the given vertex set is a minimal separator.\n\n"
    "A minimal separator is a set of vertices whose removal disconnects the graph,\n"
    "while the removal of any subset of the set keeps the graph connected.\n\n"
@@ -15481,14 +15485,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
 
   {"is_separator", (PyCFunction) igraphmodule_Graph_is_separator,
    METH_VARARGS | METH_KEYWORDS,
-   "is_separator(vertices)\n\n"
+   "is_separator(vertices)\n--\n\n"
    "Decides whether the removal of the given vertices disconnects the graph.\n\n"
    "@param vertices: a single vertex ID or a list of vertex IDs\n"
    "@return: C{True} is the given vertex set is a separator, C{False} if not.\n"},
 
   {"minimum_size_separators",
    (PyCFunction) igraphmodule_Graph_minimum_size_separators, METH_NOARGS,
-   "minimum_size_separators()\n\n"
+   "minimum_size_separators()\n--\n\n"
    "Returns a list containing all separator vertex sets of minimum size.\n\n"
    "A vertex set is a separator if its removal disconnects the graph. This method\n"
    "lists all the separators for which no smaller separator set exists in the\n"
@@ -15504,7 +15508,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /*******************/
   {"cohesive_blocks", (PyCFunction) igraphmodule_Graph_cohesive_blocks,
    METH_NOARGS,
-   "cohesive_blocks()\n\n"
+   "cohesive_blocks()\n--\n\n"
    "Calculates the cohesive block structure of the graph.\n\n"
    "@attention: this function has a more convenient interface in class\n"
    "  L{Graph} which wraps the result in a L{CohesiveBlocks} object.\n"
@@ -15516,7 +15520,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /********************************/
   {"cliques", (PyCFunction) igraphmodule_Graph_cliques,
    METH_VARARGS | METH_KEYWORDS,
-   "cliques(min=0, max=0)\n\n"
+   "cliques(min=0, max=0)\n--\n\n"
    "Returns some or all cliques of the graph as a list of tuples.\n\n"
    "A clique is a complete subgraph -- a set of vertices where an edge\n"
    "is present between any two of them (excluding loops)\n\n"
@@ -15526,7 +15530,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  negative, no upper bound will be used."},
   {"largest_cliques", (PyCFunction) igraphmodule_Graph_largest_cliques,
    METH_NOARGS,
-   "largest_cliques()\n\n"
+   "largest_cliques()\n--\n\n"
    "Returns the largest cliques of the graph as a list of tuples.\n\n"
    "Quite intuitively a clique is considered largest if there is no clique\n"
    "with more vertices in the whole graph. All largest cliques are maximal\n"
@@ -15535,7 +15539,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  L{maximal_cliques()} for the maximal cliques"},
   {"maximal_cliques", (PyCFunction) igraphmodule_Graph_maximal_cliques,
    METH_VARARGS | METH_KEYWORDS,
-   "maximal_cliques(min=0, max=0, file=None)\n\n"
+   "maximal_cliques(min=0, max=0, file=None)\n--\n\n"
    "Returns the maximal cliques of the graph as a list of tuples.\n\n"
    "A maximal clique is a clique which can't be extended by adding any other\n"
    "vertex to it. A maximal clique is not necessarily one of the largest\n"
@@ -15554,14 +15558,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@see: L{largest_cliques()} for the largest cliques."},
   {"clique_number", (PyCFunction) igraphmodule_Graph_clique_number,
    METH_NOARGS,
-   "clique_number()\n\n"
+   "clique_number() -> int\n--\n\n"
    "Returns the clique number of the graph.\n\n"
    "The clique number of the graph is the size of the largest clique.\n\n"
    "@see: L{largest_cliques()} for the largest cliques."},
   {"independent_vertex_sets",
    (PyCFunction) igraphmodule_Graph_independent_vertex_sets,
    METH_VARARGS | METH_KEYWORDS,
-   "independent_vertex_sets(min=0, max=0)\n\n"
+   "independent_vertex_sets(min=0, max=0)\n--\n\n"
    "Returns some or all independent vertex sets of the graph as a list of tuples.\n\n"
    "Two vertices are independent if there is no edge between them. Members\n"
    "of an independent vertex set are mutually independent.\n\n"
@@ -15572,7 +15576,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"largest_independent_vertex_sets",
    (PyCFunction) igraphmodule_Graph_largest_independent_vertex_sets,
    METH_NOARGS,
-   "largest_independent_vertex_sets()\n\n"
+   "largest_independent_vertex_sets()\n--\n\n"
    "Returns the largest independent vertex sets of the graph as a list of tuples.\n\n"
    "Quite intuitively an independent vertex set is considered largest if\n"
    "there is no other set with more vertices in the whole graph. All largest\n"
@@ -15584,7 +15588,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"maximal_independent_vertex_sets",
    (PyCFunction) igraphmodule_Graph_maximal_independent_vertex_sets,
    METH_NOARGS,
-   "maximal_independent_vertex_sets()\n\n"
+   "maximal_independent_vertex_sets()\n--\n\n"
    "Returns the maximal independent vertex sets of the graph as a list of tuples.\n\n"
    "A maximal independent vertex set is an independent vertex set\n"
    "which can't be extended by adding any other vertex to it. A maximal\n"
@@ -15599,7 +15603,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"independence_number",
    (PyCFunction) igraphmodule_Graph_independence_number,
    METH_NOARGS,
-   "independence_number()\n\n"
+   "independence_number() -> int\n--\n\n"
    "Returns the independence number of the graph.\n\n"
    "The independence number of the graph is the size of the largest\n"
    "independent vertex set.\n\n"
@@ -15611,7 +15615,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /*********************************/
   {"modularity", (PyCFunction) igraphmodule_Graph_modularity,
    METH_VARARGS | METH_KEYWORDS,
-   "modularity(membership, weights=None, resolution=1, directed=True)\n\n"
+   "modularity(membership, weights=None, resolution=1, directed=True) -> float\n--\n\n"
    "Calculates the modularity of the graph with respect to some vertex types.\n\n"
    "The modularity of a graph w.r.t. some division measures how good the\n"
    "division is, or how separated are the different vertex types from each\n"
@@ -15649,7 +15653,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"coreness", (PyCFunction) igraphmodule_Graph_coreness,
    METH_VARARGS | METH_KEYWORDS,
-   "coreness(mode=ALL)\n\n"
+   "coreness(mode=ALL) -> Sequence[int]\n--\n\n"
    "Finds the coreness (shell index) of the vertices of the network.\n\n"
    "The M{k}-core of a graph is a maximal subgraph in which each vertex\n"
    "has at least degree k. (Degree here means the degree in the\n"
@@ -15665,7 +15669,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_fastgreedy",
    (PyCFunction) igraphmodule_Graph_community_fastgreedy,
    METH_VARARGS | METH_KEYWORDS,
-   "community_fastgreedy(weights=None)\n\n"
+   "community_fastgreedy(weights=None)\n--\n\n"
    "Finds the community structure of the graph according to the algorithm of\n"
    "Clauset et al based on the greedy optimization of modularity.\n\n"
    "This is a bottom-up algorithm: initially every vertex belongs to a separate\n"
@@ -15688,7 +15692,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_infomap",
    (PyCFunction) igraphmodule_Graph_community_infomap,
    METH_VARARGS | METH_KEYWORDS,
-   "community_infomap(edge_weights=None, vertex_weights=None, trials=10)\n\n"
+   "community_infomap(edge_weights=None, vertex_weights=None, trials=10)\n--\n\n"
    "Finds the community structure of the network according to the Infomap\n"
    "method of Martin Rosvall and Carl T. Bergstrom.\n\n"
    "See U{http://www.mapequation.org} for a visualization of the algorithm\n"
@@ -15711,7 +15715,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_label_propagation",
    (PyCFunction) igraphmodule_Graph_community_label_propagation,
    METH_VARARGS | METH_KEYWORDS,
-   "community_label_propagation(weights=None, initial=None, fixed=None)\n\n"
+   "community_label_propagation(weights=None, initial=None, fixed=None)\n--\n\n"
    "Finds the community structure of the graph according to the label\n"
    "propagation method of Raghavan et al.\n\n"
    "Initially, each vertex is assigned a different label. After that,\n"
@@ -15744,7 +15748,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"community_leading_eigenvector", (PyCFunction) igraphmodule_Graph_community_leading_eigenvector,
    METH_VARARGS | METH_KEYWORDS,
-   "community_leading_eigenvector(n=-1, arpack_options=None, weights=None)\n\n"
+   "community_leading_eigenvector(n=-1, arpack_options=None, weights=None)\n--\n\n"
    "A proper implementation of Newman's eigenvector community structure\n"
    "detection. Each split is done by maximizing the modularity regarding\n"
    "the original network. See the reference for details.\n\n"
@@ -15768,7 +15772,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_multilevel",
    (PyCFunction) igraphmodule_Graph_community_multilevel,
    METH_VARARGS | METH_KEYWORDS,
-   "community_multilevel(weights=None, return_levels=True, resolution=1)\n\n"
+   "community_multilevel(weights=None, return_levels=True, resolution=1)\n--\n\n"
    "Finds the community structure of the graph according to the multilevel\n"
    "algorithm of Blondel et al. This is a bottom-up algorithm: initially\n"
    "every vertex belongs to a separate community, and vertices are moved\n"
@@ -15804,7 +15808,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_edge_betweenness",
   (PyCFunction)igraphmodule_Graph_community_edge_betweenness,
   METH_VARARGS | METH_KEYWORDS,
-  "community_edge_betweenness(directed=True, weights=None)\n\n"
+  "community_edge_betweenness(directed=True, weights=None)\n--\n\n"
   "Community structure detection based on the betweenness of the edges in\n"
   "the network. This algorithm was invented by M Girvan and MEJ Newman,\n"
   "see: M Girvan and MEJ Newman: Community structure in social and biological\n"
@@ -15826,7 +15830,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_optimal_modularity",
    (PyCFunction) igraphmodule_Graph_community_optimal_modularity,
    METH_VARARGS | METH_KEYWORDS,
-   "community_optimal_modularity(weights=None)\n\n"
+   "community_optimal_modularity(weights=None)\n--\n\n"
    "Calculates the optimal modularity score of the graph and the\n"
    "corresponding community structure.\n\n"
    "This function uses the GNU Linear Programming Kit to solve a large\n"
@@ -15845,7 +15849,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "community_spinglass(weights=None, spins=25, parupdate=False, "
    "start_temp=1, stop_temp=0.01, cool_fact=0.99, update_rule=\"config\", "
-   "gamma=1, implementation=\"orig\", lambda=1)\n\n"
+   "gamma=1, implementation=\"orig\", lambda=1)\n--\n\n"
    "Finds the community structure of the graph according to the spinglass\n"
    "community detection method of Reichardt & Bornholdt.\n\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
@@ -15883,35 +15887,35 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_leiden",
    (PyCFunction) igraphmodule_Graph_community_leiden,
    METH_VARARGS | METH_KEYWORDS,
-   "community_leiden(edge_weights=None, node_weights=None, \n"
-   "     resolution_parameter=1.0, normalize_resolution=False, beta=0.01, \n"
-   "     initial_membership=None, n_iterations=2)\n\n"
-   "     Finds the community structure of the graph using the\n"
-   "     Leiden algorithm of Traag, van Eck & Waltman \n\n"
-   "     @param edge_weights: edge weights to be used. Can be a sequence or\n"
-   "       iterable or even an edge attribute name.\n"
-   "     @param node_weights: the node weights used in the Leiden algorithm.\n"
-   "     @param resolution_parameter: the resolution parameter to use.\n"
-   "       Higher resolutions lead to more smaller communities, while \n"
-   "       lower resolutions lead to fewer larger communities.\n"
-   "     @param normalize_resolution: if set to true, the resolution parameter\n"
-   "       will be divided by the sum of the node weights. If this is not\n"
-   "       supplied, it will default to the node degree, or weighted degree\n"
-   "       in case edge_weights are supplied.\n"
-   "     @param node_weights: the node weights used in the Leiden algorithm.\n"
-   "     @param beta: parameter affecting the randomness in the Leiden \n"
-   "       algorithm. This affects only the refinement step of the algorithm.\n"
-   "     @param initial_membership: if provided, the Leiden algorithm\n"
-   "       will try to improve this provided membership. If no argument is\n"
-   "       provided, the aglorithm simply starts from the singleton partition.\n"
-   "     @param n_iterations: the number of iterations to iterate the Leiden\n"
-   "       algorithm. Each iteration may improve the partition further.\n"
-   "     @return: the community membership vector.\n"
+   "community_leiden(edge_weights=None, node_weights=None, "
+   "resolution_parameter=1.0, normalize_resolution=False, beta=0.01, "
+   "initial_membership=None, n_iterations=2)\n--\n\n"
+   "Finds the community structure of the graph using the Leiden algorithm of\n"
+   "Traag, van Eck & Waltman.\n\n"
+   "@param edge_weights: edge weights to be used. Can be a sequence or\n"
+   "  iterable or even an edge attribute name.\n"
+   "@param node_weights: the node weights used in the Leiden algorithm.\n"
+   "@param resolution_parameter: the resolution parameter to use.\n"
+   "  Higher resolutions lead to more smaller communities, while \n"
+   "  lower resolutions lead to fewer larger communities.\n"
+   "@param normalize_resolution: if set to true, the resolution parameter\n"
+   "  will be divided by the sum of the node weights. If this is not\n"
+   "  supplied, it will default to the node degree, or weighted degree\n"
+   "  in case edge_weights are supplied.\n"
+   "@param node_weights: the node weights used in the Leiden algorithm.\n"
+   "@param beta: parameter affecting the randomness in the Leiden \n"
+   "  algorithm. This affects only the refinement step of the algorithm.\n"
+   "@param initial_membership: if provided, the Leiden algorithm\n"
+   "  will try to improve this provided membership. If no argument is\n"
+   "  provided, the aglorithm simply starts from the singleton partition.\n"
+   "@param n_iterations: the number of iterations to iterate the Leiden\n"
+   "  algorithm. Each iteration may improve the partition further.\n"
+   "@return: the community membership vector.\n"
   },
   {"community_walktrap",
    (PyCFunction) igraphmodule_Graph_community_walktrap,
    METH_VARARGS | METH_KEYWORDS,
-   "community_walktrap(weights=None, steps=None)\n\n"
+   "community_walktrap(weights=None, steps=None)\n--\n\n"
    "Finds the community structure of the graph according to the random walk\n"
    "method of Latapy & Pons.\n\n"
    "The basic idea of the algorithm is that short random walks tend to stay\n"
@@ -15934,18 +15938,18 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /*************/
   {"_is_matching", (PyCFunction)igraphmodule_Graph_is_matching,
    METH_VARARGS | METH_KEYWORDS,
-   "_is_matching(matching, types=None)\n\n"
+   "_is_matching(matching, types=None)\n--\n\n"
    "Internal function, undocumented.\n\n"
   },
   {"_is_maximal_matching", (PyCFunction)igraphmodule_Graph_is_maximal_matching,
    METH_VARARGS | METH_KEYWORDS,
-   "_is_maximal_matching(matching, types=None)\n\n"
+   "_is_maximal_matching(matching, types=None)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "Use L{Matching.is_maximal} instead.\n"
   },
   {"_maximum_bipartite_matching", (PyCFunction)igraphmodule_Graph_maximum_bipartite_matching,
    METH_VARARGS | METH_KEYWORDS,
-   "_maximum_bipartite_matching(types, weights=None)\n\n"
+   "_maximum_bipartite_matching(types, weights=None)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: L{Graph.maximum_bipartite_matching}\n"
   },
@@ -15955,7 +15959,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /****************/
   {"random_walk", (PyCFunction)igraphmodule_Graph_random_walk,
    METH_VARARGS | METH_KEYWORDS,
-   "random_walk(start, steps, mode=\"out\", stuck=\"return\")\n\n"
+   "random_walk(start, steps, mode=\"out\", stuck=\"return\")\n--\n\n"
    "Performs a random walk of a given length from a given node.\n\n"
    "@param start: the starting vertex of the walk\n"
    "@param steps: the number of steps that the random walk should take\n"
@@ -15986,7 +15990,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"__graph_as_cobject",
    (PyCFunction) igraphmodule_Graph___graph_as_cobject__,
    METH_VARARGS | METH_KEYWORDS,
-   "__graph_as_cobject()\n\n"
+   "__graph_as_cobject()\n--\n\n"
    "Returns the igraph graph encapsulated by the Python object as\n"
    "a PyCObject\n\n."
    "A PyCObject is practically a regular C pointer, wrapped in a\n"
@@ -15998,7 +16002,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"_raw_pointer",
    (PyCFunction) igraphmodule_Graph__raw_pointer,
    METH_NOARGS,
-   "_raw_pointer()\n\n"
+   "_raw_pointer() -> int\n--\n\n"
    "Returns the memory address of the igraph graph encapsulated by the Python\n"
    "object as an ordinary Python integer.\n\n"
    "This function should not be used directly by igraph users, it is useful\n"
@@ -16008,7 +16012,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"__register_destructor",
    (PyCFunction) igraphmodule_Graph___register_destructor__,
    METH_VARARGS | METH_KEYWORDS,
-   "__register_destructor(destructor)\n\n"
+   "__register_destructor(destructor) -> None\n--\n\n"
    "Registers a destructor to be called when the object is freed by\n"
    "Python. This function should not be used directly by igraph users."},
 
@@ -16090,7 +16094,7 @@ PyNumberMethods igraphmodule_Graph_as_number = {
  */
 PyTypeObject igraphmodule_GraphType = {
   PyVarObject_HEAD_INIT(0, 0)
-  "igraph.Graph",               /* tp_name */
+  "igraph._igraph.GraphBase",   /* tp_name */
   sizeof(igraphmodule_GraphObject), /* tp_basicsize */
   0,                            /* tp_itemsize */
   (destructor) igraphmodule_Graph_dealloc,  /* tp_dealloc */
@@ -16117,9 +16121,6 @@ PyTypeObject igraphmodule_GraphType = {
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,  /* tp_flags */
   "Low-level representation of a graph.\n\n"
   "Don't use it directly, use L{igraph.Graph} instead.\n\n"
-  "@undocumented: _Bipartite, _Full_Bipartite, _GRG, _Incidence, _is_matching,\n"
-  "  _is_maximal_matching, _layout_sugiyama, _maximum_bipartite_matching,\n"
-  "  _spanning_tree\n"
   "@deffield ref: Reference",  /* tp_doc */
   (traverseproc) igraphmodule_Graph_traverse, /* tp_traverse */
   (inquiry) igraphmodule_Graph_clear, /* tp_clear */

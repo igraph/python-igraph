@@ -73,8 +73,6 @@ class Clustering(object):
       >>> cluster_list = list(cl)
       >>> print(cluster_list)
       [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9, 10]]
-
-    @undocumented: _formatted_cluster_iterator
     """
 
     def __init__(self, membership, params=None):
@@ -226,8 +224,6 @@ class VertexClustering(Clustering):
     @note: since this class is linked to a L{Graph}, destroying the graph by the
       C{del} operator does not free the memory occupied by the graph if there
       exists a L{VertexClustering} that references the L{Graph}.
-
-    @undocumented: _formatted_cluster_iterator
     """
 
     # Allow None to be passed to __plot__ as the "palette" keyword argument
@@ -567,8 +563,6 @@ class Dendrogram(object):
       3 -+   |
          |   |
       4 -+---+---
-
-    @undocumented: _item_box_size, _plot_item, _traverse_inorder
     """
 
     def __init__(self, merges):
@@ -1119,8 +1113,6 @@ class Cover(object):
       >>> cover = Cover(clustering)
       >>> list(clustering) == list(cover)
       True
-
-    @undocumented: _formatted_cluster_iterator
     """
 
     def __init__(self, clusters, n=0):
@@ -1247,8 +1239,6 @@ class VertexCover(Cover):
     @note: since this class is linked to a L{Graph}, destroying the graph by the
       C{del} operator does not free the memory occupied by the graph if there
       exists a L{VertexCover} that references the L{Graph}.
-
-    @undocumented: _formatted_cluster_iterator
     """
 
     def __init__(self, graph, clusters=None):
