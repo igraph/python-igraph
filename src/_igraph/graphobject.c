@@ -11984,21 +11984,21 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_vcount
   {"vcount", (PyCFunction) igraphmodule_Graph_vcount,
    METH_NOARGS,
-   "vcount() -> int\n--\n\n"
+   "vcount()\n--\n\n"
    "Counts the number of vertices.\n"
    "@return: the number of vertices in the graph.\n" "@rtype: integer"},
 
   // interface to igraph_ecount
   {"ecount", (PyCFunction) igraphmodule_Graph_ecount,
    METH_NOARGS,
-   "ecount() -> int\n--\n\n"
+   "ecount()\n--\n\n"
    "Counts the number of edges.\n"
    "@return: the number of edges in the graph.\n" "@rtype: integer"},
 
   // interface to igraph_is_dag
   {"is_dag", (PyCFunction) igraphmodule_Graph_is_dag,
    METH_NOARGS,
-   "is_dag() -> bool\n--\n\n"
+   "is_dag()\n--\n\n"
    "Checks whether the graph is a DAG (directed acyclic graph).\n\n"
    "A DAG is a directed graph with no directed cycles.\n\n"
    "@return: C{True} if it is a DAG, C{False} otherwise.\n"
@@ -12007,7 +12007,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_is_directed
   {"is_directed", (PyCFunction) igraphmodule_Graph_is_directed,
    METH_NOARGS,
-   "is_directed() -> bool\n--\n\n"
+   "is_directed()\n--\n\n"
    "Checks whether the graph is directed.\n"
    "@return: C{True} if it is directed, C{False} otherwise.\n"
    "@rtype: boolean"},
@@ -12015,7 +12015,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_is_simple
   {"is_simple", (PyCFunction) igraphmodule_Graph_is_simple,
    METH_NOARGS,
-   "is_simple() -> bool\n--\n\n"
+   "is_simple()\n--\n\n"
    "Checks whether the graph is simple (no loop or multiple edges).\n\n"
    "@return: C{True} if it is simple, C{False} otherwise.\n"
    "@rtype: boolean"},
@@ -12023,14 +12023,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_add_vertices */
   {"add_vertices", (PyCFunction) igraphmodule_Graph_add_vertices,
    METH_VARARGS,
-   "add_vertices(n: int) -> None\n--\n\n"
+   "add_vertices(n: int)\n--\n\n"
    "Adds vertices to the graph.\n\n"
    "@param n: the number of vertices to be added\n"},
 
   /* interface to igraph_delete_vertices */
   {"delete_vertices", (PyCFunction) igraphmodule_Graph_delete_vertices,
    METH_VARARGS,
-   "delete_vertices(vs) -> None\n--\n\n"
+   "delete_vertices(vs)\n--\n\n"
    "Deletes vertices and all its edges from the graph.\n\n"
    "@param vs: a single vertex ID or the list of vertex IDs\n"
    "  to be deleted. No argument deletes all vertices.\n"},
@@ -12038,7 +12038,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_add_edges */
   {"add_edges", (PyCFunction) igraphmodule_Graph_add_edges,
    METH_VARARGS,
-   "add_edges(es) -> None\n--\n\n"
+   "add_edges(es)\n--\n\n"
    "Adds edges to the graph.\n\n"
    "@param es: the list of edges to be added. Every edge is\n"
    "  represented with a tuple, containing the vertex IDs of the\n"
@@ -12047,7 +12047,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_delete_edges */
   {"delete_edges", (PyCFunction) igraphmodule_Graph_delete_edges,
    METH_VARARGS | METH_KEYWORDS,
-   "delete_edges(es) -> None\n--\n\n"
+   "delete_edges(es)\n--\n\n"
    "Removes edges from the graph.\n\n"
    "All vertices will be kept, even if they lose all their edges.\n"
    "Nonexistent edges will be silently ignored.\n\n"
@@ -12094,7 +12094,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_loop */
   {"is_loop", (PyCFunction) igraphmodule_Graph_is_loop,
    METH_VARARGS | METH_KEYWORDS,
-   "is_loop(edges=None) -> List[bool]\n--\n\n"
+   "is_loop(edges=None)\n--\n\n"
    "Checks whether a specific set of edges contain loop edges\n\n"
    "@param edges: edge indices which we want to check. If C{None}, all\n"
    "  edges are checked.\n"
@@ -12103,7 +12103,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_multiple */
   {"is_multiple", (PyCFunction) igraphmodule_Graph_is_multiple,
    METH_VARARGS | METH_KEYWORDS,
-   "is_multiple(edges=None) -> List[bool]\n--\n\n"
+   "is_multiple(edges=None)\n--\n\n"
    "Checks whether an edge is a multiple edge.\n\n"
    "Also works for a set of edges -- in this case, every edge is checked\n"
    "one by one. Note that if there are multiple edges going between a\n"
@@ -12118,7 +12118,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_has_multiple */
   {"has_multiple", (PyCFunction) igraphmodule_Graph_has_multiple,
    METH_NOARGS,
-   "has_multiple() -> bool\n--\n\n"
+   "has_multiple()\n--\n\n"
    "Checks whether the graph has multiple edges.\n\n"
    "@return: C{True} if the graph has at least one multiple edge,\n"
    "         C{False} otherwise.\n"
@@ -12127,7 +12127,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_mutual */
   {"is_mutual", (PyCFunction) igraphmodule_Graph_is_mutual,
    METH_VARARGS | METH_KEYWORDS,
-   "is_mutual(edges=None) -> Lis[bool]\n--\n\n"
+   "is_mutual(edges=None)\n--\n\n"
    "Checks whether an edge has an opposite pair.\n\n"
    "Also works for a set of edges -- in this case, every edge is checked\n"
    "one by one. The result will be a list of booleans (or a single boolean\n"
@@ -12146,7 +12146,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_count_multiple */
   {"count_multiple", (PyCFunction) igraphmodule_Graph_count_multiple,
    METH_VARARGS | METH_KEYWORDS,
-   "count_multiple(edges=None) -> List[int]\n--\n\n"
+   "count_multiple(edges=None)\n--\n\n"
    "Counts the multiplicities of the given edges.\n\n"
    "@param edges: edge indices for which we want to count their\n"
    "  multiplicity. If C{None}, all edges are counted.\n"
@@ -12177,7 +12177,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_get_eid */
   {"get_eid", (PyCFunction) igraphmodule_Graph_get_eid,
    METH_VARARGS | METH_KEYWORDS,
-   "get_eid(v1, v2, directed=True, error=True) -> int\n--\n\n"
+   "get_eid(v1, v2, directed=True, error=True)\n--\n\n"
    "Returns the edge ID of an arbitrary edge between vertices v1 and v2\n\n"
    "@param v1: the ID or name of the first vertex\n"
    "@param v2: the ID or name of the second vertex\n"
@@ -12192,7 +12192,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_get_eids */
   {"get_eids", (PyCFunction) igraphmodule_Graph_get_eids,
    METH_VARARGS | METH_KEYWORDS,
-   "get_eids(pairs=None, path=None, directed=True, error=True) -> List[int]\n--\n\n"
+   "get_eids(pairs=None, path=None, directed=True, error=True)\n--\n\n"
    "Returns the edge IDs of some edges between some vertices.\n\n"
    "This method can operate in two different modes, depending on which\n"
    "of the keyword arguments C{pairs} and C{path} are given.\n\n"
@@ -12779,7 +12779,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_are_connected
   {"are_connected", (PyCFunction) igraphmodule_Graph_are_connected,
    METH_VARARGS | METH_KEYWORDS,
-   "are_connected(v1, v2) -> bool\n--\n\n"
+   "are_connected(v1, v2)\n--\n\n"
    "Decides whether two given vertices are directly connected.\n\n"
    "@param v1: the ID or name of the first vertex\n"
    "@param v2: the ID or name of the second vertex\n"
@@ -13088,7 +13088,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_density */
   {"density", (PyCFunction) igraphmodule_Graph_density,
    METH_VARARGS | METH_KEYWORDS,
-   "density(loops=False) -> float\n--\n\n"
+   "density(loops=False)\n--\n\n"
    "Calculates the density of the graph.\n\n"
    "@param loops: whether to take loops into consideration. If C{True},\n"
    "  the algorithm assumes that there might be some loops in the graph\n"
@@ -13412,7 +13412,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_bipartite */
   {"is_bipartite", (PyCFunction) igraphmodule_Graph_is_bipartite,
    METH_VARARGS | METH_KEYWORDS,
-   "is_bipartite(return_types=False) -> bool\n--\n\n"
+   "is_bipartite(return_types=False)\n--\n\n"
    "Decides whether the graph is bipartite or not.\n\n"
    "Vertices of a bipartite graph can be partitioned into two groups A\n"
    "and B in a way that all edges go between the two groups.\n\n"
@@ -13450,7 +13450,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_connected */
   {"is_connected", (PyCFunction) igraphmodule_Graph_is_connected,
    METH_VARARGS | METH_KEYWORDS,
-   "is_connected(mode=STRONG) -> bool\n--\n\n"
+   "is_connected(mode=STRONG)\n--\n\n"
    "Decides whether the graph is connected.\n\n"
    "@param mode: whether we should calculate strong or weak connectivity.\n"
    "@return: C{True} if the graph is connected, C{False} otherwise.\n"},
@@ -13640,7 +13640,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_reciprocity */
   {"reciprocity", (PyCFunction) igraphmodule_Graph_reciprocity,
    METH_VARARGS | METH_KEYWORDS,
-   "reciprocity(ignore_loops=True, mode=\"default\") -> float\n--\n\n"
+   "reciprocity(ignore_loops=True, mode=\"default\")\n--\n\n"
    "Reciprocity defines the proportion of mutual connections in a\n"
    "directed graph. It is most commonly defined as the probability\n"
    "that the opposite counterpart of a directed edge is also included\n"
@@ -14908,7 +14908,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the isomorphism class of the (sub)graph\n\n"},
   {"isomorphic", (PyCFunction) igraphmodule_Graph_isomorphic,
    METH_VARARGS | METH_KEYWORDS,
-   "isomorphic(other) -> bool\n--\n\n"
+   "isomorphic(other)\n--\n\n"
    "Checks whether the graph is isomorphic to another graph.\n\n"
    "The algorithm being used is selected using a simple heuristic:\n\n"
    "  - If one graph is directed and the other undirected, an exception\n"
@@ -15265,15 +15265,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   ////////////////////////
   {"attributes", (PyCFunction) igraphmodule_Graph_attributes,
    METH_NOARGS,
-   "attributes() -> Sequence[str]\n--\n\n"
+   "attributes()\n--\n\n"
    "@return: the attribute name list of the graph\n"},
   {"vertex_attributes", (PyCFunction) igraphmodule_Graph_vertex_attributes,
    METH_NOARGS,
-   "vertex_attributes() -> Sequence[str]\n--\n\n"
+   "vertex_attributes()\n--\n\n"
    "@return: the attribute name list of the graph's vertices\n"},
   {"edge_attributes", (PyCFunction) igraphmodule_Graph_edge_attributes,
    METH_NOARGS,
-   "edge_attributes() -> Sequence[str]\n--\n\n"
+   "edge_attributes()\n--\n\n"
    "@return: the attribute name list of the graph's edges\n"},
 
   ///////////////
@@ -15544,7 +15544,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@see: L{largest_cliques()} for the largest cliques."},
   {"clique_number", (PyCFunction) igraphmodule_Graph_clique_number,
    METH_NOARGS,
-   "clique_number() -> int\n--\n\n"
+   "clique_number()\n--\n\n"
    "Returns the clique number of the graph.\n\n"
    "The clique number of the graph is the size of the largest clique.\n\n"
    "@see: L{largest_cliques()} for the largest cliques."},
@@ -15589,7 +15589,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"independence_number",
    (PyCFunction) igraphmodule_Graph_independence_number,
    METH_NOARGS,
-   "independence_number() -> int\n--\n\n"
+   "independence_number()\n--\n\n"
    "Returns the independence number of the graph.\n\n"
    "The independence number of the graph is the size of the largest\n"
    "independent vertex set.\n\n"
@@ -15601,7 +15601,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /*********************************/
   {"modularity", (PyCFunction) igraphmodule_Graph_modularity,
    METH_VARARGS | METH_KEYWORDS,
-   "modularity(membership, weights=None, resolution=1, directed=True) -> float\n--\n\n"
+   "modularity(membership, weights=None, resolution=1, directed=True)\n--\n\n"
    "Calculates the modularity of the graph with respect to some vertex types.\n\n"
    "The modularity of a graph w.r.t. some division measures how good the\n"
    "division is, or how separated are the different vertex types from each\n"
@@ -15639,7 +15639,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"coreness", (PyCFunction) igraphmodule_Graph_coreness,
    METH_VARARGS | METH_KEYWORDS,
-   "coreness(mode=ALL) -> Sequence[int]\n--\n\n"
+   "coreness(mode=ALL)\n--\n\n"
    "Finds the coreness (shell index) of the vertices of the network.\n\n"
    "The M{k}-core of a graph is a maximal subgraph in which each vertex\n"
    "has at least degree k. (Degree here means the degree in the\n"
@@ -15975,7 +15975,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"_raw_pointer",
    (PyCFunction) igraphmodule_Graph__raw_pointer,
    METH_NOARGS,
-   "_raw_pointer() -> int\n--\n\n"
+   "_raw_pointer()\n--\n\n"
    "Returns the memory address of the igraph graph encapsulated by the Python\n"
    "object as an ordinary Python integer.\n\n"
    "This function should not be used directly by igraph users, it is useful\n"
@@ -15985,7 +15985,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"__register_destructor",
    (PyCFunction) igraphmodule_Graph___register_destructor__,
    METH_VARARGS | METH_KEYWORDS,
-   "__register_destructor(destructor) -> None\n--\n\n"
+   "__register_destructor(destructor)\n--\n\n"
    "Registers a destructor to be called when the object is freed by\n"
    "Python. This function should not be used directly by igraph users."},
 

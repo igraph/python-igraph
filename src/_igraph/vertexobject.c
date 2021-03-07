@@ -733,17 +733,17 @@ GRAPH_PROXY_METHOD_PP(successors, "successors", _convert_to_vertex_list);
 PyMethodDef igraphmodule_Vertex_methods[] = {
   {"attributes", (PyCFunction)igraphmodule_Vertex_attributes,
     METH_NOARGS,
-    "attributes() -> dict\n--\n\n"
+    "attributes()\n--\n\n"
     "Returns a dict of attribute names and values for the vertex\n"
   },
   {"attribute_names", (PyCFunction)igraphmodule_Vertex_attribute_names,
     METH_NOARGS,
-    "attribute_names() -> list\n--\n\n"
+    "attribute_names()\n--\n\n"
     "Returns the list of vertex attribute names\n"
   },
   {"update_attributes", (PyCFunction)igraphmodule_Vertex_update_attributes,
     METH_VARARGS | METH_KEYWORDS,
-    "update_attributes(E, **F) -> None\n--\n\n"
+    "update_attributes(E, **F)\n--\n\n"
     "Updates the attributes of the vertex from dict/iterable E and F.\n\n"
     "If E has a C{keys()} method, it does: C{for k in E: self[k] = E[k]}.\n"
     "If E lacks a C{keys()} method, it does: C{for (k, v) in E: self[k] = v}.\n"

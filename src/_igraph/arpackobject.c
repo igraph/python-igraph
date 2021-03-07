@@ -190,7 +190,7 @@ PyObject* igraphmodule_ARPACKOptions_str(
 PyMethodDef igraphmodule_ARPACKOptions_methods[] = {
   /*{"attributes", (PyCFunction)igraphmodule_Edge_attributes,
       METH_NOARGS,
-      "attributes() -> list\n\n"
+      "attributes()\n--\n\n"
       "Returns the attribute list of the graph's edges\n"
   },*/
   {NULL}

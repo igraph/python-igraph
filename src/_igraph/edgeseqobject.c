@@ -796,36 +796,36 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
 PyMethodDef igraphmodule_EdgeSeq_methods[] = {
   {"attribute_names", (PyCFunction)igraphmodule_EdgeSeq_attribute_names,
    METH_NOARGS,
-   "attribute_names() -> list\n--\n\n"
+   "attribute_names()\n--\n\n"
    "Returns the attribute name list of the graph's edges\n"
   },
   {"find", (PyCFunction)igraphmodule_EdgeSeq_find,
    METH_VARARGS,
-   "find(condition) -> Edge\n--\n\n"
+   "find(condition)\n--\n\n"
    "For internal use only.\n"
   },
   {"get_attribute_values", (PyCFunction)igraphmodule_EdgeSeq_get_attribute_values,
    METH_O,
-   "get_attribute_values(attrname) -> list\n--\n\n"
+   "get_attribute_values(attrname)\n--\n\n"
    "Returns the value of a given edge attribute for all edges.\n\n"
    "@param attrname: the name of the attribute\n"
   },
   {"is_all", (PyCFunction)igraphmodule_EdgeSeq_is_all, METH_NOARGS,
-   "is_all() -> bool\n--\n\n"
+   "is_all()\n--\n\n"
    "Returns whether the edge sequence contains all the edges exactly once, in\n"
    "the order of their edge IDs.\n\n"
    "This is used for optimizations in some of the edge selector routines.\n"
   },
   {"set_attribute_values", (PyCFunction)igraphmodule_EdgeSeq_set_attribute_values,
    METH_VARARGS | METH_KEYWORDS,
-   "set_attribute_values(attrname, values) -> list\n--\n\n"
+   "set_attribute_values(attrname, values)\n--\n\n"
    "Sets the value of a given edge attribute for all vertices\n"
    "@param attrname: the name of the attribute\n"
    "@param values: the new attribute values in a list\n"
   },
   {"select", (PyCFunction)igraphmodule_EdgeSeq_select,
    METH_VARARGS,
-   "select(...) -> VertexSeq\n--\n\n"
+   "select(...)\n--\n\n"
    "For internal use only.\n"
   },
   {NULL}
