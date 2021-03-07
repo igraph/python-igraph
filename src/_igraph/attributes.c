@@ -24,7 +24,6 @@
 #include "attributes.h"
 #include "common.h"
 #include "convert.h"
-#include "py2compat.h"
 #include "pyhelpers.h"
 
 int igraphmodule_i_attribute_struct_init(igraphmodule_i_attribute_struct *attrs) {
@@ -76,7 +75,7 @@ int igraphmodule_i_attribute_struct_index_vertex_names(
   n = PyList_Size(name_list) - 1;
   while (n >= 0) {
     key = PyList_GET_ITEM(name_list, n);    /* we don't own a reference to key */
-    value = PyInt_FromLong(n);              /* we do own a reference to value */
+    value = PyLong_FromLong(n);              /* we do own a reference to value */
     if (value == 0)
       return 1;
 
@@ -88,10 +87,7 @@ int igraphmodule_i_attribute_struct_index_vertex_names(
           PyExc_RuntimeError,
           "error while indexing vertex names; did you accidentally try to "
           "use a non-hashable object as a vertex name earlier?"
-#ifdef IGRAPH_PYTHON3
-          /* %R is not supported in Python 2.x */
           " Check the name of vertex %R (%R)", value, key
-#endif
         );
       }
 
@@ -126,33 +122,13 @@ void igraphmodule_index_vertex_names(igraph_t *graph, igraph_bool_t force) {
 }
 
 int igraphmodule_PyObject_matches_attribute_record(PyObject* object, igraph_attribute_record_t* record) {
-#ifndef IGRAPH_PYTHON3
-  int result;
-#endif
-
   if (record == 0) {
     return 0;
   }
 
-  if (PyString_Check(object)) {
-    return PyString_IsEqualToASCIIString(object, record->name);
-  }
-
-#ifndef IGRAPH_PYTHON3
-  /* On Python 2.x, we need to handle Unicode strings as well because
-   * the user might use 'from __future__ import unicode_literals', which
-   * would turn some igraph attribute names into Unicode strings */
   if (PyUnicode_Check(object)) {
-    PyObject* ascii = PyUnicode_AsASCIIString(object);
-    if (ascii == 0) {
-      return 0;
-    }
-
-    result = PyString_IsEqualToASCIIString(ascii, record->name);
-    Py_DECREF(ascii);
-    return result;
+    return PyUnicode_IsEqualToASCIIString(object, record->name);
   }
-#endif
 
   return 0;
 }
@@ -170,21 +146,11 @@ int igraphmodule_get_vertex_id_by_name(igraph_t *graph, PyObject* o, igraph_inte
   }
 
   if (o_vid == NULL) {
-#ifdef IGRAPH_PYTHON3
     PyErr_Format(PyExc_ValueError, "no such vertex: %R", o);
-#else
-    PyObject* s = PyObject_Repr(o);
-    if (s) {
-      PyErr_Format(PyExc_ValueError, "no such vertex: %s", PyString_AS_STRING(s));
-      Py_DECREF(s);
-    } else {
-      PyErr_Format(PyExc_ValueError, "no such vertex: %p", o);
-    }
-#endif
     return 1;
   }
 
-  if (!PyInt_Check(o_vid)) {
+  if (!PyLong_Check(o_vid)) {
     PyErr_SetString(PyExc_ValueError, "non-numeric vertex ID assigned to vertex name. This is most likely a bug.");
     return 1;
   }
@@ -350,9 +316,9 @@ static int igraphmodule_i_attribute_init(igraph_t *graph, igraph_vector_ptr_t *a
       case IGRAPH_ATTRIBUTE_STRING:
         igraph_strvector_get((igraph_strvector_t*)attr_rec->value, 0, &s);
         if (s == 0)
-          value=PyString_FromString("");
+          value=PyUnicode_FromString("");
         else
-          value=PyString_FromString(s);
+          value=PyUnicode_FromString(s);
         break;
       case IGRAPH_ATTRIBUTE_BOOLEAN:
         value=VECTOR(*(igraph_vector_bool_t*)attr_rec->value)[0] ? Py_True : Py_False;
@@ -498,7 +464,7 @@ static int igraphmodule_i_attribute_add_vertices(igraph_t *graph, long int nv, i
           break;
         case IGRAPH_ATTRIBUTE_STRING:
           igraph_strvector_get((igraph_strvector_t*)attr_rec->value, i, &s);
-          o=PyString_FromString(s);
+          o=PyUnicode_FromString(s);
           break;
         case IGRAPH_ATTRIBUTE_BOOLEAN:
           o=VECTOR(*(igraph_vector_bool_t*)attr_rec->value)[i] ? Py_True : Py_False;
@@ -557,7 +523,7 @@ static int igraphmodule_i_attribute_add_vertices(igraph_t *graph, long int nv, i
           break;
         case IGRAPH_ATTRIBUTE_STRING:
           igraph_strvector_get((igraph_strvector_t*)attr_rec->value, i, &s);
-          o=PyString_FromString(s);
+          o=PyUnicode_FromString(s);
           break;
         case IGRAPH_ATTRIBUTE_BOOLEAN:
           o=VECTOR(*(igraph_vector_bool_t*)attr_rec->value)[i] ? Py_True : Py_False;
@@ -679,7 +645,7 @@ static int igraphmodule_i_attribute_add_edges(igraph_t *graph, const igraph_vect
           break;
         case IGRAPH_ATTRIBUTE_STRING:
           igraph_strvector_get((igraph_strvector_t*)attr_rec->value, i, &s);
-          o=PyString_FromString(s);
+          o=PyUnicode_FromString(s);
           break;
         case IGRAPH_ATTRIBUTE_BOOLEAN:
           o=VECTOR(*(igraph_vector_bool_t*)attr_rec->value)[i] ? Py_True : Py_False;
@@ -740,7 +706,7 @@ static int igraphmodule_i_attribute_add_edges(igraph_t *graph, const igraph_vect
           break;
         case IGRAPH_ATTRIBUTE_STRING:
           igraph_strvector_get((igraph_strvector_t*)attr_rec->value, i, &s);
-          o=PyString_FromString(s);
+          o=PyUnicode_FromString(s);
           break;
         case IGRAPH_ATTRIBUTE_BOOLEAN:
           o=VECTOR(*(igraph_vector_bool_t*)attr_rec->value)[i] ? Py_True : Py_False;
@@ -888,11 +854,7 @@ static PyObject* igraphmodule_i_ac_builtin_func(PyObject* values,
   PyObject* func = 0;
 
   if (builtin_module_dict == 0) {
-#ifdef IGRAPH_PYTHON3
     PyObject* builtin_module = PyImport_ImportModule("builtins");
-#else
-    PyObject* builtin_module = PyImport_ImportModule("__builtin__");
-#endif
     if (builtin_module == 0)
       return 0;
     builtin_module_dict = PyModule_GetDict(builtin_module);
@@ -1205,9 +1167,9 @@ static int igraphmodule_i_attribute_combine_dicts(PyObject *dict,
   /* Collect what to do for each attribute in the source dict */
   pos = 0; i = 0;
   while (PyDict_Next(dict, &pos, &key, &value)) {
-    todo[i].name = PyString_CopyAsString(key);
+    todo[i].name = PyUnicode_CopyAsString(key);
     if (todo[i].name == 0)
-      IGRAPH_ERROR("PyString_CopyAsString failed", IGRAPH_FAILURE);
+      IGRAPH_ERROR("PyUnicode_CopyAsString failed", IGRAPH_FAILURE);
     igraph_attribute_combination_query(comb, todo[i].name,
         &todo[i].type, &todo[i].func);
     i++;
@@ -1222,7 +1184,7 @@ static int igraphmodule_i_attribute_combine_dicts(PyObject *dict,
     PyObject *newvalue;
 
     /* Safety check */
-    if (!PyString_IsEqualToASCIIString(key, todo[i].name)) {
+    if (!PyUnicode_IsEqualToASCIIString(key, todo[i].name)) {
       IGRAPH_ERROR("PyDict_Next iteration order not consistent. "
           "This should never happen. Please report the bug to the igraph "
           "developers!", IGRAPH_FAILURE);
@@ -1276,7 +1238,7 @@ static int igraphmodule_i_attribute_combine_dicts(PyObject *dict,
         break;
 
       case IGRAPH_ATTRIBUTE_COMBINE_CONCAT:
-        empty_str = PyString_FromString("");
+        empty_str = PyUnicode_FromString("");
         func = PyObject_GetAttrString(empty_str, "join");
         newvalue = igraphmodule_i_ac_func(value, merges, func);
         Py_DECREF(func);
@@ -1559,7 +1521,6 @@ int igraphmodule_i_get_string_graph_attr(const igraph_t *graph,
     IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
   IGRAPH_CHECK(igraph_strvector_resize(value, 1));
 
-#ifdef IGRAPH_PYTHON3
   /* For Python 3.x, we simply call PyObject_Str, which produces a
    * Unicode string, then encode it into UTF-8, except when we
    * already have a PyBytes object -- this is assumed to be in
@@ -1576,25 +1537,11 @@ int igraphmodule_i_get_string_graph_attr(const igraph_t *graph,
     Py_DECREF(unicode);
   }
 
-#else
-  /* For Python 2.x, we check whether we have received a string or a
-   * Unicode string. Unicode strings are encoded into UTF-8, strings
-   * are used intact.
-   */
-  if (PyUnicode_Check(o)) {
-    str = PyUnicode_AsEncodedString(o, "utf-8", "xmlcharrefreplace");
-  } else {
-    str = PyObject_Str(o);
-  }
-#endif
-
-  if (str == 0)
+  if (str == 0) {
     IGRAPH_ERROR("Internal error in PyObject_Str", IGRAPH_EINVAL);
-#ifdef IGRAPH_PYTHON3
+  }
+  
   c_str = PyBytes_AS_STRING(str);
-#else
-  c_str = PyString_AS_STRING(str);
-#endif
   IGRAPH_CHECK(igraph_strvector_set(value, 0, c_str));
   Py_XDECREF(str);
 
@@ -1901,7 +1848,7 @@ int igraphmodule_attribute_name_check(PyObject* obj) {
   type_str = obj ? PyObject_Str((PyObject*)obj->ob_type) : 0;
   if (type_str != 0) {
     PyErr_Format(PyExc_TypeError, "igraph supports string attribute names only, got %s",
-        PyString_AS_STRING(type_str));
+        PyUnicode_AS_UNICODE(type_str));
     Py_DECREF(type_str);
   } else {
     PyErr_Format(PyExc_TypeError, "igraph supports string attribute names only");

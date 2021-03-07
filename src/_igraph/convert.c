@@ -25,15 +25,15 @@
 #include <Python.h>
 #include <limits.h>
 #include "attributes.h"
-#include "graphobject.h"
-#include "vertexseqobject.h"
-#include "vertexobject.h"
+#include "convert.h"
 #include "edgeseqobject.h"
 #include "edgeobject.h"
-#include "convert.h"
 #include "error.h"
+#include "graphobject.h"
 #include "memory.h"
-#include "py2compat.h"
+#include "pyhelpers.h"
+#include "vertexseqobject.h"
+#include "vertexobject.h"
 
 #if defined(_MSC_VER)
   #define strcasecmp _stricmp
@@ -42,13 +42,13 @@
 /**
  * \brief Converts a Python integer to a C int
  *
- * This is similar to PyInt_AsLong, but it checks for overflow first and throws
+ * This is similar to PyLong_AsLong, but it checks for overflow first and throws
  * an exception if necessary.
  *
  * Returns -1 if there was an error, 0 otherwise.
  */
 int PyInt_AsInt(PyObject* obj, int* result) {
-  long dummy = PyInt_AsLong(obj);
+  long dummy = PyLong_AsLong(obj);
   if (dummy < INT_MIN) {
     PyErr_SetString(PyExc_OverflowError,
         "integer too small for conversion to C int");
@@ -114,11 +114,11 @@ int igraphmodule_PyObject_to_enum(PyObject *o,
 
     if (o == 0 || o == Py_None)
       return 0;
-    if (PyInt_Check(o))
+    if (PyLong_Check(o))
       return PyInt_AsInt(o, result);
     if (PyLong_Check(o))
       return PyLong_AsInt(o, result);
-    s = PyString_CopyAsString(o);
+    s = PyUnicode_CopyAsString(o);
     if (s == 0) {
         PyErr_SetString(PyExc_TypeError, "int, long or string expected");
         return -1;
@@ -308,7 +308,6 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
   if (object != Py_None) {
     while (PyDict_Next(object, &pos, &key, &value)) {
       char *kv;
-#ifdef IGRAPH_PYTHON3
       PyObject *temp_bytes;
       if (!PyUnicode_Check(key)) {
         PyErr_SetString(PyExc_TypeError, "Dict key must be string");
@@ -321,45 +320,34 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
       }
       kv = strdup(PyBytes_AS_STRING(temp_bytes));
       Py_DECREF(temp_bytes);
-#else
-      if (!PyString_Check(key)) {
-        PyErr_SetString(PyExc_TypeError, "Dict key must be string");
-        return -1;
-      }
-      kv=PyString_AsString(key);
-#endif
       if (!strcasecmp(kv, "pos")) {
         igraphmodule_PyObject_to_enum(value, eigen_which_position_tt,
                                       (int*) &w->pos);
       } else if (!strcasecmp(kv, "howmany")) {
-        w->howmany = (int) PyInt_AsLong(value);
+        w->howmany = (int) PyLong_AsLong(value);
       } else if (!strcasecmp(kv, "il")) {
-        w->il = (int) PyInt_AsLong(value);
+        w->il = (int) PyLong_AsLong(value);
       } else if (!strcasecmp(kv, "iu")) {
-        w->iu = (int) PyInt_AsLong(value);
+        w->iu = (int) PyLong_AsLong(value);
       } else if (!strcasecmp(kv, "vl")) {
         w->vl = PyFloat_AsDouble(value);
       } else if (!strcasecmp(kv, "vu")) {
         w->vu = PyFloat_AsDouble(value);
       } else if (!strcasecmp(kv, "vestimate")) {
-        w->vestimate = (int) PyInt_AsLong(value);
+        w->vestimate = (int) PyLong_AsLong(value);
       } else if (!strcasecmp(kv, "balance")) {
         igraphmodule_PyObject_to_enum(value, lapack_dgeevc_balance_tt,
                                       (int*) &w->balance);
       } else {
         PyErr_SetString(PyExc_TypeError, "Unknown eigen parameter");
-#ifdef IGRAPH_PYTHON3
         if (kv != 0) {
           free(kv);
         }
-#endif
         return -1;
       }
-#ifdef IGRAPH_PYTHON3
       if (kv != 0) {
         free(kv);
       }
-#endif
     }
   }
   return 0;
@@ -717,9 +705,8 @@ int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_integer_t *v) {
       return retval;
     *v = num;
     return 0;
-#ifdef IGRAPH_PYTHON3
   } else if (PyNumber_Check(object)) {
-    PyObject *i = PyNumber_Int(object);
+    PyObject *i = PyNumber_Long(object);
     if (i == NULL)
       return 1;
     retval = PyInt_AsInt(i, &num);
@@ -729,25 +716,6 @@ int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_integer_t *v) {
     *v = num;
     return 0;
   }
-#else
-  } else if (PyInt_Check(object)) {
-    retval = PyInt_AsInt(object, &num);
-    if (retval)
-      return retval;
-    *v = num;
-    return 0;
-  } else if (PyNumber_Check(object)) {
-    PyObject *i = PyNumber_Int(object);
-    if (i == NULL)
-      return 1;
-    retval = PyInt_AsInt(i, &num);
-    Py_DECREF(i);
-    if (retval)
-      return retval;
-    *v = num;
-    return 0;
-  }
-#endif
   PyErr_BadArgument();
   return 1;
 }
@@ -774,12 +742,6 @@ int igraphmodule_PyObject_to_real_t(PyObject *object, igraph_real_t *v) {
     double d = PyLong_AsDouble(object);
     *v=(igraph_real_t)d;
     return 0;
-#ifndef IGRAPH_PYTHON3
-  } else if (PyInt_Check(object)) {
-    long l = PyInt_AS_LONG((PyIntObject*)object);
-    *v=(igraph_real_t)l;
-    return 0;
-#endif
   } else if (PyFloat_Check(object)) {
     double d = PyFloat_AS_DOUBLE((PyFloatObject*)object);
     *v=(igraph_real_t)d;
@@ -1030,7 +992,7 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
           PyErr_SetString(PyExc_TypeError, "iterable must return numbers");
           ok=0;
         } else {
-          PyObject *item2 = PyNumber_Int(item);
+          PyObject *item2 = PyNumber_Long(item);
           if (item2 == 0) {
             PyErr_SetString(PyExc_TypeError, "can't convert a list item to integer");
             ok = 0;
@@ -1074,7 +1036,7 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
         PyErr_SetString(PyExc_TypeError, "sequence elements must be integers");
         ok=0;
       } else {
-        PyObject *item2 = PyNumber_Int(item);
+        PyObject *item2 = PyNumber_Long(item);
         if (item2 == 0) {
           PyErr_SetString(PyExc_TypeError, "can't convert sequence element to int");
           ok=0;
@@ -1142,12 +1104,12 @@ int igraphmodule_PyObject_to_vector_long_t(PyObject *list, igraph_vector_long_t 
           PyErr_SetString(PyExc_TypeError, "iterable must return numbers");
           ok=0;
         } else {
-          PyObject *item2 = PyNumber_Int(item);
+          PyObject *item2 = PyNumber_Long(item);
           if (item2 == 0) {
             PyErr_SetString(PyExc_TypeError, "can't convert a list item to integer");
             ok = 0;
           } else {
-            value=(long)PyInt_AsLong(item);
+            value=(long)PyLong_AsLong(item);
             Py_DECREF(item2);
           }
         }
@@ -1186,12 +1148,12 @@ int igraphmodule_PyObject_to_vector_long_t(PyObject *list, igraph_vector_long_t 
         PyErr_SetString(PyExc_TypeError, "sequence elements must be integers");
         ok=0;
       } else {
-        PyObject *item2 = PyNumber_Int(item);
+        PyObject *item2 = PyNumber_Long(item);
         if (item2 == 0) {
           PyErr_SetString(PyExc_TypeError, "can't convert sequence element to integer");
           ok=0;
         } else {
-          value=(long)PyInt_AsLong(item2);
+          value=(long)PyLong_AsLong(item2);
           Py_DECREF(item2);
         }
       }
@@ -1325,7 +1287,7 @@ PyObject* igraphmodule_vector_t_to_PyList(const igraph_vector_t *v,
       if (!igraph_finite(VECTOR(*v)[i])) {
         item = PyFloat_FromDouble((double)VECTOR(*v)[i]);
       } else {
-        item = PyInt_FromLong((long)VECTOR(*v)[i]);
+        item = PyLong_FromLong((long)VECTOR(*v)[i]);
       }
     } else if (type == IGRAPHMODULE_TYPE_FLOAT) {
       item=PyFloat_FromDouble((double)VECTOR(*v)[i]);
@@ -1360,7 +1322,7 @@ PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v) {
 
   list=PyList_New(n);
   for (i=0; i<n; i++) {
-    item = PyInt_FromLong((long)VECTOR(*v)[i]);
+    item = PyLong_FromLong((long)VECTOR(*v)[i]);
     if (!item) {
       Py_DECREF(list);
       return NULL;
@@ -1388,7 +1350,7 @@ PyObject* igraphmodule_vector_long_t_to_PyList(const igraph_vector_long_t *v) {
 
   list=PyList_New(n);
   for (i=0; i<n; i++) {
-    item = PyInt_FromLong(VECTOR(*v)[i]);
+    item = PyLong_FromLong(VECTOR(*v)[i]);
     if (!item) {
       Py_DECREF(list);
       return NULL;
@@ -1415,7 +1377,7 @@ PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v) {
 
   tuple=PyTuple_New(n);
   for (i=0; i<n; i++) {
-    PyObject *item=PyInt_FromLong((long)VECTOR(*v)[i]);
+    PyObject *item=PyLong_FromLong((long)VECTOR(*v)[i]);
     if (!item) {
       Py_DECREF(tuple);
       return NULL;
@@ -1616,12 +1578,12 @@ int igraphmodule_attrib_to_vector_t(PyObject *o, igraphmodule_GraphObject *self,
   if (attr_type != ATTRIBUTE_TYPE_EDGE && attr_type != ATTRIBUTE_TYPE_VERTEX)
     return 1;
   if (o == Py_None) return 0;
-  if (PyString_Check(o)) {
+  if (PyUnicode_Check(o)) {
     /* Check whether the attribute exists and is numeric */
     igraph_attribute_type_t at;
     igraph_attribute_elemtype_t et;
     long int n;
-    char *name = PyString_CopyAsString(o);
+    char *name = PyUnicode_CopyAsString(o);
 
     if (attr_type == ATTRIBUTE_TYPE_VERTEX) {
       et = IGRAPH_ATTRIBUTE_VERTEX;
@@ -1720,7 +1682,7 @@ int igraphmodule_attrib_to_vector_int_t(PyObject *o, igraphmodule_GraphObject *s
   if (o == Py_None)
     return 0;
 
-  if (PyString_Check(o)) {
+  if (PyUnicode_Check(o)) {
     igraph_vector_t* dummy = 0;
     long int i, n;
 
@@ -1789,7 +1751,7 @@ int igraphmodule_attrib_to_vector_long_t(PyObject *o, igraphmodule_GraphObject *
     return 1;
   if (o == Py_None)
     return 0;
-  if (PyString_Check(o)) {
+  if (PyUnicode_Check(o)) {
     igraph_vector_t* dummy = 0;
     long int i, n;
 
@@ -1868,13 +1830,13 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
   if (o == Py_None)
     return 0;
 
-  if (PyString_Check(o)) {
+  if (PyUnicode_Check(o)) {
     long int i, n;
 
     /* First, check if the attribute is a "real" boolean */
     igraph_attribute_type_t at;
     igraph_attribute_elemtype_t et;
-    char *name = PyString_CopyAsString(o);
+    char *name = PyUnicode_CopyAsString(o);
 
     if (attr_type == ATTRIBUTE_TYPE_VERTEX) {
       et = IGRAPH_ATTRIBUTE_VERTEX;
@@ -2038,7 +2000,7 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
 	       if (!igraph_finite(MATRIX(*m, i, j)))
 		     item=PyFloat_FromDouble((double)MATRIX(*m, i, j));
 	       else
-             item=PyInt_FromLong((long)MATRIX(*m, i, j));
+             item=PyLong_FromLong((long)MATRIX(*m, i, j));
 		 } else
            item=PyFloat_FromDouble(MATRIX(*m, i, j));
 
@@ -2118,7 +2080,7 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igrap
   int was_warned = 0;
 
   /* calculate the matrix dimensions */
-  if (!PySequence_Check(o) || PyString_Check(o)) {
+  if (!PySequence_Check(o) || PyUnicode_Check(o)) {
     PyErr_SetString(PyExc_TypeError, "matrix expected (list of sequences)");
     return 1;
   }
@@ -2145,8 +2107,8 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igrap
     n = PySequence_Size(row);
     for (j = 0; j < n; j++) {
       item = PySequence_GetItem(row, j);
-      if (PyInt_Check(item)) {
-        MATRIX(*m, i, j) = (igraph_real_t)PyInt_AsLong(item);
+      if (PyLong_Check(item)) {
+        MATRIX(*m, i, j) = (igraph_real_t)PyLong_AsLong(item);
       } else if (PyLong_Check(item)) {
         MATRIX(*m, i, j) = (igraph_real_t)PyLong_AsLong(item);
       } else if (PyFloat_Check(item)) {
@@ -2182,7 +2144,7 @@ int igraphmodule_PyObject_to_vector_ptr_t(PyObject* list, igraph_vector_ptr_t* v
   PyObject *it, *item;
   igraph_vector_t *subvec;
 
-  if (PyString_Check(list)) {
+  if (PyUnicode_Check(list)) {
     PyErr_SetString(PyExc_TypeError, "expected iterable (but not string)");
     return 1;
   }
@@ -2253,7 +2215,7 @@ PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v) {
   /* populate the list with data */
   for (i=0; i<n; i++) {
     igraph_strvector_get(v, i, &ptr);
-    if (PyList_SetItem(list, i, PyString_FromString(ptr))) {
+    if (PyList_SetItem(list, i, PyUnicode_FromString(ptr))) {
       /* error occurred while populating the list, return immediately */
       Py_DECREF(list);
       return NULL;
@@ -2295,23 +2257,19 @@ int igraphmodule_PyList_to_strvector_t(PyObject* v, igraph_strvector_t *result) 
     igraph_bool_t will_free = 0;
 
     if (PyUnicode_Check(item)) {
-      ptr = PyString_CopyAsString(item);
+      ptr = PyUnicode_CopyAsString(item);
       if (ptr == 0) {
         igraph_strvector_destroy(result);
         return 1;
       }
       will_free = 1;
-#ifndef IGRAPH_PYTHON3
-    } else if (PyString_Check(item)) {
-      ptr = PyString_AS_STRING(item);
-#endif
     } else {
       o = PyObject_Str(item);
       if (o == 0) {
         igraph_strvector_destroy(result);
         return 1;
       }
-      ptr = PyString_CopyAsString(o);
+      ptr = PyUnicode_CopyAsString(o);
       Py_DECREF(o);
       if (ptr == 0) {
         igraph_strvector_destroy(result);
@@ -2413,7 +2371,7 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
 
   if (o == Py_None || o == 0) {
     *vid = 0;
-  } else if (PyInt_Check(o)) {
+  } else if (PyLong_Check(o)) {
     /* Single vertex ID */
     if (PyInt_AsInt(o, &tmp))
       return 1;
@@ -2435,7 +2393,7 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
     /* Other numeric type that can be converted to an index */
     PyObject* num = PyNumber_Index(o);
     if (num) {
-      if (PyInt_Check(num)) {
+      if (PyLong_Check(num)) {
         retval = PyInt_AsInt(num, &tmp);
         if (retval) {
           Py_DECREF(num);
@@ -2625,7 +2583,7 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
 
   if (o == Py_None || o == 0) {
     *eid = 0;
-  } else if (PyInt_Check(o)) {
+  } else if (PyLong_Check(o)) {
     /* Single edge ID */
     if (PyInt_AsInt(o, &tmp))
       return 1;
@@ -2643,7 +2601,7 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
     /* Other numeric type that can be converted to an index */
     PyObject* num = PyNumber_Index(o);
     if (num) {
-      if (PyInt_Check(num)) {
+      if (PyLong_Check(num)) {
         retval = PyInt_AsInt(num, &tmp);
         if (retval) {
           Py_DECREF(num);
@@ -2861,8 +2819,8 @@ int igraphmodule_PyObject_to_attribute_values(PyObject *o,
       return 1;
     }
 
-    if (PyInt_Check(item))
-      VECTOR(*v)[i] = PyInt_AsLong(item);
+    if (PyLong_Check(item))
+      VECTOR(*v)[i] = PyLong_AsLong(item);
     else if (PyLong_Check(item))
       VECTOR(*v)[i] = PyLong_AsLong(item);
     else if (PyFloat_Check(item))
@@ -2881,18 +2839,18 @@ int igraphmodule_PyObject_to_drl_options_t(PyObject *obj,
 
   if (obj == Py_None) {
     retval = igraph_layout_drl_options_init(options, IGRAPH_LAYOUT_DRL_DEFAULT);
-  } else if (PyString_Check(obj)) {
+  } else if (PyUnicode_Check(obj)) {
     /* We have a string, so we are using a preset */
     igraph_layout_drl_default_t def=IGRAPH_LAYOUT_DRL_DEFAULT;
-    if (PyString_IsEqualToASCIIString(obj, "default"))
+    if (PyUnicode_IsEqualToASCIIString(obj, "default"))
       def=IGRAPH_LAYOUT_DRL_DEFAULT;
-    else if (PyString_IsEqualToASCIIString(obj, "coarsen"))
+    else if (PyUnicode_IsEqualToASCIIString(obj, "coarsen"))
       def=IGRAPH_LAYOUT_DRL_COARSEN;
-    else if (PyString_IsEqualToASCIIString(obj, "coarsest"))
+    else if (PyUnicode_IsEqualToASCIIString(obj, "coarsest"))
       def=IGRAPH_LAYOUT_DRL_COARSEST;
-    else if (PyString_IsEqualToASCIIString(obj, "refine"))
+    else if (PyUnicode_IsEqualToASCIIString(obj, "refine"))
       def=IGRAPH_LAYOUT_DRL_REFINE;
-    else if (PyString_IsEqualToASCIIString(obj, "final"))
+    else if (PyUnicode_IsEqualToASCIIString(obj, "final"))
       def=IGRAPH_LAYOUT_DRL_FINAL;
     else {
       PyErr_SetString(PyExc_ValueError, "unknown DrL template name. Must be one of: default, coarsen, coarsest, refine, final");
@@ -2958,15 +2916,11 @@ int igraphmodule_i_PyObject_pair_to_attribute_combination_record_t(
 
   if (name == Py_None)
     result->name = 0;
-  else if (!PyString_Check(name)) {
+  else if (!PyUnicode_Check(name)) {
     PyErr_SetString(PyExc_TypeError, "keys must be strings or None in attribute combination specification dicts");
     return 1;
   } else {
-#ifdef IGRAPH_PYTHON3
-    result->name = PyString_CopyAsString(name);
-#else
-    result->name = PyString_AS_STRING(name);
-#endif
+    result->name = PyUnicode_CopyAsString(name);
   }
 
   return 0;
@@ -3035,9 +2989,7 @@ int igraphmodule_PyObject_to_attribute_combination_t(PyObject* object,
         return 1;
       }
       igraph_attribute_combination_add(result, rec.name, rec.type, rec.func);
-#ifdef IGRAPH_PYTHON3
       free((char*)rec.name);   /* was allocated in pair_to_attribute_combination_record_t above */
-#endif
     }
   } else {
     /* assume it is a string or callable */
@@ -3047,9 +2999,7 @@ int igraphmodule_PyObject_to_attribute_combination_t(PyObject* object,
     }
 
     igraph_attribute_combination_add(result, 0, rec.type, rec.func);
-#ifdef IGRAPH_PYTHON3
     free((char*)rec.name);   /* was allocated in pair_to_attribute_combination_record_t above */
-#endif
   }
 
   return 0;

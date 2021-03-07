@@ -21,7 +21,6 @@
 
 */
 
-#include "py2compat.h"
 #include "random.h"
 #include <limits.h>
 #include <igraph_random.h>
@@ -115,7 +114,7 @@ unsigned long int igraph_rng_Python_get(void *state) {
     /* Fallback to the C random generator */
     return rand() * LONG_MAX;
   }
-  retval = PyInt_AsLong(result);
+  retval = PyLong_AsLong(result);
   Py_DECREF(result);
   return retval;
 }

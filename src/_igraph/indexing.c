@@ -26,7 +26,6 @@
 #include "error.h"
 #include "indexing.h"
 #include "platform.h"
-#include "py2compat.h"
 #include "pyhelpers.h"
 
 /***************************************************************************/
@@ -41,7 +40,7 @@ static PyObject* igraphmodule_i_Graph_adjmatrix_indexing_get_value_for_vertex_pa
   if (eid >= 0) {
     /* Edge found, get the value of the attribute */
     if (values == 0) {
-      return PyInt_FromLong(1L);
+      return PyLong_FromLong(1L);
     } else {
       result = PyList_GetItem(values, eid);
       Py_XINCREF(result);
@@ -49,7 +48,7 @@ static PyObject* igraphmodule_i_Graph_adjmatrix_indexing_get_value_for_vertex_pa
     }
   } else {
     /* No such edge, return zero */
-    return PyInt_FromLong(0L);
+    return PyLong_FromLong(0L);
   }
 }
 
@@ -160,7 +159,7 @@ static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph,
       if (values)
         item = PyList_GetItem(values, eid);
       else
-        item = PyInt_FromLong(1);
+        item = PyLong_FromLong(1);
       Py_INCREF(item);
       PyList_SetItem(result, v, item);   /* reference stolen here */
     }
@@ -221,7 +220,7 @@ static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph,
  */
 static INLINE igraph_bool_t deleting_edge(PyObject* value) {
   return value == Py_None || value == Py_False ||
-      (PyInt_Check(value) && PyInt_AsLong(value) == 0);
+      (PyLong_Check(value) && PyLong_AsLong(value) == 0);
 }
 
 /**

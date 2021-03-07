@@ -146,48 +146,31 @@ void igraphmodule_Vertex_dealloc(igraphmodule_VertexObject* self) {
 PyObject* igraphmodule_Vertex_repr(igraphmodule_VertexObject *self) {
   PyObject *s;
   PyObject *attrs;
-#ifndef IGRAPH_PYTHON3
-  PyObject *grepr, *drepr;
-#endif
 
   attrs = igraphmodule_Vertex_attributes(self);
   if (attrs == 0)
     return NULL;
 
-#ifdef IGRAPH_PYTHON3
   s = PyUnicode_FromFormat("igraph.Vertex(%R, %ld, %R)",
       (PyObject*)self->gref, (long int)self->idx, attrs);
   Py_DECREF(attrs);
-#else
-  grepr=PyObject_Repr((PyObject*)self->gref);
-  drepr=PyObject_Repr(igraphmodule_Vertex_attributes(self));
-  Py_DECREF(attrs);
-  if (!grepr || !drepr) {
-    Py_XDECREF(grepr);
-    Py_XDECREF(drepr);
-    return NULL;
-  }
-  s=PyString_FromFormat("igraph.Vertex(%s,%ld,%s)", PyString_AsString(grepr),
-    (long int)self->idx, PyString_AsString(drepr));
-  Py_DECREF(grepr);
-  Py_DECREF(drepr);
-#endif
+
   return s;
 }
 
 /** \ingroup python_interface_vertex
  * \brief Returns the hash code of the vertex
  */
-Py_hash_t igraphmodule_Vertex_hash(igraphmodule_VertexObject* self) {
-  Py_hash_t hash_graph;
-  Py_hash_t hash_index;
-  Py_hash_t result;
+long igraphmodule_Vertex_hash(igraphmodule_VertexObject* self) {
+  long hash_graph;
+  long hash_index;
+  long result;
   PyObject* index_o;
 
   if (self->hash != -1)
     return self->hash;
 
-  index_o = PyInt_FromLong((long int)self->idx);
+  index_o = PyLong_FromLong((long int)self->idx);
   if (index_o == 0)
     return -1;
 
@@ -505,7 +488,7 @@ int igraphmodule_Vertex_set_attribute(igraphmodule_VertexObject* self, PyObject*
   if (!igraphmodule_attribute_name_check(k))
     return -1;
 
-  if (PyString_IsEqualToASCIIString(k, "name"))
+  if (PyUnicode_IsEqualToASCIIString(k, "name"))
     igraphmodule_invalidate_vertex_name_index(&o->g);
 
   if (v==NULL)
@@ -567,7 +550,7 @@ int igraphmodule_Vertex_set_attribute(igraphmodule_VertexObject* self, PyObject*
  * Returns the vertex index
  */
 PyObject* igraphmodule_Vertex_get_index(igraphmodule_VertexObject* self, void* closure) {
-  return PyInt_FromLong((long int)self->idx);
+  return PyLong_FromLong((long int)self->idx);
 }
 
 /**
@@ -628,7 +611,7 @@ static PyObject* _convert_to_edge_list(igraphmodule_VertexObject* vertex, PyObje
     PyObject* v;
     int idx_int;
 
-    if (!PyInt_Check(idx)) {
+    if (!PyLong_Check(idx)) {
       PyErr_SetString(PyExc_TypeError, "_convert_to_edge_list expected list of integers");
       return NULL;
     }
@@ -660,7 +643,7 @@ static PyObject* _convert_to_vertex_list(igraphmodule_VertexObject* vertex, PyOb
     PyObject* v;
     int idx_int;
 
-    if (!PyInt_Check(idx)) {
+    if (!PyLong_Check(idx)) {
       PyErr_SetString(PyExc_TypeError, "_convert_to_vertex_list expected list of integers");
       return NULL;
     }

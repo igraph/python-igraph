@@ -23,7 +23,6 @@
 #include "arpackobject.h"
 #include "graphobject.h"
 #include "error.h"
-#include "py2compat.h"
 
 PyObject* igraphmodule_arpack_options_default;
 
@@ -70,45 +69,45 @@ PyObject* igraphmodule_ARPACKOptions_getattr(
 
   if (strcmp(attrname, "bmat") == 0) {
     char buf[2] = { self->params_out.bmat[0], 0 };
-    result=PyString_FromString(buf);
+    result=PyUnicode_FromString(buf);
   } else if (strcmp(attrname, "n") == 0) {
-    result=PyInt_FromLong(self->params_out.n);
+    result=PyLong_FromLong(self->params_out.n);
   } else if (strcmp(attrname, "which") == 0) {
     char buf[3] = { self->params.which[0], self->params.which[1], 0 };
-    result=PyString_FromString(buf);
+    result=PyUnicode_FromString(buf);
   } else if (strcmp(attrname, "nev") == 0) {
-    result=PyInt_FromLong(self->params.nev);
+    result=PyLong_FromLong(self->params.nev);
   } else if (strcmp(attrname, "tol") == 0) {
     result=PyFloat_FromDouble((double)self->params.tol);
   } else if (strcmp(attrname, "ncv") == 0) {
-    result=PyInt_FromLong(self->params.ncv);
+    result=PyLong_FromLong(self->params.ncv);
   } else if (strcmp(attrname, "ldv") == 0) {
-    result=PyInt_FromLong(self->params.ldv);
+    result=PyLong_FromLong(self->params.ldv);
   } else if (strcmp(attrname, "ishift") == 0) {
-    result=PyInt_FromLong(self->params.ishift);
+    result=PyLong_FromLong(self->params.ishift);
   } else if (strcmp(attrname, "maxiter") == 0 ||
 		     strcmp(attrname, "mxiter") == 0) {
-    result=PyInt_FromLong(self->params.mxiter);
+    result=PyLong_FromLong(self->params.mxiter);
   } else if (strcmp(attrname, "nb") == 0) {
-    result=PyInt_FromLong(self->params.nb);
+    result=PyLong_FromLong(self->params.nb);
   } else if (strcmp(attrname, "mode") == 0) {
-    result=PyInt_FromLong(self->params.mode);
+    result=PyLong_FromLong(self->params.mode);
   } else if (strcmp(attrname, "start") == 0) {
-    result=PyInt_FromLong(self->params.start);
+    result=PyLong_FromLong(self->params.start);
   } else if (strcmp(attrname, "sigma") == 0) {
     result=PyFloat_FromDouble((double)self->params.sigma);
   } else if (strcmp(attrname, "info") == 0) {
-    result=PyInt_FromLong(self->params_out.info);
+    result=PyLong_FromLong(self->params_out.info);
   } else if (strcmp(attrname, "iter") == 0) {
-    result=PyInt_FromLong(self->params_out.iparam[2]);
+    result=PyLong_FromLong(self->params_out.iparam[2]);
   } else if (strcmp(attrname, "nconv") == 0) {
-    result=PyInt_FromLong(self->params_out.iparam[4]);
+    result=PyLong_FromLong(self->params_out.iparam[4]);
   } else if (strcmp(attrname, "numop") == 0) {
-    result=PyInt_FromLong(self->params_out.iparam[8]);
+    result=PyLong_FromLong(self->params_out.iparam[8]);
   } else if (strcmp(attrname, "numopb") == 0) {
-    result=PyInt_FromLong(self->params_out.iparam[9]);
+    result=PyLong_FromLong(self->params_out.iparam[9]);
   } else if (strcmp(attrname, "numreo") == 0) {
-    result=PyInt_FromLong(self->params_out.iparam[10]);
+    result=PyLong_FromLong(self->params_out.iparam[10]);
   } else {
     PyErr_SetString(PyExc_AttributeError, attrname);
   }
@@ -127,8 +126,8 @@ int igraphmodule_ARPACKOptions_setattr(
   }
   if (strcmp(attrname, "maxiter") == 0 ||
       strcmp(attrname, "mxiter") == 0) {
-    if (PyInt_Check(value)) {
-      long int n=PyInt_AsLong(value);
+    if (PyLong_Check(value)) {
+      long int n=PyLong_AsLong(value);
       if (n>0)
           self->params.mxiter=(igraph_integer_t)n;
       else {
@@ -140,8 +139,8 @@ int igraphmodule_ARPACKOptions_setattr(
       return -1;
     }
   } else if (strcmp(attrname, "tol") == 0) {
-    if (PyInt_Check(value)) {
-      self->params.tol = (igraph_real_t) PyInt_AsLong(value);
+    if (PyLong_Check(value)) {
+      self->params.tol = (igraph_real_t) PyLong_AsLong(value);
     } else if (PyFloat_Check(value)) {
       self->params.tol = (igraph_real_t) PyFloat_AsDouble(value);
     } else {
@@ -180,7 +179,7 @@ PyObject* igraphmodule_ARPACKOptions_str(
   igraphmodule_ARPACKOptionsObject *self) {
   PyObject *s;
   
-  s=PyString_FromFormat("ARPACK parameters");
+  s=PyUnicode_FromFormat("ARPACK parameters");
   return s;
 }
 

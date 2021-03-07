@@ -32,7 +32,6 @@
 #include "graphobject.h"
 #include "indexing.h"
 #include "memory.h"
-#include "py2compat.h"
 #include "pyhelpers.h"
 #include "vertexseqobject.h"
 #include <float.h>
@@ -347,11 +346,11 @@ PyObject* igraphmodule_Graph_from_igraph_t(igraph_t *graph) {
 PyObject *igraphmodule_Graph_str(igraphmodule_GraphObject * self)
 {
   if (igraph_is_directed(&self->g))
-    return PyString_FromFormat("Directed graph (|V| = %ld, |E| = %ld)",
+    return PyUnicode_FromFormat("Directed graph (|V| = %ld, |E| = %ld)",
                                (long)igraph_vcount(&self->g),
                                (long)igraph_ecount(&self->g));
   else
-    return PyString_FromFormat("Undirected graph (|V| = %ld, |E| = %ld)",
+    return PyUnicode_FromFormat("Undirected graph (|V| = %ld, |E| = %ld)",
                                (long)igraph_vcount(&self->g),
                                (long)igraph_ecount(&self->g));
 }
@@ -729,7 +728,7 @@ PyObject *igraphmodule_Graph_degree(igraphmodule_GraphObject * self,
   if (!return_single)
     list = igraphmodule_vector_t_to_PyList(&result, IGRAPHMODULE_TYPE_INT);
   else
-    list = PyInt_FromLong((long int)VECTOR(result)[0]);
+    list = PyLong_FromLong((long int)VECTOR(result)[0]);
 
   igraph_vector_destroy(&result);
   igraph_vs_destroy(&vs);
@@ -953,7 +952,7 @@ PyObject *igraphmodule_Graph_maxdegree(igraphmodule_GraphObject * self,
 
   igraph_vs_destroy(&vs);
 
-  return PyInt_FromLong((long)result);
+  return PyLong_FromLong((long)result);
 }
 
 /** \ingroup python_interface_graph
@@ -1155,7 +1154,7 @@ PyObject *igraphmodule_Graph_count_multiple(igraphmodule_GraphObject *self,
   if (!return_single)
     list = igraphmodule_vector_t_to_PyList(&result, IGRAPHMODULE_TYPE_INT);
   else
-    list = PyInt_FromLong((long int)VECTOR(result)[0]);
+    list = PyLong_FromLong((long int)VECTOR(result)[0]);
 
   igraph_vector_destroy(&result);
   igraph_es_destroy(&es);
@@ -1572,7 +1571,7 @@ PyObject *igraphmodule_Graph_diameter(igraphmodule_GraphObject * self,
     /* The diameter is integer in this case, except if igraph_diameter()
      * returned NaN or infinity for some reason */
     if (ceilf(diameter) == diameter && isfinite(diameter)) {
-      return PyInt_FromLong((long)diameter);
+      return PyLong_FromLong((long)diameter);
     } else {
       return PyFloat_FromDouble((double)diameter);
     }
@@ -1714,7 +1713,7 @@ PyObject *igraphmodule_Graph_girth(igraphmodule_GraphObject *self,
     igraph_vector_destroy(&vids);
     return o;
   }
-  return PyInt_FromLong((long)girth);
+  return PyLong_FromLong((long)girth);
 }
 
 /**
@@ -2013,8 +2012,8 @@ PyObject *igraphmodule_Graph_Barabasi(PyTypeObject * type,
     m = 1;
   } else if (m_obj != 0) {
     /* let's check whether we have a constant out-degree or a list */
-    if (PyInt_Check(m_obj)) {
-      m = PyInt_AsLong(m_obj);
+    if (PyLong_Check(m_obj)) {
+      m = PyLong_AsLong(m_obj);
       igraph_vector_init(&outseq, 0);
     } else if (PyList_Check(m_obj)) {
       if (igraphmodule_PyObject_to_vector_t(m_obj, &outseq, 1)) {
@@ -3084,8 +3083,8 @@ NULL };
   }
 
   // let's check whether we have a constant out-degree or a list
-  if (PyInt_Check(m_obj)) {
-    m = PyInt_AsLong(m_obj);
+  if (PyLong_Check(m_obj)) {
+    m = PyLong_AsLong(m_obj);
     igraph_vector_init(&outseq, 0);
   }
   else if (PyList_Check(m_obj)) {
@@ -3461,7 +3460,7 @@ PyObject *igraphmodule_Graph_Weighted_Adjacency(PyTypeObject * type,
   if (attr_o != Py_None) {
     s = PyObject_Str(attr_o);
     if (s) {
-      attr = PyString_CopyAsString(s);
+      attr = PyUnicode_CopyAsString(s);
       if (attr == 0)
         return NULL;
     } else return NULL;
@@ -4744,13 +4743,13 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
   igraph_vector_ptr_t *ptrvec=0;
   igraph_bool_t use_edges = 0;
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOOO!", kwlist, &from_o,
-        &to_o, &weights_o, &mode_o, &PyString_Type, &output_o))
+        &to_o, &weights_o, &mode_o, &PyUnicode_Type, &output_o))
     return NULL;
 
   if (output_o == 0 || output_o == Py_None ||
-      PyString_IsEqualToASCIIString(output_o, "vpath")) {
+      PyUnicode_IsEqualToASCIIString(output_o, "vpath")) {
     use_edges = 0;
-  } else if (PyString_IsEqualToASCIIString(output_o, "epath")) {
+  } else if (PyUnicode_IsEqualToASCIIString(output_o, "epath")) {
     use_edges = 1;
   } else {
     PyErr_SetString(PyExc_ValueError, "output argument must be \"vpath\" or \"epath\"");
@@ -5164,7 +5163,7 @@ PyObject *igraphmodule_Graph_neighborhood_size(igraphmodule_GraphObject *self,
   if (!return_single)
     result = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_INT);
   else
-    result = PyInt_FromLong((long)VECTOR(res)[0]);
+    result = PyLong_FromLong((long)VECTOR(res)[0]);
 
   igraph_vector_destroy(&res);
 
@@ -6319,7 +6318,7 @@ PyObject *igraphmodule_Graph_motifs_randesu_no(igraphmodule_GraphObject *self,
   }
   igraph_vector_destroy(&cut_prob);
 
-  return PyInt_FromLong((long)result);
+  return PyLong_FromLong((long)result);
 }
 
 /** \ingroup python_interface_graph
@@ -6356,9 +6355,9 @@ PyObject *igraphmodule_Graph_motifs_randesu_estimate(igraphmodule_GraphObject *s
     }
   }
 
-  if (PyInt_Check(sample)) {
+  if (PyLong_Check(sample)) {
     /* samples chosen randomly */
-    long int ns = PyInt_AsLong(sample);
+    long int ns = PyLong_AsLong(sample);
     if (igraph_motifs_randesu_estimate(&self->g, &result, (igraph_integer_t) size,
           &cut_prob, (igraph_integer_t) ns, 0)) {
       igraphmodule_handle_igraph_error();
@@ -6381,7 +6380,7 @@ PyObject *igraphmodule_Graph_motifs_randesu_estimate(igraphmodule_GraphObject *s
   }
   igraph_vector_destroy(&cut_prob);
 
-  return PyInt_FromLong((long)result);
+  return PyLong_FromLong((long)result);
 }
 
 /** \ingroup python_interface_graph
@@ -7458,7 +7457,7 @@ PyObject *igraphmodule_Graph_layout_bipartite(
   }
 
   if (types_o == Py_None) {
-    types_o = PyString_FromString("type");
+    types_o = PyUnicode_FromString("type");
   } else {
     Py_INCREF(types_o);
   }
@@ -8097,7 +8096,7 @@ PyObject *igraphmodule_Graph_write_dimacs(igraphmodule_GraphObject * self,
     return NULL;
 
   if (capacity_obj == Py_None) {
-    capacity_obj = PyString_FromString("capacity");
+    capacity_obj = PyUnicode_FromString("capacity");
   } else {
     Py_INCREF(capacity_obj);
   }
@@ -8225,7 +8224,7 @@ PyObject *igraphmodule_Graph_write_gml(igraphmodule_GraphObject * self,
       igraphmodule_filehandle_destroy(&fobj);
     }
 
-    creator_str = PyString_CopyAsString(o);
+    creator_str = PyUnicode_CopyAsString(o);
     Py_DECREF(o);
 
     if (creator_str == 0) {
@@ -8502,7 +8501,7 @@ PyObject *igraphmodule_Graph_isoclass(igraphmodule_GraphObject * self,
     }
   }
 
-  return PyInt_FromLong((long)isoclass);
+  return PyLong_FromLong((long)isoclass);
 }
 
 /** \ingroup python_interface_graph
@@ -10927,7 +10926,7 @@ PyObject *igraphmodule_Graph_clique_number(igraphmodule_GraphObject * self)
   if (igraph_clique_number(&self->g, &i))
     return igraphmodule_handle_igraph_error();
 
-  result = PyInt_FromLong((long)i);
+  result = PyLong_FromLong((long)i);
   return result;
 }
 
@@ -11088,7 +11087,7 @@ PyObject *igraphmodule_Graph_independence_number(igraphmodule_GraphObject *
   if (igraph_independence_number(&self->g, &i))
     return igraphmodule_handle_igraph_error();
 
-  result = PyInt_FromLong((long)i);
+  result = PyLong_FromLong((long)i);
   return result;
 }
 
@@ -11923,25 +11922,12 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
 /** \defgroup python_interface_internal Internal functions
  * \ingroup python_interface */
 
-#ifdef IGRAPH_PYTHON3
 PyObject *igraphmodule_Graph___graph_as_capsule__(igraphmodule_GraphObject *
                                                   self, PyObject * args,
                                                   PyObject * kwds)
 {
   return PyCapsule_New((void *)&self->g, 0, 0);
 }
-#else
-/** \ingroup python_interface_internal
- * \brief Returns the encapsulated igraph graph as a PyCObject
- * \return a new PyCObject
- */
-PyObject *igraphmodule_Graph___graph_as_cobject__(igraphmodule_GraphObject *
-                                                  self, PyObject * args,
-                                                  PyObject * kwds)
-{
-  return PyCObject_FromVoidPtr((void *)&self->g, 0);
-}
-#endif
 
 /** \ingroup python_interface_internal
  * \brief Returns the pointer of the encapsulated igraph graph as an ordinary
@@ -11949,7 +11935,7 @@ PyObject *igraphmodule_Graph___graph_as_cobject__(igraphmodule_GraphObject *
  * module without any additional conversions.
  */
 PyObject *igraphmodule_Graph__raw_pointer(igraphmodule_GraphObject *self) {
-  return PyInt_FromLong((long int)&self->g);
+  return PyLong_FromLong((long int)&self->g);
 }
 
 /** \ingroup python_interface_internal
@@ -15975,7 +15961,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /**********************/
   /* INTERNAL FUNCTIONS */
   /**********************/
-#ifdef IGRAPH_PYTHON3
   {"__graph_as_capsule",
    (PyCFunction) igraphmodule_Graph___graph_as_capsule__,
    METH_VARARGS | METH_KEYWORDS,
@@ -15986,18 +15971,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Python object. This function should not be used directly by igraph\n"
    "users, it is useful only in the case when the underlying igraph object\n"
    "must be passed to other C code through Python.\n\n"},
-#else
-  {"__graph_as_cobject",
-   (PyCFunction) igraphmodule_Graph___graph_as_cobject__,
-   METH_VARARGS | METH_KEYWORDS,
-   "__graph_as_cobject()\n--\n\n"
-   "Returns the igraph graph encapsulated by the Python object as\n"
-   "a PyCObject\n\n."
-   "A PyCObject is practically a regular C pointer, wrapped in a\n"
-   "Python object. This function should not be used directly by igraph\n"
-   "users, it is useful only in the case when the underlying igraph object\n"
-   "must be passed to other C code through Python.\n\n"},
-#endif
 
   {"_raw_pointer",
    (PyCFunction) igraphmodule_Graph__raw_pointer,
@@ -16040,9 +16013,6 @@ PyNumberMethods igraphmodule_Graph_as_number = {
   0,                            /* nb_add */
   0,                            /*nb_subtract */
   0,                            /*nb_multiply */
-#ifndef IGRAPH_PYTHON3
-  0,                            /*nb_divide */
-#endif
   0,                            /*nb_remainder */
   0,                            /*nb_divmod */
   0,                            /*nb_power */
@@ -16056,22 +16026,12 @@ PyNumberMethods igraphmodule_Graph_as_number = {
   0,                            /*nb_and */
   0,                            /*nb_xor */
   0,                            /*nb_or */
-#ifndef IGRAPH_PYTHON3
-  0,                            /*nb_coerce */
-#endif
   0,                            /*nb_int */
   0,                            /*nb_long (2.x) / nb_reserved (3.x)*/
   0,                            /*nb_float */
-#ifndef IGRAPH_PYTHON3
-  0,                            /*nb_oct */
-  0,                            /*nb_hex */
-#endif
   0,                            /*nb_inplace_add */
   0,                            /*nb_inplace_subtract */
   0,                            /*nb_inplace_multiply */
-#ifndef IGRAPH_PYTHON3
-  0,                            /*nb_inplace_divide */
-#endif
   0,                            /*nb_inplace_remainder */
   0,                            /*nb_inplace_power */
   0,                            /*nb_inplace_lshift */
@@ -16079,14 +16039,11 @@ PyNumberMethods igraphmodule_Graph_as_number = {
   0,                            /*nb_inplace_and */
   0,                            /*nb_inplace_xor */
   0,                            /*nb_inplace_or */
-
-#ifdef IGRAPH_PYTHON3
   0,                            /*nb_floor_divide */
   0,                            /*nb_true_divide */
   0,                            /*nb_inplace_floor_divide */
   0,                            /*nb_inplace_true_divide */
   0,                            /*nb_index */
-#endif
 };
 
 /** \ingroup python_interface_graph

@@ -27,7 +27,6 @@
 #include "common.h"
 #include "convert.h"
 #include "error.h"
-#include "py2compat.h"
 #include "pyhelpers.h"
 #include "vertexseqobject.h"
 #include "vertexobject.h"
@@ -115,9 +114,9 @@ int igraphmodule_VertexSeq_init(igraphmodule_VertexSeqObject *self,
   if (vsobj == Py_None) {
     /* If vs is None, we are selecting all the vertices */
     igraph_vs_all(&vs);
-  } else if (PyInt_Check(vsobj)) {
+  } else if (PyLong_Check(vsobj)) {
     /* We selected a single vertex */
-    long int idx = PyInt_AsLong(vsobj);
+    long int idx = PyLong_AsLong(vsobj);
     if (idx < 0 || idx >= igraph_vcount(&((igraphmodule_GraphObject*)g)->g)) {
       PyErr_SetString(PyExc_ValueError, "vertex index out of range");
       return -1;
@@ -353,7 +352,7 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
   if (!igraphmodule_attribute_name_check(attrname))
     return -1;
 
-  if (PyString_IsEqualToASCIIString(attrname, "name"))
+  if (PyUnicode_IsEqualToASCIIString(attrname, "name"))
     igraphmodule_invalidate_vertex_name_index(&gr->g);
 
   if (values == 0) {
@@ -363,7 +362,7 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
     return -1;
   }
 
- if (PyString_Check(values) || !PySequence_Check(values)) {
+ if (PyUnicode_Check(values) || !PySequence_Check(values)) {
     /* If values is a string or not a sequence, we construct a list with a
      * single element (the value itself) and then call ourselves again */
     int result;
@@ -541,10 +540,10 @@ PyObject* igraphmodule_VertexSeq_find(igraphmodule_VertexSeqObject *self, PyObje
       Py_DECREF(call_result);
       Py_DECREF(vertex);
     }
-  } else if (PyInt_Check(item)) {
+  } else if (PyLong_Check(item)) {
     /* Integers are interpreted as indices on the vertex set and NOT on the
      * original, untouched vertex sequence of the graph */
-    return PySequence_GetItem((PyObject*)self, PyInt_AsLong(item));
+    return PySequence_GetItem((PyObject*)self, PyLong_AsLong(item));
   } else if (PyBaseString_Check(item)) {
     /* Strings are interpreted as vertex names */
     if (igraphmodule_get_vertex_id_by_name(&self->gref->g, item, &i))
@@ -651,7 +650,7 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
       }
 
       igraph_vector_destroy(&v);
-    } else if (PyInt_Check(item)) {
+    } else if (PyLong_Check(item)) {
       /* Integers are treated specially: from now on, all remaining items
        * in the argument list must be integers and they will be used together
        * to restrict the vertex set. Integers are interpreted as indices on the
@@ -677,14 +676,14 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
       for (; i<n; i++) {
         PyObject *item2 = PyTuple_GET_ITEM(args, i);
         long idx;
-        if (!PyInt_Check(item2)) {
+        if (!PyLong_Check(item2)) {
           Py_DECREF(result);
           PyErr_SetString(PyExc_TypeError, "vertex indices expected");
           igraph_vector_destroy(&v);
           igraph_vector_destroy(&v2);
           return NULL;
         }
-        idx = PyInt_AsLong(item2);
+        idx = PyLong_AsLong(item2);
         if (idx >= m || idx < 0) {
           PyErr_SetString(PyExc_ValueError, "vertex index out of range");
           igraph_vector_destroy(&v);

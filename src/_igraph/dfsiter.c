@@ -23,7 +23,6 @@
 #include "dfsiter.h"
 #include "common.h"
 #include "error.h"
-#include "py2compat.h"
 #include "vertexobject.h"
 
 /**
@@ -50,7 +49,7 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   o->gref=g;
   o->graph=&g->g;
   
-  if (!PyInt_Check(root) && !PyObject_IsInstance(root, (PyObject*)&igraphmodule_VertexType)) {
+  if (!PyLong_Check(root) && !PyObject_IsInstance(root, (PyObject*)&igraphmodule_VertexType)) {
     PyErr_SetString(PyExc_TypeError, "root must be integer or igraph.Vertex");
     return NULL;
   }
@@ -72,8 +71,8 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
     return NULL;
   }
   
-  if (PyInt_Check(root)) {
-    r=PyInt_AsLong(root);
+  if (PyLong_Check(root)) {
+    r=PyLong_AsLong(root);
   } else {
     r = ((igraphmodule_VertexObject*)root)->idx;
   }

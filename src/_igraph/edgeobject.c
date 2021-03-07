@@ -27,7 +27,6 @@
 #include "error.h"
 #include "graphobject.h"
 #include "pyhelpers.h"
-#include "py2compat.h"
 #include "vertexobject.h"
 
 /**
@@ -146,48 +145,31 @@ void igraphmodule_Edge_dealloc(igraphmodule_EdgeObject* self) {
 PyObject* igraphmodule_Edge_repr(igraphmodule_EdgeObject *self) {
   PyObject *s;
   PyObject *attrs;
-#ifndef IGRAPH_PYTHON3
-  PyObject *grepr, *drepr;
-#endif
 
   attrs = igraphmodule_Edge_attributes(self);
   if (attrs == 0)
     return NULL;
 
-#ifdef IGRAPH_PYTHON3
   s = PyUnicode_FromFormat("igraph.Edge(%R, %ld, %R)",
       (PyObject*)self->gref, (long int)self->idx, attrs);
   Py_DECREF(attrs);
-#else
-  grepr=PyObject_Repr((PyObject*)self->gref);
-  drepr=PyObject_Repr(attrs);
-  Py_DECREF(attrs);
-  if (!grepr || !drepr) {
-    Py_XDECREF(grepr);
-    Py_XDECREF(drepr);
-    return NULL;
-  }
-  s=PyString_FromFormat("igraph.Edge(%s, %ld, %s)", PyString_AsString(grepr),
-    (long int)self->idx, PyString_AsString(drepr));
-  Py_DECREF(grepr);
-  Py_DECREF(drepr);
-#endif
+
   return s;
 }
 
 /** \ingroup python_interface_edge
  * \brief Returns the hash code of the edge
  */
-Py_hash_t igraphmodule_Edge_hash(igraphmodule_EdgeObject* self) {
-  Py_hash_t hash_graph;
-  Py_hash_t hash_index;
-  Py_hash_t result;
+long igraphmodule_Edge_hash(igraphmodule_EdgeObject* self) {
+  long hash_graph;
+  long hash_index;
+  long result;
   PyObject* index_o;
 
   if (self->hash != -1)
     return self->hash;
 
-  index_o = PyInt_FromLong((long int)self->idx);
+  index_o = PyLong_FromLong((long int)self->idx);
   if (index_o == 0)
     return -1;
 
@@ -447,7 +429,7 @@ PyObject* igraphmodule_Edge_get_from(igraphmodule_EdgeObject* self, void* closur
   if (igraph_edge(&o->g, self->idx, &from, &to)) {
     igraphmodule_handle_igraph_error(); return NULL;
   }
-  return PyInt_FromLong((long int)from);
+  return PyLong_FromLong((long int)from);
 }
 
 /**
@@ -482,7 +464,7 @@ PyObject* igraphmodule_Edge_get_to(igraphmodule_EdgeObject* self, void* closure)
   if (igraph_edge(&o->g, self->idx, &from, &to)) {
     igraphmodule_handle_igraph_error(); return NULL;
   }
-  return PyInt_FromLong((long)to);
+  return PyLong_FromLong((long)to);
 }
 
 /**
@@ -508,7 +490,7 @@ PyObject* igraphmodule_Edge_get_target_vertex(igraphmodule_EdgeObject* self, voi
  * Returns the edge index
  */
 PyObject* igraphmodule_Edge_get_index(igraphmodule_EdgeObject* self, void* closure) {
-  return PyInt_FromLong((long int)self->idx);
+  return PyLong_FromLong((long int)self->idx);
 }
 
 /**

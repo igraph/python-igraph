@@ -33,7 +33,6 @@
 #include "edgeseqobject.h"
 #include "error.h"
 #include "graphobject.h"
-#include "py2compat.h"
 #include "random.h"
 #include "vertexobject.h"
 #include "vertexseqobject.h"
@@ -130,7 +129,6 @@ static struct module_state _state = { 0, 0 };
 
 #define GETSTATE(m) (&_state)
 
-#ifdef IGRAPH_PYTHON3
 static int igraphmodule_traverse(PyObject *m, visitproc visit, void* arg) {
   Py_VISIT(GETSTATE(m)->progress_handler);
   Py_VISIT(GETSTATE(m)->status_handler);
@@ -142,7 +140,6 @@ static int igraphmodule_clear(PyObject *m) {
   Py_CLEAR(GETSTATE(m)->status_handler);
   return 0;
 }
-#endif
 
 static int igraphmodule_igraph_interrupt_hook(void* data) {
   if (PyErr_CheckSignals()) {
@@ -735,9 +732,8 @@ static PyMethodDef igraphmodule_methods[] =
   "Should not be used directly.\n"
 
 /**
- * Module definition table (only for Python 3.x)
+ * Module definition table
  */
-#ifdef IGRAPH_PYTHON3
 static struct PyModuleDef moduledef = {
   PyModuleDef_HEAD_INIT,
   "igraph._igraph",                   /* m_name */
@@ -749,7 +745,6 @@ static struct PyModuleDef moduledef = {
   igraphmodule_clear,                 /* m_clear */
   0                                   /* m_free */
 };
-#endif
 
 /****************** Exported API functions *******************/
 
@@ -796,16 +791,8 @@ igraph_t* PyIGraph_ToCGraph(PyObject* graph) {
 extern PyObject* igraphmodule_InternalError;
 extern PyObject* igraphmodule_arpack_options_default;
 
-#ifdef IGRAPH_PYTHON3
-#  define INITERROR return NULL
-   PyObject* PyInit__igraph(void)
-#else
-#  define INITERROR return
-#  ifndef PyMODINIT_FUNC
-#    define PyMODINIT_FUNC void
-#  endif
-   PyMODINIT_FUNC init_igraph(void)
-#endif
+#define INITERROR return NULL
+PyObject* PyInit__igraph(void)
 {
   PyObject* m;
   static void *PyIGraph_API[PyIGraph_API_pointers];
@@ -845,12 +832,7 @@ extern PyObject* igraphmodule_arpack_options_default;
     INITERROR;
 
   /* Initialize the core module */
-#ifdef IGRAPH_PYTHON3
   m = PyModule_Create(&moduledef);
-#else
-  m = Py_InitModule3("igraph._igraph", igraphmodule_methods, MODULE_DOCS);
-#endif
-
   if (m == NULL)
     INITERROR;
 
@@ -945,18 +927,12 @@ extern PyObject* igraphmodule_arpack_options_default;
   PyIGraph_API[PyIGraph_ToCGraph_NUM]   = (void *)PyIGraph_ToCGraph;
 
   /* Create a CObject containing the API pointer array's address */
-#ifdef IGRAPH_PYTHON3
   c_api_object = PyCapsule_New((void*)PyIGraph_API, "igraph._igraph._C_API", 0);
-#else
-  c_api_object = PyCObject_FromVoidPtr((void*)PyIGraph_API, 0);
-#endif
   if (c_api_object != 0) {
     PyModule_AddObject(m, "_C_API", c_api_object);
   }
 
   igraphmodule_initialized = 1;
 
-#ifdef IGRAPH_PYTHON3
   return m;
-#endif
 }

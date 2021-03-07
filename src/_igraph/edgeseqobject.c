@@ -28,7 +28,6 @@
 #include "edgeseqobject.h"
 #include "edgeobject.h"
 #include "error.h"
-#include "py2compat.h"
 #include "pyhelpers.h"
 
 #define GET_GRAPH(obj) (((igraphmodule_GraphObject*)obj->gref)->g)
@@ -116,9 +115,9 @@ int igraphmodule_EdgeSeq_init(igraphmodule_EdgeSeqObject *self,
   if (esobj == Py_None) {
     /* If es is None, we are selecting all the edges */
     igraph_es_all(&es, IGRAPH_EDGEORDER_ID);
-  } else if (PyInt_Check(esobj)) {
+  } else if (PyLong_Check(esobj)) {
     /* We selected a single edge */
-    long int idx = PyInt_AsLong(esobj);
+    long int idx = PyLong_AsLong(esobj);
     if (idx < 0 || idx >= igraph_ecount(&((igraphmodule_GraphObject*)g)->g)) {
       PyErr_SetString(PyExc_ValueError, "edge index out of range");
       return -1;
@@ -372,7 +371,7 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
     return -1;
   }
 
- if (PyString_Check(values) || !PySequence_Check(values)) {
+ if (PyUnicode_Check(values) || !PySequence_Check(values)) {
     /* If values is a string or not a sequence, we construct a list with a
      * single element (the value itself) and then call ourselves again */
     int result;
@@ -542,10 +541,10 @@ PyObject* igraphmodule_EdgeSeq_find(igraphmodule_EdgeSeqObject *self, PyObject *
       Py_DECREF(call_result);
       Py_DECREF(edge);
     }
-  } else if (PyInt_Check(item)) {
+  } else if (PyLong_Check(item)) {
     /* Integers are interpreted as indices on the edge set and NOT on the
      * original, untouched edge sequence of the graph */
-    return PySequence_GetItem((PyObject*)self, PyInt_AsLong(item));
+    return PySequence_GetItem((PyObject*)self, PyLong_AsLong(item));
   }
 
   PyErr_SetString(PyExc_IndexError, "no such edge");
@@ -622,7 +621,7 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
       }
 
       igraph_vector_destroy(&v);
-    } else if (PyInt_Check(item)) {
+    } else if (PyLong_Check(item)) {
       /* Integers are treated specially: from now on, all remaining items
        * in the argument list must be integers and they will be used together
        * to restrict the edge set. Integers are interpreted as indices on the
@@ -648,14 +647,14 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
       for (; i<n; i++) {
         PyObject *item2 = PyTuple_GET_ITEM(args, i);
         long idx;
-        if (!PyInt_Check(item2)) {
+        if (!PyLong_Check(item2)) {
           Py_DECREF(result);
           PyErr_SetString(PyExc_TypeError, "edge indices expected");
           igraph_vector_destroy(&v);
           igraph_vector_destroy(&v2);
           return NULL;
         }
-        idx = PyInt_AsLong(item2);
+        idx = PyLong_AsLong(item2);
         if (idx >= m || idx < 0) {
           PyErr_SetString(PyExc_ValueError, "edge index out of range");
           igraph_vector_destroy(&v);

@@ -21,8 +21,40 @@
 
 */
 
-#include "py2compat.h"
 #include "pyhelpers.h"
+
+/**
+ * Closes a Python file-like object by calling its close() method.
+ */
+int igraphmodule_PyFile_Close(PyObject* fileObj) {
+  PyObject *result;
+
+  result = PyObject_CallMethod(fileObj, "close", 0);
+  if (result) {
+    Py_DECREF(result);
+    return 0;
+  } else {
+    /* Exception raised already */
+    return 1;
+  }
+}
+
+/**
+ * Creates a Python file-like object from a Python object storing a string and
+ * an ordinary C string storing the mode to open the file in.
+ */
+PyObject* igraphmodule_PyFile_FromObject(PyObject* filename, const char* mode) {
+  PyObject *ioModule, *fileObj;
+
+  ioModule = PyImport_ImportModule("io");
+  if (ioModule == 0)
+    return 0;
+
+  fileObj = PyObject_CallMethod(ioModule, "open", "Os", filename, mode);
+  Py_DECREF(ioModule);
+
+  return fileObj;
+}
 
 /**
  * Creates a Python list and fills it with a pre-defined item.
@@ -51,7 +83,7 @@ PyObject* igraphmodule_PyList_NewFill(Py_ssize_t len, PyObject* item) {
  * \param  len   the length of the list to be created
  */
 PyObject* igraphmodule_PyList_Zeroes(Py_ssize_t len) {
-	PyObject* zero = PyInt_FromLong(0);
+	PyObject* zero = PyLong_FromLong(0);
 	PyObject* result;
 
 	if (zero == 0)
@@ -82,7 +114,7 @@ char* igraphmodule_PyObject_ConvertToCString(PyObject* string) {
     Py_INCREF(string);
   }
 
-  result = PyString_CopyAsString(string);
+  result = PyUnicode_CopyAsString(string);
   Py_DECREF(string);
 
   return result;
@@ -101,22 +133,14 @@ PyObject* igraphmodule_PyRange_create(Py_ssize_t start, Py_ssize_t stop, Py_ssiz
   PyObject* result;
 
   if (builtin_module == 0) {
-#ifdef IGRAPH_PYTHON3
     builtin_module = PyImport_ImportModule("builtins");
-#else
-    builtin_module = PyImport_ImportModule("__builtin__");
-#endif
     if (builtin_module == 0) {
       return 0;
     }
   }
 
   if (range_func == 0) {
-#ifdef IGRAPH_PYTHON3
     range_func = PyObject_GetAttrString(builtin_module, "range");
-#else
-    range_func = PyObject_GetAttrString(builtin_module, "xrange");
-#endif
     if (range_func == 0) {
       return 0;
     }
@@ -124,6 +148,47 @@ PyObject* igraphmodule_PyRange_create(Py_ssize_t start, Py_ssize_t stop, Py_ssiz
 
   result = PyObject_CallFunction(range_func, "lll", start, stop, step);
   return result;
+}
+
+char* PyUnicode_CopyAsString(PyObject* string) {
+  PyObject* bytes;
+  char* result;
+
+  if (PyBytes_Check(string)) {
+    bytes = string;
+    Py_INCREF(bytes);
+  } else {
+    bytes = PyUnicode_AsUTF8String(string);
+  }
+
+  if (bytes == 0)
+    return 0;
+  
+  result = strdup(PyBytes_AS_STRING(bytes));
+  Py_DECREF(bytes);
+
+  if (result == 0)
+    PyErr_NoMemory();
+
+  return result;
+}
+
+int PyUnicode_IsEqualToUTF8String(PyObject* py_string,
+		const char* c_string) {
+	PyObject* c_string_conv;
+	int result;
+
+	if (!PyUnicode_Check(py_string))
+		return 0;
+
+	c_string_conv = PyUnicode_FromString(c_string);
+	if (c_string_conv == 0)
+		return 0;
+
+	result = (PyUnicode_Compare(py_string, c_string_conv) == 0);
+	Py_DECREF(c_string_conv);
+
+	return result;
 }
 
 /**
