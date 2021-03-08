@@ -11980,15 +11980,17 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"vcount", (PyCFunction) igraphmodule_Graph_vcount,
    METH_NOARGS,
    "vcount()\n--\n\n"
-   "Counts the number of vertices.\n"
-   "@return: the number of vertices in the graph.\n" "@rtype: integer"},
+   "Counts the number of vertices.\n\n"
+   "@return: the number of vertices in the graph.\n"
+   "@rtype: integer\n"},
 
   // interface to igraph_ecount
   {"ecount", (PyCFunction) igraphmodule_Graph_ecount,
    METH_NOARGS,
    "ecount()\n--\n\n"
-   "Counts the number of edges.\n"
-   "@return: the number of edges in the graph.\n" "@rtype: integer"},
+   "Counts the number of edges.\n\n"
+   "@return: the number of edges in the graph.\n"
+   "@rtype: integer\n"},
 
   // interface to igraph_is_dag
   {"is_dag", (PyCFunction) igraphmodule_Graph_is_dag,
@@ -12003,7 +12005,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"is_directed", (PyCFunction) igraphmodule_Graph_is_directed,
    METH_NOARGS,
    "is_directed()\n--\n\n"
-   "Checks whether the graph is directed.\n"
+   "Checks whether the graph is directed.\n\n"
    "@return: C{True} if it is directed, C{False} otherwise.\n"
    "@rtype: boolean"},
 
@@ -15260,11 +15262,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"vertex_attributes", (PyCFunction) igraphmodule_Graph_vertex_attributes,
    METH_NOARGS,
    "vertex_attributes()\n--\n\n"
-   "@return: the attribute name list of the graph's vertices\n"},
+   "@return: the attribute name list of the vertices of the graph\n"},
   {"edge_attributes", (PyCFunction) igraphmodule_Graph_edge_attributes,
    METH_NOARGS,
    "edge_attributes()\n--\n\n"
-   "@return: the attribute name list of the graph's edges\n"},
+   "@return: the attribute name list of the edges of the graph\n"},
 
   ///////////////
   // OPERATORS //
@@ -15287,7 +15289,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"dominator", (PyCFunction) igraphmodule_Graph_dominator,
    METH_VARARGS | METH_KEYWORDS,
    "dominator(vid, mode=\"out\")\n--\n\n"
-   "Returns the dominator tree from the given root node"
+   "Returns the dominator tree from the given root node\n\n"
    "@param vid: the root vertex ID\n"
    "@param mode: either C{\"in\"} or C{\"out\"}\n"
    "@return: a list containing the dominator tree for the current graph."

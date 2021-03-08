@@ -337,9 +337,7 @@ class Graph(GraphBase):
             self.es[key] = value
 
     def add_edge(self, source, target, **kwds):
-        """add_edge(source, target, **kwds)
-
-        Adds a single edge to the graph.
+        """Adds a single edge to the graph.
 
         Keyword arguments (except the source and target arguments) will be
         assigned to the edge as attributes.
@@ -359,9 +357,7 @@ class Graph(GraphBase):
         return edge
 
     def add_edges(self, es, attributes=None):
-        """add_edges(es, attributes=None)
-
-        Adds some edges to the graph.
+        """Adds some edges to the graph.
 
         @param es: the list of edges to be added. Every edge is represented
           with a tuple containing the vertex IDs or names of the two
@@ -379,9 +375,7 @@ class Graph(GraphBase):
         return res
 
     def add_vertex(self, name=None, **kwds):
-        """add_vertex(name=None, **kwds)
-
-        Adds a single vertex to the graph. Keyword arguments will be assigned
+        """Adds a single vertex to the graph. Keyword arguments will be assigned
         as vertex attributes. Note that C{name} as a keyword argument is treated
         specially; if a graph has C{name} as a vertex attribute, it allows one
         to refer to vertices by their names in most places where igraph expects
@@ -401,9 +395,7 @@ class Graph(GraphBase):
         return vertex
 
     def add_vertices(self, n, attributes=None):
-        """add_vertices(n, attributes=None)
-
-        Adds some vertices to the graph.
+        """Adds some vertices to the graph.
 
         Note that if C{n} is a sequence of strings, indicating the names of the
         new vertices, and attributes has a key C{name}, the two conflict. In
@@ -447,23 +439,8 @@ class Graph(GraphBase):
                     self.vs[m:][key] = val
         return result
 
-    def adjacent(self, *args, **kwds):
-        """adjacent(vertex, mode=OUT)
-
-        Returns the edges a given vertex is incident on.
-
-        @deprecated: replaced by L{incident()} since igraph 0.6
-        """
-        deprecated(
-            "Graph.adjacent() is deprecated since igraph 0.6, please use "
-            "Graph.incident() instead"
-        )
-        return self.incident(*args, **kwds)
-
     def as_directed(self, *args, **kwds):
-        """as_directed(*args, **kwds)
-
-        Returns a directed copy of this graph. Arguments are passed on
+        """Returns a directed copy of this graph. Arguments are passed on
         to L{to_directed()} that is invoked on the copy.
         """
         copy = self.copy()
@@ -471,9 +448,7 @@ class Graph(GraphBase):
         return copy
 
     def as_undirected(self, *args, **kwds):
-        """as_undirected(*args, **kwds)
-
-        Returns an undirected copy of this graph. Arguments are passed on
+        """Returns an undirected copy of this graph. Arguments are passed on
         to L{to_undirected()} that is invoked on the copy.
         """
         copy = self.copy()
@@ -603,9 +578,7 @@ class Graph(GraphBase):
     blocks = biconnected_components
 
     def clear(self):
-        """clear()
-
-        Clears the graph, deleting all vertices, edges, and attributes.
+        """Clears the graph, deleting all vertices, edges, and attributes.
 
         @see: L{delete_vertices} and L{delete_edges}.
         """
@@ -614,9 +587,7 @@ class Graph(GraphBase):
             del self[attr]
 
     def cohesive_blocks(self):
-        """cohesive_blocks()
-
-        Calculates the cohesive block structure of the graph.
+        """Calculates the cohesive block structure of the graph.
 
         Cohesive blocking is a method of determining hierarchical subsets of graph
         vertices based on their structural cohesion (i.e. vertex connectivity).
@@ -633,23 +604,19 @@ class Graph(GraphBase):
         """
         return CohesiveBlocks(self, *GraphBase.cohesive_blocks(self))
 
-    def clusters(self, mode=STRONG):
-        """clusters(mode=STRONG)
-
-        Calculates the (strong or weak) clusters (connected components) for
+    def clusters(self, mode="strong"):
+        """Calculates the (strong or weak) clusters (connected components) for
         a given graph.
 
-        @param mode: must be either C{STRONG} or C{WEAK}, depending on the
-          clusters being sought. Optional, defaults to C{STRONG}.
+        @param mode: must be either C{"strong"} or C{"weak"}, depending on the
+          clusters being sought. Optional, defaults to C{"strong"}.
         @return: a L{VertexClustering} object"""
         return VertexClustering(self, GraphBase.clusters(self, mode))
 
     components = clusters
 
     def degree_distribution(self, bin_width=1, *args, **kwds):
-        """degree_distribution(bin_width=1, ...)
-
-        Calculates the degree distribution of the graph.
+        """Calculates the degree distribution of the graph.
 
         Unknown keyword arguments are directly passed to L{degree()}.
 
@@ -661,9 +628,7 @@ class Graph(GraphBase):
         return result
 
     def dyad_census(self, *args, **kwds):
-        """dyad_census()
-
-        Calculates the dyad census of the graph.
+        """Calculates the dyad census of the graph.
 
         Dyad census means classifying each pair of vertices of a directed
         graph into three categories: mutual (there is an edge from I{a} to
@@ -796,22 +761,8 @@ class Graph(GraphBase):
         """
         return [self.neighbors(idx, mode) for idx in range(self.vcount())]
 
-    def get_adjedgelist(self, *args, **kwds):
-        """Returns the incidence list representation of the graph.
-
-        @deprecated: replaced by L{get_inclist()} since igraph 0.6
-        @see: Graph.get_inclist()
-        """
-        deprecated(
-            "Graph.get_adjedgelist() is deprecated since igraph 0.6, "
-            "please use Graph.get_inclist() instead"
-        )
-        return self.get_inclist(*args, **kwds)
-
-    def get_all_simple_paths(self, v, to=None, cutoff=-1, mode=OUT):
-        """get_all_simple_paths(v, to=None, cutoff=-1, mode=OUT)
-
-        Calculates all the simple paths from a given node to some other nodes
+    def get_all_simple_paths(self, v, to=None, cutoff=-1, mode="out"):
+        """Calculates all the simple paths from a given node to some other nodes
         (or all of them) in a graph.
 
         A path is simple if its vertices are unique, i.e. no vertex is visited
@@ -844,10 +795,8 @@ class Graph(GraphBase):
                 prev = index + 1
         return result
 
-    def get_inclist(self, mode=OUT):
-        """get_inclist(mode=OUT)
-
-        Returns the incidence list representation of the graph.
+    def get_inclist(self, mode="out"):
+        """Returns the incidence list representation of the graph.
 
         The incidence list representation is a list of lists. Each
         item of the outer list belongs to a single vertex of the graph.
@@ -862,9 +811,7 @@ class Graph(GraphBase):
         return [self.incident(idx, mode) for idx in range(self.vcount())]
 
     def gomory_hu_tree(self, capacity=None, flow="flow"):
-        """gomory_hu_tree(capacity=None, flow="flow")
-
-        Calculates the Gomory-Hu tree of an undirected graph with optional
+        """Calculates the Gomory-Hu tree of an undirected graph with optional
         edge capacities.
 
         The Gomory-Hu tree is a concise representation of the value of all the
@@ -887,25 +834,21 @@ class Graph(GraphBase):
         return graph
 
     def is_named(self):
-        """is_named()
+        """Returns whether the graph is named.
 
-        Returns whether the graph is named, i.e., whether it has a "name"
-        vertex attribute.
+        A graph is named if and only if it has a C{"name"} vertex attribute.
         """
         return "name" in self.vertex_attributes()
 
     def is_weighted(self):
-        """is_weighted()
+        """Returns whether the graph is weighted.
 
-        Returns whether the graph is weighted, i.e., whether it has a "weight"
-        edge attribute.
+        A graph is weighted if and only if it has a C{"weight"} edge attribute.
         """
         return "weight" in self.edge_attributes()
 
     def maxflow(self, source, target, capacity=None):
-        """maxflow(source, target, capacity=None)
-
-        Returns a maximum flow between the given source and target vertices
+        """Returns a maximum flow between the given source and target vertices
         in a graph.
 
         A maximum flow from I{source} to I{target} is an assignment of
@@ -930,9 +873,7 @@ class Graph(GraphBase):
         return Flow(self, *GraphBase.maxflow(self, source, target, capacity))
 
     def mincut(self, source=None, target=None, capacity=None):
-        """mincut(source=None, target=None, capacity=None)
-
-        Calculates the minimum cut between the given source and target vertices
+        """Calculates the minimum cut between the given source and target vertices
         or within the whole graph.
 
         The minimum cut is the minimum set of edges that needs to be removed to
@@ -958,9 +899,7 @@ class Graph(GraphBase):
         return Cut(self, *GraphBase.mincut(self, source, target, capacity))
 
     def st_mincut(self, source, target, capacity=None):
-        """st_mincut(source, target, capacity=None)
-
-        Calculates the minimum cut between the source and target vertices in a
+        """Calculates the minimum cut between the source and target vertices in a
         graph.
 
         @param source: the source vertex ID
@@ -975,9 +914,7 @@ class Graph(GraphBase):
         return Cut(self, *GraphBase.st_mincut(self, source, target, capacity))
 
     def modularity(self, membership, weights=None):
-        """modularity(membership, weights=None)
-
-        Calculates the modularity score of the graph with respect to a given
+        """Calculates the modularity score of the graph with respect to a given
         clustering.
 
         The modularity of a graph w.r.t. some division measures how good the
@@ -1012,9 +949,7 @@ class Graph(GraphBase):
             return GraphBase.modularity(self, membership, weights)
 
     def path_length_hist(self, directed=True):
-        """path_length_hist(directed=True)
-
-        Returns the path length histogram of the graph
+        """Returns the path length histogram of the graph
 
         @param directed: whether to consider directed paths. Ignored for
           undirected graphs.
@@ -1042,7 +977,7 @@ class Graph(GraphBase):
         niter=1000,
         eps=0.001,
     ):
-        """Calculates the Google PageRank values of a graph.
+        """Calculates the PageRank values of a graph.
 
         @param vertices: the indices of the vertices being queried.
           C{None} means all of the vertices.
@@ -1150,9 +1085,7 @@ class Graph(GraphBase):
         return sum(xs) / float(len(xs))
 
     def triad_census(self, *args, **kwds):
-        """triad_census()
-
-        Calculates the triad census of the graph.
+        """Calculates the triad census of the graph.
 
         @return: a L{TriadCensus} object.
         @newfield ref: Reference
@@ -1277,11 +1210,9 @@ class Graph(GraphBase):
         )
 
     def community_leading_eigenvector_naive(self, clusters=None, return_merges=False):
-        """community_leading_eigenvector_naive(clusters=None,
-        return_merges=False)
+        """Naive implementation of Newman's eigenvector community structure detection.
 
-        A naive implementation of Newman's eigenvector community structure
-        detection. This function splits the network into two components
+        This function splits the network into two components
         according to the leading eigenvector of the modularity matrix and
         then recursively takes the given number of steps by splitting the
         communities as individual networks. This is not the correct way,
@@ -1315,6 +1246,7 @@ class Graph(GraphBase):
         self, clusters=None, weights=None, arpack_options=None
     ):
         """Newman's leading eigenvector method for detecting community structure.
+
         This is the proper implementation of the recursive, divisive algorithm:
         each split is done by maximizing the modularity regarding the
         original network.
@@ -1347,10 +1279,9 @@ class Graph(GraphBase):
         return VertexClustering(self, membership, modularity=q)
 
     def community_label_propagation(self, weights=None, initial=None, fixed=None):
-        """community_label_propagation(weights=None, initial=None, fixed=None)
-
-        Finds the community structure of the graph according to the label
+        """Finds the community structure of the graph according to the label
         propagation method of Raghavan et al.
+
         Initially, each vertex is assigned a different label. After that,
         each vertex chooses the dominant label in its neighbourhood in each
         iteration. Ties are broken randomly and the order in which the
@@ -1490,38 +1421,34 @@ class Graph(GraphBase):
         )
 
     def community_spinglass(self, *args, **kwds):
-        """community_spinglass(weights=None, spins=25, parupdate=False,
-        start_temp=1, stop_temp=0.01, cool_fact=0.99, update_rule="config",
-        gamma=1, implementation="orig", lambda_=1)
-
-        Finds the community structure of the graph according to the
+        """Finds the community structure of the graph according to the
         spinglass community detection method of Reichardt & Bornholdt.
 
-        @keyword weights: edge weights to be used. Can be a sequence or
+        @param weights: edge weights to be used. Can be a sequence or
           iterable or even an edge attribute name.
-        @keyword spins: integer, the number of spins to use. This is the
+        @param spins: integer, the number of spins to use. This is the
           upper limit for the number of communities. It is not a problem
           to supply a (reasonably) big number here, in which case some
           spin states will be unpopulated.
-        @keyword parupdate: whether to update the spins of the vertices in
+        @param parupdate: whether to update the spins of the vertices in
           parallel (synchronously) or not
-        @keyword start_temp: the starting temperature
-        @keyword stop_temp: the stop temperature
-        @keyword cool_fact: cooling factor for the simulated annealing
-        @keyword update_rule: specifies the null model of the simulation.
+        @param start_temp: the starting temperature
+        @param stop_temp: the stop temperature
+        @param cool_fact: cooling factor for the simulated annealing
+        @param update_rule: specifies the null model of the simulation.
           Possible values are C{"config"} (a random graph with the same
           vertex degrees as the input graph) or C{"simple"} (a random
           graph with the same number of edges)
-        @keyword gamma: the gamma argument of the algorithm, specifying the
+        @param gamma: the gamma argument of the algorithm, specifying the
           balance between the importance of present and missing edges
           within a community. The default value of 1.0 assigns equal
           importance to both of them.
-        @keyword implementation: currently igraph contains two implementations
+        @param implementation: currently igraph contains two implementations
           of the spinglass community detection algorithm. The faster
           original implementation is the default. The other implementation
           is able to take into account negative weights, this can be
           chosen by setting C{implementation} to C{"neg"}
-        @keyword lambda_: the lambda argument of the algorithm, which
+        @param lambda_: the lambda argument of the algorithm, which
           specifies the balance between the importance of present and missing
           negatively weighted edges within a community. Smaller values of
           lambda lead to communities with less negative intra-connectivity.
@@ -1834,9 +1761,7 @@ class Graph(GraphBase):
         return self.layout(algo, *args, **kwds)
 
     def layout_grid_fruchterman_reingold(self, *args, **kwds):
-        """layout_grid_fruchterman_reingold(*args, **kwds)
-
-        Compatibility alias to the Fruchterman-Reingold layout with the grid
+        """Compatibility alias to the Fruchterman-Reingold layout with the grid
         option turned on.
 
         @see: Graph.layout_fruchterman_reingold()
@@ -2245,9 +2170,7 @@ class Graph(GraphBase):
 
     @classmethod
     def Read_DIMACS(cls, f, directed=False):
-        """Read_DIMACS(f, directed=False)
-
-        Reads a graph from a file conforming to the DIMACS minimum-cost flow
+        """Reads a graph from a file conforming to the DIMACS minimum-cost flow
         file format.
 
         For the exact definition of the format, see
@@ -2278,9 +2201,7 @@ class Graph(GraphBase):
 
     @classmethod
     def Read_GraphMLz(cls, f, directed=True, index=0):
-        """Read_GraphMLz(f, directed=True, index=0)
-
-        Reads a graph from a zipped GraphML file.
+        """Reads a graph from a zipped GraphML file.
 
         @param f: the name of the file
         @param index: if the GraphML file contains multiple graphs,
@@ -3375,9 +3296,7 @@ class Graph(GraphBase):
 
     @classmethod
     def DataFrame(cls, edges, directed=True, vertices=None, use_vids=False):
-        """DataFrame(edges, directed=True, vertices=None)
-
-        Generates a graph from one or two dataframes.
+        """Generates a graph from one or two dataframes.
 
         @param edges: pandas DataFrame containing edges and metadata. The first
           two columns of this DataFrame contain the source and target vertices
@@ -3640,9 +3559,7 @@ class Graph(GraphBase):
             return superclass_meth(types, False, probe1, which)
 
     def bipartite_projection_size(self, types="type", *args, **kwds):
-        """bipartite_projection(types="type")
-
-        Calculates the number of vertices and edges in the bipartite
+        """Calculates the number of vertices and edges in the bipartite
         projections of this graph according to the specified vertex types.
         This is useful if you have a bipartite graph and you want to estimate
         the amount of memory you would need to calculate the projections
@@ -4191,9 +4108,7 @@ class Graph(GraphBase):
         return str(GraphSummary(self, verbosity, width, *args, **kwds))
 
     def disjoint_union(self, other):
-        """disjoint_union(self, other)
-
-        Creates the disjoint union of two (or more) graphs.
+        """Creates the disjoint union of two (or more) graphs.
 
         @param other: graph or list of graphs to be united with the current one.
         @return: the disjoint union graph
@@ -4203,9 +4118,7 @@ class Graph(GraphBase):
         return disjoint_union([self] + other)
 
     def union(self, other, byname="auto"):
-        """union(self, other, byname="auto")
-
-        Creates the union of two (or more) graphs.
+        """Creates the union of two (or more) graphs.
 
         @param other: graph or list of graphs to be united with the current one.
         @param byname: whether to use vertex names instead of ids. See
@@ -4217,9 +4130,7 @@ class Graph(GraphBase):
         return union([self] + other, byname=byname)
 
     def intersection(self, other, byname="auto"):
-        """intersection(self, other, byname="auto")
-
-        Creates the intersection of two (or more) graphs.
+        """Creates the intersection of two (or more) graphs.
 
         @param other: graph or list of graphs to be intersected with
           the current one.
