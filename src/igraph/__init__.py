@@ -3255,7 +3255,9 @@ class Graph(GraphBase):
         return result
 
     @classmethod
-    def Random_Bipartite(cls, n1, n2, p=None, m=None, directed=False, neimode="all", *args, **kwds):
+    def Random_Bipartite(
+        cls, n1, n2, p=None, m=None, directed=False, neimode="all", *args, **kwds
+    ):
         """Generates a random bipartite graph with the given number of vertices and
         edges (if m is given), or with the given number of vertices and the given
         connection probability (if p is given).
@@ -3282,7 +3284,9 @@ class Graph(GraphBase):
             p = -1
         if m is None:
             m = -1
-        result, types = cls._Random_Bipartite(n1, n2, p, m, directed, neimode, *args, **kwds)
+        result, types = cls._Random_Bipartite(
+            n1, n2, p, m, directed, neimode, *args, **kwds
+        )
         result.vs["type"] = types
         return result
 
@@ -3306,7 +3310,16 @@ class Graph(GraphBase):
         return result
 
     @classmethod
-    def Incidence(cls, matrix, directed=False, mode="out", multiple=False, weighted=None, *args, **kwds):
+    def Incidence(
+        cls,
+        matrix,
+        directed=False,
+        mode="out",
+        multiple=False,
+        weighted=None,
+        *args,
+        **kwds
+    ):
         """Creates a bipartite graph from an incidence matrix.
 
         Example:
@@ -3351,9 +3364,13 @@ class Graph(GraphBase):
             for edge in result.es:
                 source, target = edge.tuple
                 if source in rows:
-                    edge[weight_attr] = matrix[source][target - num_vertices_of_first_kind]
+                    edge[weight_attr] = matrix[source][
+                        target - num_vertices_of_first_kind
+                    ]
                 else:
-                    edge[weight_attr] = matrix[target][source - num_vertices_of_first_kind]
+                    edge[weight_attr] = matrix[target][
+                        source - num_vertices_of_first_kind
+                    ]
         return result
 
     @classmethod
