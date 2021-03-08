@@ -977,13 +977,14 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
     def draw(self, graph, *args, **kwds):
         # NOTE: matplotlib has numpy as a dependency, so we can use it in here
+        from collections import defaultdict
         import matplotlib as mpl
         import matplotlib.markers as mmarkers
         from matplotlib.path import Path
         from matplotlib.patches import FancyArrowPatch
         from matplotlib.patches import ArrowStyle
         import numpy as np
-        from collections import defaultdict
+        # Deferred import to avoid a cycle in the import graph
         from igraph.clustering import VertexClustering, VertexCover
 
         def shrink_vertex(ax, aux, vcoord, vsize_squared):
@@ -1028,7 +1029,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 del kwds["mark_groups"]
             elif (kwds["mark_groups"] is True) and (clustering is not None):
                 pass
-            # Deferred import to avoid a cycle in the import graph
             elif isinstance(kwds["mark_groups"], (VertexClustering, VertexCover)):
                 if clustering is not None:
                     raise ValueError(
@@ -1057,8 +1057,8 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 c = [colors[clusters.index(i)] for i in membership]
                 kwds["vertex_color"] = c
 
-                # mark_groups if not explicitely marked
-                if ("mark_groups" in kwds) and (kwds["mark_groups"] is True):
+                # mark_groups if not explicitly marked
+                if kwds.get("mark_groups") is True:
                     mark_groups = defaultdict(list)
                     for i, color in enumerate(c):
                         mark_groups[color].append(i)
