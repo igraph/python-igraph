@@ -920,7 +920,7 @@ PyGetSetDef igraphmodule_EdgeSeq_getseters[] = {
 PyTypeObject igraphmodule_EdgeSeqType =
 {
   PyVarObject_HEAD_INIT(0, 0)
-  "igraph.core.EdgeSeq",                    /* tp_name */
+  "igraph._igraph.EdgeSeq",                 /* tp_name */
   sizeof(igraphmodule_EdgeSeqObject),       /* tp_basicsize */
   0,                                        /* tp_itemsize */
   (destructor)igraphmodule_EdgeSeq_dealloc, /* tp_dealloc */

@@ -511,11 +511,11 @@ def main():
             ]
         )
         for part in parts:
-            klass = available_classes.get(part, None)
-            if klass is None:
+            cls = available_classes.get(part, None)
+            if cls is None:
                 print("Warning: unknown shell class `%s'" % part, file=sys.stderr)
                 continue
-            shell_classes.append(klass)
+            shell_classes.append(cls)
     else:
         shell_classes = [IPythonShell, ClassicPythonShell]
         import platform

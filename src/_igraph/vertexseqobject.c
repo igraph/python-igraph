@@ -994,7 +994,7 @@ PyGetSetDef igraphmodule_VertexSeq_getseters[] = {
 PyTypeObject igraphmodule_VertexSeqType =
 {
   PyVarObject_HEAD_INIT(0, 0)
-  "igraph.core.VertexSeq",                    /* tp_name */
+  "igraph._igraph.VertexSeq",                 /* tp_name */
   sizeof(igraphmodule_VertexSeqObject),       /* tp_basicsize */
   0,                                          /* tp_itemsize */
   (destructor)igraphmodule_VertexSeq_dealloc, /* tp_dealloc */

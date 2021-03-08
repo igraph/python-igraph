@@ -44,7 +44,7 @@ from igraph._igraph import (
     BLISS_FSM,
     DFSIter,
     Edge,
-    EdgeSeq,
+    EdgeSeq as _EdgeSeq,
     GET_ADJACENCY_BOTH,
     GET_ADJACENCY_LOWER,
     GET_ADJACENCY_UPPER,
@@ -65,7 +65,7 @@ from igraph._igraph import (
     TREE_OUT,
     TREE_UNDIRECTED,
     Vertex,
-    VertexSeq,
+    VertexSeq as _VertexSeq,
     WEAK,
     arpack_options,
     community_to_membership,
@@ -452,7 +452,7 @@ class Graph(GraphBase):
 
         Returns the edges a given vertex is incident on.
 
-        @deprecated: replaced by L{Graph.incident()} since igraph 0.6
+        @deprecated: replaced by L{incident()} since igraph 0.6
         """
         deprecated(
             "Graph.adjacent() is deprecated since igraph 0.6, please use "
@@ -464,7 +464,7 @@ class Graph(GraphBase):
         """as_directed(*args, **kwds)
 
         Returns a directed copy of this graph. Arguments are passed on
-        to L{Graph.to_directed()} that is invoked on the copy.
+        to L{to_directed()} that is invoked on the copy.
         """
         copy = self.copy()
         copy.to_directed(*args, **kwds)
@@ -474,7 +474,7 @@ class Graph(GraphBase):
         """as_undirected(*args, **kwds)
 
         Returns an undirected copy of this graph. Arguments are passed on
-        to L{Graph.to_undirected()} that is invoked on the copy.
+        to L{to_undirected()} that is invoked on the copy.
         """
         copy = self.copy()
         copy.to_undirected(*args, **kwds)
@@ -498,8 +498,8 @@ class Graph(GraphBase):
             source-target vertex pairs. When multiple edges are present
             between a given source-target vertex pair, only one is removed.
 
-        @deprecated: L{Graph.delete_edges(None)} has been replaced by
-        L{Graph.delete_edges()} - with no arguments - since igraph 0.8.3.
+        @deprecated: C{delete_edges(None)} has been replaced by
+        C{delete_edges()} - with no arguments - since igraph 0.8.3.
         """
         if len(args) == 0 and len(kwds) == 0:
             return GraphBase.delete_edges(self)
@@ -607,7 +607,7 @@ class Graph(GraphBase):
 
         Clears the graph, deleting all vertices, edges, and attributes.
 
-        @see: L{Graph.delete_vertices} and L{Graph.delete_edges}.
+        @see: L{delete_vertices} and L{delete_edges}.
         """
         self.delete_vertices()
         for attr in self.attributes():
@@ -782,28 +782,24 @@ class Graph(GraphBase):
             mtx = mtx + sparse.triu(mtx, 1).T + sparse.tril(mtx, -1).T
         return mtx
 
-    def get_adjlist(self, mode=OUT):
-        """get_adjlist(mode=OUT)
-
-        Returns the adjacency list representation of the graph.
+    def get_adjlist(self, mode="out"):
+        """Returns the adjacency list representation of the graph.
 
         The adjacency list representation is a list of lists. Each item of the
         outer list belongs to a single vertex of the graph. The inner list
         contains the neighbors of the given vertex.
 
-        @param mode: if L{OUT}, returns the successors of the vertex. If
-          L{IN}, returns the predecessors of the vertex. If L{ALL}, both
+        @param mode: if C{\"out\"}, returns the successors of the vertex. If
+          C{\"in\"}, returns the predecessors of the vertex. If C{\"all"\"}, both
           the predecessors and the successors will be returned. Ignored
           for undirected graphs.
         """
         return [self.neighbors(idx, mode) for idx in range(self.vcount())]
 
     def get_adjedgelist(self, *args, **kwds):
-        """get_adjedgelist(mode=OUT)
+        """Returns the incidence list representation of the graph.
 
-        Returns the incidence list representation of the graph.
-
-        @deprecated: replaced by L{Graph.get_inclist()} since igraph 0.6
+        @deprecated: replaced by L{get_inclist()} since igraph 0.6
         @see: Graph.get_inclist()
         """
         deprecated(
@@ -832,11 +828,11 @@ class Graph(GraphBase):
           means all the vertices.
         @param cutoff: maximum length of path that is considered. If negative,
           paths of all lengths are considered.
-        @param mode: the directionality of the paths. L{IN} means to calculate
-          incoming paths, L{OUT} means to calculate outgoing paths, L{ALL} means
+        @param mode: the directionality of the paths. C{\"in\"} means to calculate
+          incoming paths, C{\"out\"} means to calculate outgoing paths, C{\"all\"} means
           to calculate both ones.
         @return: all of the simple paths from the given node to every other
-          reachable node in the graph in a list. Note that in case of mode=L{IN},
+          reachable node in the graph in a list. Note that in case of mode=C{\"in\"},
           the vertices in a path are returned in reversed order!
         """
         paths = self._get_all_simple_paths(v, to, cutoff, mode)
@@ -858,8 +854,8 @@ class Graph(GraphBase):
         The inner list contains the IDs of the incident edges of the
         given vertex.
 
-        @param mode: if L{OUT}, returns the successors of the vertex. If
-          L{IN}, returns the predecessors of the vertex. If L{ALL}, both
+        @param mode: if C{\"out\"}, returns the successors of the vertex. If
+          C{\"in\"}, returns the predecessors of the vertex. If C{\"all\"}, both
           the predecessors and the successors will be returned. Ignored
           for undirected graphs.
         """
@@ -1318,10 +1314,7 @@ class Graph(GraphBase):
     def community_leading_eigenvector(
         self, clusters=None, weights=None, arpack_options=None
     ):
-        """community_leading_eigenvector(clusters=None, weights=None,
-          arpack_options=None)
-
-        Newman's leading eigenvector method for detecting community structure.
+        """Newman's leading eigenvector method for detecting community structure.
         This is the proper implementation of the recursive, divisive algorithm:
         each split is done by maximizing the modularity regarding the
         original network.
@@ -1630,31 +1623,27 @@ class Graph(GraphBase):
         n_iterations=2,
         node_weights=None,
     ):
-        """community_leiden(objective_function=CPM, weights=None,
-        resolution_parameter=1.0, beta=0.01, initial_membership=None,
-        n_iterations=2, node_weights=None)
+        """Finds the community structure of the graph using the Leiden
+        algorithm of Traag, van Eck & Waltman.
 
-        Finds the community structure of the graph using the
-        Leiden algorithm of Traag, van Eck & Waltman.
-
-        @keyword objective_function: whether to use the Constant Potts
+        @param objective_function: whether to use the Constant Potts
           Model (CPM) or modularity. Must be either C{"CPM"} or C{"modularity"}.
-        @keyword weights: edge weights to be used. Can be a sequence or
+        @param weights: edge weights to be used. Can be a sequence or
           iterable or even an edge attribute name.
-        @keyword resolution_parameter: the resolution parameter to use.
+        @param resolution_parameter: the resolution parameter to use.
           Higher resolutions lead to more smaller communities, while
           lower resolutions lead to fewer larger communities.
-        @keyword beta: parameter affecting the randomness in the Leiden
+        @param beta: parameter affecting the randomness in the Leiden
           algorithm. This affects only the refinement step of the algorithm.
-        @keyword initial_membership: if provided, the Leiden algorithm
+        @param initial_membership: if provided, the Leiden algorithm
           will try to improve this provided membership. If no argument is
           provided, the aglorithm simply starts from the singleton partition.
-        @keyword n_iterations: the number of iterations to iterate the Leiden
+        @param n_iterations: the number of iterations to iterate the Leiden
           algorithm. Each iteration may improve the partition further. Using
           a negative number of iterations will run until a stable iteration is
           encountered (i.e. the quality was not increased during that
           iteration).
-        @keyword node_weights: the node weights used in the Leiden algorithm.
+        @param node_weights: the node weights used in the Leiden algorithm.
           If this is not provided, it will be automatically determined on the
           basis of whether you want to use CPM or modularity. If you do provide
           this, please make sure that you understand what you are doing.
@@ -1695,61 +1684,61 @@ class Graph(GraphBase):
         Registered layout names understood by this method are:
 
           - C{auto}, C{automatic}: automatic layout
-            (see L{Graph.layout_auto})
+            (see L{layout_auto})
 
-          - C{bipartite}: bipartite layout (see L{Graph.layout_bipartite})
+          - C{bipartite}: bipartite layout (see L{layout_bipartite})
 
           - C{circle}, C{circular}: circular layout
-            (see L{Graph.layout_circle})
+            (see L{layout_circle})
 
           - C{dh}, C{davidson_harel}: Davidson-Harel layout (see
-            L{Graph.layout_davidson_harel})
+            L{layout_davidson_harel})
 
-          - C{drl}: DrL layout for large graphs (see L{Graph.layout_drl})
+          - C{drl}: DrL layout for large graphs (see L{layout_drl})
 
           - C{drl_3d}: 3D DrL layout for large graphs
-            (see L{Graph.layout_drl})
+            (see L{layout_drl})
 
           - C{fr}, C{fruchterman_reingold}: Fruchterman-Reingold layout
-            (see L{Graph.layout_fruchterman_reingold}).
+            (see L{layout_fruchterman_reingold}).
 
           - C{fr_3d}, C{fr3d}, C{fruchterman_reingold_3d}: 3D Fruchterman-
-            Reingold layout (see L{Graph.layout_fruchterman_reingold}).
+            Reingold layout (see L{layout_fruchterman_reingold}).
 
-          - C{grid}: regular grid layout in 2D (see L{Graph.layout_grid})
+          - C{grid}: regular grid layout in 2D (see L{layout_grid})
 
-          - C{grid_3d}: regular grid layout in 3D (see L{Graph.layout_grid_3d})
+          - C{grid_3d}: regular grid layout in 3D (see L{layout_grid_3d})
 
-          - C{graphopt}: the graphopt algorithm (see L{Graph.layout_graphopt})
+          - C{graphopt}: the graphopt algorithm (see L{layout_graphopt})
 
           - C{kk}, C{kamada_kawai}: Kamada-Kawai layout
-            (see L{Graph.layout_kamada_kawai})
+            (see L{layout_kamada_kawai})
 
           - C{kk_3d}, C{kk3d}, C{kamada_kawai_3d}: 3D Kamada-Kawai layout
-            (see L{Graph.layout_kamada_kawai})
+            (see L{layout_kamada_kawai})
 
           - C{lgl}, C{large}, C{large_graph}: Large Graph Layout
-            (see L{Graph.layout_lgl})
+            (see L{layout_lgl})
 
-          - C{mds}: multidimensional scaling layout (see L{Graph.layout_mds})
+          - C{mds}: multidimensional scaling layout (see L{layout_mds})
 
-          - C{random}: random layout (see L{Graph.layout_random})
+          - C{random}: random layout (see L{layout_random})
 
-          - C{random_3d}: random 3D layout (see L{Graph.layout_random})
+          - C{random_3d}: random 3D layout (see L{layout_random})
 
           - C{rt}, C{tree}, C{reingold_tilford}: Reingold-Tilford tree
-            layout (see L{Graph.layout_reingold_tilford})
+            layout (see L{layout_reingold_tilford})
 
           - C{rt_circular}, C{reingold_tilford_circular}: circular
             Reingold-Tilford tree layout
-            (see L{Graph.layout_reingold_tilford_circular})
+            (see L{layout_reingold_tilford_circular})
 
           - C{sphere}, C{spherical}, C{circle_3d}, C{circular_3d}: spherical
-            layout (see L{Graph.layout_circle})
+            layout (see L{layout_circle})
 
-          - C{star}: star layout (see L{Graph.layout_star})
+          - C{star}: star layout (see L{layout_star})
 
-          - C{sugiyama}: Sugiyama layout (see L{Graph.layout_sugiyama})
+          - C{sugiyama}: Sugiyama layout (see L{layout_sugiyama})
 
         @param layout: the layout to use. This can be one of the registered
           layout names or a callable which returns either a L{Layout} object or
@@ -1797,14 +1786,14 @@ class Graph(GraphBase):
 
           3. Otherwise, if the graph is connected and has at most 100
              vertices, the Kamada-Kawai layout will be used (see
-             L{Graph.layout_kamada_kawai()}).
+             L{layout_kamada_kawai()}).
 
           4. Otherwise, if the graph has at most 1000 vertices, the
              Fruchterman-Reingold layout will be used (see
-             L{Graph.layout_fruchterman_reingold()}).
+             L{layout_fruchterman_reingold()}).
 
           5. If everything else above failed, the DrL layout algorithm
-             will be used (see L{Graph.layout_drl()}).
+             will be used (see L{layout_drl()}).
 
         All the arguments of this function except C{dim} are passed on
         to the chosen layout function (in case we have to call some layout
@@ -1868,10 +1857,7 @@ class Graph(GraphBase):
         maxiter=100,
         return_extended_graph=False,
     ):
-        """layout_sugiyama(layers=None, weights=None, hgap=1, vgap=1, maxiter=100,
-                        return_extended_graph=False)
-
-        Places the vertices using a layered Sugiyama layout.
+        """Places the vertices using a layered Sugiyama layout.
 
         This is a layered layout that is most suitable for directed acyclic graphs,
         although it works on undirected or cyclic graphs as well.
@@ -1973,18 +1959,18 @@ class Graph(GraphBase):
         # Graph: decide on directness and mutliplicity
         if any(self.is_multiple()):
             if self.is_directed():
-                klass = nx.MultiDiGraph
+                cls = nx.MultiDiGraph
             else:
-                klass = nx.MultiGraph
+                cls = nx.MultiGraph
         else:
             if self.is_directed():
-                klass = nx.DiGraph
+                cls = nx.DiGraph
             else:
-                klass = nx.Graph
+                cls = nx.Graph
 
         # Graph attributes
         kw = {x: self[x] for x in self.attributes()}
-        g = klass(**kw)
+        g = cls(**kw)
 
         # Nodes and node attributes
         for i, v in enumerate(self.vs):
@@ -1997,7 +1983,7 @@ class Graph(GraphBase):
         return g
 
     @classmethod
-    def from_networkx(klass, g):
+    def from_networkx(cls, g):
         """Converts the graph from networkx
 
         Vertex names will be converted to "_nx_name" attribute and the vertices
@@ -2018,7 +2004,7 @@ class Graph(GraphBase):
 
         # NOTE: we do not need a special class for multigraphs, it is taken
         # care for at the edge level rather than at the graph level.
-        graph = klass(
+        graph = cls(
             n=vcount, directed=g.is_directed(), graph_attrs=gattr, vertex_attrs=vattr
         )
 
@@ -2105,7 +2091,7 @@ class Graph(GraphBase):
         return g
 
     @classmethod
-    def from_graph_tool(klass, g):
+    def from_graph_tool(cls, g):
         """Converts the graph from graph-tool
 
         @param g: graph-tool Graph
@@ -2117,7 +2103,7 @@ class Graph(GraphBase):
         vcount = g.num_vertices()
 
         # Graph
-        graph = klass(n=vcount, directed=g.is_directed(), graph_attrs=gattr)
+        graph = cls(n=vcount, directed=g.is_directed(), graph_attrs=gattr)
 
         # Node attributes
         for key, val in list(g.vertex_properties.items()):
@@ -2157,12 +2143,12 @@ class Graph(GraphBase):
 
     @classmethod
     def Read_Adjacency(
-        klass, f, sep=None, comment_char="#", attribute=None, *args, **kwds
+        cls, f, sep=None, comment_char="#", attribute=None, *args, **kwds
     ):
-        """Constructs a graph based on an adjacency matrix from the given file
+        """Constructs a graph based on an adjacency matrix from the given file.
 
         Additional positional and keyword arguments not mentioned here are
-        passed intact to L{Graph.Adjacency}.
+        passed intact to L{Adjacency}.
 
         @param f: the name of the file to be read or a file object
         @param sep: the string that separates the matrix elements in a row.
@@ -2190,10 +2176,10 @@ class Graph(GraphBase):
         f.close()
 
         if attribute is None:
-            graph = klass.Adjacency(matrix, *args, **kwds)
+            graph = cls.Adjacency(matrix, *args, **kwds)
         else:
             kwds["attr"] = attribute
-            graph = klass.Weighted_Adjacency(matrix, *args, **kwds)
+            graph = cls.Weighted_Adjacency(matrix, *args, **kwds)
 
         return graph
 
@@ -2291,7 +2277,7 @@ class Graph(GraphBase):
         return graph
 
     @classmethod
-    def Read_GraphMLz(cls, f, *params, **kwds):
+    def Read_GraphMLz(cls, f, directed=True, index=0):
         """Read_GraphMLz(f, directed=True, index=0)
 
         Reads a graph from a zipped GraphML file.
@@ -2305,10 +2291,9 @@ class Graph(GraphBase):
         from igraph.utils import named_temporary_file
 
         with named_temporary_file() as tmpfile:
-            outf = open(tmpfile, "wb")
-            copyfileobj(gzip.GzipFile(f, "rb"), outf)
-            outf.close()
-            return cls.Read_GraphML(tmpfile)
+            with open(tmpfile, "wb") as outf:
+                copyfileobj(gzip.GzipFile(f, "rb"), outf)
+            return cls.Read_GraphML(tmpfile, directed=directed, index=index)
 
     def write_pickle(self, fname=None, version=-1):
         """Saves the graph in Python pickled format
@@ -2364,7 +2349,7 @@ class Graph(GraphBase):
         return result
 
     @classmethod
-    def Read_Pickle(klass, fname=None):
+    def Read_Pickle(cls, fname=None):
         """Reads a graph from Python pickled format
 
         @param fname: the name of the file, a stream to read from, or
@@ -2404,7 +2389,7 @@ class Graph(GraphBase):
         return result
 
     @classmethod
-    def Read_Picklez(klass, fname, *args, **kwds):
+    def Read_Picklez(cls, fname, *args, **kwds):
         """Reads a graph from compressed Python pickled format, uncompressing
         it on-the-fly.
 
@@ -2424,7 +2409,7 @@ class Graph(GraphBase):
         return result
 
     @classmethod
-    def Read_Picklez(klass, fname, *args, **kwds):
+    def Read_Picklez(cls, fname, *args, **kwds):
         """Reads a graph from compressed Python pickled format, uncompressing
         it on-the-fly.
 
@@ -2441,8 +2426,8 @@ class Graph(GraphBase):
                 result = pickle.load(gzip.GzipFile(mode="rb", fileobj=fname))
         else:
             result = pickle.load(gzip.open(fname, "rb"))
-        if not isinstance(result, klass):
-            raise TypeError("unpickled object is not a %s" % klass.__name__)
+        if not isinstance(result, cls):
+            raise TypeError("unpickled object is not a %s" % cls.__name__)
         return result
 
     # pylint: disable-msg=C0301,C0323
@@ -2794,7 +2779,7 @@ class Graph(GraphBase):
             tk_window.destroy()
 
     @classmethod
-    def _identify_format(klass, filename):
+    def _identify_format(cls, filename):
         """_identify_format(filename)
 
         Tries to identify the format of the graph stored in the file with the
@@ -2880,7 +2865,7 @@ class Graph(GraphBase):
                 return "adjacency"
 
     @classmethod
-    def Read(klass, f, format=None, *args, **kwds):
+    def Read(cls, f, format=None, *args, **kwds):
         """Unified reading function for graphs.
 
         This method tries to identify the format of the graph given in
@@ -2904,14 +2889,14 @@ class Graph(GraphBase):
           none was given.
         """
         if format is None:
-            format = klass._identify_format(f)
+            format = cls._identify_format(f)
         try:
-            reader = klass._format_mapping[format][0]
+            reader = cls._format_mapping[format][0]
         except (KeyError, IndexError):
             raise IOError("unknown file format: %s" % str(format))
         if reader is None:
             raise IOError("no reader method for file format: %s" % str(format))
-        reader = getattr(klass, reader)
+        reader = getattr(cls, reader)
         return reader(f, *args, **kwds)
 
     Load = Read
@@ -2978,7 +2963,7 @@ class Graph(GraphBase):
 
     @classmethod
     def DictList(
-        klass,
+        cls,
         vertices,
         edges,
         directed=False,
@@ -3050,7 +3035,7 @@ class Graph(GraphBase):
         # Construct the edges
         efk_src, efk_dest = edge_foreign_keys
         if iterative:
-            g = klass(n, [], directed, {}, vertex_attrs)
+            g = cls(n, [], directed, {}, vertex_attrs)
             for idx, edge_data in enumerate(edges):
                 src_name, dst_name = edge_data[efk_src], edge_data[efk_dest]
                 v1 = vertex_name_map[src_name]
@@ -3095,14 +3080,14 @@ class Graph(GraphBase):
                 n = len(vertex_name_map)
 
             # Create the graph
-            return klass(n, edge_list, directed, {}, vertex_attrs, edge_attrs)
+            return cls(n, edge_list, directed, {}, vertex_attrs, edge_attrs)
 
     #####################################################
     # Constructor for tuple-like representation of graphs
 
     @classmethod
     def TupleList(
-        klass,
+        cls,
         edges,
         directed=False,
         vertex_name_attr="name",
@@ -3191,7 +3176,7 @@ class Graph(GraphBase):
         n = len(idgen)
 
         # Construct the graph
-        return klass(n, edge_list, directed, {}, vertex_attributes, edge_attributes)
+        return cls(n, edge_list, directed, {}, vertex_attributes, edge_attributes)
 
     #################################
     # Constructor for graph formulae
@@ -3214,10 +3199,8 @@ class Graph(GraphBase):
     # Friendlier interface for bipartite methods
 
     @classmethod
-    def Bipartite(klass, types, *args, **kwds):
-        """Bipartite(types, edges, directed=False)
-
-        Creates a bipartite graph with the given vertex types and edges.
+    def Bipartite(cls, types, edges, directed=False, *args, **kwds):
+        """Creates a bipartite graph with the given vertex types and edges.
         This is similar to the default constructor of the graph, the
         only difference is that it checks whether all the edges go
         between the two vertex classes and it assigns the type vector
@@ -3242,15 +3225,13 @@ class Graph(GraphBase):
         @return: the graph with a binary vertex attribute named C{"type"} that
           stores the vertex classes.
         """
-        result = klass._Bipartite(types, *args, **kwds)
+        result = cls._Bipartite(types, edges, directed, *args, **kwds)
         result.vs["type"] = [bool(x) for x in types]
         return result
 
     @classmethod
-    def Full_Bipartite(klass, *args, **kwds):
-        """Full_Bipartite(n1, n2, directed=False, mode=ALL)
-
-        Generates a full bipartite graph (directed or undirected, with or
+    def Full_Bipartite(cls, n1, n2, directed=False, mode="all", *args, **kwds):
+        """Generates a full bipartite graph (directed or undirected, with or
         without loops).
 
         >>> g = Graph.Full_Bipartite(2, 3)
@@ -3262,22 +3243,20 @@ class Graph(GraphBase):
         @param n1: the number of vertices of the first kind.
         @param n2: the number of vertices of the second kind.
         @param directed: whether tp generate a directed graph.
-        @param mode: if C{OUT}, then all vertices of the first kind are
-          connected to the others; C{IN} specifies the opposite direction,
-          C{ALL} creates mutual edges. Ignored for undirected graphs.
+        @param mode: if C{"out"}, then all vertices of the first kind are
+          connected to the others; C{"in"} specifies the opposite direction,
+          C{"all"} creates mutual edges. Ignored for undirected graphs.
 
         @return: the graph with a binary vertex attribute named C{"type"} that
           stores the vertex classes.
         """
-        result, types = klass._Full_Bipartite(*args, **kwds)
+        result, types = cls._Full_Bipartite(n1, n2, directed, mode, *args, **kwds)
         result.vs["type"] = types
         return result
 
     @classmethod
-    def Random_Bipartite(klass, *args, **kwds):
-        """Random_Bipartite(n1, n2, p=None, m=None, directed=False, neimode=ALL)
-
-        Generates a random bipartite graph with the given number of vertices and
+    def Random_Bipartite(cls, n1, n2, p=None, m=None, directed=False, neimode="all", *args, **kwds):
+        """Generates a random bipartite graph with the given number of vertices and
         edges (if m is given), or with the given number of vertices and the given
         connection probability (if p is given).
 
@@ -3299,15 +3278,17 @@ class Graph(GraphBase):
           will always point from type 2 to type 1. This argument is ignored for
           undirected graphs.
         """
-        result, types = klass._Random_Bipartite(*args, **kwds)
+        if p is None:
+            p = -1
+        if m is None:
+            m = -1
+        result, types = cls._Random_Bipartite(n1, n2, p, m, directed, neimode, *args, **kwds)
         result.vs["type"] = types
         return result
 
     @classmethod
-    def GRG(klass, n, radius, torus=False):
-        """GRG(n, radius, torus=False, return_coordinates=False)
-
-        Generates a random geometric graph.
+    def GRG(cls, n, radius, torus=False):
+        """Generates a random geometric graph.
 
         The algorithm drops the vertices randomly on the 2D unit square and
         connects them if they are closer to each other than the given radius.
@@ -3319,16 +3300,14 @@ class Graph(GraphBase):
         @param torus: This should be C{True} if we want to use a torus instead of a
           square.
         """
-        result, xs, ys = klass._GRG(n, radius, torus)
+        result, xs, ys = cls._GRG(n, radius, torus)
         result.vs["x"] = xs
         result.vs["y"] = ys
         return result
 
     @classmethod
-    def Incidence(klass, *args, **kwds):
-        """Incidence(matrix, directed=False, mode=ALL, multiple=False, weighted=None)
-
-        Creates a bipartite graph from an incidence matrix.
+    def Incidence(cls, matrix, directed=False, mode="out", multiple=False, weighted=None, *args, **kwds):
+        """Creates a bipartite graph from an incidence matrix.
 
         Example:
 
@@ -3337,10 +3316,10 @@ class Graph(GraphBase):
         @param matrix: the incidence matrix.
         @param directed: whether to create a directed graph.
         @param mode: defines the direction of edges in the graph. If
-          C{OUT}, then edges go from vertices of the first kind
+          C{"out"}, then edges go from vertices of the first kind
           (corresponding to rows of the matrix) to vertices of the
-          second kind (the columns of the matrix). If C{IN}, the
-          opposite direction is used. C{ALL} creates mutual edges.
+          second kind (the columns of the matrix). If C{"in"}, the
+          opposite direction is used. C{"all"} creates mutual edges.
           Ignored for undirected graphs.
         @param multiple: defines what to do with non-zero entries in the
           matrix. If C{False}, non-zero entries will create an edge no matter
@@ -3360,28 +3339,25 @@ class Graph(GraphBase):
         @return: the graph with a binary vertex attribute named C{"type"} that
           stores the vertex classes.
         """
-        weighted = kwds.pop("weighted", False)
         is_weighted = True if weighted or weighted == "" else False
-        multiple = kwds.get("multiple", False)
         if is_weighted and multiple:
             raise ValueError("arguments weighted and multiple can not co-exist")
-        result, types = klass._Incidence(*args, **kwds)
+        result, types = cls._Incidence(matrix, directed, mode, multiple, *args, **kwds)
         result.vs["type"] = types
         if is_weighted:
             weight_attr = "weight" if weighted == True else weighted
-            mat = args[0]
             _, rows, columns = result.get_incidence()
             num_vertices_of_first_kind = len(rows)
             for edge in result.es:
                 source, target = edge.tuple
                 if source in rows:
-                    edge[weight_attr] = mat[source][target - num_vertices_of_first_kind]
+                    edge[weight_attr] = matrix[source][target - num_vertices_of_first_kind]
                 else:
-                    edge[weight_attr] = mat[target][source - num_vertices_of_first_kind]
+                    edge[weight_attr] = matrix[target][source - num_vertices_of_first_kind]
         return result
 
     @classmethod
-    def DataFrame(klass, edges, directed=True, vertices=None, use_vids=False):
+    def DataFrame(cls, edges, directed=True, vertices=None, use_vids=False):
         """DataFrame(edges, directed=True, vertices=None)
 
         Generates a graph from one or two dataframes.
@@ -3504,10 +3480,6 @@ class Graph(GraphBase):
     def get_vertex_dataframe(self):
         """Export vertices with attributes to pandas.DataFrame
 
-        @return: a pandas.DataFrame representing vertices and their attributes.
-          The index uses vertex IDs, from 0 to N - 1 where N is the number of
-          vertices.
-
         If you want to use vertex names as index, you can do:
 
         >>> from string import ascii_letters
@@ -3516,6 +3488,9 @@ class Graph(GraphBase):
         >>> df = graph.get_vertex_dataframe()
         >>> df.set_index('name', inplace=True)
 
+        @return: a pandas.DataFrame representing vertices and their attributes.
+          The index uses vertex IDs, from 0 to N - 1 where N is the number of
+          vertices.
         """
         try:
             import pandas as pd
@@ -3532,14 +3507,6 @@ class Graph(GraphBase):
 
     def get_edge_dataframe(self):
         """Export edges with attributes to pandas.DataFrame
-
-        @return: a pandas.DataFrame representing edges and their attributes.
-          The index uses edge IDs, from 0 to M - 1 where M is the number of
-          edges. The first two columns of the dataframe represent the IDs of
-          source and target vertices for each edge. These columns have names
-          "source" and "target". If your edges have attributes with the same
-          names, they will be present in the dataframe, but not in the first
-          two columns.
 
         If you want to use source and target vertex IDs as index, you can do:
 
@@ -3560,6 +3527,13 @@ class Graph(GraphBase):
         >>> df['target'].replace(df_vert['name'], inplace=True)
         >>> df_vert.set_index('name', inplace=True)  # Optional
 
+        @return: a pandas.DataFrame representing edges and their attributes.
+          The index uses edge IDs, from 0 to M - 1 where M is the number of
+          edges. The first two columns of the dataframe represent the IDs of
+          source and target vertices for each edge. These columns have names
+          "source" and "target". If your edges have attributes with the same
+          names, they will be present in the dataframe, but not in the first
+          two columns.
         """
         try:
             import pandas as pd
@@ -3667,9 +3641,7 @@ class Graph(GraphBase):
         return super(Graph, self).bipartite_projection_size(types, *args, **kwds)
 
     def get_incidence(self, types="type", *args, **kwds):
-        """get_incidence(self, types="type")
-
-        Returns the incidence matrix of a bipartite graph. The incidence matrix
+        """Returns the incidence matrix of a bipartite graph. The incidence matrix
         is an M{n} times M{m} matrix, where M{n} and M{m} are the number of
         vertices in the two vertex classes.
 
@@ -3689,7 +3661,7 @@ class Graph(GraphBase):
         """Conducts a depth first search (DFS) on the graph.
 
         @param vid: the root vertex ID
-        @param mode: either L{IN} or L{OUT} or L{ALL}, ignored
+        @param mode: either C{\"in\"} or C{\"out\"} or C{\"all\"}, ignored
           for undirected graphs.
         @return: a tuple with the following items:
            - The vertex IDs visited (in order)
@@ -4014,10 +3986,10 @@ class Graph(GraphBase):
             The default is C{False}.
 
           - C{layout}: the layout to be used. If not an instance of
-            L{Layout}, it will be passed to L{Graph.layout} to calculate
+            L{Layout}, it will be passed to L{layout} to calculate
             the layout. Note that if you want a deterministic layout that
             does not change with every plot, you must either use a
-            deterministic layout function (like L{Graph.layout_circle}) or
+            deterministic layout function (like L{layout_circle}) or
             calculate the layout in advance and pass a L{Layout} object here.
 
           - C{margin}: the top, right, bottom, left margins as a 4-tuple.
@@ -4303,7 +4275,7 @@ class Graph(GraphBase):
 ##############################################################
 
 
-class VertexSeq(_igraph.VertexSeq):
+class VertexSeq(_VertexSeq):
     """Class representing a sequence of vertices in the graph.
 
     This class is most easily accessed by the C{vs} field of the
@@ -4361,7 +4333,7 @@ class VertexSeq(_igraph.VertexSeq):
 
     Some methods of the vertex sequences are simply proxy methods to the
     corresponding methods in the L{Graph} object. One such example is
-    L{VertexSeq.degree()}:
+    C{VertexSeq.degree()}:
 
       >>> g=Graph.Tree(7, 2)
       >>> g.vs.degree()
@@ -4572,7 +4544,7 @@ class VertexSeq(_igraph.VertexSeq):
 ##############################################################
 
 
-class EdgeSeq(_igraph.EdgeSeq):
+class EdgeSeq(_EdgeSeq):
     """Class representing a sequence of edges in the graph.
 
     This class is most easily accessed by the C{es} field of the
@@ -4633,7 +4605,7 @@ class EdgeSeq(_igraph.EdgeSeq):
 
     Some methods of the edge sequences are simply proxy methods to the
     corresponding methods in the L{Graph} object. One such example is
-    L{EdgeSeq.is_multiple()}:
+    C{EdgeSeq.is_multiple()}:
 
       >>> g=Graph(3, [(0,1), (1,0), (1,2)])
       >>> g.es.is_multiple()
@@ -5090,10 +5062,10 @@ def _add_proxy_methods():
     rename_methods[VertexSeq] = {"delete_vertices": "delete"}
     rename_methods[EdgeSeq] = {"delete_edges": "delete", "subgraph_edges": "subgraph"}
 
-    for klass, methods in decorated_methods.items():
+    for cls, methods in decorated_methods.items():
         for method in methods:
-            new_method_name = rename_methods[klass].get(method, method)
-            setattr(klass, new_method_name, _graphmethod(None, method))
+            new_method_name = rename_methods[cls].get(method, method)
+            setattr(cls, new_method_name, _graphmethod(None, method))
 
     setattr(
         EdgeSeq,

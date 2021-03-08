@@ -140,7 +140,7 @@ Traceback (most recent call last):
   File "<stdin>", line 6, in <module>
 TypeError: iterable must return pairs of integers or strings
 
-Most |igraph| functions will raise an :exc:`igraph.core.InternalError` if
+Most |igraph| functions will raise an :exc:`igraph.InternalError` if
 something goes wrong. The message corresponding to the exception gives you a
 short textual explanation of what went wrong (``cannot add edges, invalid
 vertex id``) along with the corresponding line in the C source where the error

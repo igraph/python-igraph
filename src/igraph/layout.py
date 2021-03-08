@@ -258,8 +258,9 @@ class Layout(object):
         top-down ones (that's why the Y coordinate belongs to the radius).
         It can also be used in conjunction with the Fruchterman-Reingold
         layout algorithm via its I{miny} and I{maxy} parameters (see
-        L{Graph.layout_fruchterman_reingold}) to produce radial layouts
-        where the radius belongs to some property of the vertices.
+        L{Graph.layout_fruchterman_reingold()<igraph._igraph.GraphBase.layout_fruchterman_reingold()>})
+        to produce radial layouts where the radius belongs to some property of
+        the vertices.
 
         @param min_angle: the angle corresponding to the minimum X value
         @param max_angle: the angle corresponding to the maximum X value

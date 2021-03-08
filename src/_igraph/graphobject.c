@@ -2136,7 +2136,7 @@ PyObject *igraphmodule_Graph_Degree_Sequence(PyTypeObject * type,
   igraph_bool_t has_inseq = 0;
   PyObject *outdeg = NULL, *indeg = NULL, *method = NULL;
 
-  static char *kwlist[] = { "out", "in", "method", NULL };
+  static char *kwlist[] = { "out", "in_", "method", NULL };
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O!O", kwlist,
                                    &PyList_Type, &outdeg,
@@ -2632,7 +2632,7 @@ PyObject *igraphmodule_Graph_Isoclass(PyTypeObject * type,
   igraphmodule_GraphObject *self;
   igraph_t g;
 
-  static char *kwlist[] = { "n", "class", "directed", NULL };
+  static char *kwlist[] = { "n", "cls", "directed", NULL };
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "ll|O", kwlist,
                                    &n, &isoclass, &directed))
@@ -7497,19 +7497,14 @@ PyObject *igraphmodule_Graph_get_adjacency(igraphmodule_GraphObject * self,
                                            PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] = { "type", "eids", NULL };
-  igraph_get_adjacency_t t = IGRAPH_GET_ADJACENCY_BOTH;
+  igraph_get_adjacency_t mode = IGRAPH_GET_ADJACENCY_BOTH;
   igraph_matrix_t m;
-  PyObject *result, *eids = Py_False;
+  PyObject *result, *mode_o = Py_None, *eids = Py_False;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|iO", kwlist, &t, &eids))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &mode_o, &eids))
     return NULL;
 
-  if (t != IGRAPH_GET_ADJACENCY_UPPER && t != IGRAPH_GET_ADJACENCY_LOWER &&
-      t != IGRAPH_GET_ADJACENCY_BOTH) {
-    PyErr_SetString(PyExc_ValueError,
-                    "type must be either GET_ADJACENCY_LOWER or GET_ADJACENCY_UPPER or GET_ADJACENCY_BOTH");
-    return NULL;
-  }
+  if (igraphmodule_PyObject_to_get_adjacency_t(mode_o, &mode)) return NULL;
 
   if (igraph_matrix_init
       (&m, igraph_vcount(&self->g), igraph_vcount(&self->g))) {
@@ -7517,7 +7512,7 @@ PyObject *igraphmodule_Graph_get_adjacency(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  if (igraph_get_adjacency(&self->g, &m, t, PyObject_IsTrue(eids))) {
+  if (igraph_get_adjacency(&self->g, &m, mode, PyObject_IsTrue(eids))) {
     igraphmodule_handle_igraph_error();
     igraph_matrix_destroy(&m);
     return NULL;
@@ -12023,7 +12018,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_add_vertices */
   {"add_vertices", (PyCFunction) igraphmodule_Graph_add_vertices,
    METH_VARARGS,
-   "add_vertices(n: int)\n--\n\n"
+   "add_vertices(n)\n--\n\n"
    "Adds vertices to the graph.\n\n"
    "@param n: the number of vertices to be added\n"},
 
@@ -12058,7 +12053,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_degree */
   {"degree", (PyCFunction) igraphmodule_Graph_degree,
    METH_VARARGS | METH_KEYWORDS,
-   "degree(vertices, mode=ALL, loops=True)\n--\n\n"
+   "degree(vertices, mode=\"all\", loops=True)\n--\n\n"
    "Returns some vertex degrees from the graph.\n\n"
    "This method accepts a single vertex ID or a list of vertex IDs as a\n"
    "parameter, and returns the degree of the given vertices (in the\n"
@@ -12066,14 +12061,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "parameter).\n"
    "\n"
    "@param vertices: a single vertex ID or a list of vertex IDs\n"
-   "@param mode: the type of degree to be returned (L{OUT} for\n"
-   "  out-degrees, L{IN} IN for in-degrees or L{ALL} for the sum of\n"
-   "  them).\n" "@param loops: whether self-loops should be counted.\n"},
+   "@param mode: the type of degree to be returned (C{\"out\"} for\n"
+   "  out-degrees, C{\"in\"} for in-degrees or C{\"all\"} for the sum of\n"
+   "  them).\n"
+   "@param loops: whether self-loops should be counted.\n"},
 
   /* interface to igraph_strength */
   {"strength", (PyCFunction) igraphmodule_Graph_strength,
    METH_VARARGS | METH_KEYWORDS,
-   "strength(vertices, mode=ALL, loops=True, weights=None)\n--\n\n"
+   "strength(vertices, mode=\"all\", loops=True, weights=None)\n--\n\n"
    "Returns the strength (weighted degree) of some vertices from the graph\n\n"
    "This method accepts a single vertex ID or a list of vertex IDs as a\n"
    "parameter, and returns the strength (that is, the sum of the weights\n"
@@ -12082,8 +12078,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "parameter).\n"
    "\n"
    "@param vertices: a single vertex ID or a list of vertex IDs\n"
-   "@param mode: the type of degree to be returned (L{OUT} for\n"
-   "  out-degrees, L{IN} IN for in-degrees or L{ALL} for the sum of\n"
+   "@param mode: the type of degree to be returned (C{\"out\"} for\n"
+   "  out-degrees, C{\"in\"} for in-degrees or C{\"all\"} for the sum of\n"
    "  them).\n"
    "@param loops: whether self-loops should be counted.\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
@@ -12155,24 +12151,24 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_neighbors */
   {"neighbors", (PyCFunction) igraphmodule_Graph_neighbors,
    METH_VARARGS | METH_KEYWORDS,
-   "neighbors(vertex, mode=ALL)\n--\n\n"
+   "neighbors(vertex, mode=\"all\")\n--\n\n"
    "Returns adjacent vertices to a given vertex.\n\n"
    "@param vertex: a vertex ID\n"
-   "@param mode: whether to return only successors (L{OUT}),\n"
-   "  predecessors (L{IN}) or both (L{ALL}). Ignored for undirected\n"
+   "@param mode: whether to return only successors (C{\"out\"}),\n"
+   "  predecessors (C{\"in\"}) or both (C{\"all\"}). Ignored for undirected\n"
    "  graphs."},
 
   {"successors", (PyCFunction) igraphmodule_Graph_successors,
    METH_VARARGS | METH_KEYWORDS,
    "successors(vertex)\n--\n\n"
    "Returns the successors of a given vertex.\n\n"
-   "Equivalent to calling the L{Graph.neighbors} method with type=L{OUT}."},
+   "Equivalent to calling the L{neighbors()} method with type=C{\"out\"}."},
 
   {"predecessors", (PyCFunction) igraphmodule_Graph_predecessors,
    METH_VARARGS | METH_KEYWORDS,
    "predecessors(vertex)\n--\n\n"
    "Returns the predecessors of a given vertex.\n\n"
-   "Equivalent to calling the L{Graph.neighbors} method with type=L{IN}."},
+   "Equivalent to calling the L{neighbors()} method with type=C{\"in\"}."},
 
   /* interface to igraph_get_eid */
   {"get_eid", (PyCFunction) igraphmodule_Graph_get_eid,
@@ -12220,11 +12216,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_incident */
   {"incident", (PyCFunction) igraphmodule_Graph_incident,
    METH_VARARGS | METH_KEYWORDS,
-   "incident(vertex, mode=OUT)\n--\n\n"
+   "incident(vertex, mode=\"out\")\n--\n\n"
    "Returns the edges a given vertex is incident on.\n\n"
    "@param vertex: a vertex ID\n"
-   "@param mode: whether to return only successors (L{OUT}),\n"
-   "  predecessors (L{IN}) or both (L{ALL}). Ignored for undirected\n"
+   "@param mode: whether to return only successors (C{\"out\"}),\n"
+   "  predecessors (C{\"in\"}) or both (C{\"all\"}). Ignored for undirected\n"
    "  graphs."},
 
   //////////////////////
@@ -12234,24 +12230,22 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_adjacency */
   {"Adjacency", (PyCFunction) igraphmodule_Graph_Adjacency,
    METH_CLASS | METH_VARARGS | METH_KEYWORDS,
-   "Adjacency(matrix, mode=ADJ_DIRECTED)\n--\n\n"
+   "Adjacency(matrix, mode=\"directed\")\n--\n\n"
    "Generates a graph from its adjacency matrix.\n\n"
    "@param matrix: the adjacency matrix\n"
    "@param mode: the mode to be used. Possible values are:\n"
    "\n"
-   "  - C{ADJ_DIRECTED} - the graph will be directed and a matrix\n"
-   "    element gives the number of edges between two vertex.\n"
-   "  - C{ADJ_UNDIRECTED} - alias to C{ADJ_MAX} for convenience.\n"
-   "  - C{ADJ_MAX}   - undirected graph will be created and the number of\n"
+   "  - C{\"directed\"} - the graph will be directed and a matrix\n"
+   "    element gives the number of edges between two vertices.\n"
+   "  - C{\"undirected\"} - alias to C{\"max\"} for convenience.\n"
+   "  - C{\"max\"}   - undirected graph will be created and the number of\n"
    "    edges between vertex M{i} and M{j} is M{max(A(i,j), A(j,i))}\n"
-   "  - C{ADJ_MIN}   - like C{ADJ_MAX}, but with M{min(A(i,j), A(j,i))}\n"
-   "  - C{ADJ_PLUS}  - like C{ADJ_MAX}, but with M{A(i,j) + A(j,i)}\n"
-   "  - C{ADJ_UPPER} - undirected graph with the upper right triangle of\n"
+   "  - C{\"min\"}   - like C{\"max\"}, but with M{min(A(i,j), A(j,i))}\n"
+   "  - C{\"plus\"}  - like C{\"max\"}, but with M{A(i,j) + A(j,i)}\n"
+   "  - C{\"upper\"} - undirected graph with the upper right triangle of\n"
    "    the matrix (including the diagonal)\n"
-   "  - C{ADJ_LOWER} - undirected graph with the lower left triangle of\n"
+   "  - C{\"lower\"} - undirected graph with the lower left triangle of\n"
    "    the matrix (including the diagonal)\n"
-   "\n"
-   "  These values can also be given as strings without the C{ADJ} prefix.\n"
    },
 
   /* interface to igraph_asymmetric_preference_game */
@@ -12260,7 +12254,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Asymmetric_Preference(n, type_dist_matrix, pref_matrix, attribute=None, loops=False)\n--\n\n"
    "Generates a graph based on asymmetric vertex types and connection probabilities.\n\n"
-   "This is the asymmetric variant of L{Graph.Preference}.\n"
+   "This is the asymmetric variant of L{Preference()}.\n"
    "A given number of vertices are generated. Every vertex is assigned to an\n"
    "\"incoming\" and an \"outgoing\" vertex type according to the given joint\n"
    "type probabilities. Finally, every vertex pair is evaluated and a\n"
@@ -12279,7 +12273,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_atlas
   {"Atlas", (PyCFunction) igraphmodule_Graph_Atlas,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Atlas(idx: int)\n--\n\n"
+   "Atlas(idx)\n--\n\n"
    "Generates a graph from the Graph Atlas.\n\n"
    "@param idx: The index of the graph to be generated.\n"
    "  Indices start from zero, graphs are listed:\n\n"
@@ -12330,7 +12324,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "      it will generate multiple edges as well. igraph before\n"
    "      0.6 used this algorithm for I{power}s other than 1.\n\n"
    "@param start_from: if given and not C{None}, this must be another\n"
-   "      L{Graph} object. igraph will use this graph as a starting\n"
+   "      L{GraphBase} object. igraph will use this graph as a starting\n"
    "      point for the preferential attachment model.\n\n"
    "@newfield ref: Reference\n"
    "@ref: Barabasi, A-L and Albert, R. 1999. Emergence of scaling\n"
@@ -12468,7 +12462,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_incidence */
   {"_Incidence", (PyCFunction) igraphmodule_Graph_Incidence,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "_Incidence(matrix, directed=False, mode=ALL, multiple=False)\n--\n\n"
+   "_Incidence(matrix, directed=False, mode=\"all\", multiple=False)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.Incidence()\n\n"},
 
@@ -12508,7 +12502,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Preference(n, type_dist, pref_matrix, attribute=None, directed=False, loops=False)\n--\n\n"
    "Generates a graph based on vertex types and connection probabilities.\n\n"
-   "This is practically the nongrowing variant of L{Graph.Establishment}.\n"
+   "This is practically the nongrowing variant of L{Establishment}.\n"
    "A given number of vertices are generated. Every vertex is assigned to a\n"
    "vertex type according to the given type probabilities. Finally, every\n"
    "vertex pair is evaluated and an edge is created between them with a\n"
@@ -12677,24 +12671,24 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_tree
   {"Tree", (PyCFunction) igraphmodule_Graph_Tree,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Tree(n, children, type=TREE_UNDIRECTED)\n--\n\n"
+   "Tree(n, children, type=\"undirected\")\n--\n\n"
    "Generates a tree in which almost all vertices have the same number of children.\n\n"
    "@param n: the number of vertices in the graph\n"
    "@param children: the number of children of a vertex in the graph\n"
    "@param type: determines whether the tree should be directed, and if\n"
    "  this is the case, also its orientation. Must be one of\n"
-   "  C{TREE_IN}, C{TREE_OUT} and C{TREE_UNDIRECTED}.\n"},
+   "  C{\"in\"}, C{\"out\"} and C{\"undirected\"}.\n"},
 
   /* interface to igraph_degree_sequence_game */
   {"Degree_Sequence", (PyCFunction) igraphmodule_Graph_Degree_Sequence,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Degree_Sequence(out, in=None, method=\"simple\")\n--\n\n"
+   "Degree_Sequence(out, in_=None, method=\"simple\")\n--\n\n"
    "Generates a graph with a given degree sequence.\n\n"
    "@param out: the out-degree sequence for a directed graph. If the\n"
    "  in-degree sequence is omitted, the generated graph\n"
    "  will be undirected, so this will be the in-degree\n"
    "  sequence as well\n"
-   "@param in: the in-degree sequence for a directed graph.\n"
+   "@param in_: the in-degree sequence for a directed graph.\n"
    "  If omitted, the generated graph will be undirected.\n"
    "@param method: the generation method to be used. One of the following:\n"
    "  \n"
@@ -12722,10 +12716,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_isoclass_create */
   {"Isoclass", (PyCFunction) igraphmodule_Graph_Isoclass,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Isoclass(n, class, directed=False)\n--\n\n"
+   "Isoclass(n, cls, directed=False)\n--\n\n"
    "Generates a graph with a given isomorphism class.\n\n"
    "@param n: the number of vertices in the graph (3 or 4)\n"
-   "@param class: the isomorphism class\n"
+   "@param cls: the isomorphism class\n"
    "@param directed: whether the graph should be directed.\n"},
 
   /* interface to igraph_watts_strogatz_game */
@@ -12748,24 +12742,22 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_weighted_adjacency */
   {"Weighted_Adjacency", (PyCFunction) igraphmodule_Graph_Weighted_Adjacency,
    METH_CLASS | METH_VARARGS | METH_KEYWORDS,
-   "Weighted_Adjacency(matrix, mode=ADJ_DIRECTED, attr=\"weight\", loops=True)\n--\n\n"
+   "Weighted_Adjacency(matrix, mode=\"directed\", attr=\"weight\", loops=True)\n--\n\n"
    "Generates a graph from its adjacency matrix.\n\n"
    "@param matrix: the adjacency matrix\n"
    "@param mode: the mode to be used. Possible values are:\n"
    "\n"
-   "  - C{ADJ_DIRECTED} - the graph will be directed and a matrix\n"
-   "    element gives the number of edges between two vertex.\n"
-   "  - C{ADJ_UNDIRECTED} - alias to C{ADJ_MAX} for convenience.\n"
-   "  - C{ADJ_MAX}   - undirected graph will be created and the number of\n"
+   "  - C{\"directed\"} - the graph will be directed and a matrix\n"
+   "    element gives the number of edges between two vertices.\n"
+   "  - C{\"undirected\"} - alias to C{\"max\"} for convenience.\n"
+   "  - C{\"max\"}   - undirected graph will be created and the number of\n"
    "    edges between vertex M{i} and M{j} is M{max(A(i,j), A(j,i))}\n"
-   "  - C{ADJ_MIN}   - like C{ADJ_MAX}, but with M{min(A(i,j), A(j,i))}\n"
-   "  - C{ADJ_PLUS}  - like C{ADJ_MAX}, but with M{A(i,j) + A(j,i)}\n"
-   "  - C{ADJ_UPPER} - undirected graph with the upper right triangle of\n"
+   "  - C{\"min\"}   - like C{\"max\"}, but with M{min(A(i,j), A(j,i))}\n"
+   "  - C{\"plus\"}  - like C{\"max\"}, but with M{A(i,j) + A(j,i)}\n"
+   "  - C{\"upper\"} - undirected graph with the upper right triangle of\n"
    "    the matrix (including the diagonal)\n"
-   "  - C{ADJ_LOWER} - undirected graph with the lower left triangle of\n"
+   "  - C{\"lower\"} - undirected graph with the lower left triangle of\n"
    "    the matrix (including the diagonal)\n"
-   "\n"
-   "  These values can also be given as strings without the C{ADJ} prefix.\n"
    "@param attr: the name of the edge attribute that stores the edge\n"
    "  weights.\n"
    "@param loops: whether to include loop edges. When C{False}, the diagonal\n"
@@ -12949,7 +12941,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_closeness */
   {"closeness", (PyCFunction) igraphmodule_Graph_closeness,
    METH_VARARGS | METH_KEYWORDS,
-   "closeness(vertices=None, mode=ALL, cutoff=None, weights=None, "
+   "closeness(vertices=None, mode=\"all\", cutoff=None, weights=None, "
    "normalized=True)\n--\n\n"
    "Calculates the closeness centralities of given vertices in a graph.\n\n"
    "The closeness centerality of a vertex measures how easily other\n"
@@ -12963,9 +12955,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "geodesic.\n\n"
    "@param vertices: the vertices for which the closenesses must\n"
    "  be returned. If C{None}, uses all of the vertices in the graph.\n"
-   "@param mode: must be one of L{IN}, L{OUT} and L{ALL}. L{IN} means\n"
-   "  that the length of the incoming paths, L{OUT} means that the\n"
-   "  length of the outgoing paths must be calculated. L{ALL} means\n"
+   "@param mode: must be one of C{\"in\"}, C{\"out\"} and C{\"all\"}. C{\"in\"} means\n"
+   "  that the length of the incoming paths, C{\"out\"} means that the\n"
+   "  length of the outgoing paths must be calculated. C{\"all\"} means\n"
    "  that both of them must be calculated.\n"
    "@param cutoff: if it is an integer, only paths less than or equal to this\n"
    "  length are considered, effectively resulting in an estimation of the\n"
@@ -12982,7 +12974,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_harmonic_centrality */
   {"harmonic_centrality", (PyCFunction) igraphmodule_Graph_harmonic_centrality,
    METH_VARARGS | METH_KEYWORDS,
-   "harmonic_centrality(vertices=None, mode=ALL, cutoff=None, weights=None, "
+   "harmonic_centrality(vertices=None, mode=\"all\", cutoff=None, weights=None, "
    "normalized=True)\n--\n\n"
    "Calculates the harmonic centralities of given vertices in a graph.\n\n"
    "The harmonic centerality of a vertex measures how easily other\n"
@@ -12993,9 +12985,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "vertices, the inverse distance is taken to be zero.\n\n"
    "@param vertices: the vertices for which the harmonic centrality must\n"
    "  be returned. If C{None}, uses all of the vertices in the graph.\n"
-   "@param mode: must be one of L{IN}, L{OUT} and L{ALL}. L{IN} means\n"
-   "  that the length of the incoming paths, L{OUT} means that the\n"
-   "  length of the outgoing paths must be calculated. L{ALL} means\n"
+   "@param mode: must be one of C{\"in\"}, C{\"out\"} and C{\"all\"}. C{\"in\"} means\n"
+   "  that the length of the incoming paths, C{\"out\"} means that the\n"
+   "  length of the outgoing paths must be calculated. C{\"all\"} means\n"
    "  that both of them must be calculated.\n"
    "@param cutoff: if it is not C{None}, only paths less than or equal to this\n"
    "  length are considered.\n"
@@ -13010,13 +13002,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_clusters */
   {"clusters", (PyCFunction) igraphmodule_Graph_clusters,
    METH_VARARGS | METH_KEYWORDS,
-   "clusters(mode=STRONG)\n--\n\n"
+   "clusters(mode=\"strong\")\n--\n\n"
    "Calculates the (strong or weak) clusters for a given graph.\n\n"
    "@attention: this function has a more convenient interface in class\n"
    "  L{Graph} which wraps the result in a L{VertexClustering} object.\n"
    "  It is advised to use that.\n"
-   "@param mode: must be either C{STRONG} or C{WEAK}, depending on\n"
-   "  the clusters being sought. Optional, defaults to C{STRONG}.\n"
+   "@param mode: must be either C{\"strong\"} or C{\"weak\"}, depending on\n"
+   "  the clusters being sought. Optional, defaults to C{\"strong\"}.\n"
    "@return: the component index for every node in the graph.\n"},
   {"copy", (PyCFunction) igraphmodule_Graph_copy,
    METH_NOARGS,
@@ -13029,10 +13021,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"decompose", (PyCFunction) igraphmodule_Graph_decompose,
    METH_VARARGS | METH_KEYWORDS,
-   "decompose(mode=STRONG, maxcompno=None, minelements=1)\n--\n\n"
+   "decompose(mode=\"strong\", maxcompno=None, minelements=1)\n--\n\n"
    "Decomposes the graph into subgraphs.\n\n"
-   "@param mode: must be either STRONG or WEAK, depending on the\n"
-   "  clusters being sought.\n"
+   "@param mode: must be either C{\"strong\"} or C{\"weak\"}, depending on\n"
+   "  the clusters being sought. Optional, defaults to C{\"strong\"}.\n"
    "@param maxcompno: maximum number of components to return.\n"
    "  C{None} means all possible components.\n"
    "@param minelements: minimum number of vertices in a component.\n"
@@ -13061,9 +13053,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  C{first}, C{last}, C{random}. You can also specify different\n"
    "  combination functions for different attributes by passing a dict\n"
    "  here which maps attribute names to functions. See\n"
-   "  L{Graph.simplify()} for more details.\n"
+   "  L{simplify()} for more details.\n"
    "@return: C{None}.\n"
-   "@see: L{Graph.simplify()}\n"
+   "@see: L{simplify()}\n"
   },
   /* interface to igraph_constraint */
   {"constraint", (PyCFunction) igraphmodule_Graph_constraint,
@@ -13167,16 +13159,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_eccentricity */
   {"eccentricity", (PyCFunction) igraphmodule_Graph_eccentricity,
    METH_VARARGS | METH_KEYWORDS,
-   "eccentricity(vertices=None, mode=ALL)\n--\n\n"
+   "eccentricity(vertices=None, mode=\"all\")\n--\n\n"
    "Calculates the eccentricities of given vertices in a graph.\n\n"
    "The eccentricity of a vertex is calculated by measuring the\n"
    "shortest distance from (or to) the vertex, to (or from) all other\n"
    "vertices in the graph, and taking the maximum.\n\n"
    "@param vertices: the vertices for which the eccentricity scores must\n"
    "  be returned. If C{None}, uses all of the vertices in the graph.\n"
-   "@param mode: must be one of L{IN}, L{OUT} and L{ALL}. L{IN} means\n"
-   "  that edge directions are followed; C{OUT} means that edge directions\n"
-   "  are followed the opposite direction; C{ALL} means that directions are\n"
+   "@param mode: must be one of C{\"in\"}, C{\"out\"} and C{\"all\"}. C{\"in\"} means\n"
+   "  that edge directions are followed; C{\"out\"} means that edge directions\n"
+   "  are followed the opposite direction; C{\"all\"} means that directions are\n"
    "  ignored. The argument has no effect for undirected graphs.\n"
    "@return: the calculated eccentricities in a list, or a single number if\n"
    "  a single vertex was supplied.\n"},
@@ -13293,7 +13285,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_get_shortest_paths
   {"get_shortest_paths", (PyCFunction) igraphmodule_Graph_get_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "get_shortest_paths(v, to=None, weights=None, mode=OUT, output=\"vpath\")\n--\n\n"
+   "get_shortest_paths(v, to=None, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
    "Calculates the shortest paths from/to a given node in a graph.\n\n"
    "@param v: the source/destination for the calculated paths\n"
    "@param to: a vertex selector describing the destination/source for\n"
@@ -13303,13 +13295,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param weights: edge weights in a list or the name of an edge attribute\n"
    "  holding edge weights. If C{None}, all edges are assumed to have\n"
    "  equal weight.\n"
-   "@param mode: the directionality of the paths. L{IN} means to\n"
-   "  calculate incoming paths, L{OUT} means to calculate outgoing\n"
-   "  paths, L{ALL} means to calculate both ones.\n"
+   "@param mode: the directionality of the paths. C{\"in\"} means to\n"
+   "  calculate incoming paths, C{\"out\"} means to calculate outgoing\n"
+   "  paths, C{\"all\"} means to calculate both ones.\n"
    "@param output: determines what should be returned. If this is\n"
    "  C{\"vpath\"}, a list of vertex IDs will be returned, one path\n"
    "  for each target vertex. For unconnected graphs, some of the list\n"
-   "  elements may be empty. Note that in case of mode=L{IN}, the vertices\n"
+   "  elements may be empty. Note that in case of mode=C{\"in\"}, the vertices\n"
    "  in a path are returned in reversed order. If C{output=\"epath\"},\n"
    "  edge IDs are returned instead of vertex IDs.\n"
    "@return: see the documentation of the C{output} parameter.\n"},
@@ -13318,7 +13310,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"get_all_shortest_paths",
    (PyCFunction) igraphmodule_Graph_get_all_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "get_all_shortest_paths(v, to=None, weights=None, mode=OUT)\n--\n\n"
+   "get_all_shortest_paths(v, to=None, weights=None, mode=\"out\")\n--\n\n"
    "Calculates all of the shortest paths from/to a given node in a graph.\n\n"
    "@param v: the source for the calculated paths\n"
    "@param to: a vertex selector describing the destination for\n"
@@ -13328,18 +13320,18 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param weights: edge weights in a list or the name of an edge attribute\n"
    "  holding edge weights. If C{None}, all edges are assumed to have\n"
    "  equal weight.\n"
-   "@param mode: the directionality of the paths. L{IN} means to\n"
-   "  calculate incoming paths, L{OUT} means to calculate outgoing\n"
-   "  paths, L{ALL} means to calculate both ones.\n"
+   "@param mode: the directionality of the paths. C{\"in\"} means to\n"
+   "  calculate incoming paths, C{\"out\"} means to calculate outgoing\n"
+   "  paths, C{\"all\"} means to calculate both ones.\n"
    "@return: all of the shortest path from the given node to every other\n"
-   "  reachable node in the graph in a list. Note that in case of mode=L{IN},\n"
+   "  reachable node in the graph in a list. Note that in case of mode=C{\"in\"},\n"
    "  the vertices in a path are returned in reversed order!"},
 
   /* interface to igraph_get_all_simple_paths */
   {"_get_all_simple_paths",
    (PyCFunction) igraphmodule_Graph_get_all_simple_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "_get_all_simple_paths(v, to=None, cutoff=-1, mode=OUT)\n--\n\n"
+   "_get_all_simple_paths(v, to=None, cutoff=-1, mode=\"out\")\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.get_all_simple_paths()\n\n"
   },
@@ -13450,7 +13442,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_connected */
   {"is_connected", (PyCFunction) igraphmodule_Graph_is_connected,
    METH_VARARGS | METH_KEYWORDS,
-   "is_connected(mode=STRONG)\n--\n\n"
+   "is_connected(mode=\"strong\")\n--\n\n"
    "Decides whether the graph is connected.\n\n"
    "@param mode: whether we should calculate strong or weak connectivity.\n"
    "@return: C{True} if the graph is connected, C{False} otherwise.\n"},
@@ -13473,7 +13465,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_maxdegree */
   {"maxdegree", (PyCFunction) igraphmodule_Graph_maxdegree,
    METH_VARARGS | METH_KEYWORDS,
-   "maxdegree(vertices=None, mode=ALL, loops=False)\n--\n\n"
+   "maxdegree(vertices=None, mode=\"all\", loops=False)\n--\n\n"
    "Returns the maximum degree of a vertex set in the graph.\n\n"
    "This method accepts a single vertex ID or a list of vertex IDs as a\n"
    "parameter, and returns the degree of the given vertices (in the\n"
@@ -13482,15 +13474,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "\n"
    "@param vertices: a single vertex ID or a list of vertex IDs, or\n"
    "  C{None} meaning all the vertices in the graph.\n"
-   "@param mode: the type of degree to be returned (L{OUT} for\n"
-   "  out-degrees, L{IN} IN for in-degrees or L{ALL} for the sum of\n"
+   "@param mode: the type of degree to be returned (C{\"out\"} for\n"
+   "  out-degrees, C{\"in\"} IN for in-degrees or C{\"all\"} for the sum of\n"
    "  them).\n"
    "@param loops: whether self-loops should be counted.\n"},
 
   /* interface to igraph_neighborhood */
   {"neighborhood", (PyCFunction) igraphmodule_Graph_neighborhood,
    METH_VARARGS | METH_KEYWORDS,
-   "neighborhood(vertices=None, order=1, mode=ALL, mindist=0)\n--\n\n"
+   "neighborhood(vertices=None, order=1, mode=\"all\", mindist=0)\n--\n\n"
    "For each vertex specified by I{vertices}, returns the\n"
    "vertices reachable from that vertex in at most I{order} steps. If\n"
    "I{mindist} is larger than zero, vertices that are reachable in less\n"
@@ -13518,7 +13510,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_neighborhood_size */
   {"neighborhood_size", (PyCFunction) igraphmodule_Graph_neighborhood_size,
    METH_VARARGS | METH_KEYWORDS,
-   "neighborhood_size(vertices=None, order=1, mode=ALL, mindist=0)\n--\n\n"
+   "neighborhood_size(vertices=None, order=1, mode=\"all\", mindist=0)\n--\n\n"
    "For each vertex specified by I{vertices}, returns the number of\n"
    "vertices reachable from that vertex in at most I{order} steps. If\n"
    "I{mindist} is larger than zero, vertices that are reachable in less\n"
@@ -13624,7 +13616,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interfaces to igraph_radius */
   {"radius", (PyCFunction) igraphmodule_Graph_radius,
    METH_VARARGS | METH_KEYWORDS,
-   "radius(mode=OUT)\n--\n\n"
+   "radius(mode=\"out\")\n--\n\n"
    "Calculates the radius of the graph.\n\n"
    "The radius of a graph is defined as the minimum eccentricity of\n"
    "its vertices (see L{eccentricity()}).\n"
@@ -13634,7 +13626,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  edge directions, C{ALL} ignores edge directions. The argument is\n"
    "  ignored for undirected graphs.\n"
    "@return: the radius\n"
-   "@see: L{Graph.eccentricity()}"
+   "@see: L{eccentricity()}"
   },
 
   /* interface to igraph_reciprocity */
@@ -13692,7 +13684,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_shortest_paths */
   {"shortest_paths", (PyCFunction) igraphmodule_Graph_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "shortest_paths(source=None, target=None, weights=None, mode=OUT)\n--\n\n"
+   "shortest_paths(source=None, target=None, weights=None, mode=\"out\")\n--\n\n"
    "Calculates shortest path lengths for given vertices in a graph.\n\n"
    "The algorithm used for the calculations is selected automatically:\n"
    "a simple BFS is used for unweighted graphs, Dijkstra's algorithm is\n"
@@ -13707,8 +13699,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  an attribute name (edge weights are retrieved from the given\n"
    "  attribute) or C{None} (all edges have equal weight).\n"
    "@param mode: the type of shortest paths to be used for the\n"
-   "  calculation in directed graphs. L{OUT} means only outgoing,\n"
-   "  L{IN} means only incoming paths. L{ALL} means to consider\n"
+   "  calculation in directed graphs. C{\"out\"} means only outgoing,\n"
+   "  C{\"in\"} means only incoming paths. C{\"all\"} means to consider\n"
    "  the directed graph as an undirected one.\n"
    "@return: the shortest path lengths for given vertices in a matrix\n"},
 
@@ -13774,16 +13766,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_subcomponent
   {"subcomponent", (PyCFunction) igraphmodule_Graph_subcomponent,
    METH_VARARGS | METH_KEYWORDS,
-   "subcomponent(v, mode=ALL)\n--\n\n"
+   "subcomponent(v, mode=\"all\")\n--\n\n"
    "Determines the indices of vertices which are in the same component as a given vertex.\n\n"
    "@param v: the index of the vertex used as the source/destination\n"
-   "@param mode: if equals to L{IN}, returns the vertex IDs from\n"
-   "  where the given vertex can be reached. If equals to L{OUT},\n"
+   "@param mode: if equals to C{\"in\"}, returns the vertex IDs from\n"
+   "  where the given vertex can be reached. If equals to C{\"out\"},\n"
    "  returns the vertex IDs which are reachable from the given\n"
-   "  vertex. If equals to L{ALL}, returns all vertices within the\n"
+   "  vertex. If equals to C{\"all\"}, returns all vertices within the\n"
    "  same component as the given vertex, ignoring edge directions.\n"
    "  Note that this is not equal to calculating the union of the \n"
-   "  results of L{IN} and L{OUT}.\n"
+   "  results of C{\"in\"} and C{\"out\"}.\n"
    "@return: the indices of vertices which are in the same component as a given vertex.\n"},
 
   /* interface to igraph_subgraph_edges */
@@ -13802,13 +13794,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"topological_sorting",
    (PyCFunction) igraphmodule_Graph_topological_sorting,
    METH_VARARGS | METH_KEYWORDS,
-   "topological_sorting(mode=OUT)\n--\n\n"
+   "topological_sorting(mode=\"out\")\n--\n\n"
    "Calculates a possible topological sorting of the graph.\n\n"
    "Returns a partial sorting and issues a warning if the graph is not\n"
    "a directed acyclic graph.\n\n"
-   "@param mode: if L{OUT}, vertices are returned according to the\n"
+   "@param mode: if C{\"out\"}, vertices are returned according to the\n"
    "  forward topological order -- all vertices come before their\n"
-   "  successors. If L{IN}, all vertices come before their ancestors.\n"
+   "  successors. If C{\"in\"}, all vertices come before their ancestors.\n"
    "@return: a possible topological ordering as a list"},
 
   /* interface to to_prufer */
@@ -13909,11 +13901,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_unfold_tree */
   {"unfold_tree", (PyCFunction) igraphmodule_Graph_unfold_tree,
    METH_VARARGS | METH_KEYWORDS,
-   "unfold_tree(sources=None, mode=OUT)\n--\n\n"
+   "unfold_tree(sources=None, mode=\"out\")\n--\n\n"
    "Unfolds the graph using a BFS to a tree by duplicating vertices as necessary.\n\n"
    "@param sources: the source vertices to start the unfolding from. It should be a\n"
    "  list of vertex indices, preferably one vertex from each connected component.\n"
-   "  You can use L{Graph.topological_sorting()} to determine a suitable set. A single\n"
+   "  You can use L{topological_sorting()} to determine a suitable set. A single\n"
    "  vertex index is also accepted.\n"
    "@param mode: which edges to follow during the BFS. C{OUT} follows outgoing edges,\n"
    "  C{IN} follows incoming edges, C{ALL} follows both. Ignored for undirected\n"
@@ -13974,7 +13966,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_similarity_dice */
   {"similarity_dice", (PyCFunction) igraphmodule_Graph_similarity_dice,
    METH_VARARGS | METH_KEYWORDS,
-   "similarity_dice(vertices=None, pairs=None, mode=IGRAPH_ALL, loops=True)\n--\n\n"
+   "similarity_dice(vertices=None, pairs=None, mode=\"all\", loops=True)\n--\n\n"
    "Dice similarity coefficient of vertices.\n\n"
    "The Dice similarity coefficient of two vertices is twice the number of\n"
    "their common neighbors divided by the sum of their degrees. This\n"
@@ -13986,7 +13978,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  must be C{None}, and the similarity values will be calculated only for the\n"
    "  given pairs. Vertex pairs must be specified as tuples of vertex IDs.\n"
    "@param mode: which neighbors should be considered for directed graphs.\n"
-   "  Can be L{ALL}, L{IN} or L{OUT}, ignored for undirected graphs.\n"
+   "  Can be C{\"all\"}, C{\"in\"} or C{\"out\"}, ignored for undirected graphs.\n"
    "@param loops: whether vertices should be considered adjacent to\n"
    "  themselves. Setting this to C{True} assumes a loop edge for all vertices\n"
    "  even if none is present in the graph. Setting this to C{False} may\n"
@@ -14001,7 +13993,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"similarity_inverse_log_weighted",
     (PyCFunction) igraphmodule_Graph_similarity_inverse_log_weighted,
    METH_VARARGS | METH_KEYWORDS,
-   "similarity_inverse_log_weighted(vertices=None, mode=IGRAPH_ALL)\n--\n\n"
+   "similarity_inverse_log_weighted(vertices=None, mode=\"all\")\n--\n\n"
    "Inverse log-weighted similarity coefficient of vertices.\n\n"
    "Each vertex is assigned a weight which is 1 / log(degree). The\n"
    "log-weighted similarity of two vertices is the sum of the weights\n"
@@ -14009,8 +14001,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param vertices: the vertices to be analysed. If C{None}, all vertices\n"
    "  will be considered.\n"
    "@param mode: which neighbors should be considered for directed graphs.\n"
-   "  Can be L{ALL}, L{IN} or L{OUT}, ignored for undirected graphs.\n"
-   "  L{IN} means that the weights are determined by the out-degrees, L{OUT}\n"
+   "  Can be C{\"all\"}, C{\"in\"} or C{\"out\"}, ignored for undirected graphs.\n"
+   "  C{\"in\"} means that the weights are determined by the out-degrees, C{\"out\"}\n"
    "  means that the weights are determined by the in-degrees.\n"
    "@return: the pairwise similarity coefficients for the vertices specified,\n"
    "  in the form of a matrix (list of lists).\n"
@@ -14018,7 +14010,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_similarity_jaccard */
   {"similarity_jaccard", (PyCFunction) igraphmodule_Graph_similarity_jaccard,
    METH_VARARGS | METH_KEYWORDS,
-   "similarity_jaccard(vertices=None, pairs=None, mode=IGRAPH_ALL, loops=True)\n--\n\n"
+   "similarity_jaccard(vertices=None, pairs=None, mode=\"all\", loops=True)\n--\n\n"
    "Jaccard similarity coefficient of vertices.\n\n"
    "The Jaccard similarity coefficient of two vertices is the number of their\n"
    "common neighbors divided by the number of vertices that are adjacent to\n"
@@ -14029,7 +14021,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  must be C{None}, and the similarity values will be calculated only for the\n"
    "  given pairs. Vertex pairs must be specified as tuples of vertex IDs.\n"
    "@param mode: which neighbors should be considered for directed graphs.\n"
-   "  Can be L{ALL}, L{IN} or L{OUT}, ignored for undirected graphs.\n"
+   "  Can be C{\"all\"}, C{\"in\"} or C{\"out\"}, ignored for undirected graphs.\n"
    "@param loops: whether vertices should be considered adjacent to\n"
    "  themselves. Setting this to C{True} assumes a loop edge for all vertices\n"
    "  even if none is present in the graph. Setting this to C{False} may\n"
@@ -14070,7 +14062,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param callback: C{None} or a callable that will be called for every motif\n"
    "  found in the graph. The callable must accept three parameters: the graph\n"
    "  itself, the list of vertices in the motif and the isomorphism class of the\n"
-   "  motif (see L{Graph.isoclass()}). The search will stop when the callback\n"
+   "  motif (see L{isoclass()}). The search will stop when the callback\n"
    "  returns an object with a non-zero truth value or raises an exception.\n"
    "@return: the list of motifs if I{callback} is C{None}, or C{None} otherwise\n"
    "@see: Graph.motifs_randesu_no()\n"
@@ -14094,7 +14086,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"motifs_randesu_estimate",
    (PyCFunction) igraphmodule_Graph_motifs_randesu_estimate,
    METH_VARARGS | METH_KEYWORDS,
-   "motifs_randesu_estimate(size=3, cut_prob=None, sample)\n--\n\n"
+   "motifs_randesu_estimate(size=3, cut_prob=None, sample=None)\n--\n\n"
    "Counts the total number of motifs in the graph\n\n"
    "Motifs are small subgraphs of a given structure in a graph.\n"
    "This function estimates the total number of motifs in a graph without\n"
@@ -14206,9 +14198,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_kamada_kawai",
    (PyCFunction) igraphmodule_Graph_layout_kamada_kawai,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_kamada_kawai(maxiter=1000, seed=None, maxiter=1000, epsilon=0, "
-   "kkconst=None, minx=None, maxx=None, miny=None, maxy=None, "
-   "minz=None, maxz=None, dim=2)\n--\n\n"
+   "layout_kamada_kawai(maxiter=1000, epsilon=0, kkconst=None, seed=None, "
+   "minx=None, maxx=None, miny=None, maxy=None, minz=None, maxz=None, dim=2)\n--\n\n"
    "Places the vertices on a plane according to the Kamada-Kawai algorithm.\n\n"
    "This is a force directed layout, see Kamada, T. and Kawai, S.:\n"
    "An Algorithm for Drawing General Undirected Graphs.\n"
@@ -14530,10 +14521,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   ////////////////////////////
   {"bfs", (PyCFunction) igraphmodule_Graph_bfs,
    METH_VARARGS | METH_KEYWORDS,
-   "bfs(vid, mode=OUT)\n--\n\n"
+   "bfs(vid, mode=\"out\")\n--\n\n"
    "Conducts a breadth first search (BFS) on the graph.\n\n"
    "@param vid: the root vertex ID\n"
-   "@param mode: either L{IN} or L{OUT} or L{ALL}, ignored\n"
+   "@param mode: either C{\"in\"} or C{\"out\"} or C{\"all\"}, ignored\n"
    "  for undirected graphs.\n"
    "@return: a tuple with the following items:\n"
    "   - The vertex IDs visited (in order)\n"
@@ -14541,10 +14532,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "   - The parent of every vertex in the BFS\n"},
   {"bfsiter", (PyCFunction) igraphmodule_Graph_bfsiter,
    METH_VARARGS | METH_KEYWORDS,
-   "bfsiter(vid, mode=OUT, advanced=False)\n--\n\n"
+   "bfsiter(vid, mode=\"out\", advanced=False)\n--\n\n"
    "Constructs a breadth first search (BFS) iterator of the graph.\n\n"
    "@param vid: the root vertex ID\n"
-   "@param mode: either L{IN} or L{OUT} or L{ALL}.\n"
+   "@param mode: either C{\"in\"} or C{\"out\"} or C{\"all\"}.\n"
    "@param advanced: if C{False}, the iterator returns the next\n"
    "  vertex in BFS order in every step. If C{True}, the iterator\n"
    "  returns the distance of the vertex from the root and the\n"
@@ -14552,10 +14543,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the BFS iterator as an L{igraph.BFSIter} object.\n"},
   {"dfsiter", (PyCFunction) igraphmodule_Graph_dfsiter,
    METH_VARARGS | METH_KEYWORDS,
-   "dfsiter(vid, mode=OUT, advanced=False)\n--\n\n"
+   "dfsiter(vid, mode=\"out\", advanced=False)\n--\n\n"
    "Constructs a depth first search (DFS) iterator of the graph.\n\n"
    "@param vid: the root vertex ID\n"
-   "@param mode: either L{IN} or L{OUT} or L{ALL}.\n"
+   "@param mode: either C{\"in\"} or C{\"out\"} or C{\"all\"}.\n"
    "@param advanced: if C{False}, the iterator returns the next\n"
    "  vertex in DFS order in every step. If C{True}, the iterator\n"
    "  returns the distance of the vertex from the root and the\n"
@@ -14569,12 +14560,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_get_adjacency
   {"get_adjacency", (PyCFunction) igraphmodule_Graph_get_adjacency,
    METH_VARARGS | METH_KEYWORDS,
-   "get_adjacency(type=GET_ADJACENCY_BOTH, eids=False)\n--\n\n"
+   "get_adjacency(type=\"both\", eids=False)\n--\n\n"
    "Returns the adjacency matrix of a graph.\n\n"
-   "@param type: either C{GET_ADJACENCY_LOWER} (uses the\n"
-   "  lower triangle of the matrix) or C{GET_ADJACENCY_UPPER}\n"
-   "  (uses the upper triangle) or C{GET_ADJACENCY_BOTH}\n"
-   "  (uses both parts). Ignored for directed graphs.\n"
+   "@param type: one of C{\"lower\"} (uses the lower triangle of the matrix),\n"
+   "  C{\"upper\"} (uses the upper triangle) or C{\"both\"} (uses both parts).\n"
+   "  Ignored for directed graphs.\n"
    "@param eids: if C{True}, the result matrix will contain\n"
    "  zeros for non-edges and the ID of the edge plus one\n"
    "  for edges in the appropriate cell. If C{False}, the\n"
@@ -14616,7 +14606,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  creates one undirected edge for each mutual directed edge pair.\n"
    "@param combine_edges: specifies how to combine the attributes of\n"
    "  multiple edges between the same pair of vertices into a single\n"
-   "  attribute. See L{Graph.simplify()} for more details.\n"
+   "  attribute. See L{simplify()} for more details.\n"
   },
 
   /* interface to igraph_laplacian */
@@ -14874,7 +14864,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "canonical_permutation(sh=\"fl\", color=None)\n--\n\n"
    "Calculates the canonical permutation of a graph using the BLISS isomorphism\n"
    "algorithm.\n\n"
-   "Passing the permutation returned here to L{Graph.permute_vertices()} will\n"
+   "Passing the permutation returned here to L{permute_vertices()} will\n"
    "transform the graph into its canonical form.\n\n"
    "See U{http://www.tcs.hut.fi/Software/bliss/index.html} for more information\n"
    "about the BLISS algorithm and canonical permutations.\n\n"
@@ -14918,9 +14908,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  - If the graphs have three or four vertices, then an O(1) algorithm\n"
    "    is used with precomputed data.\n\n"
    "  - Otherwise if the graphs are directed, then the VF2 isomorphism\n"
-   "    algorithm is used (see L{Graph.isomorphic_vf2}).\n\n"
+   "    algorithm is used (see L{isomorphic_vf2}).\n\n"
    "  - Otherwise the BLISS isomorphism algorithm is used, see\n"
-   "    L{Graph.isomorphic_bliss}.\n\n"
+   "    L{isomorphic_bliss}.\n\n"
    "@return: C{True} if the graphs are isomorphic, C{False} otherwise.\n"
   },
   {"isomorphic_bliss", (PyCFunction) igraphmodule_Graph_isomorphic_bliss,
@@ -15296,10 +15286,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /**********************/
   {"dominator", (PyCFunction) igraphmodule_Graph_dominator,
    METH_VARARGS | METH_KEYWORDS,
-   "dominator(vid, mode=)\n--\n\n"
+   "dominator(vid, mode=\"out\")\n--\n\n"
    "Returns the dominator tree from the given root node"
    "@param vid: the root vertex ID\n"
-   "@param mode: either L{IN} or L{OUT}\n"
+   "@param mode: either C{\"in\"} or C{\"out\"}\n"
    "@return: a list containing the dominator tree for the current graph."
   },
 
@@ -15639,15 +15629,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"coreness", (PyCFunction) igraphmodule_Graph_coreness,
    METH_VARARGS | METH_KEYWORDS,
-   "coreness(mode=ALL)\n--\n\n"
+   "coreness(mode=\"all\")\n--\n\n"
    "Finds the coreness (shell index) of the vertices of the network.\n\n"
    "The M{k}-core of a graph is a maximal subgraph in which each vertex\n"
    "has at least degree k. (Degree here means the degree in the\n"
    "subgraph of course). The coreness of a vertex is M{k} if it\n"
    "is a member of the M{k}-core but not a member of the M{k+1}-core.\n\n"
-   "@param mode: whether to compute the in-corenesses (L{IN}), the\n"
-   "  out-corenesses (L{OUT}) or the undirected corenesses (L{ALL}).\n"
-   "  Ignored and assumed to be L{ALL} for undirected graphs.\n"
+   "@param mode: whether to compute the in-corenesses (C{\"in\"}), the\n"
+   "  out-corenesses (C{\"out\"}) or the undirected corenesses (C{\"all\"}).\n"
+   "  Ignored and assumed to be C{\"all\"} for undirected graphs.\n"
    "@return: the corenesses for each vertex.\n\n"
    "@newfield ref: Reference\n"
    "@ref: Vladimir Batagelj, Matjaz Zaversnik: I{An M{O(m)} Algorithm\n"
@@ -15835,7 +15825,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "community_spinglass(weights=None, spins=25, parupdate=False, "
    "start_temp=1, stop_temp=0.01, cool_fact=0.99, update_rule=\"config\", "
-   "gamma=1, implementation=\"orig\", lambda=1)\n--\n\n"
+   "gamma=1, implementation=\"orig\", lambda_=1)\n--\n\n"
    "Finds the community structure of the graph according to the spinglass\n"
    "community detection method of Reichardt & Bornholdt.\n\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
@@ -15861,7 +15851,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  implementation is the default. The other implementation is able to take\n"
    "  into account negative weights, this can be chosen by setting\n"
    "  C{implementation} to C{\"neg\"}.\n"
-   "@param lambda: the lambda argument of the algorithm, which specifies the\n"
+   "@param lambda_: the lambda argument of the algorithm, which specifies the\n"
    "  balance between the importance of present and missing negatively\n"
    "  weighted edges within a community. Smaller values of lambda lead\n"
    "  to communities with less negative intra-connectivity. If the argument\n"
@@ -15888,7 +15878,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  will be divided by the sum of the node weights. If this is not\n"
    "  supplied, it will default to the node degree, or weighted degree\n"
    "  in case edge_weights are supplied.\n"
-   "@param node_weights: the node weights used in the Leiden algorithm.\n"
    "@param beta: parameter affecting the randomness in the Leiden \n"
    "  algorithm. This affects only the refinement step of the algorithm.\n"
    "@param initial_membership: if provided, the Leiden algorithm\n"
@@ -15931,13 +15920,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "_is_maximal_matching(matching, types=None)\n--\n\n"
    "Internal function, undocumented.\n\n"
-   "Use L{Matching.is_maximal} instead.\n"
+   "Use L{igraph.Matching.is_maximal} instead.\n"
   },
   {"_maximum_bipartite_matching", (PyCFunction)igraphmodule_Graph_maximum_bipartite_matching,
    METH_VARARGS | METH_KEYWORDS,
    "_maximum_bipartite_matching(types, weights=None)\n--\n\n"
    "Internal function, undocumented.\n\n"
-   "@see: L{Graph.maximum_bipartite_matching}\n"
+   "@see: L{igraph.Graph.maximum_bipartite_matching}\n"
   },
 
   /****************/
@@ -15949,8 +15938,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Performs a random walk of a given length from a given node.\n\n"
    "@param start: the starting vertex of the walk\n"
    "@param steps: the number of steps that the random walk should take\n"
-   "@param mode: whether to follow outbound edges only (L{OUT}),\n"
-   "  inbound edges only (L{IN}) or both (L{ALL}). Ignored for undirected\n"
+   "@param mode: whether to follow outbound edges only (C{\"out\"}),\n"
+   "  inbound edges only (C{\"in\"}) or both (C{\"all\"}). Ignored for undirected\n"
    "  graphs."
    "@param stuck: what to do when the random walk gets stuck. C{\"return\"}\n"
    "  returns a partial random walk; C{\"error\"} throws an exception.\n"

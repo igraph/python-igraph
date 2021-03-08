@@ -595,16 +595,16 @@ GRAPH_PROXY_METHOD(is_mutual, "is_mutual");
 
 #define GRAPH_PROXY_METHOD_SPEC(FUNC, METHODNAME) \
   {METHODNAME, (PyCFunction)igraphmodule_Edge_##FUNC, METH_VARARGS | METH_KEYWORDS, \
-    "Proxy method to L{Graph." METHODNAME "()}\n\n"              \
+    "Proxy method to L{Graph." METHODNAME "()<igraph._igraph.GraphBase." METHODNAME ">}\n\n"              \
     "This method calls the " METHODNAME " method of the L{Graph} class " \
     "with this edge as the first argument, and returns the result.\n\n"\
-    "@see: Graph." METHODNAME "() for details."}
+    "@see: L{Graph." METHODNAME "()<igraph._igraph.GraphBase." METHODNAME ">} for details."}
 #define GRAPH_PROXY_METHOD_SPEC_2(FUNC, METHODNAME, METHODNAME_IN_GRAPH) \
   {METHODNAME, (PyCFunction)igraphmodule_Edge_##FUNC, METH_VARARGS | METH_KEYWORDS, \
-    "Proxy method to L{Graph." METHODNAME_IN_GRAPH "()}\n\n"              \
+    "Proxy method to L{Graph." METHODNAME_IN_GRAPH "()<igraph._igraph.GraphBase." METHODNAME_IN_GRAPH ">}\n\n"              \
     "This method calls the " METHODNAME_IN_GRAPH " method of the L{Graph} class " \
     "with this edge as the first argument, and returns the result.\n\n"\
-    "@see: Graph." METHODNAME_IN_GRAPH "() for details."}
+    "@see: L{Graph." METHODNAME_IN_GRAPH "()<igraph._igraph.GraphBase." METHODNAME_IN_GRAPH ">} for details."}
 
 /**
  * \ingroup python_interface_edge

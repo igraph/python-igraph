@@ -338,14 +338,15 @@ class VertexClustering(Clustering):
 
         @param combine_vertices: specifies how to derive the attributes of
           the vertices in the new graph from the attributes of the old ones.
-          See L{Graph.contract_vertices()} for more details.
+          See L{Graph.contract_vertices()<igraph._igraph.GraphBase.contract_vertices>}
+          for more details.
         @param combine_edges: specifies how to derive the attributes of the
           edges in the new graph from the attributes of the old ones. See
-          L{igraph.Graph.simplify()} for more details. If you specify C{False}
-          here, edges will not be combined, and the number of edges between
-          the vertices representing the original clusters will be equal to
-          the number of edges between the members of those clusters in the
-          original graph.
+          L{Graph.simplify()<igraph._igraph.GraphBase.simplify>} for more details.
+          If you specify C{False} here, edges will not be combined, and the
+          number of edges between the vertices representing the original
+          clusters will be equal to the number of edges between the members of
+          those clusters in the original graph.
 
         @return: the new graph.
         """

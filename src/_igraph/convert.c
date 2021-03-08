@@ -477,6 +477,22 @@ int igraphmodule_PyObject_to_fas_algorithm_t(PyObject *o,
 }
 
 /**
+ * \ingroup python_interface_conversion
+ * \brief Converts a Python object to an igraph \c igraph_get_adjacency_t
+ */
+int igraphmodule_PyObject_to_get_adjacency_t(PyObject *o,
+  igraph_get_adjacency_t *result) {
+  static igraphmodule_enum_translation_table_entry_t get_adjacency_tt[] = {
+        {"lower", IGRAPH_GET_ADJACENCY_LOWER},
+        {"upper", IGRAPH_GET_ADJACENCY_UPPER},
+        {"both", IGRAPH_GET_ADJACENCY_BOTH},
+        {0,0}
+    };
+
+  return igraphmodule_PyObject_to_enum(o, get_adjacency_tt, (int*)result);
+}
+
+/**
  * \brief Converts a Python object to an igraph \c igraph_layout_grid_t
  */
 int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *result) {
