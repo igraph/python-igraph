@@ -4029,6 +4029,12 @@ class Graph(GraphBase):
 
               - C{False}: no groups will be highlighted
 
+              - C{True}: only valid if the object plotted is a
+                L{VertexClustering} or L{VertexCover}. The vertex groups in the
+                clutering or cover will be highlighted such that the i-th
+                group will be colored by the i-th color from the current
+                palette. If used when plotting a graph, it will throw an error.
+
               - A dict mapping tuples of vertex indices to color names.
                 The given vertex groups will be highlighted by the given
                 colors.

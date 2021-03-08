@@ -984,7 +984,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         from matplotlib.patches import ArrowStyle
         import numpy as np
         from collections import defaultdict
-        from igraph.clustering import VertexClustering
+        from igraph.clustering import VertexClustering, VertexCover
 
         def shrink_vertex(ax, aux, vcoord, vsize_squared):
             """Shrink edge by vertex size"""
@@ -1016,7 +1016,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # extract the graph. The clustering itself can be overridden using
         # the "mark_groups" option
         clustering = None
-        if isinstance(graph, VertexClustering):
+        if isinstance(graph, (VertexClustering, VertexCover)):
             clustering = graph
             graph = clustering.graph
 
@@ -1024,13 +1024,19 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # tuples of vertex indices as the keys, colors as the values. We
         # convert other formats into that one here
         if "mark_groups" in kwds:
-            if isinstance(kwds["mark_groups"], VertexClustering):
+            if kwds["mark_groups"] is False:
+                del kwds["mark_groups"]
+            elif (kwds["mark_groups"] is True) and (clustering is not None):
+                pass
+            # Deferred import to avoid a cycle in the import graph
+            elif isinstance(kwds["mark_groups"], (VertexClustering, VertexCover)):
                 if clustering is not None:
                     raise ValueError(
                         "mark_groups cannot override a clustering with another"
                     )
                 else:
                     clustering = kwds["mark_groups"]
+                    kwds["mark_groups"] = True
             else:
                 try:
                     mg_iter = iter(kwds["mark_groups"])
@@ -1041,15 +1047,18 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # If a clustering is set, color vertices and mark groups if requested
         if clustering is not None:
             if "vertex_color" not in kwds:
-                clusters = sorted(set(clustering.membership))
+                membership = clustering.membership
+                if isinstance(clustering, VertexCover):
+                    membership = [x[0] for x in membership]
+                clusters = sorted(set(membership))
                 n_colors = len(clusters)
                 cmap = mpl.cm.get_cmap("viridis")
                 colors = [cmap(1.0 * i / n_colors) for i in range(n_colors)]
-                c = [colors[clusters.index(i)] for i in clustering.membership]
+                c = [colors[clusters.index(i)] for i in membership]
                 kwds["vertex_color"] = c
 
                 # mark_groups if not explicitely marked
-                if ("mark_groups" in kwds) and (kwds["mark_groups"] == clustering):
+                if ("mark_groups" in kwds) and (kwds["mark_groups"] is True):
                     mark_groups = defaultdict(list)
                     for i, color in enumerate(c):
                         mark_groups[color].append(i)
@@ -1068,22 +1077,15 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
         # Mark groups
         if "mark_groups" in kwds:
-            try:
-                from scipy.spatial import ConvexHull
-            except ImportError:
-                raise ImportError(
-                    "You should install scipy package in order to use mark_groups"
-                )
-
             for idx, color in kwds["mark_groups"].items():
                 points = [vcoord[i] for i in idx]
-                ch = ConvexHull(points)
-                vertices = np.array([vcoord[idx[i]] for i in ch.vertices])
+                vertices = np.asarray(convex_hull(points, coords=True))
                 # 15% expansion
                 vertices += 0.15 * (vertices - vertices.mean(axis=0))
 
                 # NOTE: we could include a corner cutting algorithm close to
-                # the vertices (e.g. Chaikin) for beautification
+                # the vertices (e.g. Chaikin) for beautification, or a corner
+                # radius like it's done in the Cairo interface
                 polygon = mpl.patches.Polygon(
                     vertices,
                     facecolor=color,
