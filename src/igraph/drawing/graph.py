@@ -984,6 +984,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         from matplotlib.patches import FancyArrowPatch
         from matplotlib.patches import ArrowStyle
         import numpy as np
+
         # Deferred import to avoid a cycle in the import graph
         from igraph.clustering import VertexClustering, VertexCover
 

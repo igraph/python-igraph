@@ -2157,7 +2157,7 @@ class Graph(GraphBase):
         return super().Adjacency(matrix, mode=mode)
 
     @classmethod
-    def WeightedAdjacency(klass, matrix, mode=ADJ_DIRECTED, attr="weight", loops=True):
+    def Weighted_Adjacency(klass, matrix, mode=ADJ_DIRECTED, attr="weight", loops=True):
         """Generates a graph from its weighted adjacency matrix.
 
         @param matrix: the adjacency matrix. Possible types are:
@@ -2196,18 +2196,19 @@ class Graph(GraphBase):
         except ImportError:
             sparse = None
 
-        if (sparse is not None) and isinstance(matrix, sparse.spmatrix):
+        if sparse is not None and isinstance(matrix, sparse.spmatrix):
             return _graph_from_weighted_sparse_matrix(
                 klass,
                 matrix,
                 mode=mode,
                 attr=attr,
+                loops=loops,
             )
 
-        if (np is not None) and isinstance(matrix, np.ndarray):
+        if np is not None and isinstance(matrix, np.ndarray):
             matrix = matrix.tolist()
 
-        return super().WeightedAdjacency(
+        return super().Weighted_Adjacency(
             matrix,
             mode=mode,
             attr=attr,

@@ -37,81 +37,109 @@ from igraph._igraph import (
 )
 
 
+_SUPPORTED_MODES = ("directed", "undirected", "max", "min", "plus", "lower", "upper")
+
+
+def _convert_mode_argument(mode):
+    # resolve mode constants, convert to lowercase
+    mode = (
+        {
+            ADJ_DIRECTED: "directed",
+            ADJ_UNDIRECTED: "undirected",
+            ADJ_MAX: "max",
+            ADJ_MIN: "min",
+            ADJ_PLUS: "plus",
+            ADJ_UPPER: "upper",
+            ADJ_LOWER: "lower",
+        }
+        .get(mode, mode)
+        .lower()
+    )
+
+    if mode not in _SUPPORTED_MODES:
+        raise ValueError("mode should be one of " + (" ".join(_SUPPORTED_MODES)))
+
+    if mode == "undirected":
+        mode = "max"
+
+    return mode
+
+
 # Logic to get graph from scipy sparse matrix. This would be simple if there
 # weren't so many modes.
-def _graph_from_sparse_matrix(klass, matrix, mode=ADJ_DIRECTED):
+def _graph_from_sparse_matrix(klass, matrix, mode="directed"):
     """Construct graph from sparse matrix, unweighted"""
     # This function assumes there is scipy and the matrix is a scipy sparse
     # matrix. The caller should make sure those conditions are met.
     from scipy import sparse
 
-    modes = (
-        ADJ_DIRECTED,
-        ADJ_UNDIRECTED,
-        ADJ_MAX,
-        ADJ_MIN,
-        ADJ_PLUS,
-        ADJ_UPPER,
-        ADJ_LOWER,
-    )
-
     if not isinstance(matrix, sparse.coo_matrix):
         matrix = matrix.tocoo()
+
+    nvert = max(matrix.shape)
+    if min(matrix.shape) != nvert:
+        raise ValueError("Matrix must be square")
 
     # Shorthand notation
     m = matrix
 
-    if mode == ADJ_UNDIRECTED:
-        mode = ADJ_MAX
+    mode = _convert_mode_argument(mode)
 
-    if mode == ADJ_DIRECTED:
+    if mode == "directed":
         edges = sum(
             ([(i, j)] * n for i, j, n in zip(m.row, m.col, m.data)),
             [],
         )
 
-    elif mode in (ADJ_MAX, ADJ_MIN, ADJ_PLUS):
-        fun_dict = {
-            ADJ_MAX: max,
-            ADJ_MIN: min,
-            ADJ_PLUS: add,
-        }
-        fun = fun_dict[mode]
+    elif mode in ("max", "plus"):
+        fun = max if mode == "max" else add
         nedges = {}
         for i, j, n in zip(m.row, m.col, m.data):
-            # Fist time this pair of vertices
-            if (j, i) not in nedges:
-                nedges[(i, j)] = n
-            else:
-                nedges[(j, i)] = fun(nedges[(j, i)], n)
+            pair = (i, j) if i < j else (j, i)
+            nedges[pair] = fun(nedges.get(pair, 0), n)
 
         edges = sum(
             ([e] * n for e, n in nedges.items()),
             [],
         )
 
-    elif mode == ADJ_UPPER:
+    elif mode == "min":
+        tmp = {(i, j): n for i, j, n in zip(m.row, m.col, m.data)}
+
+        nedges = {}
+        for pair, weight in tmp.items():
+            i, j = pair
+            if i == j:
+                nedges[pair] = weight
+            elif i < j:
+                nedges[pair] = min(weight, tmp.get((j, i), 0))
+
+        edges = sum(
+            ([e] * n for e, n in nedges.items()),
+            [],
+        )
+
+    elif mode == "upper":
         edges = sum(
             ([(i, j)] * n for i, j, n in zip(m.row, m.col, m.data) if j >= i),
             [],
         )
 
-    elif mode == ADJ_LOWER:
+    elif mode == "lower":
         edges = sum(
             ([(i, j)] * n for i, j, n in zip(m.row, m.col, m.data) if j <= i),
             [],
         )
 
     else:
-        raise ValueError("mode should be one of " + " ".join(map(str, modes)))
+        raise ValueError("invalid mode")
 
-    return klass(
-        edges=edges,
-        directed=mode == ADJ_DIRECTED,
-    )
+    return klass(nvert, edges=edges, directed=(mode == "directed"))
 
 
-def _graph_from_weighted_sparse_matrix(klass, matrix, mode=ADJ_DIRECTED, attr="weight"):
+def _graph_from_weighted_sparse_matrix(
+    klass, matrix, mode=ADJ_DIRECTED, attr="weight", loops=True
+):
     """Construct graph from sparse matrix, weighted
 
     NOTE: Of course, you cannot emcompass a fully general weighted multigraph
@@ -121,65 +149,75 @@ def _graph_from_weighted_sparse_matrix(klass, matrix, mode=ADJ_DIRECTED, attr="w
     # matrix. The caller should make sure those conditions are met.
     from scipy import sparse
 
-    modes = (
-        ADJ_DIRECTED,
-        ADJ_UNDIRECTED,
-        ADJ_MAX,
-        ADJ_MIN,
-        ADJ_PLUS,
-        ADJ_UPPER,
-        ADJ_LOWER,
-    )
-
     if not isinstance(matrix, sparse.coo_matrix):
         matrix = matrix.tocoo()
+
+    nvert = max(matrix.shape)
+    if min(matrix.shape) != nvert:
+        raise ValueError("Matrix must be square")
 
     # Shorthand notation
     m = matrix
 
-    if mode == ADJ_UNDIRECTED:
-        mode = ADJ_MAX
+    mode = _convert_mode_argument(mode)
 
-    if mode == ADJ_DIRECTED:
-        edges = list(zip(m.row, m.col))
-        weights = list(m.data)
+    if mode == "directed":
+        if not loops:
+            edges, weights = [], []
+            for i, j, n in zip(m.row, m.col, m.data):
+                if i != j:
+                    edges.append((i, j))
+                    weights.append(n)
+        else:
+            edges = list(zip(m.row, m.col))
+            weights = list(m.data)
 
-    elif mode in (ADJ_MAX, ADJ_MIN, ADJ_PLUS):
-        fun_dict = {
-            ADJ_MAX: max,
-            ADJ_MIN: min,
-            ADJ_PLUS: add,
-        }
-        fun = fun_dict[mode]
+    elif mode in ("max", "plus"):
+        fun = max if mode == "max" else add
         nedges = {}
         for i, j, n in zip(m.row, m.col, m.data):
-            # Fist time this pair of vertices
-            if (j, i) not in nedges:
-                nedges[(i, j)] = n
-            else:
-                nedges[(j, i)] = fun(nedges[(j, i)], n)
+            if i == j and not loops:
+                continue
+            pair = (i, j) if i < j else (j, i)
+            nedges[pair] = fun(nedges.get(pair, 0), n)
 
         edges, weights = zip(*nedges.items())
 
-    elif mode == ADJ_UPPER:
+    elif mode == "min":
+        tmp = {(i, j): n for i, j, n in zip(m.row, m.col, m.data)}
+
+        nedges = {}
+        for pair, weight in tmp.items():
+            i, j = pair
+            if i == j and loops:
+                nedges[pair] = weight
+            elif i < j:
+                nedges[pair] = min(weight, tmp.get((j, i), 0))
+
+        edges, weights = [], []
+        for pair in sorted(nedges.keys()):
+            weight = nedges[pair]
+            if weight != 0:
+                edges.append(pair)
+                weights.append(nedges[pair])
+
+    elif mode == "upper":
         edges, weights = [], []
         for i, j, n in zip(m.row, m.col, m.data):
-            if j >= i:
+            if j > i or (loops and j == i):
                 edges.append((i, j))
                 weights.append(n)
 
-    elif mode == ADJ_LOWER:
+    elif mode == "lower":
         edges, weights = [], []
         for i, j, n in zip(m.row, m.col, m.data):
-            if j <= i:
+            if j < i or (loops and j == i):
                 edges.append((i, j))
                 weights.append(n)
 
     else:
-        raise ValueError("mode should be one of " + " ".join(map(str, modes)))
+        raise ValueError("invalid mode")
 
     return klass(
-        edges=edges,
-        directed=mode == ADJ_DIRECTED,
-        edge_attrs={attr: weights},
+        nvert, edges=edges, directed=(mode == "directed"), edge_attrs={attr: weights}
     )
