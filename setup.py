@@ -427,23 +427,71 @@ class BuildConfiguration(object):
         """
         from setuptools.command.sdist import sdist
 
+        def is_git_repo(folder):
+            return os.path.exists(os.path.join(folder, ".git"))
+
+        def cleanup_git_repo(folder):
+            folder = str(folder)
+            cwd = os.getcwd()
+            try:
+                os.chdir(folder)
+                if os.path.exists(".git"):
+                    retcode = subprocess.call("git clean -dfx", shell=True)
+                    if retcode:
+                        raise RuntimeError(f"Failed to clean {folder} with git")
+            finally:
+                os.chdir(cwd)
+
         class custom_sdist(sdist):
             def run(self):
-                # Clean up vendor/source/igraph with git
-                cwd = os.getcwd()
-                try:
-                    os.chdir(os.path.join("vendor", "source", "igraph"))
-                    if os.path.exists(".git"):
-                        retcode = subprocess.call("git clean -dfx", shell=True)
-                        if retcode:
-                            print("Failed to clean vendor/source/igraph with git")
-                            print("")
-                            return False
-                finally:
-                    os.chdir(cwd)
+                igraph_source_repo = os.path.join("vendor", "source", "igraph")
+                igraph_build_dir = os.path.join("vendor", "build", "igraph")
+                version_file = os.path.join(igraph_source_repo, "IGRAPH_VERSION")
+                version = None
 
-                # Run the original sdist command
-                sdist.run(self)
+                # Check whether the source repo contains an IGRAPH_VERSION file
+                if not os.path.exists(version_file):
+                    version_header = os.path.join(igraph_build_dir, "include", "igraph_version.h")
+                    if not os.path.exists(version_header):
+                        raise RuntimeError("You need to build the C core of igraph first before generating a source tarball of python-igraph")
+
+                    with open(version_header, "r") as fp:
+                        lines = [line.strip() for line in fp if line.startswith("#define IGRAPH_VERSION ")]
+                        if len(lines) == 1:
+                            version = lines[0].split('"')[1]
+
+                else:
+                    with open(version_file, "r") as fp:
+                        version = fp.read().strip().split("\n")[0]
+
+                if not isinstance(version, str) or len(version) < 5:
+                    raise RuntimeError(f"Cannot determine the version number of the C core in {igraph_source_repo}")
+
+                if not is_git_repo(igraph_source_repo):
+                    # python-igraph was extracted from an official tarball so
+                    # there is no need to tweak anything
+                    return sdist.run(self)
+                else:
+                    # Clean up vendor/source/igraph with git
+                    cleanup_git_repo(igraph_source_repo)
+
+                    # Copy the generated parser sources from the build folder
+                    parser_dir = os.path.join(igraph_build_dir, "src", "io", "parsers")
+                    if not os.path.isdir(parser_dir):
+                        raise RuntimeError(f"You need to build the C core of igraph first before generating a source tarball of python-igraph")
+                    shutil.copytree(parser_dir, os.path.join(igraph_source_repo, "src", "io", "parsers"))
+
+                    # Add a version file to the tarball
+                    with open(version_file, "w") as fp:
+                        fp.write(version)
+
+                    # Run the original sdist command
+                    retval = sdist.run(self)
+
+                    # Clean up vendor/source/igraph with git again
+                    cleanup_git_repo(igraph_source_repo)
+
+                    return retval
 
         return custom_sdist
 
