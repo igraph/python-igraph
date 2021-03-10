@@ -163,10 +163,8 @@ class MotifTests(unittest.TestCase):
         self.g = Graph.Erdos_Renyi(100, 0.2, directed=True)
 
     def testDyads(self):
-        """
-        @note: this test is not exhaustive, it only checks whether the
-          L{DyadCensus} objects "understand" attribute and item accessors
-        """
+        # @note: this test is not exhaustive, it only checks whether the
+        # L{DyadCensus} objects "understand" attribute and item accessors
         dc = self.g.dyad_census()
         accessors = ["mut", "mutual", "asym", "asymm", "asymmetric", "null"]
         for a in accessors:
@@ -178,10 +176,8 @@ class MotifTests(unittest.TestCase):
         self.assertTrue(len(tuple(dc)) == 3)
 
     def testTriads(self):
-        """
-        @note: this test is not exhaustive, it only checks whether the
-          L{TriadCensus} objects "understand" attribute and item accessors
-        """
+        # @note: this test is not exhaustive, it only checks whether the
+        # L{TriadCensus} objects "understand" attribute and item accessors
         tc = self.g.triad_census()
         accessors = ["003", "012", "021d", "030C"]
         for a in accessors:
