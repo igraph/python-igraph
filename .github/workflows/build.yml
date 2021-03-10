@@ -50,6 +50,8 @@ jobs:
         pip install tox tox-gh-actions
     - name: Test with tox
       run: tox
+      env:
+        TESTING_IN_TOX: 1
 
   build_osx:
     runs-on: macos-latest
