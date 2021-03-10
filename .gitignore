@@ -5,7 +5,7 @@
 build/
 dist/
 doc/api/
-igraph/*.so
+src/igraph/*.so
 *.egg-info/
 .python-version
 .eggs/
