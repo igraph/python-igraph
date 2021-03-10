@@ -449,8 +449,25 @@ class BuildConfiguration(object):
                 version_file = os.path.join(igraph_source_repo, "IGRAPH_VERSION")
                 version = None
 
-                # Check whether the source repo contains an IGRAPH_VERSION file
-                if not os.path.exists(version_file):
+                # Check whether the source repo contains an IGRAPH_VERSION file,
+                # and extract the version number from that
+                if os.path.exists(version_file):
+                    with open(version_file, "r") as fp:
+                        version = fp.read().strip().split("\n")[0]
+
+                # If no IGRAPH_VERSION file exists, but we have a git repo, try
+                # git describe
+                if not version and is_git_repo(igraph_source_repo):
+                    cwd = os.getcwd()
+                    try:
+                        os.chdir(igraph_source_repo)
+                        version = subprocess.check_output("git describe", shell=True).decode("utf-8").strip()
+                    finally:
+                        os.chdir(cwd)
+
+                # If we still don't have a version number, try to parse it from
+                # include/igraph_version.h
+                if not version:
                     version_header = os.path.join(igraph_build_dir, "include", "igraph_version.h")
                     if not os.path.exists(version_header):
                         raise RuntimeError("You need to build the C core of igraph first before generating a source tarball of python-igraph")
@@ -459,10 +476,6 @@ class BuildConfiguration(object):
                         lines = [line.strip() for line in fp if line.startswith("#define IGRAPH_VERSION ")]
                         if len(lines) == 1:
                             version = lines[0].split('"')[1]
-
-                else:
-                    with open(version_file, "r") as fp:
-                        version = fp.read().strip().split("\n")[0]
 
                 if not isinstance(version, str) or len(version) < 5:
                     raise RuntimeError(f"Cannot determine the version number of the C core in {igraph_source_repo}")
