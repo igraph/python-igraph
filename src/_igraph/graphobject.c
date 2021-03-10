@@ -1938,6 +1938,7 @@ PyObject *igraphmodule_Graph_Adjacency(PyTypeObject * type,
   return (PyObject *) self;
 }
 
+
 /** \ingroup python_interface_graph
  * \brief Generates a graph from the Graph Atlas
  * \return a reference to the newly generated Python igraph object

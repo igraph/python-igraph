@@ -137,6 +137,10 @@ from igraph.utils import (
     safemax,
 )
 from igraph.version import __version__, __version_info__
+from igraph.sparse_matrix import (
+    _graph_from_sparse_matrix,
+    _graph_from_weighted_sparse_matrix,
+)
 
 import os
 import math
@@ -2107,6 +2111,108 @@ class Graph(GraphBase):
             graph = cls.Weighted_Adjacency(matrix, *args, **kwds)
 
         return graph
+
+    @classmethod
+    def Adjacency(klass, matrix, mode=ADJ_DIRECTED, *args, **kwargs):
+        """Generates a graph from its adjacency matrix.
+
+        @param matrix: the adjacency matrix. Possible types are:
+          - a list of lists
+          - a numpy 2D array or matrix (will be converted to list of lists)
+          - a scipy.sparse matrix (will be converted to a COO matrix, but not
+            to a dense matrix)
+        @param mode: the mode to be used. Possible values are:
+
+          - C{ADJ_DIRECTED} - the graph will be directed and a matrix
+            element gives the number of edges between two vertex.
+          - C{ADJ_UNDIRECTED} - alias to C{ADJ_MAX} for convenience.
+          - C{ADJ_MAX}   - undirected graph will be created and the number of
+            edges between vertex M{i} and M{j} is M{max(A(i,j), A(j,i))}
+          - C{ADJ_MIN}   - like C{ADJ_MAX}, but with M{min(A(i,j), A(j,i))}
+          - C{ADJ_PLUS}  - like C{ADJ_MAX}, but with M{A(i,j) + A(j,i)}
+          - C{ADJ_UPPER} - undirected graph with the upper right triangle of
+            the matrix (including the diagonal)
+          - C{ADJ_LOWER} - undirected graph with the lower left triangle of
+            the matrix (including the diagonal)
+
+          These values can also be given as strings without the C{ADJ} prefix.
+
+        """
+        try:
+            import numpy as np
+        except ImportError:
+            np = None
+
+        try:
+            from scipy import sparse
+        except ImportError:
+            sparse = None
+
+        if (sparse is not None) and isinstance(matrix, sparse.spmatrix):
+            return _graph_from_sparse_matrix(klass, matrix, mode=mode)
+
+        if (np is not None) and isinstance(matrix, np.ndarray):
+            matrix = matrix.tolist()
+
+        return super().Adjacency(matrix, mode=mode)
+
+    @classmethod
+    def WeightedAdjacency(klass, matrix, mode=ADJ_DIRECTED, attr="weight", loops=True):
+        """Generates a graph from its weighted adjacency matrix.
+
+        @param matrix: the adjacency matrix. Possible types are:
+          - a list of lists
+          - a numpy 2D array or matrix (will be converted to list of lists)
+          - a scipy.sparse matrix (will be converted to a COO matrix, but not
+            to a dense matrix)
+        @param mode: the mode to be used. Possible values are:
+
+          - C{ADJ_DIRECTED} - the graph will be directed and a matrix
+            element gives the number of edges between two vertex.
+          - C{ADJ_UNDIRECTED} - alias to C{ADJ_MAX} for convenience.
+          - C{ADJ_MAX}   - undirected graph will be created and the number of
+            edges between vertex M{i} and M{j} is M{max(A(i,j), A(j,i))}
+          - C{ADJ_MIN}   - like C{ADJ_MAX}, but with M{min(A(i,j), A(j,i))}
+          - C{ADJ_PLUS}  - like C{ADJ_MAX}, but with M{A(i,j) + A(j,i)}
+          - C{ADJ_UPPER} - undirected graph with the upper right triangle of
+            the matrix (including the diagonal)
+          - C{ADJ_LOWER} - undirected graph with the lower left triangle of
+            the matrix (including the diagonal)
+
+          These values can also be given as strings without the C{ADJ} prefix.
+        @param attr: the name of the edge attribute that stores the edge
+          weights.
+        @param loops: whether to include loop edges. When C{False}, the diagonal
+          of the adjacency matrix will be ignored.
+
+        """
+        try:
+            import numpy as np
+        except ImportError:
+            np = None
+
+        try:
+            from scipy import sparse
+        except ImportError:
+            sparse = None
+
+        if (sparse is not None) and isinstance(matrix, sparse.spmatrix):
+            return _graph_from_weighted_sparse_matrix(
+                klass,
+                matrix,
+                mode=mode,
+                attr=attr,
+            )
+
+        if (np is not None) and isinstance(matrix, np.ndarray):
+            matrix = matrix.tolist()
+
+        return super().WeightedAdjacency(
+            matrix,
+            mode=mode,
+            attr=attr,
+            loops=loops,
+        )
 
     def write_dimacs(self, f, source=None, target=None, capacity="capacity"):
         """Writes the graph in DIMACS format to the given file.

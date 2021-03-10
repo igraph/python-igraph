@@ -1,11 +1,20 @@
 import unittest
 from igraph import *
 
+
 try:
     import numpy as np
-    import pandas as pd
 except ImportError:
     np = None
+
+try:
+    import scipy.sparse as sparse
+except ImportError:
+    sparse = None
+
+try:
+    import pandas as pd
+except ImportError:
     pd = None
 
 
@@ -169,8 +178,96 @@ class GeneratorTests(unittest.TestCase):
         pref_matrix[0][1] = 0.7
         self.assertRaises(InternalError, Graph.SBM, 60, pref_matrix, types)
 
+    @unittest.skipIf(np is None, "test case depends on NumPy")
+    def testAdjacencyNumPy(self):
+        mat = np.array(
+            [[0, 1, 1, 0], [1, 0, 0, 0], [0, 0, 2, 0], [0, 1, 0, 0]],
+        )
+
+        # ADJ_DIRECTED (default)
+        g = Graph.Adjacency(mat)
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (2, 2), (2, 2), (3, 1)])
+
+        # ADJ MIN
+        g = Graph.Adjacency(mat, mode="min")
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (2, 2), (2, 2)])
+
+        # ADJ LOWER
+        g = Graph.Adjacency(mat, mode="lower")
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (2, 2), (2, 2), (1, 3)])
+
+    @unittest.skipIf(
+        (sparse is None) or (np is None), "test case depends on NumPy/SciPy"
+    )
+    def testSparseAdjacency(self):
+        mat = sparse.coo_matrix(
+            [[0, 1, 1, 0], [1, 0, 0, 0], [0, 0, 2, 0], [0, 1, 0, 0]],
+        )
+
+        # ADJ_DIRECTED (default)
+        g = Graph.Adjacency(mat)
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (2, 2), (2, 2), (3, 1)])
+
+        # ADJ MIN
+        g = Graph.Adjacency(mat, mode="min")
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (2, 2), (2, 2)])
+
+        # ADJ LOWER
+        g = Graph.Adjacency(mat, mode="lower")
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (2, 2), (2, 2), (1, 3)])
+
     def testWeightedAdjacency(self):
         mat = [[0, 1, 2, 0], [2, 0, 0, 0], [0, 0, 2.5, 0], [0, 1, 0, 0]]
+
+        g = Graph.Weighted_Adjacency(mat, attr="w0")
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (2, 2), (3, 1)])
+        self.assertTrue(g.es["w0"] == [1, 2, 2, 2.5, 1])
+
+        g = Graph.Weighted_Adjacency(mat, mode="plus")
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 3), (2, 2)])
+        self.assertTrue(g.es["weight"] == [3, 2, 1, 2.5])
+
+        g = Graph.Weighted_Adjacency(mat, attr="w0", loops=False)
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (3, 1)])
+        self.assertTrue(g.es["w0"] == [1, 2, 2, 1])
+
+    @unittest.skipIf(np is None, "test case depends on NumPy")
+    def testWeightedAdjacencyNumPy(self):
+        mat = np.array(
+            [[0, 1, 2, 0], [2, 0, 0, 0], [0, 0, 2.5, 0], [0, 1, 0, 0]],
+        )
+
+        g = Graph.Weighted_Adjacency(mat, attr="w0")
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (2, 2), (3, 1)])
+        self.assertTrue(g.es["w0"] == [1, 2, 2, 2.5, 1])
+
+        g = Graph.Weighted_Adjacency(mat, mode="plus")
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 3), (2, 2)])
+        self.assertTrue(g.es["weight"] == [3, 2, 1, 2.5])
+
+        g = Graph.Weighted_Adjacency(mat, attr="w0", loops=False)
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (3, 1)])
+        self.assertTrue(g.es["w0"] == [1, 2, 2, 1])
+
+    @unittest.skipIf(
+        (sparse is None) or (np is None), "test case depends on NumPy/SciPy"
+    )
+    def testSparseWeighedAdjacency(self):
+        mat = sparse.coo_matrix(
+            [[0, 1, 2, 0], [2, 0, 0, 0], [0, 0, 2.5, 0], [0, 1, 0, 0]]
+        )
 
         g = Graph.Weighted_Adjacency(mat, attr="w0")
         el = g.get_edgelist()
