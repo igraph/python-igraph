@@ -29,7 +29,10 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Init C core submodule
-      run: git submodule update --init
+      run: |
+        git submodule update --init
+        cat vendor/source/igraph/.git
+        cat .git/modules/vendor/source/igraph/HEAD
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
