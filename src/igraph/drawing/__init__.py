@@ -318,7 +318,16 @@ class Plot(object):
         self._surface.finish()
 
     def show(self):
-        """Saves the plot to a temporary file and shows it."""
+        """Saves the plot to a temporary file and shows it.
+
+        This method is deprecated from python-igraph 0.9.1 and will be removed in
+        0.10.0.
+
+        @deprecated: Opening an image viewer with a temporary file never worked
+            reliably across platforms.
+        """
+        warn("Plot.show() is deprecated from python-igraph 0.9.1", DeprecationWarning)
+
         if not isinstance(self._surface, cairo.ImageSurface):
             sur = cairo.ImageSurface(
                 cairo.FORMAT_ARGB32, int(self.bbox.width), int(self.bbox.height)
@@ -340,7 +349,7 @@ class Plot(object):
                 # should only happen on unknown platforms.
                 plat = platform.system()
                 raise NotImplementedError(
-                    "showing plots is not implemented " + "on this platform: %s" % plat
+                    "showing plots is not implemented on this platform: %s" % plat
                 )
             else:
                 os.system("%s %s" % (imgviewer, tmpfile))
@@ -415,16 +424,18 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     @param target: the target where the object should be plotted. It can be one
       of the following types:
 
-        - C{None} -- an appropriate surface will be created and the object will
-          be plotted there.
+        - C{string} -- a file with the given name will be created and an
+          appropriate Cairo surface will be attached to it. The supported image
+          formats are: PNG, PDF, SVG and PostScript.
 
         - C{cairo.Surface} -- the given Cairo surface will be used. This can
           refer to a PNG image, an arbitrary window, an SVG file, anything that
           Cairo can handle.
 
-        - C{string} -- a file with the given name will be created and an
-          appropriate Cairo surface will be attached to it. The supported image
-          formats are: PNG, PDF, SVG and PostScript.
+        - C{None} -- a temporary file will be created and the object will be
+          plotted there. igraph will attempt to open an image viewer and show
+          the temporary file. This feature is deprecated from python-igraph
+          version 0.9.1 and will be removed in 0.10.0.
 
     @param bbox: the bounding box of the plot. It must be a tuple with either
       two or four integers, or a L{BoundingBox} object. If this is a tuple

@@ -40,7 +40,13 @@ import os.path
 
 
 def get_platform_image_viewer():
-    """Returns the path of an image viewer on the given platform"""
+    """Returns the path of an image viewer on the given platform.
+
+    Deprecated since python-igraph 0.9.1 and will be removed in 0.10.0.
+
+    @deprecated: This function was only used by the now-deprecated C{show()}
+        method of the Plot class.
+    """
     plat = platform.system()
     if plat == "Darwin":
         # Most likely Mac OS X

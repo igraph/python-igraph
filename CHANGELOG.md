@@ -1,5 +1,31 @@
 # igraph Python interface changelog
 
+## [0.9.1]
+
+### Changed
+
+* Calling `plot()` without a filename or a target surface is now deprecated.
+  The original intention was to plot to a temporary file and then open it in
+  the default image viewer of the platform of the user automatically, but this
+  has never worked reliably. The feature will be removed in 0.10.0.
+
+### Fixed
+
+* Fixed plotting of `VertexClustering` objects on Matplotlib axes.
+
+* The `IGRAPH_CMAKE_EXTRA_ARGS` environment variable is now applied _after_ the
+  default CMake arguments when building the C core of igraph from source. This
+  enables package maintainers to override any of the default arguments we pass
+  to CMake.
+
+* Fixed the documentation build by replacing Epydoc with PyDoctor.
+
+### Miscellaneous
+
+* Many old code constructs that were used to maintain compatibility with Python
+  2.x are removed now that we have dropped support for Python 2.x.
+
+
 ## [0.9.0]
 
 ### Added
@@ -55,6 +81,7 @@
 
 * The core C library is now built with `-fPIC` on Linux to allow linking to the
   Python interface.
+
 
 ## 0.8.3
 
