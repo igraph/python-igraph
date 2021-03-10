@@ -22,6 +22,10 @@
 
 ### Miscellaneous
 
+* Building `python-igraph` from source should not require `flex` and `bison`
+  any more; sources of the parsers used by the C core are now included in the
+  Python source tarball.
+
 * Many old code constructs that were used to maintain compatibility with Python
   2.x are removed now that we have dropped support for Python 2.x.
 
