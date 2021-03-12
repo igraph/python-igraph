@@ -83,8 +83,6 @@ jobs:
 
   build_windows:
     runs-on: windows-latest
-    env:
-      IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake
 
     strategy:
       matrix:
@@ -128,5 +126,7 @@ jobs:
         pip install tox tox-gh-actions
     - name: Test with tox
       run: tox
+      shell: cmd
       env:
         TESTING_IN_TOX: 1
+        IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake
