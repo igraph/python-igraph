@@ -12,8 +12,6 @@ on:
     tags-ignore:
       - '*.*.*'
 
-
-
 jobs:
   build_linux:
     runs-on: ubuntu-latest
@@ -83,3 +81,50 @@ jobs:
       env:
         TESTING_IN_TOX: 1
 
+  build_windows:
+    runs-on: windows-latest
+    env:
+      IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake
+
+    strategy:
+      matrix:
+        python-version:
+        - 3.6
+        - 3.7
+        - 3.8
+        - 3.9
+        - pypy-3.7
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Init C core submodule
+      run: |
+        git submodule update --init
+        cat vendor/source/igraph/.git
+        cat .git/modules/vendor/source/igraph/HEAD
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Cache VCPKG
+      uses: actions/cache@v2
+      with:
+        path: $(VCPKG_INSTALLATION_ROOT)\installed
+        key: vcpkg-installed-${{ runner.os }}
+    - name: Install OS dependencies
+      run: |
+        choco install winflexbison3 ninja
+        %VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
+        %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:x64-windows-static-md
+    - name: Install Python dependencies
+      run: |
+        # Pypi has no pip by default, and ubuntu blocks python -m ensurepip
+        # However, Github runners are supposed to have pip installed by default
+        # https://docs.github.com/en/actions/guides/building-and-testing-python
+        #wget -qO- https://bootstrap.pypa.io/get-pip.py | python
+        python -m pip install --upgrade pip
+        pip install tox tox-gh-actions
+    - name: Test with tox
+      run: tox
+      env:
+        TESTING_IN_TOX: 1
