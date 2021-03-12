@@ -114,8 +114,8 @@ jobs:
     - name: Install OS dependencies
       run: |
         choco install winflexbison3 ninja
-        %VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
-        %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:x64-windows-static-md
+        $env:VCPKG_INSTALLATION_ROOT\vcpkg.exe integrate install
+        $env:VCPKG_INSTALLATION_ROOT\vcpkg.exe install libxml2:x64-windows-static-md
     - name: Install Python dependencies
       run: |
         # Pypi has no pip by default, and ubuntu blocks python -m ensurepip
