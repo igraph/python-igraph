@@ -76,6 +76,7 @@ from igraph._igraph import (
     set_progress_handler,
     set_random_number_generator,
     set_status_handler,
+    __igraph_version__
 )
 from igraph.clustering import (
     Clustering,
