@@ -129,4 +129,4 @@ jobs:
       shell: cmd
       env:
         TESTING_IN_TOX: 1
-        IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_INSTALLATION_ROOT }}/scripts/buildsystems/vcpkg.cmake
+        IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
