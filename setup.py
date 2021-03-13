@@ -186,26 +186,18 @@ class IgraphCCoreBuilder(object):
             fp.write(repr(libraries))
 
     def parse_pkgconfig_file(self, filename):
-        building_on_windows = building_on_windows_msvc()
+        libraries = []
+        with filename.open("r") as fp:
+            for line in fp:
+                if line.startswith("Libs: ") or line.startswith("Libs.private: "):
+                    words = line.strip().split()
+                    libraries.extend(
+                        word[2:] for word in words if word.startswith("-l")
+                    )
 
-        if building_on_windows:
+        if not libraries:
+            # Educated guess
             libraries = ["igraph"]
-        else:
-            libraries = []
-            with filename.open("r") as fp:
-                for line in fp:
-                    if line.startswith("Libs: ") or line.startswith("Libs.private: "):
-                        words = line.strip().split()
-                        libraries.extend(
-                            word[2:] for word in words if word.startswith("-l")
-                        )
-
-            if not libraries:
-                # Educated guess
-                libraries = ["igraph"]
-
-        return libraries
-
 
 ###########################################################################
 
