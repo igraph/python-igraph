@@ -199,6 +199,8 @@ class IgraphCCoreBuilder(object):
             # Educated guess
             libraries = ["igraph"]
 
+        return libraries
+
 ###########################################################################
 
 
