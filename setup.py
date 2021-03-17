@@ -68,6 +68,7 @@ def find_static_library(library_name, library_path):
         extra_libdirs = [
             "/usr/local/lib64",
             "/usr/local/lib",
+            "/usr/lib/x86_64-linux-gnu/",
             "/usr/lib64",
             "/usr/lib",
             "/lib64",
@@ -652,8 +653,11 @@ class BuildConfiguration(object):
 
             static_lib = find_static_library(library_name, self.library_dirs)
             if static_lib:
+                print(f"Found {library_name} as static library in {static_lib}.")
                 self.libraries.remove(library_name)
                 self.extra_objects.append(static_lib)
+            else:
+                print(f"Warning: could not find static library of {library_name}.")
 
     def use_vendored_igraph(self):
         """Assumes that igraph is installed already in ``vendor/install/igraph`` and sets up
