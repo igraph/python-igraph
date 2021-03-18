@@ -196,7 +196,7 @@ class IgraphCCoreBuilder(object):
                     words = line.strip().split()
                     for word in words:
                         if word.startswith("-l"):
-                            lib = word[:2]
+                            lib = word[2:]
                             if building_on_windows:
                                 lib = 'lib' + lib
                             libraries.append(lib)
