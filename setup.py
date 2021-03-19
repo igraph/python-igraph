@@ -645,9 +645,18 @@ class BuildConfiguration(object):
                 self.use_pkgconfig = True
             elif option == "--libraries":
                 opts_to_remove.append(idx)
-                idx += 1
-                opts_to_remove.append(idx)
-                self.extra_libraries = sys.argv[idx].split(',')
+                if (idx + 1 < len(sys.argv)):
+                    idx += 1
+                    print(sys.argv)
+                    print(idx)
+                    opts_to_remove.append(idx)
+                    if (sys.argv[idx].startswith('-')):
+                        print("Warning: missing argument for --libraries")
+                        idx -= 1
+                    else:
+                        self.extra_libraries = sys.argv[idx].split(',')
+                else:
+                    print("Warning: missing argument for --libraries")
 
             idx += 1
 
