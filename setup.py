@@ -295,7 +295,6 @@ class BuildConfiguration(object):
         self.library_dirs = []
         self.runtime_library_dirs = []
         self.libraries = []
-        self.extra_libraries = []
         self.extra_compile_args = []
         self.extra_link_args = []
         self.define_macros = []
@@ -394,7 +393,9 @@ class BuildConfiguration(object):
                     )
 
                 # Add extra libraries that may have been specified
-                buildcfg.libraries.extend(buildcfg.extra_libraries)
+                if "IGRAPH_EXTRA_LIBRARIES" in os.environ:
+                    extra_libraries = os.environ["IGRAPH_EXTRA_LIBRARY_PATH"].split(',')
+                    buildcfg.libraries.extend(extra_libraries)
 
                 # Replaces library names with full paths to static libraries
                 # where possible. libm.a is excluded because it caused problems
@@ -627,10 +628,9 @@ class BuildConfiguration(object):
         # Yes, this is ugly, but we don't want to interfere with setup.py's own
         # option handling
         opts_to_remove = []
-        idx = 0
-        while idx < len(sys.argv):
-            option = sys.argv[idx]
-
+        for idx, option in enumerate(sys.argv):
+            if not option.startswith("--"):
+                continue
             if option == "--static":
                 opts_to_remove.append(idx)
                 self.static_extension = True
@@ -643,22 +643,6 @@ class BuildConfiguration(object):
             elif option == "--use-pkg-config":
                 opts_to_remove.append(idx)
                 self.use_pkgconfig = True
-            elif option == "--libraries":
-                opts_to_remove.append(idx)
-                if (idx + 1 < len(sys.argv)):
-                    idx += 1
-                    print(sys.argv)
-                    print(idx)
-                    opts_to_remove.append(idx)
-                    if (sys.argv[idx].startswith('-')):
-                        print("Warning: missing argument for --libraries")
-                        idx -= 1
-                    else:
-                        self.extra_libraries = sys.argv[idx].split(',')
-                else:
-                    print("Warning: missing argument for --libraries")
-
-            idx += 1
 
         for idx in reversed(opts_to_remove):
             sys.argv[idx : (idx + 1)] = []
