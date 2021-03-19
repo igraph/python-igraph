@@ -114,6 +114,7 @@ jobs:
         choco install winflexbison3 ninja
         %VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
         %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:x64-windows
+        run: echo "C:/vcpkg/installed/x64-windows/debug/lib/" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       shell: cmd
 
     - name: Install Python dependencies
