@@ -394,7 +394,7 @@ class BuildConfiguration(object):
 
                 # Add extra libraries that may have been specified
                 if "IGRAPH_EXTRA_LIBRARIES" in os.environ:
-                    extra_libraries = os.environ["IGRAPH_EXTRA_LIBRARY_PATH"].split(',')
+                    extra_libraries = os.environ["IGRAPH_EXTRA_LIBRARIES"].split(',')
                     buildcfg.libraries.extend(extra_libraries)
 
                 # Replaces library names with full paths to static libraries
