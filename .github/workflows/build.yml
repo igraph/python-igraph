@@ -126,11 +126,11 @@ jobs:
         pip install tox tox-gh-actions
     - name: Test with tox
       run: |
-        echo "C:/vcpkg/installed/x64-windows/debug/lib/" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "C:/vcpkg/installed/x64-windows/debug/bin/" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         tox
       env:
         TESTING_IN_TOX: 1
         IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
         VERBOSE: on
-        IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/x64-windows/debug/bin/
+        IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/x64-windows/debug/lib/
         IGRAPH_EXTRA_LIBRARIES: libxml2
