@@ -68,7 +68,7 @@ def find_static_library(library_name, library_path):
         extra_libdirs = [
             "/usr/local/lib64",
             "/usr/local/lib",
-            "/usr/lib/x86_64-linux-gnu/",
+            "/usr/lib/x86_64-linux-gnu",
             "/usr/lib64",
             "/usr/lib",
             "/lib64",
@@ -189,23 +189,24 @@ class IgraphCCoreBuilder(object):
     def parse_pkgconfig_file(self, filename):
         building_on_windows = building_on_windows_msvc()
 
-        libraries = []
-        with filename.open("r") as fp:
-            for line in fp:
-                if line.startswith("Libs: ") or line.startswith("Libs.private: "):
-                    words = line.strip().split()
-                    for word in words:
-                        if word.startswith("-l"):
-                            lib = word[2:]
-                            if building_on_windows:
-                                lib = 'lib' + lib
-                            libraries.append(lib)
-
-        if not libraries:
-            # Educated guess
+        if building_on_windows:
             libraries = ["igraph"]
+        else:
+            libraries = []
+            with filename.open("r") as fp:
+                for line in fp:
+                    if line.startswith("Libs: ") or line.startswith("Libs.private: "):
+                        words = line.strip().split()
+                        libraries.extend(
+                            word[2:] for word in words if word.startswith("-l")
+                        )
+
+            if not libraries:
+                # Educated guess
+                libraries = ["igraph"]
 
         return libraries
+
 
 ###########################################################################
 
