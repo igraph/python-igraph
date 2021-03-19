@@ -126,7 +126,9 @@ jobs:
         pip install tox tox-gh-actions
     - name: Test with tox
       run: |
-        set PATH="%PATH%;C:/vcpkg/installed/x64-windows/debug/bin/"
+        echo %PATH%
+        set PATH=%PATH%;C:/vcpkg/installed/x64-windows/debug/bin/
+        echo %PATH%
         tox
       shell: cmd
       env:
