@@ -126,8 +126,9 @@ jobs:
         pip install tox tox-gh-actions
     - name: Test with tox
       run: |
-        echo "C:/vcpkg/installed/x64-windows/debug/bin/" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        set PATH="%PATH%;C:/vcpkg/installed/x64-windows/debug/bin/"
         tox
+      shell: cmd
       env:
         TESTING_IN_TOX: 1
         IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
