@@ -127,7 +127,7 @@ jobs:
     - name: Test with tox
       run: |
         echo %PATH%
-        set PATH=%PATH%;C:/vcpkg/installed/x64-windows/debug/bin/
+        set PATH=%PATH%;C:\vcpkg\installed\x64-windows\debug\bin
         echo %PATH%
         tox
       shell: cmd
