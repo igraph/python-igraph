@@ -58,6 +58,7 @@ jobs:
           choco install winflexbison3 ninja
           %VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
           %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:x64-windows
+        shell: cmd
 
       - name: Build wheels
         uses: joerick/cibuildwheel@v1.10.0
