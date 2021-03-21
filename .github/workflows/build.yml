@@ -34,7 +34,8 @@ jobs:
       - name: Build wheels
         uses: joerick/cibuildwheel@v1.10.0
         env:
-          CIBW_BEFORE_BUILD: "pip install cmake && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD_WINDOWS: "python setup.py build_c_core"
+          CIBW_BEFORE_BUILD_MACOS: "pip install cmake && python setup.py build_c_core"
           CIBW_BEFORE_BUILD_LINUX: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
           CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
           CIBW_SKIP: "cp27-* pp27-* cp35-*"
