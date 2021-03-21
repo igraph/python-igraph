@@ -1,139 +1,70 @@
-name: "Build and test with tox"
+name: Build and test, upload to PyPI on release
 
-on:
-  push:
-    branches:
-      - '*'
-    tags-ignore:
-      - '*.*.*'
-  pull_request:
-    branches:
-      - '*'
-    tags-ignore:
-      - '*.*.*'
+on: [push, pull_request]
 
 jobs:
-  build_linux:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2019, macos-10.15]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.8'
+
+      - name: Install OS dependencies (macOS)
+        if: runner.os == 'macOS'
+        run:
+          brew install autoconf automake libtool cmake
+
+      - name: Build wheels
+        uses: joerick/cibuildwheel@v1.10.0
+        env:
+          CIBW_BEFORE_BUILD: "pip install cmake && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD_LINX: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
+          CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
+          CIBW_SKIP: "cp27-* pp27-* cp35-*"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+
+  build_sdist:
+    name: Build source distribution
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version:
-        - 3.6
-        - 3.7
-        - 3.8
-        - 3.9
-        - pypy-3.7
-
     steps:
-    - uses: actions/checkout@v1
-    - name: Init C core submodule
-      run: |
-        git submodule update --init
-        cat vendor/source/igraph/.git
-        cat .git/modules/vendor/source/igraph/HEAD
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install OS dependencies
-      run:
-        sudo apt-get install gfortran flex bison
-    - name: Install Python dependencies
-      run: |
-        # Pypi has no pip by default, and ubuntu blocks python -m ensurepip
-        # However, Github runners are supposed to have pip installed by default
-        # https://docs.github.com/en/actions/guides/building-and-testing-python
-        #wget -qO- https://bootstrap.pypa.io/get-pip.py | python
-        python -m pip install --upgrade pip
-        pip install tox tox-gh-actions
-    - name: Test with tox
-      run: tox
-      env:
-        TESTING_IN_TOX: 1
+      - uses: actions/checkout@v2
 
-  build_osx:
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version:
-        - 3.6
-        - 3.7
-        - 3.8
-        - 3.9
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.8'
 
+      - name: Build sdist
+        run: python setup.py sdist
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: dist/*.tar.gz
+
+  upload_pypi:
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
     steps:
-    - uses: actions/checkout@v1
-    - name: Init C core submodule
-      run: git submodule update --init
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install OS dependencies
-      run:
-        brew install autoconf automake libtool
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install tox tox-gh-actions
-    - name: Test with tox
-      run: tox
-      env:
-        TESTING_IN_TOX: 1
+      - uses: actions/download-artifact@v2
+        with:
+          name: artifact
+          path: dist
 
-  build_windows:
-    runs-on: windows-latest
-
-    strategy:
-      matrix:
-        python-version:
-        - 3.6
-        - 3.7
-        - 3.8
-        - 3.9
-        - pypy-3.7
-
-    steps:
-    - uses: actions/checkout@v1
-    - name: Init C core submodule
-      run: |
-        git submodule update --init
-        cat vendor/source/igraph/.git
-        cat .git/modules/vendor/source/igraph/HEAD
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Cache VCPKG
-      uses: actions/cache@v2
-      with:
-        path: $(VCPKG_INSTALLATION_ROOT)\installed
-        key: vcpkg-installed-${{ runner.os }}
-    - name: Install OS dependencies
-      run: |
-        choco install winflexbison3 ninja
-        %VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
-        %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:x64-windows
-      shell: cmd
-
-    - name: Install Python dependencies
-      run: |
-        # Pypi has no pip by default, and ubuntu blocks python -m ensurepip
-        # However, Github runners are supposed to have pip installed by default
-        # https://docs.github.com/en/actions/guides/building-and-testing-python
-        #wget -qO- https://bootstrap.pypa.io/get-pip.py | python
-        python -m pip install --upgrade pip
-        pip install tox tox-gh-actions
-    - name: Test with tox
-      run: |
-        echo %PATH%
-        set PATH=%PATH%;C:\vcpkg\installed\x64-windows\debug\bin
-        echo %PATH%
-        tox
-      shell: cmd
-      env:
-        TESTING_IN_TOX: 1
-        IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
-        VERBOSE: on
-        IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/x64-windows/debug/lib/
-        IGRAPH_EXTRA_LIBRARIES: libxml2
+      - uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}
+          # To test: repository_url: https://test.pypi.org/legacy/
