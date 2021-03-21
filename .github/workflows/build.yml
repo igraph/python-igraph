@@ -40,7 +40,7 @@ jobs:
 
   build_wheel_win:
     name: Build wheels on Windows
-    os: windows-2019
+    runs-on: windows-2019
 
     steps:
       - uses: actions/checkout@v2
@@ -97,7 +97,7 @@ jobs:
           path: dist/*.tar.gz
 
   upload_pypi:
-    needs: [build_wheels, build_sdist]
+    needs: [build_wheels, build_wheel_win, build_sdist]
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
     steps:
