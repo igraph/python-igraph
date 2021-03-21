@@ -26,19 +26,48 @@ jobs:
         run:
           brew install autoconf automake libtool cmake
 
-      - name: Install OS dependencies (Windows)
-        if: runner.os == 'Windows'
+      - name: Build wheels
+        uses: joerick/cibuildwheel@v1.10.0
+        env:
+          CIBW_BEFORE_BUILD_MACOS: "python setup.py build_c_core"
+          CIBW_BEFORE_BUILD_LINUX: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
+          CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
+          CIBW_SKIP: "cp27-* pp27-* cp35-*"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+
+  build_wheel_win:
+    name: Build wheels on Windows
+    os: windows-2019
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.8'
+
+      - name: Install OS dependencies
         run:
           choco install winflexbison3 ninja
+          #%VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
+          #%VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:x64-windows
 
       - name: Build wheels
         uses: joerick/cibuildwheel@v1.10.0
         env:
-          CIBW_BEFORE_BUILD_WINDOWS: "python setup.py build_c_core"
-          CIBW_BEFORE_BUILD_MACOS: "pip install cmake && python setup.py build_c_core"
-          CIBW_BEFORE_BUILD_LINUX: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
           CIBW_SKIP: "cp27-* pp27-* cp35-* *-win32"
+          #IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
+          #IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/x64-windows/debug/lib/
+          #IGRAPH_EXTRA_LIBRARIES: libxml2
 
       - uses: actions/upload-artifact@v2
         with:
