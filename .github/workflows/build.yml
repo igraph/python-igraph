@@ -9,11 +9,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, windows-2019, macos-10.15]
-        arch: [auto32, auto64]
-        exclude:
-          # exclude 32 bit on Windows for the moment
-          - os: windows-2019
-            arch: auto32
 
     steps:
       - uses: actions/checkout@v2
@@ -39,12 +34,11 @@ jobs:
       - name: Build wheels
         uses: joerick/cibuildwheel@v1.10.0
         env:
-          CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_BEFORE_BUILD_WINDOWS: "python setup.py build_c_core"
           CIBW_BEFORE_BUILD_MACOS: "pip install cmake && python setup.py build_c_core"
           CIBW_BEFORE_BUILD_LINUX: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
           CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
-          CIBW_SKIP: "cp27-* pp27-* cp35-*"
+          CIBW_SKIP: "cp27-* pp27-* cp35-* *-win32"
 
       - uses: actions/upload-artifact@v2
         with:
