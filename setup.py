@@ -399,7 +399,7 @@ class BuildConfiguration(object):
 
                 # Override static specification based on environment variable
                 if "IGRAPH_STATIC_EXTENSION" in os.environ:
-                    if os.environ["IGRAPH_STATIC_EXTENSION"].lower() in s.lower() in ['true', '1', 'on']:
+                    if os.environ["IGRAPH_STATIC_EXTENSION"].lower() in ['true', '1', 'on']:
                         buildcfg.static_extension = True
                     else:
                         buildcfg.static_extension = False
