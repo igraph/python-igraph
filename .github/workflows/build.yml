@@ -67,7 +67,7 @@ jobs:
         uses: joerick/cibuildwheel@v1.10.0
         env:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
-          CIBW_TEST_COMMAND: "cd {project} && python -m unittest -v"
+          CIBW_TEST_COMMAND: "cd {project} && dir && dir tests && python -m unittest -v"
           CIBW_SKIP: "cp27-* pp27-* cp35-* *-win32"
           #IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
           #IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/x64-windows/debug/lib/
