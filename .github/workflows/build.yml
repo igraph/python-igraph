@@ -2,6 +2,9 @@ name: Build and test, upload to PyPI on release
 
 on: [push, pull_request]
 
+env:
+  CMAKE_GENERATOR: Ninja
+
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
