@@ -54,7 +54,7 @@ jobs:
           python-version: '3.8'
 
       - name: Install OS dependencies
-        run:
+        run: |
           choco install winflexbison3 ninja
           %VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
           %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:x64-windows-static-md
