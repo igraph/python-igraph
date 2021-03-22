@@ -397,6 +397,13 @@ class BuildConfiguration(object):
                     extra_libraries = os.environ["IGRAPH_EXTRA_LIBRARIES"].split(',')
                     buildcfg.libraries.extend(extra_libraries)
 
+                # Override static specification based on environment variable
+                if "IGRAPH_STATIC_EXTENSION" in os.environ:
+                    if os.environ["IGRAPH_STATIC_EXTENSION"].lower() in s.lower() in ['true', '1', 'on']:
+                        buildcfg.static_extension = True
+                    else:
+                        buildcfg.static_extension = False
+
                 # Replaces library names with full paths to static libraries
                 # where possible. libm.a is excluded because it caused problems
                 # on Sabayon Linux where libm.a is probably not compiled with
@@ -738,6 +745,8 @@ exec(open("src/igraph/version.py").read())
 # Process command line options
 buildcfg = BuildConfiguration()
 buildcfg.process_args_from_command_line()
+
+
 
 # Define the extension
 sources = glob.glob(os.path.join("src", "_igraph", "*.c"))

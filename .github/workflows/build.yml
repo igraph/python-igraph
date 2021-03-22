@@ -56,19 +56,20 @@ jobs:
       - name: Install OS dependencies
         run:
           choco install winflexbison3 ninja
-          #%VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
-          #%VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:x64-windows
+          %VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
+          %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:x64-windows-static-md
         shell: cmd
 
       - name: Build wheels
         uses: joerick/cibuildwheel@v1.10.0
         env:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
-          CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest -v"
+          CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest"
           CIBW_SKIP: "cp27-* pp27-* cp35-* *-win32"
-          #IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
-          #IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/x64-windows/debug/lib/
-          #IGRAPH_EXTRA_LIBRARIES: libxml2
+          IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
+          IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/x64-windows-static-md/debug/lib/
+          IGRAPH_EXTRA_LIBRARIES: libxml2
+          IGRAPH_STATIC_EXTENSION: True
 
       - uses: actions/upload-artifact@v2
         with:
