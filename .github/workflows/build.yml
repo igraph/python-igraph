@@ -58,13 +58,12 @@ jobs:
           choco install winflexbison3 ninja
           %VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
           %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:x64-windows
-          echo "C:/vcpkg/installed/x64-windows/debug/bin/" >> $GITHUB_PATH
         shell: cmd
 
       - name: Build wheels
         uses: joerick/cibuildwheel@v1.10.0
         env:
-          CIBW_BEFORE_BUILD: "pip install delvewheel && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "pip install delvewheel && python setup.py build_c_core && set PATH=%PATH%;C:/vcpkg/installed/x64-windows/debug/bin/"
           CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest"
           #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
           CIBW_BEFORE_TEST: "echo %PATH%"
