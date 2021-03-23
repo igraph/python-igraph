@@ -63,10 +63,10 @@ jobs:
       - name: Build wheels
         uses: joerick/cibuildwheel@v1.10.0
         env:
-          CIBW_BEFORE_BUILD: "pip install delvewheel && python setup.py build_c_core && set PATH=%PATH%;C:/vcpkg/installed/x64-windows/debug/bin/"
+          CIBW_BEFORE_ALL: "set PATH=%PATH%;C:/vcpkg/installed/x64-windows/debug/bin"
+          CIBW_BEFORE_BUILD: "echo %PATH% && pip install delvewheel && python setup.py build_c_core"
           CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest"
           #CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
-          CIBW_BEFORE_TEST: "set PATH=%PATH%;C:/vcpkg/installed/x64-windows/debug/bin/ && echo %PATH%"
           CIBW_SKIP: "cp27-* pp27-* cp35-* *-win32"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/x64-windows/debug/lib/
