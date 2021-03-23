@@ -66,9 +66,9 @@ jobs:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest"
           CIBW_SKIP: "cp27-* pp27-* cp35-* *-win32"
-          IGRAPH_CMAKE_EXTRA_ARGS: -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
+          IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/x64-windows-static-md/debug/lib/
-          IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset
+          IGRAPH_EXTRA_LIBRARIES: libxml2,lzmad,zlibd,iconv,charset
           IGRAPH_STATIC_EXTENSION: True
 
       - uses: actions/upload-artifact@v2
