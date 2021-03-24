@@ -155,7 +155,7 @@ int igraphmodule_get_vertex_id_by_name(igraph_t *graph, PyObject* o, igraph_inte
     return 1;
   }
   
-  if (PyInt_AsInt(o_vid, &tmp))
+  if (PyLong_AsInt(o_vid, &tmp))
     return 1;
   
   *vid = tmp;

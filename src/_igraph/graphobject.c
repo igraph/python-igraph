@@ -4962,7 +4962,7 @@ PyObject *igraphmodule_Graph_get_all_simple_paths(igraphmodule_GraphObject *
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
     return NULL;
 
-  if (PyInt_AsInt(cutoff_o, &cutoff))
+  if (PyLong_AsInt(cutoff_o, &cutoff))
     return NULL;
 
   if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))

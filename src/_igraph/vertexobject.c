@@ -616,7 +616,7 @@ static PyObject* _convert_to_edge_list(igraphmodule_VertexObject* vertex, PyObje
       return NULL;
     }
 
-    if (PyInt_AsInt(idx, &idx_int))
+    if (PyLong_AsInt(idx, &idx_int))
       return NULL;
 
     v = igraphmodule_Edge_New(vertex->gref, idx_int);
@@ -648,7 +648,7 @@ static PyObject* _convert_to_vertex_list(igraphmodule_VertexObject* vertex, PyOb
       return NULL;
     }
 
-    if (PyInt_AsInt(idx, &idx_int))
+    if (PyLong_AsInt(idx, &idx_int))
       return NULL;
 
     v = igraphmodule_Vertex_New(vertex->gref, idx_int);

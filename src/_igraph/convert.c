@@ -40,30 +40,6 @@
 #endif
 
 /**
- * \brief Converts a Python integer to a C int
- *
- * This is similar to PyLong_AsLong, but it checks for overflow first and throws
- * an exception if necessary.
- *
- * Returns -1 if there was an error, 0 otherwise.
- */
-int PyInt_AsInt(PyObject* obj, int* result) {
-  long dummy = PyLong_AsLong(obj);
-  if (dummy < INT_MIN) {
-    PyErr_SetString(PyExc_OverflowError,
-        "integer too small for conversion to C int");
-    return -1;
-  }
-  if (dummy > INT_MAX) {
-    PyErr_SetString(PyExc_OverflowError,
-        "integer too large for conversion to C int");
-    return -1;
-  }
-  *result = (int)dummy;
-  return 0;
-}
-
-/**
  * \brief Converts a Python long to a C int
  *
  * This is similar to PyLong_AsLong, but it checks for overflow first and
@@ -74,13 +50,11 @@ int PyInt_AsInt(PyObject* obj, int* result) {
 int PyLong_AsInt(PyObject* obj, int* result) {
   long dummy = PyLong_AsLong(obj);
   if (dummy < INT_MIN) {
-    PyErr_SetString(PyExc_OverflowError,
-        "long integer too small for conversion to C int");
+    PyErr_SetString(PyExc_OverflowError, "long integer too small for conversion to C int");
     return -1;
   }
   if (dummy > INT_MAX) {
-    PyErr_SetString(PyExc_OverflowError,
-        "long integer too large for conversion to C int");
+    PyErr_SetString(PyExc_OverflowError, "long integer too large for conversion to C int");
     return -1;
   }
   *result = (int)dummy;
@@ -114,8 +88,6 @@ int igraphmodule_PyObject_to_enum(PyObject *o,
 
     if (o == 0 || o == Py_None)
       return 0;
-    if (PyLong_Check(o))
-      return PyInt_AsInt(o, result);
     if (PyLong_Check(o))
       return PyLong_AsInt(o, result);
     s = PyUnicode_CopyAsString(o);
@@ -725,7 +697,7 @@ int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_integer_t *v) {
     PyObject *i = PyNumber_Long(object);
     if (i == NULL)
       return 1;
-    retval = PyInt_AsInt(i, &num);
+    retval = PyLong_AsInt(i, &num);
     Py_DECREF(i);
     if (retval)
       return retval;
@@ -1013,7 +985,7 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
             PyErr_SetString(PyExc_TypeError, "can't convert a list item to integer");
             ok = 0;
           } else {
-            ok = (PyInt_AsInt(item, &value) == 0);
+            ok = (PyLong_AsInt(item, &value) == 0);
             Py_DECREF(item2);
           }
         }
@@ -1057,7 +1029,7 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
           PyErr_SetString(PyExc_TypeError, "can't convert sequence element to int");
           ok=0;
         } else {
-          retval = PyInt_AsInt(item2, &value);
+          retval = PyLong_AsInt(item2, &value);
           if (retval)
             ok = 0;
           Py_DECREF(item2);
@@ -2389,11 +2361,6 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
     *vid = 0;
   } else if (PyLong_Check(o)) {
     /* Single vertex ID */
-    if (PyInt_AsInt(o, &tmp))
-      return 1;
-    *vid = tmp;
-  } else if (PyLong_Check(o)) {
-    /* Single vertex ID */
     if (PyLong_AsInt(o, &tmp))
       return 1;
     *vid = tmp;
@@ -2410,13 +2377,6 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
     PyObject* num = PyNumber_Index(o);
     if (num) {
       if (PyLong_Check(num)) {
-        retval = PyInt_AsInt(num, &tmp);
-        if (retval) {
-          Py_DECREF(num);
-          return 1;
-        }
-        *vid = tmp;
-      } else if (PyLong_Check(num)) {
         retval = PyLong_AsInt(num, &tmp);
         if (retval) {
           Py_DECREF(num);
@@ -2599,11 +2559,6 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
 
   if (o == Py_None || o == 0) {
     *eid = 0;
-  } else if (PyLong_Check(o)) {
-    /* Single edge ID */
-    if (PyInt_AsInt(o, &tmp))
-      return 1;
-    *eid = tmp;
   } else if (PyLong_Check(o)) {
     /* Single edge ID */
     if (PyLong_AsInt(o, &tmp))
