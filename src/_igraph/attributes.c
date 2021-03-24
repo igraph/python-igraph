@@ -1840,16 +1840,14 @@ void igraphmodule_initialize_attribute_handler(void) {
  * Also raises a suitable Python exception if needed.
  */
 int igraphmodule_attribute_name_check(PyObject* obj) {
-  PyObject* type_str;
+  PyObject* type_obj;
 
   if (obj != 0 && PyBaseString_Check(obj))
     return 1;
 
-  type_str = obj ? PyObject_Str((PyObject*)obj->ob_type) : 0;
-  if (type_str != 0) {
-    PyErr_Format(PyExc_TypeError, "igraph supports string attribute names only, got %s",
-        PyUnicode_AS_UNICODE(type_str));
-    Py_DECREF(type_str);
+  type_obj = obj ? ((PyObject*)obj->ob_type) : 0;
+  if (type_obj != 0) {
+    PyErr_Format(PyExc_TypeError, "igraph supports string attribute names only, got %R", type_obj);
   } else {
     PyErr_Format(PyExc_TypeError, "igraph supports string attribute names only");
   }

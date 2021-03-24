@@ -430,7 +430,7 @@ PyObject* igraphmodule_is_degree_sequence(PyObject *self,
     return NULL;
   }
 
-  if (igraph_is_degree_sequence(&out_deg, is_directed ? &in_deg : 0, &result)) {
+  if (igraph_is_graphical(&out_deg, is_directed ? &in_deg : 0, IGRAPH_LOOPS_SW | IGRAPH_MULTI_SW, &result)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_destroy(&out_deg);
     if (is_directed)
@@ -470,7 +470,7 @@ PyObject* igraphmodule_is_graphical_degree_sequence(PyObject *self,
     return NULL;
   }
 
-  if (igraph_is_graphical_degree_sequence(&out_deg, is_directed ? &in_deg : 0, &result)) {
+  if (igraph_is_graphical(&out_deg, is_directed ? &in_deg : 0, IGRAPH_SIMPLE_SW, &result)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_destroy(&out_deg);
     if (is_directed)
