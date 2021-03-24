@@ -287,10 +287,14 @@ class BasicTests(unittest.TestCase):
         self.assertEqual(3, g.ecount())
         self.assertEqual(el, g.get_edgelist())
 
+        print("GGGG")
+
         # Deleting nonexistent edges
         self.assertRaises(ValueError, g.delete_edges, [(0, 2)])
         self.assertRaises(ValueError, g.delete_edges, [("A", "C")])
         self.assertRaises(ValueError, g.delete_edges, [(0, 15)])
+
+        print("HHHH")
 
         # Delete all edges
         g.delete_edges()

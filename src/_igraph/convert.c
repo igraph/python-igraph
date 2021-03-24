@@ -842,7 +842,11 @@ int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v, igraph
         igraph_vector_destroy(v);
         return 1;
       }
-      igraph_vector_push_back(v, number);
+      if (igraph_vector_push_back(v, number)) {
+        igraphmodule_handle_igraph_error();
+        igraph_vector_destroy(v);
+        return 1;
+      }
     }
   }
 
@@ -1985,11 +1989,11 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
     for (j=0; j<nc; j++)
       {
          if (type==IGRAPHMODULE_TYPE_INT) {
-	       if (!igraph_finite(MATRIX(*m, i, j)))
-		     item=PyFloat_FromDouble((double)MATRIX(*m, i, j));
-	       else
+         if (!igraph_finite(MATRIX(*m, i, j)))
+         item=PyFloat_FromDouble((double)MATRIX(*m, i, j));
+         else
              item=PyLong_FromLong((long)MATRIX(*m, i, j));
-		 } else
+     } else
            item=PyFloat_FromDouble(MATRIX(*m, i, j));
 
          if (PyList_SetItem(row, j, item))
@@ -2435,12 +2439,16 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
   if (PyObject_IsInstance(o, (PyObject*)&igraphmodule_VertexSeqType)) {
     /* Returns a vertex sequence from a VertexSeq object */
     igraphmodule_VertexSeqObject *vso = (igraphmodule_VertexSeqObject*)o;
+
     if (igraph_vs_copy(vs, &vso->vs)) {
       igraphmodule_handle_igraph_error();
       return 1;
     }
-    if (return_single)
+
+    if (return_single) {
       *return_single = 0;
+    }
+
     return 0;
   }
 
@@ -2458,21 +2466,27 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
     if (start == 0 && slicelength == no_of_vertices) {
       igraph_vs_all(vs);
     } else {
-      IGRAPH_CHECK(igraph_vector_init(&vector, slicelength));
-      IGRAPH_FINALLY(igraph_vector_destroy, &vector);
+      if (igraph_vector_init(&vector, slicelength)) {
+        igraphmodule_handle_igraph_error();
+        return 1;
+      }
 
       for (i = 0; i < slicelength; i++, start += step) {
         VECTOR(vector)[i] = start;
       }
 
-      IGRAPH_CHECK(igraph_vs_vector_copy(vs, &vector));
+      if (igraph_vs_vector_copy(vs, &vector)) {
+        igraphmodule_handle_igraph_error();
+        igraph_vector_destroy(&vector);
+        return 1;
+      }
 
       igraph_vector_destroy(&vector);
-      IGRAPH_FINALLY_CLEAN(1);
     }
 
-    if (return_single)
+    if (return_single) {
       *return_single = 0;
+    }
 
     return 0;
   }
@@ -2500,9 +2514,10 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
       return 1;
     }
 
-    IGRAPH_CHECK(igraph_vector_init(&vector, 0));
-    IGRAPH_FINALLY(igraph_vector_destroy, &vector);
-    IGRAPH_CHECK(igraph_vector_reserve(&vector, 20));
+    if (igraph_vector_init(&vector, 0)) {
+      igraphmodule_handle_igraph_error();
+      return 1;
+    }
 
     while ((item = PyIter_Next(iterator))) {
       vid = -1;
@@ -2511,22 +2526,31 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
         break;
 
       Py_DECREF(item);
-      igraph_vector_push_back(&vector, vid);
+
+      if (igraph_vector_push_back(&vector, vid)) {
+        igraphmodule_handle_igraph_error();
+        /* no need to destroy 'vector' here; will be done outside the loop due
+         * to PyErr_Occurred */
+        break;
+      }
     }
+
     Py_DECREF(iterator);
 
     if (PyErr_Occurred()) {
       igraph_vector_destroy(&vector);
-      IGRAPH_FINALLY_CLEAN(1);
       return 1;
     }
 
-    IGRAPH_CHECK(igraph_vs_vector_copy(vs, &vector));
-    igraph_vector_destroy(&vector);
-    IGRAPH_FINALLY_CLEAN(1);
+    if (igraph_vs_vector_copy(vs, &vector)) {
+      igraphmodule_handle_igraph_error();
+      igraph_vector_destroy(&vector);
+      return 1;
+    }
 
-    if (return_single)
+    if (return_single) {
       *return_single = 0;
+    }
 
     return 0;
   }
@@ -2603,7 +2627,16 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
     if (igraphmodule_PyObject_to_vid(o2, &vid2, graph))
       return 1;
 
-    igraph_get_eid(graph, eid, vid1, vid2, 1, 0);
+    retval = igraph_get_eid(graph, eid, vid1, vid2, 1, 0);
+    if (retval == IGRAPH_EINVVID) {
+      PyErr_Format(PyExc_ValueError, "no edge from vertex #%ld to #%ld; no such vertex ID",
+          (long int)vid1, (long int)vid2);
+      return 1;
+    } else if (retval) {
+      igraphmodule_handle_igraph_error();
+      return 1;
+    }
+
     if (*eid < 0) {
       PyErr_Format(PyExc_ValueError, "no edge from vertex #%ld to #%ld",
           (long int)vid1, (long int)vid2);
@@ -2679,24 +2712,32 @@ int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
       return 1;
     }
 
-    IGRAPH_CHECK(igraph_vector_init(&vector, 0));
-    IGRAPH_FINALLY(igraph_vector_destroy, &vector);
-    IGRAPH_CHECK(igraph_vector_reserve(&vector, 20));
+    if (igraph_vector_init(&vector, 0)) {
+      igraphmodule_handle_igraph_error();
+      return 1;
+    }
 
     while ((item = PyIter_Next(iterator))) {
       eid = -1;
 
-      if (igraphmodule_PyObject_to_eid(item, &eid, graph))
+      if (igraphmodule_PyObject_to_eid(item, &eid, graph)) {
         break;
+      }
 
       Py_DECREF(item);
-      igraph_vector_push_back(&vector, eid);
+
+      if (igraph_vector_push_back(&vector, eid)) {
+        igraphmodule_handle_igraph_error();
+        /* no need to destroy 'vector' here; will be done outside the loop due
+         * to PyErr_Occurred */
+        break;
+      }
     }
+
     Py_DECREF(iterator);
 
     if (PyErr_Occurred()) {
       igraph_vector_destroy(&vector);
-      IGRAPH_FINALLY_CLEAN(1);
       return 1;
     }
 
@@ -2707,17 +2748,19 @@ int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
     }
 
     igraph_vector_destroy(&vector);
-    IGRAPH_FINALLY_CLEAN(1);
 
-    if (return_single)
+    if (return_single) {
       *return_single = 0;
+    }
 
     return 0;
   }
 
   /* The object can be converted into a single edge ID */
-  if (return_single)
+  if (return_single) {
     *return_single = 1;
+  }
+
   /*
   if (single_eid)
     *single_eid = eid;
