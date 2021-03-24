@@ -414,6 +414,11 @@ class BuildConfiguration(object):
                     else:
                         buildcfg.replace_static_libraries(exclusions=["m"])
 
+                # Add extra libraries that may have been specified
+                if "IGRAPH_EXTRA_DYNAMIC_LIBRARIES" in os.environ:
+                    extra_libraries = os.environ["IGRAPH_EXTRA_DYNAMIC_LIBRARIES"].split(',')
+                    buildcfg.libraries.extend(extra_libraries)
+
                 # Prints basic build information
                 buildcfg.print_build_info()
 
