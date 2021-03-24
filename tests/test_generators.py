@@ -293,7 +293,6 @@ class GeneratorTests(unittest.TestCase):
         el = g.get_edgelist()
         self.assertFalse(g.is_directed())
         self.assertEqual(4, g.vcount())
-        print(repr(el))
         self.assertTrue(el == [(0, 1), (2, 2)])
         self.assertTrue(g.es["weight"] == [1, 2.5])
 
