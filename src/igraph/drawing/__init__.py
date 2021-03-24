@@ -41,7 +41,6 @@ __all__ = ("BoundingBox", "DefaultGraphDrawer", "Plot", "Point", "Rectangle", "p
 __license__ = "GPL"
 
 cairo = find_cairo()
-matplotlib, plt = find_matplotlib()
 
 #####################################################################
 
@@ -476,6 +475,8 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
 
     @see: Graph.__plot__
     """
+    _, plt = find_matplotlib()
+
     if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
         result = MatplotlibGraphDrawer(ax=target)
         result.draw(obj, *args, **kwds)
