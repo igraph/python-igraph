@@ -65,10 +65,10 @@ jobs:
         env:
           CIBW_BEFORE_BUILD: "pip install delvewheel && python setup.py build_c_core"
           CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair --add-path=C:/vcpkg/installed/x64-windows/debug/bin --no-dll=vcruntime140d.dll -w {dest_dir} {wheel}"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair --add-path=C:/vcpkg/installed/x64-windows/bin --no-dll=vcruntime140d.dll -w {dest_dir} {wheel}"
           CIBW_SKIP: "cp27-* pp27-* cp35-* *-win32"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
-          IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/x64-windows/debug/lib/
+          IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/x64-windows/lib/
           IGRAPH_EXTRA_LIBRARIES: libxml2
 
       - uses: actions/upload-artifact@v2
