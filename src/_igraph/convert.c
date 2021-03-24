@@ -2573,13 +2573,6 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
     PyObject* num = PyNumber_Index(o);
     if (num) {
       if (PyLong_Check(num)) {
-        retval = PyInt_AsInt(num, &tmp);
-        if (retval) {
-          Py_DECREF(num);
-          return 1;
-        }
-        *eid = tmp;
-      } else if (PyLong_Check(num)) {
         retval = PyLong_AsInt(num, &tmp);
         if (retval) {
           Py_DECREF(num);
