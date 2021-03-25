@@ -68,6 +68,7 @@ def find_static_library(library_name, library_path):
         extra_libdirs = [
             "/usr/local/lib64",
             "/usr/local/lib",
+            "/usr/lib/x86_64-linux-gnu",
             "/usr/lib64",
             "/usr/lib",
             "/lib64",
@@ -391,6 +392,18 @@ class BuildConfiguration(object):
                         + buildcfg.library_dirs
                     )
 
+                # Add extra libraries that may have been specified
+                if "IGRAPH_EXTRA_LIBRARIES" in os.environ:
+                    extra_libraries = os.environ["IGRAPH_EXTRA_LIBRARIES"].split(',')
+                    buildcfg.libraries.extend(extra_libraries)
+
+                # Override static specification based on environment variable
+                if "IGRAPH_STATIC_EXTENSION" in os.environ:
+                    if os.environ["IGRAPH_STATIC_EXTENSION"].lower() in ['true', '1', 'on']:
+                        buildcfg.static_extension = True
+                    else:
+                        buildcfg.static_extension = False
+
                 # Replaces library names with full paths to static libraries
                 # where possible. libm.a is excluded because it caused problems
                 # on Sabayon Linux where libm.a is probably not compiled with
@@ -400,6 +413,11 @@ class BuildConfiguration(object):
                         buildcfg.replace_static_libraries(only=["igraph"])
                     else:
                         buildcfg.replace_static_libraries(exclusions=["m"])
+
+                # Add extra libraries that may have been specified
+                if "IGRAPH_EXTRA_DYNAMIC_LIBRARIES" in os.environ:
+                    extra_libraries = os.environ["IGRAPH_EXTRA_DYNAMIC_LIBRARIES"].split(',')
+                    buildcfg.libraries.extend(extra_libraries)
 
                 # Prints basic build information
                 buildcfg.print_build_info()
@@ -658,8 +676,11 @@ class BuildConfiguration(object):
 
             static_lib = find_static_library(library_name, self.library_dirs)
             if static_lib:
+                print(f"Found {library_name} as static library in {static_lib}.")
                 self.libraries.remove(library_name)
                 self.extra_objects.append(static_lib)
+            else:
+                print(f"Warning: could not find static library of {library_name}.")
 
     def use_vendored_igraph(self):
         """Assumes that igraph is installed already in ``vendor/install/igraph`` and sets up
@@ -729,6 +750,8 @@ exec(open("src/igraph/version.py").read())
 # Process command line options
 buildcfg = BuildConfiguration()
 buildcfg.process_args_from_command_line()
+
+
 
 # Define the extension
 sources = glob.glob(os.path.join("src", "_igraph", "*.c"))
