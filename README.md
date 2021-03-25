@@ -1,6 +1,5 @@
 
 [![Build and test with tox](https://github.com/igraph/python-igraph/actions/workflows/build.yml/badge.svg)](https://github.com/igraph/python-igraph/actions/workflows/build.yml)
-[![Build status](https://ci.appveyor.com/api/projects/status/55i1d4g65q11f9l5?svg=true)](https://ci.appveyor.com/project/ntamas/python-igraph-jst2e)
 [![PyPI pyversions](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)](https://pypi.python.org/pypi/python-igraph)
 [![PyPI wheels](https://img.shields.io/pypi/wheel/python-igraph.svg)](https://pypi.python.org/pypi/python-igraph)
 
