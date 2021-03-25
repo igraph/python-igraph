@@ -510,10 +510,6 @@ class BuildConfiguration(object):
                     parser_dir = os.path.join(igraph_build_dir, "src", "io", "parsers")
                     if os.path.isdir(parser_dir):
                         shutil.copytree(parser_dir, os.path.join(igraph_source_repo, "src", "io", "parsers"))
-                    elif os.environ.get("TESTING_IN_TOX"):
-                        # we allow to proceed when running in tox in the CI environment;
-                        # bison and flex will be used to generate the parsers
-                        pass
                     else:
                         raise RuntimeError(f"You need to build the C core of igraph first before generating a source tarball of python-igraph")
 

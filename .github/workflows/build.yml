@@ -1,14 +1,17 @@
 name: Build and test, upload to PyPI on release
 
 on: [push, pull_request]
+env:
+  CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
+  CIBW_SKIP: "cp27-* pp27-* cp35-*"
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Build wheels on Linux (${{ matrix.wheel_arch }})
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-10.15]
+        wheel_arch: [x86_64, i686]
 
     steps:
       - uses: actions/checkout@v2
@@ -21,32 +24,32 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Install OS dependencies (macOS)
-        if: runner.os == 'macOS'
-        run:
-          brew install ninja autoconf automake libtool cmake
-
       - name: Build wheels
         uses: joerick/cibuildwheel@v1.10.0
         env:
-          CIBW_BEFORE_BUILD_MACOS: "python setup.py build_c_core"
-          CIBW_BEFORE_BUILD_LINUX: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
-          CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
-          CIBW_SKIP: "cp27-* pp27-* cp35-*"
+          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
+          CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
 
       - uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
 
-  build_wheel_win:
-    name: Build wheels on Windows
-    runs-on: windows-2019
+  build_wheel_macos:
+    name: Build wheels on macOS
+    runs-on: macos-10.15
 
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: true
           fetch-depth: 0
+
+      - name: Cache installed C core
+        id: cache-c-core
+        uses: actions/cache@v2
+        with:
+          path: vendor/install
+          key: C-core-${{ runner.os }}-${{ hashFiles('.gitmodules') }}
 
       - uses: actions/setup-python@v2
         name: Install Python
@@ -54,30 +57,86 @@ jobs:
           python-version: '3.8'
 
       - name: Install OS dependencies
+        if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
+        run:
+          brew install ninja autoconf automake libtool cmake
+
+      - name: Build wheels
+        uses: joerick/cibuildwheel@v1.10.0
+        env:
+          CIBW_BEFORE_BUILD: "python setup.py build_c_core"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+
+  build_wheel_win:
+    name: Build wheels on Windows (${{ matrix.cmake_arch }})
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        include:
+          - cmake_arch: Win32
+            wheel_arch: win32
+            vcpkg_arch: x86
+          - cmake_arch: x64
+            wheel_arch: win_amd64
+            vcpkg_arch: x64
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.8'
+
+      - name: Cache installed C core
+        id: cache-c-core
+        uses: actions/cache@v2
+        with:
+          path: vendor/install
+          key: C-core-build-${{ runner.os }}-${{ matrix.cmake_arch }}-${{ hashFiles('.gitmodules') }}-
+
+      - name: Cache VCPKG
+        uses: actions/cache@v2
+        with:
+          path: C:/vcpkg/installed/
+          key: vcpkg-${{ runner.os }}-${{ matrix.vcpkg_arch }}
+
+      - name: Install build dependencies
+        if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
+        run: choco install winflexbison3 ninja
+
+      - name: Install VCPKG libraries
         run: |
-          choco install winflexbison3 ninja
           %VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
-          %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:x64-windows-static-md
+          %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:${{ matrix.vcpkg_arch }}-windows-static-md
         shell: cmd
 
       - name: Build wheels
         uses: joerick/cibuildwheel@v1.10.0
         env:
-          CIBW_BEFORE_BUILD: "pip install delvewheel && python setup.py build_c_core"
-          CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest"
-          CIBW_SKIP: "cp27-* pp27-* cp35-* *-win32"
-          IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
-          IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/x64-windows-static-md/lib/
+          CIBW_BEFORE_BUILD: "python setup.py build_c_core"
+          CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
+          IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
+          IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
           IGRAPH_STATIC_EXTENSION: True
           IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset
           IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
+          CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest"
+
+
 
       - uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
 
   build_sdist:
-    name: Build source distribution
+    name: Build sdist and test extra dependencies
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -85,7 +144,17 @@ jobs:
           submodules: true
           fetch-depth: 0
 
+      - name: Cache installed C core
+        id: cache-c-core
+        uses: actions/cache@v2
+        with:
+          path: |
+            vendor/build
+            vendor/install
+          key: C-core-${{ runner.os }}-${{ hashFiles('.gitmodules') }}-4
+
       - name: Install OS dependencies
+        if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
         run:
           sudo apt install ninja-build cmake flex bison
 
@@ -98,6 +167,12 @@ jobs:
         run: |
           python setup.py build_c_core
           python setup.py sdist
+          python setup.py install
+
+      - name: Test
+        run: |
+          pip install numpy scipy pandas
+          python -m unittest
 
       - uses: actions/upload-artifact@v2
         with:
@@ -106,7 +181,9 @@ jobs:
   upload_pypi:
     needs: [build_wheels, build_wheel_win, build_sdist]
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.event.action == 'published'
+    if: github.event_name == 'push' &&
+        github.ref == 'refs/heads/master' &&
+        startsWith(github.event.ref, 'refs/tags/')
     steps:
       - uses: actions/download-artifact@v2
         with:
