@@ -259,7 +259,6 @@ class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
         # Finally, add the source folder path
         args.append(str(build_to_source_folder))
 
-        print("Running {}".format(" ".join(args)))
         retcode = subprocess.call(args)
         if retcode:
             return False

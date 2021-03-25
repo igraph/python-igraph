@@ -399,6 +399,7 @@ class ForeignTests(unittest.TestCase):
             self.assertTrue(isinstance(g, Graph))
             self.assertTrue(g.vcount() == 3 and g.ecount() == 1 and not g.is_directed())
             g.write_pickle(tmpfname)
+
     @skipIf(pd is None, "test case depends on Pandas")
     def testVertexDataFrames(self):
         g = Graph([(0, 1), (0, 2), (0, 3), (1, 2), (2, 4)])
