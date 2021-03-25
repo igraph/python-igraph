@@ -284,6 +284,66 @@ class ForeignTests(unittest.TestCase):
 
             g.write_adjacency(tmpfname)
 
+    def testGraphML(self):
+        with temporary_file(
+            """\
+            <?xml version="1.0" encoding="UTF-8"?>
+            <graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns
+                    http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+            <!-- Created by igraph -->
+            <key id="v_name" for="node" attr.name="name" attr.type="string"/>
+            <graph id="G" edgedefault="undirected">
+                <node id="n0">
+                <data key="v_name">a</data>
+                </node>
+                <node id="n1">
+                <data key="v_name">b</data>
+                </node>
+                <node id="n2">
+                <data key="v_name">c</data>
+                </node>
+                <node id="n3">
+                <data key="v_name">d</data>
+                </node>
+                <node id="n4">
+                <data key="v_name">e</data>
+                </node>
+                <node id="n5">
+                <data key="v_name">f</data>
+                </node>
+                <edge source="n0" target="n1">
+                </edge>
+                <edge source="n0" target="n2">
+                </edge>
+                <edge source="n0" target="n3">
+                </edge>
+                <edge source="n1" target="n2">
+                </edge>
+                <edge source="n3" target="n4">
+                </edge>
+                <edge source="n3" target="n5">
+                </edge>
+                <edge source="n4" target="n5">
+                </edge>
+            </graph>
+            </graphml>
+        """
+        ) as tmpfname:
+            try:
+                g = Graph.Read_GraphML(tmpfname)
+            except NotImplementedError as e:
+                self.skipTest(str(e))
+
+            self.assertTrue(isinstance(g, Graph))
+            self.assertEqual(g.vcount(), 6)
+            self.assertEqual(g.ecount(), 7)
+            self.assertFalse(g.is_directed())
+            self.assertTrue("name" in g.vertex_attributes())
+
+            g.write_graphml(tmpfname)
+
     def testPickle(self):
         pickle = [
             128,
@@ -339,9 +399,6 @@ class ForeignTests(unittest.TestCase):
             self.assertTrue(isinstance(g, Graph))
             self.assertTrue(g.vcount() == 3 and g.ecount() == 1 and not g.is_directed())
             g.write_pickle(tmpfname)
-
-    
-
     @skipIf(pd is None, "test case depends on Pandas")
     def testVertexDataFrames(self):
         g = Graph([(0, 1), (0, 2), (0, 3), (1, 2), (2, 4)])
