@@ -1,6 +1,6 @@
 # igraph Python interface changelog
 
-## [0.9.1]
+## 0.9.1
 
 ### Changed
 
@@ -30,7 +30,7 @@
   2.x are removed now that we have dropped support for Python 2.x.
 
 
-## [0.9.0]
+## 0.9.0
 
 ### Added
 
