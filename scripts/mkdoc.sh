@@ -15,7 +15,7 @@ cd ${ROOT_FOLDER}
 if [ ! -d ".venv" ]; then
     # Create a virtual environment for pydoctor
     python3 -m venv .venv
-    .venv/bin/pip install pydoctor
+    .venv/bin/pip install -U pydoctor wheel
 fi
 
 PYDOCTOR=.venv/bin/pydoctor
@@ -28,6 +28,14 @@ PWD=`pwd`
 
 echo "Removing existing documentation..."
 rm -rf "${DOC_API_FOLDER}/html" "${DOC_API_FOLDER}/pdf"
+
+echo "Removing existing python-igraph eggs from virtualenv..."
+SITE_PACKAGES_DIR=`.venv/bin/python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`
+rm -rf "${SITE_PACKAGES_DIR}"/python_igraph*.egg
+rm -rf "${SITE_PACKAGES_DIR}"/python_igraph*.egg-link
+
+echo "Installing python-igraph in virtualenv..."
+rm -f dist/*.whl && .venv/bin/python setup.py bdist_wheel && .venv/bin/pip install dist/*.whl
 
 IGRAPHDIR=`.venv/bin/python3 -c 'import igraph, os; print(os.path.dirname(igraph.__file__))'`
 
