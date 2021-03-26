@@ -29,6 +29,9 @@
 * Many old code constructs that were used to maintain compatibility with Python
   2.x are removed now that we have dropped support for Python 2.x.
 
+* Reading GraphML files is now also supported on Windows if you use one of the
+  official Python wheels.
+  
 
 ## 0.9.0
 
