@@ -320,7 +320,7 @@ class Plot(object):
         """Saves the plot to a temporary file and shows it.
 
         This method is deprecated from python-igraph 0.9.1 and will be removed in
-        0.10.0.
+        version 0.10.0.
 
         @deprecated: Opening an image viewer with a temporary file never worked
             reliably across platforms.
