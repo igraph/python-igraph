@@ -129,8 +129,6 @@ jobs:
           IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
           CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest"
 
-
-
       - uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
@@ -177,21 +175,3 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: dist/*.tar.gz
-
-  upload_pypi:
-    needs: [build_wheels, build_wheel_win, build_sdist]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' &&
-        github.ref == 'refs/heads/master' &&
-        startsWith(github.event.ref, 'refs/tags/')
-    steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: artifact
-          path: dist
-
-      - uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: __token__
-          password: ${{ secrets.pypi_password }}
-          # To test: repository_url: https://test.pypi.org/legacy/
