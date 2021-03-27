@@ -56,32 +56,38 @@ the directory where you extracted the source code, you should be able to build
 and install python-igraph using `python setup.py install`
 
 You may need to set the architecture that you are building on explicitly by setting the environment variable
+
 ```
 set IGRAPH_CMAKE_EXTRA_ARGS=-A [arch]
 ```
+
 where `[arch]` is either `Win32` for 32-bit builds or `x64` for 64-bit builds.
 
 #### Enabling GraphML
 
-By default, GraphML is disabled, because `libxml2` is not availabe on Windows by
-default. You can install `libxml2` on Windows using
+By default, GraphML is disabled, because `libxml2` is not available on Windows in
+the standard installation. You can install `libxml2` on Windows using
 [`vcpkg`](https://github.com/Microsoft/vcpkg). After installation of `vcpkg` you
 can install `libxml2` as follows
+
 ```
 vcpkg.exe install libxml2:x64-windows-static-md
 ```
+
 for 64-bit version (for 32-bit versions you can use the `x86-windows-static-md`
 triplet). You need to integrate `vcpkg` in the build environment using
+
 ```
 vcpkg.exe integrate install
 ```
 
 This mentions that
-```
-CMake projects should use: "-DCMAKE_TOOLCHAIN_FILE=[vcpkg build script]"
-```
+
+> CMake projects should use: `-DCMAKE_TOOLCHAIN_FILE=[vcpkg build script]`
+
 which we will do next. In order to build `python-igraph` correctly, you also
-need to set some other environment variables before building `python-igraph`
+need to set some other environment variables before building `python-igraph`:
+
 ```
 set IGRAPH_CMAKE_EXTRA_ARGS=-DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_TOOLCHAIN_FILE=[vcpkg build script]
 set IGRAPH_EXTRA_LIBRARY_PATH=[vcpkg directory]/installed/x64-windows-static-md/lib/
@@ -105,7 +111,7 @@ custom installation of igraph is discoverable with `pkg-config`. First, check
 whether `pkg-config` can tell you the required compiler and linker flags for
 igraph:
 
-```
+```bash
 pkg-config --cflags --libs igraph
 ```
 
@@ -113,14 +119,14 @@ If `pkg-config` responds with a set of compiler and linker flags and not an
 error message, you are probably okay. You can then proceed with the
 installation using pip:
 
-```
+```bash
 pip install python-igraph --install-option="--use-pkg-config"
 ```
 
 Alternatively, if you have already downloaded and extracted the source code
 of igraph, you can run `setup.py` directly:
 
-```
+```bash
 python setup.py build --use-pkg-config
 ```
 
@@ -141,22 +147,24 @@ that you have the latest development version, which contains a matching version
 of the C core of igraph as a git submodule. Therefore, to install the bleeding
 edge version, you need to instruct git to check out the submodules first:
 
-```
+```bash
 git submodule update --init
 ```
 
 Compiling the development version additionally requires `flex` and `bison`. You
 can install those on Ubuntu using
-```
+
+```bash
 sudo apt install bison flex
 ```
+
 On macOS you can install these from Homebrew or MacPorts. On Windows you can
 install `winflexbison3` from Chocolatey.
 
 Then, running the setup script should work if you have a C compiler and the
 necessary build dependencies (see the previous section):
 
-```
+```bash
 python setup.py build
 ```
 
@@ -165,7 +173,7 @@ python setup.py build
 Unit tests can be executed from the project directory with `tox` or with the
 built-in unittest module:
 
-```
+```bash
 python -m unittest
 ```
 
