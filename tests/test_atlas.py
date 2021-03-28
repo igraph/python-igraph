@@ -102,7 +102,16 @@ class AtlasTestBase(object):
 
     def testHubScore(self):
         for idx, g in enumerate(self.__class__.graphs):
-            sc = g.hub_score()
+            try:
+                sc = g.hub_score()
+            except Exception as ex:
+                self.assertTrue(
+                    False,
+                    msg="Hub score calculation threw exception for graph #%d: %s"
+                    % (idx, ex),
+                )
+                raise
+
             if g.vcount() == 0:
                 self.assertEqual([], sc)
                 continue
@@ -119,7 +128,16 @@ class AtlasTestBase(object):
 
     def testAuthorityScore(self):
         for idx, g in enumerate(self.__class__.graphs):
-            sc = g.authority_score()
+            try:
+                sc = g.authority_score()
+            except Exception as ex:
+                self.assertTrue(
+                    False,
+                    msg="Authority score calculation threw exception for graph #%d: %s"
+                    % (idx, ex),
+                )
+                raise
+
             if g.vcount() == 0:
                 self.assertEqual([], sc)
                 continue
