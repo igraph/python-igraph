@@ -6,7 +6,7 @@ Utility classes for drawing routines.
 from math import atan2, cos, sin
 from operator import itemgetter
 
-__all__ = ("BoundingBox", "FakeModule", "Point", "Rectangle")
+__all__ = ("BoundingBox", "Point", "Rectangle")
 __license__ = "GPL"
 
 #####################################################################
@@ -403,17 +403,28 @@ class BoundingBox(Rectangle):
 
 # pylint: disable-msg=R0903
 # R0903: too few public methods
-class FakeModule(object):
+class FakeModule:
     """Fake module that raises an exception for everything"""
 
+    def __init__(self, message):
+        """Constructor.
+
+        Parameters:
+            message: message to print in exceptions raised from this module
+        """
+        self._message = message
+
     def __getattr__(self, _):
-        raise AttributeError("plotting not available")
+        raise AttributeError(self._message)
 
     def __call__(self, _):
-        raise TypeError("plotting not available")
+        raise TypeError(self._message)
 
     def __setattr__(self, key, value):
-        raise AttributeError("plotting not available")
+        if key == "_message":
+            super().__setattr__(key, value)
+        else:
+            raise AttributeError(self._message)
 
 
 #####################################################################
@@ -425,7 +436,7 @@ def find_cairo():
     Returns a fake module if everything fails.
     """
     module_names = ["cairo", "cairocffi"]
-    module = FakeModule()
+    module = FakeModule("Plotting not available; please install pycairo or cairocffi")
     for module_name in module_names:
         try:
             module = __import__(module_name)
@@ -439,8 +450,7 @@ def find_cairo():
 
 
 def find_matplotlib():
-    """Tries to import the ``cairo`` Python module if it is installed,
-    also trying ``cairocffi`` (a drop-in replacement of ``cairo``).
+    """Tries to import the ``matplotlib`` Python module if it is installed.
     Returns a fake module if everything fails.
     """
     try:
@@ -448,13 +458,13 @@ def find_matplotlib():
 
         has_mpl = True
     except ImportError:
-        mpl = FakeModule()
+        mpl = FakeModule("You need to install matplotlib to use this functionality")
         has_mpl = False
 
     if has_mpl:
         import matplotlib.pyplot as plt
     else:
-        plt = FakeModule()
+        plt = FakeModule("You need to install matplotlib.pyplot to use this functionality")
 
     return mpl, plt
 
