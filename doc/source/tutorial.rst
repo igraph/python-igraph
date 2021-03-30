@@ -1050,6 +1050,6 @@ of the `Graph class`_. Should you get stuck, try asking in our
 `Discourse group`_ first - maybe there is someone out there who can help you
 out immediately.
 
-.. _API documentation: https://igraph.org/python/doc/igraph-module.html
-.. _Graph class: https://igraph.org/python/doc/igraph.Graph-class.html
+.. _API documentation: https://igraph.org/python/doc/api/index.html
+.. _Graph class: https://igraph.org/python/doc/api/igraph.Graph.html
 .. _Discourse group: https://igraph.discourse.group
