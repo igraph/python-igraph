@@ -825,7 +825,7 @@ PyMethodDef igraphmodule_EdgeSeq_methods[] = {
   },
   {"select", (PyCFunction)igraphmodule_EdgeSeq_select,
    METH_VARARGS,
-   "select(...)\n--\n\n"
+   "select(*args, **kwds)\n--\n\n"
    "For internal use only.\n"
   },
   {NULL}
