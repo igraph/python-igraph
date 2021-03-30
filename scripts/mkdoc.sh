@@ -35,7 +35,7 @@ rm -rf "${SITE_PACKAGES_DIR}"/python_igraph*.egg
 rm -rf "${SITE_PACKAGES_DIR}"/python_igraph*.egg-link
 
 echo "Installing python-igraph in virtualenv..."
-rm -f dist/*.whl && .venv/bin/python setup.py bdist_wheel && .venv/bin/pip install dist/*.whl
+rm -f dist/*.whl && .venv/bin/python setup.py bdist_wheel && .venv/bin/pip install --force-reinstall dist/*.whl
 
 IGRAPHDIR=`.venv/bin/python3 -c 'import igraph, os; print(os.path.dirname(igraph.__file__))'`
 
