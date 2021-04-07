@@ -265,13 +265,13 @@ class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
 
         print("Running build...")
         retcode = subprocess.call(
-            [cmake, "--build", ".", "--parallel", "--config", "Release"]
+            [cmake, "--build", ".", "--config", "Release"]
         )
         if retcode:
             return False
 
         print("Installing build...")
-        retcode = subprocess.call([cmake, "--install", ".", "--prefix", str(install_folder)])
+        retcode = subprocess.call([cmake, "--install", ".", "--prefix", str(install_folder), "--config", "Release"])
         if retcode:
             return False
 
