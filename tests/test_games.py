@@ -50,6 +50,9 @@ class GameTests(unittest.TestCase):
         g = Graph.Tree_Game(10, False, RANDOM_TREE_PRUFER)
         self.assertTrue(isinstance(g, Graph) and g.vcount() == 10)
 
+        # Prufer with directed (should fail)
+        self.assertRaises(InternalError, Graph.Tree_Game, 10, True, RANDOM_TREE_PRUFER)
+
         # LERW algorithm
         g = Graph.Tree_Game(10, False, RANDOM_TREE_LERW)
         self.assertTrue(isinstance(g, Graph) and g.vcount() == 10)
