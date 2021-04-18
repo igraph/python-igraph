@@ -99,6 +99,7 @@ PyObject* igraphmodule_Graph_Ring(PyTypeObject *type, PyObject *args, PyObject *
 PyObject* igraphmodule_Graph_SBM(PyTypeObject *type, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_Star(PyTypeObject *type, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_Tree(PyTypeObject *type, PyObject *args, PyObject *kwds);
+PyObject* igraphmodule_Graph_Tree_Game(PyTypeObject *type, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_Watts_Strogatz(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
 PyObject* igraphmodule_Graph_is_connected(igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds);

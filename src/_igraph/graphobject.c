@@ -674,7 +674,7 @@ PyObject *igraphmodule_Graph_delete_edges(igraphmodule_GraphObject * self,
 }
 
 /**********************************************************************
- * tructural properties                                              *
+ * structural properties                                              *
  **********************************************************************/
 
 /** \ingroup python_interface_graph
@@ -3453,6 +3453,60 @@ PyObject *igraphmodule_Graph_Tree(PyTypeObject * type,
   }
 
   if (igraph_tree(&g, (igraph_integer_t) n, (igraph_integer_t) children, mode)) {
+      igraphmodule_handle_igraph_error();
+      return NULL;
+  }
+
+  CREATE_GRAPH_FROM_TYPE(self, g, type);
+
+  return (PyObject *) self;
+}
+
+/** \ingroup python_interface_graph
+ * \brief Generates a random tree using one of a few methods.
+ *
+ * This method has three parameters:
+ * - n is the number of nodes in the tree.
+ * - directed is a bool that specifies if the edges should be directed. If so, they
+ * point away from the root.
+ * - method is one of:
+ *   - igraph.RANDOM_TREE_PRUFER (Prufer, directed currently unsupported)
+ *   - igraph.RANDOM_TREE_LERW (loop-erased random walk)
+ *
+ * \return a reference to the newly generated Python igraph object
+ * \sa igraph_tree
+ */
+PyObject *igraphmodule_Graph_Tree_Game(PyTypeObject * type,
+                                  PyObject * args, PyObject * kwds)
+{
+  long int n, directed_o, tree_method_o;
+  igraphmodule_GraphObject *self;
+  igraph_t g;
+
+  static char *kwlist[] = { "n", "directed", "method", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "lll", kwlist,
+                                   &n, &directed_o, &tree_method_o))
+    return NULL;
+
+  if (n < 0) {
+    PyErr_SetString(PyExc_ValueError, "Number of vertices must be positive.");
+    return NULL;
+  }
+
+  switch(tree_method_o) {
+    case IGRAPH_RANDOM_TREE_PRUFER:
+    case IGRAPH_RANDOM_TREE_LERW:
+      break;
+    default:
+    PyErr_SetString(PyExc_ValueError,
+        "Tree method must be igraph.RANDOM_TREE_PRUFER or igraph.RANDOM_TREE_LERW");
+    return NULL;
+  }
+
+  /* The C function takes care of the unsupported case (Prufer/directed) */
+  if (igraph_tree_game(&g, (igraph_integer_t) n, (igraph_bool_t) directed_o,
+        tree_method_o)) {
       igraphmodule_handle_igraph_error();
       return NULL;
   }
@@ -12820,6 +12874,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param n: the number of vertices in the graph (3 or 4)\n"
    "@param cls: the isomorphism class\n"
    "@param directed: whether the graph should be directed.\n"},
+
+  /* interface to igraph_tree_game */
+  {"Tree_Game", (PyCFunction) igraphmodule_Graph_Tree_Game,
+   METH_VARARGS | METH_CLASS | METH_KEYWORDS,
+   "Tree_Game(n, directed, method)\n--\n\n"
+   "Generates a random tree.\n\n"
+   "@param n: the number of vertices in the tree\n"
+   "@param directed: whether the graph should be directed.\n"
+   "@param method: one of RANDOM_TREE_PRUFER or RANDOM_TREE_LERW.\n"
+   }, 
 
   /* interface to igraph_watts_strogatz_game */
   {"Watts_Strogatz", (PyCFunction) igraphmodule_Graph_Watts_Strogatz,

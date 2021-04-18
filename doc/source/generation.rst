@@ -148,6 +148,7 @@ Stochastic graphs can be created according to several different models or games:
  - Erdos-Renyi: :meth:`Graph.Erdos_Renyi`
  - Watts-Strogatz :meth:`Graph.Watts_Strogatz`
  - stochastic block model :meth:`Graph.SBM`
+ - random tree :meth:`Graph.Tree_Game`
  - forest fire game :meth:`Graph.Forest_Fire`
  - random geometric graph :meth:`Graph.GRG`
  - growing :meth:`Graph.Growing_Random`

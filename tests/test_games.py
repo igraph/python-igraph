@@ -45,6 +45,15 @@ class GameTests(unittest.TestCase):
         g = Graph.Asymmetric_Preference(100, [[0, 1], [1, 0]], [[1, 0], [0, 1]])
         self.assertTrue(isinstance(g, Graph) and len(g.clusters()) == 1)
 
+    def testTreeGame(self):
+        # Prufer algorithm
+        g = Graph.Tree_Game(10, False, RANDOM_TREE_PRUFER)
+        self.assertTrue(isinstance(g, Graph) and g.vcount() == 10)
+
+        # LERW algorithm
+        g = Graph.Tree_Game(10, False, RANDOM_TREE_LERW)
+        self.assertTrue(isinstance(g, Graph) and g.vcount() == 10)
+
     def testWattsStrogatz(self):
         g = Graph.Watts_Strogatz(1, 20, 1, 0.2)
         self.assertTrue(isinstance(g, Graph) and g.vcount() == 20 and g.ecount() == 20)
