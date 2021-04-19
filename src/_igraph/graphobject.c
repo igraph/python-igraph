@@ -2804,7 +2804,6 @@ PyObject *igraphmodule_Graph_Realize_Degree_Sequence(PyTypeObject *type,
   igraph_edge_type_sw_t allowed_edge_types;
   igraph_realize_degseq_t method;
   PyObject *outdeg_o, *indeg_o, *edge_types_o, *method_o;
-  PyObject *repr;
   igraphmodule_GraphObject *self;
   igraph_t g;
 
@@ -2814,36 +2813,12 @@ PyObject *igraphmodule_Graph_Realize_Degree_Sequence(PyTypeObject *type,
     return NULL;
 
   /* allowed edge types */
-  repr = PyObject_Str(edge_types_o);
-  if (PyUnicode_CompareWithASCIIString(repr, "simple_sw") == 0)
-    allowed_edge_types = IGRAPH_SIMPLE_SW;
-  else if (PyUnicode_CompareWithASCIIString(repr, "loops_sw") == 0)
-    allowed_edge_types = IGRAPH_LOOPS_SW;
-  else if (PyUnicode_CompareWithASCIIString(repr, "multi_sw") == 0)
-    allowed_edge_types = IGRAPH_MULTI_SW;
-  else if (PyUnicode_CompareWithASCIIString(repr, "both_sw") == 0)
-    allowed_edge_types = IGRAPH_LOOPS_SW | IGRAPH_MULTI_SW;
-  else {
-    Py_XDECREF(repr);
-    PyErr_SetString(PyExc_ValueError, "allowed_edge_types must be 'simple_sw' or 'multi_sw' (undirected only).");
-      return NULL;
-  }
-  Py_XDECREF(repr);
+  if (igraphmodule_PyObject_to_edge_type_sw_t(edge_types_o, &allowed_edge_types))
+    return NULL;
 
   /* methods */
-  repr = PyObject_Str(method_o);
-  if (PyUnicode_CompareWithASCIIString(repr, "smallest") == 0)
-    method = IGRAPH_REALIZE_DEGSEQ_SMALLEST;
-  else if (PyUnicode_CompareWithASCIIString(repr, "largest") == 0)
-    method = IGRAPH_REALIZE_DEGSEQ_LARGEST;
-  else if (PyUnicode_CompareWithASCIIString(repr, "index") == 0)
-    method = IGRAPH_REALIZE_DEGSEQ_INDEX;
-  else {
-    Py_XDECREF(repr);
-    PyErr_SetString(PyExc_ValueError, "method must be 'smallest', 'largest', or 'index'");
+  if (igraphmodule_PyObject_to_realize_degseq_t(method_o, &method))
     return NULL;
-  }
-  Py_XDECREF(repr);
 
   /* Outdegree vector */
   if (igraphmodule_PyObject_to_vector_t(outdeg_o, &outdeg, 0))

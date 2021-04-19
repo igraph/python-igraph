@@ -3025,3 +3025,37 @@ int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o, igraph_pagerank_algo_t
 
   return igraphmodule_PyObject_to_enum(o, pagerank_algo_tt, (int*)result);
 }
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts a Python object to an igraph \c igraph_edge_type_sw_t
+ */
+int igraphmodule_PyObject_to_edge_type_sw_t(PyObject *o, igraph_edge_type_sw_t *result) {
+  static igraphmodule_enum_translation_table_entry_t edge_type_sw_tt[] = {
+        {"simple_sw", IGRAPH_SIMPLE_SW},
+        {"loops_sw", IGRAPH_LOOPS_SW},
+        {"multi_sw", IGRAPH_MULTI_SW},
+        {"both_sw", IGRAPH_LOOPS_SW | IGRAPH_MULTI_SW},
+        {0,0}
+    };
+
+  return igraphmodule_PyObject_to_enum(o, edge_type_sw_tt, (int*)result);
+}
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts a Python object to an igraph \c igraph_realize_degseq_t
+ */
+int igraphmodule_PyObject_to_realize_degseq_t(PyObject *o, igraph_realize_degseq_t *result) {
+  static igraphmodule_enum_translation_table_entry_t realize_degseq_tt[] = {
+        {"smallest", IGRAPH_REALIZE_DEGSEQ_SMALLEST},
+        {"largest", IGRAPH_REALIZE_DEGSEQ_LARGEST},
+        {"index", IGRAPH_REALIZE_DEGSEQ_INDEX},
+        {0,0}
+    };
+
+  return igraphmodule_PyObject_to_enum(o, realize_degseq_tt, (int*)result);
+}
+
+
+
