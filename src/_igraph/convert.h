@@ -47,6 +47,8 @@ int PyLong_AsInt(PyObject* obj, int* result);
 
 int igraphmodule_PyObject_to_enum(PyObject *o,
   igraphmodule_enum_translation_table_entry_t *table, int *result);
+int igraphmodule_PyObject_to_enum_strict(PyObject *o,
+  igraphmodule_enum_translation_table_entry_t *table, int *result);
 int igraphmodule_PyObject_to_add_weights_t(PyObject *o, igraph_add_weights_t *result);
 int igraphmodule_PyObject_to_adjacency_t(PyObject *o, igraph_adjacency_t *result);
 int igraphmodule_PyObject_to_attribute_combination_type_t(PyObject* o,
