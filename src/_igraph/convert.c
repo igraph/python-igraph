@@ -118,6 +118,56 @@ int igraphmodule_PyObject_to_enum(PyObject *o,
     return -1;
 }
 
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts a Python object to a corresponding igraph enum, strictly.
+ *
+ * The numeric value is returned as an integer that must be converted
+ * explicitly to the corresponding igraph enum type. This is to allow one
+ * to use the same common conversion routine for multiple enum types.
+ *
+ * \param o a Python object to be converted
+ * \param translation the translation table between strings and the
+ *   enum values. Strings are treated as case-insensitive, but it is
+ *   assumed that the translation table keys are lowercase. The last
+ *   entry of the table must contain NULL values.
+ * \param result the result is returned here. The default value must be
+ *   passed in before calling this function, since this value is
+ *   returned untouched if the given Python object is Py_None.
+ * \return 0 if everything is OK, 1 otherwise. An appropriate exception
+ *   is raised in this case.
+ */
+int igraphmodule_PyObject_to_enum_strict(PyObject *o,
+  igraphmodule_enum_translation_table_entry_t* table,
+  int *result) {
+    char *s;
+
+    if (o == 0 || o == Py_None)
+      return 0;
+    if (PyLong_Check(o))
+      return PyLong_AsInt(o, result);
+    s = PyUnicode_CopyAsString(o);
+    if (s == 0) {
+        PyErr_SetString(PyExc_TypeError, "int, long or string expected");
+        return -1;
+    }
+    /* Do NOT convert string to lowercase */
+    /* Search for exact matches */
+    while (table->name != 0) {
+        if (strcmp(s, table->name) == 0) {
+          *result = table->value;
+          free(s);
+          return 0;
+        }
+        table++;
+    }
+    free(s);
+    PyErr_SetObject(PyExc_ValueError, o);
+    return -1;
+}
+
+
 /**
  * \ingroup python_interface_conversion
  * \brief Converts a Python object to an igraph \c igraph_neimode_t
@@ -3039,7 +3089,7 @@ int igraphmodule_PyObject_to_edge_type_sw_t(PyObject *o, igraph_edge_type_sw_t *
         {0,0}
     };
 
-  return igraphmodule_PyObject_to_enum(o, edge_type_sw_tt, (int*)result);
+  return igraphmodule_PyObject_to_enum_strict(o, edge_type_sw_tt, (int*)result);
 }
 
 /**
@@ -3054,8 +3104,5 @@ int igraphmodule_PyObject_to_realize_degseq_t(PyObject *o, igraph_realize_degseq
         {0,0}
     };
 
-  return igraphmodule_PyObject_to_enum(o, realize_degseq_tt, (int*)result);
+  return igraphmodule_PyObject_to_enum_strict(o, realize_degseq_tt, (int*)result);
 }
-
-
-
