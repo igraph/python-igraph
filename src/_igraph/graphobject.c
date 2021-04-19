@@ -2801,14 +2801,15 @@ PyObject *igraphmodule_Graph_Realize_Degree_Sequence(PyTypeObject *type,
 
   igraph_vector_t outdeg, indeg;
   igraph_vector_t *indegp = 0;
-  igraph_edge_type_sw_t allowed_edge_types;
-  igraph_realize_degseq_t method;
-  PyObject *outdeg_o, *indeg_o, *edge_types_o, *method_o;
+  igraph_edge_type_sw_t allowed_edge_types = IGRAPH_SIMPLE_SW;
+  igraph_realize_degseq_t method = IGRAPH_REALIZE_DEGSEQ_SMALLEST;
+  PyObject *outdeg_o, *indeg_o = Py_None;
+  PyObject *edge_types_o = Py_None, *method_o = Py_None;
   igraphmodule_GraphObject *self;
   igraph_t g;
 
-  static char *kwlist[] = { "outdeg", "indeg", "allowed_edge_types", "method", NULL };
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOOO", kwlist,
+  static char *kwlist[] = { "out", "in_", "allowed_edge_types", "method", NULL };
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist,
                                    &outdeg_o, &indeg_o, &edge_types_o, &method_o))
     return NULL;
 
@@ -12668,22 +12669,29 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
 
   {"Realize_Degree_Sequence", (PyCFunction) igraphmodule_Graph_Realize_Degree_Sequence,
     METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-    "Realize_Degree_Sequence(outdeg, indeg, allowed_edge_types, method)\n--\n\n"
-    "Generates a graph from a degree sequence.\n\n"
-    "@param outdeg: the degree sequence of an undirected graph (if indeg=None), "
-    "or the out-degree sequence of a directed graph.\n"
-    "@param indeg: None to generate an undirected graph, the in-degree sequence "
-    "to generate a directed graph.\n"
-    "@param allowed_edge_types: for directed graphs, only 'simple_sw' is currently \n"
-    "implemented. Possible values for undirected graphs are\n"
-    " - 'simple_sw: simple graphs (no self-loops, no multi-edges)\n"
-    " - 'loops_sw': single self-loops allowed, but not multi-edges \n"
-    " - 'multi_sw': multi-edges allowed, but not self-loops \n"
-    " - 'both_sw': multi-edges and self-loops allowed \n"
-    "@param method: possible values are\n"
-    " - 'smallest': The vertex with smallest remaining degree first.\n"
-    " - 'largest': The vertex with the largest remaining degree first.\n"
-    " - 'index': The vertices are selected in order of their index.\n"
+    "Realize_Degree_Sequence(out, in_=None, allowed_edge_types=\"simple\", method=\"smallest\")\n--\n\n"
+    "Generates a graph from a degree sequence.\n"
+    "\n"
+    "@param outdeg: the degree sequence of an undirected graph (if indeg=None),\n"
+    "  or the out-degree sequence of a directed graph.\n"
+    "@param indeg: None to generate an undirected graph, the in-degree sequence\n"
+    "  to generate a directed graph.\n"
+    "@param allowed_edge_types: controls whether loops or multi-edges are allowed\n"
+    "  during the generation process. Note that not all combinations are supported\n"
+    "  for all types of graphs; an exception will be raised for unsupported\n"
+    "  combinations. Possible values are:\n"
+    "\n"
+    "    - C{simple}: simple graphs (no self-loops, no multi-edges)\n"
+    "    - C{loops}: single self-loops allowed, but not multi-edges\n"
+    "    - C{multi}: multi-edges allowed, but not self-loops\n"
+    "    - C{all}: multi-edges and self-loops allowed\n"
+    "\n"
+    "@param method: controls how the vertices are selected during the generation\n"
+    "  process. Possible values are:\n"
+    "\n"
+    "    - C{smallest}: The vertex with smallest remaining degree first.\n"
+    "    - C{largest}: The vertex with the largest remaining degree first.\n"
+    "    - C{index}: The vertices are selected in order of their index.\n"
   },
 
   // interface to igraph_ring

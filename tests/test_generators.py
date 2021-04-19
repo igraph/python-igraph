@@ -1,5 +1,6 @@
 import unittest
-from igraph import *
+
+from igraph import Graph, InternalError
 
 
 try:
@@ -137,51 +138,69 @@ class GeneratorTests(unittest.TestCase):
     def testRealizeDegreeSequence(self):
         # Test case insensitivity of options too
         g = Graph.Realize_Degree_Sequence(
-            [1, 1], None, "simple_SW", "smallest",
+            [1, 1], None, "simPLE", "smallest",
         )
         self.assertFalse(g.is_directed())
+        self.assertTrue(g.degree() == [1, 1])
 
         # Not implemented, should fail
-        self.assertRaises(NotImplementedError, Graph.Realize_Degree_Sequence,
-                [1, 1], None, "loops_sw", "largest")
+        self.assertRaises(
+            NotImplementedError, Graph.Realize_Degree_Sequence,
+            [1, 1], None, "loops", "largest"
+        )
 
         g = Graph.Realize_Degree_Sequence(
-            [1, 1], None, "both_sw", "largest",
+            [1, 1], None, "all", "largest",
         )
         self.assertFalse(g.is_directed())
+        self.assertTrue(g.degree() == [1, 1])
 
         g = Graph.Realize_Degree_Sequence(
-            [1, 1], None, "multi_sw", "index",
+            [1, 1], None, "multi", "index",
         )
         self.assertFalse(g.is_directed())
+        self.assertTrue(g.degree() == [1, 1])
 
         g = Graph.Realize_Degree_Sequence(
-            [1, 1], [1, 1], "simple_sw", "largest",
+            [1, 1], [1, 1], "simple", "largest",
         )
         self.assertTrue(g.is_directed())
+        self.assertTrue(g.indegree() == [1, 1])
+        self.assertTrue(g.outdegree() == [1, 1])
 
         # Not implemented, should fail
-        self.assertRaises(NotImplementedError, Graph.Realize_Degree_Sequence,
-                [1, 1], [1, 1], "multi_sw", "largest")
+        self.assertRaises(
+            NotImplementedError, Graph.Realize_Degree_Sequence,
+            [1, 1], [1, 1], "multi", "largest"
+        )
 
-        self.assertRaises(ValueError, Graph.Realize_Degree_Sequence,
-                [1, 1], [1, 1], "should_fail", "index")
-        self.assertRaises(ValueError, Graph.Realize_Degree_Sequence,
-                [1, 1], [1, 1], "multi_sw", "should_fail")
+        self.assertRaises(
+            ValueError, Graph.Realize_Degree_Sequence,
+            [1, 1], [1, 1], "should_fail", "index"
+        )
+        self.assertRaises(
+            ValueError, Graph.Realize_Degree_Sequence,
+            [1, 1], [1, 1], "multi", "should_fail"
+        )
 
-
+        # Degree sequence of Zachary karate club, using optional arguments
+        zachary = Graph.Famous("zachary")
+        degrees = zachary.degree()
+        g = Graph.Realize_Degree_Sequence(degrees)
+        self.assertFalse(g.is_directed())
+        self.assertTrue(g.degree() == degrees)
 
     def testKautz(self):
         g = Graph.Kautz(2, 2)
-        deg_in = g.degree(mode=IN)
-        deg_out = g.degree(mode=OUT)
+        deg_in = g.degree(mode="in")
+        deg_out = g.degree(mode="out")
         # This is not a proper test, but should spot most errors
         self.assertTrue(g.is_directed() and deg_in == [2] * 12 and deg_out == [2] * 12)
 
     def testDeBruijn(self):
         g = Graph.De_Bruijn(2, 3)
-        deg_in = g.degree(mode=IN, loops=True)
-        deg_out = g.degree(mode=OUT, loops=True)
+        deg_in = g.degree(mode="in", loops=True)
+        deg_out = g.degree(mode="out", loops=True)
         # This is not a proper test, but should spot most errors
         self.assertTrue(g.is_directed() and deg_in == [2] * 8 and deg_out == [2] * 8)
 

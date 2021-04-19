@@ -3084,10 +3084,10 @@ int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o, igraph_pagerank_algo_t
  */
 int igraphmodule_PyObject_to_edge_type_sw_t(PyObject *o, igraph_edge_type_sw_t *result) {
   static igraphmodule_enum_translation_table_entry_t edge_type_sw_tt[] = {
-        {"simple_sw", IGRAPH_SIMPLE_SW},
-        {"loops_sw", IGRAPH_LOOPS_SW},
-        {"multi_sw", IGRAPH_MULTI_SW},
-        {"both_sw", IGRAPH_LOOPS_SW | IGRAPH_MULTI_SW},
+        {"simple", IGRAPH_SIMPLE_SW},
+        {"loops", IGRAPH_LOOPS_SW},
+        {"multi", IGRAPH_MULTI_SW},
+        {"all", IGRAPH_LOOPS_SW | IGRAPH_MULTI_SW},
         {0,0}
     };
 
