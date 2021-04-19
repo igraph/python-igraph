@@ -63,6 +63,8 @@ int igraphmodule_PyObject_to_get_adjacency_t(PyObject *o, igraph_get_adjacency_t
 int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *result);
 int igraphmodule_PyObject_to_neimode_t(PyObject *o, igraph_neimode_t *result);
 int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o, igraph_pagerank_algo_t *result);
+int igraphmodule_PyObject_to_edge_type_sw_t(PyObject *o, igraph_edge_type_sw_t *result);
+int igraphmodule_PyObject_to_realize_degseq_t(PyObject *o, igraph_realize_degseq_t *result);
 int igraphmodule_PyObject_to_random_walk_stuck_t(PyObject *o, igraph_random_walk_stuck_t *result);
 int igraphmodule_PyObject_to_reciprocity_t(PyObject *o, igraph_reciprocity_t *result);
 int igraphmodule_PyObject_to_rewiring_t(PyObject *o, igraph_rewiring_t *result);
