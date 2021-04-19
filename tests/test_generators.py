@@ -140,6 +140,15 @@ class GeneratorTests(unittest.TestCase):
         )
         self.assertFalse(g.is_directed())
 
+        # Not implemented, should fail
+        self.assertRaises(NotImplementedError, Graph.Realize_Degree_Sequence,
+                [1, 1], None, "loops_sw", "largest")
+
+        g = Graph.Realize_Degree_Sequence(
+            [1, 1], None, "both_sw", "largest",
+        )
+        self.assertFalse(g.is_directed())
+
         g = Graph.Realize_Degree_Sequence(
             [1, 1], None, "multi_sw", "index",
         )
