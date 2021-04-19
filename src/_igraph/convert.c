@@ -141,7 +141,7 @@ int igraphmodule_PyObject_to_enum(PyObject *o,
 int igraphmodule_PyObject_to_enum_strict(PyObject *o,
   igraphmodule_enum_translation_table_entry_t* table,
   int *result) {
-    char *s;
+    char *s, *s2;
 
     if (o == 0 || o == Py_None)
       return 0;
@@ -152,7 +152,9 @@ int igraphmodule_PyObject_to_enum_strict(PyObject *o,
         PyErr_SetString(PyExc_TypeError, "int, long or string expected");
         return -1;
     }
-    /* Do NOT convert string to lowercase */
+    /* Convert string to lowercase */
+    for (s2=s; *s2; s2++)
+      *s2 = tolower(*s2);
     /* Search for exact matches */
     while (table->name != 0) {
         if (strcmp(s, table->name) == 0) {

@@ -135,8 +135,9 @@ class GeneratorTests(unittest.TestCase):
         self.assertRaises(InternalError, Graph.LCF, 12, (5, -5), -3)
 
     def testRealizeDegreeSequence(self):
+        # Test case insensitivity of options too
         g = Graph.Realize_Degree_Sequence(
-            [1, 1], None, "simple_sw", "smallest",
+            [1, 1], None, "simple_SW", "smallest",
         )
         self.assertFalse(g.is_directed())
 
