@@ -904,9 +904,6 @@ PyObject* PyInit__igraph(void)
   PyModule_AddIntConstant(m, "LOOPS_SW", IGRAPH_LOOPS_SW);
   PyModule_AddIntConstant(m, "MULTI_SW", IGRAPH_MULTI_SW);
 
-  PyModule_AddIntConstant(m, "RANDOM_TREE_PRUFER", IGRAPH_RANDOM_TREE_PRUFER);
-  PyModule_AddIntConstant(m, "RANDOM_TREE_LERW", IGRAPH_RANDOM_TREE_LERW);
-
   /* More useful constants */
   {
     const char* version;
