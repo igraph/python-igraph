@@ -92,6 +92,7 @@ PyObject* igraphmodule_Graph_Growing_Random(PyTypeObject *type, PyObject *args, 
 PyObject* igraphmodule_Graph_Isoclass(PyTypeObject *type, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_Lattice(PyTypeObject *type, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_LCF(PyTypeObject *type, PyObject *args, PyObject *kwds);
+PyObject* igraphmodule_Graph_Realize_Degree_Sequence(PyTypeObject *type, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_Preference(PyTypeObject *type, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_Recent_Degree(PyTypeObject *type, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_Ring(PyTypeObject *type, PyObject *args, PyObject *kwds);
