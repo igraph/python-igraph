@@ -170,5 +170,6 @@ Finally, there are some ways of generating graphs that are not covered by the pr
  - De Bruijn graphs :meth:`Graph.De_Bruijn`
  - Lederberg-Coxeter-Frucht graphs :meth:`Graph.LCF`
  - graphs with a specified isomorphism class :meth:`Graph.Isoclass`
+ - graphs with a specified degree sequence :meth:`Graph.Realize_Degree_Sequence`
                      
 .. _API documentation: https://igraph.org/python/doc/igraph-module.html

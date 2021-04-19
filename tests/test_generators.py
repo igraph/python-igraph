@@ -134,6 +134,33 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(g1.isomorphic(g2))
         self.assertRaises(InternalError, Graph.LCF, 12, (5, -5), -3)
 
+    def testRealizeDegreeSequence(self):
+        g = Graph.Realize_Degree_Sequence(
+            [1, 1], None, "simple_sw", "smallest",
+        )
+        self.assertFalse(g.is_directed())
+
+        g = Graph.Realize_Degree_Sequence(
+            [1, 1], None, "multi_sw", "index",
+        )
+        self.assertFalse(g.is_directed())
+
+        g = Graph.Realize_Degree_Sequence(
+            [1, 1], [1, 1], "simple_sw", "largest",
+        )
+        self.assertTrue(g.is_directed())
+
+        # Not implemented, should fail
+        self.assertRaises(NotImplementedError, Graph.Realize_Degree_Sequence,
+                [1, 1], [1, 1], "multi_sw", "largest")
+
+        self.assertRaises(ValueError, Graph.Realize_Degree_Sequence,
+                [1, 1], [1, 1], "should_fail", "index")
+        self.assertRaises(ValueError, Graph.Realize_Degree_Sequence,
+                [1, 1], [1, 1], "multi_sw", "should_fail")
+
+
+
     def testKautz(self):
         g = Graph.Kautz(2, 2)
         deg_in = g.degree(mode=IN)

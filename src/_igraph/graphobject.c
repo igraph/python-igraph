@@ -2792,6 +2792,88 @@ PyObject *igraphmodule_Graph_LCF(PyTypeObject *type,
 }
 
 /** \ingroup python_interface_graph
+ * \brief Generates a graph with a specified degree sequence
+ * \return a reference to the newly generated Python igraph object
+ * \sa igraph_realize_degree_sequence
+ */
+PyObject *igraphmodule_Graph_Realize_Degree_Sequence(PyTypeObject *type,
+                                 PyObject *args, PyObject *kwds) {
+
+  igraph_vector_t outdeg, indeg;
+  igraph_vector_t *indegp = 0;
+  igraph_edge_type_sw_t allowed_edge_types;
+  igraph_realize_degseq_t method;
+  PyObject *outdeg_o, *indeg_o, *edge_types_o, *method_o;
+  PyObject *repr;
+  igraphmodule_GraphObject *self;
+  igraph_t g;
+
+  static char *kwlist[] = { "outdeg", "indeg", "allowed_edge_types", "method", NULL };
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOOO", kwlist,
+                                   &outdeg_o, &indeg_o, &edge_types_o, &method_o))
+    return NULL;
+
+  /* allowed edge types */
+  repr = PyObject_Str(edge_types_o);
+  if (PyUnicode_CompareWithASCIIString(repr, "simple_sw") == 0)
+    allowed_edge_types = IGRAPH_SIMPLE_SW;
+  else if (PyUnicode_CompareWithASCIIString(repr, "multi_sw") == 0)
+    allowed_edge_types = IGRAPH_MULTI_SW;
+  else {
+    Py_XDECREF(repr);
+    PyErr_SetString(PyExc_ValueError, "allowed_edge_types must be 'simple_sw' or 'multi_sw' (undirected only).");
+      return NULL;
+  }
+  Py_XDECREF(repr);
+
+  /* methods */
+  repr = PyObject_Str(method_o);
+  if (PyUnicode_CompareWithASCIIString(repr, "smallest") == 0)
+    method = IGRAPH_REALIZE_DEGSEQ_SMALLEST;
+  else if (PyUnicode_CompareWithASCIIString(repr, "largest") == 0)
+    method = IGRAPH_REALIZE_DEGSEQ_LARGEST;
+  else if (PyUnicode_CompareWithASCIIString(repr, "index") == 0)
+    method = IGRAPH_REALIZE_DEGSEQ_INDEX;
+  else {
+    Py_XDECREF(repr);
+    PyErr_SetString(PyExc_ValueError, "method must be 'smallest', 'largest', or 'index'");
+    return NULL;
+  }
+  Py_XDECREF(repr);
+
+  /* Outdegree vector */
+  if (igraphmodule_PyObject_to_vector_t(outdeg_o, &outdeg, 0))
+    return NULL;
+
+  /* Indegree vector, PyNone means undirected graph */
+  if (indeg_o != Py_None) {
+    if (igraphmodule_PyObject_to_vector_t(indeg_o, &indeg, 0)) {
+      igraph_vector_destroy(&outdeg);
+      return NULL;
+    }
+    indegp = &indeg;
+  }
+
+  /* C function takes care of multi-sw and directed corner case */
+  if (igraph_realize_degree_sequence(&g, &outdeg, indegp, allowed_edge_types, method)) {
+    igraph_vector_destroy(&outdeg);
+    if (indegp != 0)
+      igraph_vector_destroy(&indeg);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  igraph_vector_destroy(&outdeg);
+  if (indegp != 0)
+    igraph_vector_destroy(&indeg);
+
+  CREATE_GRAPH_FROM_TYPE(self, g, type);
+
+  return (PyObject *) self;
+}
+
+
+/** \ingroup python_interface_graph
  * \brief Generates a graph based on vertex types and connection preferences
  * \return a reference to the newly generated Python igraph object
  * \sa igraph_preference_game
@@ -12603,6 +12685,21 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
     "@param n: the number of vertices\n"
     "@param shifts: the shifts in a list or tuple\n"
     "@param repeats: the number of repeats\n"
+  },
+
+  {"Realize_Degree_Sequence", (PyCFunction) igraphmodule_Graph_Realize_Degree_Sequence,
+    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
+    "Realize_Degree_Sequence(outdeg, indeg, allowed_edge_types, method)\n--\n\n"
+    "Generates a graph from a degree sequence.\n\n"
+    "@param outdeg: the degree sequence of an undirected graph (if indeg=None), "
+    "or the out-degree sequence of a directed graph.\n"
+    "@param indeg: None to generate an undirected graph, the in-degree sequence "
+    "to generate a directed graph.\n"
+    "@param allowed_edge_types: TODO!\n"
+    "@param method: possible values are\n"
+    " - REALIZE_DEGSEQ_SMALLEST: The vertex with smallest remaining degree first.\n"
+    " - REALIZE_DEGSEQ_LARGEST: The vertex with the largest remaining degree first.\n"
+    " - REALIZE_DEGSEQ_INDEX: The vertices are selected in order of their index.\n"
   },
 
   // interface to igraph_ring
