@@ -409,8 +409,7 @@ class FakeModule:
     def __init__(self, message):
         """Constructor.
 
-        Parameters:
-            message: message to print in exceptions raised from this module
+        @param message: message to print in exceptions raised from this module
         """
         self._message = message
 
