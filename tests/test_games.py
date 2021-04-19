@@ -47,14 +47,14 @@ class GameTests(unittest.TestCase):
 
     def testTreeGame(self):
         # Prufer algorithm
-        g = Graph.Tree_Game(10, False, RANDOM_TREE_PRUFER)
+        g = Graph.Tree_Game(10, False, "Prufer")
         self.assertTrue(isinstance(g, Graph) and g.vcount() == 10)
 
         # Prufer with directed (should fail)
-        self.assertRaises(InternalError, Graph.Tree_Game, 10, True, RANDOM_TREE_PRUFER)
+        self.assertRaises(InternalError, Graph.Tree_Game, 10, True, "Prufer")
 
         # LERW algorithm
-        g = Graph.Tree_Game(10, False, RANDOM_TREE_LERW)
+        g = Graph.Tree_Game(10, False, "lerw")
         self.assertTrue(isinstance(g, Graph) and g.vcount() == 10)
 
     def testWattsStrogatz(self):

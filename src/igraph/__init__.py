@@ -50,8 +50,6 @@ from igraph._igraph import (
     IN,
     InternalError,
     OUT,
-    RANDOM_TREE_PRUFER,
-    RANDOM_TREE_LERW,
     REWIRING_SIMPLE,
     REWIRING_SIMPLE_LOOPS,
     STAR_IN,
