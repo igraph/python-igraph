@@ -2817,8 +2817,12 @@ PyObject *igraphmodule_Graph_Realize_Degree_Sequence(PyTypeObject *type,
   repr = PyObject_Str(edge_types_o);
   if (PyUnicode_CompareWithASCIIString(repr, "simple_sw") == 0)
     allowed_edge_types = IGRAPH_SIMPLE_SW;
+  else if (PyUnicode_CompareWithASCIIString(repr, "loops_sw") == 0)
+    allowed_edge_types = IGRAPH_LOOPS_SW;
   else if (PyUnicode_CompareWithASCIIString(repr, "multi_sw") == 0)
     allowed_edge_types = IGRAPH_MULTI_SW;
+  else if (PyUnicode_CompareWithASCIIString(repr, "both_sw") == 0)
+    allowed_edge_types = IGRAPH_LOOPS_SW | IGRAPH_MULTI_SW;
   else {
     Py_XDECREF(repr);
     PyErr_SetString(PyExc_ValueError, "allowed_edge_types must be 'simple_sw' or 'multi_sw' (undirected only).");
@@ -12695,11 +12699,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
     "or the out-degree sequence of a directed graph.\n"
     "@param indeg: None to generate an undirected graph, the in-degree sequence "
     "to generate a directed graph.\n"
-    "@param allowed_edge_types: TODO!\n"
+    "@param allowed_edge_types: for directed graphs, only 'simple_sw' is currently \n"
+    "implemented. Possible values for undirected graphs are\n"
+    " - 'simple_sw: simple graphs (no self-loops, no multi-edges)\n"
+    " - 'loops_sw': single self-loops allowed, but not multi-edges \n"
+    " - 'multi_sw': multi-edges allowed, but not self-loops \n"
+    " - 'both_sw': multi-edges and self-loops allowed \n"
     "@param method: possible values are\n"
-    " - REALIZE_DEGSEQ_SMALLEST: The vertex with smallest remaining degree first.\n"
-    " - REALIZE_DEGSEQ_LARGEST: The vertex with the largest remaining degree first.\n"
-    " - REALIZE_DEGSEQ_INDEX: The vertices are selected in order of their index.\n"
+    " - 'smallest': The vertex with smallest remaining degree first.\n"
+    " - 'largest': The vertex with the largest remaining degree first.\n"
+    " - 'index': The vertices are selected in order of their index.\n"
   },
 
   // interface to igraph_ring
