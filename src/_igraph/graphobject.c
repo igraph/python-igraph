@@ -536,6 +536,40 @@ PyObject *igraphmodule_Graph_is_simple(igraphmodule_GraphObject *self) {
   Py_RETURN_FALSE;
 }
 
+
+/** \ingroup python_interface_graph
+ * \brief Determines whether a graph is a (directed or undirected) tree
+ * \sa igraph_is_tree
+ */
+PyObject *igraphmodule_Graph_is_tree(igraphmodule_GraphObject * self,
+                                     PyObject * args, PyObject * kwds)
+{
+  static char *kwlist[] = { "mode", NULL };
+  PyObject *mode_o = Py_None;
+  igraph_neimode_t mode = IGRAPH_OUT;
+  igraph_bool_t result;
+  int retval;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &mode_o)) {
+    return NULL;
+  }
+
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) {
+    return NULL;
+  }
+
+  if (igraph_is_tree(&self->g, &result, /* root = */ 0, mode)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (result) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
+}
+
 /** \ingroup python_interface_graph
  * \brief Adds vertices to an \c igraph.Graph
  * \return the extended \c igraph.Graph object
@@ -674,7 +708,7 @@ PyObject *igraphmodule_Graph_delete_edges(igraphmodule_GraphObject * self,
 }
 
 /**********************************************************************
- * structural properties                                              *
+ * Structural properties                                              *
  **********************************************************************/
 
 /** \ingroup python_interface_graph
@@ -3478,18 +3512,18 @@ PyObject *igraphmodule_Graph_Tree(PyTypeObject * type,
  * \sa igraph_tree
  */
 PyObject *igraphmodule_Graph_Tree_Game(PyTypeObject * type,
-                                  PyObject * args, PyObject * kwds)
+                                       PyObject * args, PyObject * kwds)
 {
   long int n;
-  PyObject *directed_o, *tree_method_o;
+  PyObject *directed_o = Py_False, *tree_method_o = Py_None;
   igraph_bool_t directed;
-  igraph_random_tree_t tree_method;
+  igraph_random_tree_t tree_method = IGRAPH_RANDOM_TREE_LERW;
   igraphmodule_GraphObject *self;
   igraph_t g;
 
   static char *kwlist[] = { "n", "directed", "method", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "lOO", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "l|OO", kwlist,
                                    &n, &directed_o, &tree_method_o))
     return NULL;
 
@@ -12124,12 +12158,28 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: C{True} if it is directed, C{False} otherwise.\n"
    "@rtype: boolean"},
 
-  // interface to igraph_is_simple
+  /* interface to igraph_is_simple */
   {"is_simple", (PyCFunction) igraphmodule_Graph_is_simple,
    METH_NOARGS,
    "is_simple()\n--\n\n"
    "Checks whether the graph is simple (no loop or multiple edges).\n\n"
    "@return: C{True} if it is simple, C{False} otherwise.\n"
+   "@rtype: boolean"},
+
+  /* interface to igraph_is_tree */
+  {"is_tree", (PyCFunction) igraphmodule_Graph_is_tree,
+   METH_VARARGS | METH_KEYWORDS,
+   "is_tree(mode=\"out\")\n--\n\n"
+   "Checks whether the graph is a (directed or undirected) tree graph.\n\n"
+   "For directed trees, the function may require that the edges are oriented\n"
+   "outwards from the root or inwards to the root, depending on the value\n"
+   "of the C{mode} argument.\n\n"
+   "@param mode: for directed graphs, specifies how the edge directions\n"
+   "  should be taken into account. C{\"all\"} means that the edge directions\n"
+   "  must be ignored, C{\"out\"} means that the edges must be oriented away\n"
+   "  from the root, C{\"in\"} means that the edges must be oriented\n"
+   "  towards the root. Ignored for undirected graphs.\n"
+   "@return: C{True} if the graph is a tree, C{False} otherwise.\n"
    "@rtype: boolean"},
 
   /* interface to igraph_add_vertices */
@@ -12740,10 +12790,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
     "  for all types of graphs; an exception will be raised for unsupported\n"
     "  combinations. Possible values are:\n"
     "\n"
-    "    - C{simple}: simple graphs (no self-loops, no multi-edges)\n"
-    "    - C{loops}: single self-loops allowed, but not multi-edges\n"
-    "    - C{multi}: multi-edges allowed, but not self-loops\n"
-    "    - C{all}: multi-edges and self-loops allowed\n"
+    "    - C{\"simple\"}: simple graphs (no self-loops, no multi-edges)\n"
+    "    - C{\"loops\"}: single self-loops allowed, but not multi-edges\n"
+    "    - C{\"multi\"}: multi-edges allowed, but not self-loops\n"
+    "    - C{\"all\"}: multi-edges and self-loops allowed\n"
     "\n"
     "@param method: controls how the vertices are selected during the generation\n"
     "  process. Possible values are:\n"
@@ -12876,12 +12926,20 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_tree_game */
   {"Tree_Game", (PyCFunction) igraphmodule_Graph_Tree_Game,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Tree_Game(n, directed, method)\n--\n\n"
-   "Generates a random tree.\n\n"
+   "Tree_Game(n, directed=False, method=\"lerw\")\n--\n\n"
+   "Generates a random tree by sampling uniformly from the set of labelled\n"
+   "trees with a given number of nodes.\n\n"
    "@param n: the number of vertices in the tree\n"
-   "@param directed: whether the graph should be directed.\n"
-   "@param method: one of 'Prufer' or 'lerw'.\n"
-   }, 
+   "@param directed: whether the graph should be directed\n"
+   "@param method: the generation method to be used. One of the following:\n"
+   "  \n"
+   "    - C{\"prufer\"} -- samples Prufer sequences uniformly, then converts\n"
+   "      them to trees\n"
+   "    - C{\"lerw\"} -- performs a loop-erased random walk on the complete\n"
+   "      graph to uniformly sample its spanning trees (Wilson's algorithm).\n"
+   "      This is the default choice as it supports both directed and\n"
+   "      undirected graphs.\n"
+  }, 
 
   /* interface to igraph_watts_strogatz_game */
   {"Watts_Strogatz", (PyCFunction) igraphmodule_Graph_Watts_Strogatz,

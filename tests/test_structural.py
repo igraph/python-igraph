@@ -527,6 +527,46 @@ class MiscTests(unittest.TestCase):
         g = Graph.Ring(10, directed=True, mutual=False)
         self.assertFalse(g.is_dag())
 
+    def testIsTree(self):
+        g = Graph()
+        self.assertFalse(g.is_tree())
+
+        g = Graph(directed=True)
+        self.assertFalse(g.is_tree())
+
+        g = Graph(1)
+        self.assertTrue(g.is_tree())
+
+        g = Graph(1, directed=True)
+        self.assertTrue(g.is_tree() and g.is_tree("out") and g.is_tree("in") and g.is_tree("all"))
+
+        g = Graph(5, [(0, 1), (1, 2), (1, 3), (3, 4)])
+        self.assertTrue(g.is_tree())
+
+        g = Graph(5, [(0, 1), (1, 2), (1, 3), (3, 4)], directed=True)
+        self.assertTrue(g.is_tree())
+        self.assertTrue(g.is_tree("out"))
+        self.assertFalse(g.is_tree("in"))
+        self.assertTrue(g.is_tree("all"))
+
+        g = Graph(5, [(0, 1), (1, 2), (3, 1), (3, 4)], directed=True)
+        self.assertFalse(g.is_tree())
+        self.assertFalse(g.is_tree("in"))
+        self.assertFalse(g.is_tree("out"))
+        self.assertTrue(g.is_tree("all"))
+
+        g = Graph(6, [(0, 4), (1, 5), (2, 1), (3, 1), (4, 3)], directed=True)
+        self.assertFalse(g.is_tree())
+        self.assertTrue(g.is_tree("in"))
+        self.assertFalse(g.is_tree("out"))
+        self.assertTrue(g.is_tree("all"))
+
+        g = Graph.Ring(10)
+        self.assertFalse(
+            g.is_tree() or g.is_tree("in") or g.is_tree("out") or
+            g.is_tree("all")
+        )
+
     def testLineGraph(self):
         g = Graph(4, [(0, 1), (0, 2), (1, 2), (0, 3), (1, 3)])
         el = g.linegraph().get_edgelist()
