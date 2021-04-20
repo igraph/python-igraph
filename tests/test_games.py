@@ -49,6 +49,8 @@ class GameTests(unittest.TestCase):
         # Prufer algorithm
         g = Graph.Tree_Game(10, False, "Prufer")
         self.assertTrue(isinstance(g, Graph) and g.vcount() == 10)
+        self.assertFalse(g.is_directed())
+        self.assertTrue(g.is_tree())
 
         # Prufer with directed (should fail)
         self.assertRaises(InternalError, Graph.Tree_Game, 10, True, "Prufer")
@@ -56,6 +58,20 @@ class GameTests(unittest.TestCase):
         # LERW algorithm
         g = Graph.Tree_Game(10, False, "lerw")
         self.assertTrue(isinstance(g, Graph) and g.vcount() == 10)
+        self.assertFalse(g.is_directed())
+        self.assertTrue(g.is_tree())
+
+        # Omitting the algorithm should default to LERW
+        g = Graph.Tree_Game(10, directed=True)
+        self.assertTrue(isinstance(g, Graph) and g.vcount() == 10)
+        self.assertTrue(g.is_directed())
+        self.assertTrue(g.is_tree())
+
+        # Omitting the directed argument should use undirected graphs
+        g = Graph.Tree_Game(42, method="Prufer")
+        self.assertTrue(isinstance(g, Graph) and g.vcount() == 42)
+        self.assertFalse(g.is_directed())
+        self.assertTrue(g.is_tree())
 
     def testWattsStrogatz(self):
         g = Graph.Watts_Strogatz(1, 20, 1, 0.2)
