@@ -1,5 +1,16 @@
 # igraph Python interface changelog
 
+## Unreleased
+
+### Added
+
+* Added `Graph.is_tree()` to test whether a graph is a tree.
+
+* Added `Graph.Realize_Degree_Sequence()` to construct a graph that realizes a
+  given degree sequence, using a deterministic (Havel-Hakimi-style) algorithm.
+
+* Added `Graph.Tree_Game()` to generate random trees with uniform sampling.
+
 ## 0.9.1
 
 ### Changed
