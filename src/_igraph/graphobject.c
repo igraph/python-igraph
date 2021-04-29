@@ -1930,6 +1930,175 @@ PyObject *igraphmodule_Graph_to_prufer(igraphmodule_GraphObject * self)
 }
 
 /**********************************************************************
+ * Eulerian paths                                                     *
+ **********************************************************************/
+/** \ingroup python_interface_graph
+ * \brief Determines whether a graph has a Eulerian path and cycle
+ * \sa igraph_is_eulerian
+ */
+PyObject *igraphmodule_Graph_is_eulerian(igraphmodule_GraphObject * self,
+                                     PyObject * args, PyObject * kwds)
+{
+  static char *kwlist[] = { NULL };
+  PyObject *dic, *has_path_o, *has_cycle_o;
+  igraph_bool_t has_path, has_cycle;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|", kwlist)) {
+    return NULL;
+  }
+
+  if (igraph_is_eulerian(&self->g, &has_path, &has_cycle)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  has_path_o = has_path ? Py_True : Py_False;
+  has_cycle_o = has_cycle ? Py_True : Py_False;
+
+  dic = PyDict_New();
+  PyDict_SetItemString(dic, "path", has_path_o);
+  PyDict_SetItemString(dic, "cycle", has_path_o);
+
+  return dic;
+}
+
+/** \ingroup python_interface_graph
+ * \brief Returns a Eulerian path, if found
+ * \sa igraph_eulerian_path
+ */
+PyObject *igraphmodule_Graph__eulerian_path(igraphmodule_GraphObject * self,
+                                     PyObject * args, PyObject * kwds)
+{
+  static char *kwlist[] = { NULL };
+  PyObject *dic, *item_edge, *item_vertex;
+  igraph_vector_t edge_res, vertex_res;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|", kwlist)) {
+    return NULL;
+  }
+
+  if (igraph_vector_init(&edge_res, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  } else if (igraph_vector_init(&vertex_res, 0)) {
+    igraph_vector_destroy(&edge_res);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_eulerian_path(&self->g, &edge_res, &vertex_res)) {
+    igraph_vector_destroy(&edge_res);
+    igraph_vector_destroy(&vertex_res);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_vector_size(&edge_res) == 0) {
+    igraph_vector_destroy(&edge_res);
+    igraph_vector_destroy(&vertex_res);
+    return PyNone;
+  }
+
+  /* list of edges */
+  item_edge = igraphmodule_vector_t_to_PyList(&edge_res, IGRAPHMODULE_TYPE_INT);  
+  igraph_vector_destroy(&edge_res);
+  if (item_edge == 0) {
+    igraph_vector_destroy(&vertex_res);
+    return NULL;
+  }
+
+  /* list of vertices */
+  item_vertex = igraphmodule_vector_t_to_PyList(&vertex_res, IGRAPHMODULE_TYPE_INT);  
+  igraph_vector_destroy(&vertex_res);
+  if (item_vertex == 0) {
+    Py_DECREF(item_edge);
+    return NULL;
+  }
+
+  dic = PyDict_New();
+  if (PyDict_SetItemString(dic, "edges", item_edges)) {
+    Py_DECREF(dic);
+    Py_DECREF(item_edge);
+    Py_DECREF(item_vertex);
+  };
+  if (PyDict_SetItemString(dic, "vertices", item_vertices)) {
+    Py_DECREF(dic);
+    Py_DECREF(item_edge);
+    Py_DECREF(item_vertex);
+  };
+
+  return dic;
+}
+
+/** \ingroup python_interface_graph
+ * \brief Returns a Eulerian cycle, if found
+ * \sa igraph_eulerian_cycle
+ */
+PyObject *igraphmodule_Graph__eulerian_cycle(igraphmodule_GraphObject * self,
+                                     PyObject * args, PyObject * kwds)
+{
+  static char *kwlist[] = { NULL };
+  PyObject *dic, *item_edge, *item_vertex;
+  igraph_vector_t edge_res, vertex_res;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|", kwlist)) {
+    return NULL;
+  }
+
+  if (igraph_vector_init(&edge_res, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  } else if (igraph_vector_init(&vertex_res, 0)) {
+    igraph_vector_destroy(&edge_res);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_eulerian_cycle(&self->g, &edge_res, &vertex_res)) {
+    igraph_vector_destroy(&edge_res);
+    igraph_vector_destroy(&vertex_res);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_vector_size(&edge_res) == 0) {
+    igraph_vector_destroy(&edge_res);
+    igraph_vector_destroy(&vertex_res);
+    return PyNone;
+  }
+
+  /* list of edges */
+  item_edge = igraphmodule_vector_t_to_PyList(&edge_res, IGRAPHMODULE_TYPE_INT);  
+  igraph_vector_destroy(&edge_res);
+  if (item_edge == 0) {
+    igraph_vector_destroy(&vertex_res);
+    return NULL;
+  }
+
+  /* list of vertices */
+  item_vertex = igraphmodule_vector_t_to_PyList(&vertex_res, IGRAPHMODULE_TYPE_INT);  
+  igraph_vector_destroy(&vertex_res);
+  if (item_vertex == 0) {
+    Py_DECREF(item_edge);
+    return NULL;
+  }
+
+  dic = PyDict_New();
+  if (PyDict_SetItemString(dic, "edges", item_edges)) {
+    Py_DECREF(dic);
+    Py_DECREF(item_edge);
+    Py_DECREF(item_vertex);
+  };
+  if (PyDict_SetItemString(dic, "vertices", item_vertices)) {
+    Py_DECREF(dic);
+    Py_DECREF(item_edge);
+    Py_DECREF(item_vertex);
+  };
+
+  return dic;
+}
+
+/**********************************************************************
  * Deterministic and non-deterministic graph generators               *
  **********************************************************************/
 
@@ -14174,6 +14343,34 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Converts a tree graph into a Prufer sequence.\n\n"
    "@return: the Prufer sequence as a list"
   },
+
+  /* interface to igraph_is_eulerian */
+  {"is_eulerian", (PyCFunction) igraphmodule_Graph_is_eulerian,
+   METH_VARARGS | METH_KEYWORDS,
+   "is_eulerian()\n--\n\n"
+   "Checks whether the graph contains a Eulerian path and cycle.\n\n"
+   "A Eulerian path is a path that visits every edge exactly once. A Eulerian\n"
+   "cycle is a Eulerian path that starts and ends at the same vertex.\n\n"
+   "@return: A dictionary with \"path\" and \"cycle\" keys, each a bool.\n"},
+
+  /* interface to igraph_eulerian_path */
+  {"eulerian_path", (PyCFunction) igraphmodule_Graph_eulerian_path,
+   METH_VARARGS | METH_KEYWORDS,
+   "eulerian_path()\n--\n\n"
+   "Returns a Eulerian path if present.\n\n"
+   "A Eulerian path is a path that visits every edge exactly once.\n\n"
+   "@return: A dictionary with \"edges\" and \"vertices\" keys, with lists\n"
+   " of ids for the edges/vertices of the path, orC{None} if not found."},
+
+  /* interface to igraph_eulerian_cycle */
+  {"eulerian_path", (PyCFunction) igraphmodule_Graph_eulerian_cycle,
+   METH_VARARGS | METH_KEYWORDS,
+   "eulerian_cycle()\n--\n\n"
+   "Returns a Eulerian cycle if present.\n\n"
+   "A Eulerian path is a path that visits every edge exactly once. A Eulerian\n"
+   "cycle is a Eulerian path that starts and ends at the same vertex.\n\n"
+   "@return: A dictionary with \"edges\" and \"vertices\" keys, with lists\n"
+   " of ids for the edges/vertices of the cycle, orC{None} if not found."},
 
   // interface to igraph_transitivity_undirected
   {"transitivity_undirected",
