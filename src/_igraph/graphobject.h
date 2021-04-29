@@ -205,6 +205,7 @@ PyObject* igraphmodule_Graph_mincut_value(igraphmodule_GraphObject* self, PyObje
 
 PyObject* igraphmodule_Graph_cliques(igraphmodule_GraphObject* self, PyObject* args, PyObject* kwds);
 PyObject* igraphmodule_Graph_maximal_cliques(igraphmodule_GraphObject* self, PyObject* args, PyObject* kwds);
+PyObject* igraphmodule_Graph_maximal_cliques_count(igraphmodule_GraphObject* self, PyObject* args, PyObject* kwds);
 PyObject* igraphmodule_Graph_largest_cliques(igraphmodule_GraphObject* self);
 PyObject* igraphmodule_Graph_clique_number(igraphmodule_GraphObject* self);
 PyObject* igraphmodule_Graph_independent_sets(igraphmodule_GraphObject* self, PyObject* args, PyObject* kwds);

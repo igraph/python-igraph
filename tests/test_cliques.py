@@ -80,6 +80,34 @@ class CliqueTests(unittest.TestCase):
             sorted(map(sorted, self.g.maximal_cliques(max=3))), [[0, 3, 4], [0, 4, 5]]
         )
 
+    def testMaximalCliquesCount(self):
+        self.assertEqual(
+            self.g.maximal_cliques_count(), 4,
+        )
+        self.assertEqual(
+            self.g.maximal_cliques_count(min=4), 2,
+        )
+        self.assertEqual(
+            self.g.maximal_cliques_count(max=3), 2,
+        )
+
+    def testMaximalCliquesSubset(self):
+        def read_cliques(fname):
+            with open(fname) as fp:
+                return sorted(sorted(int(item) for item in line.split()) for line in fp)
+
+        self.assertEqual(
+            sorted(map(sorted, self.g.maximal_cliques_subset([0, 1, 2, 3, 4, 5]))),
+            [[0, 3, 4], [0, 4, 5], [1, 2, 3, 4], [1, 2, 4, 5]],
+        )
+        self.assertEqual(
+            sorted(map(sorted, self.g.maximal_cliques_subset((1, 2, 3, 4, 5), min=4))),
+            [[1, 2, 3, 4], [1, 2, 4, 5]],
+        )
+        with temporary_file() as fname:
+            self.g.maximal_cliques_subset([0, 3, 4, 5], max=3, file=fname)
+            self.assertEqual([[0, 3, 4], [0, 4, 5]], read_cliques(fname))
+
     def testMaximalCliquesFile(self):
         def read_cliques(fname):
             with open(fname) as fp:

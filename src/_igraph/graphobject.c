@@ -11060,6 +11060,120 @@ PyObject *igraphmodule_Graph_maximal_cliques(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
+ * \brief Count all maximal cliques in a graph
+ */
+PyObject *igraphmodule_Graph_maximal_cliques_count(igraphmodule_GraphObject * self,
+    PyObject* args, PyObject* kwds) {
+  static char* kwlist[] = { "min", "max", NULL };
+  PyObject *item;
+  long int i = 0, j = 0;
+  igraph_integer_t min, max;
+  igraph_integer_t result;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ll", kwlist, &i, &j))
+    return NULL;
+
+  min = (igraph_integer_t) i;
+  max = (igraph_integer_t) j;
+
+  if (igraph_maximal_cliques_count(&self->g, &result, min, max)) {
+    return igraphmodule_handle_igraph_error();
+  }
+
+  item = PyLong_FromLong((long int) result);
+  if (!item)
+      return NULL;
+
+  return item;
+}
+
+/** \ingroup python_interface_graph
+ * \brief Find all maximal cliques in a subset of the graph
+ */
+PyObject *igraphmodule_Graph_maximal_cliques_subset(igraphmodule_GraphObject * self,
+    PyObject* args, PyObject* kwds) {
+  static char* kwlist[] = { "subset", "min", "max", "file", NULL };
+  PyObject *list, *item, *subset_i, *file = Py_None;
+  long int i = 0, j = 0;
+  igraph_vector_int_t subset;
+  igraph_integer_t min, max;
+  Py_ssize_t n;
+  igraph_vector_ptr_t result;
+  igraphmodule_filehandle_t filehandle;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|llO", kwlist, &subset_i, &i, &j, &file))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vector_int_t(subset_i, &subset)) {
+      PyErr_SetString(PyExc_ValueError, "Argument not understood: subset");
+      return NULL;
+  }
+
+  min = (igraph_integer_t) i;
+  max = (igraph_integer_t) j;
+
+  if (file == Py_None) {
+    if (igraph_vector_ptr_init(&result, 0)) {
+      PyErr_SetString(PyExc_MemoryError, "");
+      return NULL;
+    }
+
+    if (igraph_maximal_cliques_subset(&self->g,
+          &subset,
+          &result,
+          NULL, /* numbe of cliques */ 
+          NULL, /* output file */
+          min, max)) {
+      igraph_vector_int_destroy(&subset);
+      igraph_vector_ptr_destroy(&result);
+      return igraphmodule_handle_igraph_error();
+    }
+
+    igraph_vector_int_destroy(&subset);
+
+    n = (Py_ssize_t)igraph_vector_ptr_size(&result);
+    list = PyList_New(n);
+    if (!list)
+      return NULL;
+
+    for (i = 0; i < n; i++) {
+      igraph_vector_t *vec = (igraph_vector_t *) VECTOR(result)[i];
+      item = igraphmodule_vector_t_to_PyTuple(vec);
+      if (!item) {
+        for (j = i; j < n; j++)
+          igraph_vector_destroy((igraph_vector_t *) VECTOR(result)[j]);
+        igraph_vector_ptr_destroy_all(&result);
+        Py_DECREF(list);
+        return NULL;
+      }
+      else {
+        PyList_SET_ITEM(list, i, item);
+      }
+      igraph_vector_destroy(vec);
+    }
+    igraph_vector_ptr_destroy_all(&result);
+
+    return list;
+  } else {
+    if (igraphmodule_filehandle_init(&filehandle, file, "w")) {
+      return igraphmodule_handle_igraph_error();
+    }
+    if (igraph_maximal_cliques_subset(&self->g,
+          &subset,
+          NULL, /* list of output */
+          NULL, /* numbe of cliques */ 
+          igraphmodule_filehandle_get(&filehandle), min, max)) {
+      igraph_vector_int_destroy(&subset);
+      igraphmodule_filehandle_destroy(&filehandle);
+      return igraphmodule_handle_igraph_error();
+    }
+    igraph_vector_int_destroy(&subset);
+    igraphmodule_filehandle_destroy(&filehandle);
+    Py_RETURN_NONE;
+  }
+}
+
+/** \ingroup python_interface_graph
  * \brief Returns the clique number of the graph
  */
 PyObject *igraphmodule_Graph_clique_number(igraphmodule_GraphObject * self)
@@ -11269,6 +11383,36 @@ PyObject *igraphmodule_Graph_coreness(igraphmodule_GraphObject * self,
 
   return o;
 }
+
+/** \ingroup python_interface_graph
+ * \brief Returns the trussness of the graph edges
+ * \return a new PyCObject
+ */
+PyObject *igraphmodule_Graph_trussness(igraphmodule_GraphObject * self,
+                                      PyObject * args, PyObject * kwds)
+{
+  static char *kwlist[] = { NULL };
+  igraph_neimode_t mode = IGRAPH_ALL;
+  igraph_vector_t result;
+  PyObject *o;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|", kwlist))
+    return NULL;
+
+  if (igraph_vector_int_init(&result, igraph_ecount(&self->g)))
+    return igraphmodule_handle_igraph_error();
+
+  if (igraph_trussness(&self->g, &result)) {
+    igraph_vector_destroy(&result);
+    return igraphmodule_handle_igraph_error();
+  }
+
+  o = igraphmodule_vector_t_to_PyList(&result, IGRAPHMODULE_TYPE_INT);
+  igraph_vector_destroy(&result);
+
+  return o;
+}
+
 
 /**********************************************************************
  * Community structure detection and related routines                 *
@@ -15751,6 +15895,40 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the maximal cliques of the graph as a list of lists, or C{None}\n"
    "  if the C{file} argument was given."
    "@see: L{largest_cliques()} for the largest cliques."},
+  {"maximal_cliques_count", (PyCFunction) igraphmodule_Graph_maximal_cliques_count,
+   METH_VARARGS | METH_KEYWORDS,
+   "maximal_cliques_count(min=0, max=0)\n--\n\n"
+   "Count the number of maximal cliques in a graph.\n"
+   "The current implementation uses a modified Bron-Kerbosch algorithm\n"
+   "to find the maximal cliques, see: David Eppstein, Maarten Löffler, Darren\n"
+   "Strash: Listing All Maximal Cliques in Sparse Graphs in Near-Optimal Time.\n"
+   "Algorithms and Computation, Lecture Notes in Computer Science Volume 6506,\n"
+   "2010, pp 403-414.\n\n"
+   "@param min: the minimum size of maximal cliques to be counted. If zero\n"
+   "  or negative, no lower bound will be used.\n\n"
+   "@param max: the maximum size of maximal cliques to be returned. If zero\n"
+   "  or negative, no upper bound will be used. If nonzero, the size of every\n"
+   "  maximal clique found will be compared to this value and a clique will\n"
+   "  be counted only if its size is smaller than this limit.\n\n"
+   "@return: the number of maximal cliques of the graph.\n"
+   "@see: L{maximal_cliques()}, L{maximal_cliques_subset()}."},
+  {"maximal_cliques_subset", (PyCFunction) igraphmodule_Graph_maximal_cliques_subset,
+   METH_VARARGS | METH_KEYWORDS,
+   "maximal_cliques_subset(subset, min=0, max=0, file=None)\n--\n\n"
+   "Returns the maximal cliques of a subset of the graph as a list of tuples.\n\n"
+   "@param subset: list of the subset of vertices to be used.\n\n"
+   "@param min: the minimum size of maximal cliques to be returned. If zero\n"
+   "  or negative, no lower bound will be used.\n\n"
+   "@param max: the maximum size of maximal cliques to be returned. If zero\n"
+   "  or negative, no upper bound will be used. If nonzero, the size of every\n"
+   "  maximal clique found will be compared to this value and a clique will\n"
+   "  be returned only if its size is smaller than this limit.\n\n"
+   "@param file: a file object or the name of the file to write the results\n"
+   "  to. When this argument is C{None}, the maximal cliques will be returned\n"
+   "  as a list of lists.\n"
+   "@return: the maximal cliques of a subset of the graph as a list of lists,\n"
+   "or C{None} if the C{file} argument was given."
+   "@see: L{maximal_cliques()}, L{maximal_cliques_count()}."},
   {"clique_number", (PyCFunction) igraphmodule_Graph_clique_number,
    METH_NOARGS,
    "clique_number()\n--\n\n"
@@ -15861,6 +16039,17 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@newfield ref: Reference\n"
    "@ref: Vladimir Batagelj, Matjaz Zaversnik: I{An M{O(m)} Algorithm\n"
    "  for Core Decomposition of Networks.}"},
+  {"trussness", (PyCFunction) igraphmodule_Graph_trussness,
+   METH_VARARGS | METH_KEYWORDS,
+   "trussness()\n--\n\n"
+   "Finds the trussness of the edges of the network.\n\n"
+   "The M{k}-truss of a graph is a maximal subgraph in which each edge\n"
+   "is included in at least k-2 triangles. The trussness of an edge is M{k}\n"
+   "if it is a member of the M{k}-truss but not a member of the M{k+1}-truss.\n\n"
+   "@return: the trussness for each edge.\n\n"
+   "@newfield ref: Reference\n"
+   "@ref: Wang, Jia, and James Cheng. Truss decomposition in massive networks.\n"
+   "Proceedings of the VLDB Endowment 5.9 (2012): 812-823."},
   {"community_fastgreedy",
    (PyCFunction) igraphmodule_Graph_community_fastgreedy,
    METH_VARARGS | METH_KEYWORDS,
