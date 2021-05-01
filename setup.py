@@ -574,7 +574,7 @@ class BuildConfiguration(object):
         if libraries is False:
             print("Build failed for the C core of igraph.")
             print("")
-            return False
+            sys.exit(1)
 
         igraph_builder.create_build_config_file(install_folder, libraries)
 
