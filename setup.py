@@ -571,6 +571,11 @@ class BuildConfiguration(object):
         finally:
             os.chdir(cwd)
 
+        if libraries is False:
+            print("Build failed for the C core of igraph.")
+            print("")
+            return False
+
         igraph_builder.create_build_config_file(install_folder, libraries)
 
         self.use_vendored_igraph()
