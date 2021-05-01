@@ -64,6 +64,7 @@ jobs:
       - name: Build wheels
         uses: joerick/cibuildwheel@v1.10.0
         env:
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
 
       - uses: actions/upload-artifact@v2
