@@ -548,7 +548,6 @@ PyObject *igraphmodule_Graph_is_tree(igraphmodule_GraphObject * self,
   PyObject *mode_o = Py_None;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_bool_t result;
-  int retval;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &mode_o)) {
     return NULL;
