@@ -820,9 +820,11 @@ static PyObject* igraphmodule_i_ac_func(PyObject* values,
   PyObject *res, *list, *item;
 
   res = PyList_New(len);
+  
   for (i = 0; i < len; i++) {
     igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
     long int j, n = igraph_vector_size(v);
+
     list = PyList_New(n);
     for (j = 0; j < n; j++) {
       item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
@@ -831,10 +833,12 @@ static PyObject* igraphmodule_i_ac_func(PyObject* values,
     }
     item = PyObject_CallFunctionObjArgs(func, list, 0);
     Py_DECREF(list);
+
     if (item == 0) {
       Py_DECREF(res);
       return 0;
     }
+
     PyList_SET_ITEM(res, i, item);   /* reference to item stolen */
   }
 
@@ -1150,6 +1154,7 @@ static int igraphmodule_i_attribute_combine_dicts(PyObject *dict,
   Py_ssize_t pos;
   igraph_attribute_combination_record_t* todo;
   Py_ssize_t i, n;
+  
   if (!PyDict_Check(dict) || !PyDict_Check(newdict)) return 1;
 
   /* Allocate memory for the attribute_combination_records */
@@ -1282,8 +1287,8 @@ static int igraphmodule_i_attribute_combine_vertices(const igraph_t *graph,
   int result;
 
   /* Get the attribute dicts */
-  dict=ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_VERTEX];
-  newdict=ATTR_STRUCT_DICT(newgraph)[ATTRHASH_IDX_VERTEX];
+  dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_VERTEX];
+  newdict = ATTR_STRUCT_DICT(newgraph)[ATTRHASH_IDX_VERTEX];
 
   /* Combine the attribute dicts */
   result = igraphmodule_i_attribute_combine_dicts(dict, newdict,
