@@ -14832,6 +14832,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  C{\"random\"} picks a random direction for each edge. C{\"acyclic\"}\n"
    "  picks the edge directions in a way that the resulting graph will be\n"
    "  acyclic if there were no self-loops in the original graph.\n"
+  },
 
   // interface to igraph_to_undirected
   {"to_undirected", (PyCFunction) igraphmodule_Graph_to_undirected,
