@@ -1,6 +1,6 @@
 # igraph Python interface changelog
 
-## Unreleased
+## 0.9.3
 
 ### Added
 
@@ -13,9 +13,14 @@
 
 * `Graph.to_directed()` now supports a `mode=...` keyword argument.
 
+### Changed
+
+* Updated igraph dependency to 0.9.3.
+
 ### Deprecated
 
 * `Graph.to_directed(mutual=...)` is now deprecated, use `mode=...` instead.
+
 
 ## 0.9.1
 
