@@ -11,6 +11,12 @@
 
 * Added `Graph.Tree_Game()` to generate random trees with uniform sampling.
 
+* `Graph.to_directed()` now supports a `mode=...` keyword argument.
+
+### Deprecated
+
+* `Graph.to_directed(mutual=...)` is now deprecated, use `mode=...` instead.
+
 ## 0.9.1
 
 ### Changed

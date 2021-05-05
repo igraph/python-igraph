@@ -75,6 +75,7 @@ int igraphmodule_PyObject_to_spinglass_implementation_t(PyObject *o, igraph_spin
 int igraphmodule_PyObject_to_spincomm_update_t(PyObject *o, igraph_spincomm_update_t *result);
 int igraphmodule_PyObject_to_star_mode_t(PyObject *o, igraph_star_mode_t *result);
 int igraphmodule_PyObject_to_subgraph_implementation_t(PyObject *o, igraph_subgraph_implementation_t *result);
+int igraphmodule_PyObject_to_to_directed_t(PyObject *o, igraph_to_directed_t *result);
 int igraphmodule_PyObject_to_to_undirected_t(PyObject *o, igraph_to_undirected_t *result);
 int igraphmodule_PyObject_to_transitivity_mode_t(PyObject *o, igraph_transitivity_mode_t *result);
 int igraphmodule_PyObject_to_tree_mode_t(PyObject *o, igraph_tree_mode_t *result);

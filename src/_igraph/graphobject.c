@@ -608,9 +608,9 @@ PyObject *igraphmodule_Graph_delete_vertices(igraphmodule_GraphObject * self,
 
   /*Py_None also means all for now, but it is deprecated */
   if (list == Py_None) {
-        PyErr_Warn(PyExc_DeprecationWarning, "Graph.delete_vertices(None) is "
-                   "deprecated since igraph 0.8.3, please use "
-                   "Graph.delete_vertices() instead");
+    PyErr_Warn(PyExc_DeprecationWarning, "Graph.delete_vertices(None) is "
+               "deprecated since igraph 0.8.3, please use "
+               "Graph.delete_vertices() instead");
   }
 
   /* this already converts no arguments and Py_None to all vertices */
@@ -7850,18 +7850,36 @@ PyObject *igraphmodule_Graph_to_undirected(igraphmodule_GraphObject * self,
 PyObject *igraphmodule_Graph_to_directed(igraphmodule_GraphObject * self,
                                          PyObject * args, PyObject * kwds)
 {
-  PyObject *mutual = Py_True;
+  PyObject *mutual_o = Py_None;
+  PyObject *mode_o = Py_None;
   igraph_to_directed_t mode = IGRAPH_TO_DIRECTED_MUTUAL;
-  static char *kwlist[] = { "mutual", NULL };
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &mutual))
+  static char *kwlist[] = { "mode", "mutual", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &mode_o, &mutual_o))
     return NULL;
-  mode =
-    (PyObject_IsTrue(mutual) ? IGRAPH_TO_DIRECTED_MUTUAL :
-     IGRAPH_TO_DIRECTED_ARBITRARY);
+
+  if (mode_o == Py_None) {
+    /* mode argument omitted so we fall back to 'mutual' for sake of
+     * compatibility and print a warning */
+    if (mutual_o == Py_None) {
+      /* mutual was not given either, so this is okay */
+      mode = IGRAPH_TO_DIRECTED_MUTUAL;
+    } else {
+      mode = PyObject_IsTrue(mutual_o) ? IGRAPH_TO_DIRECTED_MUTUAL : IGRAPH_TO_DIRECTED_ARBITRARY;
+      PyErr_Warn(PyExc_DeprecationWarning, "The 'mutual' argument is deprecated since "
+                 "igraph 0.9.3, please use mode=... instead");
+    }
+  } else {
+    if (igraphmodule_PyObject_to_to_directed_t(mode_o, &mode)) {
+      return NULL;
+    }
+  }
+
   if (igraph_to_directed(&self->g, mode)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
+
   Py_RETURN_NONE;
 }
 
@@ -14802,14 +14820,18 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Internal function, undocumented.\n\n"
    "@see: Graph.get_incidence()\n\n"},
 
-  // interface to igraph_to_directed
+  /* interface to igraph_to_directed */
   {"to_directed", (PyCFunction) igraphmodule_Graph_to_directed,
    METH_VARARGS | METH_KEYWORDS,
-   "to_directed(mutual=True)\n--\n\n"
+   "to_directed(mode=\"mutual\")\n--\n\n"
    "Converts an undirected graph to directed.\n\n"
-   "@param mutual: C{True} if mutual directed edges should be\n"
-   "  created for every undirected edge. If C{False}, a directed\n"
-   "  edge with arbitrary direction is created.\n"},
+   "@param mode: specifies how to convert undirected edges into\n"
+   "  directed ones. C{True} or C{\"mutual\"} creates a mutual edge pair\n"
+   "  for each undirected edge. C{False} or C{\"arbitrary\"} picks an\n"
+   "  arbitrary (but deterministic) edge direction for each edge.\n"
+   "  C{\"random\"} picks a random direction for each edge. C{\"acyclic\"}\n"
+   "  picks the edge directions in a way that the resulting graph will be\n"
+   "  acyclic if there were no self-loops in the original graph.\n"
 
   // interface to igraph_to_undirected
   {"to_undirected", (PyCFunction) igraphmodule_Graph_to_undirected,

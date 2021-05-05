@@ -1,5 +1,7 @@
+import random
 import unittest
-from igraph import *
+
+from igraph import Graph, Matrix
 
 
 class DirectedUndirectedTests(unittest.TestCase):
@@ -37,7 +39,7 @@ class DirectedUndirectedTests(unittest.TestCase):
             graph2.es["weight"] == [7, 3, 11] or graph2.es["weight"] == [3, 7, 11]
         )
 
-    def testToDirected(self):
+    def testToDirectedNoModeArg(self):
         graph = Graph([(0, 1), (0, 2), (2, 3), (2, 4)], directed=False)
         graph.to_directed()
         self.assertTrue(graph.is_directed())
@@ -46,6 +48,51 @@ class DirectedUndirectedTests(unittest.TestCase):
             sorted(graph.get_edgelist())
             == [(0, 1), (0, 2), (1, 0), (2, 0), (2, 3), (2, 4), (3, 2), (4, 2)]
         )
+
+    def testToDirectedMutual(self):
+        graph = Graph([(0, 1), (0, 2), (2, 3), (2, 4)], directed=False)
+        graph.to_directed("mutual")
+        self.assertTrue(graph.is_directed())
+        self.assertTrue(graph.vcount() == 5)
+        self.assertTrue(
+            sorted(graph.get_edgelist())
+            == [(0, 1), (0, 2), (1, 0), (2, 0), (2, 3), (2, 4), (3, 2), (4, 2)]
+        )
+
+    def testToDirectedAcyclic(self):
+        graph = Graph([(0, 1), (2, 0), (3, 0), (3, 0), (4, 2)], directed=False)
+        graph.to_directed("acyclic")
+        self.assertTrue(graph.is_directed())
+        self.assertTrue(graph.vcount() == 5)
+        print(graph.get_edgelist())
+        self.assertTrue(
+            sorted(graph.get_edgelist())
+            == [(0, 1), (0, 2), (0, 3), (0, 3), (2, 4)]
+        )
+
+    def testToDirectedRandom(self):
+        random.seed(0)
+
+        graph = Graph.Ring(200, directed=False)
+        graph.to_directed("random")
+
+        self.assertTrue(graph.is_directed())
+        self.assertTrue(graph.vcount() == 200)
+        edgelist1 = sorted(graph.get_edgelist())
+
+        graph = Graph.Ring(200, directed=False)
+        graph.to_directed("random")
+
+        self.assertTrue(graph.is_directed())
+        self.assertTrue(graph.vcount() == 200)
+        edgelist2 = sorted(graph.get_edgelist())
+
+        self.assertTrue(edgelist1 != edgelist2)
+
+    def testToDirectedInvalidMode(self):
+        graph = Graph([(0, 1), (0, 2), (2, 3), (2, 4)], directed=False)
+        with self.assertRaises(ValueError):
+            graph.to_directed("no-such-mode")
 
 
 class GraphRepresentationTests(unittest.TestCase):
