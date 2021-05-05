@@ -12,7 +12,6 @@ src/igraph/*.so
 .tox
 .venv/
 .vscode/
-docker/wheelhouse
 vendor/build/
 vendor/install/
 Pipfile
