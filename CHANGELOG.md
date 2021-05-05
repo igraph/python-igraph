@@ -19,6 +19,12 @@
 
 ### Deprecated
 
+* Functions and methods that take string arguments that represent an underlying
+  enum in the C core of igraph now print a deprecation warning when provided
+  with a string that does not match one of the enum member names (as documented
+  in the docstrings) exactly. Partial matches will be removed in the next
+  minor or major version, whichever comes first.
+
 * `Graph.to_directed(mutual=...)` is now deprecated, use `mode=...` instead.
 
 

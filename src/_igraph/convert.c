@@ -83,41 +83,67 @@ int PyLong_AsInt(PyObject* obj, int* result) {
 int igraphmodule_PyObject_to_enum(PyObject *o,
   igraphmodule_enum_translation_table_entry_t* table,
   int *result) {
-    char *s, *s2;
-    int i, best, best_result, best_unique;
 
-    if (o == 0 || o == Py_None)
+  char *s, *s2;
+  int i, best, best_result, best_unique;
+
+  if (o == 0 || o == Py_None)
+    return 0;
+
+  if (PyLong_Check(o))
+    return PyLong_AsInt(o, result);
+
+  s = PyUnicode_CopyAsString(o);
+  if (s == 0) {
+    PyErr_SetString(PyExc_TypeError, "int, long or string expected");
+    return -1;
+  }
+
+  /* Convert string to lowercase */
+  for (s2 = s; *s2; s2++) {
+    *s2 = tolower(*s2);
+  }
+
+  /* Search for matches */
+  best = 0; best_unique = 0; best_result = -1;
+  while (table->name != 0) {
+    if (strcmp(s, table->name) == 0) {
+      /* Exact match found */
+      *result = table->value;
+      free(s);
       return 0;
-    if (PyLong_Check(o))
-      return PyLong_AsInt(o, result);
-    s = PyUnicode_CopyAsString(o);
-    if (s == 0) {
-        PyErr_SetString(PyExc_TypeError, "int, long or string expected");
-        return -1;
     }
-    /* Convert string to lowercase */
-    for (s2=s; *s2; s2++)
-      *s2 = tolower(*s2);
-    best = 0; best_unique = 0; best_result = -1;
-    /* Search for matches */
-    while (table->name != 0) {
-        if (strcmp(s, table->name) == 0) {
-          *result = table->value;
-          free(s);
-          return 0;
-        }
-        for (i=0; s[i] == table->name[i]; i++);
-        if (i > best) {
-            best = i; best_unique = 1; best_result = table->value;
-        } else if (i == best) best_unique = 0;
-        table++;
+
+    /* Find length of longest prefix that matches */
+    for (i = 0; s[i] == table->name[i]; i++);
+
+    if (i > best) {
+      /* Found a better match than before */
+      best = i; best_unique = 1; best_result = table->value;
+    } else if (i == best) {
+      /* Best match is not unique */
+      best_unique = 0;
     }
-    free(s);
-    if (best_unique) { *result = best_result; return 0; }
+
+    table++;
+  }
+
+  free(s);
+
+  if (best_unique) {
+    PyErr_Warn(
+      PyExc_DeprecationWarning,
+      "Partial string matches of enum members are deprecated since igraph 0.9.3; "
+      "use strings that identify an enum member unambiguously."
+    );
+
+    *result = best_result;
+    return 0;
+  } else {
     PyErr_SetObject(PyExc_ValueError, o);
     return -1;
+  }
 }
-
 
 /**
  * \ingroup python_interface_conversion
