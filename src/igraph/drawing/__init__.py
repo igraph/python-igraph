@@ -465,7 +465,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
       is 20 on each side.
 
     @keyword inline: whether to try and show the plot object inline in the
-      current IPython notebook. Passing ``None`` here or omitting this keyword
+      current IPython notebook. Passing C{None} here or omitting this keyword
       argument will look up the preferred behaviour from the
       C{shell.ipython.inlining.Plot} configuration key.  Note that this keyword
       argument has an effect only if igraph is run inside IPython and C{target}
