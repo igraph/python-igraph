@@ -4,7 +4,7 @@ import unittest
 
 from igraph import *
 
-from .utils import is_pypy, skipIf
+from .utils import is_pypy
 
 try:
     import numpy as np
@@ -85,7 +85,7 @@ class EdgeTests(unittest.TestCase):
         self.assertRaises(ValueError, getattr, e, "tuple")
         self.assertRaises(ValueError, getattr, e, "vertex_tuple")
 
-    @skipIf(is_pypy, "skipped on PyPy because we do not have access to docstrings")
+    @unittest.skipIf(is_pypy, "skipped on PyPy because we do not have access to docstrings")
     def testProxyMethods(self):
         g = Graph.GRG(10, 0.5)
         e = g.es[0]
@@ -148,7 +148,7 @@ class EdgeSeqTests(unittest.TestCase):
         self.assertRaises(IndexError, self.g.es.__getitem__, -n - 1)
         self.assertRaises(TypeError, self.g.es.__getitem__, 1.5)
 
-    @skipIf(np is None, "test case depends on NumPy")
+    @unittest.skipIf(np is None, "test case depends on NumPy")
     def testNumPyIndexing(self):
         n = self.g.ecount()
         for i in range(n):

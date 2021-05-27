@@ -4,7 +4,7 @@ import unittest
 
 from igraph import *
 
-from .utils import is_pypy, skipIf
+from .utils import is_pypy
 
 try:
     import numpy as np
@@ -99,7 +99,7 @@ class VertexTests(unittest.TestCase):
                     [edge.index for edge in vertex.neighbors(mode=mode)],
                 )
 
-    @skipIf(is_pypy, "skipped on PyPy because we do not have access to docstrings")
+    @unittest.skipIf(is_pypy, "skipped on PyPy because we do not have access to docstrings")
     def testProxyMethods(self):
         # We only test with connected graphs because disconnected graphs might
         # print a warning when shortest_paths() is invoked on them and we want
@@ -177,7 +177,7 @@ class VertexSeqTests(unittest.TestCase):
         self.assertRaises(IndexError, self.g.vs.__getitem__, -n - 1)
         self.assertRaises(TypeError, self.g.vs.__getitem__, 1.5)
 
-    @skipIf(np is None, "test case depends on NumPy")
+    @unittest.skipIf(np is None, "test case depends on NumPy")
     def testNumPyIndexing(self):
         n = self.g.vcount()
         for i in range(self.g.vcount()):

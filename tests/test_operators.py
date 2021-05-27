@@ -2,8 +2,6 @@ import unittest
 
 from igraph import *
 
-from .utils import skipIf
-
 try:
     import numpy as np
 except ImportError:
@@ -476,7 +474,7 @@ class OperatorTests(unittest.TestCase):
         self.assertEqual(g2.vcount(), 5)
         self.assertEqual(g2.ecount(), 0)
 
-    @skipIf(np is None, "test case depends on NumPy")
+    @unittest.skipIf(np is None, "test case depends on NumPy")
     def testContractVerticesWithNumPyIntegers(self):
         g = Graph.Full(4) + Graph.Full(4) + [(0, 5), (1, 4)]
         g2 = g.copy()

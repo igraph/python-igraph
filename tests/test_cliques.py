@@ -2,7 +2,7 @@ import unittest
 
 from igraph import *
 
-from .utils import is_pypy, skipIf, temporary_file
+from .utils import temporary_file
 
 
 class CliqueTests(unittest.TestCase):
