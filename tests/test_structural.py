@@ -434,7 +434,7 @@ class CentralityTests(unittest.TestCase):
 
     def testCoreness(self):
         g = Graph.Full(4) + Graph(4) + [(0, 4), (1, 5), (2, 6), (3, 7)]
-        self.assertEqual(g.coreness("A"), [3, 3, 3, 3, 1, 1, 1, 1])
+        self.assertEqual(g.coreness("all"), [3, 3, 3, 3, 1, 1, 1, 1])
 
 
 class NeighborhoodTests(unittest.TestCase):

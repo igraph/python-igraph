@@ -266,6 +266,7 @@ int igraphmodule_PyObject_to_attribute_combination_type_t(PyObject* o,
   static igraphmodule_enum_translation_table_entry_t attribute_combination_type_tt[] = {
         {"ignore", IGRAPH_ATTRIBUTE_COMBINE_IGNORE},
         {"sum", IGRAPH_ATTRIBUTE_COMBINE_SUM},
+        {"prod", IGRAPH_ATTRIBUTE_COMBINE_PROD},
         {"product", IGRAPH_ATTRIBUTE_COMBINE_PROD},
         {"min", IGRAPH_ATTRIBUTE_COMBINE_MIN},
         {"max", IGRAPH_ATTRIBUTE_COMBINE_MAX},
@@ -274,6 +275,7 @@ int igraphmodule_PyObject_to_attribute_combination_type_t(PyObject* o,
         {"last", IGRAPH_ATTRIBUTE_COMBINE_LAST},
         {"mean", IGRAPH_ATTRIBUTE_COMBINE_MEAN},
         {"median", IGRAPH_ATTRIBUTE_COMBINE_MEDIAN},
+        {"concat", IGRAPH_ATTRIBUTE_COMBINE_CONCAT},
         {"concatenate", IGRAPH_ATTRIBUTE_COMBINE_CONCAT},
         {0, 0}
   };
@@ -483,6 +485,7 @@ int igraphmodule_PyObject_to_community_comparison_t(PyObject *o,
         {"nmi", IGRAPH_COMMCMP_NMI},
         {"danon", IGRAPH_COMMCMP_NMI},
         {"split-join", IGRAPH_COMMCMP_SPLIT_JOIN},
+        {"split_join", IGRAPH_COMMCMP_SPLIT_JOIN},
         {"rand", IGRAPH_COMMCMP_RAND},
         {"adjusted_rand", IGRAPH_COMMCMP_ADJUSTED_RAND},
         {0,0}

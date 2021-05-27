@@ -64,7 +64,6 @@ class DirectedUndirectedTests(unittest.TestCase):
         graph.to_directed("acyclic")
         self.assertTrue(graph.is_directed())
         self.assertTrue(graph.vcount() == 5)
-        print(graph.get_edgelist())
         self.assertTrue(
             sorted(graph.get_edgelist())
             == [(0, 1), (0, 2), (0, 3), (0, 3), (2, 4)]

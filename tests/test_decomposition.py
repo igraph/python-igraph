@@ -583,7 +583,7 @@ class ComparisonTests(unittest.TestCase):
 
     def testCompareSplitJoin(self):
         expected = [0, 3, 5, 11]
-        self._testMethod("split", expected)
+        self._testMethod("split_join", expected)
         l1 = [1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3]
         l2 = [3, 1, 2, 1, 3, 1, 3, 1, 2, 1, 4, 2]
         self.assertEqual(split_join_distance(l1, l2), (6, 5))
