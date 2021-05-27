@@ -1920,6 +1920,7 @@ class Graph(GraphBase):
         @param g: networkx Graph or DiGraph
         """
         import networkx as nx
+        from collections import defaultdict
 
         # Graph attributes
         gattr = dict(g.graph)
@@ -1942,13 +1943,15 @@ class Graph(GraphBase):
                 graph.vs[vd[v]][key] = val
 
         # Edges and edge attributes
-        # NOTE: we need to do both together to deal well with multigraphs
-        # Each e might have a length of 2 (graphs) or 3 (multigraphs, the
-        # third element is the "color" of the edge)
-        for e, (_, _, datum) in zip(g.edges, g.edges.data()):
-            eid = graph.add_edge(vd[e[0]], vd[e[1]])
-            for key, val in list(datum.items()):
-                eid[key] = val
+        eattr_names = {name for (_, _, data) in g.edges.data() for name in data}
+        eattr = defaultdict(list)
+        edges = []
+        for (u, v, data) in g.edges.data():
+            edges.append((vd[u], vd[v]))
+            for name in eattr_names:
+                eattr[name].append(data.get(name))
+
+        graph.add_edges(edges, eattr)
 
         return graph
 
