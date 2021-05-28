@@ -254,6 +254,8 @@ int igraphmodule_PyObject_to_adjacency_t(PyObject *o,
         {"lower", IGRAPH_ADJ_LOWER},
         {"minimum", IGRAPH_ADJ_MIN},
         {"maximum", IGRAPH_ADJ_MAX},
+        {"min", IGRAPH_ADJ_MIN},
+        {"max", IGRAPH_ADJ_MAX},
         {"plus", IGRAPH_ADJ_PLUS},
         {0,0}
     };
