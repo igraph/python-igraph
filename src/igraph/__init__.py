@@ -125,7 +125,7 @@ from igraph.statistics import (
     quantile,
     power_law_fit,
 )
-from igraph.summary import GraphSummary
+from igraph.summary import GraphSummary, summary
 from igraph.utils import (
     dbl_epsilon,
     multidict,
@@ -5290,25 +5290,6 @@ def write(graph, filename, *args, **kwds):
 
 
 save = write
-
-
-def summary(obj, stream=None, *args, **kwds):
-    """Prints a summary of object o to a given stream
-
-    Positional and keyword arguments not explicitly mentioned here are passed
-    on to the underlying C{summary()} method of the object if it has any.
-
-    @param obj: the object about which a human-readable summary is requested.
-    @param stream: the stream to be used. If C{None}, the standard output
-      will be used.
-    """
-    if stream is None:
-        stream = sys.stdout
-    if hasattr(obj, "summary"):
-        stream.write(obj.summary(*args, **kwds))
-    else:
-        stream.write(str(obj))
-    stream.write("\n")
 
 
 config = init_configuration()

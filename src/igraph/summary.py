@@ -8,7 +8,7 @@ from math import ceil
 from texttable import Texttable
 from textwrap import TextWrapper
 
-__all__ = ("GraphSummary",)
+__all__ = ("GraphSummary", "summary")
 
 __license__ = """\
 Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
@@ -373,3 +373,22 @@ class GraphSummary(object):
             return "\n".join("\n".join(self.wrapper.wrap(line)) for line in output)
 
         return "\n".join(output)
+
+
+def summary(obj, stream=None, *args, **kwds):
+    """Prints a summary of object o to a given stream
+
+    Positional and keyword arguments not explicitly mentioned here are passed
+    on to the underlying C{summary()} method of the object if it has any.
+
+    @param obj: the object about which a human-readable summary is requested.
+    @param stream: the stream to be used. If C{None}, the standard output
+      will be used.
+    """
+    if stream is None:
+        stream = sys.stdout
+    if hasattr(obj, "summary"):
+        stream.write(obj.summary(*args, **kwds))
+    else:
+        stream.write(str(obj))
+    stream.write("\n")
