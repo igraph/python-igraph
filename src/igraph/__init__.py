@@ -1906,9 +1906,6 @@ class Graph(GraphBase):
 
         @param g: networkx Graph or DiGraph
         """
-        import networkx as nx
-        from collections import defaultdict
-
         # Graph attributes
         gattr = dict(g.graph)
 
@@ -1931,7 +1928,7 @@ class Graph(GraphBase):
 
         # Edges and edge attributes
         eattr_names = {name for (_, _, data) in g.edges.data() for name in data}
-        eattr = defaultdict(list)
+        eattr = {name: [] for name in eattr_names}
         edges = []
         for (u, v, data) in g.edges.data():
             edges.append((vd[u], vd[v]))
@@ -2029,13 +2026,19 @@ class Graph(GraphBase):
             for i in range(vcount):
                 graph.vs[i][key] = prop[i]
 
-        # Edges
-        # NOTE: the order the edges are put in is necessary to set the
-        # attributes later on
+        # Edges and edge attributes
+        # NOTE: graph-tool is quite strongly typed, so each property is always
+        # defined for all edges, using default values for the type. E.g. for a
+        # string property/attribute the missing edges get an empty string.
+        edges = []
+        eattr_names = list(g.edge_properties)
+        eattr = {name: [] for name in eattr_names}
         for e in g.edges():
-            edge = graph.add_edge(int(e.source()), int(e.target()))
-            for key, val in list(g.edge_properties.items()):
-                edge[key] = val[e]
+            edges.append((int(e.source()), int(e.target())))
+            for name, attr_map in list(g.edge_properties.items()):
+                eattr[name].append(attr_map[e])
+
+        graph.add_edges(edges, eattr)
 
         return graph
 
