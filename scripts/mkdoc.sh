@@ -50,5 +50,26 @@ echo "Generating HTML documentation..."
 
 # PDF not supported by PyDoctor
 
+DOC2DASH=`which doc2dash 2>/dev/null || true`
+if [ "x$DOC2DASH" != x ]; then
+    echo "Generating Dash docset..."
+    "$DOC2DASH" \
+        --online-redirect-url "https://igraph.org/python/doc/api" \
+        --name "python-igraph" \
+        -d "${DOC_API_FOLDER}" \
+	    -f \
+        "${DOC_API_FOLDER}/html"
+    DASH_READY=1
+else 
+    echo "WARNING: doc2dash not installed, skipping Dash docset generation."
+    DASH_READY=0
+fi
+
+echo ""
+echo "HTML API documentation generated in ${DOC_API_FOLDER}/html"
+if [ "x${DASH_READY}" = x1 ]; then
+    echo "Dash docset generated in ${DOC_API_FOLDER}/python-igraph.docset"
+fi
+
 cd "$PWD"
 
