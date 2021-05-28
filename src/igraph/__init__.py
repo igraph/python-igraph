@@ -344,13 +344,17 @@ class Graph(GraphBase):
 
         Keyword arguments (except the source and target arguments) will be
         assigned to the edge as attributes.
+        
+        The performance cost of adding a single edge or several edges
+        to a graph is similar. Thus, when adding several edges, a single
+        C{add_edges()} call is more efficient than multiple C{add_edge()} calls.
 
         @param source: the source vertex of the edge or its name.
         @param target: the target vertex of the edge or its name.
 
         @return: the newly added edge as an L{Edge} object. Use
             C{add_edges([(source, target)])} if you don't need the L{Edge}
-            object and want to avoid the overhead of creating t.
+            object and want to avoid the overhead of creating it.
         """
         eid = self.ecount()
         self.add_edges([(source, target)])
