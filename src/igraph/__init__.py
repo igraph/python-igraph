@@ -2034,7 +2034,7 @@ class Graph(GraphBase):
         graph = cls(n=vcount, directed=g.is_directed(), graph_attrs=gattr)
 
         # Node attributes
-        for key, val in list(g.vertex_properties.items()):
+        for key, val in g.vertex_properties.items():
             prop = val.get_array()
             for i in range(vcount):
                 graph.vs[i][key] = prop[i]
@@ -2048,7 +2048,7 @@ class Graph(GraphBase):
         eattr = {name: [] for name in eattr_names}
         for e in g.edges():
             edges.append((int(e.source()), int(e.target())))
-            for name, attr_map in list(g.edge_properties.items()):
+            for name, attr_map in g.edge_properties.items():
                 eattr[name].append(attr_map[e])
 
         graph.add_edges(edges, eattr)
