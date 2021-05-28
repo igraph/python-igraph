@@ -65,7 +65,7 @@ from igraph._igraph import (
     Vertex,
     VertexSeq as _VertexSeq,
     WEAK,
-    arpack_options,
+    arpack_options as default_arpack_options,
     community_to_membership,
     convex_hull,
     is_degree_sequence,
@@ -88,7 +88,7 @@ from igraph.clustering import (
     split_join_distance,
 )
 from igraph.cut import Cut, Flow
-from igraph.configuration import Configuration
+from igraph.configuration import Configuration, init as init_configuration
 from igraph.drawing import BoundingBox, DefaultGraphDrawer, Plot, Point, Rectangle, plot
 from igraph.drawing.colors import (
     Palette,
@@ -730,9 +730,8 @@ class Graph(GraphBase):
             from scipy import sparse
         except ImportError:
             raise ImportError(
-                "You should install scipy package in order to use this function"
+                "You should install scipy in order to use this function"
             )
-        import numpy as np
 
         edges = self.get_edgelist()
         if attribute is None:
@@ -1012,7 +1011,7 @@ class Graph(GraphBase):
         @return: a list with the Google PageRank values of the specified
           vertices."""
         if arpack_options is None:
-            arpack_options = _igraph.arpack_options
+            arpack_options = default_arpack_options
         return self.personalized_pagerank(
             vertices,
             directed,
@@ -1304,7 +1303,8 @@ class Graph(GraphBase):
         @param fixed: a list of booleans for each vertex. C{True} corresponds
           to vertices whose labeling should not change during the algorithm.
           It only makes sense if initial labels are also given. Unlabeled
-          vertices cannot be fixed.
+          vertices cannot be fixed. It may also be the name of a vertex
+          attribute; each attribute value will be interpreted as a Boolean.
         @return: an appropriate L{VertexClustering} object.
 
         @newfield ref: Reference
@@ -1314,7 +1314,7 @@ class Graph(GraphBase):
           U{http://arxiv.org/abs/0709.2938}.
         """
         if isinstance(fixed, str):
-            fixed = [bool(o) for o in g.vs[fixed]]
+            fixed = [bool(o) for o in self.vs[fixed]]
         cl = GraphBase.community_label_propagation(self, weights, initial, fixed)
         return VertexClustering(self, cl, modularity_params=dict(weights=weights))
 
@@ -1526,7 +1526,7 @@ class Graph(GraphBase):
             for arg in args:
                 try:
                     indices.extend(arg)
-                except:
+                except Exception:
                     indices.append(arg)
 
         if len(indices) > 1 or hasattr(args[0], "__iter__"):
@@ -1691,10 +1691,10 @@ class Graph(GraphBase):
             method = getattr(self.__class__, self._layout_mapping[layout])
         if not hasattr(method, "__call__"):
             raise ValueError("layout method must be callable")
-        l = method(self, *args, **kwds)
-        if not isinstance(l, Layout):
-            l = Layout(l)
-        return l
+        layout = method(self, *args, **kwds)
+        if not isinstance(layout, Layout):
+            layout = Layout(layout)
+        return layout
 
     def layout_auto(self, *args, **kwds):
         """Chooses and runs a suitable layout function based on simple
@@ -1762,19 +1762,6 @@ class Graph(GraphBase):
         else:
             algo = "drl"
         return self.layout(algo, *args, **kwds)
-
-    def layout_grid_fruchterman_reingold(self, *args, **kwds):
-        """Compatibility alias to the Fruchterman-Reingold layout with the grid
-        option turned on.
-
-        @see: Graph.layout_fruchterman_reingold()
-        """
-        deprecated(
-            "Graph.layout_grid_fruchterman_reingold() is deprecated since "
-            "igraph 0.8, please use Graph.layout_fruchterman_reingold(grid=True) instead"
-        )
-        kwds["grid"] = True
-        return self.layout_fruchterman_reingold(*args, **kwds)
 
     def layout_sugiyama(
         self,
@@ -2093,7 +2080,8 @@ class Graph(GraphBase):
         @return: the created graph"""
         if isinstance(f, str):
             f = open(f)
-        matrix, ri, weights = [], 0, {}
+
+        matrix, ri = [], 0
         for line in f:
             line = line.strip()
             if len(line) == 0:
@@ -2115,7 +2103,7 @@ class Graph(GraphBase):
         return graph
 
     @classmethod
-    def Adjacency(klass, matrix, mode=ADJ_DIRECTED, *args, **kwargs):
+    def Adjacency(cls, matrix, mode="directed", *args, **kwargs):
         """Generates a graph from its adjacency matrix.
 
         @param matrix: the adjacency matrix. Possible types are:
@@ -2124,21 +2112,17 @@ class Graph(GraphBase):
           - a scipy.sparse matrix (will be converted to a COO matrix, but not
             to a dense matrix)
         @param mode: the mode to be used. Possible values are:
-
-          - C{ADJ_DIRECTED} - the graph will be directed and a matrix
+          - C{"directed"} - the graph will be directed and a matrix
             element gives the number of edges between two vertex.
-          - C{ADJ_UNDIRECTED} - alias to C{ADJ_MAX} for convenience.
-          - C{ADJ_MAX}   - undirected graph will be created and the number of
+          - C{"undirected"} - alias to C{"max"} for convenience.
+          - C{"max"} - undirected graph will be created and the number of
             edges between vertex M{i} and M{j} is M{max(A(i,j), A(j,i))}
-          - C{ADJ_MIN}   - like C{ADJ_MAX}, but with M{min(A(i,j), A(j,i))}
-          - C{ADJ_PLUS}  - like C{ADJ_MAX}, but with M{A(i,j) + A(j,i)}
-          - C{ADJ_UPPER} - undirected graph with the upper right triangle of
+          - C{"min"} - like C{"max"}, but with M{min(A(i,j), A(j,i))}
+          - C{"plus"}  - like C{"max"}, but with M{A(i,j) + A(j,i)}
+          - C{"upper"} - undirected graph with the upper right triangle of
             the matrix (including the diagonal)
-          - C{ADJ_LOWER} - undirected graph with the lower left triangle of
+          - C{"lower"} - undirected graph with the lower left triangle of
             the matrix (including the diagonal)
-
-          These values can also be given as strings without the C{ADJ} prefix.
-
         """
         try:
             import numpy as np
@@ -2151,7 +2135,7 @@ class Graph(GraphBase):
             sparse = None
 
         if (sparse is not None) and isinstance(matrix, sparse.spmatrix):
-            return _graph_from_sparse_matrix(klass, matrix, mode=mode)
+            return _graph_from_sparse_matrix(cls, matrix, mode=mode)
 
         if (np is not None) and isinstance(matrix, np.ndarray):
             matrix = matrix.tolist()
@@ -2159,7 +2143,7 @@ class Graph(GraphBase):
         return super().Adjacency(matrix, mode=mode)
 
     @classmethod
-    def Weighted_Adjacency(klass, matrix, mode=ADJ_DIRECTED, attr="weight", loops=True):
+    def Weighted_Adjacency(cls, matrix, mode="directed", attr="weight", loops=True):
         """Generates a graph from its weighted adjacency matrix.
 
         @param matrix: the adjacency matrix. Possible types are:
@@ -2168,17 +2152,16 @@ class Graph(GraphBase):
           - a scipy.sparse matrix (will be converted to a COO matrix, but not
             to a dense matrix)
         @param mode: the mode to be used. Possible values are:
-
-          - C{ADJ_DIRECTED} - the graph will be directed and a matrix
+          - C{"directed"} - the graph will be directed and a matrix
             element gives the number of edges between two vertex.
-          - C{ADJ_UNDIRECTED} - alias to C{ADJ_MAX} for convenience.
-          - C{ADJ_MAX}   - undirected graph will be created and the number of
+          - C{"undirected"} - alias to C{"max"} for convenience.
+          - C{"max"}   - undirected graph will be created and the number of
             edges between vertex M{i} and M{j} is M{max(A(i,j), A(j,i))}
-          - C{ADJ_MIN}   - like C{ADJ_MAX}, but with M{min(A(i,j), A(j,i))}
-          - C{ADJ_PLUS}  - like C{ADJ_MAX}, but with M{A(i,j) + A(j,i)}
-          - C{ADJ_UPPER} - undirected graph with the upper right triangle of
+          - C{"min"}   - like C{"max"}, but with M{min(A(i,j), A(j,i))}
+          - C{"plus"}  - like C{"max"}, but with M{A(i,j) + A(j,i)}
+          - C{"upper"} - undirected graph with the upper right triangle of
             the matrix (including the diagonal)
-          - C{ADJ_LOWER} - undirected graph with the lower left triangle of
+          - C{"lower"} - undirected graph with the lower left triangle of
             the matrix (including the diagonal)
 
           These values can also be given as strings without the C{ADJ} prefix.
@@ -2200,7 +2183,7 @@ class Graph(GraphBase):
 
         if sparse is not None and isinstance(matrix, sparse.spmatrix):
             return _graph_from_weighted_sparse_matrix(
-                klass,
+                cls,
                 matrix,
                 mode=mode,
                 attr=attr,
@@ -2269,8 +2252,6 @@ class Graph(GraphBase):
         @param compresslevel: the level of compression. 1 is fastest and
           produces the least compression, and 9 is slowest and produces
           the most compression."""
-        from igraph.utils import named_temporary_file
-
         with named_temporary_file() as tmpfile:
             self.write_graphml(tmpfile)
             outf = gzip.GzipFile(f, "wb", compresslevel)
@@ -2318,8 +2299,6 @@ class Graph(GraphBase):
           start from zero, so if you want to load the first graph,
           specify 0 here.
         @return: the loaded graph object"""
-        from igraph.utils import named_temporary_file
-
         with named_temporary_file() as tmpfile:
             with open(tmpfile, "wb") as outf:
                 copyfileobj(gzip.GzipFile(f, "rb"), outf)
@@ -2365,17 +2344,20 @@ class Graph(GraphBase):
         """
         import pickle as pickle
 
+        file_was_opened = False
+
         if not hasattr(fname, "write"):
             file_was_opened = True
             fname = gzip.open(fname, "wb")
         elif not isinstance(fname, gzip.GzipFile):
             file_was_opened = True
             fname = gzip.GzipFile(mode="wb", fileobj=fname)
-        else:
-            file_Was_opened = False
+
         result = pickle.dump(self, fname, version)
+
         if file_was_opened:
             fname.close()
+
         return result
 
     @classmethod
@@ -2392,7 +2374,6 @@ class Graph(GraphBase):
             # Probably a file or a file-like object
             result = pickle.load(fname)
         else:
-            fp = None
             try:
                 fp = open(fname, "rb")
             except UnicodeDecodeError:
@@ -2403,7 +2384,8 @@ class Graph(GraphBase):
                     result = pickle.loads(fname)
                 except TypeError:
                     raise IOError(
-                        "Cannot load file. If fname is a file name, that filename may be incorrect."
+                        "Cannot load file. If fname is a file name, that "
+                        "filename may be incorrect."
                     )
             except IOError:
                 try:
@@ -2411,53 +2393,40 @@ class Graph(GraphBase):
                     result = pickle.loads(fname)
                 except TypeError:
                     raise IOError(
-                        "Cannot load file. If fname is a file name, that filename may be incorrect."
+                        "Cannot load file. If fname is a file name, that "
+                        "filename may be incorrect."
                     )
-            if fp is not None:
+            else:
                 result = pickle.load(fp)
                 fp.close()
-        return result
 
-    @classmethod
-    def Read_Picklez(cls, fname, *args, **kwds):
-        """Reads a graph from compressed Python pickled format, uncompressing
-        it on-the-fly.
-
-        @param fname: the name of the file or a stream to read from.
-        @return: the created graph object.
-        """
-        import pickle as pickle
-
-        if hasattr(fname, "read"):
-            # Probably a file or a file-like object
-            if isinstance(fname, gzip.GzipFile):
-                result = pickle.load(fname)
-            else:
-                result = pickle.load(gzip.GzipFile(mode="rb", fileobj=fname))
-        else:
-            result = pickle.load(gzip.open(fname, "rb"))
-        return result
-
-    @classmethod
-    def Read_Picklez(cls, fname, *args, **kwds):
-        """Reads a graph from compressed Python pickled format, uncompressing
-        it on-the-fly.
-
-        @param fname: the name of the file or a stream to read from.
-        @return: the created graph object.
-        """
-        import pickle as pickle
-
-        if hasattr(fname, "read"):
-            # Probably a file or a file-like object
-            if isinstance(fname, gzip.GzipFile):
-                result = pickle.load(fname)
-            else:
-                result = pickle.load(gzip.GzipFile(mode="rb", fileobj=fname))
-        else:
-            result = pickle.load(gzip.open(fname, "rb"))
         if not isinstance(result, cls):
             raise TypeError("unpickled object is not a %s" % cls.__name__)
+
+        return result
+
+    @classmethod
+    def Read_Picklez(cls, fname):
+        """Reads a graph from compressed Python pickled format, uncompressing
+        it on-the-fly.
+
+        @param fname: the name of the file or a stream to read from.
+        @return: the created graph object.
+        """
+        import pickle as pickle
+
+        if hasattr(fname, "read"):
+            # Probably a file or a file-like object
+            if isinstance(fname, gzip.GzipFile):
+                result = pickle.load(fname)
+            else:
+                result = pickle.load(gzip.GzipFile(mode="rb", fileobj=fname))
+        else:
+            result = pickle.load(gzip.open(fname, "rb"))
+
+        if not isinstance(result, cls):
+            raise TypeError("unpickled object is not a %s" % cls.__name__)
+
         return result
 
     # pylint: disable-msg=C0301,C0323
@@ -2609,12 +2578,18 @@ class Graph(GraphBase):
 
         print('<?xml version="1.0" encoding="UTF-8" standalone="no"?>', file=f)
         print(
-            "<!-- Created by igraph (http://igraph.org/) for use in Inkscape (http://www.inkscape.org/) -->",
+            "<!-- Created by igraph (http://igraph.org/) -->",
             file=f,
         )
         print(file=f)
         print(
-            '<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"',
+            '<svg xmlns:dc="http://purl.org/dc/elements/1.1/" '
+            'xmlns:cc="http://creativecommons.org/ns#" '
+            'xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" '
+            'xmlns:svg="http://www.w3.org/2000/svg" '
+            'xmlns="http://www.w3.org/2000/svg" '
+            'xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" '
+            'xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"',
             file=f,
         )
         print('width="{0}px" height="{1}px">'.format(width, height), end=" ", file=f)
@@ -2638,13 +2613,15 @@ class Graph(GraphBase):
             print("  <path", file=f)
             print('     id="pathArrow{0}"'.format(marker_index), file=f)
             print(
-                '     style="font-size:12.0;fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;fill:{0}"'.format(
-                    e_col
-                ),
+                '     style="font-size:12.0;fill-rule:evenodd;'
+                'stroke-width:0.62500000;stroke-linejoin:round;'
+                'fill:{0}"'.format(e_col),
                 file=f,
             )
             print(
-                '     d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "',
+                '     d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 '
+                'L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 '
+                '6.9831476,1.6157441 8.7185878,4.0337352 z "',
                 file=f,
             )
             print('     transform="scale(1.1) rotate(180) translate(1,0)" />', file=f)
@@ -2653,7 +2630,8 @@ class Graph(GraphBase):
             edge_color_dict[e_col] = "Arrow2Lend{0}".format(marker_index)
         print("</defs>", file=f)
         print(
-            '<g inkscape:groupmode="layer" id="layer2" inkscape:label="Lines" sodipodi:insensitive="true">',
+            '<g inkscape:groupmode="layer" id="layer2" inkscape:label="Lines" '
+            'sodipodi:insensitive="true">',
             file=f,
         )
 
@@ -2669,7 +2647,9 @@ class Graph(GraphBase):
 
             print("<path", file=f)
             print(
-                '    style="fill:none;stroke:{0};stroke-width:{2};stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none{1}"'.format(
+                '    style="fill:none;stroke:{0};stroke-width:{2};'
+                'stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;'
+                'stroke-opacity:1;stroke-dasharray:none{1}"'.format(
                     edge_colors[eidx],
                     ";marker-end:url(#{0})".format(edge_color_dict[edge_colors[eidx]])
                     if directed
@@ -2710,7 +2690,7 @@ class Graph(GraphBase):
             else:
                 try:
                     font_size_in_pixels = int(font_size)
-                except:
+                except Exception:
                     raise ValueError(
                         "font sizes must be specified in pixels "
                         "when any of the nodes has shape=3 (i.e. "
@@ -2763,7 +2743,8 @@ class Graph(GraphBase):
                     )
             elif shapes[vidx] == 2:
                 print(
-                    '      <rect x="-{0}" y="-{0}" width="{1}" height="{1}" id="rect{2}" style="fill:{3};fill-opacity:1" />'.format(
+                    '      <rect x="-{0}" y="-{0}" width="{1}" height="{1}" '
+                    'id="rect{2}" style="fill:{3};fill-opacity:1" />'.format(
                         vertex_size, vertex_size * 2, vidx, colors[vidx]
                     ),
                     file=f,
@@ -2774,7 +2755,9 @@ class Graph(GraphBase):
                     font.metrics("linespace") + 2,
                 )
                 print(
-                    '      <rect ry="5" rx="5" x="-{0}" y="-{1}" width="{2}" height="{3}" id="rect{4}" style="fill:{5};fill-opacity:1" />'.format(
+                    '      <rect ry="5" rx="5" x="-{0}" y="-{1}" width="{2}" '
+                    'height="{3}" id="rect{4}" style="fill:{5};fill-opacity:1" '
+                    '/>'.format(
                         vertex_width / 2.0,
                         vertex_height / 2.0,
                         vertex_width,
@@ -2786,13 +2769,19 @@ class Graph(GraphBase):
                 )
 
             print(
-                '      <text sodipodi:linespacing="125%" y="{0}" x="0" id="text{1}" style="font-size:{2};font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans">'.format(
+                '      <text sodipodi:linespacing="125%" y="{0}" x="0" '
+                'id="text{1}" style="font-size:{2};font-style:normal;'
+                'font-weight:normal;text-align:center;line-height:125%;'
+                'letter-spacing:0px;word-spacing:0px;text-anchor:middle;'
+                'fill:#000000;fill-opacity:1;stroke:none;'
+                'font-family:Sans">'.format(
                     vertex_size / 2.0, vidx, font_size
                 ),
                 file=f,
             )
             print(
-                '<tspan y="{0}" x="0" id="tspan{1}" sodipodi:role="line">{2}</tspan></text>'.format(
+                '<tspan y="{0}" x="0" id="tspan{1}" sodipodi:role="line">'
+                '{2}</tspan></text>'.format(
                     vertex_size / 2.0, vidx, str(labels[vidx])
                 ),
                 file=f,
@@ -2830,7 +2819,7 @@ class Graph(GraphBase):
             # It is most likely a file
             try:
                 filename = filename.name
-            except:
+            except Exception:
                 return None
 
         root, ext = os.path.splitext(filename)
@@ -3034,9 +3023,9 @@ class Graph(GraphBase):
         @return: the graph that was constructed
         """
 
-        def create_list_from_indices(l, n):
+        def create_list_from_indices(indices, n):
             result = [None] * n
-            for i, v in l:
+            for i, v in indices:
                 result[i] = v
             return result
 
@@ -3388,8 +3377,8 @@ class Graph(GraphBase):
         result, types = cls._Incidence(matrix, directed, mode, multiple, *args, **kwds)
         result.vs["type"] = types
         if is_weighted:
-            weight_attr = "weight" if weighted == True else weighted
-            _, rows, columns = result.get_incidence()
+            weight_attr = "weight" if weighted is True else weighted
+            _, rows, _ = result.get_incidence()
             num_vertices_of_first_kind = len(rows)
             for edge in result.es:
                 source, target = edge.tuple
@@ -3637,9 +3626,9 @@ class Graph(GraphBase):
         """
         superclass_meth = super(Graph, self).bipartite_projection
 
-        if which == False:
+        if which is False:
             which = 0
-        elif which == True:
+        elif which is True:
             which = 1
         if which != 0 and which != 1:
             which = -1
@@ -3841,13 +3830,13 @@ class Graph(GraphBase):
                     self.delete_vertices(other)
                 else:
                     return NotImplemented
-        elif isinstance(other, _igraph.Vertex):
+        elif isinstance(other, Vertex):
             self.delete_vertices(other)
-        elif isinstance(other, _igraph.VertexSeq):
+        elif isinstance(other, VertexSeq):
             self.delete_vertices(other)
-        elif isinstance(other, _igraph.Edge):
+        elif isinstance(other, Edge):
             self.delete_edges(other)
-        elif isinstance(other, _igraph.EdgeSeq):
+        elif isinstance(other, EdgeSeq):
             self.delete_edges(other)
         else:
             return NotImplemented
@@ -3881,13 +3870,13 @@ class Graph(GraphBase):
                     return NotImplemented
             else:
                 return result
-        elif isinstance(other, _igraph.Vertex):
+        elif isinstance(other, Vertex):
             result.delete_vertices(other)
-        elif isinstance(other, _igraph.VertexSeq):
+        elif isinstance(other, VertexSeq):
             result.delete_vertices(other)
-        elif isinstance(other, _igraph.Edge):
+        elif isinstance(other, Edge):
             result.delete_edges(other)
-        elif isinstance(other, _igraph.EdgeSeq):
+        elif isinstance(other, EdgeSeq):
             result.delete_edges(other)
         else:
             return NotImplemented
@@ -3937,13 +3926,13 @@ class Graph(GraphBase):
         """
         if isinstance(other, (int, tuple, list, str)):
             return self, other
-        if isinstance(other, _igraph.Vertex):
+        if isinstance(other, Vertex):
             return self, other
-        if isinstance(other, _igraph.VertexSeq):
+        if isinstance(other, VertexSeq):
             return self, other
-        if isinstance(other, _igraph.Edge):
+        if isinstance(other, Edge):
             return self, other
-        if isinstance(other, _igraph.EdgeSeq):
+        if isinstance(other, EdgeSeq):
             return self, other
         return NotImplemented
 
@@ -4428,7 +4417,7 @@ class VertexSeq(_VertexSeq):
         if args:
             # Selecting first based on positional arguments, then checking
             # the criteria specified by the (remaining) keyword arguments
-            vertex = _igraph.VertexSeq.find(self, *args)
+            vertex = _VertexSeq.find(self, *args)
             if not kwds:
                 return vertex
             vs = self.graph.vs.select(vertex.index)
@@ -4544,7 +4533,7 @@ class VertexSeq(_VertexSeq):
           >>> edges = g.vs.select(bs_gt=10, bs_lt=30)
 
         @return: the new, filtered vertex sequence"""
-        vs = _igraph.VertexSeq.select(self, *args)
+        vs = _VertexSeq.select(self, *args)
 
         operators = {
             "lt": operator.lt,
@@ -4676,7 +4665,7 @@ class EdgeSeq(_EdgeSeq):
         if args:
             # Selecting first based on positional arguments, then checking
             # the criteria specified by the keyword arguments
-            edge = _igraph.EdgeSeq.find(self, *args)
+            edge = _EdgeSeq.find(self, *args)
             if not kwds:
                 return edge
             es = self.graph.es.select(edge.index)
@@ -4833,7 +4822,7 @@ class EdgeSeq(_EdgeSeq):
 
         @return: the new, filtered edge sequence
         """
-        es = _igraph.EdgeSeq.select(self, *args)
+        es = _EdgeSeq.select(self, *args)
         is_directed = self.graph.is_directed()
 
         def _ensure_set(value):
@@ -4947,8 +4936,8 @@ class EdgeSeq(_EdgeSeq):
                             and e.target in value
                         ]
                     else:
-                        # Optimized version when the edge sequence contains all the edges
-                        # exactly once in increasing order of edge IDs
+                        # Optimized version when the edge sequence contains all
+                        # the edges exactly once in increasing order of edge IDs
                         filtered_idxs = [
                             i
                             for i in candidates
@@ -4981,8 +4970,8 @@ class EdgeSeq(_EdgeSeq):
                             or (e.target in set1 and e.source in set2)
                         ]
                     else:
-                        # Optimized version when the edge sequence contains all the edges
-                        # exactly once in increasing order of edge IDs
+                        # Optimized version when the edge sequence contains all
+                        # the edges exactly once in increasing order of edge IDs
                         filtered_idxs = [
                             i
                             for i in candidates
@@ -5223,7 +5212,7 @@ def autocurve(graph, attribute="curved", default=0):
             multiplicities[u, v].append(edge.index)
 
     result = [default] * graph.ecount()
-    for pair, eids in multiplicities.items():
+    for eids in multiplicities.values():
         # Is it a single edge?
         if len(eids) < 2:
             continue
@@ -5322,5 +5311,5 @@ def summary(obj, stream=None, *args, **kwds):
     stream.write("\n")
 
 
-config = configuration.init()
+config = init_configuration()
 del construct_graph_from_formula
