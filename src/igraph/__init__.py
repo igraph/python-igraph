@@ -1867,21 +1867,24 @@ class Graph(GraphBase):
     #############################################
     # Auxiliary I/O functions
 
-    def to_networkx(self):
-        """Converts the graph to networkx format"""
+    def to_networkx(self, create_using=None):
+        """Converts the graph to networkx format.
+
+        @param create_using: specifies which NetworkX graph class to use when
+            constructing the graph. C{None} means to let igraph infer the most
+            appropriate class based on whether the graph is directed and whether
+            it has multi-edges.
+        """
         import networkx as nx
 
         # Graph: decide on directness and mutliplicity
-        if any(self.is_multiple()):
-            if self.is_directed():
-                cls = nx.MultiDiGraph
+        if create_using is None:
+            if self.has_multiple():
+                cls = nx.MultiDiGraph if self.is_directed() else nx.MultiGraph
             else:
-                cls = nx.MultiGraph
+                cls = nx.DiGraph if self.is_directed() else nx.Graph
         else:
-            if self.is_directed():
-                cls = nx.DiGraph
-            else:
-                cls = nx.Graph
+            cls = create_using
 
         # Graph attributes
         kw = {x: self[x] for x in self.attributes()}
@@ -1889,6 +1892,8 @@ class Graph(GraphBase):
 
         # Nodes and node attributes
         for i, v in enumerate(self.vs):
+            # TODO: use _nx_name if the attribute is present so we can achieve
+            # a lossless round-trip in terms of vertex names
             g.add_node(i, **v.attributes())
 
         # Edges and edge attributes

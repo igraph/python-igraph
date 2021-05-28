@@ -13,6 +13,9 @@
 
 * `Graph.to_directed()` now supports a `mode=...` keyword argument.
 
+* Added a `create_using=...` keyword argument to `Graph.to_networkx()` to
+  let the user specify which NetworkX class to use when converting the graph.
+
 ### Changed
 
 * Updated igraph dependency to 0.9.3.
