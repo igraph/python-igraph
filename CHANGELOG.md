@@ -17,6 +17,11 @@
 
 * Updated igraph dependency to 0.9.3.
 
+### Fixed
+
+* Improved performance of `Graph.from_networkx()` and `Graph.from_graph_tool()`
+  on large graphs, thanks to @szhorvat and @iosonofabio for fixing the issue.
+
 ### Deprecated
 
 * Functions and methods that take string arguments that represent an underlying
