@@ -68,8 +68,6 @@ from igraph.configuration import Configuration
 __all__ = ("AttributeSpecification", "AttributeCollectorBase")
 
 
-# pylint: disable-msg=R0903
-# R0903: too few public methods
 class AttributeSpecification(object):
     """Class that describes how the value of a given attribute should be
     retrieved.
@@ -342,8 +340,6 @@ class AttributeCollectorBase(object, metaclass=AttributeCollectorMeta):
     def __getitem__(self, index):
         """Returns the collected attributes of the vertex/edge with the
         given index."""
-        # pylint: disable-msg=E1101
-        # E1101: instance has no '_attributes' member
         return self._cache[index]
 
     def __len__(self):

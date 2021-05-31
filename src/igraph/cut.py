@@ -46,7 +46,6 @@ class Cut(VertexClustering):
       >>> mc.es["color"] = "red"
     """
 
-    # pylint: disable-msg=R0913
     def __init__(self, graph, value=None, cut=None, partition=None, partition2=None):
         """Initializes the cut.
 
@@ -88,7 +87,6 @@ class Cut(VertexClustering):
             self._value,
         )
 
-    # pylint: disable-msg=C0103
     @property
     def es(self):
         """Returns an edge selector restricted to the cut"""
@@ -150,7 +148,6 @@ class Flow(Cut):
       >>> mf.es["color"] = "red"
     """
 
-    # pylint: disable-msg=R0913
     def __init__(self, graph, value, flow, cut, partition):
         """Initializes the flow.
 

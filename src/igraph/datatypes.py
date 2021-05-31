@@ -25,7 +25,6 @@ class Matrix(object):
         self._nrow, self._ncol, self._data = 0, 0, []
         self.data = data
 
-    # pylint: disable-msg=C0103
     @classmethod
     def Fill(cls, value, *args):
         """Creates a matrix filled with the given value
@@ -47,7 +46,6 @@ class Matrix(object):
         mtrx = [[value] * width for _ in range(height)]
         return cls(mtrx)
 
-    # pylint: disable-msg=C0103
     @classmethod
     def Zero(cls, *args):
         """Creates a matrix filled with zeros.
@@ -59,7 +57,6 @@ class Matrix(object):
         result = cls.Fill(0, *args)
         return result
 
-    # pylint: disable-msg=C0103
     @classmethod
     def Identity(cls, *args):
         """Creates an identity matrix.
@@ -68,7 +65,6 @@ class Matrix(object):
           two integers or a tuple. If a single integer is
           given here, the matrix is assumed to be square-shaped.
         """
-        # pylint: disable-msg=W0212
         result = cls.Fill(0, *args)
         for i in range(min(result.shape)):
             result._data[i][i] = 1
@@ -326,8 +322,6 @@ class Matrix(object):
         is square-shaped, the same names are used for both column and row
         names.
         """
-        # pylint: disable-msg=W0142
-        # pylint: disable-msg=C0103
         grid_width = float(kwds.get("grid_width", 1.0))
         border_width = float(kwds.get("border_width", 1.0))
         style = kwds.get("style", "boolean")

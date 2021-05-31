@@ -50,7 +50,6 @@ class ShapeDrawer(object):
         """
         raise NotImplementedError("abstract class")
 
-    # pylint: disable-msg=W0613
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
         """Determines where the shape centered at (center_x, center_y)
@@ -95,8 +94,6 @@ class RectangleDrawer(ShapeDrawer):
         height = height or width
         ctx.rectangle(center_x - width / 2, center_y - height / 2, width, height)
 
-    # pylint: disable-msg=C0103, R0911
-    # R0911: too many return statements
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
         """Determines where the rectangle centered at (center_x, center_y)

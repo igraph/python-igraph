@@ -158,7 +158,6 @@ def deprecated(message):
     warn(message, DeprecationWarning, stacklevel=3)
 
 
-# pylint: disable-msg=E1101
 class Graph(GraphBase):
     """Generic graph.
 
@@ -2441,9 +2440,6 @@ class Graph(GraphBase):
 
         return result
 
-    # pylint: disable-msg=C0301,C0323
-    # C0301: line too long.
-    # C0323: operator not followed by a space - well, print >>f looks OK
     def write_svg(
         self,
         fname,

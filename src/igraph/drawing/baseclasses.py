@@ -8,8 +8,6 @@ from math import pi
 #####################################################################
 
 
-# pylint: disable-msg=R0903
-# R0903: too few public methods
 class AbstractDrawer(object):
     """Abstract class that serves as a base class for anything that
     draws an igraph object."""
@@ -22,8 +20,6 @@ class AbstractDrawer(object):
 #####################################################################
 
 
-# pylint: disable-msg=R0903
-# R0903: too few public methods
 class AbstractCairoDrawer(AbstractDrawer):
     """Abstract class that serves as a base class for anything that
     draws on a Cairo context within a given bounding box.

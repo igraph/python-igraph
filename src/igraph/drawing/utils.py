@@ -400,8 +400,6 @@ class BoundingBox(Rectangle):
 
 #####################################################################
 
-# pylint: disable-msg=R0903
-# R0903: too few public methods
 class FakeModule:
     """Fake module that raises an exception for everything"""
 
@@ -482,8 +480,6 @@ class Point(tuple):
         """Creates a new point with the given coordinates"""
         return tuple.__new__(cls, (x, y))
 
-    # pylint: disable-msg=W0622
-    # W0622: redefining built-in 'len'
     @classmethod
     def _make(cls, iterable, new=tuple.__new__, len=len):
         """Creates a new point from a sequence or iterable"""
@@ -500,8 +496,6 @@ class Point(tuple):
         """Returns a new dict which maps field names to their values"""
         return dict(zip(self._fields, self))
 
-    # pylint: disable-msg=W0141
-    # W0141: used builtin function 'map'
     def _replace(self, **kwds):
         """Returns a new point object replacing specified fields with new
         values"""

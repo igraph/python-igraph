@@ -28,9 +28,6 @@ from igraph._igraph import set_progress_handler, set_status_handler
 from igraph.configuration import Configuration
 
 
-# pylint: disable-msg=C0103,R0903
-# C0103: invalid name. Disabled because this is a third-party class.
-# R0903: too few public methods.
 class TerminalController:
     """
     A class that can be used to portably generate formatted output to
@@ -311,14 +308,12 @@ class Shell(object):
         called C{_status_handler}."""
         return hasattr(self, "_status_handler")
 
-    # pylint: disable-msg=E1101
     def get_progress_handler(self):
         """Returns the progress handler (if exists) or None (if not)."""
         if self.supports_progress_bar():
             return self._progress_handler
         return None
 
-    # pylint: disable-msg=E1101
     def get_status_handler(self):
         """Returns the status handler (if exists) or None (if not)."""
         if self.supports_status_messages():
@@ -524,8 +519,6 @@ def main():
 
     shell = None
     for shell_class in shell_classes:
-        # pylint: disable-msg=W0703
-        # W0703: catch "Exception"
         try:
             shell = shell_class()
             break

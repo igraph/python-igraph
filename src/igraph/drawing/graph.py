@@ -42,15 +42,10 @@ cairo = find_cairo()
 #####################################################################
 
 
-# pylint: disable-msg=R0903
-# R0903: too few public methods
 class AbstractGraphDrawer(AbstractDrawer):
     """Abstract class that serves as a base class for anything that
     draws an igraph.Graph."""
 
-    # pylint: disable-msg=W0221
-    # W0221: argument number differs from overridden method
-    # E1101: Module 'cairo' has no 'foo' member - of course it does :)
     def draw(self, graph, *args, **kwds):
         """Abstract method, must be implemented in derived classes."""
         raise NotImplementedError("abstract class")
@@ -223,10 +218,6 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
 
         return vertex_order
 
-    # pylint: disable-msg=W0142,W0221,E1101
-    # W0142: Used * or ** magic
-    # W0221: argument number differs from overridden method
-    # E1101: Module 'cairo' has no 'foo' member - of course it does :)
     def draw(self, graph, palette, *args, **kwds):
         # Some abbreviations for sake of simplicity
         directed = graph.is_directed()

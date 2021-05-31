@@ -183,8 +183,6 @@ class Configuration(object):
           inline in IPython's console if the console supports it. Default: C{True}
     """
 
-    # pylint: disable-msg=R0903
-    # R0903: too few public methods
     class Types(object):
         """Static class for the implementation of custom getter/setter functions
         for configuration keys"""

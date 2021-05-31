@@ -179,7 +179,6 @@ class Histogram(object):
         """Returns the mean of the elements in the histogram"""
         return self._running_mean.mean
 
-    # pylint: disable-msg=C0103
     @property
     def sd(self):
         """Returns the standard deviation of the elements in
@@ -336,7 +335,6 @@ class RunningMean(object):
     the fly)
     """
 
-    # pylint: disable-msg=C0103
     def __init__(self, items=None, n=0.0, mean=0.0, sd=0.0):
         """RunningMean(items=None, n=0.0, mean=0.0, sd=0.0)
 

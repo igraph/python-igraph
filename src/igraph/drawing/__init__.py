@@ -85,8 +85,6 @@ class Plot(object):
     added by the L{Plot.add} method and removed by the L{Plot.remove} method.
     """
 
-    # pylint: disable-msg=E1101
-    # E1101: Module 'cairo' has no 'foo' member - of course it has! :)
     def __init__(self, target=None, bbox=None, palette=None, background=None):
         """Creates a new plot.
 
@@ -256,8 +254,6 @@ class Plot(object):
         """Marks the plot as dirty (should be redrawn)"""
         self._is_dirty = True
 
-    # pylint: disable-msg=W0142
-    # W0142: used * or ** magic
     def redraw(self, context=None):
         """Redraws the plot"""
         ctx = context or self._ctx

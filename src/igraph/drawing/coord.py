@@ -8,8 +8,6 @@ from igraph.drawing.utils import BoundingBox
 #####################################################################
 
 
-# pylint: disable-msg=R0922
-# R0922: Abstract class is only referenced 1 times
 class CoordinateSystem(AbstractCairoDrawer):
     """Class implementing a coordinate system object.
 

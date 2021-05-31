@@ -246,7 +246,6 @@ class VertexClustering(Clustering):
         else:
             self._modularity_params = dict(modularity_params)
 
-    # pylint: disable-msg=C0103
     @classmethod
     def FromAttribute(cls, graph, attribute, intervals=None, params=None):
         """Creates a vertex clustering based on the value of a vertex attribute.
@@ -738,7 +737,6 @@ class Dendrogram(object):
             return x_advance - x_bearing, height
         return height, x_advance - x_bearing
 
-    # pylint: disable-msg=R0913
     def _plot_item(self, context, horiz, idx, x, y):
         """Plots a dendrogram item to the given Cairo context
 
@@ -763,8 +761,6 @@ class Dendrogram(object):
             context.show_text(str(self._names[idx]))
             context.restore()
 
-    # pylint: disable-msg=C0103,W0613
-    # W0613 = unused argument 'palette'
     def __plot__(self, context, bbox, palette, *args, **kwds):
         """Draws the dendrogram on the given Cairo context
 
