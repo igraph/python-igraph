@@ -1180,8 +1180,13 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
             if default is True:
                 default = 0.5
             default = float(default)
-            autocurve(graph, attribute="curved", default=default)
-            kwds["edge_curved"] = graph.es.get_attribute_values("curved")
+            ecurved = autocurve(graph, attribute=None, default=default)
+        elif "edge_curved" in kwds:
+            ecurved = kwds["edge_curved"]
+        elif "curved" in graph.edge_attributes():
+            ecurved = graph.es["curved"]
+        else:
+            ecurved = [0] * ne
 
         # Arrow style for directed and undirected graphs
         if graph.is_directed():
@@ -1195,7 +1200,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
         # Edge coordinates and curvature
         nloops = [0 for x in range(ne)]
-        has_curved = "curved" in graph.es.attributes()
         arrows = []
         for ie, edge in enumerate(graph.es):
             src, tgt = edge.source, edge.target
@@ -1275,7 +1279,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 )
 
             else:
-                curved = edge["curved"] if has_curved else False
+                curved = ecurved[ie]
                 if curved:
                     aux1 = (2 * x1 + x2) / 3.0 - curved * 0.5 * (y2 - y1), (
                         2 * y1 + y2
