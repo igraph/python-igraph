@@ -1,6 +1,6 @@
 # igraph Python interface changelog
 
-## 0.9.3
+## 0.9.4
 
 ### Added
 
@@ -18,7 +18,7 @@
 
 ### Changed
 
-* Updated igraph dependency to 0.9.3.
+* Updated igraph dependency to 0.9.4.
 
 ### Fixed
 
