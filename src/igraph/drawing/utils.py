@@ -7,7 +7,6 @@ from math import atan2, cos, sin
 from operator import itemgetter
 
 __all__ = ("BoundingBox", "Point", "Rectangle")
-__license__ = "GPL"
 
 #####################################################################
 

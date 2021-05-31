@@ -11,7 +11,6 @@ from igraph.drawing.shapes import ShapeDrawerDirectory
 from math import pi
 
 __all__ = ("AbstractVertexDrawer", "AbstractCairoVertexDrawer", "DefaultVertexDrawer")
-__license__ = "GPL"
 
 
 class AbstractVertexDrawer(AbstractDrawer):

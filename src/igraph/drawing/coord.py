@@ -5,8 +5,6 @@ Coordinate systems and related plotting routines
 from igraph.drawing.baseclasses import AbstractCairoDrawer
 from igraph.drawing.utils import BoundingBox
 
-__license__ = "GPL"
-
 #####################################################################
 
 

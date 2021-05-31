@@ -13,8 +13,6 @@ L{CytoscapeGraphDrawer}. L{CytoscapeGraphDrawer} can also fetch the current
 network from Cytoscape and convert it to igraph format.
 """
 
-from collections import defaultdict
-
 from math import atan2, cos, pi, sin, tan, sqrt
 from warnings import warn
 
@@ -34,8 +32,10 @@ from igraph.drawing.utils import find_cairo, Point
 from igraph.drawing.vertex import DefaultVertexDrawer
 from igraph.layout import Layout
 
-__all__ = ("DefaultGraphDrawer", "MatplotlibGraphDrawer", "CytoscapeGraphDrawer", "UbiGraphDrawer")
-__license__ = "GPL"
+__all__ = (
+    "DefaultGraphDrawer", "MatplotlibGraphDrawer", "CytoscapeGraphDrawer",
+    "UbiGraphDrawer"
+)
 
 cairo = find_cairo()
 
@@ -442,7 +442,7 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
                     # Intersection at bottom edge of label
                     try:
                         cx += h / tan(alpha)
-                    except:
+                    except Exception:
                         pass  # tan(alpha) == inf
                     cy -= h
                 elif alpha > gamma and alpha <= gamma + 2 * beta:
@@ -453,7 +453,7 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
                     # Intersection at top edge of label
                     try:
                         cx -= h / tan(alpha)
-                    except:
+                    except Exception:
                         pass  # tan(alpha) == inf
                     cy += h
                 # Draw the label
@@ -913,10 +913,11 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
 
     The Gephi graph streaming format is a simple JSON-based format that can be used
     to post mutations to a graph (i.e. node and edge additions, removals and updates)
-    to a remote component. For instance, one can open up Gephi (U{http://www.gephi.org}),
-    install the Gephi graph streaming plugin and then send a graph from igraph
-    straight into the Gephi window by using C{GephiGraphStreamingDrawer} with the
-    appropriate URL where Gephi is listening.
+    to a remote component. For instance, one can open up Gephi
+    (U{http://www.gephi.org}), install the Gephi graph streaming plugin and then
+    send a graph from igraph straight into the Gephi window by using
+    C{GephiGraphStreamingDrawer} with the appropriate URL where Gephi is
+    listening.
 
     The C{connection} property exposes the L{GephiConnection} that the drawer
     uses. The drawer also has a property called C{streamer} which exposes the underlying

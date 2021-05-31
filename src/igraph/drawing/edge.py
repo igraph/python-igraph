@@ -11,8 +11,6 @@ __all__ = (
     "TaperedEdgeDrawer",
 )
 
-__license__ = "GPL"
-
 from igraph.drawing.colors import clamp
 from igraph.drawing.metamagic import AttributeCollectorBase
 from igraph.drawing.text import TextAlignment

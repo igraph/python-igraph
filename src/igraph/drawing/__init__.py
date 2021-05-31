@@ -38,8 +38,6 @@ from igraph.utils import _is_running_in_ipython, named_temporary_file
 
 __all__ = ("BoundingBox", "DefaultGraphDrawer", "Plot", "Point", "Rectangle", "plot")
 
-__license__ = "GPL"
-
 cairo = find_cairo()
 
 #####################################################################
