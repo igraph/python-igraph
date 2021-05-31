@@ -423,6 +423,10 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     @param target: the target where the object should be plotted. It can be one
       of the following types:
 
+        - C{matplotib.axes.Axes} -- a matplotlib/pyplot axes in which the
+          graph will be plotted. Drawing, saving to file, etc. is mostly
+          delegated to the chosen matplotlib backend.
+
         - C{string} -- a file with the given name will be created and an
           appropriate Cairo surface will be attached to it. The supported image
           formats are: PNG, PDF, SVG and PostScript.
