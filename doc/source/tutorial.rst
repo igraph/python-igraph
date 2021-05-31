@@ -753,8 +753,8 @@ nodes may be different on your machine since the layout is not deterministic):
 
    Our social network with the Kamada-Kawai layout algorithm
 
-If you prefer to use `matplotlib`_ as a default plotting engine, create an axes and use
-the ``target`` argument:
+If you prefer to use `matplotlib`_ as a plotting engine, create an axes and use the
+``target`` argument:
 
 >>> import matplotlib.pyplot as plt
 >>> fig, ax = plt.subplots()
