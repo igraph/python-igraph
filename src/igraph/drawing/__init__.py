@@ -424,8 +424,9 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
       of the following types:
 
         - C{matplotib.axes.Axes} -- a matplotlib/pyplot axes in which the
-          graph will be plotted. Drawing, saving to file, etc. is mostly
-          delegated to the chosen matplotlib backend.
+          graph will be plotted. Drawing is delegated to the chosen matplotlib
+          backend, and you can use interactive backends and matplotlib
+          functions to save to file as well.
 
         - C{string} -- a file with the given name will be created and an
           appropriate Cairo surface will be attached to it. The supported image
