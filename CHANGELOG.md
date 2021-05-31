@@ -25,6 +25,9 @@
 * Improved performance of `Graph.from_networkx()` and `Graph.from_graph_tool()`
   on large graphs, thanks to @szhorvat and @iosonofabio for fixing the issue.
 
+* Fixed the `autocurve=...` keyword argument of `plot()` when using the
+  Matplotlib backend.
+
 ### Deprecated
 
 * Functions and methods that take string arguments that represent an underlying
