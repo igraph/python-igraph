@@ -435,7 +435,7 @@ degree or betweenness centrality. You can do that with the tools presented so fa
 some basic Python knowledge, but since it is a common task to select vertices and edges
 based on attributes or structural properties, |igraph| gives you an easier way to do that:
 
->>> g.vs.select(_degree = g.maxdegree())["name"]
+>>> g.vs.select(_degree=g.maxdegree())["name"]
 ["Alice", "Bob"]
 
 The syntax may seem a little bit awkward for the first sight, so let's try to interpret
@@ -741,7 +741,7 @@ For instance, we can plot our imaginary social network with the Kamada-Kawai
 layout algorithm as follows:
 
 >>> layout = g.layout("kk")
->>> plot(g, layout = layout)
+>>> plot(g, layout=layout)
 
 This should open an external image viewer showing a visual representation of the network,
 something like the one on the following figure (although the exact placement of
@@ -753,6 +753,13 @@ nodes may be different on your machine since the layout is not deterministic):
 
    Our social network with the Kamada-Kawai layout algorithm
 
+If you prefer to use `matplotlib`_ as a default plotting engine, create an axes and use
+the ``target`` argument:
+
+>>> import matplotlib.pyplot as plt
+>>> fig, ax = plt.subplots()
+>>> plot(g, layout=layout, target=ax)
+
 Hmm, this is not too pretty so far. A trivial addition would be to use the names as the
 vertex labels and to color the vertices according to the gender. Vertex labels are taken
 from the ``label`` attribute by default and vertex colors are determined by the
@@ -761,7 +768,8 @@ from the ``label`` attribute by default and vertex colors are determined by the
 >>> g.vs["label"] = g.vs["name"]
 >>> color_dict = {"m": "blue", "f": "pink"}
 >>> g.vs["color"] = [color_dict[gender] for gender in g.vs["gender"]]
->>> plot(g, layout = layout, bbox = (300, 300), margin = 20)
+>>> plot(g, layout=layout, bbox=(300, 300), margin=20)
+>>> plot(g, layout=layout, bbox=(300, 300), margin=20, target=ax) # matplotlib version
 
 Note that we are simply re-using the previous layout object here, but we also specified
 that we need a smaller plot (300 x 300 pixels) and a larger margin around the graph
@@ -777,7 +785,7 @@ Instead of specifying the visual properties as vertex and edge attributes, you c
 also give them as keyword arguments to :func:`plot`:
 
 >>> color_dict = {"m": "blue", "f": "pink"}
->>> plot(g, layout = layout, vertex_color = [color_dict[gender] for gender in g.vs["gender"]])
+>>> plot(g, layout=layout, vertex_color=[color_dict[gender] for gender in g.vs["gender"]])
 
 This latter approach is preferred if you want to keep the properties of the visual
 representation of your graph separate from the graph itself. You can simply set up
@@ -1053,3 +1061,4 @@ out immediately.
 .. _API documentation: https://igraph.org/python/doc/api/index.html
 .. _Graph class: https://igraph.org/python/doc/api/igraph.Graph.html
 .. _Discourse group: https://igraph.discourse.group
+.. _matplotlib: https://matplotlib.org/
