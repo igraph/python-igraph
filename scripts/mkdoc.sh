@@ -2,7 +2,7 @@
 #
 # Creates the API documentation for igraph's Python interface using PyDoctor
 #
-# Usage: ./mkdoc.sh [--sync] [directory]
+# Usage: ./mkdoc.sh
 
 SCRIPTS_FOLDER=`dirname $0`
 
