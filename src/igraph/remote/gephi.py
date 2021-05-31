@@ -3,7 +3,9 @@
 """Classes that help igraph communicate with Gephi (http://www.gephi.org)."""
 
 import json
-import urllib.request, urllib.error, urllib.parse
+import urllib.error
+import urllib.parse
+import urllib.request
 
 __all__ = ("GephiConnection", "GephiGraphStreamer", "GephiGraphStreamingAPIFormat")
 __docformat__ = "restructuredtext en"

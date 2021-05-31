@@ -344,7 +344,7 @@ class Graph(GraphBase):
 
         Keyword arguments (except the source and target arguments) will be
         assigned to the edge as attributes.
-        
+
         The performance cost of adding a single edge or several edges
         to a graph is similar. Thus, when adding several edges, a single
         C{add_edges()} call is more efficient than multiple C{add_edge()} calls.

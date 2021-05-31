@@ -67,6 +67,7 @@ from igraph.configuration import Configuration
 
 __all__ = ("AttributeSpecification", "AttributeCollectorBase")
 
+
 # pylint: disable-msg=R0903
 # R0903: too few public methods
 class AttributeSpecification(object):

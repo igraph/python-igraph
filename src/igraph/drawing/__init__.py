@@ -16,7 +16,6 @@ replace it with C{cairocffi} as the two are API-compatible.
 """
 
 
-from io import StringIO
 from warnings import warn
 
 import os

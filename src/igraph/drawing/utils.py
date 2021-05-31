@@ -462,7 +462,9 @@ def find_matplotlib():
     if has_mpl:
         import matplotlib.pyplot as plt
     else:
-        plt = FakeModule("You need to install matplotlib.pyplot to use this functionality")
+        plt = FakeModule(
+            "You need to install matplotlib.pyplot to use this functionality"
+        )
 
     return mpl, plt
 

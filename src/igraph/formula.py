@@ -23,8 +23,10 @@ def generate_edges(formula):
     formula part and yields the following:
 
       - startpoint(s) of the edge by vertex names
-      - endpoint(s) of the edge by names or an empty list if the vertices are isolated
-      - a pair of bools to denote whether we had arrowheads at the start and end vertices
+      - endpoint(s) of the edge by names or an empty list if the vertices are
+        isolated
+      - a pair of bools to denote whether we had arrowheads at the start and end
+        vertices
     """
     if formula == "":
         yield [], [""], [False, False]
@@ -72,7 +74,8 @@ def generate_edges(formula):
                 pass
             else:
                 msg = (
-                    "invalid token found in edge specification: %s; token_type=%r; tok=%r"
+                    "invalid token found in edge specification: %s; "
+                    "token_type=%r; tok=%r"
                     % (formula, token_type, tok)
                 )
                 raise SyntaxError(msg)

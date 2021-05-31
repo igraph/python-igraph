@@ -383,7 +383,7 @@ class VertexClustering(Clustering):
         """
         try:
             return self.recalculate_modularity()
-        except:
+        except Exception:
             return None
         finally:
             self._modularity_dirty = False
@@ -1467,7 +1467,7 @@ class CohesiveBlocks(VertexCover):
         if "mark_groups" not in kwds:
             if Configuration.instance()["plotting.mark_groups"]:
                 prepare_groups = True
-        elif kwds["mark_groups"] == True:
+        elif kwds["mark_groups"] is True:
             prepare_groups = True
 
         if prepare_groups:
@@ -1501,7 +1501,7 @@ def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):
         # Lists, tuples
         try:
             first = mark_groups[0]
-        except:
+        except Exception:
             # Hmm. Maybe not a list or tuple?
             first = None
         if first is not None:

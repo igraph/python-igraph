@@ -243,7 +243,6 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
             t0 = 1.0
             t1 = 1.0 - radius / source_target_distance
 
-            xt0, yt0 = x3, y3
             xt1, yt1 = bezier_cubic(x0, y0, x1, y1, x2, y2, x3, y3, t1)
 
             distance_t0 = 0
@@ -254,7 +253,8 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
                     t_new = (t0 + t1) / 2.0
                 else:
                     if abs(distance_t1 - radius) < abs(distance_t0 - radius):
-                        # If t1 gets us closer to the circumference step in the same direction
+                        # If t1 gets us closer to the circumference step in the
+                        # same direction
                         t_new = t1 + (t1 - t0) / 2.0
                     else:
                         t_new = t1 - (t1 - t0)
@@ -327,8 +327,10 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
                 x_arrow_mid - x_src
             )
 
-            # Offset the second control point (aux2) such that it falls precisely on the normal to the arrow base vector
-            # Strictly speaking, offset_length is the offset length divided by the length of the arrow base vector.
+            # Offset the second control point (aux2) such that it falls precisely
+            # on the normal to the arrow base vector. Strictly speaking,
+            # offset_length is the offset length divided by the length of the
+            # arrow base vector.
             offset_length = (x_arrow_mid - aux2[0]) * x_arrow_base_vec + (
                 y_arrow_mid - aux2[1]
             ) * y_arrow_base_vec
@@ -341,7 +343,8 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
                 aux2[1] + y_arrow_base_vec * offset_length,
             )
 
-            # Draw tthe curve from the first vertex to the midpoint of the base of the arrow head
+            # Draw the curve from the first vertex to the midpoint of the base
+            # of the arrow head
             ctx.curve_to(aux1[0], aux1[1], aux2[0], aux2[1], x_arrow_mid, y_arrow_mid)
         else:
             # Determine where the edge intersects the circumference of the

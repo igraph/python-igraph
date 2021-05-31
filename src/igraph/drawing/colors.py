@@ -339,13 +339,13 @@ class RainbowPalette(Palette):
 class PrecalculatedPalette(Palette):
     """A palette that returns colors from a pre-calculated list of colors"""
 
-    def __init__(self, l):
+    def __init__(self, items):
         """Creates the palette backed by the given list. The list must contain
         RGBA quadruplets or color names, which will be resolved first by
         L{color_name_to_rgba()}. Anything that is understood by
         L{color_name_to_rgba()} is OK here."""
-        Palette.__init__(self, len(l))
-        for idx, color in enumerate(l):
+        Palette.__init__(self, len(items))
+        for idx, color in enumerate(items):
             if isinstance(color, str):
                 color = color_name_to_rgba(color)
             self._cache[idx] = color
@@ -555,7 +555,7 @@ def darken(color, ratio=0.5):
     return (red * ratio, green * ratio, blue * ratio, alpha)
 
 
-def hsla_to_rgba(h, s, l, alpha=1.0):
+def hsla_to_rgba(h, s, l, alpha=1.0):  # noqa: E741
     """Converts a color given by its HSLA coordinates (hue, saturation,
     lightness, alpha) to RGBA coordinates.
 
@@ -584,7 +584,7 @@ def hsla_to_rgba(h, s, l, alpha=1.0):
             return (c + m, m, x + m, alpha)
 
 
-def hsl_to_rgb(h, s, l):
+def hsl_to_rgb(h, s, l):  # noqa: E741
     """Converts a color given by its HSL coordinates (hue, saturation,
     lightness) to RGB coordinates.
 

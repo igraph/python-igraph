@@ -23,9 +23,8 @@ Mac OS X users are likely to invoke igraph from the command line.
 import re
 import sys
 
-# pylint: disable-msg=W0401
-# W0401: wildcard import. That's exactly what we need for the shell.
-from igraph import __version__, set_progress_handler, set_status_handler
+from igraph import __version__
+from igraph._igraph import set_progress_handler, set_status_handler
 from igraph.configuration import Configuration
 
 
@@ -193,7 +192,7 @@ class TerminalController:
         the corresponding terminal control string (if it's defined) or
         '' (if it's not).
         """
-        return re.sub("r\$\$|\${\w+}", self._render_sub, template)
+        return re.sub("r\$\$|\${\w+}", self._render_sub, template)  # noqa: W605
 
     def _render_sub(self, match):
         """Helper function for L{render}"""

@@ -351,9 +351,9 @@ class Matrix(object):
             col_names = [str(name) for name in islice(col_names, self._ncol)]
             if len(col_names) < self._ncol:
                 col_names.extend([""] * (self._ncol - len(col_names)))
-        if values == False:
+        if values is False:
             values = None
-        if values == True:
+        if values is True:
             values = self
         if isinstance(values, list):
             values = Matrix(list)
@@ -428,7 +428,7 @@ class Matrix(object):
         # Draw matrix
         x, y = ox, oy
         if style is None:
-            fill = lambda: None
+            fill = lambda: None  # noqa: E731
         else:
             fill = context.fill_preserve
         for row in self:
