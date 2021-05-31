@@ -35,6 +35,8 @@
 
 * `Graph.to_directed(mutual=...)` is now deprecated, use `mode=...` instead.
 
+* `igraph.graph.drawing.UbiGraphDrawer` is deprecated as the upstream project
+  is not maintained since 2008.
 
 ## 0.9.1
 
