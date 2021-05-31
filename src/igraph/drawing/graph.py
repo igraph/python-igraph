@@ -1190,7 +1190,13 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
             if default is True:
                 default = 0.5
             default = float(default)
-            kwds["edge_curved"] = autocurve(graph, attribute=None, default=default)
+            ecurved = autocurve(graph, attribute=None, default=default)
+        elif "edge_curved" in kwds:
+            ecurved = kwds["edge_curved"]
+        elif "curved" in graph.edge_attributes():
+            ecurved = graph.es["curved"]
+        else:
+            ecurved = [0] * ne
 
         # Arrow style for directed and undirected graphs
         if graph.is_directed():
@@ -1204,7 +1210,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
         # Edge coordinates and curvature
         nloops = [0 for x in range(ne)]
-        has_curved = "curved" in graph.es.attributes()
         arrows = []
         for ie, edge in enumerate(graph.es):
             src, tgt = edge.source, edge.target
@@ -1284,14 +1289,14 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 )
 
             else:
-                curved = edge["curved"] if has_curved else False
+                curved = ecurved[ie]
                 if curved:
-                    aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
+                    aux1 = (2 * x1 + x2) / 3.0 - curved * 0.5 * (y2 - y1), (
                         2 * y1 + y2
-                    ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
-                    aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
+                    ) / 3.0 + curved * 0.5 * (x2 - x1)
+                    aux2 = (x1 + 2 * x2) / 3.0 - curved * 0.5 * (y2 - y1), (
                         y1 + 2 * y2
-                    ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+                    ) / 3.0 + curved * 0.5 * (x2 - x1)
                     start = shrink_vertex(ax, aux1, (x1, y1), vsizes[src])
                     end = shrink_vertex(ax, aux2, (x2, y2), vsizes[tgt])
 
