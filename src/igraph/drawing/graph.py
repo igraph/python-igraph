@@ -4,7 +4,7 @@ Drawing routines to draw graphs.
 This module contains routines to draw graphs on:
 
   - Cairo surfaces (L{DefaultGraphDrawer})
-  - UbiGraph displays (L{UbiGraphDrawer}, see U{http://ubietylab.net/ubigraph})
+  - Matplotlib axes (L{MatplotlibGraphDrawer})
 
 It also contains routines to send an igraph graph directly to
 (U{Cytoscape<http://www.cytoscape.org>}) using the
@@ -34,7 +34,7 @@ from igraph.drawing.utils import find_cairo, Point
 from igraph.drawing.vertex import DefaultVertexDrawer
 from igraph.layout import Layout
 
-__all__ = ("DefaultGraphDrawer", "UbiGraphDrawer", "CytoscapeGraphDrawer")
+__all__ = ("DefaultGraphDrawer", "MatplotlibGraphDrawer", "CytoscapeGraphDrawer", "UbiGraphDrawer")
 __license__ = "GPL"
 
 cairo = find_cairo()
@@ -542,6 +542,11 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
     The drawer also has two attributes, C{vertex_defaults} and
     C{edge_defaults}. These are dictionaries that can be used to
     set default values for the vertex/edge attributes in Ubigraph.
+
+    @deprecated: UbiGraph has not received updates since 2008 and is now not
+        available for download (at least not from the official sources).
+        The UbiGraph graph drawer will be removed from python-igraph in
+        0.10.0.
     """
 
     def __init__(self, url="http://localhost:20738/RPC2"):
@@ -550,6 +555,11 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         super(UbiGraphDrawer, self).__init__(url, "ubigraph")
         self.vertex_defaults = dict(color="#ff0000", shape="cube", size=1.0)
         self.edge_defaults = dict(color="#ffffff", width=1.0)
+
+        warn(
+            "UbiGraphDrawer is deprecated from python-igraph 0.9.4",
+            DeprecationWarning
+        )
 
     def draw(self, graph, *args, **kwds):
         """Draws the given graph on an UbiGraph display.
