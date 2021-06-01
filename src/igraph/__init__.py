@@ -1937,7 +1937,7 @@ class Graph(GraphBase):
 
         Vertex names will be converted to "_nx_name" attribute and the vertices
         will get new ids from 0 up (as standard in igraph). In case of
-        multigraphs, each edge will have an "_nx_multiedgekey" attribute, to
+        multigraphs, each edge will have an "_nx_multiedge_key" attribute, to
         distinguish edges that connect the same two vertices.
 
         @param g: networkx Graph or DiGraph
