@@ -1955,9 +1955,14 @@ class Graph(GraphBase):
 
         # Dictionary connecting networkx hashables with igraph indices
         if len(g) and '_igraph_index' in g.nodes[0]:
+            # Collect _igraph_index and fill gaps
+            idx = [x['_igraph_index'] for v, x in g.nodes.data()]
+            idx.sort()
+            idx_dict = {x: i for i, x in enumerate(idx)}
+
             vd = {}
             for v, datum in g.nodes.data():
-                vd[v] = datum['_igraph_index']
+                vd[v] = idx_dict[datum['_igraph_index']]
         else:
             vd = {v: i for i, v in enumerate(vnames)}
 
