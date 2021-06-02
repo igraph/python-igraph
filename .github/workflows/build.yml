@@ -2,7 +2,7 @@ name: Build and test, upload to PyPI on release
 
 on: [push, pull_request]
 env:
-  CIBW_TEST_COMMAND: "cd {project} && python -m unittest"
+  CIBW_TEST_COMMAND: "cd {project} && python -m unittest -vvv"
   CIBW_SKIP: "cp27-* pp27-* cp35-*"
 
 jobs:
@@ -128,7 +128,7 @@ jobs:
           IGRAPH_STATIC_EXTENSION: True
           IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset
           IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
-          CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest"
+          CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest -vvv"
 
       - uses: actions/upload-artifact@v2
         with:
@@ -170,8 +170,8 @@ jobs:
 
       - name: Test
         run: |
-          pip install numpy scipy pandas
-          python -m unittest
+          pip install numpy scipy pandas networkx
+          python -m unittest -vvv
 
       - uses: actions/upload-artifact@v2
         with:
