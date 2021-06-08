@@ -1,5 +1,22 @@
 # igraph Python interface changelog
 
+## 0.9.5
+
+### Fixed
+
+* `set_random_number_generator(None)` now correctly switches back to igraph's
+  own random number generator instead of the default one that hooks into
+  the `random` module of Python.
+
+* Improved performance in cases when igraph has to call back to Python's
+  `random` module to generate random numbers. One example is
+  `Graph.Degree_Sequence(method="vl")`, whose performance suffered a more than
+  30x slowdown on 32-bit platforms before, compared to the native C
+  implementation. Now the gap is smaller. Note that if you need performance and
+  do not care about seeding the random number generator from Python, you can
+  now use `set_random_number_generator(None)` to switch back to igraph's own
+  RNG that does not need a roundtrip to Python.
+
 ## 0.9.4
 
 ### Added

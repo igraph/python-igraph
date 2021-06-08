@@ -28,13 +28,28 @@
 /**
  * \ingroup python_interface_rng
  * \brief Internal data structure for storing references to the
- *        functions used from Python's random number generator.
+ *        functions and arguments used from Python's random number generator.
  */
 typedef struct {
+  PyObject* getrandbits_func;
   PyObject* randint_func;
   PyObject* random_func;
   PyObject* gauss_func;
+
+  PyObject* rng_bits_as_pyobject;
+  PyObject* zero_as_pyobject;
+  PyObject* one_as_pyobject;
+  PyObject* rng_max_as_pyobject;
 } igraph_i_rng_Python_state_t;
+
+/* igraph_rng_get_int31() is potentially faster if the max value of the RNG
+ * is 0x7FFFFFFF; however, in case of Python, it is actually _slower_ because
+ * Python long integers are not terribly efficient. We are better off with using
+ * any other value here */
+#define RNG_MAX 0xFFFFFFFF
+
+/* This must be consistent with the value of RNG_MAX above */
+#define RNG_BITS 32
 
 static igraph_i_rng_Python_state_t igraph_rng_Python_state = {0, 0, 0};
 static igraph_rng_t igraph_rng_Python = {0, 0, 0};
@@ -66,25 +81,67 @@ PyObject* igraph_rng_Python_set_generator(PyObject* self, PyObject* object) {
     Py_RETURN_NONE;
   }
 
-#define GET_FUNC(name) {\
+#define GET_FUNC(name) { \
   func = PyObject_GetAttrString(object, name); \
-  if (func == 0) \
-    return NULL; \
-  if (!PyCallable_Check(func)) {\
-    PyErr_SetString(PyExc_TypeError, name "attribute must be callable"); \
-    return NULL; \
+  if (func == 0) {\
+    return 0; \
+  } else if (!PyCallable_Check(func)) { \
+    PyErr_SetString(PyExc_TypeError, "'" name "' attribute must be callable"); \
+    return 0; \
   } \
 }
 
+#define GET_OPTIONAL_FUNC(name) { \
+  if (PyObject_HasAttrString(object, name)) { \
+    func = PyObject_GetAttrString(object, name); \
+    if (func == 0) { \
+      return 0; \
+    } else if (!PyCallable_Check(func)) { \
+      PyErr_SetString(PyExc_TypeError, "'" name "' attribute must be callable"); \
+      return 0; \
+    } \
+  } else { \
+    func = 0; \
+  } \
+}
+
+  GET_OPTIONAL_FUNC("getrandbits"); new_state.getrandbits_func = func;
   GET_FUNC("randint"); new_state.randint_func = func;
   GET_FUNC("random"); new_state.random_func = func;
   GET_FUNC("gauss"); new_state.gauss_func = func;
 
+  /* construct the arguments of getrandbits(RNG_BITS) and randint(0, RNG_MAX)
+   * in advance */
+  new_state.rng_bits_as_pyobject = PyLong_FromLong(RNG_BITS);
+  if (new_state.rng_bits_as_pyobject == 0) {
+    return 0;
+  }
+  new_state.zero_as_pyobject = PyLong_FromLong(0);
+  if (new_state.zero_as_pyobject == 0) {
+    return 0;
+  }
+  new_state.one_as_pyobject = PyLong_FromLong(1);
+  if (new_state.one_as_pyobject == 0) {
+    return 0;
+  }
+  new_state.rng_max_as_pyobject = PyLong_FromUnsignedLong(RNG_MAX);
+  if (new_state.rng_max_as_pyobject == 0) {
+    return 0;
+  }
+
+#undef GET_FUNC
+#undef GET_OPTIONAL_FUNC
+
   old_state = igraph_rng_Python_state;
   igraph_rng_Python_state = new_state;
+  Py_XDECREF(old_state.getrandbits_func);
   Py_XDECREF(old_state.randint_func);
   Py_XDECREF(old_state.random_func);
   Py_XDECREF(old_state.gauss_func);
+  Py_XDECREF(old_state.rng_bits_as_pyobject);
+  Py_XDECREF(old_state.zero_as_pyobject);
+  Py_XDECREF(old_state.one_as_pyobject);
+  Py_XDECREF(old_state.rng_max_as_pyobject);
 
   igraph_rng_set_default(&igraph_rng_Python);
 
@@ -106,18 +163,47 @@ int igraph_rng_Python_seed(void *state, unsigned long int seed) {
  * \brief Generates an unsigned long integer using the Python random number generator.
  */
 unsigned long int igraph_rng_Python_get(void *state) {
-  PyObject* result = PyObject_CallFunction(igraph_rng_Python_state.randint_func, "kk", 0, LONG_MAX);
+  PyObject* result;
+  PyObject* exc_type;
   unsigned long int retval;
 
-  if (result == 0) {
-    PyErr_WriteUnraisable(PyErr_Occurred());
-    PyErr_Clear();
-    /* Fallback to the C random generator */
-    return rand() * LONG_MAX;
+  if (igraph_rng_Python_state.getrandbits_func) {
+    /* This is the preferred code path if the random module given by the user
+     * supports getrandbits(); it is faster than randint() but still slower
+     * than simply calling random() */
+    result = PyObject_CallFunctionObjArgs(
+      igraph_rng_Python_state.getrandbits_func,
+      igraph_rng_Python_state.rng_bits_as_pyobject,
+      0
+    );
+  } else {
+    /* We want to avoid hitting this path at all costs because randint() is
+     * very costly in the Python layer */
+    result = PyObject_CallFunctionObjArgs(
+      igraph_rng_Python_state.randint_func,
+      igraph_rng_Python_state.zero_as_pyobject,
+      igraph_rng_Python_state.rng_max_as_pyobject,
+      0
+    );
   }
-  retval = PyLong_AsLong(result);
-  Py_DECREF(result);
-  return retval;
+
+  if (result == 0) {
+    exc_type = PyErr_Occurred();
+    if (exc_type == PyExc_KeyboardInterrupt) {
+      /* KeyboardInterrupt is okay, we don't report it, just store it and let
+       * the caller handler it at the earliest convenience */
+    } else {
+      /* All other exceptions are reported and cleared */
+      PyErr_WriteUnraisable(exc_type);
+      PyErr_Clear();
+    }
+    /* Fallback to the C random generator */
+    return rand() * RNG_MAX;
+  } else {
+    retval = PyLong_AsUnsignedLong(result);
+    Py_DECREF(result);
+    return retval;
+  }
 }
 
 /**
@@ -125,19 +211,27 @@ unsigned long int igraph_rng_Python_get(void *state) {
  * \brief Generates a real number between 0 and 1 using the Python random number generator.
  */
 igraph_real_t igraph_rng_Python_get_real(void *state) {
-  PyObject* result = PyObject_CallObject(igraph_rng_Python_state.random_func, 0);
+  PyObject* exc_type;
   double retval;
+  PyObject* result = PyObject_CallObject(igraph_rng_Python_state.random_func, 0);
 
   if (result == 0) {
-    PyErr_WriteUnraisable(PyErr_Occurred());
-    PyErr_Clear();
+    exc_type = PyErr_Occurred();
+    if (exc_type == PyExc_KeyboardInterrupt) {
+      /* KeyboardInterrupt is okay, we don't report it, just store it and let
+       * the caller handler it at the earliest convenience */
+    } else {
+      /* All other exceptions are reported and cleared */
+      PyErr_WriteUnraisable(exc_type);
+      PyErr_Clear();
+    }
     /* Fallback to the C random generator */
     return rand();
+  } else {
+    retval = PyFloat_AsDouble(result);
+    Py_DECREF(result);
+    return retval;
   }
-
-  retval = PyFloat_AsDouble(result);
-  Py_DECREF(result);
-  return retval;
 }
 
 /**
@@ -146,19 +240,32 @@ igraph_real_t igraph_rng_Python_get_real(void *state) {
  *        around zero with unit variance.
  */
 igraph_real_t igraph_rng_Python_get_norm(void *state) {
-  PyObject* result = PyObject_CallFunction(igraph_rng_Python_state.gauss_func, "dd", 0.0, 1.0);
+  PyObject* exc_type;
   double retval;
+  PyObject* result = PyObject_CallFunctionObjArgs(
+    igraph_rng_Python_state.gauss_func,
+    igraph_rng_Python_state.zero_as_pyobject,
+    igraph_rng_Python_state.one_as_pyobject,
+    0
+  );
 
   if (result == 0) {
-    PyErr_WriteUnraisable(PyErr_Occurred());
-    PyErr_Clear();
+    exc_type = PyErr_Occurred();
+    if (exc_type == PyExc_KeyboardInterrupt) {
+      /* KeyboardInterrupt is okay, we don't report it, just store it and let
+       * the caller handler it at the earliest convenience */
+    } else {
+      /* All other exceptions are reported and cleared */
+      PyErr_WriteUnraisable(exc_type);
+      PyErr_Clear();
+    }
     /* Fallback to the C random generator */
     return 0;
+  } else {
+    retval = PyFloat_AsDouble(result);
+    Py_DECREF(result);
+    return retval;
   }
-
-  retval = PyFloat_AsDouble(result);
-  Py_DECREF(result);
-  return retval;
 }
 
 /**
@@ -169,7 +276,7 @@ igraph_real_t igraph_rng_Python_get_norm(void *state) {
 igraph_rng_type_t igraph_rngtype_Python = {
   /* name= */      "Python random generator",
   /* min=  */      0,
-  /* max=  */      LONG_MAX,
+  /* max=  */      RNG_MAX,
   /* init= */      igraph_rng_Python_init,
   /* destroy= */   igraph_rng_Python_destroy,
   /* seed= */      igraph_rng_Python_seed,
