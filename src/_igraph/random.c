@@ -38,6 +38,7 @@ typedef struct {
 
 static igraph_i_rng_Python_state_t igraph_rng_Python_state = {0, 0, 0};
 static igraph_rng_t igraph_rng_Python = {0, 0, 0};
+static igraph_rng_t igraph_rng_default_saved = {0, 0, 0};
 
 int igraph_rng_Python_init(void **state) {
   IGRAPH_ERROR("Python RNG error, unsupported function called",
@@ -61,7 +62,7 @@ PyObject* igraph_rng_Python_set_generator(PyObject* self, PyObject* object) {
   if (object == Py_None) {
     /* Reverting to the default igraph random number generator instead
      * of the Python-based one */
-    igraph_rng_set_default(igraph_rng_default());
+    igraph_rng_set_default(&igraph_rng_default_saved);
     Py_RETURN_NONE;
   }
 
@@ -182,6 +183,10 @@ igraph_rng_type_t igraph_rngtype_Python = {
 void igraphmodule_init_rng(PyObject* igraph_module) {
   PyObject* random_module;
 
+  if (igraph_rng_default_saved.type == 0) {
+    igraph_rng_default_saved = *igraph_rng_default();
+  }
+
   if (igraph_rng_Python.state != 0)
     return;
 
@@ -200,5 +205,6 @@ void igraphmodule_init_rng(PyObject* igraph_module) {
     PyErr_Clear();
     return;
   }
+
   Py_DECREF(random_module);
 }
