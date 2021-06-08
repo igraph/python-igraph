@@ -125,7 +125,7 @@ unsigned long int igraph_rng_Python_get(void *state) {
  * \brief Generates a real number between 0 and 1 using the Python random number generator.
  */
 igraph_real_t igraph_rng_Python_get_real(void *state) {
-  PyObject* result = PyObject_CallFunction(igraph_rng_Python_state.random_func, NULL);
+  PyObject* result = PyObject_CallObject(igraph_rng_Python_state.random_func, 0);
   double retval;
 
   if (result == 0) {
