@@ -1,5 +1,13 @@
 # igraph Python interface changelog
 
+## 0.9.6
+
+### Fixed
+
+* Version 0.9.5 accidentally broke the Matplotlib backend when it was invoked
+  without the `mark_groups=...` keyword argument; this version fixes the issue.
+  Thanks to @dschult for reporting it!
+
 ## 0.9.5
 
 ### Fixed
