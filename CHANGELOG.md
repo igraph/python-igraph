@@ -4,6 +4,8 @@
 
 ### Fixed
 
+* `plot(g, ..., mark_groups=True)` now works with the Matplotlib plotting backend.
+
 * `set_random_number_generator(None)` now correctly switches back to igraph's
   own random number generator instead of the default one that hooks into
   the `random` module of Python.
