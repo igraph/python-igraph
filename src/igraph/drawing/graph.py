@@ -1110,7 +1110,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                         membership = [x[0] for x in membership]
 
         # Mark groups
-        if "mark_groups" in kwds:
+        if "mark_groups" in kwds and isinstance(kwds["mark_groups"], dict):
             for idx, color in kwds["mark_groups"].items():
                 points = [vcoord[i] for i in idx]
                 vertices = np.asarray(convex_hull(points, coords=True))
