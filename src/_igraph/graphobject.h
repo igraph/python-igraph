@@ -145,7 +145,6 @@ PyObject* igraphmodule_Graph_layout_kamada_kawai_3d(igraphmodule_GraphObject *se
 PyObject* igraphmodule_Graph_layout_drl(igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_layout_fruchterman_reingold(igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_layout_fruchterman_reingold_3d(igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds);
-PyObject* igraphmodule_Graph_layout_grid_fruchterman_reingold(igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_layout_lgl(igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds);
 PyObject* igraphmodule_Graph_layout_reingold_tilford(igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds);
 

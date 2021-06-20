@@ -682,9 +682,6 @@ Method name                          Short name      Algorithm description
 ``layout_fruchterman_reingold_3d``   ``fr3d``,       Fruchterman-Reingold force-directed algorithm
                                      ``fr_3d``       in three dimensions
 ------------------------------------ --------------- ---------------------------------------------
-``layout_grid_fruchterman_reingold`` ``grid_fr``     Fruchterman-Reingold force-directed algorithm
-                                                     with grid heuristics for large graphs
------------------------------------- --------------- ---------------------------------------------
 ``layout_kamada_kawai``              ``kk``          Kamada-Kawai force-directed algorithm
 ------------------------------------ --------------- ---------------------------------------------
 ``layout_kamada_kawai_3d``           ``kk3d``,       Kamada-Kawai force-directed algorithm
