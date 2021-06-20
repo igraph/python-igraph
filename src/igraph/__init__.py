@@ -3401,19 +3401,22 @@ class Graph(GraphBase):
         return result
 
     @classmethod
-    def DataFrame(cls, edges, directed=True, vertices=None, use_vids=False):
+    def DataFrame(cls, edges, directed=True, vertices=None, use_vids=True):
         """Generates a graph from one or two dataframes.
 
         @param edges: pandas DataFrame containing edges and metadata. The first
           two columns of this DataFrame contain the source and target vertices
-          for each edge. These indicate the vertex *names* rather than ids
-          unless `use_vids` is True and these are nonnegative integers.
+          for each edge. These indicate the vertex IDs as nonnegative integers
+          rather than vertex *names* unless `use_vids` is False. Further columns
+          may contain edge attributes.
         @param directed: bool setting whether the graph is directed
         @param vertices: None (default) or pandas DataFrame containing vertex
-          metadata. The first column must contain the unique ids of the
-          vertices and will be set as attribute 'name'. Although vertex names
-          are usually strings, they can be any hashable object. All other
-          columns will be added as vertex attributes by column name.
+          metadata. The DataFrame's index must contain the vertex IDs as a
+          sequence of intergers from `0` to `len(vertices) - 1`. If `use_vids`
+          is False, the first column must contain the unique vertex *names*.
+          Although vertex names are usually strings, they can be any hashable
+          object. All other columns will be added as vertex attributes by column
+          name.
         @use_vids: whether to interpret the first two columns of the `edges`
           argument as vertex ids (0-based integers) instead of vertex names.
           If this argument is set to True and the first two columns of `edges`
@@ -3426,96 +3429,81 @@ class Graph(GraphBase):
         to unexpected behaviour: fill your NaNs with values before calling this
         function to mitigate.
         """
-        import numpy as np
-        import pandas as pd
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError("You should install pandas in order to use this function")
+        try:
+            import numpy as np
+        except:
+            raise ImportError("You should install numpy in order to use this function")
 
         if edges.shape[1] < 2:
-            raise ValueError("the data frame should contain at least two columns")
+            raise ValueError("The 'edges' DataFrame must contain at least two columns")
+        if vertices is not None and vertices.shape[1] < 1:
+            raise ValueError("The 'vertices' DataFrame must contain at least one column")
 
         if use_vids:
-            if str(edges.dtypes[0]).startswith("int") and str(
-                edges.dtypes[1]
-            ).startswith("int"):
-                names_edges = None
-            else:
-                raise TypeError("vertex ids must be 0-based integers")
-
+            if not (str(edges.dtypes[0]).startswith("int") and str(edges.dtypes[1]).startswith("int")):
+                raise TypeError(f"Source and target IDs must be 0-based integers, found types {edges.dtypes.tolist()[:2]}")
+            elif (edges.iloc[:, :2] < 0).any(axis=None):
+                raise ValueError("Source and target IDs must not be negative")
+            if vertices is not None:
+                vertices = vertices.sort_index()
+                if not vertices.index.equals(pd.RangeIndex.from_range(range(vertices.shape[0]))):
+                    if not str(vertices.index.dtype).startswith("int"):
+                        raise TypeError(f"Vertex IDs must be 0-based integers, found type {vertices.index.dtype}")
+                    elif (vertices.index < 0).any(axis=None):
+                        raise ValueError("Vertex IDs must not be negative")
+                    else:
+                        raise ValueError(f"Vertex IDs must be an integer sequence from 0 to {vertices.shape[0] - 1}")
         else:
-            # Handle if some elements are 'NA'
-            if edges.iloc[:, :2].isna().values.any():
-                warn("In 'edges' NA elements were replaced with string \"NA\"")
+            # Handle if some source and target names in 'edges' are 'NA'
+            if edges.iloc[:, :2].isna().any(axis=None):
+                warn("In the first two columns of 'edges' NA elements were replaced with string \"NA\"")
                 edges = edges.copy()
                 edges.iloc[:, :2].fillna("NA", inplace=True)
 
-            names_edges = np.unique(edges.values[:, :2])
+            # Bring DataFrame(s) into same format as with 'use_vids=True'
+            if vertices is None:
+                vertices = pd.DataFrame({"name": np.unique(edges.values[:, :2])})
 
-        if (vertices is not None) and vertices.iloc[:, 0].isna().values.any():
-            warn(
-                "In the first column of 'vertices' NA elements were replaced "
-                + 'with string "NA"'
-            )
-            vertices = vertices.copy()
-            vertices.iloc[:, 0].fillna("NA", inplace=True)
+            if vertices.iloc[:, 0].isna().any():
+                warn("In the first column of 'vertices' NA elements were replaced with string \"NA\"")
+                vertices = vertices.copy()
+                vertices.iloc[:, 0].fillna("NA", inplace=True)
 
-        if vertices is None:
-            names = names_edges
-        else:
-            if vertices.shape[1] < 1:
-                raise ValueError("vertices has no columns")
-
-            names_vertices = vertices.iloc[:, 0]
-
-            if names_vertices.duplicated().any():
+            if vertices.iloc[:, 0].duplicated().any():
                 raise ValueError("Vertex names must be unique")
 
-            names_vertices = names_vertices.values
+            if vertices.shape[1] > 1 and "name" in vertices.columns[1:]:
+                raise ValueError("Vertex attribute conflict: DataFrame already contains column 'name'")
 
-            if (names_edges is not None) and len(
-                np.setdiff1d(names_edges, names_vertices)
-            ):
-                raise ValueError(
-                    "Some vertices in the edge DataFrame are missing from "
-                    + "vertices DataFrame"
-                )
+            vertices = vertices.rename({vertices.columns[0]: "name"}, axis=1).reset_index(drop=True)
 
-            names = names_vertices
+            # Map source and target names in 'edges' to IDs
+            vid_map = pd.Series(vertices.index, index=vertices.iloc[:, 0])
+            edges = edges.copy()
+            edges.iloc[:, 0] = edges.iloc[:, 0].map(vid_map)
+            edges.iloc[:, 1] = edges.iloc[:, 1].map(vid_map)
 
-        # create graph
-        if names is not None:
-            nv = len(names)
+        # Create graph
+        if vertices is None:
+            nv = edges.iloc[:, :2].max().max() + 1
+            g = ig.Graph(n=nv, directed=directed)
         else:
-            nv = edges.iloc[:, :2].values.max() + 1
-        g = Graph(n=nv, directed=directed)
+            if not edges.iloc[:, :2].isin(vertices.index).all(axis=None):
+                raise ValueError("Some vertices in the edge DataFrame are missing from vertices DataFrame")
+            nv = vertices.shape[0]
+            g = ig.Graph(n=nv, directed=directed)
+            # Add vertex attributes
+            for col in vertices.columns:
+                g.vs[col] = vertices[col].tolist()
 
-        # vertex names
-        if names is not None:
-            for v, name in zip(g.vs, names):
-                v["name"] = name
-
-        # vertex attributes
-        if (vertices is not None) and (vertices.shape[1] > 1):
-            cols = vertices.columns
-            for v, (_, attr) in zip(g.vs, vertices.iterrows()):
-                for an in cols[1:]:
-                    v[an] = attr[an]
-
-        # create edge list
-        if names is not None:
-            names_idx = pd.Series(index=names, data=np.arange(len(names)))
-            e0 = names_idx[edges.values[:, 0]]
-            e1 = names_idx[edges.values[:, 1]]
-        else:
-            e0 = edges.values[:, 0]
-            e1 = edges.values[:, 1]
-
-        # add the edges
-        g.add_edges(list(zip(e0, e1)))
-
-        # edge attributes
-        if edges.shape[1] > 2:
-            for e, (_, attr) in zip(g.es, edges.iloc[:, 2:].iterrows()):
-                for a_name, a_value in list(attr.items()):
-                    e[a_name] = a_value
+        # add edges including optional attributes
+        e_list = list(edges.iloc[:, :2].itertuples(index=False, name=None))
+        e_attr = edges.iloc[:, 2:].to_dict(orient='list') if edges.shape[1] > 2 else None
+        g.add_edges(e_list, e_attr)
 
         return g
 
