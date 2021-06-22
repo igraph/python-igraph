@@ -1,6 +1,14 @@
 # igraph Python interface changelog
 
-## 0.9.6
+## [Unreleased]
+
+### Changed
+
+* Improved performance of `Graph.DataFrame()`, thanks to
+  [@fwitter](https://github.com/user/fwitter). See PR
+  [#418](https://github.com/igraph/python-igraph/pull/418) for more details.
+
+## [0.9.6]
 
 ### Fixed
 
@@ -8,7 +16,7 @@
   without the `mark_groups=...` keyword argument; this version fixes the issue.
   Thanks to @dschult for reporting it!
 
-## 0.9.5
+## [0.9.5]
 
 ### Fixed
 
@@ -27,7 +35,7 @@
   now use `set_random_number_generator(None)` to switch back to igraph's own
   RNG that does not need a roundtrip to Python.
 
-## 0.9.4
+## [0.9.4]
 
 ### Added
 
@@ -68,7 +76,7 @@
 * `igraph.graph.drawing.UbiGraphDrawer` is deprecated as the upstream project
   is not maintained since 2008.
 
-## 0.9.1
+## [0.9.1]
 
 ### Changed
 
@@ -101,7 +109,7 @@
   official Python wheels.
   
 
-## 0.9.0
+## [0.9.0]
 
 ### Added
 
@@ -158,9 +166,17 @@
   Python interface.
 
 
-## 0.8.3
+## [0.8.3]
 
 This is the last released version of `python-igraph` without a changelog file.
 Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
+
+[Unreleased]: https://github.com/igraph/igraph/compare/0.9.6..HEAD
+[0.9.6]: https://github.com/igraph/igraph/compare/0.9.5...0.9.6
+[0.9.5]: https://github.com/igraph/igraph/compare/0.9.4...0.9.5
+[0.9.4]: https://github.com/igraph/igraph/compare/0.9.1...0.9.4
+[0.9.1]: https://github.com/igraph/igraph/compare/0.9.0...0.9.1
+[0.9.0]: https://github.com/igraph/igraph/compare/0.8.5...0.9.0
+[0.8.3]: https://github.com/igraph/igraph/releases/tag/0.8.3
