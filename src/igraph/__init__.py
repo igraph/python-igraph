@@ -3490,12 +3490,12 @@ class Graph(GraphBase):
         # Create graph
         if vertices is None:
             nv = edges.iloc[:, :2].max().max() + 1
-            g = ig.Graph(n=nv, directed=directed)
+            g = Graph(n=nv, directed=directed)
         else:
             if not edges.iloc[:, :2].isin(vertices.index).all(axis=None):
                 raise ValueError("Some vertices in the edge DataFrame are missing from vertices DataFrame")
             nv = vertices.shape[0]
-            g = ig.Graph(n=nv, directed=directed)
+            g = Graph(n=nv, directed=directed)
             # Add vertex attributes
             for col in vertices.columns:
                 g.vs[col] = vertices[col].tolist()
