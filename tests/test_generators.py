@@ -364,13 +364,13 @@ class GeneratorTests(unittest.TestCase):
         edges = pd.DataFrame(
             [["C", "A", 0.4], ["A", "B", 0.1]], columns=[0, 1, "weight"]
         )
-        g = Graph.DataFrame(edges, directed=False, use_vids=False)
+        g = Graph.DataFrame(edges, directed=False)
         self.assertTrue(g.es["weight"] == [0.4, 0.1])
 
         vertices = pd.DataFrame(
             [["A", "blue"], ["B", "yellow"], ["C", "blue"]], columns=[0, "color"]
         )
-        g = Graph.DataFrame(edges, directed=True, vertices=vertices, use_vids=False)
+        g = Graph.DataFrame(edges, directed=True, vertices=vertices)
         self.assertTrue(g.vs["name"] == ["A", "B", "C"])
         self.assertTrue(g.vs["color"] == ["blue", "yellow", "blue"])
         self.assertTrue(g.es["weight"] == [0.4, 0.1])
@@ -383,19 +383,18 @@ class GeneratorTests(unittest.TestCase):
         g = Graph.DataFrame(
             edges,
             directed=True,
-            vertices=vertices,
-            use_vids=False
+            vertices=vertices
         )
         self.assertTrue(g.vs["name"] == [1, 2, 3, 4, 5, 6])
         self.assertTrue(g.vs["label"] == ["1", "2", "3", "4", "5", "6"])
 
         # Vertex ids
         edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
-        g = Graph.DataFrame(edges, use_vids=False)
+        g = Graph.DataFrame(edges)
         self.assertTrue(g.vcount() == 6)
 
         edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
-        g = Graph.DataFrame(edges)
+        g = Graph.DataFrame(edges, use_vids=True)
         self.assertTrue(g.vcount() == 7)
 
         # Graph clone
@@ -405,7 +404,7 @@ class GeneratorTests(unittest.TestCase):
         g.es["w"] = [1.0] * g.ecount()
         df_edges = g.get_edge_dataframe()
         df_vertices = g.get_vertex_dataframe()
-        g_clone = Graph.DataFrame(df_edges, g.is_directed(), df_vertices)
+        g_clone = Graph.DataFrame(df_edges, g.is_directed(), df_vertices, True)
         self.assertTrue(df_edges.equals(g_clone.get_edge_dataframe()))
         self.assertTrue(df_vertices.equals(g_clone.get_vertex_dataframe()))
 
@@ -418,38 +417,38 @@ class GeneratorTests(unittest.TestCase):
             Graph.DataFrame(edges, vertices=pd.DataFrame())
         with self.assertRaisesRegex(TypeError, "integers"):
             edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]}).astype(str)
-            Graph.DataFrame(edges)
+            Graph.DataFrame(edges, use_vids=True)
         with self.assertRaisesRegex(ValueError, "negative"):
             edges = -pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
-            Graph.DataFrame(edges)
+            Graph.DataFrame(edges, use_vids=True)
         with self.assertRaisesRegex(TypeError, "integers"):
             edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
             vertices = pd.DataFrame({0: [1, 2, 3]}, index=["1", "2", "3"])
-            Graph.DataFrame(edges, vertices=vertices)
+            Graph.DataFrame(edges, vertices=vertices, use_vids=True)
         with self.assertRaisesRegex(ValueError, "negative"):
             edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
             vertices = pd.DataFrame({0: [1, 2, 3]}, index=[-1, 2, 3])
-            Graph.DataFrame(edges, vertices=vertices)
+            Graph.DataFrame(edges, vertices=vertices, use_vids=True)
         with self.assertRaisesRegex(ValueError, "sequence"):
             edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
             vertices = pd.DataFrame({0: [1, 2, 3]}, index=[1, 2, 4])
-            Graph.DataFrame(edges, vertices=vertices)
+            Graph.DataFrame(edges, vertices=vertices, use_vids=True)
         with self.assertRaisesRegex(TypeError, "integers"):
             edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
             vertices = pd.DataFrame({0: [1, 2, 3]}, index=pd.MultiIndex.from_tuples([(1, 1), (2, 2), (3, 3)]))
-            Graph.DataFrame(edges, vertices=vertices)
+            Graph.DataFrame(edges, vertices=vertices, use_vids=True)
         with self.assertRaisesRegex(ValueError, "unique"):
             edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
             vertices = pd.DataFrame({0: [1, 2, 2]})
-            Graph.DataFrame(edges, vertices=vertices, use_vids=False)
+            Graph.DataFrame(edges, vertices=vertices)
         with self.assertRaisesRegex(ValueError, "already contains"):
             edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
             vertices = pd.DataFrame({0: [1, 2, 3], "name": [1, 2, 2]})
-            Graph.DataFrame(edges, vertices=vertices, use_vids=False)
+            Graph.DataFrame(edges, vertices=vertices)
         with self.assertRaisesRegex(ValueError, "missing from"):
             edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
             vertices = pd.DataFrame({0: [1, 2, 3]}, index=[0, 1, 2])
-            Graph.DataFrame(edges, vertices=vertices)
+            Graph.DataFrame(edges, vertices=vertices, use_vids=True)
 
 
 def suite():

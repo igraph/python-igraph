@@ -3401,22 +3401,21 @@ class Graph(GraphBase):
         return result
 
     @classmethod
-    def DataFrame(cls, edges, directed=True, vertices=None, use_vids=True):
+    def DataFrame(cls, edges, directed=True, vertices=None, use_vids=False):
         """Generates a graph from one or two dataframes.
 
         @param edges: pandas DataFrame containing edges and metadata. The first
           two columns of this DataFrame contain the source and target vertices
-          for each edge. These indicate the vertex IDs as nonnegative integers
-          rather than vertex *names* unless `use_vids` is False. Further columns
-          may contain edge attributes.
+          for each edge. These indicate the vertex *names* rather than IDs
+          unless `use_vids` is True and these are non-negative integers. Further
+          columns may contain edge attributes.
         @param directed: bool setting whether the graph is directed
         @param vertices: None (default) or pandas DataFrame containing vertex
-          metadata. The DataFrame's index must contain the vertex IDs as a
-          sequence of intergers from `0` to `len(vertices) - 1`. If `use_vids`
-          is False, the first column must contain the unique vertex *names*.
-          Although vertex names are usually strings, they can be any hashable
-          object. All other columns will be added as vertex attributes by column
-          name.
+          metadata. The first column of the DataFrame must contain the unique
+          vertex *names*. If `use_vids` is True, the DataFrame's index must
+          contain the vertex IDs as a sequence of intergers from `0` to
+          `len(vertices) - 1`. All other columns will be added as vertex
+          attributes by column name.
         @use_vids: whether to interpret the first two columns of the `edges`
           argument as vertex ids (0-based integers) instead of vertex names.
           If this argument is set to True and the first two columns of `edges`
