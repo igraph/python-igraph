@@ -59,7 +59,8 @@ def disjoint_union(graphs):
                 # New conflict
                 a_conflict.add(a_name)
                 igf = a_first_graph[a_name]
-                graph_union["{:}_{:}".format(a_name, igf)] = graph_union.pop(a_name)
+                graph_union["{:}_{:}".format(a_name, igf)] = graph_union[a_name]
+                del graph_union[a_name]
             graph_union["{:}_{:}".format(a_name, ig)] = a_value
 
     # Vertex attributes
@@ -182,7 +183,10 @@ def union(graphs, byname="auto"):
                 # New conflict
                 a_conflict.add(a_name)
                 igf = a_first_graph[a_name]
-                graph_union["{:}_{:}".format(a_name, igf)] = graph_union.pop(a_name)
+                # Delete the previous attribute and set attribute with
+                # a record about the graph of origin
+                graph_union["{:}_{:}".format(a_name, igf)] = graph_union[a_name]
+                del graph_union[a_name]
             graph_union["{:}_{:}".format(a_name, ig)] = a_value
 
     # Vertex attributes
@@ -371,7 +375,8 @@ def intersection(graphs, byname="auto", keep_all_vertices=True):
                 # New conflict
                 a_conflict.add(a_name)
                 igf = a_first_graph[a_name]
-                graph_intsec["{:}_{:}".format(a_name, igf)] = graph_intsec.pop(a_name)
+                graph_intsec["{:}_{:}".format(a_name, igf)] = graph_intsec[a_name]
+                del graph_intsec[a_name]
             graph_intsec["{:}_{:}".format(a_name, ig)] = a_value
 
     # Vertex attributes
