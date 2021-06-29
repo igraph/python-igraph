@@ -123,6 +123,27 @@ You can then further manipulate the axes and figure however you like via the `ax
 called them). This variant does not use `Cairo`_ directly and might be lacking some features that are available in the
 `Cairo`_ backend: please open an issue on Github to request specific features.
 
+Plotting via `matplotlib`_ makes it easy to combine igraph with other plots. For instance, if you want to have a figure
+with two panels showing different aspects of some data set, say a graph and a bar plot, you can easily do that:
+
+>>> import matplotlib.pyplot as plt
+>>> fig, axs = plt.subplots(1, 2, figsize=(8, 4))
+>>> ig.plot(g, target=axs[0])
+>>> axs[1].bar(x=[0, 1, 2], height=[1, 5, 3], color='tomato')
+
+Another common situation is modifying the graph plot after the fact, to achieve some kind of customization. For instance,
+you might want to change the size and color of the vertices:
+
+>>> import matplotlib.pyplot as plt
+>>> fig, ax = plt.subplots()
+>>> ig.plot(g, target=ax)
+>>> dots = ax.get_children()[0] # This is a PathCollection
+>>> dots.set_color('tomato')
+>>> dots.set_sizes([250] * g.vcount())
+
+That also helps as a workaround if you cannot figure out how to use the plotting options below: just use the defaults and
+then customize the appearance of your graph via standard `matplotlib`_ tools.
+
 Plotting graphs in Jupyter notebooks
 ++++++++++++++++++++++++++++++++++++
 |igraph| supports inline plots within a `Jupyter`_ notebook via both the `Cairo`_ and `matplotlib`_ backend. If you are
