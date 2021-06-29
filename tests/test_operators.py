@@ -128,6 +128,34 @@ class OperatorTests(unittest.TestCase):
             ]
         )
 
+    def testUnionWithConflict(self):
+        g1 = Graph.Tree(7, 2)
+        g1['name'] = 'Tree'
+        g2 = Graph.Lattice([7])
+        g2['name'] = 'Lattice'
+        g = union([g1, g2]) # Issue 422
+        self.assertTrue(
+            sorted(g.get_edgelist())
+            == [
+                (0, 1),
+                (0, 2),
+                (0, 6),
+                (1, 2),
+                (1, 3),
+                (1, 4),
+                (2, 3),
+                (2, 5),
+                (2, 6),
+                (3, 4),
+                (4, 5),
+                (5, 6),
+            ]
+        )
+        self.assertTrue(
+            sorted(g.attributes()),
+            ['name_1', 'name_2'],
+        )
+
     def testUnionMethod(self):
         g = Graph.Tree(7, 2).union(Graph.Lattice([7]))
         self.assertTrue(g.vcount() == 7 and g.ecount() == 12)
