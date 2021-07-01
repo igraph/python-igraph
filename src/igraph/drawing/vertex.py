@@ -12,6 +12,8 @@ from math import pi
 
 __all__ = ("AbstractVertexDrawer", "AbstractCairoVertexDrawer", "DefaultVertexDrawer")
 
+mpl, plt = find_matplotlib()
+
 
 class AbstractVertexDrawer(AbstractDrawer):
     """Abstract vertex drawer object from which all concrete vertex drawer
@@ -110,3 +112,89 @@ class DefaultVertexDrawer(AbstractCairoVertexDrawer):
         context.set_source_rgba(*visual_vertex.frame_color)
         context.set_line_width(visual_vertex.frame_width)
         context.stroke()
+
+
+class MatplotlibVertexDrawer(AbstractVertexDrawer):
+    def __init__(self, ax, palette, layout):
+        self.context = ax
+        AbstractVertexDrawer.__init__(self, palette, layout)
+        self.VisualVertexBuilder = self._construct_visual_vertex_builder()
+
+    def _construct_visual_vertex_builder(self):
+        class VisualVertexBuilder(AttributeCollectorBase):
+            """Collects some visual properties of a vertex for drawing"""
+
+            _kwds_prefix = "vertex_"
+            color = ("red", self.palette.get)
+            frame_color = ("black", self.palette.get)
+            frame_width = 1.0
+            label = None
+            label_angle = -pi / 2
+            label_dist = 0.0
+            label_color = ("black", self.palette.get)
+            font = "sans-serif"
+            label_size = 14.0
+            position = dict(func=self.layout.__getitem__)
+            shape = ("circle", ShapeDrawerDirectory.resolve_default)
+            size = 20.0
+            width = None
+            height = None
+
+        return VisualVertexBuilder
+
+    @staticmethod
+    def construct_patch(kind, xy, width, height=0, **kwargs):
+        if kind in ('circle', 'o'):
+            return mpl.patches.Circle(xy, width, **kwargs)
+        elif kind in ('ellipse', 'e'):
+            return mpl.patches.Ellipse(xy, width, height, **kwargs)
+        elif kind in ('square', 's'):
+            return mpl.patches.Rectangle(xy, width, height, **kwargs)
+        elif kind in ('v',):
+            vertices = [
+                [xy[0] - 0.5 * width, xy[1] + 0.333 * height],
+                [xy[0] + 0.5 * width, xy[1] + 0.333 * height],
+                [xy[0], xy[1] - 0.667 * height],
+            ]
+            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
+        elif kind in ('^',):
+            vertices = [
+                [xy[0] - 0.5 * width, xy[1] - 0.333 * height],
+                [xy[0] + 0.5 * width, xy[1] - 0.333 * height],
+                [xy[0], xy[1] + 0.667 * height],
+            ]
+            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
+        elif kind in ('diamond', 'd',):
+            vertices = [
+                [xy[0] - 0.5 * width, xy[1]],
+                [xy[0], xy[1] - 0.5 * height],
+                [xy[0] + 0.5 * width, xy[1]],
+                [xy[0], xy[1] + 0.5 * height],
+            ]
+            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
+
+    def draw(self, visual_vertex, vertex, coords):
+        ax = self.context
+
+        width = (
+            visual_vertex.width
+            if visual_vertex.width is not None
+            else visual_vertex.size
+        )
+        height = (
+            visual_vertex.height
+            if visual_vertex.height is not None
+            else visual_vertex.size
+        )
+
+        # FIXME
+        vertex_color = mpl.colors.to_rgba(*visual_vertex.color)
+        frame_color = mpl.colors.to_rgba(*visual_vertex.frame_color)
+
+        stroke = self.construct_patch(
+            coords, width, height,
+            facecolor=vertex_color,
+            edgecolor=frame_color,
+            linewidth=visual_vertex.frame_width,
+            )
+        ax.add_patch(stroke)
