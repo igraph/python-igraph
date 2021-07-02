@@ -150,14 +150,14 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
             return mpl.patches.Ellipse(xy, width, height, **kwargs)
         elif kind in ('square', 's'):
             return mpl.patches.Rectangle(xy, width, height, **kwargs)
-        elif kind in ('v',):
+        elif kind in ('triangle-down', 'v'):
             vertices = [
                 [xy[0] - 0.5 * width, xy[1] + 0.333 * height],
                 [xy[0] + 0.5 * width, xy[1] + 0.333 * height],
                 [xy[0], xy[1] - 0.667 * height],
             ]
             return mpl.patches.Polygon(vertices, closed=True, **kwargs)
-        elif kind in ('^',):
+        elif kind in ('triangle-up', '^'):
             vertices = [
                 [xy[0] - 0.5 * width, xy[1] - 0.333 * height],
                 [xy[0] + 0.5 * width, xy[1] - 0.333 * height],

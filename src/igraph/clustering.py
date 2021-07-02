@@ -427,9 +427,8 @@ class VertexClustering(Clustering):
         max_size = max(ss)
         return self.subgraph(ss.index(max_size))
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Plots the clustering to the given Cairo context in the given
-        bounding box.
+    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+        """Plots the clustering to the given Cairo context or mpl Axes.
 
         This is done by calling L{Graph.__plot__()} with the same arguments, but
         coloring the graph vertices according to the current clustering (unless
@@ -476,9 +475,16 @@ class VertexClustering(Clustering):
 
         @see: L{Graph.__plot__()} for more supported keyword arguments.
         """
+        from igraph.drawing.utils import find_matplotlib
+
         if "edge_color" not in kwds and "color" not in self.graph.edge_attributes():
             # Set up a default edge coloring based on internal vs external edges
-            colors = ["grey20", "grey80"]
+            mpl, plt = find_matplotlib()
+            if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
+                colors = ["dimgrey", "silver"]
+            else:
+                colors = ["grey20", "grey80"]
+
             kwds["edge_color"] = [
                 colors[is_crossing] for is_crossing in self.crossing()
             ]
@@ -761,8 +767,8 @@ class Dendrogram(object):
             context.show_text(str(self._names[idx]))
             context.restore()
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Draws the dendrogram on the given Cairo context
+    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+        """Draws the dendrogram on the given Cairo context or mpl Axes.
 
         Supported keyword arguments are:
 
@@ -1008,8 +1014,8 @@ class VertexDendrogram(Dendrogram):
     def optimal_count(self, value):
         self._optimal_count = max(int(value), 1)
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Draws the vertex dendrogram on the given Cairo context
+    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+        """Draws the vertex dendrogram on the given Cairo context or mpl Axes
 
         See L{Dendrogram.__plot__} for the list of supported keyword
         arguments."""
@@ -1272,9 +1278,8 @@ class VertexCover(Cover):
         """
         return [self._graph.subgraph(cl) for cl in self]
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Plots the cover to the given Cairo context in the given
-        bounding box.
+    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+        """Plots the cover to the given Cairo context or mpl Axes.
 
         This is done by calling L{Graph.__plot__()} with the same arguments, but
         drawing nice colored blobs around the vertex groups.
@@ -1320,9 +1325,16 @@ class VertexCover(Cover):
 
         @see: L{Graph.__plot__()} for more supported keyword arguments.
         """
+        from igraph.drawing.utils import find_matplotlib
+
         if "edge_color" not in kwds and "color" not in self.graph.edge_attributes():
             # Set up a default edge coloring based on internal vs external edges
-            colors = ["grey20", "grey80"]
+            mpl, plt = find_matplotlib()
+            if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
+                colors = ["dimgrey", "silver"]
+            else:
+                colors = ["grey20", "grey80"]
+
             kwds["edge_color"] = [
                 colors[is_crossing] for is_crossing in self.crossing()
             ]
@@ -1447,9 +1459,9 @@ class CohesiveBlocks(VertexCover):
         if the given group is the root."""
         return self._parent[:]
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Plots the cohesive block structure to the given Cairo context in
-        the given bounding box.
+    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+        """Plots the cohesive block structure to the given Cairo context or
+        mpl Axes.
 
         Since a L{CohesiveBlocks} instance is also a L{VertexCover}, keyword
         arguments accepted by L{VertexCover.__plot__()} are also accepted here.

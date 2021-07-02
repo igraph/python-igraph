@@ -89,7 +89,7 @@ from igraph.clustering import (
 )
 from igraph.cut import Cut, Flow
 from igraph.configuration import Configuration, init as init_configuration
-from igraph.drawing import BoundingBox, DefaultGraphDrawer, Plot, Point, Rectangle, plot
+from igraph.drawing import BoundingBox, DefaultGraphDrawer, MatplotlibGraphDrawer, Plot, Point, Rectangle, plot
 from igraph.drawing.colors import (
     Palette,
     GradientPalette,
@@ -3964,8 +3964,8 @@ class Graph(GraphBase):
     __iter__ = None  # needed for PyPy
     __hash__ = None  # needed for PyPy
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Plots the graph to the given Cairo context in the given bounding box
+    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+        """Plots the graph to the given Cairo context or mpl Axes.
 
         The visual style of vertices and edges can be modified at three
         places in the following order of precedence (lower indices override
@@ -4155,10 +4155,19 @@ class Graph(GraphBase):
             specifies whether the order is reversed (C{True}, C{False},
             C{"asc"} and C{"desc"} are accepted values).
         """
-        drawer_factory = kwds.get("drawer_factory", DefaultGraphDrawer)
+        from igraph.drawing.utils import find_matplotlib
+
+        mpl, plt = find_matplotlib()
+        if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
+            drawer_factory = kwds.get("drawer_factory", MatplotlibGraphDrawer)
+            drawer = drawer_factory(context)
+        else:
+            drawer_factory = kwds.get("drawer_factory", DefaultGraphDrawer)
+            drawer = drawer_factory(context, bbox)
+
         if "drawer_factory" in kwds:
             del kwds["drawer_factory"]
-        drawer = drawer_factory(context, bbox)
+
         drawer.draw(self, palette, *args, **kwds)
 
     def __str__(self):

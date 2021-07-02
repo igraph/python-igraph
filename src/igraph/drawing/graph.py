@@ -24,12 +24,12 @@ from igraph.drawing.baseclasses import (
     AbstractXMLRPCDrawer,
 )
 from igraph.drawing.colors import color_to_html_format, color_name_to_rgb
-from igraph.drawing.edge import ArrowEdgeDrawer
+from igraph.drawing.edge import ArrowEdgeDrawer, MatplotlibArrowEdgeDrawer
 from igraph.drawing.text import TextAlignment, TextDrawer
 from igraph.drawing.metamagic import AttributeCollectorBase
 from igraph.drawing.shapes import PolygonDrawer
-from igraph.drawing.utils import find_cairo, Point
-from igraph.drawing.vertex import DefaultVertexDrawer
+from igraph.drawing.utils import find_cairo, find_matplotlib, Point
+from igraph.drawing.vertex import DefaultVertexDrawer, MatplotlibVertexDrawer
 from igraph.layout import Layout
 
 __all__ = (
@@ -38,6 +38,7 @@ __all__ = (
 )
 
 cairo = find_cairo()
+mpl, plt = find_matplotlib()
 
 #####################################################################
 
@@ -973,9 +974,33 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         "triangle-down": "v",
     }
 
-    def __init__(self, ax):
-        """Constructs the graph drawer and associates it with the mpl axes"""
+    def __init__(
+            self,
+            ax,
+            vertex_drawer_factory=MatplotlibVertexDrawer,
+            edge_drawer_factory=MatplotlibArrowEdgeDrawer,
+            ):
+        """Constructs the graph drawer and associates it with the mpl Axes
+
+
+        @param ax: the matplotlib Axes to draw into.
+        @param vertex_drawer_factory: a factory method that returns an
+                        L{AbstractCairoVertexDrawer} instance bound to a
+                        given Cairo context. The factory method must take
+                        two parameters: the Axes and the palette to be
+                        used for drawing colored vertices. The default
+                        vertex drawer is L{MatplotlibVertexDrawer}.
+        @param edge_drawer_factory: a factory method that returns an
+                        L{AbstractEdgeDrawer} instance bound to a
+                        given matplotlib Axes. The factory method must take
+                        two parameters: the Axes and the palette
+                        to be used for drawing colored edges. The default
+                        edge drawer is L{MatplotlibArrowEdgeDrawer}.
+                        Additional styles will be added in the future.
+        """
         self.ax = ax
+        self.vertex_drawer_factory = vertex_drawer_factory
+        self.edge_drawer_factory = edge_drawer_factory
 
     def draw(self, graph, *args, **kwds):
         # NOTE: matplotlib has numpy as a dependency, so we can use it in here
@@ -1012,7 +1037,13 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
             return callback_edge_offset
 
+
+        # Some abbreviations for sake of simplicity
+        directed = graph.is_directed()
         ax = self.ax
+
+        # Calculate/get the layout of the graph
+        layout = self.ensure_layout(kwds.get("layout", None), graph)
 
         # FIXME: deal with unnamed *args
 
