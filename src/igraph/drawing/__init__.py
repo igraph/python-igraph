@@ -38,20 +38,26 @@ from igraph.utils import _is_running_in_ipython, named_temporary_file
 __all__ = ("BoundingBox", "DefaultGraphDrawer", "Plot", "Point", "Rectangle", "plot")
 
 cairo = find_cairo()
+mpl, plt = find_matplotlib()
 
 #####################################################################
 
 
-class Plot(object):
-    """Class representing an arbitrary plot
+class Plot:
+    """Class representing an arbitrary plot.
 
-    Every plot has an associated surface object where the plotting is done. The
-    surface is an instance of C{cairo.Surface}, a member of the C{pycairo}
-    library. The surface itself provides a unified API to various plotting
-    targets like SVG files, X11 windows, PostScript files, PNG files and so on.
-    C{igraph} usually does not know on which surface it is plotting right now,
-    since C{pycairo} takes care of the actual drawing. Everything that's supported
-    by C{pycairo} should be supported by this class as well.
+    Objects that you can plot include graphs, matrices, palettes, clusterings,
+    covers, and dengrograms.
+
+    Two main backends are supported: Cairo and matplotlib.
+
+    In Cairo, every plot has an associated surface object. The surface is an
+    instance of C{cairo.Surface}, a member of the C{pycairo} library. The
+    surface itself provides a unified API to various plotting targets like SVG
+    files, X11 windows, PostScript files, PNG files and so on. C{igraph} does
+    not usually know on which surface it is plotting at each point in time,
+    since C{pycairo} takes care of the actual drawing. Everything that's
+    supported by C{pycairo} should be supported by this class as well.
 
     Current Cairo surfaces include:
 
@@ -76,32 +82,40 @@ class Plot(object):
     which surface class will be used. Please note that not all surfaces might
     be available, depending on your C{pycairo} installation.
 
+    In matplotlib, every plot has an associated Axes object, which provides a
+    context. Matplotlib itself supports various backends with their own
+    surfaces.
+
     A C{Plot} has an assigned default palette (see L{igraph.drawing.colors.Palette})
     which is used for plotting objects.
 
     A C{Plot} object also has a list of objects to be plotted with their
-    respective bounding boxes, palettes and opacities. Palettes assigned
-    to an object override the default palette of the plot. Objects can be
-    added by the L{Plot.add} method and removed by the L{Plot.remove} method.
+    respective bounding boxes, palettes and opacities. Bounding boxes are
+    specific to the Cairo backend and will be None in the matplotlib backend.
+    Palettes assigned to an object override the default palette of the plot.
+    Objects can be added by the L{Plot.add} method and removed by the
+    L{Plot.remove} method.
     """
 
     def __init__(self, target=None, bbox=None, palette=None, background=None):
-        """Creates a new plot.
+        """Creates a new plot using Cairo or Matplotlib.
 
         @param target: the target surface to write to. It can be one of the
           following types:
 
-            - C{None} -- an appropriate surface will be created and the object
-              will be plotted there.
+            - C{None} -- a Cairo surface will be created and the object will be
+              plotted there.
 
             - C{cairo.Surface} -- the given Cairo surface will be used.
 
             - C{string} -- a file with the given name will be created and an
               appropriate Cairo surface will be attached to it.
 
-        @param bbox: the bounding box of the surface. It is interpreted
-          differently with different surfaces: PDF and PS surfaces will
-          treat it as points (1 point = 1/72 inch). Image surfaces will
+            - C{plt.Axes} -- the given matplotlib Axes will be used.
+
+        @param bbox: the bounding box of the surface (only for Cairo). It is
+          interpreted differently with different surfaces: PDF and PS surfaces
+          will treat it as points (1 point = 1/72 inch). Image surfaces will
           treat it as pixels. SVG surfaces will treat it as an abstract
           unit, but it will mostly be interpreted as pixels when viewing
           the SVG file in Firefox.
@@ -114,23 +128,16 @@ class Plot(object):
           palette given by the configuration key C{plotting.palette} is used.
 
         @param background: the background color. If C{None}, the background
-          will be transparent. You can use any color specification here that
-          is understood by L{igraph.drawing.colors.color_name_to_rgba}.
+          will be transparent for Cairo and your default style for matplotlib.
+          You can use any color specification here that is understood by
+          L{igraph.drawing.colors.color_name_to_rgba}.
         """
         self._filename = None
-        self._surface_was_created = not isinstance(target, cairo.Surface)
         self._need_tmpfile = False
 
         # Several Windows-specific hacks will be used from now on, thanks
         # to Dale Hunscher for debugging and fixing all that stuff
         self._windows_hacks = "Windows" in platform.platform()
-
-        if bbox is None:
-            self.bbox = BoundingBox(600, 600)
-        elif isinstance(bbox, tuple) or isinstance(bbox, list):
-            self.bbox = BoundingBox(bbox)
-        else:
-            self.bbox = bbox
 
         if palette is None:
             config = Configuration.instance()
@@ -146,6 +153,8 @@ class Plot(object):
             )
         elif isinstance(target, cairo.Surface):
             self._surface = target
+        elif hasattr(plt, "Axes") and isinstance(target, plt.Axes):
+            self._surface = None
         else:
             self._filename = target
             _, ext = os.path.splitext(target)
@@ -169,7 +178,19 @@ class Plot(object):
             else:
                 raise ValueError("image format not handled by Cairo: %s" % ext)
 
-        self._ctx = cairo.Context(self._surface)
+        if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
+            self._ctx = target
+            self.bbox = None
+        else:
+            self._ctx = cairo.Context(self._surface)
+            if bbox is None:
+                self.bbox = BoundingBox(600, 600)
+            elif isinstance(bbox, tuple) or isinstance(bbox, list):
+                self.bbox = BoundingBox(bbox)
+            else:
+                self.bbox = bbox
+
+        self._surface_was_created = not isinstance(target, cairo.Surface)
         self._objects = []
         self._is_dirty = False
 
@@ -199,7 +220,7 @@ class Plot(object):
             raise ValueError("opacity must be between 0.0 and 1.0")
         if bbox is None:
             bbox = self.bbox
-        if not isinstance(bbox, BoundingBox):
+        if (bbox is not None) and (not isinstance(bbox, BoundingBox)):
             bbox = BoundingBox(bbox)
         self._objects.append((obj, bbox, palette, opacity, args, kwds))
         self.mark_dirty()
@@ -401,6 +422,130 @@ class Plot(object):
         return self.bbox.width
 
 
+class MatplotlibPlot:
+    def __init__(self, target=None, palette=None, background=None):
+        self._ctx = target
+
+        if palette is None:
+            config = Configuration.instance()
+            palette = config["plotting.palette"]
+        if not isinstance(palette, Palette):
+            palette = palettes[palette]
+        self._palette = palette
+        self.background = background
+
+        self._objects = []
+        self._is_dirty = False
+
+    def add(self, obj, palette=None, opacity=1.0, *args, **kwds):
+        """Adds an object to the plot.
+
+        Arguments not specified here are stored and passed to the object's
+        plotting function when necessary. Since you are most likely interested
+        in the arguments acceptable by graphs, see L{Graph.__plot__} for more
+        details.
+
+        @param obj: the object to be added
+        @param palette: the color palette used for drawing the object. If the
+          object tries to get a color assigned to a positive integer, it
+          will use this palette. If C{None}, defaults to the global palette
+          of the plot.
+        @param opacity: the opacity of the object being plotted, in the range
+          0.0-1.0.
+
+        @see: Graph.__plot__
+        """
+        if opacity < 0.0 or opacity > 1.0:
+            raise ValueError("opacity must be between 0.0 and 1.0")
+
+        self._objects.append((obj, palette, opacity, args, kwds))
+        self.mark_dirty()
+
+    def mark_dirty(self):
+        """Marks the plot as dirty (should be redrawn)"""
+        self._is_dirty = True
+
+    @property
+    def background(self):
+        """Returns the background color of the plot. C{None} means a
+        transparent background.
+        """
+        return self._background
+
+    @background.setter
+    def background(self, color):
+        """Sets the background color of the plot. C{None} means a
+        transparent background. You can use any color specification here
+        that is understood by the C{get} method of the current palette
+        or by L{igraph.drawing.colors.color_name_to_rgb}.
+        """
+        if color is None:
+            self._background = None
+        else:
+            self._background = self._palette.get(color)
+
+    def remove(self, obj, idx=1):
+        """Removes an object from the plot.
+
+        If the object has been added multiple times and no bounding box
+        was specified, it removes the instance which occurs M{idx}th
+        in the list of identical instances of the object.
+
+        @param obj: the object to be removed
+        @param bbox: optional bounding box specification for the object.
+          If given, only objects with exactly this bounding box will be
+          considered.
+        @param idx: if multiple objects match the specification given by
+          M{obj} and M{bbox}, only the M{idx}th occurrence will be removed.
+        @return: C{True} if the object has been removed successfully,
+          C{False} if the object was not on the plot at all or M{idx}
+          was larger than the count of occurrences
+        """
+        for i in range(len(self._objects)):
+            current_obj = self._objects[i][0]
+            if current_obj is obj:
+                idx -= 1
+                if idx == 0:
+                    self._objects[i : (i + 1)] = []
+                    self.mark_dirty()
+                    return True
+        return False
+
+    def show(self):
+        """Saves the plot to a temporary file and shows it.
+
+        This method is deprecated from python-igraph 0.9.1 and will be removed in
+        version 0.10.0.
+
+        @deprecated: Opening an image viewer with a temporary file never worked
+            reliably across platforms.
+        """
+        if self._is_dirty:
+            self.redraw()
+
+        plt.show()
+
+    def redraw(self, context=None):
+        """Redraws the plot"""
+        ax = context or self._ctx
+
+        if self._background is not None:
+            ax.set_facecolor(self._background)
+
+        for obj, palette, opacity, args, kwds in self._objects:
+            if palette is None:
+                palette = getattr(obj, "_default_palette", self._palette)
+            plotter = getattr(obj, "__plot__", None)
+            if plotter is None:
+                warn("%s does not support plotting" % (obj,))
+            else:
+                if (opacity < 1.0) and ('alpha' not in kwds):
+                    kwds['alpha'] = opacity
+                plotter(ax, palette=palette, *args, **kwds)
+
+        self._is_dirty = False
+
+
 #####################################################################
 
 
@@ -475,22 +620,35 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     """
     _, plt = find_matplotlib()
 
+    # Switch for matplotlib backend
     if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
-        drawer = MatplotlibGraphDrawer(ax=target)
-        drawer.draw(obj, *args, **kwds)
-        return
+        # In turn, MatplotlibPlot uses obj.__plot__(ax)
+        result = MatplotlibPlot(
+            target,
+            background=kwds.get("background", None),
+            )
+        result.add(obj, *args, **kwds)
+        result.show()
+        return result
+
+    # Otherwise, use default Cairo backend
 
     if not isinstance(bbox, BoundingBox):
         bbox = BoundingBox(bbox)
 
     # In turn, Plot uses some GraphDrawer class
-    result = Plot(target, bbox, background=kwds.get("background", "white"))
+    result = Plot(
+            target,
+            bbox,
+            background=kwds.get("background", "white"),
+            )
 
     if "margin" in kwds:
         bbox = bbox.contract(kwds["margin"])
         del kwds["margin"]
     else:
         bbox = bbox.contract(20)
+
     result.add(obj, bbox, *args, **kwds)
 
     if target is None and _is_running_in_ipython():
@@ -513,8 +671,13 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     # We are either not in IPython or the user specified an explicit plot target,
     # so just show or save the result
     if target is None:
+        # show with the default backend
+        result.show()
+    elif hasattr(plt, "Axes") and isinstance(target, plt.Axes):
+        # show in matplotlib
         result.show()
     elif isinstance(target, str):
+        # save
         result.save()
 
     # Also return the plot itself

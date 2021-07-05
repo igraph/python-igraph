@@ -4,7 +4,6 @@
 Color handling functions.
 """
 
-from igraph.datatypes import Matrix
 from igraph.utils import str_to_orientation
 from math import ceil
 
@@ -162,6 +161,7 @@ class Palette(object):
 
         Keyword arguments in matplotlib are passes to Axes.imshow.
         """
+        from igraph.datatypes import Matrix
         from igraph.drawing.utils import find_matplotlib
 
         orientation = str_to_orientation(kwds.get("orientation", "lr"))

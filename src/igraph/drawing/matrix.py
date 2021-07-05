@@ -10,7 +10,7 @@ from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer
 __all__ = ("DefaultMatrixDrawer", "MatplotlibMatrixDrawer")
 
 
-class DefaultMatrixDrawer(AbstractDrawer, AbstractCairoDrawer):
+class DefaultMatrixDrawer(AbstractCairoDrawer):
     """Abstract vertex drawer object from which all concrete vertex drawer
     implementations are derived."""
 
