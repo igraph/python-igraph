@@ -11,8 +11,7 @@ __all__ = ("DefaultMatrixDrawer", "MatplotlibMatrixDrawer")
 
 
 class DefaultMatrixDrawer(AbstractCairoDrawer):
-    """Abstract vertex drawer object from which all concrete vertex drawer
-    implementations are derived."""
+    """Default Cairo drawer object for matrices."""
 
     def __init__(self, context, bbox, palette):
         """Constructs the vertex drawer and associates it to the given
@@ -84,7 +83,6 @@ class DefaultMatrixDrawer(AbstractCairoDrawer):
         context = self.context
         bbox = self.bbox
         palette = self.palette
-        matrix = self.matrix
         Matrix = matrix.__class__
 
         grid_width = float(kwds.get("grid_width", 1.0))
@@ -241,12 +239,10 @@ class DefaultMatrixDrawer(AbstractCairoDrawer):
 
 
 class MatplotlibMatrixDrawer(AbstractDrawer):
-    """Abstract vertex drawer object from which all concrete vertex drawer
-    implementations are derived."""
+    """Matplotlib drawer object for matrices."""
 
     def __init__(self, ax):
-        """Constructs the vertex drawer and associates it to the given
-        palette.
+        """Constructs the drawer and associates it to the given Axes.
 
         @param ax: the Axes on which we will draw
         """
@@ -259,7 +255,6 @@ class MatplotlibMatrixDrawer(AbstractDrawer):
 
         Keyword arguments are passed to Axes.imshow.
         """
-        import numpy as np  # A dep of matplotlib anyway
         ax = self.context
 
         ax.imshow(

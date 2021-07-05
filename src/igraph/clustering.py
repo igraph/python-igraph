@@ -10,9 +10,9 @@ from igraph import community_to_membership
 from igraph.configuration import Configuration
 from igraph.datatypes import UniqueIdGenerator
 from igraph.drawing.colors import ClusterColoringPalette
+from igraph.drawing.dendrogram import DefaultDendrogramDrawer, MatplotlibDendrogramDrawer
 from igraph.statistics import Histogram
 from igraph.summary import _get_wrapper_for_width
-from igraph.utils import str_to_orientation
 
 
 class Clustering(object):
@@ -783,131 +783,15 @@ class Dendrogram(object):
             The default is C{left-right}.
 
         """
-        from igraph.layout import Layout
+        from igraph.drawing.utils import find_matplotlib
 
-        if self._names is None:
-            self._names = [str(x) for x in range(self._nitems)]
-
-        orientation = str_to_orientation(
-            kwds.get("orientation", "lr"), reversed_vertical=True
-        )
-        horiz = orientation in ("lr", "rl")
-
-        # Get the font height
-        font_height = context.font_extents()[2]
-
-        # Calculate space needed for individual items at the
-        # bottom of the dendrogram
-        item_boxes = [
-            self._item_box_size(context, horiz, idx) for idx in range(self._nitems)
-        ]
-
-        # Small correction for cases when the right edge of the labels is
-        # aligned with the tips of the dendrogram branches
-        ygap = 2 if orientation == "bt" else 0
-        xgap = 2 if orientation == "lr" else 0
-        item_boxes = [(x + xgap, y + ygap) for x, y in item_boxes]
-
-        # Calculate coordinates
-        layout = Layout([(0, 0)] * self._nitems, dim=2)
-        inorder = self._traverse_inorder()
-        if not horiz:
-            x, y = 0, 0
-            for idx, element in enumerate(inorder):
-                layout[element] = (x, 0)
-                x += max(font_height, item_boxes[element][0])
-
-            for id1, id2 in self._merges:
-                y += 1
-                layout.append(((layout[id1][0] + layout[id2][0]) / 2.0, y))
-
-            # Mirror or rotate the layout if necessary
-            if orientation == "bt":
-                layout.mirror(1)
+        mpl, plt = find_matplotlib()
+        if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
+            drawer = MatplotlibDendrogramDrawer(context)
         else:
-            x, y = 0, 0
-            for idx, element in enumerate(inorder):
-                layout[element] = (0, y)
-                y += max(font_height, item_boxes[element][1])
+            drawer = DefaultDendrogramDrawer(context, bbox, palette)
 
-            for id1, id2 in self._merges:
-                x += 1
-                layout.append((x, (layout[id1][1] + layout[id2][1]) / 2.0))
-
-            # Mirror or rotate the layout if necessary
-            if orientation == "rl":
-                layout.mirror(0)
-
-        # Rescale layout to the bounding box
-        maxw = max(e[0] for e in item_boxes)
-        maxh = max(e[1] for e in item_boxes)
-
-        # w, h: width and height of the area containing the dendrogram
-        # tree without the items.
-        # delta_x, delta_y: displacement of the dendrogram tree
-        width, height = float(bbox.width), float(bbox.height)
-        delta_x, delta_y = 0, 0
-        if horiz:
-            width -= maxw
-            if orientation == "lr":
-                delta_x = maxw
-        else:
-            height -= maxh
-            if orientation == "tb":
-                delta_y = maxh
-
-        if horiz:
-            delta_y += font_height / 2.0
-        else:
-            delta_x += font_height / 2.0
-        layout.fit_into(
-            (delta_x, delta_y, width - delta_x, height - delta_y),
-            keep_aspect_ratio=False,
-        )
-
-        context.save()
-
-        context.translate(bbox.left, bbox.top)
-        context.set_source_rgb(0.0, 0.0, 0.0)
-        context.set_line_width(1)
-
-        # Draw items
-        if horiz:
-            sgn = 0 if orientation == "rl" else -1
-            for idx in range(self._nitems):
-                x = layout[idx][0] + sgn * item_boxes[idx][0]
-                y = layout[idx][1] - item_boxes[idx][1] / 2.0
-                self._plot_item(context, horiz, idx, x, y)
-        else:
-            sgn = 1 if orientation == "bt" else 0
-            for idx in range(self._nitems):
-                x = layout[idx][0] - item_boxes[idx][0] / 2.0
-                y = layout[idx][1] + sgn * item_boxes[idx][1]
-                self._plot_item(context, horiz, idx, x, y)
-
-        # Draw dendrogram lines
-        if not horiz:
-            for idx, (id1, id2) in enumerate(self._merges):
-                x0, y0 = layout[id1]
-                x1, y1 = layout[id2]
-                x2, y2 = layout[idx + self._nitems]
-                context.move_to(x0, y0)
-                context.line_to(x0, y2)
-                context.line_to(x1, y2)
-                context.line_to(x1, y1)
-                context.stroke()
-        else:
-            for idx, (id1, id2) in enumerate(self._merges):
-                x0, y0 = layout[id1]
-                x1, y1 = layout[id2]
-                x2, y2 = layout[idx + self._nitems]
-                context.move_to(x0, y0)
-                context.line_to(x2, y0)
-                context.line_to(x2, y1)
-                context.line_to(x1, y1)
-                context.stroke()
-
-        context.restore()
+        drawer.draw(self, **kwds)
 
     @property
     def merges(self):
