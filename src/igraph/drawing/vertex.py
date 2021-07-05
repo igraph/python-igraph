@@ -134,38 +134,40 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
             label_dist = 0.0
             label_color = ("black", self.palette.get)
             font = "sans-serif"
-            label_size = 14.0
+            label_size = 12.0
+            # FIXME? mpl.rcParams["font.size"])
             position = dict(func=self.layout.__getitem__)
-            shape = ("circle", ShapeDrawerDirectory.resolve_default)
-            size = 20.0
+            shape = ("circle", lambda x: x)
+            size = 0.2
             width = None
             height = None
+            zorder = 2
 
         return VisualVertexBuilder
 
     @staticmethod
-    def construct_patch(kind, xy, width, height=0, **kwargs):
-        if kind in ('circle', 'o'):
-            return mpl.patches.Circle(xy, width, **kwargs)
-        elif kind in ('ellipse', 'e'):
-            return mpl.patches.Ellipse(xy, width, height, **kwargs)
-        elif kind in ('square', 's'):
+    def construct_patch(shape, xy, width, height=0, **kwargs):
+        if shape in ('circle', 'o'):
+            return mpl.patches.Circle(xy, width / 2, **kwargs)
+        elif shape in ('ellipse', 'e'):
+            return mpl.patches.Ellipse(xy, width / 2, height / 2, **kwargs)
+        elif shape in ('square', 's'):
             return mpl.patches.Rectangle(xy, width, height, **kwargs)
-        elif kind in ('triangle-down', 'v'):
+        elif shape in ('triangle-down', 'v'):
             vertices = [
                 [xy[0] - 0.5 * width, xy[1] + 0.333 * height],
                 [xy[0] + 0.5 * width, xy[1] + 0.333 * height],
                 [xy[0], xy[1] - 0.667 * height],
             ]
             return mpl.patches.Polygon(vertices, closed=True, **kwargs)
-        elif kind in ('triangle-up', '^'):
+        elif shape in ('triangle-up', '^'):
             vertices = [
                 [xy[0] - 0.5 * width, xy[1] - 0.333 * height],
                 [xy[0] + 0.5 * width, xy[1] - 0.333 * height],
                 [xy[0], xy[1] + 0.667 * height],
             ]
             return mpl.patches.Polygon(vertices, closed=True, **kwargs)
-        elif kind in ('diamond', 'd',):
+        elif shape in ('diamond', 'd',):
             vertices = [
                 [xy[0] - 0.5 * width, xy[1]],
                 [xy[0], xy[1] - 0.5 * height],
@@ -188,14 +190,12 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
             else visual_vertex.size
         )
 
-        # FIXME
-        vertex_color = mpl.colors.to_rgba(*visual_vertex.color)
-        frame_color = mpl.colors.to_rgba(*visual_vertex.frame_color)
-
         stroke = self.construct_patch(
+            visual_vertex.shape,
             coords, width, height,
-            facecolor=vertex_color,
-            edgecolor=frame_color,
+            facecolor=visual_vertex.color,
+            edgecolor=visual_vertex.frame_color,
             linewidth=visual_vertex.frame_width,
+            zorder=visual_vertex.zorder,
             )
         ax.add_patch(stroke)

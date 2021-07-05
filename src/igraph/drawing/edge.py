@@ -199,6 +199,27 @@ class AbstractEdgeDrawer(object):
 class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
     """Undirected edge drawer for matplotlib"""
 
+    def _construct_visual_edge_builder(self):
+        """Construct the visual edge builder that will collect the visual
+        attributes of an edge when it is being drawn."""
+
+        class VisualEdgeBuilder(AttributeCollectorBase):
+            """Builder that collects some visual properties of an edge for
+            drawing"""
+
+            _kwds_prefix = "edge_"
+            arrow_size = 0.007
+            arrow_width = 1.4
+            color = ("#444", self.palette.get)
+            curved = (0.0, self._curvature_to_float)
+            label = None
+            label_color = ("black", self.palette.get)
+            label_size = 12.0
+            font = "sans-serif"
+            width = 2.0
+
+        return VisualEdgeBuilder
+
     def draw_loop_edge(self, edge, vertex):
         """Draws a loop edge.
 
@@ -213,8 +234,6 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
         radius = vertex.size * 1.5
         center_x = vertex.position[0] + cos(pi / 4) * radius / 2.0
         center_y = vertex.position[1] - sin(pi / 4) * radius / 2.0
-        # FIXME (?)
-        edge_color = mpl.colors.to_rgba(*edge.color)
         stroke = mpl.patches.Arc(
             (center_x, center_y),
             radius / 2.0,
@@ -222,7 +241,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             theta1=0,
             theta2=360.0,
             linewidth=edge.width,
-            edgecolor=edge_color,
+            edgecolor=edge.color,
             )
         # FIXME: make a PathCollection??
         ax.add_patch(stroke)
@@ -266,14 +285,12 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             path['vertices'].append(dest_vertex.position)
             path['codes'].append('LINETO')
 
-        # FIXME (?)
-        edge_color = mpl.colors.to_rgba(*edge.color)
         stroke = mpl.patches.PathPatch(
             mpl.path.Path(
                 path['vertices'],
                 codes=[getattr(mpl.path.Path, x) for x in path['codes']],
                 ),
-            edgecolor=edge_color,
+            edgecolor=edge.color,
             linewidth=edge.width,
         )
         # FIXME: make a PathCollection??
@@ -600,32 +617,29 @@ class MatplotlibArrowEdgeDrawer(MatplotlibEdgeDrawer, ArrowEdgeDrawer):
             path['codes'].append('LINETO')
 
         # Draw the edge
-        edge_color = mpl.colors.to_rgba(*edge.color)
         stroke = mpl.patches.PathPatch(
             mpl.path.Path(
                 path['vertices'],
                 codes=[getattr(mpl.path.Path, x) for x in path['codes']],
                 ),
-            edgecolor=edge_color,
+            edgecolor=edge.color,
             facecolor='none',
             linewidth=edge.width,
         )
+        ax.add_patch(stroke)
 
         # Draw the arrow head
         arrowhead = mpl.patches.Polygon(
             [
                 [x2, y2],
-                *aux_points[0],
-                *aux_points[1],
+                aux_points[0],
+                aux_points[1],
             ],
             closed=True,
-            facecolor=edge_color,
+            facecolor=edge.color,
             edgecolor='none',
         )
-        arrow_with_head = mpl.collections.PatchCollection(
-            [stroke, arrowhead],
-        )
-        ax.add_patch(arrow_with_head)
+        ax.add_patch(arrowhead)
 
 
 class TaperedEdgeDrawer(AbstractEdgeDrawer):

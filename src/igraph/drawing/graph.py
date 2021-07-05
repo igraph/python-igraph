@@ -83,6 +83,65 @@ class AbstractGraphDrawer(AbstractDrawer):
             layout = Layout(layout)
         return layout
 
+    @staticmethod
+    def _determine_edge_order(graph, kwds):
+        """Returns the order in which the edge of the given graph have to be
+        drawn, assuming that the relevant keyword arguments (C{edge_order} and
+        C{edge_order_by}) are given in C{kwds} as a dictionary. If neither
+        C{edge_order} nor C{edge_order_by} is present in C{kwds}, this
+        function returns C{None} to indicate that the graph drawer is free to
+        choose the most convenient edge ordering."""
+        if "edge_order" in kwds:
+            # Edge order specified explicitly
+            return kwds["edge_order"]
+
+        if kwds.get("edge_order_by") is None:
+            # No edge order specified
+            return None
+
+        # Order edges by the value of some attribute
+        edge_order_by = kwds["edge_order_by"]
+        reverse = False
+        if isinstance(edge_order_by, tuple):
+            edge_order_by, reverse = edge_order_by
+            if isinstance(reverse, str):
+                reverse = reverse.lower().startswith("desc")
+        attrs = graph.es[edge_order_by]
+        edge_order = sorted(
+            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
+        )
+
+        return edge_order
+
+    @staticmethod
+    def _determine_vertex_order(graph, kwds):
+        """Returns the order in which the vertices of the given graph have to be
+        drawn, assuming that the relevant keyword arguments (C{vertex_order} and
+        C{vertex_order_by}) are given in C{kwds} as a dictionary. If neither
+        C{vertex_order} nor C{vertex_order_by} is present in C{kwds}, this
+        function returns C{None} to indicate that the graph drawer is free to
+        choose the most convenient vertex ordering."""
+        if "vertex_order" in kwds:
+            # Vertex order specified explicitly
+            return kwds["vertex_order"]
+
+        if kwds.get("vertex_order_by") is None:
+            # No vertex order specified
+            return None
+
+        # Order vertices by the value of some attribute
+        vertex_order_by = kwds["vertex_order_by"]
+        reverse = False
+        if isinstance(vertex_order_by, tuple):
+            vertex_order_by, reverse = vertex_order_by
+            if isinstance(reverse, str):
+                reverse = reverse.lower().startswith("desc")
+        attrs = graph.vs[vertex_order_by]
+        vertex_order = sorted(
+            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
+        )
+
+        return vertex_order
 
 #####################################################################
 
@@ -160,64 +219,6 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
         self.vertex_drawer_factory = vertex_drawer_factory
         self.edge_drawer_factory = edge_drawer_factory
         self.label_drawer_factory = label_drawer_factory
-
-    def _determine_edge_order(self, graph, kwds):
-        """Returns the order in which the edge of the given graph have to be
-        drawn, assuming that the relevant keyword arguments (C{edge_order} and
-        C{edge_order_by}) are given in C{kwds} as a dictionary. If neither
-        C{edge_order} nor C{edge_order_by} is present in C{kwds}, this
-        function returns C{None} to indicate that the graph drawer is free to
-        choose the most convenient edge ordering."""
-        if "edge_order" in kwds:
-            # Edge order specified explicitly
-            return kwds["edge_order"]
-
-        if kwds.get("edge_order_by") is None:
-            # No edge order specified
-            return None
-
-        # Order edges by the value of some attribute
-        edge_order_by = kwds["edge_order_by"]
-        reverse = False
-        if isinstance(edge_order_by, tuple):
-            edge_order_by, reverse = edge_order_by
-            if isinstance(reverse, str):
-                reverse = reverse.lower().startswith("desc")
-        attrs = graph.es[edge_order_by]
-        edge_order = sorted(
-            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
-        )
-
-        return edge_order
-
-    def _determine_vertex_order(self, graph, kwds):
-        """Returns the order in which the vertices of the given graph have to be
-        drawn, assuming that the relevant keyword arguments (C{vertex_order} and
-        C{vertex_order_by}) are given in C{kwds} as a dictionary. If neither
-        C{vertex_order} nor C{vertex_order_by} is present in C{kwds}, this
-        function returns C{None} to indicate that the graph drawer is free to
-        choose the most convenient vertex ordering."""
-        if "vertex_order" in kwds:
-            # Vertex order specified explicitly
-            return kwds["vertex_order"]
-
-        if kwds.get("vertex_order_by") is None:
-            # No vertex order specified
-            return None
-
-        # Order vertices by the value of some attribute
-        vertex_order_by = kwds["vertex_order_by"]
-        reverse = False
-        if isinstance(vertex_order_by, tuple):
-            vertex_order_by, reverse = vertex_order_by
-            if isinstance(reverse, str):
-                reverse = reverse.lower().startswith("desc")
-        attrs = graph.vs[vertex_order_by]
-        vertex_order = sorted(
-            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
-        )
-
-        return vertex_order
 
     def draw(self, graph, palette, *args, **kwds):
         # Some abbreviations for sake of simplicity
@@ -1150,228 +1151,64 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 )
                 ax.add_patch(stroke)
 
-        # Vertex coordinates
-        vcoord = layout.coords
+        # Determine the order in which we will draw the vertices and edges
+        vertex_order = self._determine_vertex_order(graph, kwds)
+        edge_order = self._determine_edge_order(graph, kwds)
 
-        # Vertex properties
-        nv = graph.vcount()
-
-        # Vertex size
-        vsizes = kwds.get("vertex_size", 5)
-        # Enforce numpy array for sizes, because (1) we need the square and (2)
-        # they are needed to calculate autoshrinking of edges
-        if np.isscalar(vsizes):
-            vsizes = np.repeat(vsizes, nv)
+        # Construct the iterator that we will use to draw the vertices
+        vs = graph.vs
+        if vertex_order is None:
+            # Default vertex order
+            vertex_coord_iter = zip(vs, vertex_builder, layout)
         else:
-            vsizes = np.asarray(vsizes)
-        # ax.scatter uses the *square* of diameter
-        vsizes **= 2
-
-        # Vertex color
-        c = kwds.get("vertex_color", "steelblue")
-
-        # Vertex opacity
-        alpha = kwds.get("alpha", 1.0)
-
-        # Vertex labels
-        label = kwds.get("vertex_label", None)
-
-        # Vertex label size
-        label_size = kwds.get("vertex_label_size", mpl.rcParams["font.size"])
-
-        # Vertex zorder
-        vzorder = kwds.get("vertex_order", 2)
-
-        # Vertex shapes
-        # mpl shapes use slightly different names from Cairo, but we want the
-        # API to feel consistent, so we use a conversion dictionary
-        shapes = kwds.get("vertex_shape", "o")
-        if shapes is not None:
-            if isinstance(shapes, str):
-                shapes = self._shape_dict.get(shapes, shapes)
-            elif isinstance(shapes, mmarkers.MarkerStyle):
-                pass
-
-        # Scatter vertices
-        x, y = list(zip(*vcoord))
-        ax.scatter(x, y, s=vsizes, c=c, marker=shapes, zorder=vzorder, alpha=alpha)
-
-        # Vertex labels
-        if label is not None:
-            for i, lab in enumerate(label):
-                xi, yi = x[i], y[i]
-                ax.text(xi, yi, lab, fontsize=label_size)
-
-        dx = max(x) - min(x)
-        dy = max(y) - min(y)
-        ax.set_xlim(min(x) - 0.05 * dx, max(x) + 0.05 * dx)
-        ax.set_ylim(min(y) - 0.05 * dy, max(y) + 0.05 * dy)
-
-        # Edge properties
-        ne = graph.ecount()
-        ec = kwds.get("edge_color", "black")
-        edge_width = kwds.get("edge_width", 1)
-        arrow_width = kwds.get("edge_arrow_width", 2)
-        arrow_length = kwds.get("edge_arrow_size", 4)
-        ealpha = kwds.get("edge_alpha", 1.0)
-        ezorder = kwds.get("edge_order", 1.0)
-        try:
-            ezorder = float(ezorder)
-            ezorder = [ezorder] * ne
-        except TypeError:
-            pass
-
-        # Decide whether we need to calculate the curvature of edges
-        # automatically -- and calculate them if needed.
-        autocurve = kwds.get("autocurve", None)
-        if autocurve or (
-            autocurve is None
-            and "edge_curved" not in kwds
-            and "curved" not in graph.edge_attributes()
-            and graph.ecount() < 10000
-        ):
-            from igraph import autocurve
-
-            default = kwds.get("edge_curved", 0)
-            if default is True:
-                default = 0.5
-            default = float(default)
-            ecurved = autocurve(graph, attribute=None, default=default)
-        elif "edge_curved" in kwds:
-            ecurved = kwds["edge_curved"]
-        elif "curved" in graph.edge_attributes():
-            ecurved = graph.es["curved"]
-        else:
-            ecurved = [0] * ne
-
-        # Arrow style for directed and undirected graphs
-        if graph.is_directed():
-            arrowstyle = ArrowStyle(
-                "-|>",
-                head_length=arrow_length,
-                head_width=arrow_width,
+            # Specified vertex order
+            vertex_coord_iter = (
+                (vs[i], vertex_builder[i], layout[i]) for i in vertex_order
             )
+
+        # Draw the vertices
+        drawer_method = vertex_drawer.draw
+        for vertex, visual_vertex, coords in vertex_coord_iter:
+            drawer_method(visual_vertex, vertex, coords)
+
+
+        # Construct the iterator that we will use to draw the edges
+        es = graph.es
+        if edge_order is None:
+            # Default edge order
+            edge_coord_iter = zip(es, edge_builder)
         else:
-            arrowstyle = "-"
+            # Specified edge order
+            edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
 
-        # Edge coordinates and curvature
-        nloops = [0 for x in range(ne)]
-        arrows = []
-        for ie, edge in enumerate(graph.es):
-            src, tgt = edge.source, edge.target
-            x1, y1 = vcoord[src]
-            x2, y2 = vcoord[tgt]
+        # Draw the edges
+        if directed:
+            drawer_method = edge_drawer.draw_directed_edge
+        else:
+            drawer_method = edge_drawer.draw_undirected_edge
+        for edge, visual_edge in edge_coord_iter:
+            src, dest = edge.tuple
+            src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
+            drawer_method(visual_edge, src_vertex, dest_vertex)
 
-            # Loops require special treatment
-            if src == tgt:
-                # Find all non-loop edges
-                nloopstot = 0
-                angles = []
-                for tgtn in graph.neighbors(src):
-                    if tgtn == src:
-                        nloopstot += 1
-                        continue
-                    xn, yn = vcoord[tgtn]
-                    angles.append(180.0 / pi * atan2(yn - y1, xn - x1) % 360)
-                # with .neighbors(mode=ALL), which is default, loops are double
-                # counted
-                nloopstot //= 2
-                angles = sorted(set(angles))
-
-                # Only loops or one non-loop
-                if len(angles) < 2:
-                    ashift = angles[0] if angles else 270
-                    if nloopstot == 1:
-                        # Only one self loop, use a quadrant only
-                        angles = [(ashift + 135) % 360, (ashift + 225) % 360]
-                    else:
-                        nshift = 360.0 / nloopstot
-                        angles = [
-                            (ashift + nshift * nloops[src]) % 360,
-                            (ashift + nshift * (nloops[src] + 1)) % 360,
-                        ]
-                    nloops[src] += 1
-                else:
-                    angles.append(angles[0] + 360)
-                    idiff = 0
-                    diff = 0
-                    for i in range(len(angles) - 1):
-                        diffi = abs(angles[i + 1] - angles[i])
-                        if diffi > diff:
-                            idiff = i
-                            diff = diffi
-                    angles = angles[idiff : idiff + 2]
-                    ashift = angles[0]
-                    nshift = (angles[1] - angles[0]) / nloopstot
-                    angles = [
-                        (ashift + nshift * nloops[src]),
-                        (ashift + nshift * (nloops[src] + 1)),
-                    ]
-                    nloops[src] += 1
-
-                # this is not great, but alright
-                angspan = angles[1] - angles[0]
-                if angspan < 180:
-                    angmid1 = angles[0] + 0.1 * angspan
-                    angmid2 = angles[1] - 0.1 * angspan
-                else:
-                    angmid1 = angles[0] + 0.5 * (angspan - 180) + 45
-                    angmid2 = angles[1] - 0.5 * (angspan - 180) - 45
-                aux1 = (
-                    x1 + 0.2 * dx * cos(pi / 180 * angmid1),
-                    y1 + 0.2 * dy * sin(pi / 180 * angmid1),
+        # Vertex labels
+        labels = kwds.get("vertex_label", None)
+        if labels is not None:
+            vertex_label_iter = (
+                (labels[i], vertex_builder[i], layout[i]) for i in range(graph.vcount())
                 )
-                aux2 = (
-                    x1 + 0.2 * dx * cos(pi / 180 * angmid2),
-                    y1 + 0.2 * dy * sin(pi / 180 * angmid2),
-                )
-                start = shrink_vertex(ax, aux1, (x1, y1), vsizes[src])
-                end = shrink_vertex(ax, aux2, (x2, y2), vsizes[tgt])
+            for label, visual_vertex, coords in vertex_label_iter:
 
-                path = Path(
-                    [start, aux1, aux2, end],
-                    # Cubic bezier by mpl
-                    codes=[1, 4, 4, 4],
+                label_size = kwds.get(
+                    "vertex_label_size",
+                    visual_vertex.label_size,
                 )
 
-            else:
-                curved = ecurved[ie]
-                if curved:
-                    aux1 = (2 * x1 + x2) / 3.0 - curved * 0.5 * (y2 - y1), (
-                        2 * y1 + y2
-                    ) / 3.0 + curved * 0.5 * (x2 - x1)
-                    aux2 = (x1 + 2 * x2) / 3.0 - curved * 0.5 * (y2 - y1), (
-                        y1 + 2 * y2
-                    ) / 3.0 + curved * 0.5 * (x2 - x1)
-                    start = shrink_vertex(ax, aux1, (x1, y1), vsizes[src])
-                    end = shrink_vertex(ax, aux2, (x2, y2), vsizes[tgt])
-
-                    path = Path(
-                        [start, aux1, aux2, end],
-                        # Cubic bezier by mpl
-                        codes=[1, 4, 4, 4],
+                ax.text(
+                    *coords,
+                    label,
+                    fontsize=label_size,
+                    # TODO: alignment, overlap, etc.
                     )
-                else:
-                    start = shrink_vertex(ax, (x2, y2), (x1, y1), vsizes[src])
-                    end = shrink_vertex(ax, (x1, y1), (x2, y2), vsizes[tgt])
 
-                    path = Path([start, end], codes=[1, 2])
-
-            arrow = FancyArrowPatch(
-                path=path,
-                arrowstyle=arrowstyle,
-                lw=edge_width,
-                color=ec,
-                alpha=ealpha,
-                zorder=ezorder[ie],
-            )
-            ax.add_artist(arrow)
-
-            # Store arrows and their sources and targets for autoscaling
-            arrows.append((arrow, src, tgt))
-
-        # Autoscaling during zoom, figure resize, reset axis limits
-        callback = callback_factory(ax, vcoord, vsizes, arrows)
-        ax.get_figure().canvas.mpl_connect("resize_event", callback)
-        ax.callbacks.connect("xlim_changed", callback)
-        ax.callbacks.connect("ylim_changed", callback)
+        ax.autoscale_view()
