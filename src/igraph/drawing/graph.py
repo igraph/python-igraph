@@ -1002,7 +1002,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         self.vertex_drawer_factory = vertex_drawer_factory
         self.edge_drawer_factory = edge_drawer_factory
 
-    def draw(self, graph, *args, **kwds):
+    def draw(self, graph, palette, *args, **kwds):
         # NOTE: matplotlib has numpy as a dependency, so we can use it in here
         from collections import defaultdict
         import matplotlib as mpl
@@ -1047,119 +1047,111 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
         # FIXME: deal with unnamed *args
 
-        # graph is not necessarily a graph, it can be a VertexClustering. If so
-        # extract the graph. The clustering itself can be overridden using
-        # the "mark_groups" option
-        clustering = None
-        if isinstance(graph, (VertexClustering, VertexCover)):
-            clustering = graph
-            graph = clustering.graph
+        # Decide whether we need to calculate the curvature of edges
+        # automatically -- and calculate them if needed.
+        autocurve = kwds.get("autocurve", None)
+        if autocurve or (
+            autocurve is None
+            and "edge_curved" not in kwds
+            and "curved" not in graph.edge_attributes()
+            and graph.ecount() < 10000
+        ):
+            from igraph import autocurve
 
-        # Get layout
-        layout = kwds.get("layout", graph.layout())
-        if isinstance(layout, str):
-            layout = graph.layout(layout)
+            default = kwds.get("edge_curved", 0)
+            if default is True:
+                default = 0.5
+            default = float(default)
+            kwds["edge_curved"] = autocurve(
+                graph, attribute=None, default=default,
+            )
+
+        # Construct the vertex, edge and label drawers
+        vertex_drawer = self.vertex_drawer_factory(
+                ax, palette, layout,
+                )
+        edge_drawer = self.edge_drawer_factory(
+                ax, palette)
+
+        # Construct the visual vertex/edge builders based on the specifications
+        # provided by the vertex_drawer and the edge_drawer
+        vertex_builder = vertex_drawer.VisualVertexBuilder(graph.vs, kwds)
+        edge_builder = edge_drawer.VisualEdgeBuilder(graph.es, kwds)
+
+        # Draw the highlighted groups (if any)
+        if "mark_groups" in kwds:
+            mark_groups = kwds["mark_groups"]
+
+            # Deferred import to avoid a cycle in the import graph
+            from igraph.clustering import VertexClustering, VertexCover
+
+            # Figure out what to do with mark_groups in order to be able to
+            # iterate over it and get memberlist-color pairs
+            if isinstance(mark_groups, dict):
+                # Dictionary mapping vertex indices or tuples of vertex
+                # indices to colors
+                group_iter = iter(mark_groups.items())
+            elif isinstance(mark_groups, (VertexClustering, VertexCover)):
+                # Vertex clustering
+                group_iter = ((group, color) for color, group in enumerate(mark_groups))
+            elif hasattr(mark_groups, "__iter__"):
+                # Lists, tuples, iterators etc
+                group_iter = iter(mark_groups)
+            else:
+                # False
+                group_iter = iter({}.items())
+
+            # Iterate over color-memberlist pairs
+            for group, color_id in group_iter:
+                if not group or color_id is None:
+                    continue
+
+                color = palette.get(color_id)
+
+                if isinstance(group, VertexSeq):
+                    group = [vertex.index for vertex in group]
+                if not hasattr(group, "__iter__"):
+                    raise TypeError("group membership list must be iterable")
+
+                # Get the vertex indices that constitute the convex hull
+                hull = [group[i] for i in convex_hull([layout[idx] for idx in group])]
+
+                # Calculate the preferred rounding radius for the corners
+                corner_radius = 1.25 * max(vertex_builder[idx].size for idx in hull)
+
+                # Construct the polygon
+                polygon = [layout[idx] for idx in hull]
+
+                if len(polygon) == 2:
+                    # Expand the polygon (which is a flat line otherwise)
+                    a, b = Point(*polygon[0]), Point(*polygon[1])
+                    c = corner_radius * (a - b).normalized()
+                    n = Point(-c[1], c[0])
+                    polygon = [a + n, b + n, b - c, b - n, a - n, a + c]
+                else:
+                    # Expand the polygon around its center of mass
+                    center = Point(
+                        *[sum(coords) / float(len(coords)) for coords in zip(*polygon)]
+                    )
+                    polygon = [
+                        Point(*point).towards(center, -corner_radius)
+                        for point in polygon
+                    ]
+                    # FIXME?
+                    #polygon = [[p.x, p.y] for p in polygon]
+
+                # Draw the hull
+                facecolor = (color[0], color[1], color[2], 0.25 * color[3])
+                # TODO: corner_radius. Requires a sister class to PolygonDrawer...
+                stroke = mpl.patches.Polygon(
+                    polygon,
+                    facecolor=facecolor,
+                    edgecolor=color,
+                )
+                ax.add_patch(stroke)
 
         # Vertex coordinates
         vcoord = layout.coords
-
-        # mark groups: the used data structure is eventually the dict option:
-        # tuples of vertex indices as the keys, colors as the values. We
-        # convert other formats into that one here
-        if "mark_groups" not in kwds:
-            kwds["mark_groups"] = False
-        if kwds["mark_groups"] is False:
-            pass
-        elif (kwds["mark_groups"] is True) and (clustering is not None):
-            pass
-        elif isinstance(kwds["mark_groups"], (VertexClustering, VertexCover)):
-            if clustering is not None:
-                raise ValueError(
-                    "mark_groups cannot override a clustering with another"
-                )
-            else:
-                clustering = kwds["mark_groups"]
-                kwds["mark_groups"] = True
-        else:
-            try:
-                mg_iter = iter(kwds["mark_groups"])
-            except TypeError:
-                raise TypeError("mark_groups is not in the right format")
-            kwds["mark_groups"] = dict(mg_iter)
-
-        # If a clustering is set and marks are requested but without a specific
-        # colormap, make the colormap
-
-        # Two things need coloring: vertices and groups/clusters (polygon)
-        # The coloring needs to be coordinated between the two.
-        if clustering is not None:
-            # If mark_groups is a dict, we don't need a default color dict, we
-            # can just use the mark_groups dict. If mark_groups is False and
-            # vertex_color is set, we don't need either because the colors are
-            # already fully specified. In all other cases, we need a default
-            # color dict.
-            if isinstance(kwds["mark_groups"], dict):
-                group_colordict = kwds["mark_groups"]
-            elif (kwds["mark_groups"] is False) and ("vertex_color" in kwds):
-                pass
-            else:
-                membership = clustering.membership
-                if isinstance(clustering, VertexCover):
-                    membership = [x[0] for x in membership]
-                clusters = sorted(set(membership))
-                n_colors = len(clusters)
-                cmap = mpl.cm.get_cmap("viridis")
-                colors = [cmap(1.0 * i / n_colors) for i in range(n_colors)]
-                cluster_colordict = {g: c for g, c in zip(clusters, colors)}
-
-                # mark_groups if not explicitly marked
-                group_colordict = defaultdict(list)
-                for i, g in enumerate(membership):
-                    color = cluster_colordict[g]
-                    group_colordict[color].append(i)
-                del cluster_colordict
-                # Invert keys and values
-                group_colordict = {tuple(v): k for k, v in group_colordict.items()}
-
-            # If mark_groups is set but not defined, make a default colormap
-            if kwds["mark_groups"] is True:
-                kwds["mark_groups"] = group_colordict
-
-            if "vertex_color" not in kwds:
-                kwds["vertex_color"] = ['none' for m in membership]
-                for group_vs, color in group_colordict.items():
-                    for i in group_vs:
-                        kwds["vertex_color"][i] = color
-
-            # Now mark_groups is either a dict or False
-            # If vertex_color is not set, we can rely on mark_groups if a dict,
-            # else we need to make up the same colormap as if we were requested groups
-            if "vertex_color" not in kwds:
-                if isinstance(kwds["mark_groups"], dict):
-                    membership = clustering.membership
-                    if isinstance(clustering, VertexCover):
-                        membership = [x[0] for x in membership]
-
-        # Mark groups
-        if "mark_groups" in kwds and isinstance(kwds["mark_groups"], dict):
-            for idx, color in kwds["mark_groups"].items():
-                points = [vcoord[i] for i in idx]
-                vertices = np.asarray(convex_hull(points, coords=True))
-                # 15% expansion
-                vertices += 0.15 * (vertices - vertices.mean(axis=0))
-
-                # NOTE: we could include a corner cutting algorithm close to
-                # the vertices (e.g. Chaikin) for beautification, or a corner
-                # radius like it's done in the Cairo interface
-                polygon = mpl.patches.Polygon(
-                    vertices,
-                    facecolor=color,
-                    alpha=0.3,
-                    zorder=0,
-                    edgecolor=color,
-                    lw=2,
-                )
-                ax.add_artist(polygon)
 
         # Vertex properties
         nv = graph.vcount()
