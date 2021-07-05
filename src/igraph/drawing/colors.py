@@ -138,10 +138,19 @@ class Palette(object):
         """Returns the number of colors in this palette"""
         return self._length
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Plots the colors of the palette on the given Cairo context
+    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+        """Plots the colors of the palette on the given Cairo context/mpl Axes
 
-        Supported keyword arguments are:
+        Supported keywork arguments in both Cairo and matplotlib are:
+
+          - C{orientation}: the orientation of the palette. Must be one of
+            the following values: C{left-right}, C{bottom-top}, C{right-left}
+            or C{top-bottom}. Possible aliases: C{horizontal} = C{left-right},
+            C{vertical} = C{bottom-top}, C{lr} = C{left-right},
+            C{rl} = C{right-left}, C{tb} = C{top-bottom}, C{bt} = C{bottom-top}.
+            The default is C{left-right}.
+
+        Additional supported keyword arguments in Cairo are:
 
           - C{border_width}: line width of the border shown around the palette.
             If zero or negative, the border is turned off. Default is C{1}.
@@ -151,15 +160,10 @@ class Palette(object):
             turned off if the size of a cell is less than three times the given
             line width. Default is C{0}.  Fractional widths are also allowed.
 
-          - C{orientation}: the orientation of the palette. Must be one of
-            the following values: C{left-right}, C{bottom-top}, C{right-left}
-            or C{top-bottom}. Possible aliases: C{horizontal} = C{left-right},
-            C{vertical} = C{bottom-top}, C{lr} = C{left-right},
-            C{rl} = C{right-left}, C{tb} = C{top-bottom}, C{bt} = C{bottom-top}.
-            The default is C{left-right}.
+        Keyword arguments in matplotlib are passes to Axes.imshow.
         """
-        border_width = float(kwds.get("border_width", 1.0))
-        grid_width = float(kwds.get("grid_width", 0.0))
+        from igraph.drawing.utils import find_matplotlib
+
         orientation = str_to_orientation(kwds.get("orientation", "lr"))
 
         # Construct a matrix and plot that
@@ -171,15 +175,29 @@ class Palette(object):
         else:
             matrix = Matrix([[i] for i in indices])
 
-        return matrix.__plot__(
-            context,
-            bbox,
-            self,
-            style="palette",
-            square=False,
-            grid_width=grid_width,
-            border_width=border_width,
-        )
+        mpl, plt = find_matplotlib()
+        if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
+            cmap = mpl.colors.ListedColormap(
+                [self.get(i) for i in range(self.length)]
+            )
+            matrix.__plot__(
+                context,
+                cmap=cmap,
+                **kwds,
+                )
+        else:
+            border_width = float(kwds.get("border_width", 1.0))
+            grid_width = float(kwds.get("grid_width", 0.0))
+
+            return matrix.__plot__(
+                context,
+                bbox,
+                self,
+                style="palette",
+                square=False,
+                grid_width=grid_width,
+                border_width=border_width,
+            )
 
     def __repr__(self):
         return "<%s with %d colors>" % (self.__class__.__name__, self._length)
