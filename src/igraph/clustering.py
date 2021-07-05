@@ -477,9 +477,10 @@ class VertexClustering(Clustering):
         """
         from igraph.drawing.utils import find_matplotlib
 
+        mpl, plt = find_matplotlib()
+
         if "edge_color" not in kwds and "color" not in self.graph.edge_attributes():
             # Set up a default edge coloring based on internal vs external edges
-            mpl, plt = find_matplotlib()
             if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
                 colors = ["dimgrey", "silver"]
             else:

@@ -476,13 +476,14 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     _, plt = find_matplotlib()
 
     if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
-        result = MatplotlibGraphDrawer(ax=target)
-        result.draw(obj, *args, **kwds)
+        drawer = MatplotlibGraphDrawer(ax=target)
+        drawer.draw(obj, *args, **kwds)
         return
 
     if not isinstance(bbox, BoundingBox):
         bbox = BoundingBox(bbox)
 
+    # In turn, Plot uses some GraphDrawer class
     result = Plot(target, bbox, background=kwds.get("background", "white"))
 
     if "margin" in kwds:
