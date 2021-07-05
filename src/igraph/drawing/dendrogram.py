@@ -4,7 +4,9 @@ Drawing routines to draw the matrices.
 This module provides implementations of matrix drawers.
 """
 
+from math import pi
 from itertools import islice
+
 from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer
 from igraph.utils import str_to_orientation
 
@@ -27,6 +29,45 @@ class DefaultDendrogramDrawer(AbstractCairoDrawer):
         """
         AbstractCairoDrawer.__init__(self, context, bbox)
         self.palette = palette
+
+    @staticmethod
+    def _item_box_size(dendro, context, horiz, idx):
+        """Calculates the amount of space needed for drawing an
+        individual vertex at the bottom of the dendrogram."""
+        if dendro._names is None or dendro._names[idx] is None:
+            x_bearing, _, _, height, x_advance, _ = context.text_extents("")
+        else:
+            x_bearing, _, _, height, x_advance, _ = context.text_extents(
+                str(dendro._names[idx])
+            )
+
+        if horiz:
+            return x_advance - x_bearing, height
+        return height, x_advance - x_bearing
+
+    def _plot_item(self, dendro, context, horiz, idx, x, y):
+        """Plots a dendrogram item to the given Cairo context
+
+        @param context: the Cairo context we are plotting on
+        @param horiz: whether the dendrogram is horizontally oriented
+        @param idx: the index of the item
+        @param x: the X position of the item
+        @param y: the Y position of the item
+        """
+        if dendro._names is None or dendro._names[idx] is None:
+            return
+
+        height = self._item_box_size(dendro, context, True, idx)[1]
+        if horiz:
+            context.move_to(x, y + height)
+            context.show_text(str(self._names[idx]))
+        else:
+            context.save()
+            context.translate(x, y)
+            context.rotate(-pi / 2.0)
+            context.move_to(0, height)
+            context.show_text(str(self._names[idx]))
+            context.restore()
 
     def draw(self, dendro, **kwds):
         """Draws the given Dendrogram in a Cairo context.
@@ -177,13 +218,13 @@ class DefaultDendrogramDrawer(AbstractCairoDrawer):
             for idx in range(dendro._nitems):
                 x = layout[idx][0] + sgn * item_boxes[idx][0]
                 y = layout[idx][1] - item_boxes[idx][1] / 2.0
-                dendro._plot_item(context, horiz, idx, x, y)
+                self._plot_item(dendro, context, horiz, idx, x, y)
         else:
             sgn = 1 if orientation == "bt" else 0
             for idx in range(dendro._nitems):
                 x = layout[idx][0] - item_boxes[idx][0] / 2.0
                 y = layout[idx][1] + sgn * item_boxes[idx][1]
-                dendro._plot_item(context, horiz, idx, x, y)
+                dendro._plot_item(dendro, context, horiz, idx, x, y)
 
         # Draw dendrogram lines
         if not horiz:

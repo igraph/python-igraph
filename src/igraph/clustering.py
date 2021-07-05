@@ -730,44 +730,6 @@ class Dendrogram(object):
 
         return out.getvalue().strip()
 
-    def _item_box_size(self, context, horiz, idx):
-        """Calculates the amount of space needed for drawing an
-        individual vertex at the bottom of the dendrogram."""
-        if self._names is None or self._names[idx] is None:
-            x_bearing, _, _, height, x_advance, _ = context.text_extents("")
-        else:
-            x_bearing, _, _, height, x_advance, _ = context.text_extents(
-                str(self._names[idx])
-            )
-
-        if horiz:
-            return x_advance - x_bearing, height
-        return height, x_advance - x_bearing
-
-    def _plot_item(self, context, horiz, idx, x, y):
-        """Plots a dendrogram item to the given Cairo context
-
-        @param context: the Cairo context we are plotting on
-        @param horiz: whether the dendrogram is horizontally oriented
-        @param idx: the index of the item
-        @param x: the X position of the item
-        @param y: the Y position of the item
-        """
-        if self._names is None or self._names[idx] is None:
-            return
-
-        height = self._item_box_size(context, True, idx)[1]
-        if horiz:
-            context.move_to(x, y + height)
-            context.show_text(str(self._names[idx]))
-        else:
-            context.save()
-            context.translate(x, y)
-            context.rotate(-pi / 2.0)
-            context.move_to(0, height)
-            context.show_text(str(self._names[idx]))
-            context.restore()
-
     def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
         """Draws the dendrogram on the given Cairo context or mpl Axes.
 

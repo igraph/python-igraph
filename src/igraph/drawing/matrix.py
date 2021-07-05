@@ -5,6 +5,7 @@ This module provides implementations of matrix drawers.
 """
 
 from itertools import islice
+
 from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer
 
 __all__ = ("DefaultMatrixDrawer", "MatplotlibMatrixDrawer")
