@@ -1004,40 +1004,8 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         self.edge_drawer_factory = edge_drawer_factory
 
     def draw(self, graph, palette, *args, **kwds):
-        # NOTE: matplotlib has numpy as a dependency, so we can use it in here
-        from collections import defaultdict
-        import matplotlib as mpl
-        import matplotlib.markers as mmarkers
-        from matplotlib.path import Path
-        from matplotlib.patches import FancyArrowPatch
-        from matplotlib.patches import ArrowStyle
-        import numpy as np
-
         # Deferred import to avoid a cycle in the import graph
         from igraph.clustering import VertexClustering, VertexCover
-
-        def shrink_vertex(ax, aux, vcoord, vsize_squared):
-            """Shrink edge by vertex size"""
-            aux_display, vcoord_display = ax.transData.transform([aux, vcoord])
-            d = sqrt(((aux_display - vcoord_display) ** 2).sum())
-            fr = sqrt(vsize_squared) / d
-            end_display = vcoord_display + fr * (aux_display - vcoord_display)
-            end = ax.transData.inverted().transform(end_display)
-            return end
-
-        def callback_factory(ax, vcoord, vsizes, arrows):
-            def callback_edge_offset(event):
-                for arrow, src, tgt in arrows:
-                    v1, v2 = vcoord[src], vcoord[tgt]
-                    # This covers both cases (curved and straight)
-                    aux1, aux2 = arrow._path_original.vertices[[1, -2]]
-                    start = shrink_vertex(ax, aux1, v1, vsizes[src])
-                    end = shrink_vertex(ax, aux2, v2, vsizes[tgt])
-                    arrow._path_original.vertices[0] = start
-                    arrow._path_original.vertices[-1] = end
-
-            return callback_edge_offset
-
 
         # Some abbreviations for sake of simplicity
         directed = graph.is_directed()
@@ -1191,7 +1159,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
             src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
             drawer_method(visual_edge, src_vertex, dest_vertex)
 
-        # Vertex labels
+        # Draw the vertex labels
         labels = kwds.get("vertex_label", None)
         if labels is not None:
             vertex_label_iter = (
@@ -1208,7 +1176,29 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                     *coords,
                     label,
                     fontsize=label_size,
-                    # TODO: alignment, overlap, etc.
+                    # TODO: alignment, overlap, offset, etc.
                     )
+
+        # Draw the edge labels
+        labels = kwds.get("edge_label", None)
+        if labels is not None:
+            edge_label_iter = (
+                (labels[i], edge_builder[i], graph.es[i]) for i in range(graph.ecount())
+                )
+            for label, visual_edge, edge in edge_label_iter:
+                # Ask the edge drawer to propose an anchor point for the label
+                src, dest = edge.tuple
+                src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
+                (x, y), (halign, valign) = edge_drawer.get_label_position(
+                    edge, src_vertex, dest_vertex,
+                )
+
+                ax.text(
+                        x, y,
+                        label,
+                        fontsize=visual_edge.label_size,
+                        color=visual_edge.label_color,
+                        # TODO: alignment, overlap, offset, etc.
+                        )
 
         ax.autoscale_view()
