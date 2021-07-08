@@ -1136,26 +1136,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         for vertex, visual_vertex, coords in vertex_coord_iter:
             drawer_method(visual_vertex, vertex, coords)
 
-
-        # Construct the iterator that we will use to draw the edges
-        es = graph.es
-        if edge_order is None:
-            # Default edge order
-            edge_coord_iter = zip(es, edge_builder)
-        else:
-            # Specified edge order
-            edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
-
-        # Draw the edges
-        if directed:
-            drawer_method = edge_drawer.draw_directed_edge
-        else:
-            drawer_method = edge_drawer.draw_undirected_edge
-        for edge, visual_edge in edge_coord_iter:
-            src, dest = edge.tuple
-            src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
-            drawer_method(visual_edge, src_vertex, dest_vertex)
-
         # Draw the vertex labels
         labels = kwds.get("vertex_label", None)
         if labels is not None:
@@ -1176,6 +1156,25 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                     # TODO: alignment, overlap, offset, etc.
                     )
 
+        # Construct the iterator that we will use to draw the edges
+        es = graph.es
+        if edge_order is None:
+            # Default edge order
+            edge_coord_iter = zip(es, edge_builder)
+        else:
+            # Specified edge order
+            edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
+
+        # Draw the edges
+        if directed:
+            drawer_method = edge_drawer.draw_directed_edge
+        else:
+            drawer_method = edge_drawer.draw_undirected_edge
+        for edge, visual_edge in edge_coord_iter:
+            src, dest = edge.tuple
+            src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
+            drawer_method(visual_edge, src_vertex, dest_vertex)
+
         # Draw the edge labels
         labels = kwds.get("edge_label", None)
         if labels is not None:
@@ -1195,7 +1194,8 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                         label,
                         fontsize=visual_edge.label_size,
                         color=visual_edge.label_color,
-                        # TODO: alignment, overlap, offset, etc.
+                        ha=halign, va=valign,
+                        # TODO: offset, etc.
                         )
 
         ax.autoscale_view()

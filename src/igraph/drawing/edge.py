@@ -151,6 +151,10 @@ class AbstractEdgeDrawer(object):
           Members of the alignment tuple are taken from constants in the
           L{TextAlignment} class.
         """
+        # TODO: curved edges don't play terribly well with this function,
+        # we could try to get the mid point of the actual curved arrow
+        # (Bezier curve) and use that.
+
         # Determine the angle of the line
         dx = dest_vertex.position[0] - src_vertex.position[0]
         dy = dest_vertex.position[1] - src_vertex.position[1]
