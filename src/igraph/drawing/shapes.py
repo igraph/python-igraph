@@ -23,8 +23,10 @@ from math import atan2, copysign, cos, pi, sin
 import sys
 
 from igraph.drawing.baseclasses import AbstractCairoDrawer
-from igraph.drawing.utils import Point
+from igraph.drawing.utils import Point, find_matplotlib
 from igraph.utils import consecutive_pairs
+
+mpl, plt = find_matplotlib()
 
 
 class ShapeDrawer(object):
@@ -276,8 +278,24 @@ class DiamondDrawer(ShapeDrawer):
 #####################################################################
 
 
-class PolygonDrawer(AbstractCairoDrawer):
-    """Class that is used to draw polygons.
+class AbstractPolygonDrawer:
+    """Abstract class that is used to draw polygons"""
+
+    @staticmethod
+    def _round_corners(points, corner_radius):
+        points = [Point(*point) for point in points]
+        side_vecs = [v - u for u, v in consecutive_pairs(points, circular=True)]
+        half_side_lengths = [side.length() / 2 for side in side_vecs]
+        corner_radii = [corner_radius] * len(points)
+        for idx in range(len(corner_radii)):
+            prev_idx = -1 if idx == 0 else idx - 1
+            radii = [corner_radius, half_side_lengths[prev_idx], half_side_lengths[idx]]
+            corner_radii[idx] = min(radii)
+        return corner_radii
+
+
+class PolygonDrawer(AbstractCairoDrawer, AbstractPolygonDrawer):
+    """Class that is used to draw polygons in Cairo.
 
     The corner points of the polygon can be set by the C{points}
     property of the drawer, or passed at construction time. Most
@@ -332,14 +350,7 @@ class PolygonDrawer(AbstractCairoDrawer):
         # of the side / 2. For each corner, the final corner radius
         # is the smaller of the radii on the two sides adjacent to
         # the corner.
-        points = [Point(*point) for point in points]
-        side_vecs = [v - u for u, v in consecutive_pairs(points, circular=True)]
-        half_side_lengths = [side.length() / 2 for side in side_vecs]
-        corner_radii = [corner_radius] * len(points)
-        for idx in range(len(corner_radii)):
-            prev_idx = -1 if idx == 0 else idx - 1
-            radii = [corner_radius, half_side_lengths[prev_idx], half_side_lengths[idx]]
-            corner_radii[idx] = min(radii)
+        corner_radii = self._round_corners(points, corner_radius)
 
         # Okay, move to the last corner, adjusted by corner_radii[-1]
         # towards the first corner
@@ -368,6 +379,89 @@ class PolygonDrawer(AbstractCairoDrawer):
         self.draw_path(points)
         self.context.stroke()
 
+
+class MatplotlibPolygonDrawer(AbstractPolygonDrawer):
+    """Class that is used to draw polygons in matplotlib.
+
+    The corner points of the polygon can be set by the C{points}
+    property of the drawer, or passed at construction time. Most
+    drawing methods in this class also have an extra C{points}
+    argument that can be used to override the set of points in the
+    C{points} property."""
+
+    def __init__(self, ax, points=[]):
+        """Constructs a new polygon drawer that draws on the given
+        Cairo context.
+
+        @param  ax: the matplotlib Axes to draw on
+        @param  points:  the list of corner points
+        """
+        self.context = ax
+        self.points = points
+
+    def draw(self, points=None, corner_radius=0, **kwds):
+        """Sets up a mpl.path.Path for the outline of a polygon in matplotlib.
+
+        @param points: the coordinates of the corners of the polygon,
+          in clockwise or counter-clockwise order, or C{None} if we are
+          about to use the C{points} property of the class.
+        @param corner_radius: if zero, an ordinary polygon will be drawn.
+          If positive, the corners of the polygon will be rounded with
+          the given radius.
+        """
+        if points is None:
+            points = self.points
+
+        if len(points) < 2:
+            # Well, a polygon must have at least two corner points
+            return
+
+        ax = self.context
+        if corner_radius <= 0:
+            # No rounded corners, this is simple
+            stroke = mpl.patches.Polygon(points, **kwds)
+            ax.add_patch(stroke)
+
+        # Rounded corners. First, we will take each side of the
+        # polygon and find what the corner radius should be on
+        # each corner. If the side is longer than 2r (where r is
+        # equal to corner_radius), the radius allowed by that side
+        # is r; if the side is shorter, the radius is the length
+        # of the side / 2. For each corner, the final corner radius
+        # is the smaller of the radii on the two sides adjacent to
+        # the corner.
+        corner_radii = self._round_corners(points, corner_radius)
+
+        # Okay, move to the last corner, adjusted by corner_radii[-1]
+        # towards the first corner
+        path = []
+        codes = []
+        path.append((points[-1].towards(points[0], corner_radii[-1])))
+        codes.append(mpl.path.Path.MOVETO)
+
+        # Now, for each point in points, draw a line towards the
+        # corner, stopping before it in a distance of corner_radii[idx],
+        # then draw the corner
+        u = points[-1]
+        for idx, (v, w) in enumerate(consecutive_pairs(points, True)):
+            radius = corner_radii[idx]
+            path.append(v.towards(u, radius))
+            codes.append(mpl.path.Path.LINETO)
+
+            aux1 = v.towards(u, radius / 2)
+            aux2 = v.towards(w, radius / 2)
+
+            path.append(aux1)
+            path.append(aux2)
+            path.append(v.towards(w, corner_radii[idx]))
+            codes.extend([mpl.path.Path.CURVE4] * 3)
+            u = v
+
+        stroke = mpl.patches.PathPatch(
+            mpl.path.Path(path, codes=codes, closed=True),
+            **kwds,
+        )
+        ax.add_patch(stroke)
 
 #####################################################################
 

@@ -27,7 +27,7 @@ from igraph.drawing.colors import color_to_html_format, color_name_to_rgb
 from igraph.drawing.edge import ArrowEdgeDrawer, MatplotlibArrowEdgeDrawer
 from igraph.drawing.text import TextAlignment, TextDrawer
 from igraph.drawing.metamagic import AttributeCollectorBase
-from igraph.drawing.shapes import PolygonDrawer
+from igraph.drawing.shapes import PolygonDrawer, MatplotlibPolygonDrawer
 from igraph.drawing.utils import find_cairo, find_matplotlib, Point
 from igraph.drawing.vertex import DefaultVertexDrawer, MatplotlibVertexDrawer
 from igraph.layout import Layout
@@ -1106,18 +1106,15 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                         Point(*point).towards(center, -corner_radius)
                         for point in polygon
                     ]
-                    # FIXME?
-                    #polygon = [[p.x, p.y] for p in polygon]
 
                 # Draw the hull
                 facecolor = (color[0], color[1], color[2], 0.25 * color[3])
-                # TODO: corner_radius. Requires a sister class to PolygonDrawer...
-                stroke = mpl.patches.Polygon(
-                    polygon,
-                    facecolor=facecolor,
-                    edgecolor=color,
-                )
-                ax.add_patch(stroke)
+                drawer = MatplotlibPolygonDrawer(ax, points=polygon)
+                drawer.draw(
+                        corner_radius=corner_radius,
+                        facecolor=facecolor,
+                        edgecolor=color,
+                        )
 
         # Determine the order in which we will draw the vertices and edges
         vertex_order = self._determine_vertex_order(graph, kwds)
