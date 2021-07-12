@@ -824,6 +824,8 @@ Attribute name  Keyword argument       Purpose
 =============== ====================== ==========================================
 ``color``       ``vertex_color``       Color of the vertex
 --------------- ---------------------- ------------------------------------------
+``font``        ``vertex_font``        Font family of the vertex
+--------------- ---------------------- ------------------------------------------
 ``label``       ``vertex_label``       Label of the vertex
 --------------- ---------------------- ------------------------------------------
 ``label_angle`` ``vertex_label_angle`` The placement of the vertex label on the
@@ -870,6 +872,8 @@ Attribute name  Keyword argument       Purpose
                                        make multiple edges visible. See also the
                                        ``autocurve`` keyword argument to
                                        :func:`plot`.
+--------------- ---------------------- ------------------------------------------
+``font``        ``edge_font``          Font family of the edge
 --------------- ---------------------- ------------------------------------------
 ``arrow_size``  ``edge_arrow_size``    Size (length) of the arrowhead on the edge
                                        if the graph is directed, relative to 15
