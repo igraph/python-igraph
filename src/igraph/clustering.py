@@ -427,7 +427,7 @@ class VertexClustering(Clustering):
         max_size = max(ss)
         return self.subgraph(ss.index(max_size))
 
-    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
         """Plots the clustering to the given Cairo context or mpl Axes.
 
         This is done by calling L{Graph.__plot__()} with the same arguments, but
@@ -475,17 +475,11 @@ class VertexClustering(Clustering):
 
         @see: L{Graph.__plot__()} for more supported keyword arguments.
         """
-        from igraph.drawing.utils import find_matplotlib
-
-        mpl, plt = find_matplotlib()
+        from igraph.drawing.colors import default_edge_colors
 
         if "edge_color" not in kwds and "color" not in self.graph.edge_attributes():
             # Set up a default edge coloring based on internal vs external edges
-            if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
-                colors = ["dimgrey", "silver"]
-            else:
-                colors = ["grey20", "grey80"]
-
+            colors = default_edge_colors[backend]
             kwds["edge_color"] = [
                 colors[is_crossing] for is_crossing in self.crossing()
             ]
@@ -504,7 +498,9 @@ class VertexClustering(Clustering):
         if "vertex_color" not in kwds:
             kwds["vertex_color"] = self.membership
 
-        return self._graph.__plot__(context, bbox, palette, *args, **kwds)
+        result = self._graph.__plot__(backend, context, bbox, palette, *args, **kwds)
+
+        return result
 
     def _formatted_cluster_iterator(self):
         """Iterates over the clusters and formats them into a string to be
@@ -730,7 +726,7 @@ class Dendrogram(object):
 
         return out.getvalue().strip()
 
-    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
         """Draws the dendrogram on the given Cairo context or mpl Axes.
 
         Supported keyword arguments are:
@@ -861,7 +857,7 @@ class VertexDendrogram(Dendrogram):
     def optimal_count(self, value):
         self._optimal_count = max(int(value), 1)
 
-    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
         """Draws the vertex dendrogram on the given Cairo context or mpl Axes
 
         See L{Dendrogram.__plot__} for the list of supported keyword
@@ -878,7 +874,7 @@ class VertexDendrogram(Dendrogram):
             name if name is not None else str(idx)
             for idx, name in enumerate(self._names)
         ]
-        result = Dendrogram.__plot__(self, context, bbox, palette, *args, **kwds)
+        result = Dendrogram.__plot__(self, backend, context, bbox, palette, *args, **kwds)
         del self._names
 
         return result
@@ -1125,7 +1121,7 @@ class VertexCover(Cover):
         """
         return [self._graph.subgraph(cl) for cl in self]
 
-    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
         """Plots the cover to the given Cairo context or mpl Axes.
 
         This is done by calling L{Graph.__plot__()} with the same arguments, but
@@ -1199,7 +1195,7 @@ class VertexCover(Cover):
                 kwds["mark_groups"], self
             )
 
-        return self._graph.__plot__(context, bbox, palette, *args, **kwds)
+        return self._graph.__plot__(backend, context, bbox, palette, *args, **kwds)
 
     def _formatted_cluster_iterator(self):
         """Iterates over the clusters and formats them into a string to be
@@ -1306,7 +1302,7 @@ class CohesiveBlocks(VertexCover):
         if the given group is the root."""
         return self._parent[:]
 
-    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
         """Plots the cohesive block structure to the given Cairo context or
         mpl Axes.
 
@@ -1332,7 +1328,7 @@ class CohesiveBlocks(VertexCover):
         if "vertex_color" not in kwds:
             kwds["vertex_color"] = self.max_cohesions()
 
-        return VertexCover.__plot__(self, context, bbox, palette, *args, **kwds)
+        return VertexCover.__plot__(self, backend, context, bbox, palette, *args, **kwds)
 
 
 def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):

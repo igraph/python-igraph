@@ -8,10 +8,13 @@ from itertools import islice
 
 from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer
 
-__all__ = ("DefaultMatrixDrawer", "MatplotlibMatrixDrawer")
+__all__ = (
+    "CairoMatrixDrawer", "MatplotlibMatrixDrawer",
+    "DefaultMatrixDrawer", # TODO: deprecate
+)
 
 
-class DefaultMatrixDrawer(AbstractCairoDrawer):
+class CairoMatrixDrawer(AbstractCairoDrawer):
     """Default Cairo drawer object for matrices."""
 
     def __init__(self, context, bbox, palette):
@@ -237,6 +240,10 @@ class DefaultMatrixDrawer(AbstractCairoDrawer):
             context.set_source_rgb(0.0, 0.0, 0.0)
             context.rectangle(ox, oy, dx * matrix.shape[1], dy * matrix.shape[0])
             context.stroke()
+
+
+# TODO: deprecate
+DefaultMatrixDrawer = CairoMatrixDrawer
 
 
 class MatplotlibMatrixDrawer(AbstractDrawer):

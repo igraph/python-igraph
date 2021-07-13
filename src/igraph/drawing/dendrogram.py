@@ -11,12 +11,16 @@ from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer
 from igraph.utils import str_to_orientation
 from igraph.drawing.utils import find_matplotlib
 
-__all__ = ("DefaultDendrogramDrawer", "MatplotlibDendrogramDrawer")
+__all__ = (
+    "CairoDendrogramDrawer",
+    "MatplotlibDendrogramDrawer",
+    "DefaultDendrogramDrawer",  # TODO: deprecate
+)
 
 mpl, plt = find_matplotlib()
 
 
-class DefaultDendrogramDrawer(AbstractCairoDrawer):
+class CairoDendrogramDrawer(AbstractCairoDrawer):
     """Default Cairo drawer object for dendrograms."""
 
     def __init__(self, context, bbox, palette):
@@ -252,6 +256,10 @@ class DefaultDendrogramDrawer(AbstractCairoDrawer):
                 context.stroke()
 
         context.restore()
+
+
+# TODO: deprecate
+DefaultDendrogramDrawer = CairoDendrogramDrawer
 
 
 class MatplotlibDendrogramDrawer(AbstractDrawer):

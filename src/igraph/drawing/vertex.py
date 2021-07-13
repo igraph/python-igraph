@@ -11,7 +11,11 @@ from igraph.drawing.shapes import ShapeDrawerDirectory
 from igraph.drawing.utils import find_matplotlib
 from math import pi
 
-__all__ = ("AbstractVertexDrawer", "AbstractCairoVertexDrawer", "DefaultVertexDrawer")
+__all__ = (
+    "AbstractVertexDrawer", "AbstractCairoVertexDrawer", "CairoVertexDrawer",
+    "MatplotlibVertexDrawer",
+    "DefaultVertexDrawer",  # TODO: deprecate
+    )
 
 mpl, plt = find_matplotlib()
 
@@ -64,7 +68,7 @@ class AbstractCairoVertexDrawer(AbstractVertexDrawer, AbstractCairoDrawer):
         AbstractVertexDrawer.__init__(self, palette, layout)
 
 
-class DefaultVertexDrawer(AbstractCairoVertexDrawer):
+class CairoVertexDrawer(AbstractCairoVertexDrawer):
     """The default vertex drawer implementation of igraph."""
 
     def __init__(self, context, bbox, palette, layout):
@@ -113,6 +117,10 @@ class DefaultVertexDrawer(AbstractCairoVertexDrawer):
         context.set_source_rgba(*visual_vertex.frame_color)
         context.set_line_width(visual_vertex.frame_width)
         context.stroke()
+
+
+# TODO: Deprecate
+DefaultVertexDrawer = CairoVertexDrawer
 
 
 class MatplotlibVertexDrawer(AbstractVertexDrawer):

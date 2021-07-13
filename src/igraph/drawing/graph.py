@@ -27,14 +27,15 @@ from igraph.drawing.colors import color_to_html_format, color_name_to_rgb
 from igraph.drawing.edge import ArrowEdgeDrawer, MatplotlibArrowEdgeDrawer
 from igraph.drawing.text import TextAlignment, TextDrawer
 from igraph.drawing.metamagic import AttributeCollectorBase
-from igraph.drawing.shapes import PolygonDrawer, MatplotlibPolygonDrawer
+from igraph.drawing.shapes import CairoPolygonDrawer, MatplotlibPolygonDrawer
 from igraph.drawing.utils import find_cairo, find_matplotlib, Point
 from igraph.drawing.vertex import DefaultVertexDrawer, MatplotlibVertexDrawer
 from igraph.layout import Layout
 
 __all__ = (
-    "DefaultGraphDrawer", "MatplotlibGraphDrawer", "CytoscapeGraphDrawer",
-    "UbiGraphDrawer"
+    "CairoGraphDrawer", "MatplotlibGraphDrawer", "CytoscapeGraphDrawer",
+    "UbiGraphDrawer",
+    "DefaultGraphDrawer",  # TODO: deprecate
 )
 
 cairo = find_cairo()
@@ -166,7 +167,7 @@ class AbstractCairoGraphDrawer(AbstractGraphDrawer, AbstractCairoDrawer):
 #####################################################################
 
 
-class DefaultGraphDrawer(AbstractCairoGraphDrawer):
+class CairoGraphDrawer(AbstractCairoGraphDrawer):
     """Class implementing the default visualisation of a graph.
 
     The default visualisation of a graph draws the nodes on a 2D plane
@@ -296,7 +297,7 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
                 group_iter = iter({}.items())
 
             # We will need a polygon drawer to draw the convex hulls
-            polygon_drawer = PolygonDrawer(context, bbox)
+            polygon_drawer = CairoPolygonDrawer(context, bbox)
 
             # Iterate over color-memberlist pairs
             for group, color_id in group_iter:
@@ -513,6 +514,9 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
             label_drawer.bbox = (x - w, y - h, x + w, y + h)
             label_drawer.draw(wrap=wrap)
 
+
+# TODO: deprecate
+DefaultGraphDrawer = CairoGraphDrawer
 
 #####################################################################
 
@@ -1070,6 +1074,12 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 # False
                 group_iter = iter({}.items())
 
+            if kwds.get("legend", False):
+                legend_info = {
+                    'handles': [],
+                    'labels': [],
+                }
+
             # Iterate over color-memberlist pairs
             for group, color_id in group_iter:
                 if not group or color_id is None:
@@ -1115,6 +1125,22 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                         facecolor=facecolor,
                         edgecolor=color,
                         )
+
+                if kwds.get("legend", False):
+                    legend_info['handles'].append(
+                        plt.Rectangle(
+                            (0, 0), 0, 0,
+                            facecolor=facecolor,
+                            edgecolor=color,
+                        )
+                    )
+                    legend_info['labels'].append(str(color_id))
+
+        if kwds.get("legend", False):
+            ax.legend(
+                legend_info['handles'],
+                legend_info['labels'],
+                )
 
         # Determine the order in which we will draw the vertices and edges
         vertex_order = self._determine_vertex_order(graph, kwds)

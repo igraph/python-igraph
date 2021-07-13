@@ -25,6 +25,7 @@ __all__ = (
     "rgb_to_hsl",
     "rgba_to_hsla",
     "palettes",
+    "default_edge_colors",
     "known_colors",
 )
 
@@ -744,6 +745,12 @@ def lighten(color, ratio=0.5):
         blue + (1.0 - blue) * ratio,
         alpha,
     )
+
+
+default_edge_colors = {
+    'cairo': ["grey20", "grey80"],
+    'matplotlib': ["dimgrey", "silver"],
+}
 
 
 known_colors = {

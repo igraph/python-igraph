@@ -47,6 +47,8 @@ def get_platform_image_viewer():
             "ristretto",
             "geeqie",
             "eom",
+            "feh",
+            "sxiv",
         ]
         paths = ["/usr/bin", "/bin"]
         for path in paths:
@@ -159,6 +161,8 @@ class Configuration(object):
     These settings specify the default values used by plotting functions.
     They are all stored in section C{plotting}.
 
+        - B{backend}: either "cairo" or "matplotlib".
+
         - B{layout}: default graph layout algorithm to be used.
 
         - B{mark_groups}: whether to mark the clusters by polygons when
@@ -247,6 +251,7 @@ class Configuration(object):
         "general.shells": {"default": "IPythonShell,ClassicPythonShell"},
         "general.verbose": {"default": True, "type": "boolean"},
         "apps.image_viewer": {"default": get_platform_image_viewer()},
+        "plotting.backend": {"default": "cairo"},
         "plotting.layout": {"default": "auto"},
         "plotting.mark_groups": {"default": False, "type": "boolean"},
         "plotting.palette": {"default": "gray"},

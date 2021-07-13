@@ -3,7 +3,7 @@
 """Additional auxiliary data types"""
 
 from itertools import islice
-from igraph.drawing.matrix import DefaultMatrixDrawer, MatplotlibMatrixDrawer
+from igraph.drawing.matrix import CairoMatrixDrawer, MatplotlibMatrixDrawer
 
 
 class Matrix(object):
@@ -272,7 +272,7 @@ class Matrix(object):
         the original matrix."""
         return (list(row) for row in self._data)
 
-    def __plot__(self, context, bbox=None, palette=None, **kwds):
+    def __plot__(self, backend, context, bbox=None, palette=None, **kwds):
         """Plots the matrix to the given Cairo context in the given box
 
         Besides the usual self-explanatory plotting parameters (C{context},
@@ -323,13 +323,16 @@ class Matrix(object):
         is square-shaped, the same names are used for both column and row
         names.
         """
-        from igraph.drawing.utils import find_matplotlib
-
-        mpl, plt = find_matplotlib()
-        if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
-            drawer = MatplotlibMatrixDrawer(context)
+        if backend == "matplotlib":
+            drawer = MatplotlibMatrixDrawer(
+                    context,
+                    )
         else:
-            drawer = DefaultMatrixDrawer(context, bbox, palette)
+            drawer = CairoMatrixDrawer(
+                    context,
+                    bbox,
+                    palette,
+                    )
 
         drawer.draw(self, **kwds)
 

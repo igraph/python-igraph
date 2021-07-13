@@ -294,7 +294,7 @@ class AbstractPolygonDrawer:
         return corner_radii
 
 
-class PolygonDrawer(AbstractCairoDrawer, AbstractPolygonDrawer):
+class CairoPolygonDrawer(AbstractCairoDrawer, AbstractPolygonDrawer):
     """Class that is used to draw polygons in Cairo.
 
     The corner points of the polygon can be set by the C{points}
@@ -311,7 +311,7 @@ class PolygonDrawer(AbstractCairoDrawer, AbstractPolygonDrawer):
         @param  bbox:    ignored, leave it at its default value
         @param  points:  the list of corner points
         """
-        super(PolygonDrawer, self).__init__(context, bbox)
+        super(CairoPolygonDrawer, self).__init__(context, bbox)
         self.points = points
 
     def draw_path(self, points=None, corner_radius=0):
@@ -378,6 +378,10 @@ class PolygonDrawer(AbstractCairoDrawer, AbstractPolygonDrawer):
         """
         self.draw_path(points)
         self.context.stroke()
+
+
+# TODO: deprecate
+PolygonDrawer = CairoPolygonDrawer
 
 
 class MatplotlibPolygonDrawer(AbstractPolygonDrawer):

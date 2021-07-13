@@ -25,7 +25,11 @@ import time
 from io import BytesIO
 from igraph.configuration import Configuration
 from igraph.drawing.colors import Palette, palettes
-from igraph.drawing.graph import DefaultGraphDrawer, MatplotlibGraphDrawer
+from igraph.drawing.graph import (
+    CairoGraphDrawer,
+    MatplotlibGraphDrawer,
+    DefaultGraphDrawer,
+)
 from igraph.drawing.utils import (
     BoundingBox,
     Point,
@@ -35,7 +39,15 @@ from igraph.drawing.utils import (
 )
 from igraph.utils import _is_running_in_ipython, named_temporary_file
 
-__all__ = ("BoundingBox", "DefaultGraphDrawer", "Plot", "Point", "Rectangle", "plot")
+__all__ = (
+    "BoundingBox",
+    "CairoGraphDrawer",
+    "MatplotlibGraphDrawer",
+    "DefaultGraphDrawer",
+    "Plot",
+    "Point", "Rectangle",
+    "plot",
+)
 
 cairo = find_cairo()
 mpl, plt = find_matplotlib()
@@ -43,7 +55,7 @@ mpl, plt = find_matplotlib()
 #####################################################################
 
 
-class Plot:
+class CairoPlot:
     """Class representing an arbitrary plot.
 
     Objects that you can plot include graphs, matrices, palettes, clusterings,
@@ -97,7 +109,14 @@ class Plot:
     L{Plot.remove} method.
     """
 
-    def __init__(self, target=None, bbox=None, palette=None, background=None):
+    def __init__(
+            self,
+            target=None,
+            bbox=None,
+            palette=None,
+            background=None,
+            margin=20,
+            ):
         """Creates a new plot using Cairo or Matplotlib.
 
         @param target: the target surface to write to. It can be one of the
@@ -132,8 +151,17 @@ class Plot:
           You can use any color specification here that is understood by
           L{igraph.drawing.colors.color_name_to_rgba}.
         """
+
         self._filename = None
         self._need_tmpfile = False
+
+        if bbox is None:
+            self.bbox = BoundingBox(600, 600)
+        elif isinstance(bbox, tuple) or isinstance(bbox, list):
+            self.bbox = BoundingBox(bbox)
+        else:
+            self.bbox = bbox
+        self.bbox = self.bbox.contract(margin)
 
         # Several Windows-specific hacks will be used from now on, thanks
         # to Dale Hunscher for debugging and fixing all that stuff
@@ -153,8 +181,6 @@ class Plot:
             )
         elif isinstance(target, cairo.Surface):
             self._surface = target
-        elif hasattr(plt, "Axes") and isinstance(target, plt.Axes):
-            self._surface = None
         else:
             self._filename = target
             _, ext = os.path.splitext(target)
@@ -178,22 +204,14 @@ class Plot:
             else:
                 raise ValueError("image format not handled by Cairo: %s" % ext)
 
-        if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
-            self._ctx = target
-            self.bbox = None
-        else:
-            self._ctx = cairo.Context(self._surface)
-            if bbox is None:
-                self.bbox = BoundingBox(600, 600)
-            elif isinstance(bbox, tuple) or isinstance(bbox, list):
-                self.bbox = BoundingBox(bbox)
-            else:
-                self.bbox = bbox
+        self._ctx = cairo.Context(self._surface)
 
         self._surface_was_created = not isinstance(target, cairo.Surface)
         self._objects = []
         self._is_dirty = False
 
+        if background is None:
+            background = "white"
         self.background = background
 
     def add(self, obj, bbox=None, palette=None, opacity=1.0, *args, **kwds):
@@ -294,7 +312,7 @@ class Plot:
                     ctx.push_group()
                 else:
                     ctx.save()
-                plotter(ctx, bbox, palette, *args, **kwds)
+                plotter('cairo', ctx, bbox, palette, *args, **kwds)
                 if opacity < 1.0:
                     ctx.pop_group_to_source()
                     ctx.paint_with_alpha(opacity)
@@ -423,7 +441,16 @@ class Plot:
 
 
 class MatplotlibPlot:
-    def __init__(self, target=None, palette=None, background=None):
+    def __init__(
+            self,
+            target=None,
+            palette=None,
+            background=None,
+            ):
+        if target is None:
+            # Ignore the figure, one can recover it via target.figure
+            _, target = plt.subplots()
+
         self._ctx = target
 
         if palette is None:
@@ -541,9 +568,64 @@ class MatplotlibPlot:
             else:
                 if (opacity < 1.0) and ('alpha' not in kwds):
                     kwds['alpha'] = opacity
-                plotter(ax, palette=palette, *args, **kwds)
+                plotter(
+                    'matplotlib',
+                    ax,
+                    palette=palette,
+                    *args, **kwds,
+                    )
 
         self._is_dirty = False
+
+    def save(self, fname=None, **kwargs):
+        if fname is None:
+            raise ValueError('Please specify a file path')
+
+        fig = self._ctx.figure
+        fig.savefig(fname, **kwargs)
+
+
+class Plot:
+    def __init__(self, backend, target, *args, **kwargs):
+        self._backend = backend
+        if backend == 'cairo':
+            bbox = kwargs.pop('bbox', None)
+            palette = kwargs.pop('palette', None)
+            background = kwargs.pop('background', 'white')
+            self._instance = CairoPlot(
+                    target=target,
+                    bbox=bbox,
+                    palette=palette,
+                    background=background,
+                    )
+        else:
+            self._instance = MatplotlibPlot(
+                    target,
+                    )
+
+    @property
+    def backend(self):
+        return self._backend
+
+    def add(self, obj, *args, **kwargs):
+        return self._instance.add(
+            obj, *args, **kwargs,
+        )
+
+    def remove(self, obj, *args, **kwargs):
+        return self._instance.remove(
+            obj, *args, **kwargs,
+        )
+
+    def show(self):
+        return self._instance.show()
+
+    def redraw(self):
+        return self._instance.redraw()
+
+    def save(self, fname=None):
+        return self._instance.save(fname=fname)
+
 
 
 #####################################################################
@@ -618,63 +700,53 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
 
     @see: Graph.__plot__
     """
-    _, plt = find_matplotlib()
 
-    # Switch for matplotlib backend
+    # Switch backend based on target (first) and config (second)
     if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
-        # In turn, MatplotlibPlot uses obj.__plot__(ax)
-        result = MatplotlibPlot(
-            target,
-            background=kwds.get("background", None),
-            )
+        backend = 'matplotlib'
+    elif isinstance(target, cairo.Surface):
+        backend = 'cairo'
+    else:
+        backend = Configuration.instance()['plotting.backend']
+
+    if backend == "":
+        raise ImportError('cairo or matplotlib are needed for plotting')
+
+    inline = False
+    if backend == 'cairo':
+        if target is None and _is_running_in_ipython():
+            inline = kwds.get("inline")
+            if inline is None:
+                inline = Configuration.instance()["shell.ipython.inlining.Plot"]
+
+    result = Plot(
+        backend,
+        target,
+    )
+
+    if backend == 'cairo':
+        result.add(obj, bbox, *args, **kwds)
+    else:
         result.add(obj, *args, **kwds)
+
+    # Matplotlib takes care of the actual backend. We want to show but also
+    # return the object in case the user wants to add more objects. Whether the
+    # plot is actually drawn on the cavas depends on mpl config, e.g. plt.ion()
+    if backend == 'matplotlib':
         result.show()
         return result
 
-    # Otherwise, use default Cairo backend
-
-    if not isinstance(bbox, BoundingBox):
-        bbox = BoundingBox(bbox)
-
-    # In turn, Plot uses some GraphDrawer class
-    result = Plot(
-            target,
-            bbox,
-            background=kwds.get("background", "white"),
-            )
-
-    if "margin" in kwds:
-        bbox = bbox.contract(kwds["margin"])
-        del kwds["margin"]
-    else:
-        bbox = bbox.contract(20)
-
-    result.add(obj, bbox, *args, **kwds)
-
-    if target is None and _is_running_in_ipython():
-        # Get the default value of the `inline` argument from the configuration if
-        # needed
-        inline = kwds.get("inline")
-        if inline is None:
-            config = Configuration.instance()
-            inline = config["shell.ipython.inlining.Plot"]
-
-        # If we requested an inline plot, just return the result and IPython will
-        # call its _repr_svg_ method. If we requested a non-inline plot, show the
-        # plot in a separate window and return nothing
-        if inline:
-            return result
-        else:
-            result.show()
-            return
+    # If we requested an inline plot, just return the result and IPython will
+    # call its _repr_svg_ method. If we requested a non-inline plot, show the
+    # plot in a separate window and return nothing
+    if inline:
+        return result
 
     # We are either not in IPython or the user specified an explicit plot target,
     # so just show or save the result
+
     if target is None:
         # show with the default backend
-        result.show()
-    elif hasattr(plt, "Axes") and isinstance(target, plt.Axes):
-        # show in matplotlib
         result.show()
     elif isinstance(target, str):
         # save
