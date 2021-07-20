@@ -1224,4 +1224,14 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                         # TODO: offset, etc.
                         )
 
+        # Despine
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+
+        # Remove axis ticks
+        ax.set_xticks([])
+        ax.set_yticks([])
+
         ax.autoscale_view()
