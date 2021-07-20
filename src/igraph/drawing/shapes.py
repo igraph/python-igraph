@@ -37,7 +37,7 @@ class ShapeDrawer(object):
     Cairo path appropriately."""
 
     @staticmethod
-    def draw_path(ctx, center_x, center_y, width, height=None):
+    def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws the path of the shape on the given Cairo context, without
         stroking or filling it.
 
@@ -86,15 +86,20 @@ class NullDrawer(ShapeDrawer):
 class RectangleDrawer(ShapeDrawer):
     """Static class which draws rectangular vertices"""
 
-    names = "rectangle rect rectangular square box"
+    names = "rectangle rect rectangular square box s"
 
     @staticmethod
-    def draw_path(ctx, center_x, center_y, width, height=None):
+    def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws a rectangle-shaped path on the Cairo context without stroking
         or filling it.
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        ctx.rectangle(center_x - width / 2, center_y - height / 2, width, height)
+        if isinstance(ctx, plt.Axes):
+            return mpl.patches.Rectangle(
+                (center_x - width / 2, center_y - height / 2),
+                width, height, **kwargs)
+        else:
+            ctx.rectangle(center_x - width / 2, center_y - height / 2, width, height)
 
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
@@ -147,17 +152,21 @@ class RectangleDrawer(ShapeDrawer):
 class CircleDrawer(ShapeDrawer):
     """Static class which draws circular vertices"""
 
-    names = "circle circular"
+    names = "circle circular o"
 
     @staticmethod
-    def draw_path(ctx, center_x, center_y, width, height=None):
+    def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws a circular path on the Cairo context without stroking or
         filling it.
 
         Height is ignored, it is the width that determines the diameter of the circle.
 
         @see: ShapeDrawer.draw_path"""
-        ctx.arc(center_x, center_y, width / 2, 0, 2 * pi)
+        if isinstance(ctx, plt.Axes):
+            return mpl.patches.Circle(
+                (center_x, center_y), width / 2, **kwargs)
+        else:
+            ctx.arc(center_x, center_y, width / 2, 0, 2 * pi)
 
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
@@ -174,19 +183,27 @@ class CircleDrawer(ShapeDrawer):
 class UpTriangleDrawer(ShapeDrawer):
     """Static class which draws upright triangles"""
 
-    names = "triangle triangle-up up-triangle arrow arrow-up up-arrow"
+    names = "triangle triangle-up up-triangle arrow arrow-up up-arrow ^"
 
     @staticmethod
-    def draw_path(ctx, center_x, center_y, width, height=None):
+    def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws an upright triangle on the Cairo context without stroking or
         filling it.
 
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        ctx.move_to(center_x - width / 2, center_y + height / 2)
-        ctx.line_to(center_x, center_y - height / 2)
-        ctx.line_to(center_x + width / 2, center_y + height / 2)
-        ctx.close_path()
+        if isinstance(ctx, plt.Axes):
+            vertices = [
+                [center_x - 0.5 * width, center_y - 0.333 * height],
+                [center_x + 0.5 * width, center_y - 0.333 * height],
+                [center_x, center_x + 0.667 * height],
+            ]
+            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
+        else:
+            ctx.move_to(center_x - width / 2, center_y + height / 2)
+            ctx.line_to(center_x, center_y - height / 2)
+            ctx.line_to(center_x + width / 2, center_y + height / 2)
+            ctx.close_path()
 
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
@@ -203,19 +220,28 @@ class UpTriangleDrawer(ShapeDrawer):
 class DownTriangleDrawer(ShapeDrawer):
     """Static class which draws triangles pointing down"""
 
-    names = "down-triangle triangle-down arrow-down down-arrow"
+    names = "down-triangle triangle-down arrow-down down-arrow v"
 
     @staticmethod
-    def draw_path(ctx, center_x, center_y, width, height=None):
+    def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws a triangle on the Cairo context without stroking or
         filling it.
 
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        ctx.move_to(center_x - width / 2, center_y - height / 2)
-        ctx.line_to(center_x, center_y + height / 2)
-        ctx.line_to(center_x + width / 2, center_y - height / 2)
-        ctx.close_path()
+        if isinstance(ctx, plt.Axes):
+            vertices = [
+                [center_x - 0.5 * width, center_y + 0.333 * height],
+                [center_x + 0.5 * width, center_y + 0.333 * height],
+                [center_x, center_y - 0.667 * height],
+            ]
+            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
+
+        else:
+            ctx.move_to(center_x - width / 2, center_y - height / 2)
+            ctx.line_to(center_x, center_y + height / 2)
+            ctx.line_to(center_x + width / 2, center_y - height / 2)
+            ctx.close_path()
 
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
@@ -232,20 +258,29 @@ class DownTriangleDrawer(ShapeDrawer):
 class DiamondDrawer(ShapeDrawer):
     """Static class which draws diamonds (i.e. rhombuses)"""
 
-    names = "diamond rhombus"
+    names = "diamond rhombus d"
 
     @staticmethod
-    def draw_path(ctx, center_x, center_y, width, height=None):
+    def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws a rhombus on the Cairo context without stroking or
         filling it.
 
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        ctx.move_to(center_x - width / 2, center_y)
-        ctx.line_to(center_x, center_y + height / 2)
-        ctx.line_to(center_x + width / 2, center_y)
-        ctx.line_to(center_x, center_y - height / 2)
-        ctx.close_path()
+        if isinstance(ctx, plt.Axes):
+            vertices = [
+                [center_x - 0.5 * width, center_y],
+                [center_x, center_y - 0.5 * height],
+                [center_x + 0.5 * width, center_y],
+                [center_x, center_y + 0.5 * height],
+            ]
+            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
+        else:
+            ctx.move_to(center_x - width / 2, center_y)
+            ctx.line_to(center_x, center_y + height / 2)
+            ctx.line_to(center_x + width / 2, center_y)
+            ctx.line_to(center_x, center_y - height / 2)
+            ctx.close_path()
 
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):

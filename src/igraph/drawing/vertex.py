@@ -145,44 +145,13 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
             label_size = 12.0
             # FIXME? mpl.rcParams["font.size"])
             position = dict(func=self.layout.__getitem__)
-            shape = ("circle", lambda x: x)
+            shape = ("circle", ShapeDrawerDirectory.resolve_default)
             size = 0.2
             width = None
             height = None
             zorder = 2
 
         return VisualVertexBuilder
-
-    @staticmethod
-    def construct_patch(shape, xy, width, height=0, **kwargs):
-        if shape in ('circle', 'o'):
-            return mpl.patches.Circle(xy, width / 2, **kwargs)
-        elif shape in ('ellipse', 'e'):
-            return mpl.patches.Ellipse(xy, width / 2, height / 2, **kwargs)
-        elif shape in ('square', 's'):
-            return mpl.patches.Rectangle(xy, width, height, **kwargs)
-        elif shape in ('triangle-down', 'v'):
-            vertices = [
-                [xy[0] - 0.5 * width, xy[1] + 0.333 * height],
-                [xy[0] + 0.5 * width, xy[1] + 0.333 * height],
-                [xy[0], xy[1] - 0.667 * height],
-            ]
-            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
-        elif shape in ('triangle-up', '^'):
-            vertices = [
-                [xy[0] - 0.5 * width, xy[1] - 0.333 * height],
-                [xy[0] + 0.5 * width, xy[1] - 0.333 * height],
-                [xy[0], xy[1] + 0.667 * height],
-            ]
-            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
-        elif shape in ('diamond', 'd',):
-            vertices = [
-                [xy[0] - 0.5 * width, xy[1]],
-                [xy[0], xy[1] - 0.5 * height],
-                [xy[0] + 0.5 * width, xy[1]],
-                [xy[0], xy[1] + 0.5 * height],
-            ]
-            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
 
     def draw(self, visual_vertex, vertex, coords):
         ax = self.context
@@ -198,9 +167,12 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
             else visual_vertex.size
         )
 
-        stroke = self.construct_patch(
-            visual_vertex.shape,
-            coords, width, height,
+        stroke = visual_vertex.shape.draw_path(
+            ax,
+            coords[0],
+            coords[1],
+            width,
+            height,
             facecolor=visual_vertex.color,
             edgecolor=visual_vertex.frame_color,
             linewidth=visual_vertex.frame_width,

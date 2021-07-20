@@ -440,193 +440,8 @@ class CairoPlot:
         return self.bbox.width
 
 
-class MatplotlibPlot:
-    def __init__(
-            self,
-            target=None,
-            palette=None,
-            background=None,
-            ):
-        if target is None:
-            # Ignore the figure, one can recover it via target.figure
-            _, target = plt.subplots()
-
-        self._ctx = target
-
-        if palette is None:
-            config = Configuration.instance()
-            palette = config["plotting.palette"]
-        if not isinstance(palette, Palette):
-            palette = palettes[palette]
-        self._palette = palette
-        self.background = background
-
-        self._objects = []
-        self._is_dirty = False
-
-    def add(self, obj, palette=None, opacity=1.0, *args, **kwds):
-        """Adds an object to the plot.
-
-        Arguments not specified here are stored and passed to the object's
-        plotting function when necessary. Since you are most likely interested
-        in the arguments acceptable by graphs, see L{Graph.__plot__} for more
-        details.
-
-        @param obj: the object to be added
-        @param palette: the color palette used for drawing the object. If the
-          object tries to get a color assigned to a positive integer, it
-          will use this palette. If C{None}, defaults to the global palette
-          of the plot.
-        @param opacity: the opacity of the object being plotted, in the range
-          0.0-1.0.
-
-        @see: Graph.__plot__
-        """
-        if opacity < 0.0 or opacity > 1.0:
-            raise ValueError("opacity must be between 0.0 and 1.0")
-
-        self._objects.append((obj, palette, opacity, args, kwds))
-        self.mark_dirty()
-
-    def mark_dirty(self):
-        """Marks the plot as dirty (should be redrawn)"""
-        self._is_dirty = True
-
-    @property
-    def background(self):
-        """Returns the background color of the plot. C{None} means a
-        transparent background.
-        """
-        return self._background
-
-    @background.setter
-    def background(self, color):
-        """Sets the background color of the plot. C{None} means a
-        transparent background. You can use any color specification here
-        that is understood by the C{get} method of the current palette
-        or by L{igraph.drawing.colors.color_name_to_rgb}.
-        """
-        if color is None:
-            self._background = None
-        else:
-            self._background = self._palette.get(color)
-
-    def remove(self, obj, idx=1):
-        """Removes an object from the plot.
-
-        If the object has been added multiple times and no bounding box
-        was specified, it removes the instance which occurs M{idx}th
-        in the list of identical instances of the object.
-
-        @param obj: the object to be removed
-        @param bbox: optional bounding box specification for the object.
-          If given, only objects with exactly this bounding box will be
-          considered.
-        @param idx: if multiple objects match the specification given by
-          M{obj} and M{bbox}, only the M{idx}th occurrence will be removed.
-        @return: C{True} if the object has been removed successfully,
-          C{False} if the object was not on the plot at all or M{idx}
-          was larger than the count of occurrences
-        """
-        for i in range(len(self._objects)):
-            current_obj = self._objects[i][0]
-            if current_obj is obj:
-                idx -= 1
-                if idx == 0:
-                    self._objects[i : (i + 1)] = []
-                    self.mark_dirty()
-                    return True
-        return False
-
-    def show(self):
-        """Saves the plot to a temporary file and shows it.
-
-        This method is deprecated from python-igraph 0.9.1 and will be removed in
-        version 0.10.0.
-
-        @deprecated: Opening an image viewer with a temporary file never worked
-            reliably across platforms.
-        """
-        if self._is_dirty:
-            self.redraw()
-
-        plt.show()
-
-    def redraw(self, context=None):
-        """Redraws the plot"""
-        ax = context or self._ctx
-
-        if self._background is not None:
-            ax.set_facecolor(self._background)
-
-        for obj, palette, opacity, args, kwds in self._objects:
-            if palette is None:
-                palette = getattr(obj, "_default_palette", self._palette)
-            plotter = getattr(obj, "__plot__", None)
-            if plotter is None:
-                warn("%s does not support plotting" % (obj,))
-            else:
-                if (opacity < 1.0) and ('alpha' not in kwds):
-                    kwds['alpha'] = opacity
-                plotter(
-                    'matplotlib',
-                    ax,
-                    palette=palette,
-                    *args, **kwds,
-                    )
-
-        self._is_dirty = False
-
-    def save(self, fname=None, **kwargs):
-        if fname is None:
-            raise ValueError('Please specify a file path')
-
-        fig = self._ctx.figure
-        fig.savefig(fname, **kwargs)
-
-
-class Plot:
-    def __init__(self, backend, target, *args, **kwargs):
-        self._backend = backend
-        if backend == 'cairo':
-            bbox = kwargs.pop('bbox', None)
-            palette = kwargs.pop('palette', None)
-            background = kwargs.pop('background', 'white')
-            self._instance = CairoPlot(
-                    target=target,
-                    bbox=bbox,
-                    palette=palette,
-                    background=background,
-                    )
-        else:
-            self._instance = MatplotlibPlot(
-                    target,
-                    )
-
-    @property
-    def backend(self):
-        return self._backend
-
-    def add(self, obj, *args, **kwargs):
-        return self._instance.add(
-            obj, *args, **kwargs,
-        )
-
-    def remove(self, obj, *args, **kwargs):
-        return self._instance.remove(
-            obj, *args, **kwargs,
-        )
-
-    def show(self):
-        return self._instance.show()
-
-    def redraw(self):
-        return self._instance.redraw()
-
-    def save(self, fname=None):
-        return self._instance.save(fname=fname)
-
-
+# TODO: deprecate
+Plot = CairoPlot
 
 #####################################################################
 
@@ -712,29 +527,57 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     if backend == "":
         raise ImportError('cairo or matplotlib are needed for plotting')
 
-    inline = False
-    if backend == 'cairo':
-        if target is None and _is_running_in_ipython():
-            inline = kwds.get("inline")
-            if inline is None:
-                inline = Configuration.instance()["shell.ipython.inlining.Plot"]
-
-    result = Plot(
-        backend,
-        target,
-    )
-
-    if backend == 'cairo':
-        result.add(obj, bbox, *args, **kwds)
-    else:
-        result.add(obj, *args, **kwds)
-
-    # Matplotlib takes care of the actual backend. We want to show but also
-    # return the object in case the user wants to add more objects. Whether the
-    # plot is actually drawn on the cavas depends on mpl config, e.g. plt.ion()
+    # Matplotlib backend
     if backend == 'matplotlib':
-        result.show()
-        return result
+        # Create a new axes if needed
+        if target is None:
+            _, target = plt.subplots()
+
+        # Choose palette
+        # If explicit, use it. If not or None, ask the object: None is an
+        # acceptable response from the object (e.g. for cluterings), it means
+        # the palette is handles internally. If no response, default to config.
+        palette = kwds.pop('palette', None)
+        if palette is None:
+            palette = getattr(
+                obj, "_default_palette",
+                Configuration.instance()["plotting.palette"],
+            )
+        if (palette is not None) and (not isinstance(palette, Palette)):
+            palette = palettes[palette]
+
+        # Get the plotting function from the object
+        plotter = getattr(obj, "__plot__", None)
+        if plotter is None:
+            warn("%s does not support plotting" % (obj,))
+            return
+        else:
+            plotter(
+                'matplotlib',
+                target,
+                palette=palette,
+                *args, **kwds,
+                )
+            plt.show()
+            return
+
+    # Cairo backend
+    inline = False
+    if target is None and _is_running_in_ipython():
+        inline = kwds.get("inline")
+        if inline is None:
+            inline = Configuration.instance()["shell.ipython.inlining.Plot"]
+
+    bbox = kwds.pop('bbox', None)
+    palette = kwds.pop('palette', None)
+    background = kwds.pop('background', 'white')
+    result = CairoPlot(
+        target=target,
+        bbox=bbox,
+        palette=palette,
+        background=background,
+        )
+    result.add(obj, bbox, *args, **kwds)
 
     # If we requested an inline plot, just return the result and IPython will
     # call its _repr_svg_ method. If we requested a non-inline plot, show the

@@ -497,7 +497,6 @@ class VertexClustering(Clustering):
 
         if "vertex_color" not in kwds:
             kwds["vertex_color"] = self.membership
-
         result = self._graph.__plot__(backend, context, bbox, palette, *args, **kwds)
 
         return result
