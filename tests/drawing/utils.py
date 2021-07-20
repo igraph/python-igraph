@@ -1,3 +1,5 @@
+# Functions adapted from matplotlib.testing. Credit for the original functions
+# goes to the amazing folks over at matplotlib.
 from pathlib import Path
 import sys
 import inspect
@@ -38,6 +40,7 @@ def _unittest_image_comparison(
             img = _ImageComparisonBase(func, tol=tol, remove_text=remove_text,
                                        savefig_kwargs=savefig_kwargs)
             matplotlib.testing.set_font_settings_for_testing()
+
             func(*args, **kwargs)
 
             assert len(plt.get_fignums()) == len(baseline_images), (
