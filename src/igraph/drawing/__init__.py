@@ -558,8 +558,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
                 palette=palette,
                 *args, **kwds,
                 )
-            plt.show()
-            return
+            return target
 
     # Cairo backend
     inline = False
