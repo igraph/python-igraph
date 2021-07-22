@@ -147,6 +147,17 @@ then customize the appearance of your graph via standard `matplotlib`_ tools.
 .. note:: The order of `ax.get_children()` is the following: (i) patches for clustering hulls if requested;
    (ii) patches for vertices; (iii) patches for edges: for undirected graphs, there's one patch per edge. For directed graphs, there's a *pair* of patches, associated with the arrow body and head, respectively. 
 
+To use `matplotlib_` as your default plotting backend, you can set:
+
+>>> ig.Configuration.instance()['plotting.backend'] = 'matplotlib'
+
+Then you don't have to specify an `Axes` anymore:
+
+>>> ig.plot(g)
+
+will automatically make a new `Axes` for you and return it.
+
+
 Plotting graphs in Jupyter notebooks
 ++++++++++++++++++++++++++++++++++++
 |igraph| supports inline plots within a `Jupyter`_ notebook via both the `Cairo`_ and `matplotlib`_ backend. If you are
