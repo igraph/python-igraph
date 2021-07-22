@@ -1,14 +1,22 @@
 import random
 import unittest
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from utils import image_comparison
 
 from igraph import Graph, InternalError, plot, VertexClustering
+from .utils import find_image_comparison
+
+try:
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+except ImportError:
+    mpl = None
+    plt = None
+
+image_comparison = find_image_comparison()
 
 
 class GraphTestRunner(unittest.TestCase):
+    @unittest.skipIf(plt is None, "test case depends on matplotlib")
     @image_comparison(
             baseline_images=['graph_basic'], remove_text=True)
     def test_basic(self):
@@ -17,6 +25,7 @@ class GraphTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         plot(g, target=ax)
 
+    @unittest.skipIf(plt is None, "test case depends on matplotlib")
     @image_comparison(
             baseline_images=['graph_directed'], remove_text=True)
     def test_directed(self):
@@ -25,6 +34,7 @@ class GraphTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         plot(g, target=ax)
 
+    @unittest.skipIf(plt is None, "test case depends on matplotlib")
     @image_comparison(
             baseline_images=['graph_mark_groups_directed'], remove_text=True)
     def test_mark_groups(self):
@@ -33,6 +43,7 @@ class GraphTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         plot(g, target=ax, mark_groups=True)
 
+    @unittest.skipIf(plt is None, "test case depends on matplotlib")
     @image_comparison(
             baseline_images=['graph_mark_groups_squares_directed'], remove_text=True)
     def test_mark_groups_squares(self):
@@ -43,6 +54,7 @@ class GraphTestRunner(unittest.TestCase):
 
 
 class ClusteringTestRunner(unittest.TestCase):
+    @unittest.skipIf(plt is None, "test case depends on matplotlib")
     @image_comparison(
             baseline_images=['clustering_directed'], remove_text=True)
     def test_clustering_directed_small(self):
@@ -52,6 +64,7 @@ class ClusteringTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         plot(clu, target=ax, mark_groups=True)
 
+    @unittest.skipIf(plt is None, "test case depends on matplotlib")
     @image_comparison(
             baseline_images=['clustering_directed_large'], remove_text=True)
     def test_clustering_directed_large(self):

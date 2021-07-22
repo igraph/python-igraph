@@ -5,11 +5,25 @@ import sys
 import inspect
 import functools
 
-import matplotlib
-from matplotlib.testing.decorators import (
-        _checked_on_freetype_version, _ImageComparisonBase)
-from matplotlib.testing.compare import comparable_formats
-import matplotlib.pyplot as plt
+try:
+    import matplotlib
+    from matplotlib.testing.decorators import (
+            _checked_on_freetype_version, _ImageComparisonBase)
+    from matplotlib.testing.compare import comparable_formats
+    import matplotlib.pyplot as plt
+except ImportError:
+    matplotlib = None
+
+__all__ = ('find_image_comparison', )
+
+
+def find_image_comparison():
+    def dummy_comparison(*args, **kwargs):
+        return lambda *args, **kwargs: None
+
+    if matplotlib is None:
+        return dummy_comparison
+    return image_comparison
 
 
 # NOTE: Parametrizing this requires pytest (see matplotlib's test suite)
