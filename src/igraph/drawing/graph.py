@@ -1136,11 +1136,11 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                     )
                     legend_info['labels'].append(str(color_id))
 
-        if kwds.get("legend", False):
-            ax.legend(
-                legend_info['handles'],
-                legend_info['labels'],
-                )
+            if kwds.get("legend", False):
+                ax.legend(
+                    legend_info['handles'],
+                    legend_info['labels'],
+                    )
 
         # Determine the order in which we will draw the vertices and edges
         vertex_order = self._determine_vertex_order(graph, kwds)

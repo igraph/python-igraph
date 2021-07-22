@@ -3,7 +3,12 @@ import unittest
 
 
 from igraph import Graph, InternalError, plot, VertexClustering
-from .utils import find_image_comparison
+# FIXME: find a better way to do this that works for both direct call and module
+# import e.g. tox
+try:
+    from .utils import find_image_comparison
+except ImportError:
+    from utils import find_image_comparison
 
 try:
     import matplotlib as mpl
@@ -51,6 +56,18 @@ class GraphTestRunner(unittest.TestCase):
         g = Graph.Ring(5, directed=True)
         fig, ax = plt.subplots()
         plot(g, target=ax, mark_groups=True, vertex_shape='s')
+
+    @unittest.skipIf(plt is None, "test case depends on matplotlib")
+    @image_comparison(
+            baseline_images=['graph_edit_children'], remove_text=True)
+    def test_mark_groups_squares(self):
+        plt.close('all')
+        g = Graph.Ring(5)
+        fig, ax = plt.subplots()
+        plot(g, target=ax, vertex_shape='o')
+        dot = ax.get_children()[0]
+        dot.set_facecolor('blue')
+        dot.radius *= 0.5
 
 
 class ClusteringTestRunner(unittest.TestCase):
