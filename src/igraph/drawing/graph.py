@@ -1162,25 +1162,34 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         for vertex, visual_vertex, coords in vertex_coord_iter:
             drawer_method(visual_vertex, vertex, coords)
 
+
+        # Construct the iterator that we will use to draw the vertex labels
+        vs = graph.vs
+        if vertex_order is None:
+            # Default vertex order
+            vertex_coord_iter = zip(vertex_builder, layout)
+        else:
+            # Specified vertex order
+            vertex_coord_iter = (
+                (vertex_builder[i], layout[i]) for i in vertex_order
+            )
+
         # Draw the vertex labels
-        labels = kwds.get("vertex_label", None)
-        if labels is not None:
-            vertex_label_iter = (
-                (labels[i], vertex_builder[i], layout[i]) for i in range(graph.vcount())
-                )
-            for label, visual_vertex, coords in vertex_label_iter:
+        for vertex, coords in vertex_coord_iter:
+            if vertex.label is None:
+                continue
 
-                label_size = kwds.get(
-                    "vertex_label_size",
-                    visual_vertex.label_size,
-                )
+            label_size = kwds.get(
+                "vertex_label_size",
+                vertex.label_size,
+            )
 
-                ax.text(
-                    *coords,
-                    label,
-                    fontsize=label_size,
-                    # TODO: alignment, overlap, offset, etc.
-                    )
+            ax.text(
+                *coords,
+                vertex.label,
+                fontsize=label_size,
+                # TODO: alignment, overlap, offset, etc.
+                )
 
         # Construct the iterator that we will use to draw the edges
         es = graph.es

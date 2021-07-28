@@ -245,6 +245,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             theta1=0,
             theta2=360.0,
             linewidth=edge.width,
+            facecolor='none',
             edgecolor=edge.color,
             )
         # FIXME: make a PathCollection??
@@ -295,6 +296,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
                 codes=[getattr(mpl.path.Path, x) for x in path['codes']],
                 ),
             edgecolor=edge.color,
+            facecolor='none',
             linewidth=edge.width,
         )
         # FIXME: make a PathCollection??
