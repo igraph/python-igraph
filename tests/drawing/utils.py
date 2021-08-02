@@ -7,8 +7,7 @@ import functools
 
 try:
     import matplotlib
-    from matplotlib.testing.decorators import (
-            _checked_on_freetype_version, _ImageComparisonBase)
+    from matplotlib.testing.decorators import _ImageComparisonBase
     from matplotlib.testing.compare import comparable_formats
     import matplotlib.pyplot as plt
 except ImportError:
@@ -32,7 +31,7 @@ _default_extension = 'svg'
 
 def _unittest_image_comparison(
         baseline_images, tol,
-        freetype_version, remove_text, savefig_kwargs,
+        remove_text, savefig_kwargs,
         style):
     """
     Decorate function with image comparison for unittest.
@@ -46,7 +45,6 @@ def _unittest_image_comparison(
 
         @functools.wraps(func)
         @matplotlib.style.context(style)
-        @_checked_on_freetype_version(freetype_version)
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             __tracebackhide__ = True
@@ -73,7 +71,7 @@ def _unittest_image_comparison(
 
 
 def image_comparison(baseline_images, tol=0,
-                     freetype_version=None, remove_text=False,
+                     remove_text=False,
                      savefig_kwarg=None,
                      # Default of mpl_test_settings fixture and cleanup too.
                      style=("classic", "_classic_test_patch")):
@@ -93,9 +91,6 @@ def image_comparison(baseline_images, tol=0,
         The RMS threshold above which the test is considered failed.
         Due to expected small differences in floating-point calculations, on
         32-bit systems an additional 0.06 is added to this threshold.
-    freetype_version : str or tuple
-        The expected freetype version or range of versions for this test to
-        pass.
     remove_text : bool
         Remove the title and tick text from the figure before comparison.  This
         is useful to make the baseline images independent of variations in text
@@ -115,5 +110,5 @@ def image_comparison(baseline_images, tol=0,
         tol += 0.06
     return _unittest_image_comparison(
         baseline_images=baseline_images, tol=tol,
-        freetype_version=freetype_version, remove_text=remove_text,
+        remove_text=remove_text,
         savefig_kwargs=savefig_kwarg, style=style)
