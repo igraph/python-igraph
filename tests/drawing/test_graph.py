@@ -85,7 +85,8 @@ class ClusteringTestRunner(unittest.TestCase):
         g = Graph.Ring(50, directed=True)
         clu = VertexClustering(g, [0] * 3 + [1] * 17 + [2] * 30)
         fig, ax = plt.subplots()
-        plot(clu, target=ax, mark_groups=True)
+        layout = [(x*2.5, y*2.5) for x, y in g.layout("circle")]
+        plot(clu, layout=layout, target=ax, mark_groups=True)
 
 
 def suite():
