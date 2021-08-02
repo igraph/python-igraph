@@ -149,7 +149,7 @@ then customize the appearance of your graph via standard `matplotlib`_ tools.
 
 To use `matplotlib_` as your default plotting backend, you can set:
 
->>> ig.Configuration.instance()['plotting.backend'] = 'matplotlib'
+>>> ig.config['plotting.backend'] = 'matplotlib'
 
 Then you don't have to specify an `Axes` anymore:
 
