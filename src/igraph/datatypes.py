@@ -325,14 +325,14 @@ class Matrix(object):
         """
         if backend == "matplotlib":
             drawer = MatplotlibMatrixDrawer(
-                    context,
-                    )
+                context,
+            )
         else:
             drawer = CairoMatrixDrawer(
-                    context,
-                    bbox,
-                    palette,
-                    )
+                context,
+                bbox,
+                palette,
+            )
 
         drawer.draw(self, **kwds)
 
@@ -578,7 +578,7 @@ class UniqueIdGenerator(object):
         self._ids[item] = value
 
     def __len__(self):
-        """"Returns the number of items"""
+        """ "Returns the number of items"""
         return len(self._ids)
 
     def reverse_dict(self):

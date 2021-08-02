@@ -9,8 +9,9 @@ from itertools import islice
 from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer
 
 __all__ = (
-    "CairoMatrixDrawer", "MatplotlibMatrixDrawer",
-    "DefaultMatrixDrawer", # TODO: deprecate
+    "CairoMatrixDrawer",
+    "MatplotlibMatrixDrawer",
+    "DefaultMatrixDrawer",  # TODO: deprecate
 )
 
 
@@ -267,6 +268,6 @@ class MatplotlibMatrixDrawer(AbstractDrawer):
 
         ax.imshow(
             matrix.data,
-            interpolation='nearest',
+            interpolation="nearest",
             **kwds,
         )

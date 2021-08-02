@@ -284,20 +284,24 @@ class MatplotlibDendrogramDrawer(AbstractDrawer):
         if dendro._names is None or dendro._names[idx] is None:
             return
 
-        if orientation == 'lr':
-            ha, va, rotation = 'right', 'center', 0
-        elif orientation == 'rl':
-            ha, va, rotation = 'left', 'center', 0
-        elif orientation == 'tb':
-            ha, va, rotation = 'center', 'bottom', 90
+        if orientation == "lr":
+            ha, va, rotation = "right", "center", 0
+        elif orientation == "rl":
+            ha, va, rotation = "left", "center", 0
+        elif orientation == "tb":
+            ha, va, rotation = "center", "bottom", 90
         else:
-            ha, va, rotation = 'center', 'top', 90
+            ha, va, rotation = "center", "top", 90
 
         # TODO: offset a little? But remember zoom in callbacks
 
         ax.text(
-            x, y, dendro._names[idx],
-            ha=ha, va=va, rotation=rotation,
+            x,
+            y,
+            dendro._names[idx],
+            ha=ha,
+            va=va,
+            rotation=rotation,
         )
 
     def draw(self, dendro, orientation="lr", **kwds):
@@ -316,16 +320,14 @@ class MatplotlibDendrogramDrawer(AbstractDrawer):
         ax = self.context
 
         # Styling defaults
-        kwds['edgecolor'] = kwds.pop('color', 'black')
-        if ('lw' not in kwds) and ('linewidth' not in kwds):
-            kwds['linewidth'] = 1
+        kwds["edgecolor"] = kwds.pop("color", "black")
+        if ("lw" not in kwds) and ("linewidth" not in kwds):
+            kwds["linewidth"] = 1
 
         if dendro._names is None:
             dendro._names = [str(x) for x in range(dendro._nitems)]
 
-        orientation = str_to_orientation(
-            orientation, reversed_vertical=True
-        )
+        orientation = str_to_orientation(orientation, reversed_vertical=True)
         horiz = orientation in ("lr", "rl")
 
         # Calculate node coordinates
@@ -369,7 +371,7 @@ class MatplotlibDendrogramDrawer(AbstractDrawer):
                 layout.mirror(0)
 
         ## Draw leaf names
-        #for idx in range(dendro._nitems):
+        # for idx in range(dendro._nitems):
         #    x, y = layout[idx]
         #    self._plot_item(dendro, ax, orientation, idx, x, y)
         ticks, ticklabels = [], []
@@ -400,7 +402,7 @@ class MatplotlibDendrogramDrawer(AbstractDrawer):
                 poly = mpl.patches.Polygon(
                     [[x0, y0], [x0, y2], [x1, y2], [x1, y1]],
                     closed=False,
-                    facecolor='none',
+                    facecolor="none",
                     **kwds,
                 )
                 ax.add_patch(poly)
@@ -412,7 +414,7 @@ class MatplotlibDendrogramDrawer(AbstractDrawer):
                 poly = mpl.patches.Polygon(
                     [[x0, y0], [x2, y0], [x2, y1], [x1, y1]],
                     closed=False,
-                    facecolor='none',
+                    facecolor="none",
                     **kwds,
                 )
                 ax.add_patch(poly)

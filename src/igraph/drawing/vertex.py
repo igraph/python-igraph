@@ -12,10 +12,12 @@ from igraph.drawing.utils import find_matplotlib
 from math import pi
 
 __all__ = (
-    "AbstractVertexDrawer", "AbstractCairoVertexDrawer", "CairoVertexDrawer",
+    "AbstractVertexDrawer",
+    "AbstractCairoVertexDrawer",
+    "CairoVertexDrawer",
     "MatplotlibVertexDrawer",
     "DefaultVertexDrawer",  # TODO: deprecate
-    )
+)
 
 mpl, plt = find_matplotlib()
 
@@ -177,5 +179,5 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
             edgecolor=visual_vertex.frame_color,
             linewidth=visual_vertex.frame_width,
             zorder=visual_vertex.zorder,
-            )
+        )
         ax.add_patch(stroke)

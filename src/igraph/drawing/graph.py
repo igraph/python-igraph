@@ -33,7 +33,9 @@ from igraph.drawing.vertex import DefaultVertexDrawer, MatplotlibVertexDrawer
 from igraph.layout import Layout
 
 __all__ = (
-    "CairoGraphDrawer", "MatplotlibGraphDrawer", "CytoscapeGraphDrawer",
+    "CairoGraphDrawer",
+    "MatplotlibGraphDrawer",
+    "CytoscapeGraphDrawer",
     "UbiGraphDrawer",
     "DefaultGraphDrawer",  # TODO: deprecate
 )
@@ -143,6 +145,7 @@ class AbstractGraphDrawer(AbstractDrawer):
         )
 
         return vertex_order
+
 
 #####################################################################
 
@@ -554,8 +557,7 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         self.edge_defaults = dict(color="#ffffff", width=1.0)
 
         warn(
-            "UbiGraphDrawer is deprecated from python-igraph 0.9.4",
-            DeprecationWarning
+            "UbiGraphDrawer is deprecated from python-igraph 0.9.4", DeprecationWarning
         )
 
     def draw(self, graph, *args, **kwds):
@@ -980,11 +982,11 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
     }
 
     def __init__(
-            self,
-            ax,
-            vertex_drawer_factory=MatplotlibVertexDrawer,
-            edge_drawer_factory=MatplotlibArrowEdgeDrawer,
-            ):
+        self,
+        ax,
+        vertex_drawer_factory=MatplotlibVertexDrawer,
+        edge_drawer_factory=MatplotlibArrowEdgeDrawer,
+    ):
         """Constructs the graph drawer and associates it with the mpl Axes
 
 
@@ -1036,15 +1038,18 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 default = 0.5
             default = float(default)
             kwds["edge_curved"] = autocurve(
-                graph, attribute=None, default=default,
+                graph,
+                attribute=None,
+                default=default,
             )
 
         # Construct the vertex, edge and label drawers
         vertex_drawer = self.vertex_drawer_factory(
-                ax, palette, layout,
-                )
-        edge_drawer = self.edge_drawer_factory(
-                ax, palette)
+            ax,
+            palette,
+            layout,
+        )
+        edge_drawer = self.edge_drawer_factory(ax, palette)
 
         # Construct the visual vertex/edge builders based on the specifications
         # provided by the vertex_drawer and the edge_drawer
@@ -1076,8 +1081,8 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
             if kwds.get("legend", False):
                 legend_info = {
-                    'handles': [],
-                    'labels': [],
+                    "handles": [],
+                    "labels": [],
                 }
 
             # Iterate over color-memberlist pairs
@@ -1121,26 +1126,28 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 facecolor = (color[0], color[1], color[2], 0.25 * color[3])
                 drawer = MatplotlibPolygonDrawer(ax, points=polygon)
                 drawer.draw(
-                        corner_radius=corner_radius,
-                        facecolor=facecolor,
-                        edgecolor=color,
-                        )
+                    corner_radius=corner_radius,
+                    facecolor=facecolor,
+                    edgecolor=color,
+                )
 
                 if kwds.get("legend", False):
-                    legend_info['handles'].append(
+                    legend_info["handles"].append(
                         plt.Rectangle(
-                            (0, 0), 0, 0,
+                            (0, 0),
+                            0,
+                            0,
                             facecolor=facecolor,
                             edgecolor=color,
                         )
                     )
-                    legend_info['labels'].append(str(color_id))
+                    legend_info["labels"].append(str(color_id))
 
             if kwds.get("legend", False):
                 ax.legend(
-                    legend_info['handles'],
-                    legend_info['labels'],
-                    )
+                    legend_info["handles"],
+                    legend_info["labels"],
+                )
 
         # Determine the order in which we will draw the vertices and edges
         vertex_order = self._determine_vertex_order(graph, kwds)
@@ -1162,7 +1169,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         for vertex, visual_vertex, coords in vertex_coord_iter:
             drawer_method(visual_vertex, vertex, coords)
 
-
         # Construct the iterator that we will use to draw the vertex labels
         vs = graph.vs
         if vertex_order is None:
@@ -1170,9 +1176,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
             vertex_coord_iter = zip(vertex_builder, layout)
         else:
             # Specified vertex order
-            vertex_coord_iter = (
-                (vertex_builder[i], layout[i]) for i in vertex_order
-            )
+            vertex_coord_iter = ((vertex_builder[i], layout[i]) for i in vertex_order)
 
         # Draw the vertex labels
         for vertex, coords in vertex_coord_iter:
@@ -1189,7 +1193,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 vertex.label,
                 fontsize=label_size,
                 # TODO: alignment, overlap, offset, etc.
-                )
+            )
 
         # Construct the iterator that we will use to draw the edges
         es = graph.es
@@ -1215,29 +1219,33 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         if labels is not None:
             edge_label_iter = (
                 (labels[i], edge_builder[i], graph.es[i]) for i in range(graph.ecount())
-                )
+            )
             for label, visual_edge, edge in edge_label_iter:
                 # Ask the edge drawer to propose an anchor point for the label
                 src, dest = edge.tuple
                 src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
                 (x, y), (halign, valign) = edge_drawer.get_label_position(
-                    edge, src_vertex, dest_vertex,
+                    edge,
+                    src_vertex,
+                    dest_vertex,
                 )
 
                 ax.text(
-                        x, y,
-                        label,
-                        fontsize=visual_edge.label_size,
-                        color=visual_edge.label_color,
-                        ha=halign, va=valign,
-                        # TODO: offset, etc.
-                        )
+                    x,
+                    y,
+                    label,
+                    fontsize=visual_edge.label_size,
+                    color=visual_edge.label_color,
+                    ha=halign,
+                    va=valign,
+                    # TODO: offset, etc.
+                )
 
         # Despine
-        ax.spines['right'].set_visible(False)
-        ax.spines['top'].set_visible(False)
-        ax.spines['left'].set_visible(False)
-        ax.spines['bottom'].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.spines["left"].set_visible(False)
+        ax.spines["bottom"].set_visible(False)
 
         # Remove axis ticks
         ax.set_xticks([])

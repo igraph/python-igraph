@@ -245,9 +245,9 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             theta1=0,
             theta2=360.0,
             linewidth=edge.width,
-            facecolor='none',
+            facecolor="none",
             edgecolor=edge.color,
-            )
+        )
         # FIXME: make a PathCollection??
         ax.add_patch(stroke)
 
@@ -269,9 +269,9 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
 
         ax = self.context
 
-        path = {'vertices': [], 'codes': []}
-        path['vertices'].append(src_vertex.position)
-        path['codes'].append('MOVETO')
+        path = {"vertices": [], "codes": []}
+        path["vertices"].append(src_vertex.position)
+        path["codes"].append("MOVETO")
 
         if edge.curved:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
@@ -282,21 +282,21 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
                 y1 + 2 * y2
             ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
 
-            path['vertices'].append(aux1)
-            path['vertices'].append(aux2)
-            path['vertices'].append(dest_vertex.position)
-            path['codes'].extend(['CURVE4'] * 3)
+            path["vertices"].append(aux1)
+            path["vertices"].append(aux2)
+            path["vertices"].append(dest_vertex.position)
+            path["codes"].extend(["CURVE4"] * 3)
         else:
-            path['vertices'].append(dest_vertex.position)
-            path['codes'].append('LINETO')
+            path["vertices"].append(dest_vertex.position)
+            path["codes"].append("LINETO")
 
         stroke = mpl.patches.PathPatch(
             mpl.path.Path(
-                path['vertices'],
-                codes=[getattr(mpl.path.Path, x) for x in path['codes']],
-                ),
+                path["vertices"],
+                codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
+            ),
             edgecolor=edge.color,
-            facecolor='none',
+            facecolor="none",
             linewidth=edge.width,
         )
         # FIXME: make a PathCollection??
@@ -334,8 +334,7 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
 
     @classmethod
     def intersect_bezier_circle(
-        cls,
-        x0, y0, x1, y1, x2, y2, x3, y3, radius, max_iter=10
+        cls, x0, y0, x1, y1, x2, y2, x3, y3, radius, max_iter=10
     ):
         """Binary search solver for finding the intersection of a Bezier curve
         and a circle centered at the curve's end point.
@@ -509,9 +508,9 @@ class MatplotlibArrowEdgeDrawer(MatplotlibEdgeDrawer, ArrowEdgeDrawer):
         (x_src, y_src), (x_dest, y_dest) = src_vertex.position, dest_vertex.position
 
         # Draw the edge
-        path = {'vertices': [], 'codes': []}
-        path['vertices'].append([x1, y1])
-        path['codes'].append('MOVETO')
+        path = {"vertices": [], "codes": []}
+        path["vertices"].append([x1, y1])
+        path["codes"].append("MOVETO")
 
         if edge.curved:
             # Calculate the curve
@@ -587,10 +586,10 @@ class MatplotlibArrowEdgeDrawer(MatplotlibEdgeDrawer, ArrowEdgeDrawer):
 
             # Draw the curve from the first vertex to the midpoint of the base
             # of the arrow head
-            path['vertices'].append(aux1)
-            path['vertices'].append(aux2)
-            path['vertices'].append([x_arrow_mid, y_arrow_mid])
-            path['codes'].extend(['CURVE4'] * 3)
+            path["vertices"].append(aux1)
+            path["vertices"].append(aux2)
+            path["vertices"].append([x_arrow_mid, y_arrow_mid])
+            path["codes"].extend(["CURVE4"] * 3)
 
         else:
             # Determine where the edge intersects the circumference of the
@@ -619,17 +618,17 @@ class MatplotlibArrowEdgeDrawer(MatplotlibEdgeDrawer, ArrowEdgeDrawer):
                 aux_points[0][1] + aux_points[1][1]
             ) / 2.0
             # Draw the line
-            path['vertices'].append([x_arrow_mid, y_arrow_mid])
-            path['codes'].append('LINETO')
+            path["vertices"].append([x_arrow_mid, y_arrow_mid])
+            path["codes"].append("LINETO")
 
         # Draw the edge
         stroke = mpl.patches.PathPatch(
             mpl.path.Path(
-                path['vertices'],
-                codes=[getattr(mpl.path.Path, x) for x in path['codes']],
-                ),
+                path["vertices"],
+                codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
+            ),
             edgecolor=edge.color,
-            facecolor='none',
+            facecolor="none",
             linewidth=edge.width,
         )
         ax.add_patch(stroke)
@@ -643,7 +642,7 @@ class MatplotlibArrowEdgeDrawer(MatplotlibEdgeDrawer, ArrowEdgeDrawer):
             ],
             closed=True,
             facecolor=edge.color,
-            edgecolor='none',
+            edgecolor="none",
         )
         ax.add_patch(arrowhead)
 

@@ -178,14 +178,12 @@ class Palette(object):
 
         mpl, plt = find_matplotlib()
         if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
-            cmap = mpl.colors.ListedColormap(
-                [self.get(i) for i in range(self.length)]
-            )
+            cmap = mpl.colors.ListedColormap([self.get(i) for i in range(self.length)])
             matrix.__plot__(
                 context,
                 cmap=cmap,
                 **kwds,
-                )
+            )
         else:
             border_width = float(kwds.get("border_width", 1.0))
             grid_width = float(kwds.get("grid_width", 0.0))
@@ -748,8 +746,8 @@ def lighten(color, ratio=0.5):
 
 
 default_edge_colors = {
-    'cairo': ["grey20", "grey80"],
-    'matplotlib': ["dimgrey", "silver"],
+    "cairo": ["grey20", "grey80"],
+    "matplotlib": ["dimgrey", "silver"],
 }
 
 

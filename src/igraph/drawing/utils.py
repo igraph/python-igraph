@@ -400,6 +400,7 @@ class BoundingBox(Rectangle):
 
 #####################################################################
 
+
 class FakeModule:
     """Fake module that raises an exception for everything"""
 

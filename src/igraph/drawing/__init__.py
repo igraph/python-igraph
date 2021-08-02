@@ -45,7 +45,8 @@ __all__ = (
     "MatplotlibGraphDrawer",
     "DefaultGraphDrawer",
     "Plot",
-    "Point", "Rectangle",
+    "Point",
+    "Rectangle",
     "plot",
 )
 
@@ -110,13 +111,13 @@ class CairoPlot:
     """
 
     def __init__(
-            self,
-            target=None,
-            bbox=None,
-            palette=None,
-            background=None,
-            margin=20,
-            ):
+        self,
+        target=None,
+        bbox=None,
+        palette=None,
+        background=None,
+        margin=20,
+    ):
         """Creates a new plot using Cairo or Matplotlib.
 
         @param target: the target surface to write to. It can be one of the
@@ -312,7 +313,7 @@ class CairoPlot:
                     ctx.push_group()
                 else:
                     ctx.save()
-                plotter('cairo', ctx, bbox, palette, *args, **kwds)
+                plotter("cairo", ctx, bbox, palette, *args, **kwds)
                 if opacity < 1.0:
                     ctx.pop_group_to_source()
                     ctx.paint_with_alpha(opacity)
@@ -520,17 +521,17 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
 
     # Switch backend based on target (first) and config (second)
     if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
-        backend = 'matplotlib'
+        backend = "matplotlib"
     elif isinstance(target, cairo.Surface):
-        backend = 'cairo'
+        backend = "cairo"
     else:
-        backend = Configuration.instance()['plotting.backend']
+        backend = Configuration.instance()["plotting.backend"]
 
     if backend not in VALID_BACKENDS:
-        raise ValueError('unknown plotting backend: {0!r}'.format(backend))
+        raise ValueError("unknown plotting backend: {0!r}".format(backend))
 
     # Matplotlib backend
-    if backend == 'matplotlib':
+    if backend == "matplotlib":
         # Create a new axes if needed
         if target is None:
             _, target = plt.subplots()
@@ -539,10 +540,11 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
         # If explicit, use it. If not or None, ask the object: None is an
         # acceptable response from the object (e.g. for cluterings), it means
         # the palette is handles internally. If no response, default to config.
-        palette = kwds.pop('palette', None)
+        palette = kwds.pop("palette", None)
         if palette is None:
             palette = getattr(
-                obj, "_default_palette",
+                obj,
+                "_default_palette",
                 Configuration.instance()["plotting.palette"],
             )
         if (palette is not None) and (not isinstance(palette, Palette)):
@@ -555,11 +557,12 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
             return
         else:
             plotter(
-                'matplotlib',
+                "matplotlib",
                 target,
                 palette=palette,
-                *args, **kwds,
-                )
+                *args,
+                **kwds,
+            )
             return target
 
     # Cairo backend
@@ -569,15 +572,15 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
         if inline is None:
             inline = Configuration.instance()["shell.ipython.inlining.Plot"]
 
-    bbox = kwds.pop('bbox', None)
-    palette = kwds.pop('palette', None)
-    background = kwds.pop('background', 'white')
+    bbox = kwds.pop("bbox", None)
+    palette = kwds.pop("palette", None)
+    background = kwds.pop("background", "white")
     result = CairoPlot(
         target=target,
         bbox=bbox,
         palette=palette,
         background=background,
-        )
+    )
     result.add(obj, bbox, *args, **kwds)
 
     # If we requested an inline plot, just return the result and IPython will

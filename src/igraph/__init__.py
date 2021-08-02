@@ -74,7 +74,7 @@ from igraph._igraph import (
     set_progress_handler,
     set_random_number_generator,
     set_status_handler,
-    __igraph_version__
+    __igraph_version__,
 )
 from igraph.clustering import (
     Clustering,
@@ -89,7 +89,16 @@ from igraph.clustering import (
 )
 from igraph.cut import Cut, Flow
 from igraph.configuration import Configuration, init as init_configuration
-from igraph.drawing import BoundingBox, CairoGraphDrawer, DefaultGraphDrawer, MatplotlibGraphDrawer, Plot, Point, Rectangle, plot
+from igraph.drawing import (
+    BoundingBox,
+    CairoGraphDrawer,
+    DefaultGraphDrawer,
+    MatplotlibGraphDrawer,
+    Plot,
+    Point,
+    Rectangle,
+    plot,
+)
 from igraph.drawing.colors import (
     Palette,
     GradientPalette,
@@ -732,9 +741,7 @@ class Graph(GraphBase):
         try:
             from scipy import sparse
         except ImportError:
-            raise ImportError(
-                "You should install scipy in order to use this function"
-            )
+            raise ImportError("You should install scipy in order to use this function")
 
         edges = self.get_edgelist()
         if attribute is None:
@@ -2454,7 +2461,7 @@ class Graph(GraphBase):
         edge_stroke_widths="width",
         font_size=16,
         *args,
-        **kwds
+        **kwds,
     ):
         """Saves the graph as an SVG (Scalable Vector Graphics) file
 
@@ -2622,13 +2629,13 @@ class Graph(GraphBase):
             print('     id="pathArrow{0}"'.format(marker_index), file=f)
             print(
                 '     style="font-size:12.0;fill-rule:evenodd;'
-                'stroke-width:0.62500000;stroke-linejoin:round;'
+                "stroke-width:0.62500000;stroke-linejoin:round;"
                 'fill:{0}"'.format(e_col),
                 file=f,
             )
             print(
                 '     d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 '
-                'L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 '
+                "L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 "
                 '6.9831476,1.6157441 8.7185878,4.0337352 z "',
                 file=f,
             )
@@ -2656,7 +2663,7 @@ class Graph(GraphBase):
             print("<path", file=f)
             print(
                 '    style="fill:none;stroke:{0};stroke-width:{2};'
-                'stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;'
+                "stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;"
                 'stroke-opacity:1;stroke-dasharray:none{1}"'.format(
                     edge_colors[eidx],
                     ";marker-end:url(#{0})".format(edge_color_dict[edge_colors[eidx]])
@@ -2765,7 +2772,7 @@ class Graph(GraphBase):
                 print(
                     '      <rect ry="5" rx="5" x="-{0}" y="-{1}" width="{2}" '
                     'height="{3}" id="rect{4}" style="fill:{5};fill-opacity:1" '
-                    '/>'.format(
+                    "/>".format(
                         vertex_width / 2.0,
                         vertex_height / 2.0,
                         vertex_width,
@@ -2779,19 +2786,15 @@ class Graph(GraphBase):
             print(
                 '      <text sodipodi:linespacing="125%" y="{0}" x="0" '
                 'id="text{1}" style="font-size:{2};font-style:normal;'
-                'font-weight:normal;text-align:center;line-height:125%;'
-                'letter-spacing:0px;word-spacing:0px;text-anchor:middle;'
-                'fill:#000000;fill-opacity:1;stroke:none;'
-                'font-family:Sans">'.format(
-                    vertex_size / 2.0, vidx, font_size
-                ),
+                "font-weight:normal;text-align:center;line-height:125%;"
+                "letter-spacing:0px;word-spacing:0px;text-anchor:middle;"
+                "fill:#000000;fill-opacity:1;stroke:none;"
+                'font-family:Sans">'.format(vertex_size / 2.0, vidx, font_size),
                 file=f,
             )
             print(
                 '<tspan y="{0}" x="0" id="tspan{1}" sodipodi:role="line">'
-                '{2}</tspan></text>'.format(
-                    vertex_size / 2.0, vidx, str(labels[vidx])
-                ),
+                "{2}</tspan></text>".format(vertex_size / 2.0, vidx, str(labels[vidx])),
                 file=f,
             )
             print("    </g>", file=f)
@@ -3345,7 +3348,7 @@ class Graph(GraphBase):
         multiple=False,
         weighted=None,
         *args,
-        **kwds
+        **kwds,
     ):
         """Creates a bipartite graph from an incidence matrix.
 
@@ -3440,26 +3443,41 @@ class Graph(GraphBase):
         if edges.shape[1] < 2:
             raise ValueError("The 'edges' DataFrame must contain at least two columns")
         if vertices is not None and vertices.shape[1] < 1:
-            raise ValueError("The 'vertices' DataFrame must contain at least one column")
+            raise ValueError(
+                "The 'vertices' DataFrame must contain at least one column"
+            )
 
         if use_vids:
-            if not (str(edges.dtypes[0]).startswith("int") and str(edges.dtypes[1]).startswith("int")):
-                raise TypeError(f"Source and target IDs must be 0-based integers, found types {edges.dtypes.tolist()[:2]}")
+            if not (
+                str(edges.dtypes[0]).startswith("int")
+                and str(edges.dtypes[1]).startswith("int")
+            ):
+                raise TypeError(
+                    f"Source and target IDs must be 0-based integers, found types {edges.dtypes.tolist()[:2]}"
+                )
             elif (edges.iloc[:, :2] < 0).any(axis=None):
                 raise ValueError("Source and target IDs must not be negative")
             if vertices is not None:
                 vertices = vertices.sort_index()
-                if not vertices.index.equals(pd.RangeIndex.from_range(range(vertices.shape[0]))):
+                if not vertices.index.equals(
+                    pd.RangeIndex.from_range(range(vertices.shape[0]))
+                ):
                     if not str(vertices.index.dtype).startswith("int"):
-                        raise TypeError(f"Vertex IDs must be 0-based integers, found type {vertices.index.dtype}")
+                        raise TypeError(
+                            f"Vertex IDs must be 0-based integers, found type {vertices.index.dtype}"
+                        )
                     elif (vertices.index < 0).any(axis=None):
                         raise ValueError("Vertex IDs must not be negative")
                     else:
-                        raise ValueError(f"Vertex IDs must be an integer sequence from 0 to {vertices.shape[0] - 1}")
+                        raise ValueError(
+                            f"Vertex IDs must be an integer sequence from 0 to {vertices.shape[0] - 1}"
+                        )
         else:
             # Handle if some source and target names in 'edges' are 'NA'
             if edges.iloc[:, :2].isna().any(axis=None):
-                warn("In the first two columns of 'edges' NA elements were replaced with string \"NA\"")
+                warn(
+                    "In the first two columns of 'edges' NA elements were replaced with string \"NA\""
+                )
                 edges = edges.copy()
                 edges.iloc[:, :2].fillna("NA", inplace=True)
 
@@ -3468,7 +3486,9 @@ class Graph(GraphBase):
                 vertices = pd.DataFrame({"name": np.unique(edges.values[:, :2])})
 
             if vertices.iloc[:, 0].isna().any():
-                warn("In the first column of 'vertices' NA elements were replaced with string \"NA\"")
+                warn(
+                    "In the first column of 'vertices' NA elements were replaced with string \"NA\""
+                )
                 vertices = vertices.copy()
                 vertices.iloc[:, 0].fillna("NA", inplace=True)
 
@@ -3476,9 +3496,13 @@ class Graph(GraphBase):
                 raise ValueError("Vertex names must be unique")
 
             if vertices.shape[1] > 1 and "name" in vertices.columns[1:]:
-                raise ValueError("Vertex attribute conflict: DataFrame already contains column 'name'")
+                raise ValueError(
+                    "Vertex attribute conflict: DataFrame already contains column 'name'"
+                )
 
-            vertices = vertices.rename({vertices.columns[0]: "name"}, axis=1).reset_index(drop=True)
+            vertices = vertices.rename(
+                {vertices.columns[0]: "name"}, axis=1
+            ).reset_index(drop=True)
 
             # Map source and target names in 'edges' to IDs
             vid_map = pd.Series(vertices.index, index=vertices.iloc[:, 0])
@@ -3492,7 +3516,9 @@ class Graph(GraphBase):
             g = Graph(n=nv, directed=directed)
         else:
             if not edges.iloc[:, :2].isin(vertices.index).all(axis=None):
-                raise ValueError("Some vertices in the edge DataFrame are missing from vertices DataFrame")
+                raise ValueError(
+                    "Some vertices in the edge DataFrame are missing from vertices DataFrame"
+                )
             nv = vertices.shape[0]
             g = Graph(n=nv, directed=directed)
             # Add vertex attributes
@@ -3501,7 +3527,9 @@ class Graph(GraphBase):
 
         # add edges including optional attributes
         e_list = list(edges.iloc[:, :2].itertuples(index=False, name=None))
-        e_attr = edges.iloc[:, 2:].to_dict(orient='list') if edges.shape[1] > 2 else None
+        e_attr = (
+            edges.iloc[:, 2:].to_dict(orient="list") if edges.shape[1] > 2 else None
+        )
         g.add_edges(e_list, e_attr)
 
         return g

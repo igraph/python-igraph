@@ -10,7 +10,10 @@ from igraph import community_to_membership
 from igraph.configuration import Configuration
 from igraph.datatypes import UniqueIdGenerator
 from igraph.drawing.colors import ClusterColoringPalette
-from igraph.drawing.dendrogram import DefaultDendrogramDrawer, MatplotlibDendrogramDrawer
+from igraph.drawing.dendrogram import (
+    DefaultDendrogramDrawer,
+    MatplotlibDendrogramDrawer,
+)
 from igraph.statistics import Histogram
 from igraph.summary import _get_wrapper_for_width
 
@@ -873,7 +876,9 @@ class VertexDendrogram(Dendrogram):
             name if name is not None else str(idx)
             for idx, name in enumerate(self._names)
         ]
-        result = Dendrogram.__plot__(self, backend, context, bbox, palette, *args, **kwds)
+        result = Dendrogram.__plot__(
+            self, backend, context, bbox, palette, *args, **kwds
+        )
         del self._names
 
         return result
@@ -1327,7 +1332,9 @@ class CohesiveBlocks(VertexCover):
         if "vertex_color" not in kwds:
             kwds["vertex_color"] = self.max_cohesions()
 
-        return VertexCover.__plot__(self, backend, context, bbox, palette, *args, **kwds)
+        return VertexCover.__plot__(
+            self, backend, context, bbox, palette, *args, **kwds
+        )
 
 
 def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):

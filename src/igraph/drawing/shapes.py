@@ -96,8 +96,8 @@ class RectangleDrawer(ShapeDrawer):
         height = height or width
         if isinstance(ctx, plt.Axes):
             return mpl.patches.Rectangle(
-                (center_x - width / 2, center_y - height / 2),
-                width, height, **kwargs)
+                (center_x - width / 2, center_y - height / 2), width, height, **kwargs
+            )
         else:
             ctx.rectangle(center_x - width / 2, center_y - height / 2, width, height)
 
@@ -163,8 +163,7 @@ class CircleDrawer(ShapeDrawer):
 
         @see: ShapeDrawer.draw_path"""
         if isinstance(ctx, plt.Axes):
-            return mpl.patches.Circle(
-                (center_x, center_y), width / 2, **kwargs)
+            return mpl.patches.Circle((center_x, center_y), width / 2, **kwargs)
         else:
             ctx.arc(center_x, center_y, width / 2, 0, 2 * pi)
 
@@ -501,6 +500,7 @@ class MatplotlibPolygonDrawer(AbstractPolygonDrawer):
             **kwds,
         )
         ax.add_patch(stroke)
+
 
 #####################################################################
 
