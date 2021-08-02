@@ -516,6 +516,8 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     @see: Graph.__plot__
     """
 
+    VALID_BACKENDS = ("cairo", "matplotlib")
+
     # Switch backend based on target (first) and config (second)
     if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
         backend = 'matplotlib'
@@ -524,8 +526,8 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     else:
         backend = Configuration.instance()['plotting.backend']
 
-    if backend == "":
-        raise ImportError('cairo or matplotlib are needed for plotting')
+    if backend not in VALID_BACKENDS:
+        raise ValueError('unknown plotting backend: {0!r}'.format(backend))
 
     # Matplotlib backend
     if backend == 'matplotlib':

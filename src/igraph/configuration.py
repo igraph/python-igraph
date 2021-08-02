@@ -161,7 +161,8 @@ class Configuration(object):
     These settings specify the default values used by plotting functions.
     They are all stored in section C{plotting}.
 
-        - B{backend}: either "cairo" or "matplotlib".
+        - B{backend}: either "cairo" if you want to use Cairo for plotting
+          or "matplotlib" if you want to use the Matplotlib plotting backend.
 
         - B{layout}: default graph layout algorithm to be used.
 
