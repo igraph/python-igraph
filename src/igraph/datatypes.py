@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Additional auxiliary data types"""
 
-from itertools import islice
 from igraph.drawing.matrix import CairoMatrixDrawer, MatplotlibMatrixDrawer
 
 
@@ -324,16 +323,9 @@ class Matrix(object):
         names.
         """
         if backend == "matplotlib":
-            drawer = MatplotlibMatrixDrawer(
-                context,
-            )
+            drawer = MatplotlibMatrixDrawer(context)
         else:
-            drawer = CairoMatrixDrawer(
-                context,
-                bbox,
-                palette,
-            )
-
+            drawer = CairoMatrixDrawer(context, bbox, palette)
         drawer.draw(self, **kwds)
 
     def min(self, dim=None):
