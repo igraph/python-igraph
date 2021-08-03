@@ -1,18 +1,25 @@
 """
 Drawing and plotting routines for IGraph.
 
-Plotting is dependent on the C{pycairo} or C{cairocffi} libraries that provide
-Python bindings to the popular U{Cairo library<http://www.cairographics.org>}.
+IGraph has two plotting backends at the moment: Cairo and Matplotlib.
+
+The Cairo backend is dependent on the C{pycairo} or C{cairocffi} libraries that
+provide Python bindings to the popular U{Cairo library<http://www.cairographics.org>}.
 This means that if you don't have U{pycairo<http://www.cairographics.org/pycairo>}
 or U{cairocffi<http://cairocffi.readthedocs.io>} installed, you won't be able
-to use the plotting capabilities. However, you can still use L{Graph.write_svg}
-to save the graph to an SVG file and view it from
+to use the Cairo plotting backend. Whenever the documentation refers to the
+C{pycairo} library, you can safely replace it with C{cairocffi} as the two are
+API-compatible.
+
+The Matplotlib backend uses the U{Matplotlib library<https://matplotlib.org>}.
+You will need to install it from PyPI if you want to use the Matplotlib
+plotting backend.
+
+If you do not want to (or cannot) install any of the dependencies outlined
+above, you can still save the graph to an SVG file and view it from
 U{Mozilla Firefox<http://www.mozilla.org/firefox>} (free) or edit it in
 U{Inkscape<http://www.inkscape.org>} (free), U{Skencil<http://www.skencil.org>}
 (formerly known as Sketch, also free) or Adobe Illustrator.
-
-Whenever the documentation refers to the C{pycairo} library, you can safely
-replace it with C{cairocffi} as the two are API-compatible.
 """
 
 
@@ -57,12 +64,11 @@ mpl, plt = find_matplotlib()
 
 
 class CairoPlot:
-    """Class representing an arbitrary plot.
+    """Class representing an arbitrary plot that uses the Cairo plotting
+    backend.
 
     Objects that you can plot include graphs, matrices, palettes, clusterings,
-    covers, and dengrograms.
-
-    Two main backends are supported: Cairo and matplotlib.
+    covers, and dendrograms.
 
     In Cairo, every plot has an associated surface object. The surface is an
     instance of C{cairo.Surface}, a member of the C{pycairo} library. The
@@ -95,19 +101,13 @@ class CairoPlot:
     which surface class will be used. Please note that not all surfaces might
     be available, depending on your C{pycairo} installation.
 
-    In matplotlib, every plot has an associated Axes object, which provides a
-    context. Matplotlib itself supports various backends with their own
-    surfaces.
-
     A C{Plot} has an assigned default palette (see L{igraph.drawing.colors.Palette})
     which is used for plotting objects.
 
     A C{Plot} object also has a list of objects to be plotted with their
-    respective bounding boxes, palettes and opacities. Bounding boxes are
-    specific to the Cairo backend and will be None in the matplotlib backend.
-    Palettes assigned to an object override the default palette of the plot.
-    Objects can be added by the L{Plot.add} method and removed by the
-    L{Plot.remove} method.
+    respective bounding boxes, palettes and opacities. Palettes assigned to an
+    object override the default palette of the plot. Objects can be added by the
+    L{Plot.add} method and removed by the L{Plot.remove} method.
     """
 
     def __init__(
@@ -118,7 +118,7 @@ class CairoPlot:
         background=None,
         margin=20,
     ):
-        """Creates a new plot using Cairo or Matplotlib.
+        """Creates a new plot.
 
         @param target: the target surface to write to. It can be one of the
           following types:
@@ -131,14 +131,11 @@ class CairoPlot:
             - C{string} -- a file with the given name will be created and an
               appropriate Cairo surface will be attached to it.
 
-            - C{plt.Axes} -- the given matplotlib Axes will be used.
-
-        @param bbox: the bounding box of the surface (only for Cairo). It is
-          interpreted differently with different surfaces: PDF and PS surfaces
-          will treat it as points (1 point = 1/72 inch). Image surfaces will
-          treat it as pixels. SVG surfaces will treat it as an abstract
-          unit, but it will mostly be interpreted as pixels when viewing
-          the SVG file in Firefox.
+        @param bbox: the bounding box of the surface. It is interpreted
+          differently with different surfaces: PDF and PS surfaces will treat it
+          as points (1 point = 1/72 inch). Image surfaces will treat it as
+          pixels. SVG surfaces will treat it as an abstract unit, but it will
+          mostly be interpreted as pixels when viewing the SVG file in Firefox.
 
         @param palette: the palette primarily used on the plot if the
           added objects do not specify a private palette. Must be either
@@ -148,9 +145,8 @@ class CairoPlot:
           palette given by the configuration key C{plotting.palette} is used.
 
         @param background: the background color. If C{None}, the background
-          will be transparent for Cairo and your default style for matplotlib.
-          You can use any color specification here that is understood by
-          L{igraph.drawing.colors.color_name_to_rgba}.
+          will be transparent. You can use any color specification here that is
+          understood by L{igraph.drawing.colors.color_name_to_rgba}.
         """
 
         self._filename = None
@@ -484,14 +480,14 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
       SVG and PostScript plots, where 72 pt = 1 inch = 2.54 cm). If this is
       a tuple with four integers, the first two denotes the X and Y coordinates
       of a corner and the latter two denoting the X and Y coordinates of the
-      opposite corner.
+      opposite corner. Ignored for Matplotlib plots.
 
     @keyword opacity: the opacity of the object being plotted. It can be
       used to overlap several plots of the same graph if you use the same
       layout for them -- for instance, you might plot a graph with opacity
       0.5 and then plot its spanning tree over it with opacity 0.1. To
       achieve this, you'll need to modify the L{Plot} object returned with
-      L{Plot.add}.
+      L{Plot.add}. Ignored for Matplotlib plots.
 
     @keyword palette: the palette primarily used on the plot if the
       added objects do not specify a private palette. Must be either
@@ -503,7 +499,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     @keyword margin: the top, right, bottom, left margins as a 4-tuple.
       If it has less than 4 elements or is a single float, the elements
       will be re-used until the length is at least 4. The default margin
-      is 20 on each side.
+      is 20 units on each side. Ignored for Matplotlib plots.
 
     @keyword inline: whether to try and show the plot object inline in the
       current IPython notebook. Passing C{None} here or omitting this keyword
@@ -572,7 +568,6 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
         if inline is None:
             inline = Configuration.instance()["shell.ipython.inlining.Plot"]
 
-    bbox = kwds.pop("bbox", None)
     palette = kwds.pop("palette", None)
     background = kwds.pop("background", "white")
     result = CairoPlot(

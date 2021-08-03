@@ -431,7 +431,7 @@ class VertexClustering(Clustering):
         return self.subgraph(ss.index(max_size))
 
     def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
-        """Plots the clustering to the given Cairo context or mpl Axes.
+        """Plots the clustering to the given Cairo context or matplotlib Axes.
 
         This is done by calling L{Graph.__plot__()} with the same arguments, but
         coloring the graph vertices according to the current clustering (unless
@@ -729,7 +729,7 @@ class Dendrogram(object):
         return out.getvalue().strip()
 
     def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
-        """Draws the dendrogram on the given Cairo context or mpl Axes.
+        """Draws the dendrogram on the given Cairo context or matplotlib Axes.
 
         Supported keyword arguments are:
 
@@ -860,7 +860,7 @@ class VertexDendrogram(Dendrogram):
         self._optimal_count = max(int(value), 1)
 
     def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
-        """Draws the vertex dendrogram on the given Cairo context or mpl Axes
+        """Draws the vertex dendrogram on the given Cairo context or matplotlib Axes
 
         See L{Dendrogram.__plot__} for the list of supported keyword
         arguments."""
@@ -1126,7 +1126,7 @@ class VertexCover(Cover):
         return [self._graph.subgraph(cl) for cl in self]
 
     def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
-        """Plots the cover to the given Cairo context or mpl Axes.
+        """Plots the cover to the given Cairo context or matplotlib Axes.
 
         This is done by calling L{Graph.__plot__()} with the same arguments, but
         drawing nice colored blobs around the vertex groups.
