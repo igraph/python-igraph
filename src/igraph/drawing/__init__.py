@@ -116,7 +116,6 @@ class CairoPlot:
         bbox=None,
         palette=None,
         background=None,
-        margin=20,
     ):
         """Creates a new plot.
 
@@ -158,7 +157,6 @@ class CairoPlot:
             self.bbox = BoundingBox(bbox)
         else:
             self.bbox = bbox
-        self.bbox = self.bbox.contract(margin)
 
         # Several Windows-specific hacks will be used from now on, thanks
         # to Dale Hunscher for debugging and fixing all that stuff
@@ -570,13 +568,15 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
 
     palette = kwds.pop("palette", None)
     background = kwds.pop("background", "white")
+    margin = float(kwds.pop("margin", 20))
     result = CairoPlot(
         target=target,
         bbox=bbox,
         palette=palette,
         background=background,
     )
-    result.add(obj, bbox, *args, **kwds)
+    item_bbox = result.bbox.contract(margin)
+    result.add(obj, item_bbox, *args, **kwds)
 
     # If we requested an inline plot, just return the result and IPython will
     # call its _repr_svg_ method. If we requested a non-inline plot, show the
