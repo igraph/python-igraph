@@ -138,7 +138,7 @@ class Palette(object):
         """Returns the number of colors in this palette"""
         return self._length
 
-    def __plot__(self, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
         """Plots the colors of the palette on the given Cairo context/mpl Axes
 
         Supported keywork arguments in both Cairo and matplotlib are:
@@ -189,6 +189,7 @@ class Palette(object):
             grid_width = float(kwds.get("grid_width", 0.0))
 
             return matrix.__plot__(
+                backend,
                 context,
                 bbox,
                 self,
