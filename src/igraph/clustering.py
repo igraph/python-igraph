@@ -11,7 +11,7 @@ from igraph.configuration import Configuration
 from igraph.datatypes import UniqueIdGenerator
 from igraph.drawing.colors import ClusterColoringPalette
 from igraph.drawing.dendrogram import (
-    DefaultDendrogramDrawer,
+    CairoDendrogramDrawer,
     MatplotlibDendrogramDrawer,
 )
 from igraph.statistics import Histogram
@@ -749,7 +749,7 @@ class Dendrogram(object):
         if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
             drawer = MatplotlibDendrogramDrawer(context)
         else:
-            drawer = DefaultDendrogramDrawer(context, bbox, palette)
+            drawer = CairoDendrogramDrawer(context, bbox, palette)
 
         drawer.draw(self, **kwds)
 

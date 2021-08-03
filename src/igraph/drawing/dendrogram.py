@@ -14,7 +14,7 @@ from igraph.drawing.utils import find_matplotlib
 __all__ = (
     "CairoDendrogramDrawer",
     "MatplotlibDendrogramDrawer",
-    "DefaultDendrogramDrawer",  # TODO: deprecate
+    "CairoDendrogramDrawer",  # TODO: deprecate
 )
 
 mpl, plt = find_matplotlib()
@@ -259,7 +259,7 @@ class CairoDendrogramDrawer(AbstractCairoDrawer):
 
 
 # TODO: deprecate
-DefaultDendrogramDrawer = CairoDendrogramDrawer
+CairoDendrogramDrawer = CairoDendrogramDrawer
 
 
 class MatplotlibDendrogramDrawer(AbstractDrawer):

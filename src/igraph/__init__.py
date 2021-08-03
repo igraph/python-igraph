@@ -3993,7 +3993,7 @@ class Graph(GraphBase):
     __hash__ = None  # needed for PyPy
 
     def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
-        """Plots the graph to the given Cairo context or mpl Axes.
+        """Plots the graph to the given Cairo context or matplotlib Axes.
 
         The visual style of vertices and edges can be modified at three
         places in the following order of precedence (lower indices override
