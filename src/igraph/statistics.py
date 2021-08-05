@@ -230,39 +230,51 @@ class Histogram(object):
             yield (x, x + self._bin_width, elem)
             x += self._bin_width
 
-    def __plot__(self, context, bbox, _, **kwds):
+    def __plot__(self, backend, context, bbox=None, _=None, **kwds):
         """Plotting support"""
         from igraph.drawing.coord import DescartesCoordinateSystem
 
-        coord_system = DescartesCoordinateSystem(
-            context,
-            bbox,
-            (
-                kwds.get("min", self._min),
-                0,
-                kwds.get("max", self._max),
-                kwds.get("max_value", max(self._bins)),
-            ),
-        )
+        xmin = kwds.get("min", self._min)
+        ymin = 0
+        xmax = kwds.get("max", self._max)
+        ymax = kwds.get("max_value", max(self._bins))
+        width = self._bin_width
 
-        # Draw the boxes
-        context.set_line_width(1)
-        context.set_source_rgb(1.0, 0.0, 0.0)
-        x = self._min
-        for value in self._bins:
-            top_left_x, top_left_y = coord_system.local_to_context(x, value)
-            x += self._bin_width
-            bottom_right_x, bottom_right_y = coord_system.local_to_context(x, 0)
-            context.rectangle(
-                top_left_x,
-                top_left_y,
-                bottom_right_x - top_left_x,
-                bottom_right_y - top_left_y,
+        if backend == 'cairo':
+            coord_system = DescartesCoordinateSystem(
+                context,
+                bbox,
+                (xmin, ymin, xmax, ymax),
             )
-            context.fill()
 
-        # Draw the axes
-        coord_system.draw()
+            # Draw the boxes
+            context.set_line_width(1)
+            context.set_source_rgb(1.0, 0.0, 0.0)
+            x = self._min
+            for value in self._bins:
+                top_left_x, top_left_y = coord_system.local_to_context(x, value)
+                x += width
+                bottom_right_x, bottom_right_y = coord_system.local_to_context(x, 0)
+                context.rectangle(
+                    top_left_x,
+                    top_left_y,
+                    bottom_right_x - top_left_x,
+                    bottom_right_y - top_left_y,
+                )
+                context.fill()
+
+            # Draw the axes
+            coord_system.draw()
+
+        else:
+            ax = context
+            x = [self._min + width * i for i, _ in enumerate(self._bins)]
+            y = self._bins
+            # Draw the boxes/bars
+            ax.bar(x, y, align='left')
+            ax.set_xlim(xmin, xmax)
+            ax.set_ylim(ymin, ymax)
+
 
     def to_string(self, max_width=78, show_bars=True, show_counts=True):
         """Returns the string representation of the histogram.
