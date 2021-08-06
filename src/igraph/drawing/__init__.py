@@ -307,7 +307,7 @@ class CairoPlot:
                     ctx.push_group()
                 else:
                     ctx.save()
-                plotter("cairo", ctx, bbox, palette, *args, **kwds)
+                plotter("cairo", ctx, bbox=bbox, palette=palette, *args, **kwds)
                 if opacity < 1.0:
                     ctx.pop_group_to_source()
                     ctx.paint_with_alpha(opacity)
@@ -533,7 +533,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
         # Choose palette
         # If explicit, use it. If not or None, ask the object: None is an
         # acceptable response from the object (e.g. for cluterings), it means
-        # the palette is handles internally. If no response, default to config.
+        # the palette is handled internally. If no response, default to config.
         palette = kwds.pop("palette", None)
         if palette is None:
             palette = getattr(
