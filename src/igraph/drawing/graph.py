@@ -224,10 +224,20 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
         self.edge_drawer_factory = edge_drawer_factory
         self.label_drawer_factory = label_drawer_factory
 
-    def draw(self, graph, palette, *args, **kwds):
+    def draw(self, graph, *args, **kwds):
+        # Positional arguments are not used
+        if args:
+            warn(
+                "Positional arguments to plot functions are ignored "
+                "and will be deprecated soon.", DeprecationWarning,
+            )
+
         # Some abbreviations for sake of simplicity
         directed = graph.is_directed()
         context = self.context
+
+        # Palette
+        palette = kwds.pop('palette', None)
 
         # Calculate/get the layout of the graph
         layout = self.ensure_layout(kwds.get("layout", None), graph)
@@ -565,6 +575,13 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
 
         @keyword clear: whether to clear the current UbiGraph display before
                         plotting. Default: C{True}."""
+        # Positional arguments are not used
+        if args:
+            warn(
+                "Positional arguments to plot functions are ignored "
+                "and will be deprecated soon.", DeprecationWarning,
+            )
+
         display = self.service
 
         # Clear the display and set the default visual attributes
@@ -687,6 +704,13 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
           for each node in the graph. The default is C{None}, which
           simply uses the vertex index for each vertex."""
         from xmlrpc.client import Fault
+
+        # Positional arguments are not used
+        if args:
+            warn(
+                "Positional arguments to plot functions are ignored "
+                "and will be deprecated soon.", DeprecationWarning,
+            )
 
         cy = self.service
 
@@ -964,6 +988,13 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
             - ``encoder`` lets one specify an instance of ``json.JSONEncoder`` that
               will be used to encode the JSON objects.
         """
+        # Positional arguments are not used
+        if args:
+            warn(
+                "Positional arguments to plot functions are ignored "
+                "and will be deprecated soon.", DeprecationWarning,
+            )
+
         self.streamer.post(graph, self.connection, encoder=kwds.get("encoder"))
 
 
@@ -1009,18 +1040,26 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         self.vertex_drawer_factory = vertex_drawer_factory
         self.edge_drawer_factory = edge_drawer_factory
 
-    def draw(self, graph, palette, *args, **kwds):
+    def draw(self, graph, *args, **kwds):
         # Deferred import to avoid a cycle in the import graph
         from igraph.clustering import VertexClustering, VertexCover
+
+        # Positional arguments are not used
+        if args:
+            warn(
+                "Positional arguments to plot functions are ignored "
+                "and will be deprecated soon.", DeprecationWarning,
+            )
 
         # Some abbreviations for sake of simplicity
         directed = graph.is_directed()
         ax = self.ax
 
+        # Palette
+        palette = kwds.pop('palette', None)
+
         # Calculate/get the layout of the graph
         layout = self.ensure_layout(kwds.get("layout", None), graph)
-
-        # FIXME: deal with unnamed *args
 
         # Decide whether we need to calculate the curvature of edges
         # automatically -- and calculate them if needed.

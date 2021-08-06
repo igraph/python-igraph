@@ -138,7 +138,7 @@ class Palette(object):
         """Returns the number of colors in this palette"""
         return self._length
 
-    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, *args, **kwds):
         """Plots the colors of the palette on the given Cairo context/mpl Axes
 
         Supported keywork arguments in both Cairo and matplotlib are:
@@ -165,6 +165,8 @@ class Palette(object):
         from igraph.datatypes import Matrix
         from igraph.drawing.utils import find_matplotlib
 
+        mpl, plt = find_matplotlib()
+
         orientation = str_to_orientation(kwds.get("orientation", "lr"))
 
         # Construct a matrix and plot that
@@ -176,8 +178,7 @@ class Palette(object):
         else:
             matrix = Matrix([[i] for i in indices])
 
-        mpl, plt = find_matplotlib()
-        if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
+        if backend == 'matplotlib':
             cmap = mpl.colors.ListedColormap([self.get(i) for i in range(self.length)])
             matrix.__plot__(
                 context,
@@ -185,6 +186,10 @@ class Palette(object):
                 **kwds,
             )
         else:
+            bbox = kwds.pop('bbox', None)
+            if bbox is None:
+                raise ValueError('bbox is required for cairo plots')
+
             border_width = float(kwds.get("border_width", 1.0))
             grid_width = float(kwds.get("grid_width", 0.0))
 

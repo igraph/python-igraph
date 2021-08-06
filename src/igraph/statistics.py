@@ -230,7 +230,7 @@ class Histogram(object):
             yield (x, x + self._bin_width, elem)
             x += self._bin_width
 
-    def __plot__(self, backend, context, bbox=None, _=None, **kwds):
+    def __plot__(self, backend, context, **kwds):
         """Plotting support"""
         from igraph.drawing.coord import DescartesCoordinateSystem
 
@@ -240,7 +240,20 @@ class Histogram(object):
         ymax = kwds.get("max_value", max(self._bins))
         width = self._bin_width
 
-        if backend == 'cairo':
+        if backend == 'matplotlib':
+            ax = context
+            x = [self._min + width * i for i, _ in enumerate(self._bins)]
+            y = self._bins
+            # Draw the boxes/bars
+            ax.bar(x, y, align='left')
+            ax.set_xlim(xmin, xmax)
+            ax.set_ylim(ymin, ymax)
+
+        else:
+            bbox = kwds.pop('bbox', None)
+            if bbox is None:
+                raise ValueError('bbox is required for cairo plots')
+
             coord_system = DescartesCoordinateSystem(
                 context,
                 bbox,
@@ -265,16 +278,6 @@ class Histogram(object):
 
             # Draw the axes
             coord_system.draw()
-
-        else:
-            ax = context
-            x = [self._min + width * i for i, _ in enumerate(self._bins)]
-            y = self._bins
-            # Draw the boxes/bars
-            ax.bar(x, y, align='left')
-            ax.set_xlim(xmin, xmax)
-            ax.set_ylim(ymin, ymax)
-
 
     def to_string(self, max_width=78, show_bars=True, show_counts=True):
         """Returns the string representation of the histogram.

@@ -3992,7 +3992,7 @@ class Graph(GraphBase):
     __iter__ = None  # needed for PyPy
     __hash__ = None  # needed for PyPy
 
-    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, *args, **kwds):
         """Plots the graph to the given Cairo context or matplotlib Axes.
 
         The visual style of vertices and edges can be modified at three
@@ -4184,16 +4184,16 @@ class Graph(GraphBase):
             C{"asc"} and C{"desc"} are accepted values).
         """
         if backend == "matplotlib":
-            drawer_factory = kwds.get("drawer_factory", MatplotlibGraphDrawer)
+            drawer_factory = kwds.pop("drawer_factory", MatplotlibGraphDrawer)
             drawer = drawer_factory(context)
         else:
-            drawer_factory = kwds.get("drawer_factory", CairoGraphDrawer)
+            bbox = kwds.pop('bbox', None)
+            if bbox is None:
+                raise ValueError('bbox is required for cairo plots')
+            drawer_factory = kwds.pop("drawer_factory", CairoGraphDrawer)
             drawer = drawer_factory(context, bbox)
 
-        if "drawer_factory" in kwds:
-            del kwds["drawer_factory"]
-
-        drawer.draw(self, palette, *args, **kwds)
+        drawer.draw(self, *args, **kwds)
 
     def __str__(self):
         """Returns a string representation of the graph.

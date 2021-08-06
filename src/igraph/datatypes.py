@@ -271,7 +271,7 @@ class Matrix(object):
         the original matrix."""
         return (list(row) for row in self._data)
 
-    def __plot__(self, backend, context, bbox=None, palette=None, **kwds):
+    def __plot__(self, backend, context, **kwds):
         """Plots the matrix to the given Cairo context in the given box
 
         Besides the usual self-explanatory plotting parameters (C{context},
@@ -325,6 +325,13 @@ class Matrix(object):
         if backend == "matplotlib":
             drawer = MatplotlibMatrixDrawer(context)
         else:
+            bbox = kwds.pop('bbox', None)
+            palette = kwds.pop('palette', None)
+            if bbox is None:
+                raise ValueError('bbox is required for cairo plots')
+            if palette is None:
+                raise ValueError('palette is required for cairo plots')
+
             drawer = CairoMatrixDrawer(context, bbox, palette)
         drawer.draw(self, **kwds)
 

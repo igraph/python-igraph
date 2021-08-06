@@ -430,7 +430,7 @@ class VertexClustering(Clustering):
         max_size = max(ss)
         return self.subgraph(ss.index(max_size))
 
-    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, *args, **kwds):
         """Plots the clustering to the given Cairo context or matplotlib Axes.
 
         This is done by calling L{Graph.__plot__()} with the same arguments, but
@@ -487,8 +487,9 @@ class VertexClustering(Clustering):
                 colors[is_crossing] for is_crossing in self.crossing()
             ]
 
+        palette = kwds.get('palette', None)
         if palette is None:
-            palette = ClusterColoringPalette(len(self))
+            kwds['palette'] = ClusterColoringPalette(len(self))
 
         if "mark_groups" not in kwds:
             if Configuration.instance()["plotting.mark_groups"]:
@@ -500,7 +501,7 @@ class VertexClustering(Clustering):
 
         if "vertex_color" not in kwds:
             kwds["vertex_color"] = self.membership
-        result = self._graph.__plot__(backend, context, bbox, palette, *args, **kwds)
+        result = self._graph.__plot__(backend, context, *args, **kwds)
 
         return result
 
@@ -728,7 +729,7 @@ class Dendrogram(object):
 
         return out.getvalue().strip()
 
-    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, *args, **kwds):
         """Draws the dendrogram on the given Cairo context or matplotlib Axes.
 
         Supported keyword arguments are:
@@ -743,12 +744,15 @@ class Dendrogram(object):
             The default is C{left-right}.
 
         """
-        from igraph.drawing.utils import find_matplotlib
-
-        mpl, plt = find_matplotlib()
-        if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
+        if backend == "matplotlib":
             drawer = MatplotlibDendrogramDrawer(context)
         else:
+            bbox = kwds.pop('bbox', None)
+            palette = kwds.pop('palette', None)
+            if bbox is None:
+                raise ValueError('bbox is required for cairo plots')
+            if palette is None:
+                raise ValueError('palette is required for cairo plots')
             drawer = CairoDendrogramDrawer(context, bbox, palette)
 
         drawer.draw(self, **kwds)
@@ -859,7 +863,7 @@ class VertexDendrogram(Dendrogram):
     def optimal_count(self, value):
         self._optimal_count = max(int(value), 1)
 
-    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, *args, **kwds):
         """Draws the vertex dendrogram on the given Cairo context or matplotlib Axes
 
         See L{Dendrogram.__plot__} for the list of supported keyword
@@ -877,7 +881,7 @@ class VertexDendrogram(Dendrogram):
             for idx, name in enumerate(self._names)
         ]
         result = Dendrogram.__plot__(
-            self, backend, context, bbox, palette, *args, **kwds
+            self, backend, context, *args, **kwds
         )
         del self._names
 
@@ -1125,7 +1129,7 @@ class VertexCover(Cover):
         """
         return [self._graph.subgraph(cl) for cl in self]
 
-    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, *args, **kwds):
         """Plots the cover to the given Cairo context or matplotlib Axes.
 
         This is done by calling L{Graph.__plot__()} with the same arguments, but
@@ -1176,8 +1180,7 @@ class VertexCover(Cover):
 
         if "edge_color" not in kwds and "color" not in self.graph.edge_attributes():
             # Set up a default edge coloring based on internal vs external edges
-            mpl, plt = find_matplotlib()
-            if hasattr(plt, "Axes") and isinstance(context, plt.Axes):
+            if backend == 'matplotlib':
                 colors = ["dimgrey", "silver"]
             else:
                 colors = ["grey20", "grey80"]
@@ -1186,10 +1189,9 @@ class VertexCover(Cover):
                 colors[is_crossing] for is_crossing in self.crossing()
             ]
 
-        if "palette" in kwds:
-            palette = kwds["palette"]
-        else:
-            palette = ClusterColoringPalette(len(self))
+        palette = kwds.get("palette", None)
+        if palette is None:
+            kwds["palette"] = ClusterColoringPalette(len(self))
 
         if "mark_groups" not in kwds:
             if Configuration.instance()["plotting.mark_groups"]:
@@ -1199,7 +1201,7 @@ class VertexCover(Cover):
                 kwds["mark_groups"], self
             )
 
-        return self._graph.__plot__(backend, context, bbox, palette, *args, **kwds)
+        return self._graph.__plot__(backend, context, *args, **kwds)
 
     def _formatted_cluster_iterator(self):
         """Iterates over the clusters and formats them into a string to be
@@ -1306,7 +1308,7 @@ class CohesiveBlocks(VertexCover):
         if the given group is the root."""
         return self._parent[:]
 
-    def __plot__(self, backend, context, bbox=None, palette=None, *args, **kwds):
+    def __plot__(self, backend, context, *args, **kwds):
         """Plots the cohesive block structure to the given Cairo context or
         mpl Axes.
 
@@ -1333,7 +1335,7 @@ class CohesiveBlocks(VertexCover):
             kwds["vertex_color"] = self.max_cohesions()
 
         return VertexCover.__plot__(
-            self, backend, context, bbox, palette, *args, **kwds
+            self, backend, context, *args, **kwds
         )
 
 
