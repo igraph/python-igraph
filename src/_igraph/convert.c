@@ -1167,116 +1167,6 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
 
 /**
  * \ingroup python_interface_conversion
- * \brief Converts a Python list of ints to an igraph \c igraph_vector_long_t
- * The incoming \c igraph_vector_long_t should be uninitialized.
- * Raises suitable Python exceptions when needed.
- *
- * This function is almost identical to
- * \ref igraphmodule_PyObject_to_vector_t . Make sure you fix bugs
- * in both cases (if any).
- *
- * \param list the Python list to be converted
- * \param v the \c igraph_vector_long_t containing the result
- * \return 0 if everything was OK, 1 otherwise
- */
-int igraphmodule_PyObject_to_vector_long_t(PyObject *list, igraph_vector_long_t *v) {
-  PyObject *item;
-  long value=0;
-  Py_ssize_t i, j, k;
-  int ok;
-
-  if (PyBaseString_Check(list)) {
-    /* It is highly unlikely that a string (although it is a sequence) will
-     * provide us with integers or integer pairs */
-    PyErr_SetString(PyExc_TypeError, "expected a sequence or an iterable containing integers");
-    return 1;
-  }
-
-  if (!PySequence_Check(list)) {
-    /* try to use an iterator */
-    PyObject *it = PyObject_GetIter(list);
-    if (it) {
-      PyObject *item;
-      igraph_vector_long_init(v, 0);
-      while ((item = PyIter_Next(it)) != 0) {
-        ok = 1;
-        if (!PyNumber_Check(item)) {
-          PyErr_SetString(PyExc_TypeError, "iterable must return numbers");
-          ok=0;
-        } else {
-          PyObject *item2 = PyNumber_Long(item);
-          if (item2 == 0) {
-            PyErr_SetString(PyExc_TypeError, "can't convert a list item to integer");
-            ok = 0;
-          } else {
-            value=(long)PyLong_AsLong(item);
-            Py_DECREF(item2);
-          }
-        }
-
-        if (ok == 0) {
-          igraph_vector_long_destroy(v);
-          Py_DECREF(item);
-          Py_DECREF(it);
-          return 1;
-        }
-        if (igraph_vector_long_push_back(v, value)) {
-          igraphmodule_handle_igraph_error();
-          igraph_vector_long_destroy(v);
-          Py_DECREF(item);
-          Py_DECREF(it);
-          return 1;
-        }
-        Py_DECREF(item);
-      }
-      Py_DECREF(it);
-      return 0;
-    } else {
-      PyErr_SetString(PyExc_TypeError, "sequence or iterable expected");
-      return 1;
-    }
-    return 0;
-  }
-
-  j=PySequence_Size(list);
-  igraph_vector_long_init(v, j);
-  for (i=0, k=0; i<j; i++) {
-    item=PySequence_GetItem(list, i);
-    if (item) {
-      ok=1;
-      if (!PyNumber_Check(item)) {
-        PyErr_SetString(PyExc_TypeError, "sequence elements must be integers");
-        ok=0;
-      } else {
-        PyObject *item2 = PyNumber_Long(item);
-        if (item2 == 0) {
-          PyErr_SetString(PyExc_TypeError, "can't convert sequence element to integer");
-          ok=0;
-        } else {
-          value=(long)PyLong_AsLong(item2);
-          Py_DECREF(item2);
-        }
-      }
-      Py_XDECREF(item);
-      if (!ok) {
-        igraph_vector_long_destroy(v);
-        return 1;
-      }
-      VECTOR(*v)[k]=value;
-      k++;
-    } else {
-      /* this should not happen, but we return anyway.
-       * an IndexError exception was set by PyList_GetItem
-       * at this point */
-      igraph_vector_long_destroy(v);
-      return 1;
-    }
-  }
-  return 0;
-}
-
-/**
- * \ingroup python_interface_conversion
  * \brief Converts a Python list of objects to an igraph \c igraph_vector_bool_t
  * The incoming \c igraph_vector_bool_t should be uninitialized. Raises suitable
  * Python exceptions when needed.
@@ -1423,34 +1313,6 @@ PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v) {
   list=PyList_New(n);
   for (i=0; i<n; i++) {
     item = PyLong_FromLong((long)VECTOR(*v)[i]);
-    if (!item) {
-      Py_DECREF(list);
-      return NULL;
-    }
-    PyList_SET_ITEM(list, i, item);
-  }
-
-  return list;
-}
-
-/**
- * \ingroup python_interface_conversion
- * \brief Converts an igraph \c igraph_vector_long_t to a Python integer list
- *
- * \param v the \c igraph_vector_long_t containing the vector to be converted
- * \return the Python integer list as a \c PyObject*, or \c NULL if an error occurred
- */
-PyObject* igraphmodule_vector_long_t_to_PyList(const igraph_vector_long_t *v) {
-  PyObject *list, *item;
-  Py_ssize_t n, i;
-
-  n = igraph_vector_long_size(v);
-  if (n<0)
-    return igraphmodule_handle_igraph_error();
-
-  list=PyList_New(n);
-  for (i=0; i<n; i++) {
-    item = PyLong_FromLong(VECTOR(*v)[i]);
     if (!item) {
       Py_DECREF(list);
       return NULL;
@@ -1756,9 +1618,8 @@ int igraphmodule_attrib_to_vector_t(PyObject *o, igraphmodule_GraphObject *self,
  * \ingroup python_interface_conversion
  * \brief Converts an attribute name or a sequence to a vector_int_t
  *
- * Similar to igraphmodule_attrib_to_vector_t and
- * igraphmodule_attrib_to_vector_long_t. Make sure you fix bugs
- * in all three places (if any).
+ * Similar to igraphmodule_attrib_to_vector_t. Make sure you fix bugs
+ * in all two places (if any).
  *
  * Note that if the function returned a pointer to an \c igraph_vector_int_t,
  * it is the caller's responsibility to destroy the object and free its
@@ -1813,75 +1674,6 @@ int igraphmodule_attrib_to_vector_int_t(PyObject *o, igraphmodule_GraphObject *s
     }
     if (igraphmodule_PyObject_to_vector_int_t(o, result)) {
       igraph_vector_int_destroy(result);
-      free(result);
-      return 1;
-    }
-    *vptr = result;
-  } else {
-    PyErr_SetString(PyExc_TypeError, "unhandled type");
-    return 1;
-  }
-  return 0;
-}
-
-/**
- * \ingroup python_interface_conversion
- * \brief Converts an attribute name or a sequence to a vector_long_t
- *
- * Similar to igraphmodule_attrib_to_vector_t and
- * igraphmodule_attrib_to_vector_int_t. Make sure you fix bugs
- * in all three places (if any).
- *
- * Note that if the function returned a pointer to an \c igraph_vector_long_t,
- * it is the caller's responsibility to destroy the object and free its
- * pointer after having finished using it.
- *
- * \param o the Python object being converted.
- * \param self a Python Graph object being used when attributes are queried
- * \param vptr the pointer to the allocated vector is returned here.
- * \param attr_type the type of the attribute being handled
- * \return 0 if everything was OK, nonzero otherwise.
- */
-int igraphmodule_attrib_to_vector_long_t(PyObject *o, igraphmodule_GraphObject *self,
-    igraph_vector_long_t **vptr, int attr_type) {
-  igraph_vector_long_t *result;
-
-  *vptr = 0;
-  if (attr_type != ATTRIBUTE_TYPE_EDGE && attr_type != ATTRIBUTE_TYPE_VERTEX)
-    return 1;
-  if (o == Py_None)
-    return 0;
-  if (PyUnicode_Check(o)) {
-    igraph_vector_t* dummy = 0;
-    long int i, n;
-
-    if (igraphmodule_attrib_to_vector_t(o, self, &dummy, attr_type))
-      return 1;
-
-    if (dummy == 0)
-      return 0;
-
-    n = igraph_vector_size(dummy);
-
-    result = (igraph_vector_long_t*)calloc(1, sizeof(igraph_vector_long_t));
-    igraph_vector_long_init(result, n);
-    if (result==0) {
-      igraph_vector_destroy(dummy); free(dummy);
-      PyErr_NoMemory();
-      return 1;
-    }
-    for (i=0; i<n; i++)
-      VECTOR(*result)[i] = (long int)VECTOR(*dummy)[i];
-    igraph_vector_destroy(dummy); free(dummy);
-    *vptr = result;
-  } else if (PySequence_Check(o)) {
-    result = (igraph_vector_long_t*)calloc(1, sizeof(igraph_vector_long_t));
-    if (result==0) {
-      PyErr_NoMemory();
-      return 1;
-    }
-    if (igraphmodule_PyObject_to_vector_long_t(o, result)) {
-      igraph_vector_long_destroy(result);
       free(result);
       return 1;
     }

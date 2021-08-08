@@ -91,7 +91,6 @@ int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v,
 		igraph_bool_t need_non_negative);
 int igraphmodule_PyObject_float_to_vector_t(PyObject *list, igraph_vector_t *v);
 int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v);
-int igraphmodule_PyObject_to_vector_long_t(PyObject *list, igraph_vector_long_t *v);
 int igraphmodule_PyObject_to_vector_bool_t(PyObject *list, igraph_vector_bool_t *v);
 int igraphmodule_PyObject_to_vector_ptr_t(PyObject *list, igraph_vector_ptr_t *v,
 		igraph_bool_t need_non_negative);
@@ -136,8 +135,6 @@ int igraphmodule_attrib_to_vector_t(PyObject *o, igraphmodule_GraphObject *self,
   igraph_vector_t **vptr, int attr_type);
 int igraphmodule_attrib_to_vector_int_t(PyObject *o, igraphmodule_GraphObject *self,
   igraph_vector_int_t **vptr, int attr_type);
-int igraphmodule_attrib_to_vector_long_t(PyObject *o, igraphmodule_GraphObject *self,
-  igraph_vector_long_t **vptr, int attr_type);
 int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *self,
   igraph_vector_bool_t **vptr, int attr_type);
 
@@ -153,7 +150,6 @@ PyObject* igraphmodule_vector_t_to_PyList_pairs(const igraph_vector_t *v);
 PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
         igraphmodule_conv_t type);
 PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v);
-PyObject* igraphmodule_vector_long_t_to_PyList(const igraph_vector_long_t *v);
 PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
         igraphmodule_conv_t type);
 #endif

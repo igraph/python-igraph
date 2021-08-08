@@ -443,7 +443,7 @@ PyObject *igraphmodule_Graph_is_matching(igraphmodule_GraphObject* self,
     PyObject* args, PyObject* kwds) {
   static char* kwlist[] = { "matching", "types", NULL };
   PyObject *matching_o, *types_o = Py_None;
-  igraph_vector_long_t* matching = 0;
+  igraph_vector_int_t* matching = 0;
   igraph_vector_bool_t* types = 0;
   igraph_bool_t result;
 
@@ -451,23 +451,23 @@ PyObject *igraphmodule_Graph_is_matching(igraphmodule_GraphObject* self,
         &types_o))
     return NULL;
 
-  if (igraphmodule_attrib_to_vector_long_t(matching_o, self, &matching,
+  if (igraphmodule_attrib_to_vector_int_t(matching_o, self, &matching,
         ATTRIBUTE_TYPE_VERTEX))
     return NULL;
 
   if (igraphmodule_attrib_to_vector_bool_t(types_o, self, &types, ATTRIBUTE_TYPE_VERTEX)) {
-    if (matching != 0) { igraph_vector_long_destroy(matching); free(matching); }
+    if (matching != 0) { igraph_vector_int_destroy(matching); free(matching); }
     return NULL;
   }
 
   if (igraph_is_matching(&self->g, types, matching, &result)) {
-    if (matching != 0) { igraph_vector_long_destroy(matching); free(matching); }
+    if (matching != 0) { igraph_vector_int_destroy(matching); free(matching); }
     if (types != 0) { igraph_vector_bool_destroy(types); free(types); }
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
-  if (matching != 0) { igraph_vector_long_destroy(matching); free(matching); }
+  if (matching != 0) { igraph_vector_int_destroy(matching); free(matching); }
   if (types != 0) { igraph_vector_bool_destroy(types); free(types); }
 
   if (result)
@@ -485,7 +485,7 @@ PyObject *igraphmodule_Graph_is_maximal_matching(igraphmodule_GraphObject* self,
     PyObject* args, PyObject* kwds) {
   static char* kwlist[] = { "matching", "types", NULL };
   PyObject *matching_o, *types_o = Py_None;
-  igraph_vector_long_t* matching = 0;
+  igraph_vector_int_t* matching = 0;
   igraph_vector_bool_t* types = 0;
   igraph_bool_t result;
 
@@ -493,23 +493,23 @@ PyObject *igraphmodule_Graph_is_maximal_matching(igraphmodule_GraphObject* self,
         &types_o))
     return NULL;
 
-  if (igraphmodule_attrib_to_vector_long_t(matching_o, self, &matching,
+  if (igraphmodule_attrib_to_vector_int_t(matching_o, self, &matching,
         ATTRIBUTE_TYPE_VERTEX))
     return NULL;
 
   if (igraphmodule_attrib_to_vector_bool_t(types_o, self, &types, ATTRIBUTE_TYPE_VERTEX)) {
-    if (matching != 0) { igraph_vector_long_destroy(matching); free(matching); }
+    if (matching != 0) { igraph_vector_int_destroy(matching); free(matching); }
     return NULL;
   }
 
   if (igraph_is_maximal_matching(&self->g, types, matching, &result)) {
-    if (matching != 0) { igraph_vector_long_destroy(matching); free(matching); }
+    if (matching != 0) { igraph_vector_int_destroy(matching); free(matching); }
     if (types != 0) { igraph_vector_bool_destroy(types); free(types); }
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
-  if (matching != 0) { igraph_vector_long_destroy(matching); free(matching); }
+  if (matching != 0) { igraph_vector_int_destroy(matching); free(matching); }
   if (types != 0) { igraph_vector_bool_destroy(types); free(types); }
 
   if (result)
@@ -1586,7 +1586,9 @@ PyObject *igraphmodule_Graph_diameter(igraphmodule_GraphObject * self,
       ATTRIBUTE_TYPE_EDGE)) return NULL;
 
   if (weights) {
-    if (igraph_diameter_dijkstra(&self->g, weights, &diameter, 0, 0, 0,
+    if (igraph_diameter_dijkstra(&self->g, weights, &diameter,
+          /* from, to, vertex_path, edge_path */
+          0, 0, 0, 0,
           PyObject_IsTrue(dir), PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
       igraph_vector_destroy(weights); free(weights);
@@ -1595,8 +1597,10 @@ PyObject *igraphmodule_Graph_diameter(igraphmodule_GraphObject * self,
     igraph_vector_destroy(weights); free(weights);
     return PyFloat_FromDouble((double)diameter);
   } else {
-    if (igraph_diameter(&self->g, &diameter, 0, 0, 0, PyObject_IsTrue(dir),
-                        PyObject_IsTrue(vcount_if_unconnected))) {
+    if (igraph_diameter(&self->g, &diameter,
+          /* from, to, vertex_path, edge_path */
+          0, 0, 0, 0,
+          PyObject_IsTrue(dir), PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
       return NULL;
     }
@@ -1635,7 +1639,9 @@ PyObject *igraphmodule_Graph_get_diameter(igraphmodule_GraphObject * self,
 
   igraph_vector_init(&res, 0);
   if (weights) {
-    if (igraph_diameter_dijkstra(&self->g, weights, 0, 0, 0, &res,
+    if (igraph_diameter_dijkstra(&self->g, weights, 0,
+          /* from, to, vertex_path, edge_path */
+          0, 0, &res, 0,
           PyObject_IsTrue(dir), PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
       igraph_vector_destroy(weights); free(weights);
@@ -1644,8 +1650,10 @@ PyObject *igraphmodule_Graph_get_diameter(igraphmodule_GraphObject * self,
     }
     igraph_vector_destroy(weights); free(weights);
   } else {
-    if (igraph_diameter(&self->g, 0, 0, 0, &res, PyObject_IsTrue(dir),
-                        PyObject_IsTrue(vcount_if_unconnected))) {
+    if (igraph_diameter(&self->g, 0,
+          /* from, to, vertex_path, edge_path */
+          0, 0, &res, 0, 
+          PyObject_IsTrue(dir), PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
       return NULL;
     }
@@ -1680,7 +1688,9 @@ PyObject *igraphmodule_Graph_farthest_points(igraphmodule_GraphObject * self,
       ATTRIBUTE_TYPE_EDGE)) return NULL;
 
   if (weights) {
-    if (igraph_diameter_dijkstra(&self->g, weights, &len, &from, &to, 0,
+    if (igraph_diameter_dijkstra(&self->g, weights, &len,
+          /* from, to, vertex_path, edge_path */          
+          &from, &to, 0, 0,
           PyObject_IsTrue(dir), PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
       igraph_vector_destroy(weights); free(weights);
@@ -1693,8 +1703,10 @@ PyObject *igraphmodule_Graph_farthest_points(igraphmodule_GraphObject * self,
       return Py_BuildValue("OOd", Py_None, Py_None, (double)len);
     }
   } else {
-    if (igraph_diameter(&self->g, &len, &from, &to, 0, PyObject_IsTrue(dir),
-                        PyObject_IsTrue(vcount_if_unconnected))) {
+    if (igraph_diameter(&self->g, &len,
+          /* from, to, vertex_path, edge_path */
+          &from, &to, 0, 0, 
+          PyObject_IsTrue(dir), PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
       return NULL;
     }
@@ -5039,7 +5051,9 @@ PyObject *igraphmodule_Graph_get_all_shortest_paths(igraphmodule_GraphObject *
     return NULL;
   }
 
-  if (igraph_get_all_shortest_paths_dijkstra(&self->g, &res,
+  if (igraph_get_all_shortest_paths_dijkstra(&self->g,
+        /* vertices, edges */
+        &res, NULL,
         NULL, from, to, weights, mode)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_ptr_destroy(&res);
@@ -10967,7 +10981,7 @@ PyObject *igraphmodule_Graph_maximum_bipartite_matching(igraphmodule_GraphObject
   PyObject *types_o = Py_None, *weights_o = Py_None, *result_o;
   igraph_vector_bool_t* types = 0;
   igraph_vector_t* weights = 0;
-  igraph_vector_long_t result;
+  igraph_vector_int_t result;
   double eps = -1;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|Od", kwlist, &types_o,
@@ -10985,7 +10999,7 @@ PyObject *igraphmodule_Graph_maximum_bipartite_matching(igraphmodule_GraphObject
     return NULL;
   }
 
-  if (igraph_vector_long_init(&result, 0)) {
+  if (igraph_vector_int_init(&result, 0)) {
     if (types != 0) { igraph_vector_bool_destroy(types); free(types); }
     if (weights != 0) { igraph_vector_destroy(weights); free(weights); }
     igraphmodule_handle_igraph_error();
@@ -10995,7 +11009,7 @@ PyObject *igraphmodule_Graph_maximum_bipartite_matching(igraphmodule_GraphObject
   if (igraph_maximum_bipartite_matching(&self->g, types, 0, 0, &result, weights, eps)) {
     if (types != 0) { igraph_vector_bool_destroy(types); free(types); }
     if (weights != 0) { igraph_vector_destroy(weights); free(weights); }
-    igraph_vector_long_destroy(&result);
+    igraph_vector_int_destroy(&result);
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -11003,8 +11017,8 @@ PyObject *igraphmodule_Graph_maximum_bipartite_matching(igraphmodule_GraphObject
   if (types != 0) { igraph_vector_bool_destroy(types); free(types); }
   if (weights != 0) { igraph_vector_destroy(weights); free(weights); }
 
-  result_o = igraphmodule_vector_long_t_to_PyList(&result);
-  igraph_vector_long_destroy(&result);
+  result_o = igraphmodule_vector_int_t_to_PyList(&result);
+  igraph_vector_int_destroy(&result);
 
   return result_o;
 }
