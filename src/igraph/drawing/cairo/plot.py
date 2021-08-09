@@ -23,13 +23,11 @@ U{Inkscape<http://www.inkscape.org>} (free), U{Skencil<http://www.skencil.org>}
 """
 
 
-from warnings import warn
-
 import os
-import platform
-import time
 
 from io import BytesIO
+from warnings import warn
+
 from igraph.configuration import Configuration
 from igraph.drawing.cairo.utils import find_cairo
 from igraph.drawing.colors import Palette, palettes
@@ -137,10 +135,6 @@ class CairoPlot:
             self.bbox = BoundingBox(bbox)
         else:
             self.bbox = bbox
-
-        # Several Windows-specific hacks will be used from now on, thanks
-        # to Dale Hunscher for debugging and fixing all that stuff
-        self._windows_hacks = "Windows" in platform.platform()
 
         if palette is None:
             config = Configuration.instance()
@@ -322,50 +316,6 @@ class CairoPlot:
 
         self._ctx.show_page()
         self._surface.finish()
-
-    def show(self):
-        """Saves the plot to a temporary file and shows it.
-
-        This method is deprecated from python-igraph 0.9.1 and will be removed in
-        version 0.10.0.
-
-        @deprecated: Opening an image viewer with a temporary file never worked
-            reliably across platforms.
-        """
-        warn("Plot.show() is deprecated from python-igraph 0.9.1", DeprecationWarning)
-
-        if not isinstance(self._surface, cairo.ImageSurface):
-            sur = cairo.ImageSurface(
-                cairo.FORMAT_ARGB32, int(self.bbox.width), int(self.bbox.height)
-            )
-            ctx = cairo.Context(sur)
-            self.redraw(ctx)
-        else:
-            sur = self._surface
-            ctx = self._ctx
-            if self._is_dirty:
-                self.redraw(ctx)
-
-        with named_temporary_file(prefix="igraph", suffix=".png") as tmpfile:
-            sur.write_to_png(tmpfile)
-            config = Configuration.instance()
-            imgviewer = config["apps.image_viewer"]
-            if not imgviewer:
-                # No image viewer was given and none was detected. This
-                # should only happen on unknown platforms.
-                plat = platform.system()
-                raise NotImplementedError(
-                    "showing plots is not implemented on this platform: %s" % plat
-                )
-            else:
-                os.system("%s %s" % (imgviewer, tmpfile))
-                if platform.system() == "Darwin" or self._windows_hacks:
-                    # On Mac OS X and Windows, launched applications are likely to
-                    # fork and give control back to Python immediately.
-                    # Chances are that the temporary image file gets removed
-                    # before the image viewer has a chance to open it, so
-                    # we wait here a little bit. Yes, this is quite hackish :(
-                    time.sleep(5)
 
     def _repr_svg_(self):
         """Returns an SVG representation of this plot as a string.

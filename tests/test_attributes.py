@@ -105,8 +105,7 @@ class AttributeTests(unittest.TestCase):
 
         # Check the exception
         self.assertTrue(isinstance(err, RuntimeError))
-        if sys.version_info >= (3, 4):
-            self.assertTrue(repr(value) in str(err))
+        self.assertTrue(repr(value) in str(err))
 
     def testVertexNameIndexingBug196(self):
         g = Graph()

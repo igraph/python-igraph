@@ -77,10 +77,9 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
           refer to a PNG image, an arbitrary window, an SVG file, anything that
           Cairo can handle.
 
-        - C{None} -- a temporary file will be created and the object will be
-          plotted there. igraph will attempt to open an image viewer and show
-          the temporary file. This feature is deprecated from python-igraph
-          version 0.9.1 and will be removed in 0.10.0.
+        - C{None} -- no plotting will be performed; igraph simply returns a
+          CairoPlot_ object that you can use to manipulate the plot and save it
+          to a file later.
 
     @param bbox: the bounding box of the plot. It must be a tuple with either
       two or four integers, or a L{BoundingBox} object. If this is a tuple
@@ -200,10 +199,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     # We are either not in IPython or the user specified an explicit plot target,
     # so just show or save the result
 
-    if target is None:
-        # show with the default backend
-        result.show()
-    elif isinstance(target, str):
+    if isinstance(target, str):
         # save
         result.save()
 

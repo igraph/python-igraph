@@ -8,83 +8,10 @@ This module provides the framework for altering and querying igraph parameters
 as well as saving them to and retrieving them from disk.
 """
 
-import sys
-
-if sys.version_info < (3, 2):
-    from configparser import SafeConfigParser as ConfigParser
-else:
-    from configparser import ConfigParser
-
-import platform
 import os.path
+import platform
 
-
-def get_platform_image_viewer():
-    """Returns the path of an image viewer on the given platform.
-
-    Deprecated since python-igraph 0.9.1 and will be removed in 0.10.0.
-
-    @deprecated: This function was only used by the now-deprecated C{show()}
-        method of the Plot class.
-    """
-    plat = platform.system()
-    if plat == "Darwin":
-        # Most likely Mac OS X
-        return "open"
-    elif plat == "Linux":
-        # Linux has a whole lot of choices, try to find one
-        choices = [
-            "eog",
-            "gthumb",
-            "gqview",
-            "kuickshow",
-            "xnview",
-            "display",
-            "gpicview",
-            "gwenview",
-            "qiv",
-            "gimv",
-            "ristretto",
-            "geeqie",
-            "eom",
-            "feh",
-            "sxiv",
-        ]
-        paths = ["/usr/bin", "/bin"]
-        for path in paths:
-            for choice in choices:
-                full_path = os.path.join(path, choice)
-                if os.path.isfile(full_path):
-                    return full_path
-        return ""
-    elif plat == "FreeBSD":
-        # FreeBSD also has a whole lot of choices, try to find one
-        choices = [
-            "eog",
-            "gthumb",
-            "geeqie",
-            "display",
-            "gpicview",
-            "gwenview",
-            "qiv",
-            "gimv",
-            "ristretto",
-            "geeqie",
-            "eom",
-        ]
-        paths = ["%%LOCALBASE%%/bin"]
-        for path in paths:
-            for choice in choices:
-                full_path = os.path.join(path, choice)
-                if os.path.isfile(full_path):
-                    return full_path
-        return ""
-    elif plat == "Windows" or plat == "Microsoft":  # Thanks to Dale Hunscher
-        # Use the built-in Windows image viewer, if available
-        return "start"
-    else:
-        # Unknown system
-        return ""
+from configparser import ConfigParser
 
 
 class Configuration:
@@ -141,19 +68,6 @@ class Configuration:
           C{IPythonShell, ClassicPythonShell}. This is the default, by the way.
         - B{verbose}: whether L{igraph} should talk more than really necessary.
           For instance, if set to C{True}, some functions display progress bars.
-
-    Application settings
-    --------------------
-
-    These settings specify the external applications that are possibly
-    used by C{igraph}. They are all stored in section C{apps}.
-
-        - B{image_viewer}: image viewer application. If set to an empty string,
-          it will be determined automatically from the platform C{igraph} runs
-          on. On Mac OS X, it defaults to the Preview application. On Linux,
-          it chooses a viewer from several well-known Linux viewers like
-          C{gthumb}, C{kuickview} and so on (see the source code for the full
-          list). On Windows, it defaults to the system's built-in image viewer.
 
     Plotting settings
     -----------------
@@ -251,7 +165,6 @@ class Configuration:
     _definitions = {
         "general.shells": {"default": "IPythonShell,ClassicPythonShell"},
         "general.verbose": {"default": True, "type": "boolean"},
-        "apps.image_viewer": {"default": get_platform_image_viewer()},
         "plotting.backend": {"default": "cairo"},
         "plotting.layout": {"default": "auto"},
         "plotting.mark_groups": {"default": False, "type": "boolean"},
