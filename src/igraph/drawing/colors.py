@@ -4,6 +4,7 @@
 Color handling functions.
 """
 
+from abc import ABCMeta, abstractmethod
 from igraph.utils import str_to_orientation
 from math import ceil
 
@@ -30,7 +31,7 @@ __all__ = (
 )
 
 
-class Palette:
+class Palette(metaclass=ABCMeta):
     """Base class of color palettes.
 
     Color palettes are mappings that assign integers from the range
@@ -117,6 +118,7 @@ class Palette:
         # Multiple colors
         return [self.get(color) for color in colors]
 
+    @abstractmethod
     def _get(self, v):
         """Override this method in a subclass to create a custom palette.
 
@@ -125,7 +127,7 @@ class Palette:
 
         @param v: numerical index of the color to be retrieved
         @return: a 4-tuple containing the RGBA values"""
-        raise NotImplementedError("abstract class")
+        raise NotImplementedError
 
     __getitem__ = get
 

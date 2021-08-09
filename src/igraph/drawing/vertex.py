@@ -5,6 +5,7 @@ This module provides implementations of vertex drawers, i.e. drawers that the
 default graph drawer will use to draw vertices.
 """
 
+from abc import abstractmethod
 from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer
 from igraph.drawing.matplotlib.utils import find_matplotlib
 from igraph.drawing.metamagic import AttributeCollectorBase
@@ -37,6 +38,7 @@ class AbstractVertexDrawer(AbstractDrawer):
         self.layout = layout
         self.palette = palette
 
+    @abstractmethod
     def draw(self, visual_vertex, vertex, coords):
         """Draws the given vertex.
 
@@ -47,7 +49,7 @@ class AbstractVertexDrawer(AbstractDrawer):
         @param coords: the X and Y coordinates of the vertex as specified by the
             layout algorithm, scaled into the bounding box.
         """
-        raise NotImplementedError("abstract class")
+        raise NotImplementedError
 
 
 class AbstractCairoVertexDrawer(AbstractVertexDrawer, AbstractCairoDrawer):

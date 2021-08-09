@@ -19,6 +19,7 @@ name in the C{shape} attribute of vertices.
 
 __all__ = ("ShapeDrawerDirectory",)
 
+from abc import ABCMeta, abstractmethod
 from math import atan2, copysign, cos, pi, sin
 import sys
 
@@ -30,7 +31,7 @@ from igraph.utils import consecutive_pairs
 mpl, plt = find_matplotlib()
 
 
-class ShapeDrawer:
+class ShapeDrawer(metaclass=ABCMeta):
     """Static class, the ancestor of all vertex shape drawer classes.
 
     Custom shapes must implement at least the C{draw_path} method of the class.
@@ -38,6 +39,7 @@ class ShapeDrawer:
     Cairo path appropriately."""
 
     @staticmethod
+    @abstractmethod
     def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws the path of the shape on the given Cairo context, without
         stroking or filling it.
@@ -51,7 +53,7 @@ class ShapeDrawer:
         @param width: the width of the object
         @param height: the height of the object. If C{None}, equals to the width.
         """
-        raise NotImplementedError("abstract class")
+        raise NotImplementedError
 
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):

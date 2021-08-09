@@ -13,6 +13,7 @@ L{CytoscapeGraphDrawer}. L{CytoscapeGraphDrawer} can also fetch the current
 network from Cytoscape and convert it to igraph format.
 """
 
+from abc import abstractmethod
 from math import atan2, cos, pi, sin, tan
 from warnings import warn
 
@@ -52,9 +53,10 @@ class AbstractGraphDrawer(AbstractDrawer):
     """Abstract class that serves as a base class for anything that
     draws an igraph.Graph."""
 
+    @abstractmethod
     def draw(self, graph, *args, **kwds):
         """Abstract method, must be implemented in derived classes."""
-        raise NotImplementedError("abstract class")
+        raise NotImplementedError
 
     def ensure_layout(self, layout, graph=None):
         """Helper method that ensures that I{layout} is an instance
@@ -832,7 +834,7 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         version = tuple(map(int, version.split(".")[:2]))
         if version < (1, 3):
             raise NotImplementedError(
-                "CytoscapeGraphDrawer requires " "Cytoscape-RPC 1.3 or newer"
+                "CytoscapeGraphDrawer requires Cytoscape-RPC 1.3 or newer"
             )
 
         # Find out the ID of the network we are interested in

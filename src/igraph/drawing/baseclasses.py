@@ -2,19 +2,22 @@
 Abstract base classes for the drawing routines.
 """
 
-from igraph.drawing.utils import BoundingBox
+from abc import ABCMeta, abstractmethod
 from math import pi
+
+from igraph.drawing.utils import BoundingBox
 
 #####################################################################
 
 
-class AbstractDrawer:
+class AbstractDrawer(metaclass=ABCMeta):
     """Abstract class that serves as a base class for anything that
     draws an igraph object."""
 
+    @abstractmethod
     def draw(self, *args, **kwds):
         """Abstract method, must be implemented in derived classes."""
-        raise NotImplementedError("abstract class")
+        raise NotImplementedError
 
 
 #####################################################################
@@ -58,10 +61,6 @@ class AbstractCairoDrawer(AbstractDrawer):
             self._bbox = BoundingBox(bbox)
         else:
             self._bbox = bbox
-
-    def draw(self, *args, **kwds):
-        """Abstract method, must be implemented in derived classes."""
-        raise NotImplementedError("abstract class")
 
     def _mark_point(self, x, y, color=0, size=4):
         """Marks the given point with a small circle on the canvas.

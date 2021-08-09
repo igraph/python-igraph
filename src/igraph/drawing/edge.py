@@ -2,6 +2,14 @@
 Drawers for various edge styles in graph plots.
 """
 
+from abc import ABCMeta, abstractmethod
+from igraph.drawing.colors import clamp
+from igraph.drawing.metamagic import AttributeCollectorBase
+from igraph.drawing.text import TextAlignment
+from igraph.drawing.cairo.utils import find_cairo
+from igraph.drawing.matplotlib.utils import find_matplotlib
+from math import atan2, cos, pi, sin, sqrt
+
 __all__ = (
     "AbstractEdgeDrawer",
     "AlphaVaryingEdgeDrawer",
@@ -11,18 +19,11 @@ __all__ = (
     "TaperedEdgeDrawer",
 )
 
-from igraph.drawing.colors import clamp
-from igraph.drawing.metamagic import AttributeCollectorBase
-from igraph.drawing.text import TextAlignment
-from igraph.drawing.cairo.utils import find_cairo
-from igraph.drawing.matplotlib.utils import find_matplotlib
-from math import atan2, cos, pi, sin, sqrt
-
 cairo = find_cairo()
 mpl, plt = find_matplotlib()
 
 
-class AbstractEdgeDrawer:
+class AbstractEdgeDrawer(metaclass=ABCMeta):
     """Abstract edge drawer object from which all concrete edge drawer
     implementations are derived."""
 
@@ -69,6 +70,7 @@ class AbstractEdgeDrawer:
 
         return VisualEdgeBuilder
 
+    @abstractmethod
     def draw_directed_edge(self, edge, src_vertex, dest_vertex):
         """Draws a directed edge.
 
@@ -79,7 +81,7 @@ class AbstractEdgeDrawer:
         @param dest_vertex: the target vertex. Visual properties are given
           again as attributes.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def draw_loop_edge(self, edge, vertex):
         """Draws a loop edge.
