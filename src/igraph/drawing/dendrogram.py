@@ -6,7 +6,8 @@ This module provides implementations of matrix drawers.
 
 from math import pi
 
-from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer
+from igraph.drawing.baseclasses import AbstractDrawer
+from igraph.drawing.cairo.base import AbstractCairoDrawer
 from igraph.drawing.matplotlib.utils import find_matplotlib
 from igraph.utils import str_to_orientation
 

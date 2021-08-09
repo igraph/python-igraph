@@ -19,16 +19,14 @@ from warnings import warn
 
 from igraph._igraph import convex_hull, VertexSeq
 from igraph.configuration import Configuration
-from igraph.drawing.baseclasses import (
-    AbstractDrawer,
-    AbstractCairoDrawer,
-    AbstractXMLRPCDrawer,
-)
+from igraph.drawing.baseclasses import AbstractDrawer, AbstractXMLRPCDrawer
+from igraph.drawing.cairo.base import AbstractCairoDrawer
+from igraph.drawing.cairo.text import CairoTextDrawer
 from igraph.drawing.cairo.utils import find_cairo
 from igraph.drawing.matplotlib.utils import find_matplotlib
 from igraph.drawing.colors import color_to_html_format, color_name_to_rgb
 from igraph.drawing.edge import ArrowEdgeDrawer, MatplotlibArrowEdgeDrawer
-from igraph.drawing.text import TextAlignment, TextDrawer
+from igraph.drawing.text import TextAlignment
 from igraph.drawing.metamagic import AttributeCollectorBase
 from igraph.drawing.shapes import CairoPolygonDrawer, MatplotlibPolygonDrawer
 from igraph.drawing.utils import Point
@@ -191,7 +189,7 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
         bbox,
         vertex_drawer_factory=DefaultVertexDrawer,
         edge_drawer_factory=ArrowEdgeDrawer,
-        label_drawer_factory=TextDrawer,
+        label_drawer_factory=CairoTextDrawer,
     ):
         """Constructs the graph drawer and associates it to the given
         Cairo context and the given L{BoundingBox}.
@@ -218,10 +216,10 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
                         edges drawn by igraph. The default edge drawer is
                         L{ArrowEdgeDrawer}.
         @param label_drawer_factory: a factory method that returns a
-                        L{TextDrawer} instance bound to a given Cairo
+                        L{CairoTextDrawer} instance bound to a given Cairo
                         context. The method must take one parameter: the
                         Cairo context. The default label drawer is
-                        L{TextDrawer}.
+                        L{CairoTextDrawer}.
         """
         AbstractCairoGraphDrawer.__init__(self, context, bbox)
         self.vertex_drawer_factory = vertex_drawer_factory

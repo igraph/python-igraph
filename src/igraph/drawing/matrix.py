@@ -6,7 +6,8 @@ This module provides implementations of matrix drawers.
 
 from itertools import islice
 
-from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer
+from igraph.drawing.baseclasses import AbstractDrawer
+from igraph.drawing.cairo.base import AbstractCairoDrawer
 
 __all__ = (
     "CairoMatrixDrawer",

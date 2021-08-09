@@ -6,7 +6,8 @@ default graph drawer will use to draw vertices.
 """
 
 from abc import abstractmethod
-from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer
+from igraph.drawing.baseclasses import AbstractDrawer
+from igraph.drawing.cairo.base import AbstractCairoDrawer
 from igraph.drawing.matplotlib.utils import find_matplotlib
 from igraph.drawing.metamagic import AttributeCollectorBase
 from igraph.drawing.shapes import ShapeDrawerDirectory

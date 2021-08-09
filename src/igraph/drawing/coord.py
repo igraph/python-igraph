@@ -3,7 +3,7 @@ Coordinate systems and related plotting routines
 """
 
 from abc import abstractmethod
-from igraph.drawing.baseclasses import AbstractCairoDrawer
+from igraph.drawing.cairo.base import AbstractCairoDrawer
 from igraph.drawing.utils import BoundingBox
 
 #####################################################################
