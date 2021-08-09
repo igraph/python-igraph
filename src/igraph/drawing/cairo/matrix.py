@@ -1,19 +1,11 @@
-"""
-Drawing routines to draw the matrices.
-
-This module provides implementations of matrix drawers.
-"""
+"""This module provides implementation for a Cairo-specific matrix drawer."""
 
 from itertools import islice
+from math import pi
 
-from igraph.drawing.baseclasses import AbstractDrawer
 from igraph.drawing.cairo.base import AbstractCairoDrawer
 
-__all__ = (
-    "CairoMatrixDrawer",
-    "MatplotlibMatrixDrawer",
-    "DefaultMatrixDrawer",  # TODO: deprecate
-)
+__all__ = ("CairoMatrixDrawer",)
 
 
 class CairoMatrixDrawer(AbstractCairoDrawer):
@@ -31,7 +23,7 @@ class CairoMatrixDrawer(AbstractCairoDrawer):
         @param palette: the palette that can be used to map integer
                         color indices to colors when drawing vertices
         """
-        AbstractCairoDrawer.__init__(self, context, bbox)
+        super().__init__(context, bbox)
         self.palette = palette
 
     def draw(self, matrix, **kwds):
@@ -129,10 +121,17 @@ class CairoMatrixDrawer(AbstractCairoDrawer):
         if row_names is not None or col_names is not None:
             te = context.text_extents
             space_width = te(" ")[4]
-            max_row_name_width = max([te(s)[4] for s in row_names]) + space_width
-            max_col_name_width = max([te(s)[4] for s in col_names]) + space_width
+            if row_names is not None:
+                max_row_name_width = max([te(s)[4] for s in row_names]) + space_width
+            else:
+                max_row_name_width = 0
+            if col_names is not None:
+                max_col_name_width = max([te(s)[4] for s in col_names]) + space_width
+            else:
+                max_col_name_width = 0
         else:
             max_row_name_width, max_col_name_width = 0, 0
+            space_width = 0
 
         # Calculate sizes
         total_width = float(bbox.width) - max_row_name_width
@@ -152,6 +151,8 @@ class CairoMatrixDrawer(AbstractCairoDrawer):
             mi, ma = matrix.min(), matrix.max()
             color_offset = mi
             color_ratio = (len(palette) - 1) / float(ma - mi)
+        else:
+            color_offset, color_ratio = 0, 1
 
         # Validate grid width
         if dx < 3 * grid_width or dy < 3 * grid_width:
@@ -179,7 +180,7 @@ class CairoMatrixDrawer(AbstractCairoDrawer):
         if col_names is not None:
             context.save()
             context.translate(ox, oy)
-            context.rotate(-1.5707963285)  # pi/2
+            context.rotate(-pi / 2)
             x, y = 0.0, 0.0
             for heading in col_names:
                 _, _, _, h, _, _ = context.text_extents(heading)
@@ -242,33 +243,3 @@ class CairoMatrixDrawer(AbstractCairoDrawer):
             context.set_source_rgb(0.0, 0.0, 0.0)
             context.rectangle(ox, oy, dx * matrix.shape[1], dy * matrix.shape[0])
             context.stroke()
-
-
-# TODO: deprecate
-DefaultMatrixDrawer = CairoMatrixDrawer
-
-
-class MatplotlibMatrixDrawer(AbstractDrawer):
-    """Matplotlib drawer object for matrices."""
-
-    def __init__(self, ax):
-        """Constructs the drawer and associates it to the given Axes.
-
-        @param ax: the Axes on which we will draw
-        """
-        self.context = ax
-
-    def draw(self, matrix, **kwds):
-        """Draws the given Matrix in a matplotlib Axes.
-
-        @param matrix: the igraph.Matrix to plot.
-
-        Keyword arguments are passed to Axes.imshow.
-        """
-        ax = self.context
-
-        ax.imshow(
-            matrix.data,
-            interpolation="nearest",
-            **kwds,
-        )

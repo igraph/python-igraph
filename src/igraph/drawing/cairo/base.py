@@ -1,9 +1,10 @@
 from math import pi
+from typing import Tuple, Union
 
 from igraph.drawing.baseclasses import AbstractDrawer
 from igraph.drawing.utils import BoundingBox
 
-__all__ = ("AbstractCairoDrawer", )
+__all__ = ("AbstractCairoDrawer",)
 
 
 class AbstractCairoDrawer(AbstractDrawer):
@@ -16,7 +17,9 @@ class AbstractCairoDrawer(AbstractDrawer):
     of the drawing area.
     """
 
-    def __init__(self, context, bbox):
+    _bbox: BoundingBox
+
+    def __init__(self, context, bbox: BoundingBox):
         """Constructs the drawer and associates it to the given
         Cairo context and the given L{BoundingBox}.
 
@@ -27,11 +30,11 @@ class AbstractCairoDrawer(AbstractDrawer):
                         or a L{BoundingBox} object).
         """
         self.context = context
-        self._bbox = None
+        self._bbox = None  # type: ignore
         self.bbox = bbox
 
     @property
-    def bbox(self):
+    def bbox(self) -> BoundingBox:
         """The bounding box of the drawing area where this drawer will
         draw."""
         return self._bbox
@@ -45,7 +48,13 @@ class AbstractCairoDrawer(AbstractDrawer):
         else:
             self._bbox = bbox
 
-    def _mark_point(self, x, y, color=0, size=4):
+    def _mark_point(
+        self,
+        x: float,
+        y: float,
+        color: Union[int, Tuple[float, ...]] = 0,
+        size: float = 4,
+    ) -> None:
         """Marks the given point with a small circle on the canvas.
         Used primarily for debugging purposes.
 
@@ -59,13 +68,15 @@ class AbstractCairoDrawer(AbstractDrawer):
         """
         if isinstance(color, int):
             colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (0, 1, 1), (1, 0, 1)]
-            color = colors[color % len(colors)]
-        if len(color) == 3:
-            color += (0.5,)
+            color_tuple = colors[color % len(colors)]
+        elif len(color) == 3:
+            color_tuple = color + (0.5,)
+        else:
+            color_tuple = color
 
         ctx = self.context
         ctx.save()
-        ctx.set_source_rgba(*color)
+        ctx.set_source_rgba(*color_tuple)
         ctx.arc(x, y, size / 2.0, 0, 2 * pi)
         ctx.fill()
         ctx.restore()

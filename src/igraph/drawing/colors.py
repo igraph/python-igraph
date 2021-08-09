@@ -181,7 +181,7 @@ class Palette(metaclass=ABCMeta):
         else:
             matrix = Matrix([[i] for i in indices])
 
-        if backend == 'matplotlib':
+        if backend == "matplotlib":
             cmap = mpl.colors.ListedColormap([self.get(i) for i in range(self.length)])
             matrix.__plot__(
                 context,
@@ -189,9 +189,9 @@ class Palette(metaclass=ABCMeta):
                 **kwds,
             )
         else:
-            bbox = kwds.pop('bbox', None)
+            bbox = kwds.pop("bbox", None)
             if bbox is None:
-                raise ValueError('bbox is required for cairo plots')
+                raise ValueError("bbox is required for Cairo plots")
 
             border_width = float(kwds.get("border_width", 1.0))
             grid_width = float(kwds.get("grid_width", 0.0))

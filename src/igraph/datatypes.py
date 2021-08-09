@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Additional auxiliary data types"""
 
-from igraph.drawing.matrix import CairoMatrixDrawer, MatplotlibMatrixDrawer
+__all__ = ("Matrix",)
 
 
 class Matrix:
@@ -323,14 +323,18 @@ class Matrix:
         names.
         """
         if backend == "matplotlib":
+            from igraph.drawing.matplotlib.matrix import MatplotlibMatrixDrawer
+
             drawer = MatplotlibMatrixDrawer(context)
         else:
-            bbox = kwds.pop('bbox', None)
-            palette = kwds.pop('palette', None)
+            from igraph.drawing.cairo.matrix import CairoMatrixDrawer
+
+            bbox = kwds.pop("bbox", None)
+            palette = kwds.pop("palette", None)
             if bbox is None:
-                raise ValueError('bbox is required for cairo plots')
+                raise ValueError("bbox is required for Cairo plots")
             if palette is None:
-                raise ValueError('palette is required for cairo plots')
+                raise ValueError("palette is required for Cairo plots")
 
             drawer = CairoMatrixDrawer(context, bbox, palette)
         drawer.draw(self, **kwds)
