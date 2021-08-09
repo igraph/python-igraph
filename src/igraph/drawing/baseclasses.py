@@ -70,3 +70,35 @@ class AbstractXMLRPCDrawer(AbstractDrawer):
         url_parts = list(url_parts)
         url_parts[1] = hostname
         return urlunparse(url_parts)
+
+
+#####################################################################
+
+
+class AbstractVertexDrawer(AbstractDrawer):
+    """Abstract vertex drawer object from which all concrete vertex drawer
+    implementations are derived."""
+
+    def __init__(self, palette, layout):
+        """Constructs the vertex drawer and associates it to the given
+        palette.
+
+        @param palette: the palette that can be used to map integer
+                        color indices to colors when drawing vertices
+        @param layout:  the layout of the vertices in the graph being drawn
+        """
+        self.layout = layout
+        self.palette = palette
+
+    @abstractmethod
+    def draw(self, visual_vertex, vertex, coords):
+        """Draws the given vertex.
+
+        @param visual_vertex: object specifying the visual properties of the
+            vertex. Its structure is defined by the VisualVertexBuilder of the
+            L{CairoGraphDrawer}; see its source code.
+        @param vertex: the raw igraph vertex being drawn
+        @param coords: the X and Y coordinates of the vertex as specified by the
+            layout algorithm, scaled into the bounding box.
+        """
+        raise NotImplementedError

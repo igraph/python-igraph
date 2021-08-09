@@ -26,7 +26,8 @@ U{Inkscape<http://www.inkscape.org>} (free), U{Skencil<http://www.skencil.org>}
 from warnings import warn
 
 from igraph.configuration import Configuration
-from igraph.drawing.cairo import CairoPlot
+from igraph.drawing.cairo.plot import CairoPlot
+from igraph.drawing.cairo.utils import find_cairo
 from igraph.drawing.colors import Palette, palettes
 from igraph.drawing.graph import (
     CairoGraphDrawer,
@@ -124,11 +125,12 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     VALID_BACKENDS = ("cairo", "matplotlib")
 
     _, plt = find_matplotlib()
+    cairo = find_cairo()
 
     # Switch backend based on target (first) and config (second)
     if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
         backend = "matplotlib"
-    elif isinstance(target, cairo.Surface):
+    elif hasattr(cairo, "Surface") and isinstance(target, cairo.Surface):
         backend = "cairo"
     else:
         backend = Configuration.instance()["plotting.backend"]

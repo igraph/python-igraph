@@ -2,9 +2,8 @@
 Utility classes for drawing routines.
 """
 
-
 from math import atan2, cos, sin
-from operator import itemgetter
+from typing import NamedTuple
 
 __all__ = ("BoundingBox", "Point", "Rectangle")
 
@@ -427,46 +426,8 @@ class FakeModule:
 #####################################################################
 
 
-class Point(tuple):
+class Point(NamedTuple("_Point", [("x", float), ("y", float)])):
     """Class representing a point on the 2D plane."""
-
-    __slots__ = ()
-    _fields = ("x", "y")
-
-    def __new__(cls, x, y):
-        """Creates a new point with the given coordinates"""
-        return tuple.__new__(cls, (x, y))
-
-    @classmethod
-    def _make(cls, iterable, new=tuple.__new__, len=len):
-        """Creates a new point from a sequence or iterable"""
-        result = new(cls, iterable)
-        if len(result) != 2:
-            raise TypeError("Expected 2 arguments, got %d" % len(result))
-        return result
-
-    def __repr__(self):
-        """Returns a nicely formatted representation of the point"""
-        return "Point(x=%r, y=%r)" % self
-
-    def _asdict(self):
-        """Returns a new dict which maps field names to their values"""
-        return dict(zip(self._fields, self))
-
-    def _replace(self, **kwds):
-        """Returns a new point object replacing specified fields with new
-        values"""
-        result = self._make(map(kwds.pop, ("x", "y"), self))
-        if kwds:
-            raise ValueError("Got unexpected field names: %r" % list(kwds.keys()))
-        return result
-
-    def __getnewargs__(self):
-        """Return self as a plain tuple. Used by copy and pickle."""
-        return tuple(self)
-
-    x = property(itemgetter(0), doc="Alias for field number 0")
-    y = property(itemgetter(1), doc="Alias for field number 1")
 
     def __add__(self, other):
         """Adds the coordinates of a point to another one"""
@@ -515,7 +476,7 @@ class Point(tuple):
           return this point, 1 will return the other point.
         """
         ratio = float(ratio)
-        return Point(
+        return self.__class__(
             x=self.x * (1.0 - ratio) + other.x * ratio,
             y=self.y * (1.0 - ratio) + other.y * ratio,
         )
@@ -530,8 +491,8 @@ class Point(tuple):
         after normalization. Returns the normalized point."""
         len = self.length()
         if len == 0:
-            return Point(x=self.x, y=self.y)
-        return Point(x=self.x / len, y=self.y / len)
+            return self.__class__(x=self.x, y=self.y)
+        return self.__class__(x=self.x / len, y=self.y / len)
 
     def sq_length(self):
         """Returns the squared length of the vector pointing from the origin
@@ -545,7 +506,9 @@ class Point(tuple):
             return self
 
         angle = atan2(other.y - self.y, other.x - self.x)
-        return Point(self.x + distance * cos(angle), self.y + distance * sin(angle))
+        return self.__class__(
+            self.x + distance * cos(angle), self.y + distance * sin(angle)
+        )
 
     @classmethod
     def FromPolar(cls, radius, angle):

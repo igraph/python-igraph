@@ -22,15 +22,16 @@ from igraph.configuration import Configuration
 from igraph.drawing.baseclasses import AbstractDrawer, AbstractXMLRPCDrawer
 from igraph.drawing.cairo.base import AbstractCairoDrawer
 from igraph.drawing.cairo.text import CairoTextDrawer
+from igraph.drawing.cairo.vertex import CairoVertexDrawer
 from igraph.drawing.cairo.utils import find_cairo
 from igraph.drawing.matplotlib.utils import find_matplotlib
+from igraph.drawing.matplotlib.vertex import MatplotlibVertexDrawer
 from igraph.drawing.colors import color_to_html_format, color_name_to_rgb
 from igraph.drawing.edge import ArrowEdgeDrawer, MatplotlibArrowEdgeDrawer
 from igraph.drawing.text import TextAlignment
 from igraph.drawing.metamagic import AttributeCollectorBase
 from igraph.drawing.shapes import CairoPolygonDrawer, MatplotlibPolygonDrawer
 from igraph.drawing.utils import Point
-from igraph.drawing.vertex import DefaultVertexDrawer, MatplotlibVertexDrawer
 from igraph.layout import Layout
 
 __all__ = (
@@ -38,7 +39,6 @@ __all__ = (
     "MatplotlibGraphDrawer",
     "CytoscapeGraphDrawer",
     "UbiGraphDrawer",
-    "DefaultGraphDrawer",  # TODO: deprecate
 )
 
 cairo = find_cairo()
@@ -187,7 +187,7 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
         self,
         context,
         bbox,
-        vertex_drawer_factory=DefaultVertexDrawer,
+        vertex_drawer_factory=CairoVertexDrawer,
         edge_drawer_factory=ArrowEdgeDrawer,
         label_drawer_factory=CairoTextDrawer,
     ):
@@ -202,10 +202,10 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
         @param vertex_drawer_factory: a factory method that returns an
                         L{AbstractCairoVertexDrawer} instance bound to a
                         given Cairo context. The factory method must take
-                        three parameters: the Cairo context, the bounding
-                        box of the drawing area and the palette to be
-                        used for drawing colored vertices. The default
-                        vertex drawer is L{DefaultVertexDrawer}.
+                        four parameters: the Cairo context, the bounding
+                        box of the drawing area, the palette to be
+                        used for drawing colored vertices, and the graph layout.
+                        The default vertex drawer is L{DefaultVertexDrawer}.
         @param edge_drawer_factory: a factory method that returns an
                         L{AbstractEdgeDrawer} instance bound to a
                         given Cairo context. The factory method must take
@@ -231,7 +231,8 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
         if args:
             warn(
                 "Positional arguments to plot functions are ignored "
-                "and will be deprecated soon.", DeprecationWarning,
+                "and will be deprecated soon.",
+                DeprecationWarning,
             )
 
         # Some abbreviations for sake of simplicity
@@ -239,7 +240,7 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
         context = self.context
 
         # Palette
-        palette = kwds.pop('palette', None)
+        palette = kwds.pop("palette", None)
 
         # Calculate/get the layout of the graph
         layout = self.ensure_layout(kwds.get("layout", None), graph)
@@ -581,7 +582,8 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         if args:
             warn(
                 "Positional arguments to plot functions are ignored "
-                "and will be deprecated soon.", DeprecationWarning,
+                "and will be deprecated soon.",
+                DeprecationWarning,
             )
 
         display = self.service
@@ -711,7 +713,8 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         if args:
             warn(
                 "Positional arguments to plot functions are ignored "
-                "and will be deprecated soon.", DeprecationWarning,
+                "and will be deprecated soon.",
+                DeprecationWarning,
             )
 
         cy = self.service
@@ -994,7 +997,8 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
         if args:
             warn(
                 "Positional arguments to plot functions are ignored "
-                "and will be deprecated soon.", DeprecationWarning,
+                "and will be deprecated soon.",
+                DeprecationWarning,
             )
 
         self.streamer.post(graph, self.connection, encoder=kwds.get("encoder"))
@@ -1022,21 +1026,17 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
     ):
         """Constructs the graph drawer and associates it with the mpl Axes
 
-
         @param ax: the matplotlib Axes to draw into.
         @param vertex_drawer_factory: a factory method that returns an
-                        L{AbstractCairoVertexDrawer} instance bound to a
-                        given Cairo context. The factory method must take
-                        two parameters: the Axes and the palette to be
-                        used for drawing colored vertices. The default
-                        vertex drawer is L{MatplotlibVertexDrawer}.
+            L{AbstractVertexDrawer} instance bound to the given Matplotlib axes.
+            The factory method must take three parameters: the axes and the
+            palette to be used for drawing colored vertices, and the layout of
+            the graph. The default vertex drawer is L{MatplotlibVertexDrawer}.
         @param edge_drawer_factory: a factory method that returns an
-                        L{AbstractEdgeDrawer} instance bound to a
-                        given matplotlib Axes. The factory method must take
-                        two parameters: the Axes and the palette
-                        to be used for drawing colored edges. The default
-                        edge drawer is L{MatplotlibArrowEdgeDrawer}.
-                        Additional styles will be added in the future.
+            L{AbstractEdgeDrawer} instance bound to a given Matplotlib Axes.
+            The factory method must take two parameters: the Axes and the palette
+            to be used for drawing colored edges. The default edge drawer is
+            L{MatplotlibArrowEdgeDrawer}.
         """
         self.ax = ax
         self.vertex_drawer_factory = vertex_drawer_factory
@@ -1050,7 +1050,8 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         if args:
             warn(
                 "Positional arguments to plot functions are ignored "
-                "and will be deprecated soon.", DeprecationWarning,
+                "and will be deprecated soon.",
+                DeprecationWarning,
             )
 
         # Some abbreviations for sake of simplicity
@@ -1058,7 +1059,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         ax = self.ax
 
         # Palette
-        palette = kwds.pop('palette', None)
+        palette = kwds.pop("palette", None)
 
         # Calculate/get the layout of the graph
         layout = self.ensure_layout(kwds.get("layout", None), graph)
