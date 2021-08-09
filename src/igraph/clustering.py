@@ -18,7 +18,7 @@ from igraph.statistics import Histogram
 from igraph.summary import _get_wrapper_for_width
 
 
-class Clustering(object):
+class Clustering:
     """Class representing a clustering of an arbitrary ordered set.
 
     This is now used as a base for L{VertexClustering}, but it might be
@@ -520,7 +520,7 @@ class VertexClustering(Clustering):
 ###############################################################################
 
 
-class Dendrogram(object):
+class Dendrogram:
     """The hierarchical clustering (dendrogram) of some dataset.
 
     A hierarchical clustering means that we know not only the way the
@@ -891,7 +891,7 @@ class VertexDendrogram(Dendrogram):
 ###############################################################################
 
 
-class Cover(object):
+class Cover:
     """Class representing a cover of an arbitrary ordered set.
 
     Covers are similar to clusterings, but each element of the set may

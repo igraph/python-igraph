@@ -14,7 +14,7 @@ __docformat__ = "restructuredtext en"
 #####################################################################
 
 
-class TextAlignment(object):
+class TextAlignment:
     """Text alignment constants."""
 
     LEFT, CENTER, RIGHT = "left", "center", "right"
@@ -36,7 +36,7 @@ class TextDrawer(AbstractCairoDrawer):
     def __init__(self, context, text="", halign="center", valign="center"):
         """Constructs a new instance that will draw the given `text` on
         the given Cairo `context`."""
-        super(TextDrawer, self).__init__(context, (0, 0))
+        super().__init__(context, (0, 0))
         self.text = text
         self.halign = halign
         self.valign = valign

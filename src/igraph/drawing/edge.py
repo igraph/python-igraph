@@ -22,7 +22,7 @@ cairo = find_cairo()
 mpl, plt = find_matplotlib()
 
 
-class AbstractEdgeDrawer(object):
+class AbstractEdgeDrawer:
     """Abstract edge drawer object from which all concrete edge drawer
     implementations are derived."""
 
@@ -696,7 +696,7 @@ class AlphaVaryingEdgeDrawer(AbstractEdgeDrawer):
     """
 
     def __init__(self, context, alpha_at_src, alpha_at_dest):
-        super(AlphaVaryingEdgeDrawer, self).__init__(context)
+        super().__init__(context)
         self.alpha_at_src = (clamp(float(alpha_at_src), 0.0, 1.0),)
         self.alpha_at_dest = (clamp(float(alpha_at_dest), 0.0, 1.0),)
 
@@ -731,7 +731,7 @@ class LightToDarkEdgeDrawer(AlphaVaryingEdgeDrawer):
     """
 
     def __init__(self, context):
-        super(LightToDarkEdgeDrawer, self).__init__(context, 0.0, 1.0)
+        super().__init__(context, 0.0, 1.0)
 
 
 class DarkToLightEdgeDrawer(AlphaVaryingEdgeDrawer):
@@ -743,4 +743,4 @@ class DarkToLightEdgeDrawer(AlphaVaryingEdgeDrawer):
     """
 
     def __init__(self, context):
-        super(DarkToLightEdgeDrawer, self).__init__(context, 1.0, 0.0)
+        super().__init__(context, 1.0, 0.0)

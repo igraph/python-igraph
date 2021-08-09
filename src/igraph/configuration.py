@@ -87,7 +87,7 @@ def get_platform_image_viewer():
         return ""
 
 
-class Configuration(object):
+class Configuration:
     """Class representing igraph configuration details.
 
     General ideas
@@ -188,7 +188,7 @@ class Configuration(object):
           inline in IPython's console if the console supports it. Default: C{True}
     """
 
-    class Types(object):
+    class Types:
         """Static class for the implementation of custom getter/setter functions
         for configuration keys"""
 

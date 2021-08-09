@@ -30,7 +30,7 @@ from igraph.utils import consecutive_pairs
 mpl, plt = find_matplotlib()
 
 
-class ShapeDrawer(object):
+class ShapeDrawer:
     """Static class, the ancestor of all vertex shape drawer classes.
 
     Custom shapes must implement at least the C{draw_path} method of the class.
@@ -346,7 +346,7 @@ class CairoPolygonDrawer(AbstractCairoDrawer, AbstractPolygonDrawer):
         @param  bbox:    ignored, leave it at its default value
         @param  points:  the list of corner points
         """
-        super(CairoPolygonDrawer, self).__init__(context, bbox)
+        super().__init__(context, bbox)
         self.points = points
 
     def draw_path(self, points=None, corner_radius=0):
@@ -506,7 +506,7 @@ class MatplotlibPolygonDrawer(AbstractPolygonDrawer):
 #####################################################################
 
 
-class ShapeDrawerDirectory(object):
+class ShapeDrawerDirectory:
     """Static class that resolves shape names to their corresponding
     shape drawer classes.
 

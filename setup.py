@@ -177,7 +177,7 @@ def wait_for_keypress(seconds):
 ###########################################################################
 
 
-class IgraphCCoreBuilder(object):
+class IgraphCCoreBuilder:
     """Superclass for classes responsible for downloading and building the
     C core of igraph if it is not installed yet.
     """
@@ -290,7 +290,7 @@ class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
 ###########################################################################
 
 
-class BuildConfiguration(object):
+class BuildConfiguration:
     def __init__(self):
         self.include_dirs = []
         self.library_dirs = []
