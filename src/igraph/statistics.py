@@ -232,8 +232,6 @@ class Histogram:
 
     def __plot__(self, backend, context, **kwds):
         """Plotting support"""
-        from igraph.drawing.coord import DescartesCoordinateSystem
-
         xmin = kwds.get("min", self._min)
         ymin = 0
         xmax = kwds.get("max", self._max)
@@ -250,6 +248,8 @@ class Histogram:
             ax.set_ylim(ymin, ymax)
 
         else:
+            from igraph.drawing.cairo.coord import DescartesCoordinateSystem
+
             bbox = kwds.pop('bbox', None)
             if bbox is None:
                 raise ValueError('bbox is required for cairo plots')
