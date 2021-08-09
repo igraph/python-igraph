@@ -215,3 +215,113 @@ class AbstractVertexDrawer(AbstractDrawer):
             layout algorithm, scaled into the bounding box.
         """
         raise NotImplementedError
+
+
+#####################################################################
+
+
+class AbstractGraphDrawer(AbstractDrawer):
+    """Abstract class that serves as a base class for anything that
+    draws an igraph.Graph.
+    """
+
+    @abstractmethod
+    def draw(self, graph, *args, **kwds):
+        """Abstract method, must be implemented in derived classes."""
+        raise NotImplementedError
+
+    @staticmethod
+    def ensure_layout(layout, graph=None):
+        """Helper method that ensures that I{layout} is an instance
+        of L{Layout}. If it is not, the method will try to convert
+        it to a L{Layout} according to the following rules:
+
+          - If I{layout} is a string, it is assumed to be a name
+            of an igraph layout, and it will be passed on to the
+            C{layout} method of the given I{graph} if I{graph} is
+            not C{None}.
+
+          - If I{layout} is C{None}, the C{layout} method of
+            I{graph} will be invoked with no parameters, which
+            will call the default layout algorithm.
+
+          - Otherwise, I{layout} will be passed on to the constructor
+            of L{Layout}. This handles lists of lists, lists of tuples
+            and such.
+
+        If I{layout} is already a L{Layout} instance, it will still
+        be copied and a copy will be returned. This is because graph
+        drawers are allowed to transform the layout for their purposes,
+        and we don't want the transformation to propagate back to the
+        caller.
+        """
+        from igraph.layout import Layout  # avoid circular imports
+
+        if isinstance(layout, Layout):
+            layout = Layout(layout.coords)
+        elif isinstance(layout, str) or layout is None:
+            layout = graph.layout(layout)
+        else:
+            layout = Layout(layout)
+
+        return layout
+
+    @staticmethod
+    def _determine_edge_order(graph, kwds):
+        """Returns the order in which the edge of the given graph have to be
+        drawn, assuming that the relevant keyword arguments (C{edge_order} and
+        C{edge_order_by}) are given in C{kwds} as a dictionary. If neither
+        C{edge_order} nor C{edge_order_by} is present in C{kwds}, this
+        function returns C{None} to indicate that the graph drawer is free to
+        choose the most convenient edge ordering."""
+        if "edge_order" in kwds:
+            # Edge order specified explicitly
+            return kwds["edge_order"]
+
+        if kwds.get("edge_order_by") is None:
+            # No edge order specified
+            return None
+
+        # Order edges by the value of some attribute
+        edge_order_by = kwds["edge_order_by"]
+        reverse = False
+        if isinstance(edge_order_by, tuple):
+            edge_order_by, reverse = edge_order_by
+            if isinstance(reverse, str):
+                reverse = reverse.lower().startswith("desc")
+        attrs = graph.es[edge_order_by]
+        edge_order = sorted(
+            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
+        )
+
+        return edge_order
+
+    @staticmethod
+    def _determine_vertex_order(graph, kwds):
+        """Returns the order in which the vertices of the given graph have to be
+        drawn, assuming that the relevant keyword arguments (C{vertex_order} and
+        C{vertex_order_by}) are given in C{kwds} as a dictionary. If neither
+        C{vertex_order} nor C{vertex_order_by} is present in C{kwds}, this
+        function returns C{None} to indicate that the graph drawer is free to
+        choose the most convenient vertex ordering."""
+        if "vertex_order" in kwds:
+            # Vertex order specified explicitly
+            return kwds["vertex_order"]
+
+        if kwds.get("vertex_order_by") is None:
+            # No vertex order specified
+            return None
+
+        # Order vertices by the value of some attribute
+        vertex_order_by = kwds["vertex_order_by"]
+        reverse = False
+        if isinstance(vertex_order_by, tuple):
+            vertex_order_by, reverse = vertex_order_by
+            if isinstance(reverse, str):
+                reverse = reverse.lower().startswith("desc")
+        attrs = graph.vs[vertex_order_by]
+        vertex_order = sorted(
+            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
+        )
+
+        return vertex_order

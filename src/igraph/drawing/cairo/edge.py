@@ -14,7 +14,7 @@ from .utils import find_cairo
 __all__ = (
     "AbstractCairoEdgeDrawer",
     "AlphaVaryingEdgeDrawer",
-    "ArrowEdgeDrawer",
+    "CairoArrowEdgeDrawer",
     "DarkToLightEdgeDrawer",
     "LightToDarkEdgeDrawer",
     "TaperedEdgeDrawer",
@@ -113,7 +113,7 @@ class AbstractCairoEdgeDrawer(AbstractEdgeDrawer):
         ctx.stroke()
 
 
-class ArrowEdgeDrawer(AbstractCairoEdgeDrawer):
+class CairoArrowEdgeDrawer(AbstractCairoEdgeDrawer):
     """Edge drawer implementation that draws undirected edges as
     straight lines and directed edges as arrows.
     """

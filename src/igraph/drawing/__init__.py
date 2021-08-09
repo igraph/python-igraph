@@ -26,14 +26,11 @@ U{Inkscape<http://www.inkscape.org>} (free), U{Skencil<http://www.skencil.org>}
 from warnings import warn
 
 from igraph.configuration import Configuration
+from igraph.drawing.cairo.graph import CairoGraphDrawer
 from igraph.drawing.cairo.plot import CairoPlot
 from igraph.drawing.cairo.utils import find_cairo
 from igraph.drawing.colors import Palette, palettes
-from igraph.drawing.graph import (
-    CairoGraphDrawer,
-    MatplotlibGraphDrawer,
-    DefaultGraphDrawer,
-)
+from igraph.drawing.matplotlib.graph import MatplotlibGraphDrawer
 from igraph.drawing.matplotlib.utils import find_matplotlib
 from igraph.drawing.utils import BoundingBox, Point, Rectangle
 from igraph.utils import _is_running_in_ipython
@@ -51,6 +48,9 @@ __all__ = (
 
 # TODO: deprecate
 Plot = CairoPlot
+
+# TODO: deprecate
+DefaultGraphDrawer = CairoGraphDrawer
 
 
 def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
