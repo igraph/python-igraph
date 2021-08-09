@@ -21,13 +21,14 @@ from igraph._igraph import convex_hull, VertexSeq
 from igraph.configuration import Configuration
 from igraph.drawing.baseclasses import AbstractDrawer, AbstractXMLRPCDrawer
 from igraph.drawing.cairo.base import AbstractCairoDrawer
+from igraph.drawing.cairo.edge import ArrowEdgeDrawer
 from igraph.drawing.cairo.text import CairoTextDrawer
 from igraph.drawing.cairo.vertex import CairoVertexDrawer
 from igraph.drawing.cairo.utils import find_cairo
+from igraph.drawing.matplotlib.edge import MatplotlibEdgeDrawer
 from igraph.drawing.matplotlib.utils import find_matplotlib
 from igraph.drawing.matplotlib.vertex import MatplotlibVertexDrawer
 from igraph.drawing.colors import color_to_html_format, color_name_to_rgb
-from igraph.drawing.edge import ArrowEdgeDrawer, MatplotlibArrowEdgeDrawer
 from igraph.drawing.text import TextAlignment
 from igraph.drawing.metamagic import AttributeCollectorBase
 from igraph.drawing.shapes import CairoPolygonDrawer, MatplotlibPolygonDrawer
@@ -1022,7 +1023,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         self,
         ax,
         vertex_drawer_factory=MatplotlibVertexDrawer,
-        edge_drawer_factory=MatplotlibArrowEdgeDrawer,
+        edge_drawer_factory=MatplotlibEdgeDrawer,
     ):
         """Constructs the graph drawer and associates it with the mpl Axes
 
@@ -1036,7 +1037,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
             L{AbstractEdgeDrawer} instance bound to a given Matplotlib Axes.
             The factory method must take two parameters: the Axes and the palette
             to be used for drawing colored edges. The default edge drawer is
-            L{MatplotlibArrowEdgeDrawer}.
+            L{MatplotlibEdgeDrawer}.
         """
         self.ax = ax
         self.vertex_drawer_factory = vertex_drawer_factory

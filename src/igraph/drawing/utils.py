@@ -2,10 +2,17 @@
 Utility classes for drawing routines.
 """
 
-from math import atan2, cos, sin
+from math import atan2, cos, hypot, sin
 from typing import NamedTuple
 
-__all__ = ("BoundingBox", "Point", "Rectangle")
+__all__ = (
+    "BoundingBox",
+    "Point",
+    "Rectangle",
+    "euclidean_distance",
+    "evaluate_cubic_bezier",
+    "intersect_bezier_curve_and_circle",
+)
 
 #####################################################################
 
@@ -519,3 +526,73 @@ class Point(NamedTuple("_Point", [("x", float), ("y", float)])):
         the origin.
         """
         return cls(radius * cos(angle), radius * sin(angle))
+
+
+def euclidean_distance(x1, y1, x2, y2):
+    """Computes the Euclidean distance between points (x1,y1) and (x2,y2)."""
+    return hypot(x2 - x1, y2 - y1)
+
+
+def evaluate_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3, t):
+    """Evaluates the Bezier curve from point (x0,y0) to (x3,y3)
+    via control points (x1,y1) and (x2,y2) at t. t is typically in the range
+    [0; 1] such that 0 returns (x0, y0) and 1 returns (x3, y3).
+    """
+    xt = (
+        (1.0 - t) ** 3 * x0
+        + 3.0 * t * (1.0 - t) ** 2 * x1
+        + 3.0 * t ** 2 * (1.0 - t) * x2
+        + t ** 3 * x3
+    )
+    yt = (
+        (1.0 - t) ** 3 * y0
+        + 3.0 * t * (1.0 - t) ** 2 * y1
+        + 3.0 * t ** 2 * (1.0 - t) * y2
+        + t ** 3 * y3
+    )
+    return xt, yt
+
+
+def intersect_bezier_curve_and_circle(
+    x0, y0, x1, y1, x2, y2, x3, y3, radius, max_iter=10
+):
+    """Binary search solver for finding the intersection of a Bezier curve
+    and a circle centered at the curve's end point.
+
+    Returns the x, y coordinates of the intersection point.
+    """
+    # The exact formulation of the problem is a quartic equation and it is
+    # probably not worth coding up an exact quartic solver. The solution below
+    # uses binary search. Another solution would be simply to intersect the
+    # circle with the line pointing from (x2, y2) to (x3, y3) as the difference
+    # is likely to be negligible.
+
+    precision = radius / 20.0
+    source_target_distance = euclidean_distance(x0, y0, x3, y3)
+    radius = float(radius)
+    t0 = 1.0
+    t1 = 1.0 - radius / source_target_distance
+
+    xt1, yt1 = evaluate_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3, t1)
+
+    distance_t0 = 0
+    distance_t1 = euclidean_distance(x3, y3, xt1, yt1)
+    counter = 0
+    while abs(distance_t1 - radius) > precision and counter < max_iter:
+        if ((distance_t1 - radius) > 0) != ((distance_t0 - radius) > 0):
+            t_new = (t0 + t1) / 2.0
+        else:
+            if abs(distance_t1 - radius) < abs(distance_t0 - radius):
+                # If t1 gets us closer to the circumference step in the
+                # same direction
+                t_new = t1 + (t1 - t0) / 2.0
+            else:
+                t_new = t1 - (t1 - t0)
+        t_new = 1 if t_new > 1 else (0 if t_new < 0 else t_new)
+        t0, t1 = t1, t_new
+        distance_t0 = distance_t1
+        xt1, yt1 = evaluate_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3, t1)
+        distance_t1 = euclidean_distance(x3, y3, xt1, yt1)
+        counter += 1
+
+    return evaluate_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3, t1)
