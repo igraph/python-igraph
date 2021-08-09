@@ -708,10 +708,7 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
         PyObject* range;
         igraph_bool_t ok;
 
-        /* Casting to void* because Python 2.x expects PySliceObject*
-         * but Python 3.x expects PyObject* */
-        ok = (PySlice_GetIndicesEx((void*)item, igraph_vector_size(&v2),
-              &start, &stop, &step, &sl) == 0);
+        ok = (PySlice_GetIndicesEx(item, igraph_vector_size(&v2), &start, &stop, &step, &sl) == 0);
         if (ok) {
           range = igraphmodule_PyRange_create(start, stop, step);
           ok = (range != 0);

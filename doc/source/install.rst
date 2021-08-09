@@ -36,9 +36,7 @@ Installing |igraph| from the Python Package Index
 To ensure getting the latest binary release of |igraph|'s Python interface, it is recommended
 that you install it from the `Python Package Index
 <http://pypi.python.org/pypi/python-igraph>`_ (PyPI), which has installers for Windows, Linux,
-and macOS. Currently there are binary packages for Python 2.7, and Python 3.5 through 3.8, but
-note that support for Python 2.7 will be discontinued with the version 0.9.0 release of
-|igraph|'s Python interface.
+and macOS. We aim to provide binary packages for the three latest minor versions of Python 3.x.
 
 To install |python-igraph| globally, use the following command (you probably need
 administrator/root priviledges):

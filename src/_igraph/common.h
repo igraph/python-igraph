@@ -41,33 +41,8 @@
 #  define RC_TRAVERSE(T, P)
 #endif
 
-/* Compatibility stuff for Python 2.3 */
-#ifndef Py_RETURN_TRUE
-#define Py_RETURN_TRUE { Py_INCREF(Py_True); return Py_True; }
-#endif
-
-#ifndef Py_RETURN_FALSE
-#define Py_RETURN_FALSE { Py_INCREF(Py_False); return Py_False; }
-#endif
-
-#ifndef Py_RETURN_NONE
-#define Py_RETURN_NONE { Py_INCREF(Py_None); return Py_None; }
-#endif
-
-#ifndef Py_RETURN_NOTIMPLEMENTED
-#define Py_RETURN_NOTIMPLEMENTED { Py_INCREF(Py_NotImplemented); return Py_NotImplemented; }
-#endif
-
 #ifndef Py_RETURN
 #define Py_RETURN(x) { if (x) { Py_RETURN_TRUE; } else { Py_RETURN_FALSE; } }
-#endif
-
-/* Compatibility stuff for Python 2.4 */
-#if (PY_MAJOR_VERSION <= 2) & (PY_MINOR_VERSION <= 4)
-#define lenfunc inquiry
-#define ssizeargfunc intargfunc
-#define ssizessizeargfunc intintargfunc
-#define Py_ssize_t int
 #endif
 
 #define ATTRIBUTE_TYPE_VERTEX 1
