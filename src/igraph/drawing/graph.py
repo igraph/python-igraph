@@ -23,12 +23,14 @@ from igraph.drawing.baseclasses import (
     AbstractCairoDrawer,
     AbstractXMLRPCDrawer,
 )
+from igraph.drawing.cairo.utils import find_cairo
+from igraph.drawing.matplotlib.utils import find_matplotlib
 from igraph.drawing.colors import color_to_html_format, color_name_to_rgb
 from igraph.drawing.edge import ArrowEdgeDrawer, MatplotlibArrowEdgeDrawer
 from igraph.drawing.text import TextAlignment, TextDrawer
 from igraph.drawing.metamagic import AttributeCollectorBase
 from igraph.drawing.shapes import CairoPolygonDrawer, MatplotlibPolygonDrawer
-from igraph.drawing.utils import find_cairo, find_matplotlib, Point
+from igraph.drawing.utils import Point
 from igraph.drawing.vertex import DefaultVertexDrawer, MatplotlibVertexDrawer
 from igraph.layout import Layout
 

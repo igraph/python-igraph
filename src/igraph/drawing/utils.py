@@ -427,50 +427,6 @@ class FakeModule:
 #####################################################################
 
 
-def find_cairo():
-    """Tries to import the ``cairo`` Python module if it is installed,
-    also trying ``cairocffi`` (a drop-in replacement of ``cairo``).
-    Returns a fake module if everything fails.
-    """
-    module_names = ["cairo", "cairocffi"]
-    module = FakeModule("Plotting not available; please install pycairo or cairocffi")
-    for module_name in module_names:
-        try:
-            module = __import__(module_name)
-            break
-        except ImportError:
-            pass
-    return module
-
-
-#####################################################################
-
-
-def find_matplotlib():
-    """Tries to import the ``matplotlib`` Python module if it is installed.
-    Returns a fake module if everything fails.
-    """
-    try:
-        import matplotlib as mpl
-
-        has_mpl = True
-    except ImportError:
-        mpl = FakeModule("You need to install matplotlib to use this functionality")
-        has_mpl = False
-
-    if has_mpl:
-        import matplotlib.pyplot as plt
-    else:
-        plt = FakeModule(
-            "You need to install matplotlib.pyplot to use this functionality"
-        )
-
-    return mpl, plt
-
-
-#####################################################################
-
-
 class Point(tuple):
     """Class representing a point on the 2D plane."""
 

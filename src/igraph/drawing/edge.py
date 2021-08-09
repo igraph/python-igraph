@@ -14,7 +14,8 @@ __all__ = (
 from igraph.drawing.colors import clamp
 from igraph.drawing.metamagic import AttributeCollectorBase
 from igraph.drawing.text import TextAlignment
-from igraph.drawing.utils import find_cairo, find_matplotlib
+from igraph.drawing.cairo.utils import find_cairo
+from igraph.drawing.matplotlib.utils import find_matplotlib
 from math import atan2, cos, pi, sin, sqrt
 
 cairo = find_cairo()

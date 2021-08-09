@@ -23,7 +23,8 @@ from math import atan2, copysign, cos, pi, sin
 import sys
 
 from igraph.drawing.baseclasses import AbstractCairoDrawer
-from igraph.drawing.utils import Point, find_matplotlib
+from igraph.drawing.matplotlib.utils import find_matplotlib
+from igraph.drawing.utils import Point
 from igraph.utils import consecutive_pairs
 
 mpl, plt = find_matplotlib()

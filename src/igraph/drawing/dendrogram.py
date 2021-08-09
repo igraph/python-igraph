@@ -5,11 +5,10 @@ This module provides implementations of matrix drawers.
 """
 
 from math import pi
-from itertools import islice
 
 from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer
+from igraph.drawing.matplotlib.utils import find_matplotlib
 from igraph.utils import str_to_orientation
-from igraph.drawing.utils import find_matplotlib
 
 __all__ = (
     "CairoDendrogramDrawer",

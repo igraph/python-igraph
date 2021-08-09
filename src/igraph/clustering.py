@@ -1176,8 +1176,6 @@ class VertexCover(Cover):
 
         @see: L{Graph.__plot__()} for more supported keyword arguments.
         """
-        from igraph.drawing.utils import find_matplotlib
-
         if "edge_color" not in kwds and "color" not in self.graph.edge_attributes():
             # Set up a default edge coloring based on internal vs external edges
             if backend == 'matplotlib':

@@ -270,7 +270,7 @@ class TextDrawer(AbstractCairoDrawer):
 def test():
     """Testing routine for L{TextDrawer}"""
     import math
-    from igraph.drawing.utils import find_cairo
+    from igraph.drawing.cairo.utils import find_cairo
 
     cairo = find_cairo()
 

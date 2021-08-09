@@ -163,9 +163,9 @@ class Palette(object):
         Keyword arguments in matplotlib are passes to Axes.imshow.
         """
         from igraph.datatypes import Matrix
-        from igraph.drawing.utils import find_matplotlib
+        from igraph.drawing.matplotlib.utils import find_matplotlib
 
-        mpl, plt = find_matplotlib()
+        mpl, _ = find_matplotlib()
 
         orientation = str_to_orientation(kwds.get("orientation", "lr"))
 

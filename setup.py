@@ -19,7 +19,7 @@ SKIP_HEADER_INSTALL = (platform.python_implementation() == "PyPy") or (
 
 ###########################################################################
 
-from setuptools import setup, Command, Extension
+from setuptools import find_packages, setup, Command, Extension
 
 import glob
 import shlex
@@ -785,7 +785,7 @@ options = dict(
     author_email="ntamas@gmail.com",
     ext_modules=[igraph_extension],
     package_dir={"igraph": "src/igraph"},
-    packages=["igraph", "igraph.app", "igraph.drawing", "igraph.remote"],
+    packages=find_packages(where="src"),
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
     extras_require={"plotting": ["pycairo>=1.18.0"]},
