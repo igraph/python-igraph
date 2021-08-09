@@ -42,7 +42,7 @@ cairo = find_cairo()
 #####################################################################
 
 
-class Plot(object):
+class Plot:
     """Class representing an arbitrary plot
 
     Every plot has an associated surface object where the plotting is done. The

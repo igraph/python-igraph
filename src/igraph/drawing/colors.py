@@ -30,7 +30,7 @@ __all__ = (
 )
 
 
-class Palette(object):
+class Palette:
     """Base class of color palettes.
 
     Color palettes are mappings that assign integers from the range

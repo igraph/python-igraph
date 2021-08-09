@@ -68,7 +68,7 @@ from igraph.configuration import Configuration
 __all__ = ("AttributeSpecification", "AttributeCollectorBase")
 
 
-class AttributeSpecification(object):
+class AttributeSpecification:
     """Class that describes how the value of a given attribute should be
     retrieved.
 
@@ -173,13 +173,13 @@ class AttributeCollectorMeta(type):
             "%s.Element" % name, (attr_spec.name for attr_spec in attr_specs)
         )
 
-        return super(AttributeCollectorMeta, mcs).__new__(mcs, name, bases, attrs)
+        return super().__new__(mcs, name, bases, attrs)
 
     @classmethod
     def record_generator(mcs, name, slots):
         """Generates a simple class that has the given slots and nothing else"""
 
-        class Element(object):
+        class Element:
             """A simple class that holds the attributes collected by the
             attribute collector"""
 

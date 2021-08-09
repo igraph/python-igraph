@@ -717,7 +717,7 @@ class DegreeSequenceTests(unittest.TestCase):
 
 class InheritedGraph(Graph):
     def __init__(self, *args, **kwds):
-        super(InheritedGraph, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
         self.init_called = True
 
     def __new__(cls, *args, **kwds):
@@ -727,7 +727,7 @@ class InheritedGraph(Graph):
 
     @classmethod
     def Adjacency(cls, *args, **kwds):
-        result = super(InheritedGraph, cls).Adjacency(*args, **kwds)
+        result = super().Adjacency(*args, **kwds)
         result.adjacency_called = True
         return result
 

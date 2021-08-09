@@ -5,7 +5,7 @@
 from itertools import islice
 
 
-class Matrix(object):
+class Matrix:
     """Simple matrix data type.
 
     Of course there are much more advanced matrix data types for Python (for
@@ -653,7 +653,7 @@ class TriadCensus(tuple):
         return "\n".join(result)
 
 
-class UniqueIdGenerator(object):
+class UniqueIdGenerator:
     """A dictionary-like class that can be used to assign unique IDs to
     names (say, vertex names).
 

@@ -285,7 +285,7 @@ class ProgressBar:
             self.last_message = ""
 
 
-class Shell(object):
+class Shell:
     """Superclass of the embeddable shells supported by igraph"""
 
     def __init__(self):
@@ -362,7 +362,7 @@ class IDLEShell(Shell):
         self._root.destroy()
 
 
-class ConsoleProgressBarMixin(object):
+class ConsoleProgressBarMixin:
     """Mixin class for console shells that support a progress bar."""
 
     def __init__(self):

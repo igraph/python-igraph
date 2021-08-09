@@ -3,7 +3,7 @@ import unittest
 from igraph import *
 
 
-class AtlasTestBase(object):
+class AtlasTestBase:
     def testPageRank(self):
         for idx, g in enumerate(self.__class__.graphs):
             try:

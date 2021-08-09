@@ -13,7 +13,7 @@ from igraph.drawing.utils import BoundingBox
 from igraph.statistics import RunningMean
 
 
-class Layout(object):
+class Layout:
     """Represents the layout of a graph.
 
     A layout is practically a list of coordinates in an n-dimensional

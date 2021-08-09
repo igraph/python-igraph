@@ -8,7 +8,7 @@ from math import pi
 #####################################################################
 
 
-class AbstractDrawer(object):
+class AbstractDrawer:
     """Abstract class that serves as a base class for anything that
     draws an igraph object."""
 
