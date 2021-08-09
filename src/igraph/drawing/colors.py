@@ -196,8 +196,8 @@ class Palette(object):
             return matrix.__plot__(
                 backend,
                 context,
-                bbox,
-                self,
+                bbox=bbox,
+                palette=self,
                 style="palette",
                 square=False,
                 grid_width=grid_width,
