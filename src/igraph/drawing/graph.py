@@ -13,7 +13,7 @@ L{CytoscapeGraphDrawer}. L{CytoscapeGraphDrawer} can also fetch the current
 network from Cytoscape and convert it to igraph format.
 """
 
-from math import atan2, cos, pi, sin, tan, sqrt
+from math import atan2, cos, pi, sin, tan
 from warnings import warn
 
 from igraph._igraph import convex_hull, VertexSeq

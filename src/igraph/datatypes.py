@@ -272,7 +272,7 @@ class Matrix(object):
         return (list(row) for row in self._data)
 
     def __plot__(self, backend, context, **kwds):
-        """Plots the matrix to the given Cairo context in the given box
+        """Plots the matrix to the given Cairo context or matplotlib Axes.
 
         Besides the usual self-explanatory plotting parameters (C{context},
         C{bbox}, C{palette}), it accepts the following keyword arguments:

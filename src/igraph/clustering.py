@@ -1310,7 +1310,7 @@ class CohesiveBlocks(VertexCover):
 
     def __plot__(self, backend, context, *args, **kwds):
         """Plots the cohesive block structure to the given Cairo context or
-        mpl Axes.
+        matplotlib Axes.
 
         Since a L{CohesiveBlocks} instance is also a L{VertexCover}, keyword
         arguments accepted by L{VertexCover.__plot__()} are also accepted here.
