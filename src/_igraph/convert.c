@@ -1377,16 +1377,16 @@ PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v) {
 
 /**
  * \ingroup python_interface_conversion
- * \brief Converts an igraph \c igraph_vector_t to a Python list of integer pairs
+ * \brief Converts an igraph \c igraph_vector_int_t to a Python list of integer pairs
  *
  * \param v the \c igraph_vector_t containing the vector to be converted
  * \return the Python integer pair list as a \c PyObject*, or \c NULL if an error occurred
  */
-PyObject* igraphmodule_vector_t_to_PyList_pairs(const igraph_vector_t *v) {
+PyObject* igraphmodule_vector_int_t_to_PyList_pairs(const igraph_vector_int_t *v) {
    PyObject *list, *pair;
    long n, i, j;
 
-   n=igraph_vector_size(v);
+   n=igraph_vector_int_size(v);
    if (n<0) return igraphmodule_handle_igraph_error();
    if (n%2) return igraphmodule_handle_igraph_error();
 
@@ -1413,11 +1413,11 @@ PyObject* igraphmodule_vector_t_to_PyList_pairs(const igraph_vector_t *v) {
  * \brief Converts a Python iterable of non-negative integer pairs (i.e. an
  * edge list) to an igraph \c igraph_vector_t
  *
- * The incoming \c igraph_vector_t should be uninitialized. Raises suitable
+ * The incoming \c igraph_vector_int_t should be uninitialized. Raises suitable
  * Python exceptions when needed.
  *
  * \param list the Python list to be converted
- * \param v the \c igraph_vector_t containing the result
+ * \param v the \c igraph_vector_int_t containing the result
  * \param graph  the graph that will be used to interpret vertex names
  *               if a string is yielded by the Python iterable. \c NULL
  *               means that vertex names are not allowed.
@@ -1446,7 +1446,7 @@ int igraphmodule_PyObject_to_edgelist(
 
   /* We also accept a memoryview, although we don't advertise that in the
    * public API yet as the exact layout of the memory area has to match the
-   * way items are laid out in an igraph_vector_t, and that's an implementation
+   * way items are laid out in an igraph_vector_int_t, and that's an implementation
    * detail that we don't want to commit ourselves to */
   if (PyMemoryView_Check(list)) {
     buffer = PyMemoryView_GET_BUFFER(list);
@@ -1856,18 +1856,18 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
  * \ingroup python_interface_conversion
  * \brief Converts two igraph \c igraph_vector_t vectors to a Python list of integer pairs
  *
- * \param v1 the \c igraph_vector_t containing the 1st vector to be converted
- * \param v2 the \c igraph_vector_t containing the 2nd vector to be converted
+ * \param v1 the \c igraph_vector_int_t containing the 1st vector to be converted
+ * \param v2 the \c igraph_vector_int_t containing the 2nd vector to be converted
  * \return the Python integer pair list as a \c PyObject*, or \c NULL if an error occurred
  */
-PyObject* igraphmodule_vector_t_pair_to_PyList(const igraph_vector_t *v1,
-    const igraph_vector_t *v2) {
+PyObject* igraphmodule_vector_int_t_pair_to_PyList(const igraph_vector_int_t *v1,
+    const igraph_vector_int_t *v2) {
    PyObject *list, *pair;
    long n, i;
 
-   n=igraph_vector_size(v1);
+   n=igraph_vector_int_size(v1);
    if (n<0) return igraphmodule_handle_igraph_error();
-   if (igraph_vector_size(v2) != n) return igraphmodule_handle_igraph_error();
+   if (igraph_vector_int_size(v2) != n) return igraphmodule_handle_igraph_error();
 
    /* create a new Python list */
    list=PyList_New(n);
@@ -2351,7 +2351,7 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
 int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
     igraph_t *graph, igraph_bool_t *return_single, igraph_integer_t *single_vid) {
   igraph_integer_t vid;
-  igraph_vector_t vector;
+  igraph_vector_int_t vector;
 
   if (o == 0 || o == Py_None) {
     /* Returns a vertex sequence for all vertices */
@@ -2382,16 +2382,14 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
     Py_ssize_t no_of_vertices = igraph_vcount(graph);
     Py_ssize_t start, stop, step, slicelength, i;
 
-    /* Casting to void* because Python 2.x expects PySliceObject*
-     * but Python 3.x expects PyObject* */
-    if (PySlice_GetIndicesEx((void*)o, no_of_vertices,
+    if (PySlice_GetIndicesEx(o, no_of_vertices,
           &start, &stop, &step, &slicelength))
       return 1;
 
     if (start == 0 && slicelength == no_of_vertices) {
       igraph_vs_all(vs);
     } else {
-      if (igraph_vector_init(&vector, slicelength)) {
+      if (igraph_vector_int_init(&vector, slicelength)) {
         igraphmodule_handle_igraph_error();
         return 1;
       }
@@ -2402,11 +2400,11 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
 
       if (igraph_vs_vector_copy(vs, &vector)) {
         igraphmodule_handle_igraph_error();
-        igraph_vector_destroy(&vector);
+        igraph_vector_int_destroy(&vector);
         return 1;
       }
 
-      igraph_vector_destroy(&vector);
+      igraph_vector_int_destroy(&vector);
     }
 
     if (return_single) {
@@ -2439,7 +2437,7 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
       return 1;
     }
 
-    if (igraph_vector_init(&vector, 0)) {
+    if (igraph_vector_int_init(&vector, 0)) {
       igraphmodule_handle_igraph_error();
       return 1;
     }
@@ -2452,7 +2450,7 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
 
       Py_DECREF(item);
 
-      if (igraph_vector_push_back(&vector, vid)) {
+      if (igraph_vector_int_push_back(&vector, vid)) {
         igraphmodule_handle_igraph_error();
         /* no need to destroy 'vector' here; will be done outside the loop due
          * to PyErr_Occurred */
@@ -2463,13 +2461,13 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
     Py_DECREF(iterator);
 
     if (PyErr_Occurred()) {
-      igraph_vector_destroy(&vector);
+      igraph_vector_int_destroy(&vector);
       return 1;
     }
 
     if (igraph_vs_vector_copy(vs, &vector)) {
       igraphmodule_handle_igraph_error();
-      igraph_vector_destroy(&vector);
+      igraph_vector_int_destroy(&vector);
       return 1;
     }
 
@@ -2598,7 +2596,7 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
 int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
                   igraph_bool_t *return_single) {
   igraph_integer_t eid;
-  igraph_vector_t vector;
+  igraph_vector_int_t vector;
 
   if (o == 0 || o == Py_None) {
     /* Returns an edge sequence for all edges */
@@ -2637,7 +2635,7 @@ int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
       return 1;
     }
 
-    if (igraph_vector_init(&vector, 0)) {
+    if (igraph_vector_int_init(&vector, 0)) {
       igraphmodule_handle_igraph_error();
       return 1;
     }
@@ -2651,7 +2649,7 @@ int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
 
       Py_DECREF(item);
 
-      if (igraph_vector_push_back(&vector, eid)) {
+      if (igraph_vector_int_push_back(&vector, eid)) {
         igraphmodule_handle_igraph_error();
         /* no need to destroy 'vector' here; will be done outside the loop due
          * to PyErr_Occurred */
@@ -2662,17 +2660,17 @@ int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
     Py_DECREF(iterator);
 
     if (PyErr_Occurred()) {
-      igraph_vector_destroy(&vector);
+      igraph_vector_int_destroy(&vector);
       return 1;
     }
 
-    if (igraph_vector_size(&vector) > 0) {
+    if (igraph_vector_int_size(&vector) > 0) {
       igraph_es_vector_copy(es, &vector);
     } else {
       igraph_es_none(es);
     }
 
-    igraph_vector_destroy(&vector);
+    igraph_vector_int_destroy(&vector);
 
     if (return_single) {
       *return_single = 0;

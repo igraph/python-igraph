@@ -125,7 +125,7 @@ int igraphmodule_VertexSeq_init(igraphmodule_VertexSeqObject *self,
   } else {
     igraph_vector_int_t v;
     igraph_integer_t n = igraph_vcount(&((igraphmodule_GraphObject*)g)->g);
-    if (igraphmodule_PyObject_to_vector_t(vsobj, &v, 1))
+    if (igraphmodule_PyObject_to_vector_int_t(vsobj, &v))
       return -1;
     if (!igraph_vector_int_isininterval(&v, 0, n-1)) {
       igraph_vector_int_destroy(&v);
@@ -661,7 +661,7 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
         igraphmodule_handle_igraph_error();
         return 0;
       }
-      if (igraph_vector_init(&v2, 0)) {
+      if (igraph_vector_int_init(&v2, 0)) {
         igraph_vector_int_destroy(&v);
         igraphmodule_handle_igraph_error();
         return 0;

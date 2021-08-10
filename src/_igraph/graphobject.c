@@ -638,7 +638,7 @@ PyObject *igraphmodule_Graph_add_edges(igraphmodule_GraphObject * self,
                                        PyObject * args, PyObject * kwds)
 {
   PyObject *list;
-  igraph_vector_t v;
+  igraph_vector_int_t v;
   igraph_bool_t v_owned = 0;
 
   if (!PyArg_ParseTuple(args, "O", &list))
@@ -651,13 +651,13 @@ PyObject *igraphmodule_Graph_add_edges(igraphmodule_GraphObject * self,
   if (igraph_add_edges(&self->g, &v, 0)) {
     igraphmodule_handle_igraph_error();
     if (v_owned) {
-      igraph_vector_destroy(&v);
+      igraph_vector_int_destroy(&v);
     }
     return NULL;
   }
 
   if (v_owned) {
-    igraph_vector_destroy(&v);
+    igraph_vector_int_destroy(&v);
   }
 
   Py_RETURN_NONE;
@@ -3064,7 +3064,7 @@ PyObject *igraphmodule_Graph_Asymmetric_Preference(PyTypeObject * type,
   CREATE_GRAPH_FROM_TYPE(self, g, type);
 
   if (store_attribs) {
-    type_vec_o = igraphmodule_vector_t_pair_to_PyList(&in_type_vec,
+    type_vec_o = igraphmodule_vector_int_t_pair_to_PyList(&in_type_vec,
                                                       &out_type_vec);
     if (type_vec_o == NULL) {
       igraph_matrix_destroy(&pm);
@@ -5488,23 +5488,23 @@ PyObject *igraphmodule_Graph_permute_vertices(igraphmodule_GraphObject *self,
                                               PyObject *args, PyObject *kwds) {
   static char *kwlist[] = { "permutation", NULL };
   igraph_t pg;
-  igraph_vector_t perm;
+  igraph_vector_int_t perm;
   igraphmodule_GraphObject *result;
   PyObject *list;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist, &PyList_Type, &list))
     return NULL;
 
-  if (igraphmodule_PyObject_to_vector_t(list, &perm, 1))
+  if (igraphmodule_PyObject_to_vector_int_t(list, &perm))
     return NULL;
 
   if (igraph_permute_vertices(&self->g, &pg, &perm)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&perm);
+    igraph_vector_int_destroy(&perm);
     return NULL;
   }
 
-  igraph_vector_destroy(&perm);
+  igraph_vector_int_destroy(&perm);
 
   CREATE_GRAPH(result, pg);
 
@@ -7804,18 +7804,18 @@ PyObject *igraphmodule_Graph_laplacian(igraphmodule_GraphObject * self,
 PyObject *igraphmodule_Graph_get_edgelist(igraphmodule_GraphObject * self,
                                           PyObject * args, PyObject * kwds)
 {
-  igraph_vector_t edgelist;
+  igraph_vector_int_t edgelist;
   PyObject *result;
 
-  igraph_vector_init(&edgelist, igraph_ecount(&self->g));
+  igraph_vector_int_init(&edgelist, igraph_ecount(&self->g));
   if (igraph_get_edgelist(&self->g, &edgelist, 0)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&edgelist);
+    igraph_vector_int_destroy(&edgelist);
     return NULL;
   }
 
-  result = igraphmodule_vector_t_to_PyList_pairs(&edgelist);
-  igraph_vector_destroy(&edgelist);
+  result = igraphmodule_vector_int_t_to_PyList_pairs(&edgelist);
+  igraph_vector_int_destroy(&edgelist);
 
   return (PyObject *) result;
 }
