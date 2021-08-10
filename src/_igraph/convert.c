@@ -783,12 +783,35 @@ int igraphmodule_PyObject_to_igraph_t(PyObject *o, igraph_t **result) {
 }
 
 /**
+ * \brief Converts a PyLong to an igraph \c igraph_integer_t
+ *
+ * Raises suitable Python exceptions when needed.
+ *
+ * This function differs from the next one because it is less generic,
+ * i.e. the Python object has to be a PyLong
+ *
+ * \param object the PyLong to be converted
+ * \param v the result is stored here
+ * \return 0 if everything was OK, 1 otherwise
+ */
+int PyLong_to_integer_t(PyObject* obj, int* v) {
+  if (IGRAPH_INTEGER_SIZE == 64) {
+      *v = (igraph_integer_t)PyLong_AsLong(obj);
+  } else {
+      int dummy;
+     PyLong_AsInt(obj, &dummy);
+      *v = (igraph_integer_t)dummy;
+  }
+  return 0;
+}
+
+/**
  * \brief Converts a Python object to an igraph \c igraph_integer_t
  *
  * Raises suitable Python exceptions when needed.
  *
  * \param object the Python object to be converted
- * \param v the result is returned here
+ * \param v the result is stored here
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_integer_t *v) {
@@ -796,16 +819,18 @@ int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_integer_t *v) {
 
   if (object == NULL) {
   } else if (PyLong_Check(object)) {
-    retval = PyLong_AsInt(object, &num);
+    retval = PyLong_to_integer_t(object, &num);
     if (retval)
       return retval;
     *v = num;
     return 0;
   } else if (PyNumber_Check(object)) {
+    /* try to recast as PyLong */
     PyObject *i = PyNumber_Long(object);
     if (i == NULL)
       return 1;
-    retval = PyLong_AsInt(i, &num);
+    /* as above, plus decrement the reference for the temp variable */
+    retval = PyLong_to_integer_t(i, &num);
     Py_DECREF(i);
     if (retval)
       return retval;
@@ -1404,7 +1429,7 @@ PyObject* igraphmodule_vector_t_to_PyList_pairs(const igraph_vector_t *v) {
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyObject_to_edgelist(
-    PyObject *list, igraph_vector_t *v, igraph_t *graph,
+    PyObject *list, igraph_vector_int_t *v, igraph_t *graph,
     igraph_bool_t* list_is_owned
 ) {
   PyObject *item, *i1, *i2, *it;
@@ -1449,7 +1474,7 @@ int igraphmodule_PyObject_to_edgelist(
       return 1;
     }
 
-    igraph_vector_view(v, buffer->buf, buffer->len / buffer->itemsize);
+    igraph_vector_int_view(v, buffer->buf, buffer->len / buffer->itemsize);
 
     if (list_is_owned) {
       *list_is_owned = 0;
@@ -1462,7 +1487,7 @@ int igraphmodule_PyObject_to_edgelist(
   if (!it)
     return 1;
 
-  igraph_vector_init(v, 0);
+  igraph_vector_int_init(v, 0);
   if (list_is_owned) {
     *list_is_owned = 1;
   }
@@ -1488,18 +1513,18 @@ int igraphmodule_PyObject_to_edgelist(
     Py_DECREF(item);
 
     if (ok) {
-      if (igraph_vector_push_back(v, idx1)) {
+      if (igraph_vector_int_push_back(v, idx1)) {
         igraphmodule_handle_igraph_error();
         ok = 0;
       }
-      if (ok && igraph_vector_push_back(v, idx2)) {
+      if (ok && igraph_vector_int_push_back(v, idx2)) {
         igraphmodule_handle_igraph_error();
         ok = 0;
       }
     }
 
     if (!ok) {
-      igraph_vector_destroy(v);
+      igraph_vector_int_destroy(v);
       Py_DECREF(it);
       return 1;
     }

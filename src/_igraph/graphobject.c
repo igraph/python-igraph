@@ -204,7 +204,7 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
   long int n = 0;
   PyObject *edges = NULL, *dir = Py_False, *ptr_o = 0;
   void* ptr = 0;
-  igraph_vector_t edges_vector;
+  igraph_vector_int_t edges_vector;
   igraph_bool_t edges_vector_owned = 0;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|lOOO!", kwlist,
@@ -232,7 +232,7 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
     }
   } else if (edges) {
     /* Caller specified an edge list, so we use igraph_create */
-    /* We have to convert the Python list to a igraph_vector_t */
+    /* We have to convert the Python list to a igraph_vector_int_t */
     if (igraphmodule_PyObject_to_edgelist(edges, &edges_vector, 0, &edges_vector_owned)) {
       igraphmodule_handle_igraph_error();
       return -1;
@@ -242,13 +242,13 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
         (&self->g, &edges_vector, (igraph_integer_t) n, PyObject_IsTrue(dir))) {
       igraphmodule_handle_igraph_error();
       if (edges_vector_owned) {
-        igraph_vector_destroy(&edges_vector);
+        igraph_vector_int_destroy(&edges_vector);
       }
       return -1;
     }
 
     if (edges_vector_owned) {
-      igraph_vector_destroy(&edges_vector);
+      igraph_vector_int_destroy(&edges_vector);
     }
   } else {
     /* No edge list was specified, and no previously initialized graph object
@@ -7695,39 +7695,39 @@ PyObject *igraphmodule_Graph_get_incidence(igraphmodule_GraphObject * self,
 {
   static char *kwlist[] = { "types", NULL };
   igraph_matrix_t matrix;
-  igraph_vector_t row_ids, col_ids;
+  igraph_vector_int_t row_ids, col_ids;
   igraph_vector_bool_t *types;
   PyObject *matrix_o, *row_ids_o, *col_ids_o, *types_o;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &types_o))
     return NULL;
 
-  if (igraph_vector_init(&row_ids, 0))
+  if (igraph_vector_int_init(&row_ids, 0))
     return NULL;
 
-  if (igraph_vector_init(&col_ids, 0)) {
-    igraph_vector_destroy(&row_ids);
+  if (igraph_vector_int_init(&col_ids, 0)) {
+    igraph_vector_int_destroy(&row_ids);
     return NULL;
   }
 
   if (igraphmodule_attrib_to_vector_bool_t(types_o, self, &types, ATTRIBUTE_TYPE_VERTEX)) {
-    igraph_vector_destroy(&row_ids);
-    igraph_vector_destroy(&col_ids);
+    igraph_vector_int_destroy(&row_ids);
+    igraph_vector_int_destroy(&col_ids);
     return NULL;
   }
 
   if (igraph_matrix_init(&matrix, 1, 1)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&row_ids);
-    igraph_vector_destroy(&col_ids);
+    igraph_vector_int_destroy(&row_ids);
+    igraph_vector_int_destroy(&col_ids);
     if (types) { igraph_vector_bool_destroy(types); free(types); }
     return NULL;
   }
 
   if (igraph_get_incidence(&self->g, types, &matrix, &row_ids, &col_ids)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&row_ids);
-    igraph_vector_destroy(&col_ids);
+    igraph_vector_int_destroy(&row_ids);
+    igraph_vector_int_destroy(&col_ids);
     if (types) { igraph_vector_bool_destroy(types); free(types); }
     igraph_matrix_destroy(&matrix);
     return NULL;
@@ -7739,9 +7739,9 @@ PyObject *igraphmodule_Graph_get_incidence(igraphmodule_GraphObject * self,
   igraph_matrix_destroy(&matrix);
 
   row_ids_o = igraphmodule_vector_t_to_PyList(&row_ids, IGRAPHMODULE_TYPE_INT);
-  igraph_vector_destroy(&row_ids);
+  igraph_vector_int_destroy(&row_ids);
   col_ids_o = igraphmodule_vector_t_to_PyList(&col_ids, IGRAPHMODULE_TYPE_INT);
-  igraph_vector_destroy(&col_ids);
+  igraph_vector_int_destroy(&col_ids);
 
   return Py_BuildValue("NNN", matrix_o, row_ids_o, col_ids_o);
 }

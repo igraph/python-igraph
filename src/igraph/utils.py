@@ -5,7 +5,7 @@
 from contextlib import contextmanager
 
 from collections.abc import MutableMapping
-from ctypes import c_double, sizeof
+from ctypes import sizeof
 from itertools import chain
 
 import os
@@ -59,13 +59,18 @@ def numpy_to_contiguous_memoryview(obj):
     directly when constructing a Graph.
     """
     # Deferred import to prevent a hard dependency on NumPy
-    from numpy import float32, float64, require
+    from numpy import int32, int64, require
 
-    size = sizeof(c_double)
+    # TODO: we used to export to double, which is only dependent on the
+    # architecture. Now with integers and a compile-time flag, we have
+    # to figure out what is the integer bitness of the underlying C core.
+    # Think of how to do that, for now default to 64 bit ints!
+    size = 8
+    #size = sizeof(c_double)
     if size == 8:
-        dtype = float64
+        dtype = int64
     elif size == 4:
-        dtype = float32
+        dtype = int32
     else:
         raise TypeError("size of C double (%d bytes) is not supported" % size)
 
