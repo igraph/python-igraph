@@ -271,9 +271,11 @@ def suite():
     attribute_suite = unittest.makeSuite(AttributeTests)
     attribute_combination_suite = unittest.makeSuite(AttributeCombinationTests)
     unicode_attributes_suite = unittest.makeSuite(UnicodeAttributeTests)
-    return unittest.TestSuite(
-        [attribute_suite, attribute_combination_suite, unicode_attributes_suite]
-    )
+    return unittest.TestSuite([
+        attribute_suite,
+        attribute_combination_suite,
+        unicode_attributes_suite,
+        ])
 
 
 def test():
