@@ -413,7 +413,7 @@ PyObject* igraphmodule_is_degree_sequence(PyObject *self,
   PyObject *args, PyObject *kwds) {
   static char* kwlist[] = { "out_deg", "in_deg", NULL };
   PyObject *out_deg_o = 0, *in_deg_o = 0;
-  igraph_vector_t out_deg, in_deg;
+  igraph_vector_int_t out_deg, in_deg;
   igraph_bool_t is_directed, result;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist,
@@ -422,25 +422,25 @@ PyObject* igraphmodule_is_degree_sequence(PyObject *self,
 
   is_directed = (in_deg_o != 0 && in_deg_o != Py_None);
 
-  if (igraphmodule_PyObject_to_vector_t(out_deg_o, &out_deg, 0))
+  if (igraphmodule_PyObject_to_vector_int_t(out_deg_o, &out_deg))
     return NULL;
 
-  if (is_directed && igraphmodule_PyObject_to_vector_t(in_deg_o, &in_deg, 0)) {
-    igraph_vector_destroy(&out_deg);
+  if (is_directed && igraphmodule_PyObject_to_vector_int_t(in_deg_o, &in_deg)) {
+    igraph_vector_int_destroy(&out_deg);
     return NULL;
   }
 
   if (igraph_is_graphical(&out_deg, is_directed ? &in_deg : 0, IGRAPH_LOOPS_SW | IGRAPH_MULTI_SW, &result)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&out_deg);
+    igraph_vector_int_destroy(&out_deg);
     if (is_directed)
-      igraph_vector_destroy(&in_deg);
+      igraph_vector_int_destroy(&in_deg);
     return NULL;
   }
 
-  igraph_vector_destroy(&out_deg);
+  igraph_vector_int_destroy(&out_deg);
   if (is_directed)
-    igraph_vector_destroy(&in_deg);
+    igraph_vector_int_destroy(&in_deg);
 
   if (result)
     Py_RETURN_TRUE;
@@ -453,7 +453,7 @@ PyObject* igraphmodule_is_graphical_degree_sequence(PyObject *self,
   PyObject *args, PyObject *kwds) {
   static char* kwlist[] = { "out_deg", "in_deg", NULL };
   PyObject *out_deg_o = 0, *in_deg_o = 0;
-  igraph_vector_t out_deg, in_deg;
+  igraph_vector_int_t out_deg, in_deg;
   igraph_bool_t is_directed, result;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist,
@@ -462,25 +462,25 @@ PyObject* igraphmodule_is_graphical_degree_sequence(PyObject *self,
 
   is_directed = (in_deg_o != 0 && in_deg_o != Py_None);
 
-  if (igraphmodule_PyObject_to_vector_t(out_deg_o, &out_deg, 0))
+  if (igraphmodule_PyObject_to_vector_int_t(out_deg_o, &out_deg))
     return NULL;
 
-  if (is_directed && igraphmodule_PyObject_to_vector_t(in_deg_o, &in_deg, 0)) {
-    igraph_vector_destroy(&out_deg);
+  if (is_directed && igraphmodule_PyObject_to_vector_int_t(in_deg_o, &in_deg)) {
+    igraph_vector_int_destroy(&out_deg);
     return NULL;
   }
 
   if (igraph_is_graphical(&out_deg, is_directed ? &in_deg : 0, IGRAPH_SIMPLE_SW, &result)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&out_deg);
+    igraph_vector_int_destroy(&out_deg);
     if (is_directed)
-      igraph_vector_destroy(&in_deg);
+      igraph_vector_int_destroy(&in_deg);
     return NULL;
   }
 
-  igraph_vector_destroy(&out_deg);
+  igraph_vector_int_destroy(&out_deg);
   if (is_directed)
-    igraph_vector_destroy(&in_deg);
+    igraph_vector_int_destroy(&in_deg);
 
   if (result)
     Py_RETURN_TRUE;
@@ -493,7 +493,7 @@ PyObject* igraphmodule_is_graphical(PyObject *self, PyObject *args, PyObject *kw
   static char* kwlist[] = { "out_deg", "in_deg", "loops", "multiple", NULL };
   PyObject *out_deg_o = 0, *in_deg_o = 0;
   PyObject *loops = Py_False, *multiple = Py_False;
-  igraph_vector_t out_deg, in_deg;
+  igraph_vector_int_t out_deg, in_deg;
   igraph_bool_t is_directed, result;
   int allowed_edge_types;
 
@@ -503,11 +503,11 @@ PyObject* igraphmodule_is_graphical(PyObject *self, PyObject *args, PyObject *kw
 
   is_directed = (in_deg_o != 0 && in_deg_o != Py_None);
 
-  if (igraphmodule_PyObject_to_vector_t(out_deg_o, &out_deg, 0))
+  if (igraphmodule_PyObject_to_vector_int_t(out_deg_o, &out_deg))
     return NULL;
 
-  if (is_directed && igraphmodule_PyObject_to_vector_t(in_deg_o, &in_deg, 0)) {
-    igraph_vector_destroy(&out_deg);
+  if (is_directed && igraphmodule_PyObject_to_vector_int_t(in_deg_o, &in_deg)) {
+    igraph_vector_int_destroy(&out_deg);
     return NULL;
   }
 
@@ -521,16 +521,16 @@ PyObject* igraphmodule_is_graphical(PyObject *self, PyObject *args, PyObject *kw
 
   if (igraph_is_graphical(&out_deg, is_directed ? &in_deg : 0, allowed_edge_types, &result)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&out_deg);
+    igraph_vector_int_destroy(&out_deg);
     if (is_directed) {
-      igraph_vector_destroy(&in_deg);
+      igraph_vector_int_destroy(&in_deg);
     }
     return NULL;
   }
 
-  igraph_vector_destroy(&out_deg);
+  igraph_vector_int_destroy(&out_deg);
   if (is_directed) {
-    igraph_vector_destroy(&in_deg);
+    igraph_vector_int_destroy(&in_deg);
   }
 
   if (result)
