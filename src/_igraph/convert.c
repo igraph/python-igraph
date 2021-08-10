@@ -1908,36 +1908,35 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
    // create a new Python list
    list=PyList_New(nr);
    // populate the list with data
-   for (i=0; i<nr; i++)
-     {
+   for (i=0; i<nr; i++) {
     row=PyList_New(nc);
-    for (j=0; j<nc; j++)
-      {
-         if (type==IGRAPHMODULE_TYPE_INT) {
-         if (!igraph_finite(MATRIX(*m, i, j)))
-         item=PyFloat_FromDouble((double)MATRIX(*m, i, j));
-         else
-             item=PyLong_FromLong((long)MATRIX(*m, i, j));
-     } else
-           item=PyFloat_FromDouble(MATRIX(*m, i, j));
+    for (j=0; j<nc; j++) {
+      if (type==IGRAPHMODULE_TYPE_INT) {
+        // FIXME: something is not right here I think
+        // convert to integers except nan or infinity
+        if (!igraph_finite(MATRIX(*m, i, j)))
+          item=PyFloat_FromDouble((double)MATRIX(*m, i, j));
+        else
+          item=PyLong_FromLong((long)MATRIX(*m, i, j));
+      } else
+        // convert to floats
+        item=PyFloat_FromDouble(MATRIX(*m, i, j));
 
-         if (PyList_SetItem(row, j, item))
-           {
-          // error occurred while populating the list, return immediately
-          Py_DECREF(row);
-          Py_DECREF(list);
-          return NULL;
-           }
+      if (PyList_SetItem(row, j, item)) {
+        // error occurred while populating the list, return immediately
+        Py_DECREF(row);
+        Py_DECREF(list);
+        return NULL;
       }
-    if (PyList_SetItem(list, i, row))
-      {
-         Py_DECREF(row);
-         Py_DECREF(list);
-         return NULL;
-      }
-     }
-   // return the list
-   return list;
+    }
+    if (PyList_SetItem(list, i, row)) {
+      Py_DECREF(row);
+      Py_DECREF(list);
+      return NULL;
+    }
+  }
+  // return the list
+  return list;
 }
 
 /**
@@ -1958,7 +1957,10 @@ PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
 
   list=PyList_New(n);
   for (i=0; i<n; i++) {
-    item=igraphmodule_vector_t_to_PyList((igraph_vector_t*)VECTOR(*v)[i], type);
+    if (type == IGRAPHMODULE_TYPE_INT)
+      item=igraphmodule_vector_int_t_to_PyList((igraph_vector_int_t*)VECTOR(*v)[i]);
+    else
+      item=igraphmodule_vector_t_to_PyList((igraph_vector_t*)VECTOR(*v)[i], type);
     if (item == NULL) {
       Py_DECREF(list);
       return NULL;
