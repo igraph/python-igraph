@@ -12,6 +12,7 @@ __all__ = (
     "euclidean_distance",
     "evaluate_cubic_bezier",
     "intersect_bezier_curve_and_circle",
+    "str_to_orientation",
 )
 
 #####################################################################
@@ -596,3 +597,51 @@ def intersect_bezier_curve_and_circle(
         counter += 1
 
     return evaluate_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3, t1)
+
+
+def str_to_orientation(value, reversed_horizontal=False, reversed_vertical=False):
+    """Tries to interpret a string as an orientation value.
+
+    The following basic values are understood: ``left-right``, ``bottom-top``,
+    ``right-left``, ``top-bottom``. Possible aliases are:
+
+      - ``horizontal``, ``horiz``, ``h`` and ``lr`` for ``left-right``
+
+      - ``vertical``, ``vert``, ``v`` and ``tb`` for top-bottom.
+
+      - ``lr`` for ``left-right``.
+
+      - ``rl`` for ``right-left``.
+
+    ``reversed_horizontal`` reverses the meaning of ``horizontal``, ``horiz``
+    and ``h`` to ``rl`` (instead of ``lr``); similarly, ``reversed_vertical``
+    reverses the meaning of ``vertical``, ``vert`` and ``v`` to ``bt``
+    (instead of ``tb``).
+
+    Returns one of ``lr``, ``rl``, ``tb`` or ``bt``, or throws ``ValueError``
+    if the string cannot be interpreted as an orientation.
+    """
+
+    aliases = {
+        "left-right": "lr",
+        "right-left": "rl",
+        "top-bottom": "tb",
+        "bottom-top": "bt",
+        "top-down": "tb",
+        "bottom-up": "bt",
+        "top-bottom": "tb",
+        "bottom-top": "bt",
+        "td": "tb",
+        "bu": "bt",
+    }
+
+    dir = ["lr", "rl"][reversed_horizontal]
+    aliases.update(horizontal=dir, horiz=dir, h=dir)
+
+    dir = ["tb", "bt"][reversed_vertical]
+    aliases.update(vertical=dir, vert=dir, v=dir)
+
+    result = aliases.get(value, value)
+    if result not in ("lr", "rl", "tb", "bt"):
+        raise ValueError("unknown orientation: %s" % result)
+    return result

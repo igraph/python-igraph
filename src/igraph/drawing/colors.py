@@ -7,7 +7,7 @@ Color handling functions.
 from abc import ABCMeta, abstractmethod
 from math import ceil
 
-from igraph.utils import str_to_orientation
+from .utils import str_to_orientation
 
 __all__ = (
     "Palette",

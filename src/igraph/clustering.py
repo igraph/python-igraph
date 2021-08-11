@@ -3,17 +3,14 @@
 """Classes related to graph clustering."""
 
 from copy import deepcopy
-from math import pi
 from io import StringIO
 
 from igraph import community_to_membership
 from igraph.configuration import Configuration
 from igraph.datatypes import UniqueIdGenerator
 from igraph.drawing.colors import ClusterColoringPalette
-from igraph.drawing.dendrogram import (
-    CairoDendrogramDrawer,
-    MatplotlibDendrogramDrawer,
-)
+from igraph.drawing.cairo.dendrogram import CairoDendrogramDrawer
+from igraph.drawing.matplotlib.dendrogram import MatplotlibDendrogramDrawer
 from igraph.statistics import Histogram
 from igraph.summary import _get_wrapper_for_width
 
