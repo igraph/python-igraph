@@ -378,7 +378,7 @@ PyObject* igraphmodule_compare_communities(PyObject *self,
   PyObject *args, PyObject *kwds) {
   static char* kwlist[] = { "comm1", "comm2", "method", NULL };
   PyObject *comm1_o, *comm2_o, *method_o = Py_None;
-  igraph_vector_t comm1, comm2;
+  igraph_vector_int_t comm1, comm2;
   igraph_community_comparison_t method = IGRAPH_COMMCMP_VI;
   igraph_real_t result;
 
@@ -389,21 +389,21 @@ PyObject* igraphmodule_compare_communities(PyObject *self,
   if (igraphmodule_PyObject_to_community_comparison_t(method_o, &method))
     return NULL;
 
-  if (igraphmodule_PyObject_to_vector_t(comm1_o, &comm1, 0))
+  if (igraphmodule_PyObject_to_vector_int_t(comm1_o, &comm1))
     return NULL;
-  if (igraphmodule_PyObject_to_vector_t(comm2_o, &comm2, 0)) {
-    igraph_vector_destroy(&comm1);
+  if (igraphmodule_PyObject_to_vector_int_t(comm2_o, &comm2)) {
+    igraph_vector_int_destroy(&comm1);
     return NULL;
   }
 
   if (igraph_compare_communities(&comm1, &comm2, &result, method)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&comm1);
-    igraph_vector_destroy(&comm2);
+    igraph_vector_int_destroy(&comm1);
+    igraph_vector_int_destroy(&comm2);
     return NULL;
   }
-  igraph_vector_destroy(&comm1);
-  igraph_vector_destroy(&comm2);
+  igraph_vector_int_destroy(&comm1);
+  igraph_vector_int_destroy(&comm2);
 
   return PyFloat_FromDouble((double)result);
 }
@@ -570,28 +570,28 @@ PyObject* igraphmodule_split_join_distance(PyObject *self,
   PyObject *args, PyObject *kwds) {
   static char* kwlist[] = { "comm1", "comm2", NULL };
   PyObject *comm1_o, *comm2_o;
-  igraph_vector_t comm1, comm2;
+  igraph_vector_int_t comm1, comm2;
   igraph_integer_t distance12, distance21;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist,
       &comm1_o, &comm2_o))
     return NULL;
 
-  if (igraphmodule_PyObject_to_vector_t(comm1_o, &comm1, 0))
+  if (igraphmodule_PyObject_to_vector_int_t(comm1_o, &comm1))
     return NULL;
-  if (igraphmodule_PyObject_to_vector_t(comm2_o, &comm2, 0)) {
-    igraph_vector_destroy(&comm1);
+  if (igraphmodule_PyObject_to_vector_int_t(comm2_o, &comm2)) {
+    igraph_vector_int_destroy(&comm1);
     return NULL;
   }
 
   if (igraph_split_join_distance(&comm1, &comm2, &distance12, &distance21)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&comm1);
-    igraph_vector_destroy(&comm2);
+    igraph_vector_int_destroy(&comm1);
+    igraph_vector_int_destroy(&comm2);
     return NULL;
   }
-  igraph_vector_destroy(&comm1);
-  igraph_vector_destroy(&comm2);
+  igraph_vector_int_destroy(&comm1);
+  igraph_vector_int_destroy(&comm2);
 
   return Py_BuildValue("ll", (long)distance12, (long)distance21);
 }

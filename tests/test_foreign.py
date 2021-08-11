@@ -4,7 +4,10 @@ import warnings
 
 from igraph import Graph, InternalError
 
-from .utils import temporary_file
+try:
+    from .utils import temporary_file
+except ImportError:
+    from utils import temporary_file
 
 try:
     import networkx as nx
@@ -277,20 +280,18 @@ class ForeignTests(unittest.TestCase):
         ) as tmpfname:
             g = Graph.Read_Adjacency(tmpfname)
             self.assertTrue(isinstance(g, Graph))
-            self.assertTrue(
-                g.vcount() == 6
-                and g.ecount() == 18
-                and g.is_directed()
-                and "weight" not in g.edge_attributes()
-            )
+            self.assertEqual(g.vcount(), 6)
+            self.assertEqual(g.ecount(), 18)
+            self.assertTrue(g.is_directed())
+            self.assertTrue("weight" not in g.edge_attributes())
+
             g = Graph.Read_Adjacency(tmpfname, attribute="weight")
             self.assertTrue(isinstance(g, Graph))
+            self.assertEqual(g.vcount(), 6)
+            self.assertEqual(g.ecount(), 12)
+            self.assertTrue(g.is_directed())
             self.assertTrue(
-                g.vcount() == 6
-                and g.ecount() == 12
-                and g.is_directed()
-                and g.es["weight"] == [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2]
-            )
+                    g.es["weight"] == [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2])
 
             g.write_adjacency(tmpfname)
 

@@ -1941,6 +1941,51 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
 
 /**
  * \ingroup python_interface_conversion
+ * \brief Converts an igraph \c igraph_matrix_int_t to a Python list of lists
+ *
+ * \param m the \c igraph_matrix_int_t containing the matrix to be converted
+ * \return the Python list of lists as a \c PyObject*, or \c NULL if an error occurred
+ */
+PyObject* igraphmodule_matrix_int_t_to_PyList(const igraph_matrix_int_t *m) {
+   PyObject *list, *row, *item;
+   Py_ssize_t nr, nc, i, j;
+
+   nr = igraph_matrix_int_nrow(m);
+   nc = igraph_matrix_int_ncol(m);
+   if (nr<0 || nc<0)
+     return igraphmodule_handle_igraph_error();
+
+   // create a new Python list
+   list=PyList_New(nr);
+   // populate the list with data
+   for (i=0; i<nr; i++) {
+    row=PyList_New(nc);
+    for (j=0; j<nc; j++) {
+      // convert to integers except nan or infinity
+      if (!igraph_finite(MATRIX(*m, i, j)))
+        item=PyFloat_FromDouble((double)MATRIX(*m, i, j));
+      else
+        item=PyLong_FromLong((long)MATRIX(*m, i, j));
+
+      if (PyList_SetItem(row, j, item)) {
+        // error occurred while populating the list, return immediately
+        Py_DECREF(row);
+        Py_DECREF(list);
+        return NULL;
+      }
+    }
+    if (PyList_SetItem(list, i, row)) {
+      Py_DECREF(row);
+      Py_DECREF(list);
+      return NULL;
+    }
+  }
+  // return the list
+  return list;
+}
+
+/**
+ * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_ptr_t to a Python list of lists
  *
  * \param v the \c igraph_vector_ptr_t containing the vector to be converted
