@@ -2046,6 +2046,79 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igrap
 
 /**
  * \ingroup python_interface_conversion
+ * \brief Converts a Python list of lists to an \c igraph_matrix_int_t
+ *
+ * \param o the Python object representing the list of lists
+ * \param m the address of an uninitialized \c igraph_matrix_int_t
+ * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
+ */
+int igraphmodule_PyList_to_matrix_int_t(PyObject* o, igraph_matrix_int_t *m) {
+  return igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(o, m, 0);
+}
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts a Python list of lists to an \c igraph_matrix_int_t, ensuring
+ * that the matrix has at least the given number of columns
+ *
+ * \param o the Python object representing the list of lists
+ * \param m the address of an uninitialized \c igraph_matrix_int_t
+ * \param num_cols the minimum number of columns in the matrix
+ * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
+ */
+int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, igraph_matrix_int_t *m, int min_cols) {
+  Py_ssize_t nr, nc, n, i, j;
+  PyObject *row, *item;
+  int was_warned = 0;
+
+  /* calculate the matrix dimensions */
+  if (!PySequence_Check(o) || PyUnicode_Check(o)) {
+    PyErr_SetString(PyExc_TypeError, "matrix expected (list of sequences)");
+    return 1;
+  }
+
+  nr = PySequence_Size(o);
+  nc = min_cols > 0 ? min_cols : 0;
+  for (i = 0; i < nr; i++) {
+    row = PySequence_GetItem(o, i);
+    if (!PySequence_Check(row)) {
+      Py_DECREF(row);
+      PyErr_SetString(PyExc_TypeError, "matrix expected (list of sequences)");
+      return 1;
+    }
+    n = PySequence_Size(row);
+    Py_DECREF(row);
+    if (n > nc) {
+      nc = n;
+    }
+  }
+
+  igraph_matrix_int_init(m, nr, nc);
+  for (i = 0; i < nr; i++) {
+    row = PySequence_GetItem(o, i);
+    n = PySequence_Size(row);
+    for (j = 0; j < n; j++) {
+      item = PySequence_GetItem(row, j);
+      if (PyLong_Check(item)) {
+        MATRIX(*m, i, j) = (igraph_integer_t)PyLong_AsLong(item);
+      } else if (PyLong_Check(item)) {
+        MATRIX(*m, i, j) = (igraph_integer_t)PyLong_AsLong(item);
+      } else if (PyFloat_Check(item)) {
+        MATRIX(*m, i, j) = (igraph_integer_t)PyFloat_AsDouble(item);
+      } else if (!was_warned) {
+        PyErr_Warn(PyExc_Warning, "non-numeric value in matrix ignored");
+        was_warned=1;
+      }
+      Py_DECREF(item);
+    }
+    Py_DECREF(row);
+  }
+
+  return 0;
+}
+
+/**
+ * \ingroup python_interface_conversion
  * \brief Converts a Python list of lists to an \c igraph_vector_ptr_t
  *        containing \c igraph_vector_t items.
  *

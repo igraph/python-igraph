@@ -1953,7 +1953,7 @@ PyObject *igraphmodule_Graph_Adjacency(PyTypeObject * type,
                                        PyObject * args, PyObject * kwds) {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  igraph_matrix_t m;
+  igraph_matrix_int_t m;
   PyObject *matrix, *mode_o = Py_None;
   igraph_adjacency_t mode = IGRAPH_ADJ_DIRECTED;
 
@@ -1964,7 +1964,7 @@ PyObject *igraphmodule_Graph_Adjacency(PyTypeObject * type,
     return NULL;
   if (igraphmodule_PyObject_to_adjacency_t(mode_o, &mode)) return NULL;
 
-  if (igraphmodule_PyList_to_matrix_t(matrix, &m)) {
+  if (igraphmodule_PyList_to_matrix_int_t(matrix, &m)) {
     PyErr_SetString(PyExc_TypeError,
                     "Error while converting adjacency matrix");
     return NULL;
@@ -1972,11 +1972,11 @@ PyObject *igraphmodule_Graph_Adjacency(PyTypeObject * type,
 
   if (igraph_adjacency(&g, &m, mode)) {
     igraphmodule_handle_igraph_error();
-    igraph_matrix_destroy(&m);
+    igraph_matrix_int_destroy(&m);
     return NULL;
   }
 
-  igraph_matrix_destroy(&m);
+  igraph_matrix_int_destroy(&m);
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
 
@@ -2763,7 +2763,7 @@ PyObject *igraphmodule_Graph_K_Regular(PyTypeObject * type,
 PyObject *igraphmodule_Graph_Lattice(PyTypeObject * type,
                                      PyObject * args, PyObject * kwds)
 {
-  igraph_vector_t dimvector;
+  igraph_vector_int_t dimvector;
   long int nei = 1;
   igraph_bool_t directed;
   igraph_bool_t mutual;
@@ -2784,17 +2784,17 @@ PyObject *igraphmodule_Graph_Lattice(PyTypeObject * type,
   mutual = PyObject_IsTrue(o_mutual);
   circular = PyObject_IsTrue(o_circular);
 
-  if (igraphmodule_PyObject_to_vector_t(o_dimvector, &dimvector, 1))
+  if (igraphmodule_PyObject_to_vector_int_t(o_dimvector, &dimvector))
     return NULL;
 
   if (igraph_lattice(&g, &dimvector, (igraph_integer_t) nei,
         directed, mutual, circular)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&dimvector);
+    igraph_vector_int_destroy(&dimvector);
     return NULL;
   }
 
-  igraph_vector_destroy(&dimvector);
+  igraph_vector_int_destroy(&dimvector);
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
 
