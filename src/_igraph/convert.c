@@ -1384,9 +1384,36 @@ PyObject* igraphmodule_vector_int_t_to_PyList_with_nan(const igraph_vector_int_t
 
 /**
  * \ingroup python_interface_conversion
- * \brief Converts an igraph \c igraph_vector_int_t to a Python integer tuple
+ * \brief Converts an igraph \c igraph_vector_t to a Python integer tuple
  *
  * \param v the \c igraph_vector_t containing the vector to be converted
+ * \return the Python integer tuple as a \c PyObject*, or \c NULL if an error occurred
+ */
+PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v) {
+  PyObject* tuple;
+  Py_ssize_t n, i;
+
+  n=igraph_vector_size(v);
+  if (n<0) return igraphmodule_handle_igraph_error();
+
+  tuple=PyTuple_New(n);
+  for (i=0; i<n; i++) {
+    PyObject *item=PyLong_FromLong((long)VECTOR(*v)[i]);
+    if (!item) {
+      Py_DECREF(tuple);
+      return NULL;
+    }
+    PyTuple_SET_ITEM(tuple, i, item);
+  }
+
+  return tuple;
+}
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts an igraph \c igraph_vector_int_t to a Python integer tuple
+ *
+ * \param v the \c igraph_vector_int_t containing the vector to be converted
  * \return the Python integer tuple as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_vector_int_t_to_PyTuple(const igraph_vector_int_t *v) {
