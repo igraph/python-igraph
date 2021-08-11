@@ -498,11 +498,11 @@ class NeighborhoodTests(unittest.TestCase):
 class MiscTests(unittest.TestCase):
     def testBridges(self):
         g = Graph(5, [(0, 1), (1, 2), (2, 0), (0, 3), (3, 4)])
-        self.assertTrue(g.bridges() == [3, 4])
+        self.assertEqual(g.bridges(), [3, 4])
         g = Graph(7, [(0, 1), (1, 2), (2, 0), (1, 6), (1, 3), (1, 4), (3, 5), (4, 5)])
-        self.assertTrue(g.bridges() == [3])
+        self.assertEqual(g.bridges(), [3])
         g = Graph(3, [(0, 1), (1, 2), (2, 3)])
-        self.assertTrue(g.bridges() == [0, 1, 2])
+        self.assertEqual(g.bridges(), [0, 1, 2])
 
     def testConstraint(self):
         g = Graph(4, [(0, 1), (0, 2), (1, 2), (0, 3), (1, 3)])

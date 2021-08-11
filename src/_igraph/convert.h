@@ -94,6 +94,7 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
 int igraphmodule_PyObject_to_vector_bool_t(PyObject *list, igraph_vector_bool_t *v);
 int igraphmodule_PyObject_to_vector_ptr_t(PyObject *list, igraph_vector_ptr_t *v,
 		igraph_bool_t need_non_negative);
+int igraphmodule_PyObject_to_vector_int_ptr_t(PyObject *list, igraph_vector_ptr_t *v);
 
 int igraphmodule_PyObject_to_edgelist(
     PyObject *list, igraph_vector_int_t *v, igraph_t *graph,
@@ -149,8 +150,10 @@ PyObject* igraphmodule_vector_int_t_to_PyTuple(const igraph_vector_int_t *v);
 PyObject* igraphmodule_vector_int_t_pair_to_PyList(const igraph_vector_int_t *v1,
         const igraph_vector_int_t *v2);
 PyObject* igraphmodule_vector_int_t_to_PyList_pairs(const igraph_vector_int_t *v);
+PyObject* igraphmodule_vector_int_t_to_PyList_with_nan(const igraph_vector_int_t *v, const igraph_integer_t nanvalue);
 PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
         igraphmodule_conv_t type);
+PyObject* igraphmodule_vector_int_ptr_t_to_PyList(const igraph_vector_ptr_t *v);
 PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v);
 PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
         igraphmodule_conv_t type);

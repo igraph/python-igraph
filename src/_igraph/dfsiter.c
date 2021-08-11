@@ -65,7 +65,7 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
-  if (igraph_vector_init(&o->neis, 0)) {
+  if (igraph_vector_int_init(&o->neis, 0)) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     igraph_stack_destroy(&o->stack);
     return NULL;
@@ -81,7 +81,7 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
       igraph_stack_push(&o->stack, 0) ||
       igraph_stack_push(&o->stack, -1)) {
     igraph_stack_destroy(&o->stack);
-    igraph_vector_destroy(&o->neis);
+    igraph_vector_int_destroy(&o->neis);
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
@@ -133,7 +133,7 @@ int igraphmodule_DFSIter_clear(igraphmodule_DFSIterObject *self) {
   Py_XDECREF(tmp);
 
   igraph_stack_destroy(&self->stack);
-  igraph_vector_destroy(&self->neis);
+  igraph_vector_int_destroy(&self->neis);
   free(self->visited);
   self->visited = 0;
   
@@ -193,7 +193,7 @@ PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self) {
       igraphmodule_handle_igraph_error();
       return NULL;
     }
-    for (i=0; i<igraph_vector_size(&self->neis); i++) {
+    for (i=0; i<igraph_vector_int_size(&self->neis); i++) {
       igraph_integer_t neighbor = (igraph_integer_t)VECTOR(self->neis)[i];
       /* new neighbor, push the next item onto the stack */
       if (self->visited[neighbor] == 0) {
