@@ -20,11 +20,11 @@ from igraph._igraph import convex_hull, VertexSeq
 from igraph.configuration import Configuration
 from igraph.drawing.baseclasses import AbstractGraphDrawer
 from igraph.drawing.text import TextAlignment
-from igraph.drawing.shapes import CairoPolygonDrawer
 from igraph.drawing.utils import Point
 
 from .base import AbstractCairoDrawer
 from .edge import CairoArrowEdgeDrawer
+from .polygon import CairoPolygonDrawer
 from .text import CairoTextDrawer
 from .utils import find_cairo
 from .vertex import CairoVertexDrawer

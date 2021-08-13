@@ -117,7 +117,8 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
       argument has an effect only if igraph is run inside IPython and C{target}
       is C{None}.
 
-    @return: an appropriate L{Plot} object.
+    @return: an appropriate L{CairoPlot} object for the Cairo backend or the
+      Matplotlib C{Axes} object for the Matplotlib backend
 
     @see: Graph.__plot__
     """
@@ -146,7 +147,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
 
         # Choose palette
         # If explicit, use it. If not or None, ask the object: None is an
-        # acceptable response from the object (e.g. for cluterings), it means
+        # acceptable response from the object (e.g. for clusterings), it means
         # the palette is handled internally. If no response, default to config.
         palette = kwds.pop("palette", None)
         if palette is None:
@@ -155,7 +156,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
                 "_default_palette",
                 Configuration.instance()["plotting.palette"],
             )
-        if (palette is not None) and (not isinstance(palette, Palette)):
+        if palette is not None and not isinstance(palette, Palette):
             palette = palettes[palette]
 
         # Get the plotting function from the object

@@ -5,10 +5,13 @@ Utility classes for drawing routines.
 from math import atan2, cos, hypot, sin
 from typing import NamedTuple
 
+from igraph.utils import consecutive_pairs
+
 __all__ = (
     "BoundingBox",
     "Point",
     "Rectangle",
+    "calculate_corner_radii",
     "euclidean_distance",
     "evaluate_cubic_bezier",
     "intersect_bezier_curve_and_circle",
@@ -527,6 +530,23 @@ class Point(NamedTuple("_Point", [("x", float), ("y", float)])):
         the origin.
         """
         return cls(radius * cos(angle), radius * sin(angle))
+
+
+def calculate_corner_radii(points, corner_radius):
+    """Given a list of points and a desired corner radius, returns a list
+    containing proposed corner radii for each of the points such that it is
+    ensured that the corner radius at a point is never larger than half of
+    the minimum distance between the point and its neighbors.
+    """
+    points = [Point(*point) for point in points]
+    side_vecs = [v - u for u, v in consecutive_pairs(points, circular=True)]
+    half_side_lengths = [side.length() / 2 for side in side_vecs]
+    corner_radii = [corner_radius] * len(points)
+    for idx in range(len(corner_radii)):
+        prev_idx = -1 if idx == 0 else idx - 1
+        radii = [corner_radius, half_side_lengths[prev_idx], half_side_lengths[idx]]
+        corner_radii[idx] = min(radii)
+    return corner_radii
 
 
 def euclidean_distance(x1, y1, x2, y2):

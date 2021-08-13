@@ -34,7 +34,7 @@ from igraph.drawing.colors import Palette, palettes
 from igraph.drawing.utils import BoundingBox
 from igraph.utils import named_temporary_file
 
-__all__ = ("CairoPlot", )
+__all__ = ("CairoPlot",)
 
 cairo = find_cairo()
 
@@ -175,7 +175,6 @@ class CairoPlot:
 
         self._ctx = cairo.Context(self._surface)
 
-        self._surface_was_created = not isinstance(target, cairo.Surface)
         self._objects = []
         self._is_dirty = False
 
@@ -306,9 +305,7 @@ class CairoPlot:
 
             fname = fname or self._filename
             if fname is None:
-                raise ValueError(
-                    "no file name is known for the surface " + "and none given"
-                )
+                raise ValueError("no file name is known for the surface and none given")
             return self._surface.write_to_png(fname)
 
         if fname is not None:

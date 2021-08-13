@@ -17,10 +17,10 @@ from warnings import warn
 
 from igraph._igraph import convex_hull, VertexSeq
 from igraph.drawing.baseclasses import AbstractGraphDrawer
-from igraph.drawing.shapes import MatplotlibPolygonDrawer
 from igraph.drawing.utils import Point
 
 from .edge import MatplotlibEdgeDrawer
+from .polygon import MatplotlibPolygonDrawer
 from .utils import find_matplotlib
 from .vertex import MatplotlibVertexDrawer
 
@@ -190,8 +190,9 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
                 # Draw the hull
                 facecolor = (color[0], color[1], color[2], 0.25 * color[3])
-                drawer = MatplotlibPolygonDrawer(ax, points=polygon)
+                drawer = MatplotlibPolygonDrawer(ax)
                 drawer.draw(
+                    polygon,
                     corner_radius=corner_radius,
                     facecolor=facecolor,
                     edgecolor=color,
