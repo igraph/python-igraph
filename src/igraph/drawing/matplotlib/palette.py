@@ -42,6 +42,7 @@ class MatplotlibPaletteDrawer(AbstractDrawer):
             [self.get(i) for i in range(self.length)],
         )
         matrix.__plot__(
+            'matplotlib',
             ax,
             cmap=cmap,
             **kwds,
