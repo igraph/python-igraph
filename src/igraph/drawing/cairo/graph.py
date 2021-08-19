@@ -73,7 +73,7 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
     def __init__(
         self,
         context,
-        bbox,
+        bbox=None,
         vertex_drawer_factory=CairoVertexDrawer,
         edge_drawer_factory=CairoArrowEdgeDrawer,
         label_drawer_factory=CairoTextDrawer,
@@ -121,6 +121,10 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
                 "and will be deprecated soon.",
                 DeprecationWarning,
             )
+
+        bbox = self.bbox = kwds.pop('bbox', None)
+        if bbox is None:
+            raise ValueError('bbox is required for cairo plots')
 
         # Some abbreviations for sake of simplicity
         directed = graph.is_directed()

@@ -4183,16 +4183,13 @@ class Graph(GraphBase):
             specifies whether the order is reversed (C{True}, C{False},
             C{"asc"} and C{"desc"} are accepted values).
         """
-        if backend == "matplotlib":
-            drawer_factory = kwds.pop("drawer_factory", MatplotlibGraphDrawer)
-            drawer = drawer_factory(context)
-        else:
-            bbox = kwds.pop('bbox', None)
-            if bbox is None:
-                raise ValueError('bbox is required for cairo plots')
-            drawer_factory = kwds.pop("drawer_factory", CairoGraphDrawer)
-            drawer = drawer_factory(context, bbox)
+        from igraph.drawing import DrawerDirectory
 
+        drawer = kwds.pop(
+            "drawer_factory",
+            DrawerDirectory.resolve(self, backend)(context),
+
+        )
         drawer.draw(self, *args, **kwds)
 
     def __str__(self):

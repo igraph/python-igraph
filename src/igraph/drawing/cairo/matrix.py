@@ -11,20 +11,13 @@ __all__ = ("CairoMatrixDrawer",)
 class CairoMatrixDrawer(AbstractCairoDrawer):
     """Default Cairo drawer object for matrices."""
 
-    def __init__(self, context, bbox, palette):
+    def __init__(self, context):
         """Constructs the vertex drawer and associates it to the given
         palette.
 
         @param context: the context on which we will draw
-        @param bbox:    the bounding box within which we will draw.
-                        Can be anything accepted by the constructor
-                        of L{BoundingBox} (i.e., a 2-tuple, a 4-tuple
-                        or a L{BoundingBox} object).
-        @param palette: the palette that can be used to map integer
-                        color indices to colors when drawing vertices
         """
-        super().__init__(context, bbox)
-        self.palette = palette
+        super().__init__(context, bbox=None)
 
     def draw(self, matrix, **kwds):
         """Draws the given Matrix in a Cairo context.
@@ -32,6 +25,13 @@ class CairoMatrixDrawer(AbstractCairoDrawer):
         @param matrix: the igraph.Matrix to plot.
 
         It accepts the following keyword arguments:
+
+          - C{bbox}:    the bounding box within which we will draw.
+            Can be anything accepted by the constructor of L{BoundingBox}
+            (i.e., a 2-tuple, a 4-tuple or a L{BoundingBox} object).
+
+          - C{palette}: the palette that can be used to map integer color
+            indices to colors when drawing vertices
 
           - C{style}: the style of the plot. C{boolean} is useful for plotting
             matrices with boolean (C{True}/C{False} or 0/1) values: C{False}
@@ -79,9 +79,14 @@ class CairoMatrixDrawer(AbstractCairoDrawer):
         names.
         """
         context = self.context
-        bbox = self.bbox
-        palette = self.palette
         Matrix = matrix.__class__
+
+        bbox = self.bbox = kwds.pop("bbox", None)
+        palette = kwds.pop("palette", None)
+        if bbox is None:
+            raise ValueError("bbox is required for Cairo plots")
+        if palette is None:
+            raise ValueError("palette is required for Cairo plots")
 
         grid_width = float(kwds.get("grid_width", 1.0))
         border_width = float(kwds.get("border_width", 1.0))

@@ -322,21 +322,9 @@ class Matrix:
         is square-shaped, the same names are used for both column and row
         names.
         """
-        if backend == "matplotlib":
-            from igraph.drawing.matplotlib.matrix import MatplotlibMatrixDrawer
+        from igraph.drawing import DrawerDirectory
 
-            drawer = MatplotlibMatrixDrawer(context)
-        else:
-            from igraph.drawing.cairo.matrix import CairoMatrixDrawer
-
-            bbox = kwds.pop("bbox", None)
-            palette = kwds.pop("palette", None)
-            if bbox is None:
-                raise ValueError("bbox is required for Cairo plots")
-            if palette is None:
-                raise ValueError("palette is required for Cairo plots")
-
-            drawer = CairoMatrixDrawer(context, bbox, palette)
+        drawer = DrawerDirectory.resolve(self, backend)(context)
         drawer.draw(self, **kwds)
 
     def min(self, dim=None):

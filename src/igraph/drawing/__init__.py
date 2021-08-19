@@ -26,12 +26,20 @@ U{Inkscape<http://www.inkscape.org>} (free), U{Skencil<http://www.skencil.org>}
 from warnings import warn
 
 from igraph.configuration import Configuration
-from igraph.drawing.cairo.graph import CairoGraphDrawer
-from igraph.drawing.cairo.plot import CairoPlot
 from igraph.drawing.cairo.utils import find_cairo
-from igraph.drawing.colors import Palette, palettes
-from igraph.drawing.matplotlib.graph import MatplotlibGraphDrawer
 from igraph.drawing.matplotlib.utils import find_matplotlib
+from igraph.drawing.cairo.plot import CairoPlot
+from igraph.drawing.colors import Palette, palettes
+
+from igraph.drawing.cairo.graph import CairoGraphDrawer
+from igraph.drawing.cairo.matrix import CairoMatrixDrawer
+from igraph.drawing.cairo.histogram import CairoHistogramDrawer
+from igraph.drawing.cairo.palette import CairoPaletteDrawer
+from igraph.drawing.matplotlib.graph import MatplotlibGraphDrawer
+from igraph.drawing.matplotlib.matrix import MatplotlibMatrixDrawer
+from igraph.drawing.matplotlib.histogram import MatplotlibHistogramDrawer
+from igraph.drawing.matplotlib.palette import MatplotlibPaletteDrawer
+
 from igraph.drawing.utils import BoundingBox, Point, Rectangle
 from igraph.utils import _is_running_in_ipython
 
@@ -44,6 +52,7 @@ __all__ = (
     "Point",
     "Rectangle",
     "plot",
+    "DrawerDirectory",
 )
 
 # TODO: deprecate
@@ -51,6 +60,52 @@ Plot = CairoPlot
 
 # TODO: deprecate
 DefaultGraphDrawer = CairoGraphDrawer
+
+
+class DrawerDirectory:
+    """Static class that finds the object/backend drawer
+
+    This directory is used by the __plot__ functions.
+    """
+    valid_backends = ('cairo', 'matplotlib')
+    valid_objects = (
+        'Graph',
+        'Matrix',
+        'Histogram',
+        'Palette',
+    )
+    known_drawers = {
+        'cairo': {
+            'Graph': CairoGraphDrawer,
+            'Matrix': CairoMatrixDrawer,
+            'Histogram': CairoHistogramDrawer,
+            'Palette': CairoPaletteDrawer,
+
+        },
+        'matplotlib': {
+            'Graph': MatplotlibGraphDrawer,
+            'Matrix': MatplotlibMatrixDrawer,
+            'Histogram': MatplotlibHistogramDrawer,
+            'Palette': MatplotlibPaletteDrawer,
+        },
+    }
+
+    @classmethod
+    def resolve(cls, obj, backend):
+        """Given a shape name, returns the corresponding shape drawer class
+
+        @param: obj: an instance of the object to plot
+        @param backend: the name of the backend
+        @return: the corresponding shape drawer class
+
+        @raise ValueError: if no drawer is available for this backend/object
+        """
+        object_name = str(obj.__class__).split('.')[-1]
+
+        try:
+            return cls.known_drawers[backend][object_name]
+        except KeyError:
+            raise ValueError("unknown drawer: %s %s" % backend, object_name)
 
 
 def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):

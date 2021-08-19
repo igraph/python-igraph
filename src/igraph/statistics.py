@@ -232,52 +232,10 @@ class Histogram:
 
     def __plot__(self, backend, context, **kwds):
         """Plotting support"""
-        xmin = kwds.get("min", self._min)
-        ymin = 0
-        xmax = kwds.get("max", self._max)
-        ymax = kwds.get("max_value", max(self._bins))
-        width = self._bin_width
+        from igraph.drawing import DrawerDirectory
 
-        if backend == 'matplotlib':
-            ax = context
-            x = [self._min + width * i for i, _ in enumerate(self._bins)]
-            y = self._bins
-            # Draw the boxes/bars
-            ax.bar(x, y, align='left')
-            ax.set_xlim(xmin, xmax)
-            ax.set_ylim(ymin, ymax)
-
-        else:
-            from igraph.drawing.cairo.coord import DescartesCoordinateSystem
-
-            bbox = kwds.pop('bbox', None)
-            if bbox is None:
-                raise ValueError('bbox is required for cairo plots')
-
-            coord_system = DescartesCoordinateSystem(
-                context,
-                bbox,
-                (xmin, ymin, xmax, ymax),
-            )
-
-            # Draw the boxes
-            context.set_line_width(1)
-            context.set_source_rgb(1.0, 0.0, 0.0)
-            x = self._min
-            for value in self._bins:
-                top_left_x, top_left_y = coord_system.local_to_context(x, value)
-                x += width
-                bottom_right_x, bottom_right_y = coord_system.local_to_context(x, 0)
-                context.rectangle(
-                    top_left_x,
-                    top_left_y,
-                    bottom_right_x - top_left_x,
-                    bottom_right_y - top_left_y,
-                )
-                context.fill()
-
-            # Draw the axes
-            coord_system.draw()
+        drawer = DrawerDirectory.resolve(self, backend)(context)
+        drawer.draw(self, **kwds)
 
     def to_string(self, max_width=78, show_bars=True, show_counts=True):
         """Returns the string representation of the histogram.

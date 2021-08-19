@@ -7,8 +7,6 @@ Color handling functions.
 from abc import ABCMeta, abstractmethod
 from math import ceil
 
-from .utils import str_to_orientation
-
 __all__ = (
     "Palette",
     "GradientPalette",
@@ -165,47 +163,10 @@ class Palette(metaclass=ABCMeta):
 
         Keyword arguments in matplotlib are passes to Axes.imshow.
         """
-        from igraph.datatypes import Matrix
-        from igraph.drawing.matplotlib.utils import find_matplotlib
+        from igraph.drawing import DrawerDirectory
 
-        mpl, _ = find_matplotlib()
-
-        orientation = str_to_orientation(kwds.get("orientation", "lr"))
-
-        # Construct a matrix and plot that
-        indices = list(range(len(self)))
-        if orientation in ("rl", "bt"):
-            indices.reverse()
-        if orientation in ("lr", "rl"):
-            matrix = Matrix([indices])
-        else:
-            matrix = Matrix([[i] for i in indices])
-
-        if backend == "matplotlib":
-            cmap = mpl.colors.ListedColormap([self.get(i) for i in range(self.length)])
-            matrix.__plot__(
-                context,
-                cmap=cmap,
-                **kwds,
-            )
-        else:
-            bbox = kwds.pop("bbox", None)
-            if bbox is None:
-                raise ValueError("bbox is required for Cairo plots")
-
-            border_width = float(kwds.get("border_width", 1.0))
-            grid_width = float(kwds.get("grid_width", 0.0))
-
-            return matrix.__plot__(
-                backend,
-                context,
-                bbox=bbox,
-                palette=self,
-                style="palette",
-                square=False,
-                grid_width=grid_width,
-                border_width=border_width,
-            )
+        drawer = DrawerDirectory.resolve(self, backend)(context)
+        drawer.draw(self, **kwds)
 
     def __repr__(self):
         return "<%s with %d colors>" % (self.__class__.__name__, self._length)
