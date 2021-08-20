@@ -12,7 +12,7 @@ __all__ = ("PlotlyEdgeDrawer",)
 plotly = find_plotly()
 
 
-class PlotlyEdgesDrawer(AbstractEdgeDrawer):
+class PlotlyEdgeDrawer(AbstractEdgeDrawer):
     """Matplotlib-specific abstract edge drawer object."""
 
     def __init__(self, context, palette):
