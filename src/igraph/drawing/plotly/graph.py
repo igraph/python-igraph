@@ -38,6 +38,7 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
         self,
         fig,
         vertex_drawer_factory=PlotlyVerticesDrawer,
+        edge_drawer_factory=PlotlyEdgeDrawer,
     ):
         """Constructs the graph drawer and associates it with the plotly Figure
 
@@ -46,6 +47,7 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
         """
         self.fig = fig
         self.vertex_drawer_factory = vertex_drawer_factory
+        self.edge_drawer_factory = edge_drawer_factory
 
     def draw(self, graph, *args, **kwds):
         # Deferred import to avoid a cycle in the import graph
