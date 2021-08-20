@@ -104,12 +104,14 @@ class DrawerDirectory:
 
         @raise ValueError: if no drawer is available for this backend/object
         """
-        object_name = str(obj.__class__).split('.')[-1]
+        object_name = str(obj.__class__).split('.')[-1].strip("<'>")
 
         try:
             return cls.known_drawers[backend][object_name]
         except KeyError:
-            raise ValueError("unknown drawer: %s %s" % backend, object_name)
+            raise ValueError(
+                f"unknown drawer for {object_name} and backend {backend}",
+                )
 
 
 def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
