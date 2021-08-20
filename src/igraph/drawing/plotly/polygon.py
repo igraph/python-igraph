@@ -1,7 +1,7 @@
 from igraph.drawing.utils import calculate_corner_radii
 from igraph.utils import consecutive_pairs
 
-from .utils import find_plotly
+from .utils import find_plotly, format_path_step
 
 __all__ = ("PlotlyPolygonDrawer",)
 
@@ -36,12 +36,6 @@ class PlotlyPolygonDrawer:
           If positive, the corners of the polygon will be rounded with
           the given radius.
         """
-        def format_path_step(code, points):
-            step = f" {code}"
-            for (x, y) in points:
-                step += f" {x},{y}"
-            return step
-
         if len(points) < 2:
             # Well, a polygon must have at least two corner points
             return

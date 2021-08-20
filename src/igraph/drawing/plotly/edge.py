@@ -4,21 +4,21 @@ from math import atan2, cos, pi, sin
 
 from igraph.drawing.baseclasses import AbstractEdgeDrawer
 from igraph.drawing.metamagic import AttributeCollectorBase
-from igraph.drawing.matplotlib.utils import find_matplotlib
-from igraph.drawing.utils import euclidean_distance, intersect_bezier_curve_and_circle
+from igraph.drawing.plotly.utils import find_plotly, format_path_step, format_arc
+from igraph.drawing.utils import Point, euclidean_distance, intersect_bezier_curve_and_circle
 
-__all__ = ("MatplotlibEdgeDrawer",)
+__all__ = ("PlotlyEdgeDrawer",)
 
-mpl, plt = find_matplotlib()
+plotly = find_plotly()
 
 
-class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
+class PlotlyEdgesDrawer(AbstractEdgeDrawer):
     """Matplotlib-specific abstract edge drawer object."""
 
     def __init__(self, context, palette):
         """Constructs the edge drawer.
 
-        @param context: a Matplotlib axes object on which the edges will be
+        @param context: a plotly Figure object on which the edges will be
             drawn.
         @param palette: the palette that can be used to map integer color
             indices to colors when drawing edges
@@ -52,14 +52,14 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
         if src_vertex == dest_vertex:  # TODO
             return self.draw_loop_edge(edge, src_vertex)
 
-        ax = self.context
+        fig = self.context
         (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
         (x_src, y_src), (x_dest, y_dest) = src_vertex.position, dest_vertex.position
 
         # Draw the edge
-        path = {"vertices": [], "codes": []}
-        path["vertices"].append([x1, y1])
-        path["codes"].append("MOVETO")
+        path = [
+            format_path_step("M", [x1, y1]),
+        ]
 
         if edge.curved:
             # Calculate the curve
@@ -135,10 +135,9 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
 
             # Draw the curve from the first vertex to the midpoint of the base
             # of the arrow head
-            path["vertices"].append(aux1)
-            path["vertices"].append(aux2)
-            path["vertices"].append([x_arrow_mid, y_arrow_mid])
-            path["codes"].extend(["CURVE4"] * 3)
+            path.append(format_path_step(
+                "C", [aux1, aux2, [x_arrow_mid, y_arrow_mid]]
+            ))
 
         else:
             # Determine where the edge intersects the circumference of the
@@ -167,33 +166,27 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
                 aux_points[0][1] + aux_points[1][1]
             ) / 2.0
             # Draw the line
-            path["vertices"].append([x_arrow_mid, y_arrow_mid])
-            path["codes"].append("LINETO")
+            path.append(format_path_step(
+                "L", Point(x_arrow_mid, y_arrow_mid),
+            ))
 
         # Draw the edge
-        stroke = mpl.patches.PathPatch(
-            mpl.path.Path(
-                path["vertices"],
-                codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
-            ),
-            edgecolor=edge.color,
-            facecolor="none",
-            linewidth=edge.width,
+        stroke = dict(
+            type='path',
+            path=path,
+            line_color=edge.color,
+            line_width=edge.width,
         )
-        ax.add_patch(stroke)
+        fig.add_shape(stroke)
 
         # Draw the arrow head
-        arrowhead = mpl.patches.Polygon(
-            [
-                [x2, y2],
-                aux_points[0],
-                aux_points[1],
-            ],
-            closed=True,
-            facecolor=edge.color,
-            edgecolor="none",
+        arrowhead = plotly.graph_objects.Scatter(
+            x=[x2, aux_points[0][0], aux_points[1][0], x2],
+            y=[y2, aux_points[0][1], aux_points[1][1], y2],
+            fillcolor=edge.color,
+            mode="line",
         )
-        ax.add_patch(arrowhead)
+        fig.add_trace(arrowhead)
 
     def draw_loop_edge(self, edge, vertex):
         """Draws a loop edge.
@@ -205,22 +198,23 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
         @param vertex: the vertex to which the edge is attached. Visual
           properties are given again as attributes.
         """
-        ax = self.context
+        fig = self.context
         radius = vertex.size * 1.5
         center_x = vertex.position[0] + cos(pi / 4) * radius / 2.0
         center_y = vertex.position[1] - sin(pi / 4) * radius / 2.0
-        stroke = mpl.patches.Arc(
-            (center_x, center_y),
-            radius / 2.0,
-            radius / 2.0,
-            theta1=0,
-            theta2=360.0,
-            linewidth=edge.width,
-            facecolor="none",
-            edgecolor=edge.color,
+        stroke = dict(
+            type='path',
+            path=format_arc(
+                (center_x, center_y),
+                radius / 2.0,
+                radius / 2.0,
+                theta1=0,
+                theta2=360.0,
+            ),
+            line_color=edge.color,
+            line_width=edge.width,
         )
-        # FIXME: make a PathCollection??
-        ax.add_patch(stroke)
+        fig.add_shape(stroke)
 
     def draw_undirected_edge(self, edge, src_vertex, dest_vertex):
         """Draws an undirected edge.
@@ -238,11 +232,11 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
         if src_vertex == dest_vertex:
             return self.draw_loop_edge(edge, src_vertex)
 
-        ax = self.context
+        fig = self.context
 
-        path = {"vertices": [], "codes": []}
-        path["vertices"].append(src_vertex.position)
-        path["codes"].append("MOVETO")
+        path = [
+            format_path_step("M", src_vertex.position)
+        ]
 
         if edge.curved:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
@@ -253,22 +247,21 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
                 y1 + 2 * y2
             ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
 
-            path["vertices"].append(aux1)
-            path["vertices"].append(aux2)
-            path["vertices"].append(dest_vertex.position)
-            path["codes"].extend(["CURVE4"] * 3)
+            path.append(format_path_step(
+                "C", [aux1, aux2, dest_vertex.position],
+            ))
+
         else:
             path["vertices"].append(dest_vertex.position)
             path["codes"].append("LINETO")
+            path.append(format_path_step(
+                "L", dest_vertex.position,
+            ))
 
-        stroke = mpl.patches.PathPatch(
-            mpl.path.Path(
-                path["vertices"],
-                codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
-            ),
-            edgecolor=edge.color,
-            facecolor="none",
-            linewidth=edge.width,
+        stroke = dict(
+            type='path',
+            path=path,
+            line_color=edge.color,
+            line_width=edge.width,
         )
-        # FIXME: make a PathCollection??
-        ax.add_artist(stroke)
+        fig.add_shape(stroke)

@@ -5,17 +5,17 @@ This module contains routines to draw graphs on plotly surfaces.
 
 """
 
+from collections import defaultdict
 from warnings import warn
 
 from igraph._igraph import convex_hull, VertexSeq
 from igraph.drawing.baseclasses import AbstractGraphDrawer
 from igraph.drawing.utils import Point
 
-from .vertex import PlotlyVerticesDrawer
-#from .edge import MatplotlibEdgeDrawer
+from .edge import PlotlyEdgeDrawer
 from .polygon import PlotlyPolygonDrawer
 from .utils import find_plotly
-#from .vertex import MatplotlibVertexDrawer
+from .vertex import PlotlyVerticesDrawer
 
 __all__ = ("PlotlyGraphDrawer",)
 
@@ -92,7 +92,7 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
 
         # Construct the vertex, edge and label drawers
         vertex_drawer = self.vertex_drawer_factory(fig)
-        #FIXME edge_drawer = self.edge_drawer_factory(ax, palette)
+        edge_drawer = self.edge_drawer_factory(fig, palette)
 
         # Construct the visual edge builders based on the specifications
         # provided by the edge_drawer
@@ -211,11 +211,12 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
             # Specified edge order
             edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
 
-        # Draw the edges
+        # Draw the edges and labels
+        # We need the vertex builder to get the layout and offsets
         if directed:
-            drawer_method = edge_drawer.draw_directed_edge
+            drawer_method = edge_drawer.draw_directed_edges
         else:
-            drawer_method = edge_drawer.draw_undirected_edge
+            drawer_method = edge_drawer.draw_undirected_edges
         for edge, visual_edge in edge_coord_iter:
             src, dest = edge.tuple
             src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
@@ -227,6 +228,13 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
             edge_label_iter = (
                 (labels[i], edge_builder[i], graph.es[i]) for i in range(graph.ecount())
             )
+            lab_args = {
+                'text': [],
+                'x': [],
+                'y': [],
+                'color': [],
+                # FIXME: horizontal/vertical alignment, offset, etc?
+            }
             for label, visual_edge, edge in edge_label_iter:
                 # Ask the edge drawer to propose an anchor point for the label
                 src, dest = edge.tuple
@@ -236,26 +244,21 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                     src_vertex,
                     dest_vertex,
                 )
+                if label is None:
+                    continue
 
-                ax.text(
-                    x,
-                    y,
-                    label,
-                    fontsize=visual_edge.label_size,
-                    color=visual_edge.label_color,
-                    ha=halign,
-                    va=valign,
-                    # TODO: offset, etc.
-                )
+                lab_args['text'].append(label)
+                lab_args['x'].append(x)
+                lab_args['y'].append(y)
+                lab_args['color'].append(visual_edge.label_color)
+            stroke = plotly.graph_objects.Scatter(
+                mode='text',
+                **lab_args,
+            )
+            fig.add_trace(stroke)
 
         # Despine
-        ax.spines["right"].set_visible(False)
-        ax.spines["top"].set_visible(False)
-        ax.spines["left"].set_visible(False)
-        ax.spines["bottom"].set_visible(False)
-
-        # Remove axis ticks
-        ax.set_xticks([])
-        ax.set_yticks([])
-
-        ax.autoscale_view()
+        fig.update_layout(
+            yaxis={'visible': False, 'showticklabels': False},
+            xaxis={'visible': False, 'showticklabels': False},
+        )
