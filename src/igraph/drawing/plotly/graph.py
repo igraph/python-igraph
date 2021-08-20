@@ -93,12 +93,12 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
             )
 
         # Construct the vertex, edge and label drawers
-        vertex_drawer = self.vertex_drawer_factory(fig)
+        vertex_drawer = self.vertex_drawer_factory(fig, layout)
         edge_drawer = self.edge_drawer_factory(fig, palette)
 
         # Construct the visual edge builders based on the specifications
         # provided by the edge_drawer
-        vertex_builder = edge_drawer.VisualVertexBuilder(graph.vs, kwds)
+        vertex_builder = vertex_drawer.VisualVertexBuilder(graph.vs, kwds)
         edge_builder = edge_drawer.VisualEdgeBuilder(graph.es, kwds)
 
         # Draw the highlighted groups (if any)
@@ -201,8 +201,23 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                 (vs[i], vertex_builder[i], layout[i]) for i in vertex_order
             )
 
-        # Draw the vertices and text labels
-        vertex_drawer.draw(vertex_coord_iter)
+        # Draw the vertices
+        drawer_method = vertex_drawer.draw
+        for vertex, visual_vertex, coords in vertex_coord_iter:
+            drawer_method(visual_vertex, vertex, coords)
+
+        # Construct the iterator that we will use to draw the vertex labels
+        vs = graph.vs
+        if vertex_order is None:
+            # Default vertex order
+            vertex_coord_iter = zip(vertex_builder, layout)
+        else:
+            # Specified vertex order
+            vertex_coord_iter = ((vertex_builder[i], layout[i]) for i in vertex_order)
+
+        # Draw the vertex labels
+        for vertex, coords in vertex_coord_iter:
+            vertex_drawer.draw_label(vertex, coords, **kwds)
 
         # Construct the iterator that we will use to draw the edges
         es = graph.es
@@ -216,9 +231,9 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
         # Draw the edges and labels
         # We need the vertex builder to get the layout and offsets
         if directed:
-            drawer_method = edge_drawer.draw_directed_edges
+            drawer_method = edge_drawer.draw_directed_edge
         else:
-            drawer_method = edge_drawer.draw_undirected_edges
+            drawer_method = edge_drawer.draw_undirected_edge
         for edge, visual_edge in edge_coord_iter:
             src, dest = edge.tuple
             src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]

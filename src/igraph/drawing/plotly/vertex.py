@@ -1,5 +1,8 @@
 """Vertices drawer. Unlike other backends, all vertices are drawn at once"""
 
+from math import pi
+
+from igraph.drawing.metamagic import AttributeCollectorBase
 from .utils import find_plotly
 
 __all__ = ('PlotlyVerticesDrawer',)
@@ -8,62 +11,83 @@ plotly = find_plotly()
 
 
 class PlotlyVerticesDrawer:
-    default_args = {
-        'symbol': 'circle',
-        'size': 0.2,
-        'fillcolor': 'green',
-        'line_color': 'black',
-    }
 
-
-    def __init__(self, fig):
+    def __init__(self, fig, layout):
         self.fig = fig
+        self.layout = layout
+        self.VisualVertexBuilder = self._construct_visual_vertex_builder()
 
-    def draw(self, vertex_iter):
+    def _construct_visual_vertex_builder(self):
+        class VisualVertexBuilder(AttributeCollectorBase):
+            """Collects some visual properties of a vertex for drawing"""
+
+            _kwds_prefix = "vertex_"
+            color = "red"
+            frame_color = "black"
+            frame_width = 1.0
+            label = None
+            label_angle = -pi / 2
+            label_dist = 0.0
+            label_color = "black"
+            font = "sans-serif"
+            label_size = 12.0
+            # FIXME? mpl.rcParams["font.size"])
+            position = dict(func=self.layout.__getitem__)
+            shape = "circle"
+            size = 0.2
+            width = None
+            height = None
+            zorder = 2
+
+        return VisualVertexBuilder
+
+
+    def draw(self, visual_vertex, vertex, point):
+        if visual_vertex.size <= 0:
+            return
+
         fig = self.fig
 
-        # Vertices
-        marker_kwds = {
-            'x': [],
-            'y': [],
-            'symbol': [],
-            'size': [],
-            'fillcolor': [],
-            'line_color': [],
+        marker_kwds = {}
+        marker_kwds['x'] = [point[0]]
+        marker_kwds['y'] = [point[1]]
+        marker_kwds['marker'] = {
+                'symbol': visual_vertex.shape,
+                'size': visual_vertex.size,
+                'color': visual_vertex.color,
+                'line_color': visual_vertex.frame_color,
         }
-        # Vertex text
-        text_kwds = {
-            'x': [],
-            'y': [],
-            'text': [],
-        }
-        # We iterate only once as it can exhaust
-        for vertex, visual_vertex, point in vertex_iter:
-            if visual_vertex.size > 0:
-                marker_kwds['x'].append(point[0])
-                marker_kwds['y'].append(point[1])
-                marker_kwds['symbol'] = visual_vertex.shape
-                marker_kwds['size'] = visual_vertex.size
-                marker_kwds['fillcolor'] = visual_vertex.color
-                marker_kwds['line_color'] = visual_vertex.edge_color
 
-            if visual_vertex.label is not None:
-                text_kwds['x'].append(point[0])
-                text_kwds['y'].append(point[1])
-                text_kwds['text'].append(visual_vertex.label)
+        #if visual_vertex.label is not None:
+        #    text_kwds['x'].append(point[0])
+        #    text_kwds['y'].append(point[1])
+        #    text_kwds['text'].append(visual_vertex.label)
 
         # Draw dots
-        if len(marker_kwds['x']):
-            stroke = plotly.graph_objects.Scatter(
-                mode='markers',
-                **marker_kwds,
-            )
-            fig.add_trace(stroke)
+        stroke = plotly.graph_objects.Scatter(
+            mode='markers',
+            **marker_kwds,
+        )
+        fig.add_trace(stroke)
+
+    def draw_label(self, visual_vertex, point, **kwds):
+        if visual_vertex.label is None:
+            return
+
+        fig = self.fig
+
+        text_kwds = {}
+        text_kwds['x'] = [point[0]]
+        text_kwds['y'] = [point[1]]
+        text_kwds['text'].append(visual_vertex.label)
+
+        # TODO: add more options
 
         # Draw text labels
-        if len(text_kwds['x']):
-            stroke = plotly.graph_objects.Scatter(
-                mode='text',
-                **text_kwds,
-            )
-            fig.add_trace(stroke)
+        stroke = plotly.graph_objects.Scatter(
+            mode='text',
+            **text_kwds,
+        )
+        fig.add_trace(stroke)
+
+

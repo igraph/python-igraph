@@ -718,6 +718,7 @@ def lighten(color, ratio=0.5):
 default_edge_colors = {
     "cairo": ["grey20", "grey80"],
     "matplotlib": ["dimgrey", "silver"],
+    "plotly": ["rgb(51,51,51)", "rgb(rgb(204,204,204)"],
 }
 
 

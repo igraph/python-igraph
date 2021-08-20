@@ -28,6 +28,7 @@ from warnings import warn
 from igraph.configuration import Configuration
 from igraph.drawing.cairo.utils import find_cairo
 from igraph.drawing.matplotlib.utils import find_matplotlib
+from igraph.drawing.plotly.utils import find_plotly
 from igraph.drawing.cairo.plot import CairoPlot
 from igraph.drawing.colors import Palette, palettes
 
@@ -184,14 +185,18 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     @see: Graph.__plot__
     """
 
-    VALID_BACKENDS = ("cairo", "matplotlib")
+    VALID_BACKENDS = ("cairo", "matplotlib", "plotly")
 
     _, plt = find_matplotlib()
     cairo = find_cairo()
+    plotly = find_plotly()
 
     # Switch backend based on target (first) and config (second)
     if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
         backend = "matplotlib"
+    elif hasattr(plotly, "graph_objects") and isinstance(
+            target, plotly.graph_objects.Figure):
+        backend = "plotly"
     elif hasattr(cairo, "Surface") and isinstance(target, cairo.Surface):
         backend = "cairo"
     else:
@@ -200,12 +205,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     if backend not in VALID_BACKENDS:
         raise ValueError("unknown plotting backend: {0!r}".format(backend))
 
-    # Matplotlib backend
-    if backend == "matplotlib":
-        # Create a new axes if needed
-        if target is None:
-            _, target = plt.subplots()
-
+    if backend in ("matplotlib", "plotly"):
         # Choose palette
         # If explicit, use it. If not or None, ask the object: None is an
         # acceptable response from the object (e.g. for clusterings), it means
@@ -220,6 +220,15 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
         if palette is not None and not isinstance(palette, Palette):
             palette = palettes[palette]
 
+        if target is None:
+            if backend == "matplotlib":
+                # Create a new axes if needed
+                _, target = plt.subplots()
+
+            elif backend == "plotly":
+                # Create a new figure if needed
+                target = plotly.graph_objects.Figure()
+
         # Get the plotting function from the object
         plotter = getattr(obj, "__plot__", None)
         if plotter is None:
@@ -227,7 +236,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
             return
         else:
             plotter(
-                "matplotlib",
+                backend,
                 target,
                 palette=palette,
                 *args,

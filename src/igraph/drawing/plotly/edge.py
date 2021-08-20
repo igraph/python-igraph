@@ -4,7 +4,7 @@ from math import atan2, cos, pi, sin
 
 from igraph.drawing.baseclasses import AbstractEdgeDrawer
 from igraph.drawing.metamagic import AttributeCollectorBase
-from igraph.drawing.plotly.utils import find_plotly, format_path_step, format_arc
+from igraph.drawing.plotly.utils import find_plotly, format_path_step, format_arc, format_rgba
 from igraph.drawing.utils import Point, euclidean_distance, intersect_bezier_curve_and_circle
 
 __all__ = ("PlotlyEdgeDrawer",)
@@ -38,7 +38,7 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
             _kwds_prefix = "edge_"
             arrow_size = 0.007
             arrow_width = 1.4
-            color = ("#444", self.palette.get)
+            color = "#444"
             curved = (0.0, self._curvature_to_float)
             label = None
             label_color = ("black", self.palette.get)
@@ -252,16 +252,16 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
             ))
 
         else:
-            path["vertices"].append(dest_vertex.position)
-            path["codes"].append("LINETO")
             path.append(format_path_step(
                 "L", dest_vertex.position,
             ))
 
+        path = ' '.join(path)
+
         stroke = dict(
             type='path',
             path=path,
-            line_color=edge.color,
+            line_color=format_rgba(edge.color),
             line_width=edge.width,
         )
         fig.add_shape(stroke)

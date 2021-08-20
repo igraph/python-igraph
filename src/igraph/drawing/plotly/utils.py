@@ -19,13 +19,14 @@ def find_plotly() -> Any:
 
 def format_path_step(code, point_or_points):
     """Format step in SVG path for plotly"""
-    if isinstance(point_or_points, Point):
+    if isinstance(point_or_points[0], (float, int)):
         points = [point_or_points]
     else:
         points = point_or_points
 
-    step = f" {code}"
-    for (x, y) in points:
+    step = f"{code}"
+    for point in points:
+        x, y = point[0], point[1]
         step += f" {x},{y}"
     return step
 
@@ -48,4 +49,26 @@ def format_arc(center, radius_x, radius_y, theta1, theta2, N=100, closed=False):
     if closed:
         path += ' Z'
     return path
+
+
+def format_rgba(color):
+    """Format colors in a way understood by plotly"""
+    if isinstance(color, str):
+        return color
+
+    if isinstance(color, float):
+        if color > 1:
+            color /= 255.
+        color = [color] * 3
+
+    r = int(255 * color[0])
+    g = int(255 * color[1])
+    b = int(255 * color[2])
+    if len(color) > 3:
+        a = int(255 * color[3])
+    else:
+        a = 255
+
+    colstr = f'rgb({r},{g},{b},{a})'
+    return colstr
 
