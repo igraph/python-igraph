@@ -39,6 +39,7 @@ from igraph.drawing.matplotlib.graph import MatplotlibGraphDrawer
 from igraph.drawing.matplotlib.matrix import MatplotlibMatrixDrawer
 from igraph.drawing.matplotlib.histogram import MatplotlibHistogramDrawer
 from igraph.drawing.matplotlib.palette import MatplotlibPaletteDrawer
+from igraph.drawing.plotly.graph import PlotlyGraphDrawer
 
 from igraph.drawing.utils import BoundingBox, Point, Rectangle
 from igraph.utils import _is_running_in_ipython
@@ -87,6 +88,9 @@ class DrawerDirectory:
             'Matrix': MatplotlibMatrixDrawer,
             'Histogram': MatplotlibHistogramDrawer,
             'Palette': MatplotlibPaletteDrawer,
+        },
+        'plotly': {
+            'Graph': PlotlyGraphDrawer,
         },
     }
 
