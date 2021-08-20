@@ -34,6 +34,31 @@ jobs:
         with:
           path: ./wheelhouse/*.whl
 
+  build_aarch64_wheels:
+    name: Build wheels on Linux AArch64
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
+
+      - name: Build wheels
+        uses: joerick/cibuildwheel@v1.10.0
+        env:
+          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
+          CIBW_ARCHS_LINUX: aarch64
+          CIBW_BUILD: "*-manylinux_aarch64"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+
   build_wheel_macos:
     name: Build wheels on macOS
     runs-on: macos-10.15
