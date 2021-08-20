@@ -14,7 +14,7 @@ from igraph.drawing.utils import Point
 
 from .edge import PlotlyEdgeDrawer
 from .polygon import PlotlyPolygonDrawer
-from .utils import find_plotly
+from .utils import find_plotly, format_rgba
 from .vertex import PlotlyVerticesDrawer
 
 __all__ = ("PlotlyGraphDrawer",)
@@ -93,7 +93,7 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
             )
 
         # Construct the vertex, edge and label drawers
-        vertex_drawer = self.vertex_drawer_factory(fig, layout)
+        vertex_drawer = self.vertex_drawer_factory(fig, palette, layout)
         edge_drawer = self.edge_drawer_factory(fig, palette)
 
         # Construct the visual edge builders based on the specifications
@@ -168,8 +168,8 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                 drawer.draw(
                     polygon,
                     corner_radius=corner_radius,
-                    fillcolor=facecolor,
-                    line_color=color,
+                    fillcolor=format_rgba(facecolor),
+                    line_color=format_rgba(color),
                 )
 
                 if kwds.get("legend", False):

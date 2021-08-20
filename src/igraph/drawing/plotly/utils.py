@@ -69,6 +69,6 @@ def format_rgba(color):
     else:
         a = 255
 
-    colstr = f'rgb({r},{g},{b},{a})'
+    colstr = f'rgba({r},{g},{b},{a})'
     return colstr
 

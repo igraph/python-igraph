@@ -110,11 +110,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
             )
 
         # Construct the vertex, edge and label drawers
-        vertex_drawer = self.vertex_drawer_factory(
-            ax,
-            palette,
-            layout,
-        )
+        vertex_drawer = self.vertex_drawer_factory(ax, palette, layout)
         edge_drawer = self.edge_drawer_factory(ax, palette)
 
         # Construct the visual vertex/edge builders based on the specifications

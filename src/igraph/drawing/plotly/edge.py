@@ -140,11 +140,12 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
             ))
 
         else:
-            # Determine where the edge intersects the circumference of the
-            # vertex shape.
-            x2, y2 = dest_vertex.shape.intersection_point(
-                x2, y2, x1, y1, dest_vertex.size
-            )
+            # FIXME: this is tricky in plotly, let's skip for now
+            ## Determine where the edge intersects the circumference of the
+            ## vertex shape.
+            #x2, y2 = dest_vertex.shape.intersection_point(
+            #    x2, y2, x1, y1, dest_vertex.size
+            #)
 
             # Draw the arrowhead
             angle = atan2(y_dest - y2, x_dest - x2)
@@ -170,11 +171,13 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
                 "L", Point(x_arrow_mid, y_arrow_mid),
             ))
 
+        path = ' '.join(path)
+
         # Draw the edge
         stroke = dict(
             type='path',
             path=path,
-            line_color=edge.color,
+            line_color=format_rgba(edge.color),
             line_width=edge.width,
         )
         fig.add_shape(stroke)
@@ -183,8 +186,8 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
         arrowhead = plotly.graph_objects.Scatter(
             x=[x2, aux_points[0][0], aux_points[1][0], x2],
             y=[y2, aux_points[0][1], aux_points[1][1], y2],
-            fillcolor=edge.color,
-            mode="line",
+            fillcolor=format_rgba(edge.color),
+            mode="lines",
         )
         fig.add_trace(arrowhead)
 

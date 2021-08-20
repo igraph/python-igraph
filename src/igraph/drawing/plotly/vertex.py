@@ -2,19 +2,21 @@
 
 from math import pi
 
+from igraph.drawing.baseclasses import AbstractVertexDrawer
 from igraph.drawing.metamagic import AttributeCollectorBase
-from .utils import find_plotly
+from .utils import find_plotly, format_rgba
 
 __all__ = ('PlotlyVerticesDrawer',)
 
 plotly = find_plotly()
 
 
-class PlotlyVerticesDrawer:
+class PlotlyVerticesDrawer(AbstractVertexDrawer):
+    """Plotly backend-specific vertex drawer."""
 
-    def __init__(self, fig, layout):
+    def __init__(self, fig, palette, layout):
         self.fig = fig
-        self.layout = layout
+        super().__init__(palette, layout)
         self.VisualVertexBuilder = self._construct_visual_vertex_builder()
 
     def _construct_visual_vertex_builder(self):
@@ -22,8 +24,8 @@ class PlotlyVerticesDrawer:
             """Collects some visual properties of a vertex for drawing"""
 
             _kwds_prefix = "vertex_"
-            color = "red"
-            frame_color = "black"
+            color = ("red", self.palette.get)
+            frame_color = ("black", self.palette.get)
             frame_width = 1.0
             label = None
             label_angle = -pi / 2
@@ -54,8 +56,8 @@ class PlotlyVerticesDrawer:
         marker_kwds['marker'] = {
                 'symbol': visual_vertex.shape,
                 'size': visual_vertex.size,
-                'color': visual_vertex.color,
-                'line_color': visual_vertex.frame_color,
+                'color': format_rgba(visual_vertex.color),
+                'line_color': format_rgba(visual_vertex.frame_color),
         }
 
         #if visual_vertex.label is not None:
