@@ -19,7 +19,7 @@ class AbstractCairoDrawer(AbstractDrawer):
 
     _bbox: BoundingBox
 
-    def __init__(self, context, bbox: BoundingBox):
+    def __init__(self, context, bbox: BoundingBox or None):
         """Constructs the drawer and associates it to the given
         Cairo context and the given L{BoundingBox}.
 
@@ -31,7 +31,9 @@ class AbstractCairoDrawer(AbstractDrawer):
         """
         self.context = context
         self._bbox = None  # type: ignore
-        self.bbox = bbox
+        # can be set at drawing time
+        if bbox is not None:
+            self.bbox = bbox
 
     @property
     def bbox(self) -> BoundingBox:

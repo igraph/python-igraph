@@ -122,9 +122,12 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
                 DeprecationWarning,
             )
 
-        bbox = self.bbox = kwds.pop('bbox', None)
+        bbox = kwds.pop('bbox', None)
         if bbox is None:
             raise ValueError('bbox is required for cairo plots')
+        # Validate it through set/get
+        self.bbox = bbox
+        bbox = self.bbox
 
         # Some abbreviations for sake of simplicity
         directed = graph.is_directed()

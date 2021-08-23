@@ -23,6 +23,7 @@ U{Inkscape<http://www.inkscape.org>} (free), U{Skencil<http://www.skencil.org>}
 """
 
 
+from pathlib import Path
 from warnings import warn
 
 from igraph.configuration import Configuration
@@ -272,7 +273,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     # We are either not in IPython or the user specified an explicit plot target,
     # so just show or save the result
 
-    if isinstance(target, str):
+    if isinstance(target, (str, Path)):
         # save
         result.save()
 
