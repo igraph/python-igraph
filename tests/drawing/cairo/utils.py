@@ -66,6 +66,7 @@ def _load_baseline_images(filenames, engine, fmt='png'):
     for fn in filenames:
         fn_abs = baseline_folder / f'{fn}.{fmt}'
         image = _load_image(fn_abs, fmt)
+        assert image is not None
         images.append(image)
     return images
 

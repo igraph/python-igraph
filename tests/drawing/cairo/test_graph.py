@@ -34,64 +34,61 @@ class GraphTestRunner(unittest.TestCase):
         g = Graph.Ring(5, directed=True)
         plot(g, target=result_image_folder / 'graph_directed.png')
 
-#    @unittest.skipIf(plotly is None, "test case depends on plotly")
-#    @image_comparison(baseline_images=["graph_mark_groups_directed"])
-#    def test_mark_groups(self):
-#        g = Graph.Ring(5, directed=True)
-#        fig = plotly.graph_objects.Figure()
-#        plot(g, target=fig, mark_groups=True)
-#        return fig
-#
-#    @unittest.skipIf(plotly is None, "test case depends on plotly")
-#    @image_comparison(
-#        baseline_images=["graph_mark_groups_squares_directed"]
-#    )
-#    def test_mark_groups_squares(self):
-#        g = Graph.Ring(5, directed=True)
-#        fig = plotly.graph_objects.Figure()
-#        plot(g, target=fig, mark_groups=True, vertex_shape="square")
-#        return fig
-#
-#    @unittest.skipIf(plotly is None, "test case depends on plotly")
-#    @image_comparison(baseline_images=["graph_edit_children"])
-#    def test_mark_groups_squares(self):
-#        g = Graph.Ring(5)
-#        fig = plotly.graph_objects.Figure()
-#        plot(g, target=fig, vertex_shape="circle")
-#        # FIXME
-#        #dot = ax.get_children()[0]
-#        #dot.set_facecolor("blue")
-#        #dot.radius *= 0.5
-#        return fig
-#
-#
-#class ClusteringTestRunner(unittest.TestCase):
-#    @unittest.skipIf(plotly is None, "test case depends on plotly")
-#    @image_comparison(baseline_images=["clustering_directed"])
-#    def test_clustering_directed_small(self):
-#        g = Graph.Ring(5, directed=True)
-#        clu = VertexClustering(g, [0] * 5)
-#        fig = plotly.graph_objects.Figure()
-#        plot(clu, target=fig, mark_groups=True)
-#        return fig
-#
-#    @unittest.skipIf(plotly is None, "test case depends on plotly")
-#    @image_comparison(baseline_images=["clustering_directed_large"])
-#    def test_clustering_directed_large(self):
-#        g = Graph.Ring(50, directed=True)
-#        clu = VertexClustering(g, [0] * 3 + [1] * 17 + [2] * 30)
-#        fig = plotly.graph_objects.Figure()
-#        layout = [(x*2.5, y*2.5) for x, y in g.layout("circle")]
-#        plot(clu, layout=layout, target=fig, mark_groups=True)
-#        return fig
+    @unittest.skipIf(cairo is None, "test case depends on cairo")
+    @image_comparison(baseline_images=["graph_mark_groups_directed"])
+    def test_mark_groups(self):
+        g = Graph.Ring(5, directed=True)
+        plot(
+            g,
+            target=result_image_folder / 'graph_mark_groups_directed.png',
+            mark_groups=True)
+
+    @unittest.skipIf(cairo is None, "test case depends on cairo")
+    @image_comparison(
+        baseline_images=["graph_mark_groups_squares_directed"]
+    )
+    def test_mark_groups_squares(self):
+        g = Graph.Ring(5, directed=True)
+        plot(
+            g,
+            target=result_image_folder / 'graph_mark_groups_squares_directed.png',
+            mark_groups=True,
+            vertex_shape="square",
+        )
+
+
+class ClusteringTestRunner(unittest.TestCase):
+    @unittest.skipIf(cairo is None, "test case depends on cairo")
+    @image_comparison(baseline_images=["clustering_directed"])
+    def test_clustering_directed_small(self):
+        g = Graph.Ring(5, directed=True)
+        clu = VertexClustering(g, [0] * 5)
+        plot(
+            clu,
+            target=result_image_folder / 'clustering_directed.png',
+            mark_groups=True,
+        )
+
+    @unittest.skipIf(cairo is None, "test case depends on cairo")
+    @image_comparison(baseline_images=["clustering_directed_large"])
+    def test_clustering_directed_large(self):
+        g = Graph.Ring(50, directed=True)
+        clu = VertexClustering(g, [0] * 3 + [1] * 17 + [2] * 30)
+        layout = [(x*2.5, y*2.5) for x, y in g.layout("circle")]
+        plot(
+            clu,
+            layout=layout,
+            target=result_image_folder / 'clustering_directed_large.png',
+            mark_groups=True,
+        )
 
 
 def suite():
     graph = unittest.makeSuite(GraphTestRunner)
-    #clustering = unittest.makeSuite(ClusteringTestRunner)
+    clustering = unittest.makeSuite(ClusteringTestRunner)
     return unittest.TestSuite([
         graph,
-        #clustering,
+        clustering,
     ])
 
 
