@@ -306,7 +306,10 @@ class CairoPlot:
             fname = fname or self._filename
             if fname is None:
                 raise ValueError("no file name is known for the surface and none given")
-            return self._surface.write_to_png(fname)
+
+            # Conversion to string is needed because the user might pass a Path
+            # object and cairocffi expects a string
+            return self._surface.write_to_png(str(fname))
 
         if fname is not None:
             warn("filename is ignored for surfaces other than ImageSurface")

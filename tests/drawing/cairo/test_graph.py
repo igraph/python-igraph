@@ -22,6 +22,10 @@ image_comparison = find_image_comparison()
 
 
 class GraphTestRunner(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        result_image_folder.mkdir(parents=True, exist_ok=True)
+
     @unittest.skipIf(cairo is None, "test case depends on cairo")
     @image_comparison(baseline_images=["graph_basic"])
     def test_basic(self):
