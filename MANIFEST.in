@@ -1,6 +1,5 @@
 include src/_igraph/*.h
 include MANIFEST.in
-include COPYING
 include scripts/mkdoc.sh
 include tests/*.py
 
