@@ -15,6 +15,4 @@ result_images/
 .vscode/
 vendor/build/
 vendor/install/
-Pipfile
-Pipfile.lock
 
