@@ -29,20 +29,20 @@ _default_extension = "svg"
 def _load_baseline_image(filename, fmt):
     import json
 
-    if fmt == 'json':
-        with open(filename, 'rt') as handle:
+    if fmt == "json":
+        with open(filename, "rt") as handle:
             image = json.load(handle)
         return image
 
-    raise NotImplementedError(f'Image format {fmt} not implemented yet')
+    raise NotImplementedError(f"Image format {fmt} not implemented yet")
 
 
-def _load_baseline_images(filenames, engine, fmt='json'):
-    baseline_folder = Path(__file__).parent / '..' / 'baseline_images' / engine
+def _load_baseline_images(filenames, engine, fmt="json"):
+    baseline_folder = Path(__file__).parent / ".." / "baseline_images" / engine
 
     images = []
     for fn in filenames:
-        fn_abs = baseline_folder / f'{fn}.{fmt}'
+        fn_abs = baseline_folder / f"{fn}.{fmt}"
         image = _load_baseline_image(fn_abs, fmt)
         images.append(image)
     return images
@@ -54,37 +54,39 @@ def _store_result_image_json(fig, result_fn):
 
     os.makedirs(result_fn.parent, exist_ok=True)
 
-    # This produces a Python dict that's JSON compatible
-    fig_json = fig.to_json()
-    with open(result_fn, 'wt') as handle:
-        json.dump(fig_json, handle)
+    # This produces a Python dict that's JSON compatible. We print it to a
+    # file in a way that is easy to diff and lists properties in a predictable
+    # order
+    fig_json = fig.to_dict()
+    with open(result_fn, "wt") as handle:
+        json.dump(fig_json, handle, indent=2, sort_keys=True)
 
 
-def _store_result_image(image, filename, engine, fmt='json'):
-    result_folder = Path('result_images') / engine
-    result_fn = result_folder / (filename + f'.{fmt}')
+def _store_result_image(image, filename, engine, fmt="json"):
+    result_folder = Path("result_images") / engine
+    result_fn = result_folder / (filename + f".{fmt}")
 
-    if fmt == 'json':
+    if fmt == "json":
         return _store_result_image_json(image, result_fn)
 
-    raise NotImplementedError(f'Image format {fmt} not implemented yet')
+    raise NotImplementedError(f"Image format {fmt} not implemented yet")
 
 
 def _compare_image_json(baseline, fig):
-    # This produces a Python dict that's JSON compatible
-    fig_json = fig.to_json()
-    return baseline == fig_json
+    return baseline == fig.to_dict()
 
 
-def compare_image(baseline, fig, tol=0, fmt='json'):
-    if fmt == 'json':
+def compare_image(baseline, fig, tol=0, fmt="json"):
+    if fmt == "json":
         return _compare_image_json(baseline, fig)
 
-    raise NotImplementedError(f'Image format {fmt} not implemented yet')
+    raise NotImplementedError(f"Image format {fmt} not implemented yet")
 
 
 def _unittest_image_comparison(
-    baseline_images, tol, remove_text,
+    baseline_images,
+    tol,
+    remove_text,
 ):
     """
     Decorate function with image comparison for unittest.
@@ -111,20 +113,21 @@ def _unittest_image_comparison(
 
             # Store images (used to bootstrap new tests)
             for fig, image_file in zip(figs, baseline_images):
-                _store_result_image(fig, image_file, 'plotly')
+                _store_result_image(fig, image_file, "plotly")
 
-            assert len(baseline_images) == len(figs), \
-                "Test generated {} images but there are {} baseline images".format(
-                    len(figs), len(baseline_images))
-
+            assert len(baseline_images) == len(
+                figs
+            ), "Test generated {} images but there are {} baseline images".format(
+                len(figs), len(baseline_images)
+            )
 
             # 2. load the control images
-            baselines = _load_baseline_images(baseline_images, 'plotly')
+            baselines = _load_baseline_images(baseline_images, "plotly")
 
             # 3. compare them one by one
             for i, (baseline, fig) in enumerate(zip(baselines, figs)):
                 if remove_text:
-                    #TODO
+                    # TODO
                     pass
 
                 # FIXME: what does tolerance mean for json?
