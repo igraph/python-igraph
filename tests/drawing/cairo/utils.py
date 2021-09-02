@@ -18,29 +18,27 @@ result_image_folder = Path('result_images') / 'cairo'
 
 
 def find_open_image_png_function():
-    iopen = None
     try:
-        from cv2 import imread as iopen
+        from cv2 import imread
 
         def fun(filename):
-            return iopen(str(filename))
+            return imread(str(filename))
         return fun
     except ImportError:
         pass
 
     try:
         import numpy as np
-        from PIL.Image import open as iopen
+        from PIL import Image
 
         def fun(filename):
-            with iopen(filename) as f:
-                res = np.asarray(iopen(f))
-            return res
+            with Image.open(filename) as f:
+                return np.asarray(f)
         return fun
     except ImportError:
         pass
 
-    raise ImportError('PIL or opencv required to run cairo tests')
+    raise ImportError('PIL or OpenCV required to run Cairo tests')
 
 
 def find_image_comparison():

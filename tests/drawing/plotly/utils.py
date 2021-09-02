@@ -73,7 +73,6 @@ def _store_result_image(image, filename, engine, fmt='json'):
 def _compare_image_json(baseline, fig):
     # This produces a Python dict that's JSON compatible
     fig_json = fig.to_json()
-
     return baseline == fig_json
 
 
@@ -130,7 +129,7 @@ def _unittest_image_comparison(
 
                 # FIXME: what does tolerance mean for json?
                 res = compare_image(baseline, fig, tol)
-                assert(res)
+                assert res, f"Image {i} does not match the corresponding baseline"
 
             return figs
 

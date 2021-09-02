@@ -788,7 +788,13 @@ options = dict(
     packages=find_packages(where="src"),
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
-    extras_require={"plotting": ["cairocffi>=1.2.0"]},
+    extras_require={
+        "cairo": ["cairocffi>=1.2.0"],
+        "matplotlib": ["matplotlib>=3.4.0"],
+        "plotly": ["plotly>=5.3.0"],
+        # compatibility alias to 'cairo' for python-igraph <= 0.9.6
+        "plotting": ["cairocffi>=1.2.0"]
+    },
     headers=headers,
     platforms="ALL",
     keywords=[
