@@ -788,7 +788,7 @@ options = dict(
     packages=["igraph", "igraph.app", "igraph.drawing", "igraph.remote"],
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
-    extras_require={"plotting": ["pycairo>=1.18.0"]},
+    extras_require={"plotting": ["cairocffi>=1.2.0"]},
     headers=headers,
     platforms="ALL",
     keywords=[
