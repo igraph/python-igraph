@@ -11,7 +11,7 @@ __all__ = ("GephiConnection", "GephiGraphStreamer", "GephiGraphStreamingAPIForma
 __docformat__ = "restructuredtext en"
 
 
-class GephiConnection(object):
+class GephiConnection:
     """Object that represents a connection to a Gephi master server."""
 
     def __init__(self, url=None, host="127.0.0.1", port=8080, workspace=1):
@@ -79,7 +79,7 @@ class GephiConnection(object):
         return "%s(url=%r)" % (self.__class__.__name__, self.url)
 
 
-class GephiGraphStreamingAPIFormat(object):
+class GephiGraphStreamingAPIFormat:
     """Object that implements the Gephi graph streaming API format and returns
     Python objects corresponding to the events defined in the API.
     """
@@ -166,7 +166,7 @@ class GephiGraphStreamingAPIFormat(object):
         return {"de": {identifier: {}}}
 
 
-class GephiGraphStreamer(object):
+class GephiGraphStreamer:
     """Class that produces JSON event objects that stream an igraph graph to
     Gephi using the Gephi Graph Streaming API.
 

@@ -18,7 +18,7 @@ __all__ = (
 )
 
 
-class FittedPowerLaw(object):
+class FittedPowerLaw:
     """Result of fitting a power-law to a vector of samples
 
     Example:
@@ -104,7 +104,7 @@ D=0.21..., p=0.993...)
         return "\n".join(result)
 
 
-class Histogram(object):
+class Histogram:
     """Generic histogram class for real numbers
 
     Example:
@@ -324,7 +324,7 @@ class Histogram(object):
         return self.to_string()
 
 
-class RunningMean(object):
+class RunningMean:
     """Running mean calculator.
 
     This class can be used to calculate the mean of elements from a

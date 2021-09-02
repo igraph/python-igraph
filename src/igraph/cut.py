@@ -154,7 +154,7 @@ class Flow(Cut):
         This should not be called directly, everything is
         taken care of by L{Graph.maxflow}.
         """
-        super(Flow, self).__init__(graph, value, cut, partition)
+        super().__init__(graph, value, cut, partition)
         self._flow = flow
 
     def __repr__(self):

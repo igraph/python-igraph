@@ -177,7 +177,7 @@ def wait_for_keypress(seconds):
 ###########################################################################
 
 
-class IgraphCCoreBuilder(object):
+class IgraphCCoreBuilder:
     """Superclass for classes responsible for downloading and building the
     C core of igraph if it is not installed yet.
     """
@@ -290,7 +290,7 @@ class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
 ###########################################################################
 
 
-class BuildConfiguration(object):
+class BuildConfiguration:
     def __init__(self):
         self.include_dirs = []
         self.library_dirs = []
@@ -788,7 +788,7 @@ options = dict(
     packages=["igraph", "igraph.app", "igraph.drawing", "igraph.remote"],
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
-    extras_require={"plotting": ["pycairo>=1.18.0"]},
+    extras_require={"plotting": ["cairocffi>=1.2.0"]},
     headers=headers,
     platforms="ALL",
     keywords=[

@@ -5,7 +5,7 @@
 from igraph._igraph import Vertex
 
 
-class Matching(object):
+class Matching:
     """A matching of vertices in a graph.
 
     A matching of an undirected graph is a set of edges such that each

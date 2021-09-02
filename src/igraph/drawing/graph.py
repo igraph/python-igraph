@@ -543,7 +543,7 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
     def __init__(self, url="http://localhost:20738/RPC2"):
         """Constructs an UbiGraph drawer using the display at the given
         URL."""
-        super(UbiGraphDrawer, self).__init__(url, "ubigraph")
+        super().__init__(url, "ubigraph")
         self.vertex_defaults = dict(color="#ff0000", shape="cube", size=1.0)
         self.edge_defaults = dict(color="#ffffff", width=1.0)
 
@@ -664,7 +664,7 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
     def __init__(self, url="http://localhost:9000/Cytoscape"):
         """Constructs a Cytoscape graph drawer using the XML-RPC interface
         of Cytoscape at the given URL."""
-        super(CytoscapeGraphDrawer, self).__init__(url, "Cytoscape")
+        super().__init__(url, "Cytoscape")
         self.network_id = None
 
     def draw(self, graph, name="Network from igraph", create_view=True, *args, **kwds):
@@ -940,7 +940,7 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
           - C{GephiGraphStreamingDrawer(url="http://remote:1234/workspace7)} is
             the same as above, but with an explicit URL.
         """
-        super(GephiGraphStreamingDrawer, self).__init__()
+        super().__init__()
 
         from igraph.remote.gephi import GephiGraphStreamer, GephiConnection
 

@@ -3,7 +3,7 @@ import unittest
 from igraph import *
 
 
-class FakeRNG(object):
+class FakeRNG:
     @staticmethod
     def random():
         return 0.1
@@ -17,7 +17,7 @@ class FakeRNG(object):
         return 0.3
 
 
-class InvalidRNG(object):
+class InvalidRNG:
     pass
 
 

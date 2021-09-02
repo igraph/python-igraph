@@ -24,8 +24,8 @@ Starting |igraph|
 ordinary Python module at the Python prompt::
 
   $ python
-  Python 2.7.1 (r271:86832, Jun 16 2011, 16:59:05)
-  [GCC 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2335.15.00)] on darwin
+  Python 3.9.6 (default, Jun 29 2021, 05:25:02)
+  [Clang 12.0.5 (clang-1205.0.22.9)] on darwin
   Type "help", "copyright", "credits" or "license" for more information.
   >>> import igraph
 
@@ -57,7 +57,7 @@ When you start the script, you will see something like this::
 
   $ igraph
   No configuration file, using defaults
-  igraph 0.6 running inside Python 2.7.1 (r271:86832, Jun 16 2011, 16:59:05)
+  igraph 0.9.4 running inside Python 3.9.6 (default, Jun 29 2021, 05:25:02)
   Type "copyright", "credits" or "license" for more information.
   >>>
 
@@ -824,6 +824,8 @@ Attribute name  Keyword argument       Purpose
 =============== ====================== ==========================================
 ``color``       ``vertex_color``       Color of the vertex
 --------------- ---------------------- ------------------------------------------
+``font``        ``vertex_font``        Font family of the vertex
+--------------- ---------------------- ------------------------------------------
 ``label``       ``vertex_label``       Label of the vertex
 --------------- ---------------------- ------------------------------------------
 ``label_angle`` ``vertex_label_angle`` The placement of the vertex label on the
@@ -870,6 +872,8 @@ Attribute name  Keyword argument       Purpose
                                        make multiple edges visible. See also the
                                        ``autocurve`` keyword argument to
                                        :func:`plot`.
+--------------- ---------------------- ------------------------------------------
+``font``        ``edge_font``          Font family of the edge
 --------------- ---------------------- ------------------------------------------
 ``arrow_size``  ``edge_arrow_size``    Size (length) of the arrowhead on the edge
                                        if the graph is directed, relative to 15

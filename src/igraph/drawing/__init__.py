@@ -42,7 +42,7 @@ cairo = find_cairo()
 #####################################################################
 
 
-class Plot(object):
+class Plot:
     """Class representing an arbitrary plot
 
     Every plot has an associated surface object where the plotting is done. The
@@ -369,12 +369,7 @@ class Plot(object):
         context.show_page()
         surface.finish()
         # Return the raw SVG representation
-        result = io.getvalue()
-        if hasattr(result, "encode"):
-            result = result.encode("utf-8")  # for Python 2.x
-        else:
-            result = result.decode("utf-8")  # for Python 3.x
-
+        result = io.getvalue().decode("utf-8")
         return result, {"isolated": True}  # put it inside an iframe
 
     @property

@@ -2294,7 +2294,7 @@ class Graph(GraphBase):
           vertices are attached as graph attributes C{source} and C{target},
           the edge capacities are stored in the C{capacity} edge attribute.
         """
-        graph, source, target, cap = super(Graph, cls).Read_DIMACS(f, directed)
+        graph, source, target, cap = super().Read_DIMACS(f, directed)
         graph.es["capacity"] = cap
         graph["source"] = source
         graph["target"] = target
@@ -3619,7 +3619,7 @@ class Graph(GraphBase):
           is not 1 or 2, or the projected one-mode graph specified by the
           C{which} argument if its value is 0, 1, C{False} or C{True}.
         """
-        superclass_meth = super(Graph, self).bipartite_projection
+        superclass_meth = super().bipartite_projection
 
         if which is False:
             which = 0
@@ -3665,7 +3665,7 @@ class Graph(GraphBase):
           first projection, followed by the number of vertices and edges in the
           second projection.
         """
-        return super(Graph, self).bipartite_projection_size(types, *args, **kwds)
+        return super().bipartite_projection_size(types, *args, **kwds)
 
     def get_incidence(self, types="type", *args, **kwds):
         """Returns the incidence matrix of a bipartite graph. The incidence matrix
@@ -3680,7 +3680,7 @@ class Graph(GraphBase):
           original vertex IDs. The second list is the same for the column
           indices.
         """
-        return super(Graph, self).get_incidence(types, *args, **kwds)
+        return super().get_incidence(types, *args, **kwds)
 
     ###########################
     # DFS (C version will come soon)

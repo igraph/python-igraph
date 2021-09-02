@@ -192,7 +192,7 @@ class MotifTests(unittest.TestCase):
         self.assertTrue(len(tuple(tc)) == 16)
 
 
-class CliqueBenchmark(object):
+class CliqueBenchmark:
     """This is a benchmark, not a real test case. You can run it
     using:
 

@@ -11,7 +11,7 @@ __all__ = ("BoundingBox", "Point", "Rectangle")
 #####################################################################
 
 
-class Rectangle(object):
+class Rectangle:
     """Class representing a rectangle."""
 
     __slots__ = ("_left", "_top", "_right", "_bottom")

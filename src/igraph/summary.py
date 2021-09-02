@@ -13,7 +13,7 @@ from textwrap import TextWrapper
 __all__ = ("GraphSummary", "summary")
 
 
-class FakeWrapper(object):
+class FakeWrapper:
     """Object whose interface is compatible with C{textwrap.TextWrapper}
     but does no wrapping."""
 
@@ -38,7 +38,7 @@ def _get_wrapper_for_width(width, *args, **kwds):
     return TextWrapper(width=width, *args, **kwds)
 
 
-class GraphSummary(object):
+class GraphSummary:
     """Summary representation of a graph.
 
     The summary representation includes a header line and the list of
