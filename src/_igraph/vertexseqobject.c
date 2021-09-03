@@ -213,6 +213,8 @@ PyObject* igraphmodule_VertexSeq_sq_item(igraphmodule_VertexSeqObject* self,
         idx = self->vs.data.vid;
       }
       break;
+    case IGRAPH_VS_NONE:
+      break;
     case IGRAPH_VS_SEQ:
       if (i < 0) {
         i = self->vs.data.seq.to - self->vs.data.seq.from + i;
@@ -223,6 +225,10 @@ PyObject* igraphmodule_VertexSeq_sq_item(igraphmodule_VertexSeqObject* self,
       break;
     /* TODO: IGRAPH_VS_ADJ, IGRAPH_VS_NONADJ - someday :) They are unused
        yet in the Python interface */
+    default:
+      return PyErr_Format(
+        igraphmodule_InternalError, "unsupported vertex selector type: %d", igraph_vs_type(&self->vs)
+      );
   }
 
   if (idx < 0) {

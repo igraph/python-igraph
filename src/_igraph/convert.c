@@ -1337,6 +1337,7 @@ PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v) {
 
   list=PyList_New(n);
   for (i=0; i<n; i++) {
+    /* TODO: what if igraph_integer_t is larger than a long? */
     item = PyLong_FromLong((long)VECTOR(*v)[i]);
     if (!item) {
       Py_DECREF(list);

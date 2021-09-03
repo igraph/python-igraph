@@ -413,7 +413,7 @@ static int igraphmodule_i_attribute_copy(igraph_t *to, const igraph_t *from,
 }
 
 /* Adding vertices */
-static int igraphmodule_i_attribute_add_vertices(igraph_t *graph, long int nv, igraph_vector_ptr_t *attr) {
+static int igraphmodule_i_attribute_add_vertices(igraph_t *graph, igraph_integer_t nv, igraph_vector_ptr_t *attr) {
   /* Extend the end of every value in the vertex hash with nv pieces of None */
   PyObject *key, *value, *dict;
   long int i, j, k, l;

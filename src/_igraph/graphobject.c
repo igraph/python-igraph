@@ -6352,18 +6352,18 @@ typedef struct {
   PyObject* graph;
 } igraphmodule_i_Graph_motifs_randesu_callback_data_t;
 
-igraph_bool_t igraphmodule_i_Graph_motifs_randesu_callback(const igraph_t *graph,
-    igraph_vector_t *vids, int isoclass, void* extra) {
+igraph_error_t igraphmodule_i_Graph_motifs_randesu_callback(const igraph_t *graph,
+    igraph_vector_int_t *vids, int isoclass, void* extra) {
   igraphmodule_i_Graph_motifs_randesu_callback_data_t* data =
     (igraphmodule_i_Graph_motifs_randesu_callback_data_t*)extra;
   PyObject* vector;
   PyObject* result;
   igraph_bool_t retval;
 
-  vector = igraphmodule_vector_t_to_PyList(vids, IGRAPHMODULE_TYPE_INT);
+  vector = igraphmodule_vector_int_t_to_PyList(vids);
   if (vector == NULL) {
     /* Error in conversion, return 1 */
-    return 1;
+    return IGRAPH_FAILURE;
   }
 
   result = PyObject_CallFunction(data->func, "OOi", data->graph, vector, isoclass);
@@ -6371,13 +6371,13 @@ igraph_bool_t igraphmodule_i_Graph_motifs_randesu_callback(const igraph_t *graph
 
   if (result == NULL) {
     /* Error in callback, return 1 */
-    return 1;
+    return IGRAPH_FAILURE;
   }
 
   retval = PyObject_IsTrue(result);
   Py_DECREF(result);
 
-  return retval;
+  return retval ? IGRAPH_STOP : IGRAPH_SUCCESS;
 }
 
 /** \ingroup python_interface_graph
@@ -8819,17 +8819,17 @@ igraph_bool_t igraphmodule_i_Graph_isomorphic_vf2_callback_fn(
 
   map12_o = igraphmodule_vector_int_t_to_PyList(map12);
   if (map12_o == NULL) {
-    /* Error in conversion, return 0 to stop the search */
+    /* Error in conversion, return an error code */
     PyErr_WriteUnraisable(data->callback_fn);
-    return 0;
+    return IGRAPH_FAILURE;
   }
 
   map21_o = igraphmodule_vector_int_t_to_PyList(map21);
   if (map21_o == NULL) {
-    /* Error in conversion, return 0 to stop the search */
+    /* Error in conversion, return an error code */
     PyErr_WriteUnraisable(data->callback_fn);
     Py_DECREF(map21_o);
-    return 0;
+    return IGRAPH_FAILURE;
   }
 
   result = PyObject_CallFunction(data->callback_fn, "OOOO", data->graph1, data->graph2,
@@ -8838,15 +8838,15 @@ igraph_bool_t igraphmodule_i_Graph_isomorphic_vf2_callback_fn(
   Py_DECREF(map21_o);
 
   if (result == NULL) {
-    /* Error in callback, return 0 */
+    /* Error in callback, return an error code */
     PyErr_WriteUnraisable(data->callback_fn);
-    return 0;
+    return IGRAPH_FAILURE;
   }
 
   retval = PyObject_IsTrue(result);
   Py_DECREF(result);
 
-  return retval;
+  return retval ? IGRAPH_SUCCESS : IGRAPH_STOP;
 }
 
 igraph_bool_t igraphmodule_i_Graph_isomorphic_vf2_node_compat_fn(

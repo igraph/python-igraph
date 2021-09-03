@@ -46,7 +46,7 @@ PyTypeObject igraphmodule_EdgeSeqType;
  * \return the allocated PyObject
  */
 PyObject* igraphmodule_EdgeSeq_new(PyTypeObject *subtype,
-	PyObject *args, PyObject *kwds) {
+  PyObject *args, PyObject *kwds) {
   igraphmodule_EdgeSeqObject* o;
 
   o=(igraphmodule_EdgeSeqObject*)PyType_GenericNew(subtype, args, kwds);
@@ -124,7 +124,7 @@ int igraphmodule_EdgeSeq_init(igraphmodule_EdgeSeqObject *self,
     }
     igraph_es_1(&es, (igraph_integer_t)idx);
   } else {
-	/* We selected multiple edges */
+  /* We selected multiple edges */
     igraph_vector_int_t v;
     igraph_integer_t n = igraph_ecount(&((igraphmodule_GraphObject*)g)->g);
     if (igraphmodule_PyObject_to_vector_int_t(esobj, &v))
@@ -228,9 +228,17 @@ PyObject* igraphmodule_EdgeSeq_sq_item(igraphmodule_EdgeSeqObject* self,
       }
       break;
 
+    case IGRAPH_ES_NONE:
+      break;
+
     /* TODO: IGRAPH_ES_PAIRS, IGRAPH_ES_ADJ, IGRAPH_ES_PATH,
        IGRAPH_ES_MULTIPATH - someday :) They are unused yet in the Python
        interface */
+
+    default:
+      return PyErr_Format(
+        igraphmodule_InternalError, "unsupported edge selector type: %d", igraph_es_type(&self->es)
+      );
   }
   if (idx < 0) {
     PyErr_SetString(PyExc_IndexError, "edge index out of range");
