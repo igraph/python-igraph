@@ -828,10 +828,10 @@ options = dict(
         "plotting": ["cairocffi>=1.2.0"],
         "test": [
             "networkx>=2.5",
-            "numpy>=1.19.0",
-            "pandas>=1.1.0",
-            "scipy>=1.5.0",
             "pytest>=6.2.5",
+            'numpy>=1.19.0 ; platform_python_implementation != "pypy"',
+            'pandas>=1.1.0 ; platform_python_implementation != "pypy"',
+            'scipy>=1.5.0 ; platform_python_implementation != "pypy"',
         ],
     },
     headers=headers,
