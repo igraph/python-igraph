@@ -75,7 +75,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: vendor/install
-          key: C-core-${{ runner.os }}-${{ hashFiles('.gitmodules') }}
+          key: C-core-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
 
       - uses: actions/setup-python@v2
         name: Install Python
