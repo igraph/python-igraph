@@ -829,9 +829,9 @@ options = dict(
         "test": [
             "networkx>=2.5",
             "pytest>=6.2.5",
-            'numpy>=1.19.0 ; platform_python_implementation != "pypy"',
-            'pandas>=1.1.0 ; platform_python_implementation != "pypy"',
-            'scipy>=1.5.0 ; platform_python_implementation != "pypy"',
+            'numpy>=1.19.0 ; platform_python_implementation != "PyPy"',
+            'pandas>=1.1.0 ; platform_python_implementation != "PyPy"',
+            'scipy>=1.5.0 ; platform_python_implementation != "PyPy"',
         ],
     },
     python_requires=">=3.6",
