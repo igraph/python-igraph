@@ -827,10 +827,10 @@ options = dict(
     extras_require={
         "plotting": ["cairocffi>=1.2.0"],
         "test": [
-            "networkx>=2.6.2",
-            "numpy>=1.21.2",
-            "pandas>=1.3.2",
-            "scipy>=1.7.1",
+            "networkx>=2.5",
+            "numpy>=1.19.0",
+            "pandas>=1.1.0",
+            "scipy>=1.5.0",
             "pytest>=6.2.5",
         ],
     },
