@@ -794,13 +794,16 @@ int igraphmodule_PyObject_to_igraph_t(PyObject *o, igraph_t **result) {
  * \param v the result is stored here
  * \return 0 if everything was OK, 1 otherwise
  */
-int PyLong_to_integer_t(PyObject* obj, int* v) {
+int PyLong_to_integer_t(PyObject* obj, igraph_integer_t* v) {
   if (IGRAPH_INTEGER_SIZE == 64) {
-      *v = (igraph_integer_t)PyLong_AsLong(obj);
+    /* here the assumption is that sizeof(long long) == 64 bits; anyhow, this
+     * is the widest integer type that we can convert a PyLong to so we cannot
+     * do any better than this */
+    *v = PyLong_AsLongLong(obj);
   } else {
-      int dummy;
-     PyLong_AsInt(obj, &dummy);
-      *v = (igraph_integer_t)dummy;
+    int dummy;
+    PyLong_AsInt(obj, &dummy);
+    *v = (igraph_integer_t)dummy;
   }
   return 0;
 }
@@ -815,7 +818,8 @@ int PyLong_to_integer_t(PyObject* obj, int* v) {
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_integer_t *v) {
-  int retval, num;
+  int retval;
+  igraph_integer_t num;
 
   if (object == NULL) {
   } else if (PyLong_Check(object)) {
@@ -1093,10 +1097,10 @@ int igraphmodule_PyObject_float_to_vector_t(PyObject *list, igraph_vector_t *v) 
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v) {
-  PyObject *item;
-  int value=0;
+  PyObject *it = 0, *item;
+  igraph_integer_t value = 0;
   Py_ssize_t i, j, k;
-  int ok, retval;
+  int ok;
 
   if (PyBaseString_Check(list)) {
     /* It is highly unlikely that a string (although it is a sequence) will
@@ -1107,24 +1111,20 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
 
   if (!PySequence_Check(list)) {
     /* try to use an iterator */
-    PyObject *it = PyObject_GetIter(list);
+    it = PyObject_GetIter(list);
     if (it) {
-      PyObject *item;
-      igraph_vector_int_init(v, 0);
+      if (igraph_vector_int_init(v, 0)) {
+        igraphmodule_handle_igraph_error();
+        Py_DECREF(it);
+        return 1;
+      }
+
       while ((item = PyIter_Next(it)) != 0) {
-        ok = 1;
         if (!PyNumber_Check(item)) {
           PyErr_SetString(PyExc_TypeError, "iterable must return numbers");
-          ok=0;
+          ok = 0;
         } else {
-          PyObject *item2 = PyNumber_Long(item);
-          if (item2 == 0) {
-            PyErr_SetString(PyExc_TypeError, "can't convert a list item to integer");
-            ok = 0;
-          } else {
-            ok = (PyLong_AsInt(item, &value) == 0);
-            Py_DECREF(item2);
-          }
+          ok = (igraphmodule_PyObject_to_integer_t(item, &value) == 0);
         }
 
         if (ok == 0) {
@@ -1133,6 +1133,7 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
           Py_DECREF(it);
           return 1;
         }
+
         if (igraph_vector_int_push_back(v, value)) {
           igraphmodule_handle_igraph_error();
           igraph_vector_int_destroy(v);
@@ -1140,43 +1141,44 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
           Py_DECREF(it);
           return 1;
         }
+
         Py_DECREF(item);
       }
+
       Py_DECREF(it);
-      return 0;
     } else {
       PyErr_SetString(PyExc_TypeError, "sequence or iterable expected");
       return 1;
     }
+
     return 0;
   }
 
-  j=PySequence_Size(list);
-  igraph_vector_int_init(v, j);
-  for (i=0, k=0; i<j; i++) {
-    item=PySequence_GetItem(list, i);
+  j = PySequence_Size(list);
+
+  if (igraph_vector_int_init(v, j)) {
+    igraphmodule_handle_igraph_error();
+    Py_XDECREF(it);
+    return 1;
+  }
+
+  for (i = 0, k = 0; i < j; i++) {
+    item = PySequence_GetItem(list, i);
     if (item) {
-      ok=1;
       if (!PyNumber_Check(item)) {
         PyErr_SetString(PyExc_TypeError, "sequence elements must be integers");
-        ok=0;
+        ok = 0;
       } else {
-        PyObject *item2 = PyNumber_Long(item);
-        if (item2 == 0) {
-          PyErr_SetString(PyExc_TypeError, "can't convert sequence element to int");
-          ok=0;
-        } else {
-          retval = PyLong_AsInt(item2, &value);
-          if (retval)
-            ok = 0;
-          Py_DECREF(item2);
-        }
+        ok = (igraphmodule_PyObject_to_integer_t(item, &value) == 0);
       }
+
       Py_XDECREF(item);
+
       if (!ok) {
         igraph_vector_int_destroy(v);
         return 1;
       }
+
       VECTOR(*v)[k]=value;
       k++;
     } else {
@@ -1187,6 +1189,7 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
       return 1;
     }
   }
+
   return 0;
 }
 
