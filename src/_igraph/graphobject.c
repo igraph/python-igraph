@@ -7659,12 +7659,12 @@ PyObject *igraphmodule_Graph_layout_bipartite(
 PyObject *igraphmodule_Graph_get_adjacency(igraphmodule_GraphObject * self,
                                            PyObject * args, PyObject * kwds)
 {
-  static char *kwlist[] = { "type", "eids", NULL };
+  static char *kwlist[] = { "type", NULL };
   igraph_get_adjacency_t mode = IGRAPH_GET_ADJACENCY_BOTH;
   igraph_matrix_t m;
-  PyObject *result, *mode_o = Py_None, *eids = Py_False;
+  PyObject *result, *mode_o = Py_None;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &mode_o, &eids))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &mode_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_get_adjacency_t(mode_o, &mode)) return NULL;
@@ -7675,7 +7675,7 @@ PyObject *igraphmodule_Graph_get_adjacency(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  if (igraph_get_adjacency(&self->g, &m, mode, PyObject_IsTrue(eids))) {
+  if (igraph_get_adjacency(&self->g, &m, mode)) {
     igraphmodule_handle_igraph_error();
     igraph_matrix_destroy(&m);
     return NULL;
