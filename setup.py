@@ -788,7 +788,10 @@ options = dict(
     packages=["igraph", "igraph.app", "igraph.drawing", "igraph.remote"],
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
-    extras_require={"plotting": ["cairocffi>=1.2.0"]},
+    extras_require={
+        "plotting": ["cairocffi>=1.2.0"],
+        "test": ["networkx>=2.6.2", "numpy>=1.21.2", "pandas>=1.3.2", "scipy>=1.7.1"]
+    },
     headers=headers,
     platforms="ALL",
     keywords=[
