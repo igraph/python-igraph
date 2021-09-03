@@ -834,6 +834,7 @@ options = dict(
             'scipy>=1.5.0 ; platform_python_implementation != "pypy"',
         ],
     },
+    python_requires=">=3.6",
     headers=headers,
     platforms="ALL",
     keywords=[
