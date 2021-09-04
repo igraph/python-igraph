@@ -60,19 +60,20 @@ def numpy_to_contiguous_memoryview(obj):
     """
     # Deferred import to prevent a hard dependency on NumPy
     from numpy import int32, int64, require
+    from igraph._igraph import INTEGER_SIZE
 
     # TODO: we used to export to double, which is only dependent on the
     # architecture. Now with integers and a compile-time flag, we have
     # to figure out what is the integer bitness of the underlying C core.
     # Think of how to do that, for now default to 64 bit ints!
-    size = 8
-    #size = sizeof(c_double)
-    if size == 8:
+    if INTEGER_SIZE == 64:
         dtype = int64
-    elif size == 4:
+    elif INTEGER_SIZE == 32:
         dtype = int32
     else:
-        raise TypeError("size of C double (%d bytes) is not supported" % size)
+        raise TypeError(
+            f"size of igraph_integer_t in the C layer ({INTEGER_SIZE} bits) is not supported"
+        )
 
     return memoryview(require(obj, dtype=dtype, requirements="AC"))
 
