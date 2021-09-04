@@ -1516,9 +1516,9 @@ int igraphmodule_PyObject_to_edgelist(
   if (PyMemoryView_Check(list)) {
     buffer = PyMemoryView_GET_BUFFER(list);
 
-    if (buffer->itemsize != sizeof(igraph_real_t)) {
+    if (buffer->itemsize != sizeof(igraph_integer_t)) {
       PyErr_SetString(
-        PyExc_TypeError, "item size of buffer must match the size of igraph_real_t"
+        PyExc_TypeError, "item size of buffer must match the size of igraph_integer_t"
       );
       return 1;
     }
