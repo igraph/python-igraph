@@ -6564,7 +6564,7 @@ PyObject *igraphmodule_Graph_triad_census(igraphmodule_GraphObject *self) {
     return NULL;
   }
 
-  list = igraphmodule_vector_t_to_PyTuple(&result);
+  list = igraphmodule_vector_t_to_PyTuple(&result, IGRAPHMODULE_TYPE_INT);
   igraph_vector_destroy(&result);
 
   return list;

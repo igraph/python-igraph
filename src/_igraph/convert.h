@@ -143,10 +143,12 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
 
 /* Conversion from igraph types to PyObjects */
 
+PyObject* igraphmodule_integer_t_to_PyObject(igraph_integer_t value);
+PyObject* igraphmodule_real_t_to_PyObject(igraph_real_t value, igraphmodule_conv_t type);
+
 PyObject* igraphmodule_vector_bool_t_to_PyList(const igraph_vector_bool_t *v);
-PyObject* igraphmodule_vector_t_to_PyList(const igraph_vector_t *v,
-        igraphmodule_conv_t type);
-PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v);
+PyObject* igraphmodule_vector_t_to_PyList(const igraph_vector_t *v, igraphmodule_conv_t type);
+PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v,  igraphmodule_conv_t type);
 PyObject* igraphmodule_vector_int_t_to_PyTuple(const igraph_vector_int_t *v);
 PyObject* igraphmodule_vector_int_t_pair_to_PyList(const igraph_vector_int_t *v1,
         const igraph_vector_int_t *v2);

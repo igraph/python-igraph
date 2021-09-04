@@ -1260,6 +1260,48 @@ int igraphmodule_PyObject_to_vector_bool_t(PyObject *list,
 
 /**
  * \ingroup python_interface_conversion
+ * \brief Converts an igraph \c igraph_integer_t to a Python integer
+ *
+ * \param value the \c igraph_integer_t value to be converted
+ * \return the Python integer as a \c PyObject*, or \c NULL if an
+ * error occurred
+ */
+PyObject* igraphmodule_integer_t_to_PyObject(igraph_integer_t value) {
+#if IGRAPH_INTEGER_SIZE == 32
+  /* minimum size of a long is 32 bits so we are okay */
+  return PyLong_FromLong(value);
+#elif IGRAPH_INTEGER_SIZE == 64
+  /* minimum size of a long long is 64 bits so we are okay */
+  return PyLong_FromLongLong(value);
+#else
+#  error "Unknown igraph_integer_t size"
+#endif
+}
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts an igraph \c igraph_real_t to a Python float or integer
+ *
+ * \param value the \c igraph_real_t value to be converted
+ * \return the Python float or integer as a \c PyObject*, or \c NULL if an
+ * error occurred
+ */
+PyObject* igraphmodule_real_t_to_PyObject(igraph_real_t value, igraphmodule_conv_t type) {
+  if (type == IGRAPHMODULE_TYPE_INT) {
+    if (!igraph_finite(value)) {
+      return PyFloat_FromDouble(value);
+    } else {
+      return igraphmodule_integer_t_to_PyObject((igraph_integer_t)value);
+    }
+  } else if (type == IGRAPHMODULE_TYPE_FLOAT) {
+    return PyFloat_FromDouble(value);
+  } else {
+    Py_RETURN_NONE;
+  }
+}
+
+/**
+ * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_bool_t to a Python boolean list
  *
  * \param v the \c igraph_vector_bool_t containing the vector to be converted
@@ -1291,28 +1333,22 @@ PyObject* igraphmodule_vector_bool_t_to_PyList(const igraph_vector_bool_t *v) {
  * \param v the \c igraph_vector_t containing the vector to be converted
  * \return the Python integer list as a \c PyObject*, or \c NULL if an error occurred
  */
-PyObject* igraphmodule_vector_t_to_PyList(const igraph_vector_t *v,
-    igraphmodule_conv_t type) {
+PyObject* igraphmodule_vector_t_to_PyList(const igraph_vector_t *v, igraphmodule_conv_t type) {
   PyObject *list, *item;
   Py_ssize_t n, i;
 
-  n=igraph_vector_size(v);
-  if (n<0) return igraphmodule_handle_igraph_error();
+  n = igraph_vector_size(v);
+  if (n < 0) {
+    return igraphmodule_handle_igraph_error();
+  }
 
-  list=PyList_New(n);
-  for (i=0; i<n; i++) {
-    if (type == IGRAPHMODULE_TYPE_INT) {
-      if (!igraph_finite(VECTOR(*v)[i])) {
-        item = PyFloat_FromDouble((double)VECTOR(*v)[i]);
-      } else {
-        item = PyLong_FromLong((long)VECTOR(*v)[i]);
-      }
-    } else if (type == IGRAPHMODULE_TYPE_FLOAT) {
-      item=PyFloat_FromDouble((double)VECTOR(*v)[i]);
-    } else {
-      item=Py_None;
-      Py_INCREF(item);
-    }
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
+
+  for (i = 0; i < n; i++) {
+    item = igraphmodule_real_t_to_PyObject(VECTOR(*v)[i], type);
     if (!item) {
       Py_DECREF(list);
       return NULL;
@@ -1335,13 +1371,17 @@ PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v) {
   Py_ssize_t n, i;
 
   n = igraph_vector_int_size(v);
-  if (n<0)
+  if (n < 0) {
     return igraphmodule_handle_igraph_error();
+  }
 
-  list=PyList_New(n);
-  for (i=0; i<n; i++) {
-    /* TODO: what if igraph_integer_t is larger than a long? */
-    item = PyLong_FromLong((long)VECTOR(*v)[i]);
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
+
+  for (i = 0; i < n; i++) {
+    item = igraphmodule_integer_t_to_PyObject(VECTOR(*v)[i]);
     if (!item) {
       Py_DECREF(list);
       return NULL;
@@ -1356,6 +1396,9 @@ PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v) {
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_int_t to a Python integer list, with nan
  *
+ * This function works like \ref igraphmodyle_vector_int_t_to_PyList but it maps
+ * one distinguished value in the vector to NaN.
+ *
  * \param v the \c igraph_vector_int_t containing the vector to be converted
  * \return the Python integer list as a \c PyObject*, or \c NULL if an error occurred
  */
@@ -1365,16 +1408,21 @@ PyObject* igraphmodule_vector_int_t_to_PyList_with_nan(const igraph_vector_int_t
   igraph_integer_t val;
 
   n = igraph_vector_int_size(v);
-  if (n<0)
+  if (n < 0) {
     return igraphmodule_handle_igraph_error();
+  }
 
-  list=PyList_New(n);
-  for (i=0; i<n; i++) {
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
+
+  for (i = 0; i < n; i++) {
     val = VECTOR(*v)[i];
     if (val == nanvalue) {
       item = Py_BuildValue("d", NAN);
     } else {
-      item = PyLong_FromLong((long)val);
+      item = igraphmodule_integer_t_to_PyObject(VECTOR(*v)[i]);
     }
     if (!item) {
       Py_DECREF(list);
@@ -1391,22 +1439,31 @@ PyObject* igraphmodule_vector_int_t_to_PyList_with_nan(const igraph_vector_int_t
  * \brief Converts an igraph \c igraph_vector_t to a Python integer tuple
  *
  * \param v the \c igraph_vector_t containing the vector to be converted
- * \return the Python integer tuple as a \c PyObject*, or \c NULL if an error occurred
+ * \param type the type of conversion. If equals to IGRAPHMODULE_TYPE_INT,
+ *        returns an integer tuple, else returns a float tuple.
+ * \return the Python integer or float tuple as a \c PyObject*, or \c NULL if an error occurred
  */
-PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v) {
-  PyObject* tuple;
+PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v, igraphmodule_conv_t type) {
+  PyObject *tuple, *item;
   Py_ssize_t n, i;
 
-  n=igraph_vector_size(v);
-  if (n<0) return igraphmodule_handle_igraph_error();
+  n = igraph_vector_size(v);
+  if (n < 0) {
+    return igraphmodule_handle_igraph_error();
+  }
 
-  tuple=PyTuple_New(n);
-  for (i=0; i<n; i++) {
-    PyObject *item=PyLong_FromLong((long)VECTOR(*v)[i]);
+  tuple = PyTuple_New(n);
+  if (!tuple) {
+    return NULL;
+  }
+  
+  for (i = 0; i < n; i++) {
+    item = igraphmodule_real_t_to_PyObject(VECTOR(*v)[i], type);
     if (!item) {
       Py_DECREF(tuple);
       return NULL;
     }
+
     PyTuple_SET_ITEM(tuple, i, item);
   }
 
@@ -1421,15 +1478,21 @@ PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v) {
  * \return the Python integer tuple as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_vector_int_t_to_PyTuple(const igraph_vector_int_t *v) {
-  PyObject* tuple;
+  PyObject *tuple, *item;
   Py_ssize_t n, i;
 
-  n=igraph_vector_int_size(v);
-  if (n<0) return igraphmodule_handle_igraph_error();
+  n = igraph_vector_int_size(v);
+  if (n < 0) {
+    return igraphmodule_handle_igraph_error();
+  }
 
-  tuple=PyTuple_New(n);
-  for (i=0; i<n; i++) {
-    PyObject *item=PyLong_FromLong((long)VECTOR(*v)[i]);
+  tuple = PyTuple_New(n);
+  if (!tuple) {
+    return NULL;
+  }
+
+  for (i = 0; i < n; i++) {
+    item = igraphmodule_integer_t_to_PyObject(VECTOR(*v)[i]);
     if (!item) {
       Py_DECREF(tuple);
       return NULL;
@@ -1967,27 +2030,27 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
 
    nr = igraph_matrix_nrow(m);
    nc = igraph_matrix_ncol(m);
-   if (nr<0 || nc<0)
+   if (nc < 0 || nc < 0) {
      return igraphmodule_handle_igraph_error();
+   }
 
    // create a new Python list
-   list=PyList_New(nr);
-   // populate the list with data
-   for (i=0; i<nr; i++) {
-    row=PyList_New(nc);
-    for (j=0; j<nc; j++) {
-      if (type==IGRAPHMODULE_TYPE_INT) {
-        // FIXME: something is not right here I think
-        // convert to integers except nan or infinity
-        if (!igraph_finite(MATRIX(*m, i, j)))
-          item=PyFloat_FromDouble((double)MATRIX(*m, i, j));
-        else
-          item=PyLong_FromLong((long)MATRIX(*m, i, j));
-      } else
-        // convert to floats
-        item=PyFloat_FromDouble(MATRIX(*m, i, j));
+   list = PyList_New(nr);
+   if (!list) {
+     return NULL;
+   }
 
-      if (PyList_SetItem(row, j, item)) {
+   // populate the list with data
+   for (i = 0; i < nr; i++) {
+    row = PyList_New(nc);
+    if (!row) {
+      Py_DECREF(list);
+      return NULL;
+    }
+  
+    for (j = 0; j < nc; j++) {
+      item = igraphmodule_real_t_to_PyObject(MATRIX(*m, i, j), type);
+      if (!item || PyList_SetItem(row, j, item)) {
         // error occurred while populating the list, return immediately
         Py_DECREF(row);
         Py_DECREF(list);
@@ -2000,6 +2063,7 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
       return NULL;
     }
   }
+
   // return the list
   return list;
 }
@@ -2017,22 +2081,29 @@ PyObject* igraphmodule_matrix_int_t_to_PyList(const igraph_matrix_int_t *m) {
 
    nr = igraph_matrix_int_nrow(m);
    nc = igraph_matrix_int_ncol(m);
-   if (nr<0 || nc<0)
+   if (nr < 0 || nc < 0) {
      return igraphmodule_handle_igraph_error();
+   }
 
    // create a new Python list
-   list=PyList_New(nr);
+   list = PyList_New(nr);
+   if (!list) {
+     return NULL;
+   }
+  
    // populate the list with data
-   for (i=0; i<nr; i++) {
-    row=PyList_New(nc);
-    for (j=0; j<nc; j++) {
-      // convert to integers except nan or infinity
-      if (!igraph_finite(MATRIX(*m, i, j)))
-        item=PyFloat_FromDouble((double)MATRIX(*m, i, j));
-      else
-        item=PyLong_FromLong((long)MATRIX(*m, i, j));
+   for (i = 0; i < nr; i++) {
+    row = PyList_New(nc);
+    if (!row) {
+      Py_DECREF(list);
+      return NULL;
+    }
 
-      if (PyList_SetItem(row, j, item)) {
+    for (j = 0; j < nc; j++) {
+      // convert to integers except nan or infinity
+      item = igraphmodule_integer_t_to_PyObject(MATRIX(*m, i, j));
+
+      if (!item || PyList_SetItem(row, j, item)) {
         // error occurred while populating the list, return immediately
         Py_DECREF(row);
         Py_DECREF(list);
@@ -2045,6 +2116,7 @@ PyObject* igraphmodule_matrix_int_t_to_PyList(const igraph_matrix_int_t *m) {
       return NULL;
     }
   }
+
   // return the list
   return list;
 }
@@ -2570,9 +2642,8 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
     *vid = 0;
   } else if (PyLong_Check(o)) {
     /* Single vertex ID */
-    if (PyLong_AsInt(o, &tmp))
+    if (igraphmodule_PyObject_to_integer_t(o, vid)) 
       return 1;
-    *vid = tmp;
   } else if (graph != 0 && PyBaseString_Check(o)) {
     /* Single vertex ID from vertex name */
     if (igraphmodule_get_vertex_id_by_name(graph, o, vid))
@@ -2606,7 +2677,7 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
   }
 
   if (*vid < 0) {
-    PyErr_Format(PyExc_ValueError, "vertex IDs must be positive, got: %ld", (long)(*vid));
+    PyErr_Format(PyExc_ValueError, "vertex IDs must be non-negative, got: %" IGRAPH_PRId, *vid);
     return 1;
   }
 
@@ -2787,9 +2858,8 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
     *eid = 0;
   } else if (PyLong_Check(o)) {
     /* Single edge ID */
-    if (PyLong_AsInt(o, &tmp))
+    if (igraphmodule_PyObject_to_integer_t(o, eid)) 
       return 1;
-    *eid = tmp;
   } else if (PyObject_IsInstance(o, (PyObject*)&igraphmodule_EdgeType)) {
     /* Single edge ID from Edge object */
     igraphmodule_EdgeObject *eo = (igraphmodule_EdgeObject*)o;
@@ -2852,7 +2922,7 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
   }
 
   if (*eid < 0) {
-    PyErr_Format(PyExc_ValueError, "edge IDs must be positive, got: %ld", (long)(*eid));
+    PyErr_Format(PyExc_ValueError, "edge IDs must be non-negative, got: %" IGRAPH_PRId, *eid);
     return 1;
   }
 
