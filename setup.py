@@ -828,12 +828,13 @@ options = dict(
         "plotting": ["cairocffi>=1.2.0"],
         "test": [
             "networkx>=2.5",
-            "numpy>=1.19.0",
-            "pandas>=1.1.0",
-            "scipy>=1.5.0",
             "pytest>=6.2.5",
+            "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
+            "pandas>=1.1.0,<1.3.1; platform_python_implementation != 'PyPy'",
+            "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
         ],
     },
+    python_requires=">=3.6",
     headers=headers,
     platforms="ALL",
     keywords=[
