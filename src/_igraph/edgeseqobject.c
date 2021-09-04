@@ -46,7 +46,7 @@ PyTypeObject igraphmodule_EdgeSeqType;
  * \return the allocated PyObject
  */
 PyObject* igraphmodule_EdgeSeq_new(PyTypeObject *subtype,
-	PyObject *args, PyObject *kwds) {
+  PyObject *args, PyObject *kwds) {
   igraphmodule_EdgeSeqObject* o;
 
   o=(igraphmodule_EdgeSeqObject*)PyType_GenericNew(subtype, args, kwds);
@@ -74,17 +74,17 @@ igraphmodule_EdgeSeq_copy(igraphmodule_EdgeSeqObject* o) {
   if (copy == NULL) return NULL;
 
   if (igraph_es_type(&o->es) == IGRAPH_ES_VECTOR) {
-    igraph_vector_t v;
-    if (igraph_vector_copy(&v, o->es.data.vecptr)) {
+    igraph_vector_int_t v;
+    if (igraph_vector_int_copy(&v, o->es.data.vecptr)) {
       igraphmodule_handle_igraph_error();
       return 0;
     }
     if (igraph_es_vector_copy(&copy->es, &v)) {
       igraphmodule_handle_igraph_error();
-      igraph_vector_destroy(&v);
+      igraph_vector_int_destroy(&v);
       return 0;
     }
-    igraph_vector_destroy(&v);
+    igraph_vector_int_destroy(&v);
   } else {
     copy->es = o->es;
   }
@@ -124,22 +124,22 @@ int igraphmodule_EdgeSeq_init(igraphmodule_EdgeSeqObject *self,
     }
     igraph_es_1(&es, (igraph_integer_t)idx);
   } else {
-	/* We selected multiple edges */
-    igraph_vector_t v;
+  /* We selected multiple edges */
+    igraph_vector_int_t v;
     igraph_integer_t n = igraph_ecount(&((igraphmodule_GraphObject*)g)->g);
-    if (igraphmodule_PyObject_to_vector_t(esobj, &v, 1))
+    if (igraphmodule_PyObject_to_vector_int_t(esobj, &v))
       return -1;
-    if (!igraph_vector_isininterval(&v, 0, n-1)) {
-      igraph_vector_destroy(&v);
+    if (!igraph_vector_int_isininterval(&v, 0, n-1)) {
+      igraph_vector_int_destroy(&v);
       PyErr_SetString(PyExc_ValueError, "edge index out of range");
       return -1;
     }
     if (igraph_es_vector_copy(&es, &v)) {
       igraphmodule_handle_igraph_error();
-      igraph_vector_destroy(&v);
+      igraph_vector_int_destroy(&v);
       return -1;
     }
-    igraph_vector_destroy(&v);
+    igraph_vector_int_destroy(&v);
   }
 
   self->es = es;
@@ -206,9 +206,9 @@ PyObject* igraphmodule_EdgeSeq_sq_item(igraphmodule_EdgeSeqObject* self,
     case IGRAPH_ES_VECTOR:
     case IGRAPH_ES_VECTORPTR:
       if (i < 0) {
-        i = igraph_vector_size(self->es.data.vecptr) + i;
+        i = igraph_vector_int_size(self->es.data.vecptr) + i;
       }
-      if (i >= 0 && i < igraph_vector_size(self->es.data.vecptr)) {
+      if (i >= 0 && i < igraph_vector_int_size(self->es.data.vecptr)) {
         idx = (igraph_integer_t)VECTOR(*self->es.data.vecptr)[i];
       }
       break;
@@ -228,9 +228,17 @@ PyObject* igraphmodule_EdgeSeq_sq_item(igraphmodule_EdgeSeqObject* self,
       }
       break;
 
+    case IGRAPH_ES_NONE:
+      break;
+
     /* TODO: IGRAPH_ES_PAIRS, IGRAPH_ES_ADJ, IGRAPH_ES_PATH,
        IGRAPH_ES_MULTIPATH - someday :) They are unused yet in the Python
        interface */
+
+    default:
+      return PyErr_Format(
+        igraphmodule_InternalError, "unsupported edge selector type: %d", igraph_es_type(&self->es)
+      );
   }
   if (idx < 0) {
     PyErr_SetString(PyExc_IndexError, "edge index out of range");
@@ -285,7 +293,7 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
 
     case IGRAPH_ES_VECTOR:
     case IGRAPH_ES_VECTORPTR:
-      n = igraph_vector_size(self->es.data.vecptr);
+      n = igraph_vector_int_size(self->es.data.vecptr);
       result = PyList_New(n);
       if (!result) return 0;
 
@@ -355,7 +363,7 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values_mapping(igraphmodule_EdgeSeq
 int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject* self, PyObject* attrname, PyObject* values) {
   PyObject *dict, *list, *item;
   igraphmodule_GraphObject *gr;
-  igraph_vector_t es;
+  igraph_vector_int_t es;
   long i, j, n, no_of_edges;
 
   gr = self->gref;
@@ -430,19 +438,19 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
   } else {
     /* We are working with a subset of the graph. Convert the sequence to a
      * vector and loop through it */
-    if (igraph_vector_init(&es, 0)) {
+    if (igraph_vector_int_init(&es, 0)) {
       igraphmodule_handle_igraph_error();
       return -1;
     }
     if (igraph_es_as_vector(&gr->g, self->es, &es)) {
       igraphmodule_handle_igraph_error();
-      igraph_vector_destroy(&es);
+      igraph_vector_int_destroy(&es);
       return -1;
     }
-    no_of_edges = (long)igraph_vector_size(&es);
+    no_of_edges = (long)igraph_vector_int_size(&es);
     if (n == 0 && no_of_edges > 0) {
       PyErr_SetString(PyExc_ValueError, "sequence must not be empty");
-      igraph_vector_destroy(&es);
+      igraph_vector_int_destroy(&es);
       return -1;
     }
     /* Check if we already have attributes with the given name */
@@ -452,22 +460,22 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
       for (i=0, j=0; i<no_of_edges; i++, j++) {
         if (j == n) j = 0;
         item = PySequence_GetItem(values, j);
-        if (item == 0) { igraph_vector_destroy(&es); return -1; }
+        if (item == 0) { igraph_vector_int_destroy(&es); return -1; }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
         if (PyList_SetItem(list, (long)VECTOR(es)[i], item)) {
           Py_DECREF(item);
-          igraph_vector_destroy(&es);
+          igraph_vector_int_destroy(&es);
           return -1;
         } /* PyList_SetItem stole a reference to the item automatically */
       }
-      igraph_vector_destroy(&es);
+      igraph_vector_int_destroy(&es);
     } else if (values != 0) {
       /* We don't have attributes with the given name yet. Create an entry
        * in the dict, create a new list, fill with None for vertices not in the
        * sequence and copy the rest */
       long n2 = igraph_ecount(&gr->g);
       list = PyList_New(n2);
-      if (list == 0) { igraph_vector_destroy(&es); return -1; }
+      if (list == 0) { igraph_vector_int_destroy(&es); return -1; }
       for (i=0; i<n2; i++) {
         Py_INCREF(Py_None);
         PyList_SET_ITEM(list, i, Py_None);
@@ -476,14 +484,14 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
         if (j == n) j = 0;
         item = PySequence_GetItem(values, j);
         if (item == 0) {
-          igraph_vector_destroy(&es);
+          igraph_vector_int_destroy(&es);
           Py_DECREF(list); return -1;
         }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
         PyList_SET_ITEM(list, (long)VECTOR(es)[i], item);
         /* PyList_SET_ITEM stole a reference to the item automatically */
       }
-      igraph_vector_destroy(&es);
+      igraph_vector_int_destroy(&es);
       if (PyDict_SetItem(dict, attrname, list)) {
         Py_DECREF(list);
         return -1;
@@ -580,9 +588,9 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
       /* Call the callable for every edge in the current sequence to
        * determine what's up */
       igraph_bool_t was_excluded = 0;
-      igraph_vector_t v;
+      igraph_vector_int_t v;
 
-      if (igraph_vector_init(&v, 0)) {
+      if (igraph_vector_int_init(&v, 0)) {
         igraphmodule_handle_igraph_error();
         return 0;
       }
@@ -593,17 +601,17 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
         PyObject *call_result;
         if (edge == 0) {
           Py_DECREF(result);
-          igraph_vector_destroy(&v);
+          igraph_vector_int_destroy(&v);
           return NULL;
         }
         call_result = PyObject_CallFunctionObjArgs(item, edge, NULL);
         if (call_result == 0) {
           Py_DECREF(edge); Py_DECREF(result);
-          igraph_vector_destroy(&v);
+          igraph_vector_int_destroy(&v);
           return NULL;
         }
         if (PyObject_IsTrue(call_result))
-          igraph_vector_push_back(&v,
+          igraph_vector_int_push_back(&v,
             igraphmodule_Edge_get_index_long((igraphmodule_EdgeObject*)edge));
         else was_excluded=1;
         Py_DECREF(call_result);
@@ -614,92 +622,92 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
         igraph_es_destroy(&result->es);
         if (igraph_es_vector_copy(&result->es, &v)) {
           Py_DECREF(result);
-          igraph_vector_destroy(&v);
+          igraph_vector_int_destroy(&v);
           igraphmodule_handle_igraph_error();
           return NULL;
         }
       }
 
-      igraph_vector_destroy(&v);
+      igraph_vector_int_destroy(&v);
     } else if (PyLong_Check(item)) {
       /* Integers are treated specially: from now on, all remaining items
        * in the argument list must be integers and they will be used together
        * to restrict the edge set. Integers are interpreted as indices on the
        * edge set and NOT on the original, untouched edge sequence of the
        * graph */
-      igraph_vector_t v, v2;
-      if (igraph_vector_init(&v, 0)) {
+      igraph_vector_int_t v, v2;
+      if (igraph_vector_int_init(&v, 0)) {
         igraphmodule_handle_igraph_error();
         return 0;
       }
-      if (igraph_vector_init(&v2, 0)) {
-        igraph_vector_destroy(&v);
+      if (igraph_vector_int_init(&v2, 0)) {
+        igraph_vector_int_destroy(&v);
         igraphmodule_handle_igraph_error();
         return 0;
       }
       if (igraph_es_as_vector(&gr->g, self->es, &v2)) {
-        igraph_vector_destroy(&v);
-        igraph_vector_destroy(&v2);
+        igraph_vector_int_destroy(&v);
+        igraph_vector_int_destroy(&v2);
         igraphmodule_handle_igraph_error();
         return 0;
       }
-      m = igraph_vector_size(&v2);
+      m = igraph_vector_int_size(&v2);
       for (; i<n; i++) {
         PyObject *item2 = PyTuple_GET_ITEM(args, i);
         long idx;
         if (!PyLong_Check(item2)) {
           Py_DECREF(result);
           PyErr_SetString(PyExc_TypeError, "edge indices expected");
-          igraph_vector_destroy(&v);
-          igraph_vector_destroy(&v2);
+          igraph_vector_int_destroy(&v);
+          igraph_vector_int_destroy(&v2);
           return NULL;
         }
         idx = PyLong_AsLong(item2);
         if (idx >= m || idx < 0) {
           PyErr_SetString(PyExc_ValueError, "edge index out of range");
-          igraph_vector_destroy(&v);
-          igraph_vector_destroy(&v2);
+          igraph_vector_int_destroy(&v);
+          igraph_vector_int_destroy(&v2);
           return NULL;
         }
-        if (igraph_vector_push_back(&v, VECTOR(v2)[idx])) {
+        if (igraph_vector_int_push_back(&v, VECTOR(v2)[idx])) {
           Py_DECREF(result);
           igraphmodule_handle_igraph_error();
-          igraph_vector_destroy(&v);
-          igraph_vector_destroy(&v2);
+          igraph_vector_int_destroy(&v);
+          igraph_vector_int_destroy(&v2);
           return NULL;
         }
       }
-      igraph_vector_destroy(&v2);
+      igraph_vector_int_destroy(&v2);
       igraph_es_destroy(&result->es);
       if (igraph_es_vector_copy(&result->es, &v)) {
         Py_DECREF(result);
         igraphmodule_handle_igraph_error();
-        igraph_vector_destroy(&v);
+        igraph_vector_int_destroy(&v);
         return NULL;
       }
-      igraph_vector_destroy(&v);
+      igraph_vector_int_destroy(&v);
     } else {
       /* Iterators and everything that was not handled directly */
       PyObject *iter, *item2;
-      igraph_vector_t v, v2;
+      igraph_vector_int_t v, v2;
 
       /* Allocate stuff */
-      if (igraph_vector_init(&v, 0)) {
+      if (igraph_vector_int_init(&v, 0)) {
         igraphmodule_handle_igraph_error();
         return 0;
       }
-      if (igraph_vector_init(&v2, 0)) {
-        igraph_vector_destroy(&v);
+      if (igraph_vector_int_init(&v2, 0)) {
+        igraph_vector_int_destroy(&v);
         igraphmodule_handle_igraph_error();
         return 0;
       }
       if (igraph_es_as_vector(&gr->g, self->es, &v2)) {
-        igraph_vector_destroy(&v);
-        igraph_vector_destroy(&v2);
+        igraph_vector_int_destroy(&v);
+        igraph_vector_int_destroy(&v2);
         igraphmodule_handle_igraph_error();
         return 0;
       }
-      m = igraph_vector_size(&v2);
+      m = igraph_vector_int_size(&v2);
 
       /* Create an appropriate iterator */
       if (PySlice_Check(item)) {
@@ -708,7 +716,8 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
         PyObject* range;
         igraph_bool_t ok;
 
-        ok = (PySlice_GetIndicesEx(item, igraph_vector_size(&v2), &start, &stop, &step, &sl) == 0);
+        ok = (PySlice_GetIndicesEx(item, igraph_vector_int_size(&v2),
+              &start, &stop, &step, &sl) == 0);
         if (ok) {
           range = igraphmodule_PyRange_create(start, stop, step);
           ok = (range != 0);
@@ -719,8 +728,8 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
           ok = (iter != 0);
         }
         if (!ok) {
-          igraph_vector_destroy(&v);
-          igraph_vector_destroy(&v2);
+          igraph_vector_int_destroy(&v);
+          igraph_vector_int_destroy(&v2);
           PyErr_SetString(PyExc_TypeError, "error while converting slice to iterator");
           Py_DECREF(result);
           return 0;
@@ -732,8 +741,8 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
 
       /* Did we manage to get an iterator? */
       if (iter == 0) {
-        igraph_vector_destroy(&v);
-        igraph_vector_destroy(&v2);
+        igraph_vector_int_destroy(&v);
+        igraph_vector_int_destroy(&v2);
         PyErr_SetString(PyExc_TypeError, "invalid edge filter among positional arguments");
         Py_DECREF(result);
         return 0;
@@ -749,25 +758,25 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
             PyErr_SetString(PyExc_ValueError, "edge index out of range");
             Py_DECREF(result);
             Py_DECREF(iter);
-            igraph_vector_destroy(&v);
-            igraph_vector_destroy(&v2);
+            igraph_vector_int_destroy(&v);
+            igraph_vector_int_destroy(&v2);
             return NULL;
           }
-          if (igraph_vector_push_back(&v, VECTOR(v2)[(long int) igraph_idx])) {
+          if (igraph_vector_int_push_back(&v, VECTOR(v2)[(long int) igraph_idx])) {
             Py_DECREF(result);
             Py_DECREF(iter);
             igraphmodule_handle_igraph_error();
-            igraph_vector_destroy(&v);
-            igraph_vector_destroy(&v2);
+            igraph_vector_int_destroy(&v);
+            igraph_vector_int_destroy(&v2);
             return NULL;
           }
         }
       }
       /* Deallocate stuff */
-      igraph_vector_destroy(&v2);
+      igraph_vector_int_destroy(&v2);
       Py_DECREF(iter);
       if (PyErr_Occurred()) {
-        igraph_vector_destroy(&v);
+        igraph_vector_int_destroy(&v);
         Py_DECREF(result);
         return 0;
       }
@@ -775,10 +784,10 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
       if (igraph_es_vector_copy(&result->es, &v)) {
         Py_DECREF(result);
         igraphmodule_handle_igraph_error();
-        igraph_vector_destroy(&v);
+        igraph_vector_int_destroy(&v);
         return NULL;
       }
-      igraph_vector_destroy(&v);
+      igraph_vector_int_destroy(&v);
     }
   }
 
@@ -878,21 +887,21 @@ PyObject* igraphmodule_EdgeSeq_get_graph(igraphmodule_EdgeSeqObject* self,
 PyObject* igraphmodule_EdgeSeq_get_indices(igraphmodule_EdgeSeqObject* self,
   void* closure) {
   igraphmodule_GraphObject *gr = self->gref;
-  igraph_vector_t es;
+  igraph_vector_int_t es;
   PyObject *result;
 
-  if (igraph_vector_init(&es, 0)) {
+  if (igraph_vector_int_init(&es, 0)) {
     igraphmodule_handle_igraph_error();
     return 0;
   }
   if (igraph_es_as_vector(&gr->g, self->es, &es)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&es);
+    igraph_vector_int_destroy(&es);
     return 0;
   }
 
-  result = igraphmodule_vector_t_to_PyList(&es, IGRAPHMODULE_TYPE_INT);
-  igraph_vector_destroy(&es);
+  result = igraphmodule_vector_int_t_to_PyList(&es);
+  igraph_vector_int_destroy(&es);
 
   return result;
 }

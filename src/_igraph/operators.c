@@ -153,10 +153,10 @@ PyObject *igraphmodule__union(PyObject *self,
     for (i = 0; i < no_of_graphs; i++) {
       long int j;
       long int no_of_edges = (long int) igraph_ecount(VECTOR(gs)[i]);
-      igraph_vector_t *map = VECTOR(edgemaps)[i];
+      igraph_vector_int_t *map = VECTOR(edgemaps)[i];
       PyObject *emi = PyList_New((Py_ssize_t) no_of_edges);
       for (j = 0; j < no_of_edges; j++) {
-        PyObject *dest = PyLong_FromLong(VECTOR(*map)[j]);
+        PyObject *dest = PyLong_FromLong((long)VECTOR(*map)[j]);
         PyList_SET_ITEM(emi, (Py_ssize_t) j, dest);
       }
       PyList_SET_ITEM(em_list, (Py_ssize_t) i, emi);
@@ -263,10 +263,10 @@ PyObject *igraphmodule__intersection(PyObject *self,
     for (i = 0; i < no_of_graphs; i++) {
       long int j;
       long int no_of_edges = (long int) igraph_ecount(VECTOR(gs)[i]);
-      igraph_vector_t *map = VECTOR(edgemaps)[i];
+      igraph_vector_int_t *map = VECTOR(edgemaps)[i];
       PyObject *emi = PyList_New((Py_ssize_t) no_of_edges);
       for (j = 0; j < no_of_edges; j++) {
-        PyObject *dest = PyLong_FromLong(VECTOR(*map)[j]);
+        PyObject *dest = PyLong_FromLong((long)VECTOR(*map)[j]);
         PyList_SET_ITEM(emi, (Py_ssize_t) j, dest);
       }
       PyList_SET_ITEM(em_list, (Py_ssize_t) i, emi);

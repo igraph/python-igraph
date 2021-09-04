@@ -413,7 +413,7 @@ static int igraphmodule_i_attribute_copy(igraph_t *to, const igraph_t *from,
 }
 
 /* Adding vertices */
-static int igraphmodule_i_attribute_add_vertices(igraph_t *graph, long int nv, igraph_vector_ptr_t *attr) {
+static int igraphmodule_i_attribute_add_vertices(igraph_t *graph, igraph_integer_t nv, igraph_vector_ptr_t *attr) {
   /* Extend the end of every value in the vertex hash with nv pieces of None */
   PyObject *key, *value, *dict;
   long int i, j, k, l;
@@ -553,7 +553,7 @@ static int igraphmodule_i_attribute_add_vertices(igraph_t *graph, long int nv, i
 
 /* Permuting vertices */
 static int igraphmodule_i_attribute_permute_vertices(const igraph_t *graph,
-    igraph_t *newgraph, const igraph_vector_t *idx) {
+    igraph_t *newgraph, const igraph_vector_int_t *idx) {
   long int n, i;
   PyObject *key, *value, *dict, *newdict, *newlist, *o;
   Py_ssize_t pos=0;
@@ -564,7 +564,7 @@ static int igraphmodule_i_attribute_permute_vertices(const igraph_t *graph,
   newdict=PyDict_New();
   if (!newdict) return 1;
 
-  n=igraph_vector_size(idx);
+  n=igraph_vector_int_size(idx);
   pos=0;
 
   while (PyDict_Next(dict, &pos, &key, &value)) {
@@ -593,7 +593,7 @@ static int igraphmodule_i_attribute_permute_vertices(const igraph_t *graph,
 }
 
 /* Adding edges */
-static int igraphmodule_i_attribute_add_edges(igraph_t *graph, const igraph_vector_t *edges, igraph_vector_ptr_t *attr) {
+static int igraphmodule_i_attribute_add_edges(igraph_t *graph, const igraph_vector_int_t *edges, igraph_vector_ptr_t *attr) {
   /* Extend the end of every value in the edge hash with ne pieces of None */
   PyObject *key, *value, *dict;
   Py_ssize_t pos=0;
@@ -601,7 +601,7 @@ static int igraphmodule_i_attribute_add_edges(igraph_t *graph, const igraph_vect
   igraph_bool_t *added_attrs=0;
   igraph_attribute_record_t *attr_rec;
 
-  ne=igraph_vector_size(edges)/2;
+  ne=igraph_vector_int_size(edges)/2;
   if (!graph->attr) return IGRAPH_SUCCESS;
   if (ne<0) return IGRAPH_SUCCESS;
   
@@ -771,7 +771,7 @@ static void igraphmodule_i_attribute_delete_edges(igraph_t *graph, const igraph_
 
 /* Permuting edges */
 static int igraphmodule_i_attribute_permute_edges(const igraph_t *graph,
-    igraph_t *newgraph, const igraph_vector_t *idx) { 
+    igraph_t *newgraph, const igraph_vector_int_t *idx) { 
   long int n, i;
   PyObject *key, *value, *dict, *newdict, *newlist, *o;
   Py_ssize_t pos=0;
@@ -782,7 +782,7 @@ static int igraphmodule_i_attribute_permute_edges(const igraph_t *graph,
   newdict=PyDict_New();
   if (!newdict) return 1;
 
-  n=igraph_vector_size(idx);
+  n=igraph_vector_int_size(idx);
   pos=0;
 
   while (PyDict_Next(dict, &pos, &key, &value)) {
@@ -822,8 +822,8 @@ static PyObject* igraphmodule_i_ac_func(PyObject* values,
   res = PyList_New(len);
   
   for (i = 0; i < len; i++) {
-    igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
-    long int j, n = igraph_vector_size(v);
+    igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
+    long int j, n = igraph_vector_int_size(v);
 
     list = PyList_New(n);
     for (j = 0; j < n; j++) {
@@ -889,9 +889,9 @@ static PyObject* igraphmodule_i_ac_sum(PyObject* values,
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
-    igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
+    igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
     igraph_real_t num = 0.0, sum = 0.0;
-    long int j, n = igraph_vector_size(v);
+    long int j, n = igraph_vector_int_size(v);
 
     for (j = 0; j < n; j++) {
       item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
@@ -923,9 +923,9 @@ static PyObject* igraphmodule_i_ac_prod(PyObject* values,
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
-    igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
+    igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
     igraph_real_t num = 1.0, prod = 1.0;
-    long int j, n = igraph_vector_size(v);
+    long int j, n = igraph_vector_int_size(v);
 
     for (j = 0; j < n; j++) {
       item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
@@ -957,8 +957,8 @@ static PyObject* igraphmodule_i_ac_first(PyObject* values,
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
-    igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
-    long int n = igraph_vector_size(v);
+    igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
+    long int n = igraph_vector_int_size(v);
 
     item = n > 0 ? PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[0]) : Py_None;
     Py_INCREF(item);
@@ -992,8 +992,8 @@ static PyObject* igraphmodule_i_ac_random(PyObject* values,
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
-    igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
-    long int n = igraph_vector_size(v);
+    igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
+    long int n = igraph_vector_int_size(v);
 
     if (n > 0) {
       num = PyObject_CallObject(random_func, 0);
@@ -1030,8 +1030,8 @@ static PyObject* igraphmodule_i_ac_last(PyObject* values,
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
-    igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
-    long int n = igraph_vector_size(v);
+    igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
+    long int n = igraph_vector_int_size(v);
 
     item = (n > 0) ? PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[n-1]) : Py_None;
     Py_INCREF(item);
@@ -1054,9 +1054,9 @@ static PyObject* igraphmodule_i_ac_mean(PyObject* values,
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
-    igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
+    igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
     igraph_real_t num = 0.0, mean = 0.0;
-    long int j, n = igraph_vector_size(v);
+    long int j, n = igraph_vector_int_size(v);
 
     for (j = 0; j < n; ) {
       item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
@@ -1090,8 +1090,8 @@ static PyObject* igraphmodule_i_ac_median(PyObject* values,
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
-    igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
-    long int j, n = igraph_vector_size(v);
+    igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
+    long int j, n = igraph_vector_int_size(v);
     list = PyList_New(n);
     for (j = 0; j < n; j++) {
       item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
@@ -1317,19 +1317,19 @@ static int igraphmodule_i_attribute_combine_edges(const igraph_t *graph,
 /* Getting attribute names and types */
 static int igraphmodule_i_attribute_get_info(const igraph_t *graph,
                                              igraph_strvector_t *gnames,
-                                             igraph_vector_t *gtypes,
+                                             igraph_vector_int_t *gtypes,
                                              igraph_strvector_t *vnames,
-                                             igraph_vector_t *vtypes,
+                                             igraph_vector_int_t *vtypes,
                                              igraph_strvector_t *enames,
-                                             igraph_vector_t *etypes) {
+                                             igraph_vector_int_t *etypes) {
   igraph_strvector_t *names[3] = { gnames, vnames, enames };
-  igraph_vector_t *types[3] = { gtypes, vtypes, etypes };
+  igraph_vector_int_t *types[3] = { gtypes, vtypes, etypes };
   int retval;
   long int i, j, k, l, m;
   
   for (i=0; i<3; i++) {
     igraph_strvector_t *n = names[i];
-    igraph_vector_t *t = types[i];
+    igraph_vector_int_t *t = types[i];
     PyObject *dict = ATTR_STRUCT_DICT(graph)[i];
     PyObject *keys;
     PyObject *values;
@@ -1344,7 +1344,7 @@ static int igraphmodule_i_attribute_get_info(const igraph_t *graph,
     }
     if (t) {
       k=PyList_Size(keys);
-      igraph_vector_resize(t, k);
+      igraph_vector_int_resize(t, k);
       for (j=0; j<k; j++) {
         int is_numeric = 1;
         int is_string = 1;
