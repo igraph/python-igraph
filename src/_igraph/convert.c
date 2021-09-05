@@ -2927,7 +2927,7 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
   } else if (PyObject_IsInstance(o, (PyObject*)&igraphmodule_EdgeType)) {
     /* Single edge ID from Edge object */
     igraphmodule_EdgeObject *eo = (igraphmodule_EdgeObject*)o;
-    *eid = igraphmodule_Edge_get_index_igraph_integer(eo);
+    *eid = igraphmodule_Edge_get_index_as_igraph_integer(eo);
   } else if (PyIndex_Check(o)) {
     /* Other numeric type that can be converted to an index */
     PyObject* num = PyNumber_Index(o);
@@ -2965,8 +2965,11 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
 
     retval = igraph_get_eid(graph, eid, vid1, vid2, 1, 0);
     if (retval == IGRAPH_EINVVID) {
-      PyErr_Format(PyExc_ValueError, "no edge from vertex #%ld to #%ld; no such vertex ID",
-          (long int)vid1, (long int)vid2);
+      PyErr_Format(
+        PyExc_ValueError,
+        "no edge from vertex #%" IGRAPH_PRId " to #%" IGRAPH_PRId "; no such vertex ID",
+        vid1, vid2
+      );
       return 1;
     } else if (retval) {
       igraphmodule_handle_igraph_error();
@@ -2974,8 +2977,11 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
     }
 
     if (*eid < 0) {
-      PyErr_Format(PyExc_ValueError, "no edge from vertex #%ld to #%ld",
-          (long int)vid1, (long int)vid2);
+      PyErr_Format(
+        PyExc_ValueError,
+        "no edge from vertex #%" IGRAPH_PRId " to #%" IGRAPH_PRId,
+        vid1, vid2
+      );
       return 1;
     }
   } else {

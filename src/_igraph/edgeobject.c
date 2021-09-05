@@ -23,6 +23,7 @@
 */
 
 #include "attributes.h"
+#include "convert.h"
 #include "edgeobject.h"
 #include "error.h"
 #include "graphobject.h"
@@ -150,8 +151,8 @@ PyObject* igraphmodule_Edge_repr(igraphmodule_EdgeObject *self) {
   if (attrs == 0)
     return NULL;
 
-  s = PyUnicode_FromFormat("igraph.Edge(%R, %ld, %R)",
-      (PyObject*)self->gref, (long int)self->idx, attrs);
+  s = PyUnicode_FromFormat("igraph.Edge(%R, %" IGRAPH_PRId ", %R)",
+      (PyObject*)self->gref, self->idx, attrs);
   Py_DECREF(attrs);
 
   return s;
@@ -169,7 +170,7 @@ long igraphmodule_Edge_hash(igraphmodule_EdgeObject* self) {
   if (self->hash != -1)
     return self->hash;
 
-  index_o = PyLong_FromLong((long int)self->idx);
+  index_o = igraphmodule_integer_t_to_PyObject(self->idx);
   if (index_o == 0)
     return -1;
 
@@ -260,23 +261,25 @@ PyObject* igraphmodule_Edge_attribute_names(igraphmodule_EdgeObject* self) {
 PyObject* igraphmodule_Edge_attributes(igraphmodule_EdgeObject* self) {
   igraphmodule_GraphObject *o = self->gref;
   PyObject *names, *dict;
-  long int i, n;
+  Py_ssize_t i, n;
 
-  if (!igraphmodule_Edge_Validate((PyObject*)self))
-    return 0;
-
-  dict=PyDict_New();
-  if (!dict)
+  if (!igraphmodule_Edge_Validate((PyObject*)self)) {
     return NULL;
+  }
 
-  names=igraphmodule_Graph_edge_attributes(o);
+  dict = PyDict_New();
+  if (!dict) {
+    return NULL;
+  }
+
+  names = igraphmodule_Graph_edge_attributes(o);
   if (!names) {
     Py_DECREF(dict);
     return NULL;
   }
 
   n = PyList_Size(names);
-  for (i=0; i<n; i++) {
+  for (i = 0; i < n; i++) {
     PyObject *name = PyList_GetItem(names, i);
     if (name) {
       PyObject *dictit;
@@ -423,13 +426,15 @@ PyObject* igraphmodule_Edge_get_from(igraphmodule_EdgeObject* self, void* closur
   igraphmodule_GraphObject *o = self->gref;
   igraph_integer_t from, to;
 
-  if (!igraphmodule_Edge_Validate((PyObject*)self))
+  if (!igraphmodule_Edge_Validate((PyObject*)self)) {
     return NULL;
+  }
 
   if (igraph_edge(&o->g, self->idx, &from, &to)) {
-    igraphmodule_handle_igraph_error(); return NULL;
+    return igraphmodule_handle_igraph_error();
   }
-  return PyLong_FromLong((long int)from);
+
+  return igraphmodule_integer_t_to_PyObject(from);
 }
 
 /**
@@ -458,13 +463,15 @@ PyObject* igraphmodule_Edge_get_to(igraphmodule_EdgeObject* self, void* closure)
   igraphmodule_GraphObject *o = self->gref;
   igraph_integer_t from, to;
   
-  if (!igraphmodule_Edge_Validate((PyObject*)self))
+  if (!igraphmodule_Edge_Validate((PyObject*)self)) {
     return NULL;
+  }
 
   if (igraph_edge(&o->g, self->idx, &from, &to)) {
-    igraphmodule_handle_igraph_error(); return NULL;
+    return igraphmodule_handle_igraph_error();
   }
-  return PyLong_FromLong((long)to);
+
+  return igraphmodule_integer_t_to_PyObject(to);
 }
 
 /**
@@ -490,23 +497,15 @@ PyObject* igraphmodule_Edge_get_target_vertex(igraphmodule_EdgeObject* self, voi
  * Returns the edge index
  */
 PyObject* igraphmodule_Edge_get_index(igraphmodule_EdgeObject* self, void* closure) {
-  return PyLong_FromLong((long int)self->idx);
+  return igraphmodule_integer_t_to_PyObject(self->idx);
 }
 
 /**
  * \ingroup python_interface_edge
  * Returns the edge index as an igraph_integer_t
  */
-igraph_integer_t igraphmodule_Edge_get_index_igraph_integer(igraphmodule_EdgeObject* self) {
+igraph_integer_t igraphmodule_Edge_get_index_as_igraph_integer(igraphmodule_EdgeObject* self) {
   return self->idx;
-}
-
-/**
- * \ingroup python_interface_edge
- * Returns the edge index as an ordinary C long
- */
-long igraphmodule_Edge_get_index_long(igraphmodule_EdgeObject* self) {
-  return (long)self->idx;
 }
 
 /**
@@ -516,14 +515,32 @@ long igraphmodule_Edge_get_index_long(igraphmodule_EdgeObject* self) {
 PyObject* igraphmodule_Edge_get_tuple(igraphmodule_EdgeObject* self, void* closure) {
   igraphmodule_GraphObject *o = self->gref;
   igraph_integer_t from, to;
+  PyObject *from_o, *to_o, *result;
   
-  if (!igraphmodule_Edge_Validate((PyObject*)self))
+  if (!igraphmodule_Edge_Validate((PyObject*)self)) {
     return NULL;
+  }
 
   if (igraph_edge(&o->g, self->idx, &from, &to)) {
-    igraphmodule_handle_igraph_error(); return NULL;
+    return igraphmodule_handle_igraph_error();
   }
-  return Py_BuildValue("(ii)", (long)from, (long)to);
+
+  from_o = igraphmodule_integer_t_to_PyObject(from);
+  if (!from_o) {
+    return NULL;
+  }
+
+  to_o = igraphmodule_integer_t_to_PyObject(to);
+  if (!to_o) {
+    Py_DECREF(from_o);
+    return NULL;
+  }
+
+  result = PyTuple_Pack(2, from_o, to_o);
+  Py_DECREF(to_o);
+  Py_DECREF(from_o);
+
+  return result;
 }
 
 /**
@@ -567,7 +584,7 @@ PyObject* igraphmodule_Edge_get_graph(igraphmodule_EdgeObject* self, void* closu
 #define GRAPH_PROXY_METHOD(FUNC, METHODNAME) \
     PyObject* igraphmodule_Edge_##FUNC(igraphmodule_EdgeObject* self, PyObject* args, PyObject* kwds) { \
       PyObject *new_args, *item, *result;                     \
-      long int i, num_args = args ? PyTuple_Size(args)+1 : 1; \
+      Py_ssize_t i, num_args = args ? PyTuple_Size(args)+1 : 1; \
                                                               \
       /* Prepend ourselves to args */                         \
       new_args = PyTuple_New(num_args);                       \

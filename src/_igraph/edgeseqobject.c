@@ -612,7 +612,7 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
         }
         if (PyObject_IsTrue(call_result))
           igraph_vector_int_push_back(&v,
-            igraphmodule_Edge_get_index_long((igraphmodule_EdgeObject*)edge));
+            igraphmodule_Edge_get_index_as_igraph_integer((igraphmodule_EdgeObject*)edge));
         else was_excluded=1;
         Py_DECREF(call_result);
         Py_DECREF(edge);
