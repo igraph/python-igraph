@@ -1312,12 +1312,17 @@ PyObject* igraphmodule_vector_bool_t_to_PyList(const igraph_vector_bool_t *v) {
   PyObject *list, *item;
   Py_ssize_t n, i;
 
-  n=igraph_vector_bool_size(v);
-  if (n<0)
+  n = igraph_vector_bool_size(v);
+  if (n < 0) {
     return igraphmodule_handle_igraph_error();
+  }
 
-  list=PyList_New(n);
-  for (i=0; i<n; i++) {
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
+
+  for (i = 0; i < n; i++) {
     item = VECTOR(*v)[i] ? Py_True : Py_False;
     Py_INCREF(item);
     PyList_SET_ITEM(list, i, item);
@@ -1511,29 +1516,52 @@ PyObject* igraphmodule_vector_int_t_to_PyTuple(const igraph_vector_int_t *v) {
  * \return the Python integer pair list as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_vector_int_t_to_PyList_pairs(const igraph_vector_int_t *v) {
-   PyObject *list, *pair;
-   long n, i, j;
+   PyObject *list, *pair, *first, *second;
+  Py_ssize_t n, i, j;
 
-   n=igraph_vector_int_size(v);
-   if (n<0) return igraphmodule_handle_igraph_error();
-   if (n%2) return igraphmodule_handle_igraph_error();
+  n = igraph_vector_int_size(v);
+  if (n < 0 || n % 2 != 0) {
+    return igraphmodule_handle_igraph_error();
+  }
 
-   /* create a new Python list */
-   n>>=1;
-   list=PyList_New(n);
+  /* create a new Python list */
+  n >>= 1;
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
 
-   /* populate the list with data */
-   for (i=0, j=0; i<n; i++, j+=2) {
-     pair=Py_BuildValue("(ll)", (long)VECTOR(*v)[j], (long)VECTOR(*v)[j+1]);
-     if (pair==NULL || PyList_SetItem(list, i, pair)) {
-       /* error occurred while populating the list, return immediately */
-       Py_DECREF(pair);
-       Py_DECREF(list);
-       return NULL;
-     }
-   }
+  /* populate the list with data */
+  for (i = 0, j = 0; i < n; i++, j += 2) {
+    first = igraphmodule_integer_t_to_PyObject(VECTOR(*v)[j]);
+    if (!first) {
+      Py_DECREF(list);
+      return NULL;
+    }
 
-   return list;
+    second = igraphmodule_integer_t_to_PyObject(VECTOR(*v)[j + 1]);
+    if (!second) {
+      Py_DECREF(first);
+      Py_DECREF(list);
+      return NULL;
+    }
+
+    pair = PyTuple_Pack(2, first, second);
+    if (pair == NULL) {
+      Py_DECREF(second);
+      Py_DECREF(first);
+      Py_DECREF(list);
+      return NULL;
+    }
+
+    Py_DECREF(first);
+    Py_DECREF(second);
+    first = second = 0;
+
+    PyList_SET_ITEM(list, i, pair);
+  }
+
+  return list;
 }
 
 /**
@@ -1982,7 +2010,7 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
 
 /**
  * \ingroup python_interface_conversion
- * \brief Converts two igraph \c igraph_vector_t vectors to a Python list of integer pairs
+ * \brief Converts two igraph \c igraph_vector_int_t vectors to a Python list of integer pairs
  *
  * \param v1 the \c igraph_vector_int_t containing the 1st vector to be converted
  * \param v2 the \c igraph_vector_int_t containing the 2nd vector to be converted
@@ -1990,28 +2018,51 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
  */
 PyObject* igraphmodule_vector_int_t_pair_to_PyList(const igraph_vector_int_t *v1,
     const igraph_vector_int_t *v2) {
-   PyObject *list, *pair;
-   long n, i;
+  PyObject *list, *pair, *first, *second;
+  Py_ssize_t i, n;
 
-   n=igraph_vector_int_size(v1);
-   if (n<0) return igraphmodule_handle_igraph_error();
-   if (igraph_vector_int_size(v2) != n) return igraphmodule_handle_igraph_error();
+  n = igraph_vector_int_size(v1);
+  if (n < 0 || igraph_vector_int_size(v2) != n) {
+    return igraphmodule_handle_igraph_error();
+  }
 
-   /* create a new Python list */
-   list=PyList_New(n);
+  /* create a new Python list */
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
 
-   /* populate the list with data */
-   for (i=0; i<n; i++) {
-     pair=Py_BuildValue("(ll)", (long)VECTOR(*v1)[i], (long)VECTOR(*v2)[i]);
-     if (pair==NULL || PyList_SetItem(list, i, pair)) {
-       /* error occurred while populating the list, return immediately */
-       Py_DECREF(pair);
-       Py_DECREF(list);
-       return NULL;
-     }
-   }
+  /* populate the list with data */
+  for (i = 0; i < n; i++) {
+    first = igraphmodule_integer_t_to_PyObject(VECTOR(*v1)[i]);
+    if (!first) {
+      Py_DECREF(list);
+      return NULL;
+    }
 
-   return list;
+    second = igraphmodule_integer_t_to_PyObject(VECTOR(*v2)[i]);
+    if (!second) {
+      Py_DECREF(first);
+      Py_DECREF(list);
+      return NULL;
+    }
+
+    pair = PyTuple_Pack(2, first, second);
+    if (pair == NULL) {
+      Py_DECREF(second);
+      Py_DECREF(first);
+      Py_DECREF(list);
+      return NULL;
+    }
+
+    Py_DECREF(first);
+    Py_DECREF(second);
+    first = second = 0;
+
+    PyList_SET_ITEM(list, i, pair);
+  }
+
+  return list;
 }
 
 /**
@@ -2025,23 +2076,23 @@ PyObject* igraphmodule_vector_int_t_pair_to_PyList(const igraph_vector_int_t *v1
  */
 PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
     igraphmodule_conv_t type) {
-   PyObject *list, *row, *item;
-   Py_ssize_t nr, nc, i, j;
+  PyObject *list, *row, *item;
+  Py_ssize_t nr, nc, i, j;
 
-   nr = igraph_matrix_nrow(m);
-   nc = igraph_matrix_ncol(m);
-   if (nc < 0 || nc < 0) {
-     return igraphmodule_handle_igraph_error();
-   }
+  nr = igraph_matrix_nrow(m);
+  nc = igraph_matrix_ncol(m);
+  if (nc < 0 || nc < 0) {
+    return igraphmodule_handle_igraph_error();
+  }
 
-   // create a new Python list
-   list = PyList_New(nr);
-   if (!list) {
-     return NULL;
-   }
+  // create a new Python list
+  list = PyList_New(nr);
+  if (!list) {
+    return NULL;
+  }
 
-   // populate the list with data
-   for (i = 0; i < nr; i++) {
+  // populate the list with data
+  for (i = 0; i < nr; i++) {
     row = PyList_New(nc);
     if (!row) {
       Py_DECREF(list);
@@ -2050,18 +2101,16 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
   
     for (j = 0; j < nc; j++) {
       item = igraphmodule_real_t_to_PyObject(MATRIX(*m, i, j), type);
-      if (!item || PyList_SetItem(row, j, item)) {
-        // error occurred while populating the list, return immediately
+      if (!item) {
         Py_DECREF(row);
         Py_DECREF(list);
         return NULL;
       }
+
+      PyList_SET_ITEM(row, j, item);
     }
-    if (PyList_SetItem(list, i, row)) {
-      Py_DECREF(row);
-      Py_DECREF(list);
-      return NULL;
-    }
+
+    PyList_SET_ITEM(list, i, row);   
   }
 
   // return the list
@@ -2102,19 +2151,16 @@ PyObject* igraphmodule_matrix_int_t_to_PyList(const igraph_matrix_int_t *m) {
     for (j = 0; j < nc; j++) {
       // convert to integers except nan or infinity
       item = igraphmodule_integer_t_to_PyObject(MATRIX(*m, i, j));
-
-      if (!item || PyList_SetItem(row, j, item)) {
-        // error occurred while populating the list, return immediately
+      if (!item) {
         Py_DECREF(row);
         Py_DECREF(list);
         return NULL;
       }
+
+      PyList_SET_ITEM(row, j, item);
     }
-    if (PyList_SetItem(list, i, row)) {
-      Py_DECREF(row);
-      Py_DECREF(list);
-      return NULL;
-    }
+
+    PyList_SET_ITEM(list, i, row);   
   }
 
   // return the list
@@ -2133,13 +2179,18 @@ PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
   PyObject *list, *item;
   Py_ssize_t n, i;
 
-  n=igraph_vector_ptr_size(v);
-  if (n<0)
+  n = igraph_vector_ptr_size(v);
+  if (n < 0) {
     return igraphmodule_handle_igraph_error();
+  }
 
-  list=PyList_New(n);
-  for (i=0; i<n; i++) {
-    item=igraphmodule_vector_t_to_PyList((igraph_vector_t*)VECTOR(*v)[i], type);
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
+
+  for (i = 0; i < n; i++) {
+    item = igraphmodule_vector_t_to_PyList((igraph_vector_t*)VECTOR(*v)[i], type);
     if (item == NULL) {
       Py_DECREF(list);
       return NULL;
@@ -2161,13 +2212,18 @@ PyObject* igraphmodule_vector_int_ptr_t_to_PyList(const igraph_vector_ptr_t *v) 
   PyObject *list, *item;
   Py_ssize_t n, i;
 
-  n=igraph_vector_ptr_size(v);
-  if (n<0)
+  n = igraph_vector_ptr_size(v);
+  if (n < 0) {
     return igraphmodule_handle_igraph_error();
+  }
 
-  list=PyList_New(n);
-  for (i=0; i<n; i++) {
-    item=igraphmodule_vector_int_t_to_PyList((igraph_vector_int_t*)VECTOR(*v)[i]);
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
+
+  for (i = 0; i < n; i++) {
+    item = igraphmodule_vector_int_t_to_PyList((igraph_vector_int_t*)VECTOR(*v)[i]);
     if (item == NULL) {
       Py_DECREF(list);
       return NULL;
@@ -2471,28 +2527,36 @@ int igraphmodule_PyObject_to_vector_int_ptr_t(PyObject* list, igraph_vector_ptr_
  * \return the Python string list as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v) {
-  PyObject* list;
+  PyObject *list, *item;
   Py_ssize_t n, i;
   char* ptr;
 
-  n=igraph_strvector_size(v);
-  if (n<0)
+  n = igraph_strvector_size(v);
+  if (n < 0) {
     return igraphmodule_handle_igraph_error();
+  }
 
-  // create a new Python list
-  list=PyList_New(n);
+  /* create a new Python list */
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
+
   /* populate the list with data */
-  for (i=0; i<n; i++) {
+  for (i = 0; i < n; i++) {
     igraph_strvector_get(v, i, &ptr);
-    if (PyList_SetItem(list, i, PyUnicode_FromString(ptr))) {
-      /* error occurred while populating the list, return immediately */
+
+    item = PyUnicode_FromString(ptr);
+    if (!item) {
       Py_DECREF(list);
       return NULL;
     }
+
+    PyList_SET_ITEM(list, i, item);
   }
 
-   /* return the list */
-   return list;
+  /* return the list */
+  return list;
 }
 
 /**
