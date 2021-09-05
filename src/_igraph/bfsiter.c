@@ -22,6 +22,7 @@
 
 #include "bfsiter.h"
 #include "common.h"
+#include "convert.h"
 #include "error.h"
 #include "vertexobject.h"
 
@@ -42,9 +43,9 @@ PyTypeObject igraphmodule_BFSIterType;
  */
 PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, igraph_neimode_t mode, igraph_bool_t advanced) {
   igraphmodule_BFSIterObject* o;
-  long int no_of_nodes, r;
+  igraph_integer_t no_of_nodes, r;
   
-  o=PyObject_GC_New(igraphmodule_BFSIterObject, &igraphmodule_BFSIterType);
+  o = PyObject_GC_New(igraphmodule_BFSIterObject, &igraphmodule_BFSIterType);
   Py_INCREF(g);
   o->gref=g;
   o->graph=&g->g;
@@ -54,39 +55,47 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
     return NULL;
   }
   
-  no_of_nodes=igraph_vcount(&g->g);
+  no_of_nodes = igraph_vcount(&g->g);
   o->visited=(char*)calloc(no_of_nodes, sizeof(char));
   if (o->visited == 0) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
   
-  if (igraph_dqueue_init(&o->queue, 100)) {
+  if (igraph_dqueue_int_init(&o->queue, 100)) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
+
   if (igraph_vector_int_init(&o->neis, 0)) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
-    igraph_dqueue_destroy(&o->queue);
+    igraph_dqueue_int_destroy(&o->queue);
     return NULL;
   }
   
   if (PyLong_Check(root)) {
-    r=PyLong_AsLong(root);
+    if (igraphmodule_PyObject_to_integer_t(root, &r)) {
+      igraph_dqueue_int_destroy(&o->queue);
+      return NULL;
+    }
   } else {
-    r=((igraphmodule_VertexObject*)root)->idx;
+    r = ((igraphmodule_VertexObject*)root)->idx;
   }
-  if (igraph_dqueue_push(&o->queue, r) ||
-      igraph_dqueue_push(&o->queue, 0) ||
-      igraph_dqueue_push(&o->queue, -1)) {
-    igraph_dqueue_destroy(&o->queue);
+
+  if (igraph_dqueue_int_push(&o->queue, r) ||
+      igraph_dqueue_int_push(&o->queue, 0) ||
+      igraph_dqueue_int_push(&o->queue, -1)) {
+    igraph_dqueue_int_destroy(&o->queue);
     igraph_vector_int_destroy(&o->neis);
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
   o->visited[r]=1;
   
-  if (!igraph_is_directed(&g->g)) mode=IGRAPH_ALL;
+  if (!igraph_is_directed(&g->g)) {
+    mode=IGRAPH_ALL;
+  }
+
   o->mode=mode;
   o->advanced=advanced;
   
@@ -131,7 +140,7 @@ int igraphmodule_BFSIter_clear(igraphmodule_BFSIterObject *self) {
   self->gref=NULL;
   Py_XDECREF(tmp);
 
-  igraph_dqueue_destroy(&self->queue);
+  igraph_dqueue_int_destroy(&self->queue);
   igraph_vector_int_destroy(&self->neis);
   free(self->visited);
   self->visited=0;
@@ -157,27 +166,28 @@ PyObject* igraphmodule_BFSIter_iter(igraphmodule_BFSIterObject* self) {
 }
 
 PyObject* igraphmodule_BFSIter_iternext(igraphmodule_BFSIterObject* self) {
-  if (!igraph_dqueue_empty(&self->queue)) {
-    igraph_integer_t vid = (igraph_integer_t)igraph_dqueue_pop(&self->queue);
-    igraph_integer_t dist = (igraph_integer_t)igraph_dqueue_pop(&self->queue);
-    igraph_integer_t parent = (igraph_integer_t)igraph_dqueue_pop(&self->queue);
-    long int i;
+  if (!igraph_dqueue_int_empty(&self->queue)) {
+    igraph_integer_t vid = igraph_dqueue_int_pop(&self->queue);
+    igraph_integer_t dist = igraph_dqueue_int_pop(&self->queue);
+    igraph_integer_t parent = igraph_dqueue_int_pop(&self->queue);
+    igraph_integer_t i, n;
     
     if (igraph_neighbors(self->graph, &self->neis, vid, self->mode)) {
       igraphmodule_handle_igraph_error();
       return NULL;
     }
-	
-    for (i=0; i<igraph_vector_int_size(&self->neis); i++) {
-      igraph_integer_t neighbor = (igraph_integer_t)VECTOR(self->neis)[i];
-      if (self->visited[neighbor]==0) {
-	self->visited[neighbor]=1;
-	if (igraph_dqueue_push(&self->queue, neighbor) ||
-	    igraph_dqueue_push(&self->queue, dist+1) ||
-	    igraph_dqueue_push(&self->queue, vid)) {
-	  igraphmodule_handle_igraph_error();
-	  return NULL;
-	}
+
+    n = igraph_vector_int_size(&self->neis);
+    for (i = 0; i < n; i++) {
+      igraph_integer_t neighbor = VECTOR(self->neis)[i];
+      if (self->visited[neighbor] == 0) {
+        self->visited[neighbor] = 1;
+        if (igraph_dqueue_int_push(&self->queue, neighbor) ||
+            igraph_dqueue_int_push(&self->queue, dist+1) ||
+            igraph_dqueue_int_push(&self->queue, vid)) {
+          igraphmodule_handle_igraph_error();
+          return NULL;
+        }
       }
     }
 
@@ -194,7 +204,7 @@ PyObject* igraphmodule_BFSIter_iternext(igraphmodule_BFSIterObject* self) {
         Py_INCREF(Py_None);
         parentobj=Py_None;
       }
-      return Py_BuildValue("NlN", vertexobj, (long int)dist, parentobj);
+      return Py_BuildValue("NnN", vertexobj, (Py_ssize_t)dist, parentobj);
     } else {
       return igraphmodule_Vertex_New(self->gref, vid);
     }
