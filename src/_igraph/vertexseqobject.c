@@ -173,16 +173,21 @@ void igraphmodule_VertexSeq_dealloc(igraphmodule_VertexSeqObject* self) {
  * \ingroup python_interface_vertexseq
  * \brief Returns the length of the sequence
  */
-int igraphmodule_VertexSeq_sq_length(igraphmodule_VertexSeqObject* self) {
+Py_ssize_t igraphmodule_VertexSeq_sq_length(igraphmodule_VertexSeqObject* self) {
   igraph_t *g;
   igraph_integer_t result;
-  if (!self->gref) return -1;
-  g=&GET_GRAPH(self);
+
+  if (!self->gref) {
+    return -1;
+  }
+
+  g = &GET_GRAPH(self);
   if (igraph_vs_size(g, &self->vs, &result)) {
     igraphmodule_handle_igraph_error();
     return -1;
   }
-  return (int)result;
+  
+  return result;
 }
 
 /**

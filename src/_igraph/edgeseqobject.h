@@ -46,7 +46,7 @@ int igraphmodule_EdgeSeq_init(igraphmodule_EdgeSeqObject *self,
   PyObject *args, PyObject *kwds);
 void igraphmodule_EdgeSeq_dealloc(igraphmodule_EdgeSeqObject* self);
 
-int igraphmodule_EdgeSeq_sq_length(igraphmodule_EdgeSeqObject *self);
+Py_ssize_t igraphmodule_EdgeSeq_sq_length(igraphmodule_EdgeSeqObject *self);
 
 PyObject* igraphmodule_EdgeSeq_find(igraphmodule_EdgeSeqObject *self,
   PyObject *args);
