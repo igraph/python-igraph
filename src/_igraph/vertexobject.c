@@ -550,7 +550,7 @@ int igraphmodule_Vertex_set_attribute(igraphmodule_VertexObject* self, PyObject*
  * Returns the vertex index
  */
 PyObject* igraphmodule_Vertex_get_index(igraphmodule_VertexObject* self, void* closure) {
-  return PyLong_FromLong((long int)self->idx);
+  return igraphmodule_integer_t_to_PyObject(self->idx);
 }
 
 /**
@@ -559,14 +559,6 @@ PyObject* igraphmodule_Vertex_get_index(igraphmodule_VertexObject* self, void* c
  */
 igraph_integer_t igraphmodule_Vertex_get_index_igraph_integer(igraphmodule_VertexObject* self) {
   return self->idx;
-}
-
-/**
- * \ingroup python_interface_vertex
- * Returns the vertex index as an ordinary C long
- */
-long igraphmodule_Vertex_get_index_long(igraphmodule_VertexObject* self) {
-  return (long)self->idx;
 }
 
 /**

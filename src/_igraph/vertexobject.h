@@ -49,7 +49,6 @@ PyObject* igraphmodule_Vertex_repr(igraphmodule_VertexObject *self);
 PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self);
 PyObject* igraphmodule_Vertex_attribute_names(igraphmodule_VertexObject* self);
 igraph_integer_t igraphmodule_Vertex_get_index_igraph_integer(igraphmodule_VertexObject* self);
-long igraphmodule_Vertex_get_index_long(igraphmodule_VertexObject* self);
 PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
     PyObject* kwds);
 

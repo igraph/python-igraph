@@ -577,8 +577,10 @@ PyObject* igraphmodule_split_join_distance(PyObject *self,
       &comm1_o, &comm2_o))
     return NULL;
 
-  if (igraphmodule_PyObject_to_vector_int_t(comm1_o, &comm1))
+  if (igraphmodule_PyObject_to_vector_int_t(comm1_o, &comm1)) {
     return NULL;
+  }
+
   if (igraphmodule_PyObject_to_vector_int_t(comm2_o, &comm2)) {
     igraph_vector_int_destroy(&comm1);
     return NULL;
@@ -590,10 +592,13 @@ PyObject* igraphmodule_split_join_distance(PyObject *self,
     igraph_vector_int_destroy(&comm2);
     return NULL;
   }
+
   igraph_vector_int_destroy(&comm1);
   igraph_vector_int_destroy(&comm2);
 
-  return Py_BuildValue("ll", (long)distance12, (long)distance21);
+  /* sizeof(Py_ssize_t) is most likely the same as sizeof(igraph_integer_t),
+   * but even if it isn't, we cast explicitly so we are safe */
+  return Py_BuildValue("nn", (Py_ssize_t)distance12, (Py_ssize_t)distance21);
 }
 
 /** \ingroup python_interface

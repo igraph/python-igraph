@@ -186,7 +186,7 @@ Py_ssize_t igraphmodule_VertexSeq_sq_length(igraphmodule_VertexSeqObject* self) 
     igraphmodule_handle_igraph_error();
     return -1;
   }
-  
+
   return result;
 }
 
@@ -651,7 +651,7 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
         }
         if (PyObject_IsTrue(call_result))
           igraph_vector_int_push_back(&v,
-            igraphmodule_Vertex_get_index_long((igraphmodule_VertexObject*)vertex));
+            igraphmodule_Vertex_get_index_igraph_integer((igraphmodule_VertexObject*)vertex));
         else was_excluded=1;
         Py_DECREF(call_result);
         Py_DECREF(vertex);
