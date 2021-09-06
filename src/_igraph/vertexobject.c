@@ -654,7 +654,7 @@ static PyObject* _convert_to_vertex_list(igraphmodule_VertexObject* vertex, PyOb
 #define GRAPH_PROXY_METHOD_PP(FUNC, METHODNAME, POSTPROCESS) \
     PyObject* igraphmodule_Vertex_##FUNC(igraphmodule_VertexObject* self, PyObject* args, PyObject* kwds) { \
       PyObject *new_args, *item, *result;                     \
-      long int i, num_args = args ? PyTuple_Size(args)+1 : 1; \
+      Py_ssize_t i, num_args = args ? PyTuple_Size(args)+1 : 1; \
                                                               \
       /* Prepend ourselves to args */                         \
       new_args = PyTuple_New(num_args);                       \

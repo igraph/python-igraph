@@ -816,14 +816,14 @@ static int igraphmodule_i_attribute_permute_edges(const igraph_t *graph,
  */
 static PyObject* igraphmodule_i_ac_func(PyObject* values,
     const igraph_vector_ptr_t *merges, PyObject* func) {
-  long int i, len = igraph_vector_ptr_size(merges);
+  igraph_integer_t i, len = igraph_vector_ptr_size(merges);
   PyObject *res, *list, *item;
 
   res = PyList_New(len);
   
   for (i = 0; i < len; i++) {
     igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
-    long int j, n = igraph_vector_int_size(v);
+    igraph_integer_t j, n = igraph_vector_int_size(v);
 
     list = PyList_New(n);
     for (j = 0; j < n; j++) {
@@ -884,14 +884,14 @@ static PyObject* igraphmodule_i_ac_builtin_func(PyObject* values,
  */
 static PyObject* igraphmodule_i_ac_sum(PyObject* values,
     const igraph_vector_ptr_t *merges) {
-  long int i, len = igraph_vector_ptr_size(merges);
+  igraph_integer_t i, len = igraph_vector_ptr_size(merges);
   PyObject *res, *item;
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
     igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
     igraph_real_t num = 0.0, sum = 0.0;
-    long int j, n = igraph_vector_int_size(v);
+    igraph_integer_t j, n = igraph_vector_int_size(v);
 
     for (j = 0; j < n; j++) {
       item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
@@ -918,14 +918,14 @@ static PyObject* igraphmodule_i_ac_sum(PyObject* values,
  */
 static PyObject* igraphmodule_i_ac_prod(PyObject* values,
     const igraph_vector_ptr_t *merges) {
-  long int i, len = igraph_vector_ptr_size(merges);
+  igraph_integer_t i, len = igraph_vector_ptr_size(merges);
   PyObject *res, *item;
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
     igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
     igraph_real_t num = 1.0, prod = 1.0;
-    long int j, n = igraph_vector_int_size(v);
+    igraph_integer_t j, n = igraph_vector_int_size(v);
 
     for (j = 0; j < n; j++) {
       item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
@@ -952,13 +952,13 @@ static PyObject* igraphmodule_i_ac_prod(PyObject* values,
  */
 static PyObject* igraphmodule_i_ac_first(PyObject* values,
     const igraph_vector_ptr_t *merges) {
-  long int i, len = igraph_vector_ptr_size(merges);
+  igraph_integer_t i, len = igraph_vector_ptr_size(merges);
   PyObject *res, *item;
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
     igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
-    long int n = igraph_vector_int_size(v);
+    igraph_integer_t n = igraph_vector_int_size(v);
 
     item = n > 0 ? PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[0]) : Py_None;
     Py_INCREF(item);
@@ -1027,13 +1027,13 @@ static PyObject* igraphmodule_i_ac_random(PyObject* values,
  */
 static PyObject* igraphmodule_i_ac_last(PyObject* values,
     const igraph_vector_ptr_t *merges) {
-  long int i, len = igraph_vector_ptr_size(merges);
+  igraph_integer_t i, len = igraph_vector_ptr_size(merges);
   PyObject *res, *item;
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
     igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
-    long int n = igraph_vector_int_size(v);
+    igraph_integer_t n = igraph_vector_int_size(v);
 
     item = (n > 0) ? PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[n-1]) : Py_None;
     Py_INCREF(item);
@@ -1051,14 +1051,14 @@ static PyObject* igraphmodule_i_ac_last(PyObject* values,
  */
 static PyObject* igraphmodule_i_ac_mean(PyObject* values,
     const igraph_vector_ptr_t *merges) {
-  long int i, len = igraph_vector_ptr_size(merges);
+  igraph_integer_t i, len = igraph_vector_ptr_size(merges);
   PyObject *res, *item;
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
     igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
     igraph_real_t num = 0.0, mean = 0.0;
-    long int j, n = igraph_vector_int_size(v);
+    igraph_integer_t j, n = igraph_vector_int_size(v);
 
     for (j = 0; j < n; ) {
       item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
@@ -1087,13 +1087,13 @@ static PyObject* igraphmodule_i_ac_mean(PyObject* values,
  */
 static PyObject* igraphmodule_i_ac_median(PyObject* values,
     const igraph_vector_ptr_t *merges) {
-  long int i, len = igraph_vector_ptr_size(merges);
+  igraph_integer_t i, len = igraph_vector_ptr_size(merges);
   PyObject *res, *list, *item;
 
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
     igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
-    long int j, n = igraph_vector_int_size(v);
+    igraph_integer_t j, n = igraph_vector_int_size(v);
     list = PyList_New(n);
     for (j = 0; j < n; j++) {
       item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
