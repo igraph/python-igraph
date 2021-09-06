@@ -757,10 +757,11 @@ PyObject *igraphmodule_Graph_degree(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  if (!return_single)
+  if (!return_single) {
     list = igraphmodule_vector_int_t_to_PyList(&result);
-  else
-    list = PyLong_FromLong((long int)VECTOR(result)[0]);
+  } else {
+    list = igraphmodule_integer_t_to_PyObject(VECTOR(result)[0]);
+  }
 
   igraph_vector_int_destroy(&result);
   igraph_vs_destroy(&vs);
@@ -1183,10 +1184,11 @@ PyObject *igraphmodule_Graph_count_multiple(igraphmodule_GraphObject *self,
     return NULL;
   }
 
-  if (!return_single)
+  if (!return_single) {
     list = igraphmodule_vector_int_t_to_PyList(&result);
-  else
-    list = PyLong_FromLong((long int)VECTOR(result)[0]);
+  } else {
+    list = igraphmodule_integer_t_to_PyObject(VECTOR(result)[0]);
+  }
 
   igraph_vector_int_destroy(&result);
   igraph_es_destroy(&es);
@@ -12116,7 +12118,7 @@ PyObject *igraphmodule_Graph___graph_as_capsule__(igraphmodule_GraphObject *
  * module without any additional conversions.
  */
 PyObject *igraphmodule_Graph__raw_pointer(igraphmodule_GraphObject *self) {
-  return PyLong_FromLong((long int)&self->g);
+  return PyLong_FromVoidPtr(&self->g);
 }
 
 /** \ingroup python_interface_internal

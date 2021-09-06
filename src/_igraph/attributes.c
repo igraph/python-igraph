@@ -976,7 +976,7 @@ static PyObject* igraphmodule_i_ac_first(PyObject* values,
  */
 static PyObject* igraphmodule_i_ac_random(PyObject* values,
     const igraph_vector_ptr_t *merges) {
-  long int i, len = igraph_vector_ptr_size(merges);
+  igraph_integer_t i, len = igraph_vector_ptr_size(merges);
   PyObject *res, *item, *num;
   PyObject *random_module = PyImport_ImportModule("random");
   PyObject *random_func;
@@ -993,7 +993,7 @@ static PyObject* igraphmodule_i_ac_random(PyObject* values,
   res = PyList_New(len);
   for (i = 0; i < len; i++) {
     igraph_vector_int_t *v = (igraph_vector_int_t*)VECTOR(*merges)[i];
-    long int n = igraph_vector_int_size(v);
+    igraph_integer_t n = igraph_vector_int_size(v);
 
     if (n > 0) {
       num = PyObject_CallObject(random_func, 0);
@@ -1002,7 +1002,9 @@ static PyObject* igraphmodule_i_ac_random(PyObject* values,
         Py_DECREF(res);
         return 0;
       }
-      item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[(long int)(n*PyFloat_AsDouble(num))]);
+      item = PyList_GET_ITEM(
+        values, VECTOR(*v)[(igraph_integer_t)(n * PyFloat_AsDouble(num))]
+      );
       Py_DECREF(num);
     } else {
       item = Py_None;
