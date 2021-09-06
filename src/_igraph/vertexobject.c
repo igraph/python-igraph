@@ -151,8 +151,8 @@ PyObject* igraphmodule_Vertex_repr(igraphmodule_VertexObject *self) {
   if (attrs == 0)
     return NULL;
 
-  s = PyUnicode_FromFormat("igraph.Vertex(%R, %ld, %R)",
-      (PyObject*)self->gref, (long int)self->idx, attrs);
+  s = PyUnicode_FromFormat("igraph.Vertex(%R, %" IGRAPH_PRId ", %R)",
+      (PyObject*)self->gref, self->idx, attrs);
   Py_DECREF(attrs);
 
   return s;
@@ -170,7 +170,7 @@ long igraphmodule_Vertex_hash(igraphmodule_VertexObject* self) {
   if (self->hash != -1)
     return self->hash;
 
-  index_o = PyLong_FromLong((long int)self->idx);
+  index_o = igraphmodule_integer_t_to_PyObject(self->idx);
   if (index_o == 0)
     return -1;
 

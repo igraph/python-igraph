@@ -76,6 +76,7 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   if (PyLong_Check(root)) {
     if (igraphmodule_PyObject_to_integer_t(root, &r)) {
       igraph_dqueue_int_destroy(&o->queue);
+      igraph_vector_int_destroy(&o->neis);
       return NULL;
     }
   } else {

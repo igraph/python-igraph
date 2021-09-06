@@ -34,7 +34,7 @@ typedef struct
 {
   PyObject_HEAD
   igraphmodule_GraphObject* gref;
-  igraph_stack_t stack;
+  igraph_stack_int_t stack;
   igraph_vector_int_t neis;
   igraph_t *graph;
   char *visited;

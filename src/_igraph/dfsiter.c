@@ -20,6 +20,7 @@
 
 */
 
+#include "convert.h"
 #include "dfsiter.h"
 #include "common.h"
 #include "error.h"
@@ -42,7 +43,7 @@ PyTypeObject igraphmodule_DFSIterType;
  */
 PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, igraph_neimode_t mode, igraph_bool_t advanced) {
   igraphmodule_DFSIterObject* o;
-  long int no_of_nodes, r;
+  igraph_integer_t no_of_nodes, r;
 
   o=PyObject_GC_New(igraphmodule_DFSIterObject, &igraphmodule_DFSIterType);
   Py_INCREF(g);
@@ -54,42 +55,51 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
     return NULL;
   }
   
-  no_of_nodes=igraph_vcount(&g->g);
-  o->visited=(char*)calloc(no_of_nodes, sizeof(char));
+  no_of_nodes = igraph_vcount(&g->g);
+  o->visited = (char*)calloc(no_of_nodes, sizeof(char));
   if (o->visited == 0) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
   
-  if (igraph_stack_init(&o->stack, 100)) {
+  if (igraph_stack_int_init(&o->stack, 100)) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
+
   if (igraph_vector_int_init(&o->neis, 0)) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
-    igraph_stack_destroy(&o->stack);
+    igraph_stack_int_destroy(&o->stack);
     return NULL;
   }
   
   if (PyLong_Check(root)) {
-    r=PyLong_AsLong(root);
+    if (igraphmodule_PyObject_to_integer_t(root, &r)) {
+      igraph_stack_int_destroy(&o->stack);
+      igraph_vector_int_destroy(&o->neis);
+      return NULL;
+    }
   } else {
     r = ((igraphmodule_VertexObject*)root)->idx;
   }
+
   /* push the root onto the stack */
-  if (igraph_stack_push(&o->stack, r) ||
-      igraph_stack_push(&o->stack, 0) ||
-      igraph_stack_push(&o->stack, -1)) {
-    igraph_stack_destroy(&o->stack);
+  if (igraph_stack_int_push(&o->stack, r) ||
+      igraph_stack_int_push(&o->stack, 0) ||
+      igraph_stack_int_push(&o->stack, -1)) {
+    igraph_stack_int_destroy(&o->stack);
     igraph_vector_int_destroy(&o->neis);
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
   o->visited[r] = 1;
   
-  if (!igraph_is_directed(&g->g)) mode=IGRAPH_ALL;
-  o->mode=mode;
-  o->advanced=advanced;
+  if (!igraph_is_directed(&g->g)) {
+    mode = IGRAPH_ALL;
+  }
+
+  o->mode = mode;
+  o->advanced = advanced;
   
   PyObject_GC_Track(o);
   
@@ -112,8 +122,10 @@ int igraphmodule_DFSIter_traverse(igraphmodule_DFSIterObject *self,
   RC_TRAVERSE("DFSIter", self);
   
   if (self->gref) {
-    vret=visit((PyObject*)self->gref, arg);
-    if (vret != 0) return vret;
+    vret = visit((PyObject*)self->gref, arg);
+    if (vret != 0) {
+      return vret;
+    }
   }
   
   return 0;
@@ -128,11 +140,11 @@ int igraphmodule_DFSIter_clear(igraphmodule_DFSIterObject *self) {
 
   PyObject_GC_UnTrack(self);
   
-  tmp=(PyObject*)self->gref;
+  tmp = (PyObject*)self->gref;
   self->gref = NULL;
   Py_XDECREF(tmp);
 
-  igraph_stack_destroy(&self->stack);
+  igraph_stack_int_destroy(&self->stack);
   igraph_vector_int_destroy(&self->neis);
   free(self->visited);
   self->visited = 0;
@@ -164,28 +176,29 @@ PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self) {
   igraph_bool_t any = 0;
 
   /* nothing on the stack, end of iterator */
-  if(igraph_stack_empty(&self->stack)) {
+  if (igraph_stack_int_empty(&self->stack)) {
     return NULL;
   }
 
   /* peek at the top element on the stack
    * because we save three things, pop 3 in inverse order and push them back */
-  parent_out = (igraph_integer_t)igraph_stack_pop(&self->stack);
-  dist_out = (igraph_integer_t)igraph_stack_pop(&self->stack);
-  vid_out = (igraph_integer_t)igraph_stack_pop(&self->stack);
-  igraph_stack_push(&self->stack, (long int) vid_out);
-  igraph_stack_push(&self->stack, (long int) dist_out);
-  igraph_stack_push(&self->stack, (long int) parent_out);
+  parent_out = igraph_stack_int_pop(&self->stack);
+  dist_out = igraph_stack_int_pop(&self->stack);
+  vid_out = igraph_stack_int_pop(&self->stack);
+  igraph_stack_int_push(&self->stack, vid_out);
+  igraph_stack_int_push(&self->stack, dist_out);
+  igraph_stack_int_push(&self->stack, parent_out);
 
-  /* look for neighbors until you found one or until you have exausted the graph */
-  while (!any && !igraph_stack_empty(&self->stack)) {
-    igraph_integer_t parent = (igraph_integer_t)igraph_stack_pop(&self->stack);
-    igraph_integer_t dist = (igraph_integer_t)igraph_stack_pop(&self->stack);
-    igraph_integer_t vid = (igraph_integer_t)igraph_stack_pop(&self->stack);
-    igraph_stack_push(&self->stack, (long int) vid);
-    igraph_stack_push(&self->stack, (long int) dist);
-    igraph_stack_push(&self->stack, (long int) parent);
-    long int i;
+  /* look for neighbors until we find one or until we have exhausted the graph */
+  while (!any && !igraph_stack_int_empty(&self->stack)) {
+    igraph_integer_t parent = igraph_stack_int_pop(&self->stack);
+    igraph_integer_t dist = igraph_stack_int_pop(&self->stack);
+    igraph_integer_t vid = igraph_stack_int_pop(&self->stack);
+    igraph_stack_int_push(&self->stack, vid);
+    igraph_stack_int_push(&self->stack, dist);
+    igraph_stack_int_push(&self->stack, parent);
+    igraph_integer_t i, n;
+
     /* the values above are returned at at this stage. However, we must
      * prepare for the next iteration by putting the next unvisited
      * neighbor onto the stack */
@@ -193,15 +206,17 @@ PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self) {
       igraphmodule_handle_igraph_error();
       return NULL;
     }
-    for (i=0; i<igraph_vector_int_size(&self->neis); i++) {
-      igraph_integer_t neighbor = (igraph_integer_t)VECTOR(self->neis)[i];
+
+    n = igraph_vector_int_size(&self->neis);
+    for (i = 0; i < n; i++) {
+      igraph_integer_t neighbor = VECTOR(self->neis)[i];
       /* new neighbor, push the next item onto the stack */
       if (self->visited[neighbor] == 0) {
         any = 1;
         self->visited[neighbor]=1;
-        if (igraph_stack_push(&self->stack, neighbor) ||
-            igraph_stack_push(&self->stack, dist+1) ||
-            igraph_stack_push(&self->stack, vid)) {
+        if (igraph_stack_int_push(&self->stack, neighbor) ||
+            igraph_stack_int_push(&self->stack, dist+1) ||
+            igraph_stack_int_push(&self->stack, vid)) {
           igraphmodule_handle_igraph_error();
           return NULL;
         }
@@ -210,9 +225,9 @@ PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self) {
     }
     /* no new neighbors, end of subtree */
     if (!any) {
-       igraph_stack_pop(&self->stack);
-       igraph_stack_pop(&self->stack);
-       igraph_stack_pop(&self->stack);
+       igraph_stack_int_pop(&self->stack);
+       igraph_stack_int_pop(&self->stack);
+       igraph_stack_int_pop(&self->stack);
     }
   }
 
@@ -229,9 +244,9 @@ PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self) {
           return NULL;
     } else {
       Py_INCREF(Py_None);
-      parentobj=Py_None;
+      parentobj = Py_None;
     }
-    return Py_BuildValue("NlN", vertexobj, (long int)dist_out, parentobj);
+    return Py_BuildValue("NnN", vertexobj, (Py_ssize_t) dist_out, parentobj);
   } else {
     return vertexobj;
   }
