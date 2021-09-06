@@ -33,8 +33,11 @@
 #include <igraph_types.h>
 #include "graphobject.h"
 
-typedef enum { IGRAPHMODULE_TYPE_INT=0, IGRAPHMODULE_TYPE_FLOAT }
-igraphmodule_conv_t;
+typedef enum {
+  IGRAPHMODULE_TYPE_INT = 0,
+  IGRAPHMODULE_TYPE_FLOAT = 1,
+  IGRAPHMODULE_TYPE_FLOAT_IF_FRACTIONAL_ELSE_INT = 2
+} igraphmodule_conv_t;
 
 typedef struct {
   const char* name;
