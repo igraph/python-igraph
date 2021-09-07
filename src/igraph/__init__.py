@@ -3205,6 +3205,70 @@ class Graph(GraphBase):
         # Construct the graph
         return cls(n, edge_list, directed, {}, vertex_attributes, edge_attributes)
 
+    #####################################################
+    # Constructor for dict-like representation of graphs
+
+    def SequenceDict(
+        cls,
+        edges,
+        directed=False,
+        vertex_name_attr="name",
+    ):
+        """Constructs a graph from a dict-of-sequences representation.
+
+        This function is used to construct a graph from a dictionary of
+        sequences (e.g. of lists). For each key x, its corresponding value is
+        a sequence of multiple objects: for each y, the edge (x,y) will be
+        created in the graph. x and y must be either one of:
+
+        - two integers: the vertices with those ids will be connected
+        - two strings: the vertices with those names will be connected
+
+        If names are used, the order of vertices is not guaranteed, and each
+        vertex will be given the vertex_name_attr attribute.
+        """
+        from collections import defaultdict
+
+        # See if we are using names or integers
+        for item in edges:
+            break
+        if not isinstance(item, (int, str)):
+            raise ValueError("Keys must be integers or strings")
+
+        vertex_attributes = {}
+
+        if isinstance(item, str):
+            n = -1
+            name_map = {}
+            edge_list = []
+            for item, sequence in edges.items():
+                vid = name_map[item] = name_map.get(item, n+1)
+                if vid == n+1:
+                    n += 1
+                for item2 in sequence:
+                    vid2 = name_map[item] = name_map.get(item, n+1)
+                    if vid2 == n+1:
+                        n += 1
+                    edge_list.append((vid, vid2))
+            n += 1
+            name_list = [None for key in range(n)]
+            for name, vid in name_map.items():
+                name_list[vid] = name
+            vertex_attributes[vertex_name_attr] = name_list
+
+        else:
+            edge_list = []
+            n = 0
+            for vid, sequence in edges.items():
+                n = max(n, vid)
+                for vid2 in sequence:
+                    n = max(n, vid2)
+                    edge_list.append((vid, vid2))
+            name_list = None
+
+        # Construct the graph
+        return cls(n, edge_list, directed, {}, vertex_attributes, {})
+
     #################################
     # Constructor for graph formulae
     Formula = classmethod(construct_graph_from_formula)

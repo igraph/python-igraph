@@ -603,6 +603,37 @@ class GraphTupleListTests(unittest.TestCase):
             self.assertTrue(g.edge_attributes() == [])
 
 
+class GraphSequenceDictTests(unittest.TestCase):
+    def setUp(self):
+        self.eids = {
+            0: [1],
+            2: [1, 0],
+            3: [0, 1],
+        }
+        self.edges = {
+            "Alice": ["Bob"],
+            "Cecil": ["Bob", "Alice"],
+            "David": ["Alice", "Bob"],
+        }
+
+    def testGraphFromSequenceDict(self):
+        g = Graph.SequenceDict(self.eids)
+        self.checkIfOK(g, ())
+
+    def testGraphFromSequenceDictWithNames(self):
+        g = Graph.SequenceDict(self.edges)
+        self.checkIfOK(g, "name")
+
+    def checkIfOK(self, g, name_attr):
+        self.assertTrue(g.vcount() == 4 and g.ecount() == 5 and not g.is_directed())
+        self.assertTrue(g.get_edgelist() == [(0, 1), (1, 2), (0, 2), (0, 3), (1, 3)])
+        self.assertTrue(g.attributes() == [])
+        if name_attr:
+            self.assertTrue(g.vertex_attributes() == [name_attr])
+            self.assertTrue(g.vs[name_attr] == ["Alice", "Bob", "Cecil", "David"])
+        self.assertTrue(g.edge_attributes() == [])
+
+
 class DegreeSequenceTests(unittest.TestCase):
     def testIsDegreeSequence(self):
         # Catch and suppress warnings because is_degree_sequence() is now
@@ -764,6 +795,7 @@ def suite():
     datatype_suite = unittest.makeSuite(DatatypeTests)
     graph_dict_list_suite = unittest.makeSuite(GraphDictListTests)
     graph_tuple_list_suite = unittest.makeSuite(GraphTupleListTests)
+    graph_sequence_dict_suite = unittest.makeSuite(GraphSequenceDictTests)
     degree_sequence_suite = unittest.makeSuite(DegreeSequenceTests)
     inheritance_suite = unittest.makeSuite(InheritanceTests)
     return unittest.TestSuite(
@@ -772,6 +804,7 @@ def suite():
             datatype_suite,
             graph_dict_list_suite,
             graph_tuple_list_suite,
+            graph_sequence_dict_suite,
             degree_sequence_suite,
             inheritance_suite,
         ]
