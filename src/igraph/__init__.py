@@ -3208,6 +3208,7 @@ class Graph(GraphBase):
     #####################################################
     # Constructor for dict-like representation of graphs
 
+    @classmethod
     def SequenceDict(
         cls,
         edges,
