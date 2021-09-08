@@ -24,10 +24,17 @@ along with this program; if not, write to the Free Software
 Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
+import gzip
+from shutil import copyfileobj
+from warnings import warn
+
 from igraph.datatypes import UniqueIdGenerator
 from igraph.sparse_matrix import (
     _graph_from_sparse_matrix,
     _graph_from_weighted_sparse_matrix,
+)
+from igraph.utils import (
+    named_temporary_file,
 )
 
 
@@ -297,7 +304,7 @@ def construct_graph_from_sequence_dict(
 def construct_graph_from_dict_dict(
     cls,
     edges,
-    directd=False,
+    directed=False,
 ):
     """Constructs a graph from a dict-of-dicts representation.
 
@@ -339,10 +346,11 @@ def construct_graph_from_dict_dict(
         edge_list = []
         n = 0
         for source, target_dict in edges.items():
-            n = max(n, source, *sequence)
+            n = max(n, source, *target_dict)
             for target, edge_attrs in target_dict.items():
                 edge_list.append((source, target))
                 edge_attribute_list.append(edge_attrs)
+        n += 1
 
     # Construct graph without edge attributes
     graph = cls(n, edge_list, directed, {}, vertex_attributes, {})
@@ -493,3 +501,483 @@ def construct_graph_from_weighted_adjacency(cls, matrix, mode="directed", attr="
         graph.vs['name'] = vertex_names
 
     return graph
+
+
+def construct_graph_from_dataframe(cls, edges, directed=True, vertices=None, use_vids=False):
+    """Generates a graph from one or two dataframes.
+
+    @param edges: pandas DataFrame containing edges and metadata. The first
+      two columns of this DataFrame contain the source and target vertices
+      for each edge. These indicate the vertex *names* rather than IDs
+      unless `use_vids` is True and these are non-negative integers. Further
+      columns may contain edge attributes.
+    @param directed: bool setting whether the graph is directed
+    @param vertices: None (default) or pandas DataFrame containing vertex
+      metadata. The first column of the DataFrame must contain the unique
+      vertex *names*. If `use_vids` is True, the DataFrame's index must
+      contain the vertex IDs as a sequence of intergers from `0` to
+      `len(vertices) - 1`. All other columns will be added as vertex
+      attributes by column name.
+    @use_vids: whether to interpret the first two columns of the `edges`
+      argument as vertex ids (0-based integers) instead of vertex names.
+      If this argument is set to True and the first two columns of `edges`
+      are not integers, an error is thrown.
+
+    @return: the graph
+
+    Vertex names in either the `edges` or `vertices` arguments that are set
+    to NaN (not a number) will be set to the string "NA". That might lead
+    to unexpected behaviour: fill your NaNs with values before calling this
+    function to mitigate.
+    """
+    # Deferred import to avoid cycles
+    from igraph import Graph
+
+    try:
+        import pandas as pd
+    except ImportError:
+        raise ImportError("You should install pandas in order to use this function")
+    try:
+        import numpy as np
+    except:
+        raise ImportError("You should install numpy in order to use this function")
+
+    if edges.shape[1] < 2:
+        raise ValueError("The 'edges' DataFrame must contain at least two columns")
+    if vertices is not None and vertices.shape[1] < 1:
+        raise ValueError("The 'vertices' DataFrame must contain at least one column")
+
+    if use_vids:
+        if not (str(edges.dtypes[0]).startswith("int") and str(edges.dtypes[1]).startswith("int")):
+            raise TypeError(f"Source and target IDs must be 0-based integers, found types {edges.dtypes.tolist()[:2]}")
+        elif (edges.iloc[:, :2] < 0).any(axis=None):
+            raise ValueError("Source and target IDs must not be negative")
+        if vertices is not None:
+            vertices = vertices.sort_index()
+            if not vertices.index.equals(pd.RangeIndex.from_range(range(vertices.shape[0]))):
+                if not str(vertices.index.dtype).startswith("int"):
+                    raise TypeError(f"Vertex IDs must be 0-based integers, found type {vertices.index.dtype}")
+                elif (vertices.index < 0).any(axis=None):
+                    raise ValueError("Vertex IDs must not be negative")
+                else:
+                    raise ValueError(f"Vertex IDs must be an integer sequence from 0 to {vertices.shape[0] - 1}")
+    else:
+        # Handle if some source and target names in 'edges' are 'NA'
+        if edges.iloc[:, :2].isna().any(axis=None):
+            warn("In the first two columns of 'edges' NA elements were replaced with string \"NA\"")
+            edges = edges.copy()
+            edges.iloc[:, :2].fillna("NA", inplace=True)
+
+        # Bring DataFrame(s) into same format as with 'use_vids=True'
+        if vertices is None:
+            vertices = pd.DataFrame({"name": np.unique(edges.values[:, :2])})
+
+        if vertices.iloc[:, 0].isna().any():
+            warn("In the first column of 'vertices' NA elements were replaced with string \"NA\"")
+            vertices = vertices.copy()
+            vertices.iloc[:, 0].fillna("NA", inplace=True)
+
+        if vertices.iloc[:, 0].duplicated().any():
+            raise ValueError("Vertex names must be unique")
+
+        if vertices.shape[1] > 1 and "name" in vertices.columns[1:]:
+            raise ValueError("Vertex attribute conflict: DataFrame already contains column 'name'")
+
+        vertices = vertices.rename({vertices.columns[0]: "name"}, axis=1).reset_index(drop=True)
+
+        # Map source and target names in 'edges' to IDs
+        vid_map = pd.Series(vertices.index, index=vertices.iloc[:, 0])
+        edges = edges.copy()
+        edges.iloc[:, 0] = edges.iloc[:, 0].map(vid_map)
+        edges.iloc[:, 1] = edges.iloc[:, 1].map(vid_map)
+
+    # Create graph
+    if vertices is None:
+        nv = edges.iloc[:, :2].max().max() + 1
+        g = Graph(n=nv, directed=directed)
+    else:
+        if not edges.iloc[:, :2].isin(vertices.index).all(axis=None):
+            raise ValueError("Some vertices in the edge DataFrame are missing from vertices DataFrame")
+        nv = vertices.shape[0]
+        g = Graph(n=nv, directed=directed)
+        # Add vertex attributes
+        for col in vertices.columns:
+            g.vs[col] = vertices[col].tolist()
+
+    # add edges including optional attributes
+    e_list = list(edges.iloc[:, :2].itertuples(index=False, name=None))
+    e_attr = edges.iloc[:, 2:].to_dict(orient='list') if edges.shape[1] > 2 else None
+    g.add_edges(e_list, e_attr)
+
+    return g
+
+
+def construct_graph_from_adjacency_file(
+    cls, f, sep=None, comment_char="#", attribute=None, *args, **kwds
+):
+    """Constructs a graph based on an adjacency matrix from the given file.
+
+    Additional positional and keyword arguments not mentioned here are
+    passed intact to L{Adjacency}.
+
+    @param f: the name of the file to be read or a file object
+    @param sep: the string that separates the matrix elements in a row.
+      C{None} means an arbitrary sequence of whitespace characters.
+    @param comment_char: lines starting with this string are treated
+      as comments.
+    @param attribute: an edge attribute name where the edge weights are
+      stored in the case of a weighted adjacency matrix. If C{None},
+      no weights are stored, values larger than 1 are considered as
+      edge multiplicities.
+    @return: the created graph"""
+    if isinstance(f, str):
+        f = open(f)
+
+    matrix, ri = [], 0
+    for line in f:
+        line = line.strip()
+        if len(line) == 0:
+            continue
+        if line.startswith(comment_char):
+            continue
+        row = [float(x) for x in line.split(sep)]
+        matrix.append(row)
+        ri += 1
+
+    f.close()
+
+    if attribute is None:
+        graph = cls.Adjacency(matrix, *args, **kwds)
+    else:
+        kwds["attr"] = attribute
+        graph = cls.Weighted_Adjacency(matrix, *args, **kwds)
+
+    return graph
+
+
+def construct_graph_from_dimacs_file(cls, f, directed=False):
+    """Reads a graph from a file conforming to the DIMACS minimum-cost flow
+    file format.
+
+    For the exact definition of the format, see
+    U{http://lpsolve.sourceforge.net/5.5/DIMACS.htm}.
+
+    Restrictions compared to the official description of the format are
+    as follows:
+
+      - igraph's DIMACS reader requires only three fields in an arc
+        definition, describing the edge's source and target node and
+        its capacity.
+      - Source vertices are identified by 's' in the FLOW field, target
+        vertices are identified by 't'.
+      - Node indices start from 1. Only a single source and target node
+        is allowed.
+
+    @param f: the name of the file or a Python file handle
+    @param directed: whether the generated graph should be directed.
+    @return: the generated graph. The indices of the source and target
+      vertices are attached as graph attributes C{source} and C{target},
+      the edge capacities are stored in the C{capacity} edge attribute.
+    """
+    # Deferred import to avoid cycles
+    from igraph import Graph
+
+    graph, source, target, cap = super(Graph, cls).Read_DIMACS(f, directed)
+    graph.es["capacity"] = cap
+    graph["source"] = source
+    graph["target"] = target
+    return graph
+
+
+def construct_graph_from_graphmlz_file(cls, f, directed=True, index=0):
+    """Reads a graph from a zipped GraphML file.
+
+    @param f: the name of the file
+    @param index: if the GraphML file contains multiple graphs,
+      specified the one that should be loaded. Graph indices
+      start from zero, so if you want to load the first graph,
+      specify 0 here.
+    @return: the loaded graph object"""
+    with named_temporary_file() as tmpfile:
+        with open(tmpfile, "wb") as outf:
+            copyfileobj(gzip.GzipFile(f, "rb"), outf)
+        return cls.Read_GraphML(tmpfile, directed=directed, index=index)
+
+
+def construct_graph_from_pickle_file(cls, fname=None):
+    """Reads a graph from Python pickled format
+
+    @param fname: the name of the file, a stream to read from, or
+      a string containing the pickled data.
+    @return: the created graph object.
+    """
+    import pickle as pickle
+
+    if hasattr(fname, "read"):
+        # Probably a file or a file-like object
+        result = pickle.load(fname)
+    else:
+        try:
+            fp = open(fname, "rb")
+        except UnicodeDecodeError:
+            try:
+                # We are on Python 3.6 or above and we are passing a pickled
+                # stream that cannot be decoded as Unicode. Try unpickling
+                # directly.
+                result = pickle.loads(fname)
+            except TypeError:
+                raise IOError(
+                    "Cannot load file. If fname is a file name, that "
+                    "filename may be incorrect."
+                )
+        except IOError:
+            try:
+                # No file with the given name, try unpickling directly.
+                result = pickle.loads(fname)
+            except TypeError:
+                raise IOError(
+                    "Cannot load file. If fname is a file name, that "
+                    "filename may be incorrect."
+                )
+        else:
+            result = pickle.load(fp)
+            fp.close()
+
+    if not isinstance(result, cls):
+        raise TypeError("unpickled object is not a %s" % cls.__name__)
+
+    return result
+
+
+def construct_graph_from_picklez_file(cls, fname):
+    """Reads a graph from compressed Python pickled format, uncompressing
+    it on-the-fly.
+
+    @param fname: the name of the file or a stream to read from.
+    @return: the created graph object.
+    """
+    import pickle as pickle
+
+    if hasattr(fname, "read"):
+        # Probably a file or a file-like object
+        if isinstance(fname, gzip.GzipFile):
+            result = pickle.load(fname)
+        else:
+            result = pickle.load(gzip.GzipFile(mode="rb", fileobj=fname))
+    else:
+        result = pickle.load(gzip.open(fname, "rb"))
+
+    if not isinstance(result, cls):
+        raise TypeError("unpickled object is not a %s" % cls.__name__)
+
+    return result
+
+
+def construct_graph_from_file(cls, f, format=None, *args, **kwds):
+    """Unified reading function for graphs.
+
+    This method tries to identify the format of the graph given in
+    the first parameter and calls the corresponding reader method.
+
+    The remaining arguments are passed to the reader method without
+    any changes.
+
+    @param f: the file containing the graph to be loaded
+    @param format: the format of the file (if known in advance).
+      C{None} means auto-detection. Possible values are: C{"ncol"}
+      (NCOL format), C{"lgl"} (LGL format), C{"graphdb"} (GraphDB
+      format), C{"graphml"}, C{"graphmlz"} (GraphML and gzipped
+      GraphML format), C{"gml"} (GML format), C{"net"}, C{"pajek"}
+      (Pajek format), C{"dimacs"} (DIMACS format), C{"edgelist"},
+      C{"edges"} or C{"edge"} (edge list), C{"adjacency"}
+      (adjacency matrix), C{"dl"} (DL format used by UCINET),
+      C{"pickle"} (Python pickled format),
+      C{"picklez"} (gzipped Python pickled format)
+    @raises IOError: if the file format can't be identified and
+      none was given.
+    """
+    if format is None:
+        format = cls._identify_format(f)
+    try:
+        reader = cls._format_mapping[format][0]
+    except (KeyError, IndexError):
+        raise IOError("unknown file format: %s" % str(format))
+    if reader is None:
+        raise IOError("no reader method for file format: %s" % str(format))
+    reader = getattr(cls, reader)
+    return reader(f, *args, **kwds)
+
+
+def construct_random_geometric_graph(cls, n, radius, torus=False):
+    """Generates a random geometric graph.
+
+    The algorithm drops the vertices randomly on the 2D unit square and
+    connects them if they are closer to each other than the given radius.
+    The coordinates of the vertices are stored in the vertex attributes C{x}
+    and C{y}.
+
+    @param n: The number of vertices in the graph
+    @param radius: The given radius
+    @param torus: This should be C{True} if we want to use a torus instead of a
+      square.
+    """
+    result, xs, ys = cls._GRG(n, radius, torus)
+    result.vs["x"] = xs
+    result.vs["y"] = ys
+    return result
+
+
+def construct_incidence_bipartite_graph(
+    cls,
+    matrix,
+    directed=False,
+    mode="out",
+    multiple=False,
+    weighted=None,
+    *args,
+    **kwds
+):
+    """Creates a bipartite graph from an incidence matrix.
+
+    Example:
+
+    >>> g = Graph.Incidence([[0, 1, 1], [1, 1, 0]])
+
+    @param matrix: the incidence matrix.
+    @param directed: whether to create a directed graph.
+    @param mode: defines the direction of edges in the graph. If
+      C{"out"}, then edges go from vertices of the first kind
+      (corresponding to rows of the matrix) to vertices of the
+      second kind (the columns of the matrix). If C{"in"}, the
+      opposite direction is used. C{"all"} creates mutual edges.
+      Ignored for undirected graphs.
+    @param multiple: defines what to do with non-zero entries in the
+      matrix. If C{False}, non-zero entries will create an edge no matter
+      what the value is. If C{True}, non-zero entries are rounded up to
+      the nearest integer and this will be the number of multiple edges
+      created.
+    @param weighted: defines whether to create a weighted graph from the
+      incidence matrix. If it is c{None} then an unweighted graph is created
+      and the multiple argument is used to determine the edges of the graph.
+      If it is a string then for every non-zero matrix entry, an edge is created
+      and the value of the entry is added as an edge attribute named by the
+      weighted argument. If it is C{True} then a weighted graph is created and
+      the name of the edge attribute will be ‘weight’.
+
+    @raise ValueError: if the weighted and multiple are passed together.
+
+    @return: the graph with a binary vertex attribute named C{"type"} that
+      stores the vertex classes.
+    """
+    is_weighted = True if weighted or weighted == "" else False
+    if is_weighted and multiple:
+        raise ValueError("arguments weighted and multiple can not co-exist")
+    result, types = cls._Incidence(matrix, directed, mode, multiple, *args, **kwds)
+    result.vs["type"] = types
+    if is_weighted:
+        weight_attr = "weight" if weighted is True else weighted
+        _, rows, _ = result.get_incidence()
+        num_vertices_of_first_kind = len(rows)
+        for edge in result.es:
+            source, target = edge.tuple
+            if source in rows:
+                edge[weight_attr] = matrix[source][
+                    target - num_vertices_of_first_kind
+                ]
+            else:
+                edge[weight_attr] = matrix[target][
+                    source - num_vertices_of_first_kind
+                ]
+    return result
+
+
+def construct_bipartite_graph(cls, types, edges, directed=False, *args, **kwds):
+    """Creates a bipartite graph with the given vertex types and edges.
+    This is similar to the default constructor of the graph, the
+    only difference is that it checks whether all the edges go
+    between the two vertex classes and it assigns the type vector
+    to a C{type} attribute afterwards.
+
+    Examples:
+
+    >>> g = Graph.Bipartite([0, 1, 0, 1], [(0, 1), (2, 3), (0, 3)])
+    >>> g.is_bipartite()
+    True
+    >>> g.vs["type"]
+    [False, True, False, True]
+
+    @param types: the vertex types as a boolean list. Anything that
+      evaluates to C{False} will denote a vertex of the first kind,
+      anything that evaluates to C{True} will denote a vertex of the
+      second kind.
+    @param edges: the edges as a list of tuples.
+    @param directed: whether to create a directed graph. Bipartite
+      networks are usually undirected, so the default is C{False}
+
+    @return: the graph with a binary vertex attribute named C{"type"} that
+      stores the vertex classes.
+    """
+    result = cls._Bipartite(types, edges, directed, *args, **kwds)
+    result.vs["type"] = [bool(x) for x in types]
+    return result
+
+
+def construct_full_bipartite_graph(cls, n1, n2, directed=False, mode="all", *args, **kwds):
+    """Generates a full bipartite graph (directed or undirected, with or
+    without loops).
+
+    >>> g = Graph.Full_Bipartite(2, 3)
+    >>> g.is_bipartite()
+    True
+    >>> g.vs["type"]
+    [False, False, True, True, True]
+
+    @param n1: the number of vertices of the first kind.
+    @param n2: the number of vertices of the second kind.
+    @param directed: whether tp generate a directed graph.
+    @param mode: if C{"out"}, then all vertices of the first kind are
+      connected to the others; C{"in"} specifies the opposite direction,
+      C{"all"} creates mutual edges. Ignored for undirected graphs.
+
+    @return: the graph with a binary vertex attribute named C{"type"} that
+      stores the vertex classes.
+    """
+    result, types = cls._Full_Bipartite(n1, n2, directed, mode, *args, **kwds)
+    result.vs["type"] = types
+    return result
+
+
+def construct_random_bipartite_graph(
+    cls, n1, n2, p=None, m=None, directed=False, neimode="all", *args, **kwds
+):
+    """Generates a random bipartite graph with the given number of vertices and
+    edges (if m is given), or with the given number of vertices and the given
+    connection probability (if p is given).
+
+    If m is given but p is not, the generated graph will have n1 vertices of
+    type 1, n2 vertices of type 2 and m randomly selected edges between them. If
+    p is given but m is not, the generated graph will have n1 vertices of type 1
+    and n2 vertices of type 2, and each edge will exist between them with
+    probability p.
+
+    @param n1: the number of vertices of type 1.
+    @param n2: the number of vertices of type 2.
+    @param p: the probability of edges. If given, C{m} must be missing.
+    @param m: the number of edges. If given, C{p} must be missing.
+    @param directed: whether to generate a directed graph.
+    @param neimode: if the graph is directed, specifies how the edges will be
+      generated. If it is C{"all"}, edges will be generated in both directions
+      (from type 1 to type 2 and vice versa) independently. If it is C{"out"}
+      edges will always point from type 1 to type 2. If it is C{"in"}, edges
+      will always point from type 2 to type 1. This argument is ignored for
+      undirected graphs.
+    """
+    if p is None:
+        p = -1
+    if m is None:
+        m = -1
+    result, types = cls._Random_Bipartite(
+        n1, n2, p, m, directed, neimode, *args, **kwds
+    )
+    result.vs["type"] = types
+    return result
