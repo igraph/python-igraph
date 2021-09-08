@@ -152,16 +152,16 @@ static int igraphmodule_igraph_interrupt_hook(void* data) {
 int igraphmodule_igraph_progress_hook(const char* message, igraph_real_t percent,
 				       void* data) {
   PyObject* progress_handler = GETSTATE(0)->progress_handler;
+  PyObject *result;
 
   if (progress_handler) {
-    PyObject *result;
     if (PyCallable_Check(progress_handler)) {
-      result=PyObject_CallFunction(progress_handler,
-				   "sd", message, (double)percent);
-      if (result)
+      result = PyObject_CallFunction(progress_handler, "sd", message, (double)percent);
+      if (result) {
         Py_DECREF(result);
-      else
+      } else {
         return IGRAPH_INTERRUPTED;
+      }
     }
   }
   
@@ -383,14 +383,18 @@ PyObject* igraphmodule_compare_communities(PyObject *self,
   igraph_real_t result;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|O", kwlist,
-      &comm1_o, &comm2_o, &method_o))
+      &comm1_o, &comm2_o, &method_o)) {
     return NULL;
+  }
 
-  if (igraphmodule_PyObject_to_community_comparison_t(method_o, &method))
+  if (igraphmodule_PyObject_to_community_comparison_t(method_o, &method)) {
     return NULL;
+  }
 
-  if (igraphmodule_PyObject_to_vector_int_t(comm1_o, &comm1))
+  if (igraphmodule_PyObject_to_vector_int_t(comm1_o, &comm1)) {
     return NULL;
+  }
+
   if (igraphmodule_PyObject_to_vector_int_t(comm2_o, &comm2)) {
     igraph_vector_int_destroy(&comm1);
     return NULL;
@@ -402,10 +406,11 @@ PyObject* igraphmodule_compare_communities(PyObject *self,
     igraph_vector_int_destroy(&comm2);
     return NULL;
   }
+
   igraph_vector_int_destroy(&comm1);
   igraph_vector_int_destroy(&comm2);
 
-  return PyFloat_FromDouble((double)result);
+  return igraphmodule_real_t_to_PyObject(result, IGRAPHMODULE_TYPE_FLOAT);
 }
 
 

@@ -938,7 +938,7 @@ PyObject *igraphmodule_Graph_density(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  return Py_BuildValue("d", (double)result);
+  return igraphmodule_real_t_to_PyObject(result, IGRAPHMODULE_TYPE_FLOAT);
 }
 
 /** \ingroup python_interface_graph
@@ -1320,7 +1320,7 @@ PyObject *igraphmodule_Graph_reciprocity(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  return Py_BuildValue("d", (double)result);
+  return igraphmodule_real_t_to_PyObject(result, IGRAPHMODULE_TYPE_FLOAT);
 }
 
 /** \ingroup python_interface_graph
@@ -1914,7 +1914,7 @@ PyObject *igraphmodule_Graph_radius(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  return PyFloat_FromDouble((double)radius);
+  return igraphmodule_real_t_to_PyObject(radius, IGRAPHMODULE_TYPE_FLOAT_IF_FRACTIONAL_ELSE_INT);
 }
 
 /** \ingroup python_interface_graph
@@ -3713,7 +3713,7 @@ PyObject *igraphmodule_Graph_assortativity_nominal(igraphmodule_GraphObject *sel
     return NULL;
   }
 
-  return Py_BuildValue("d", (double)(res));
+  return igraphmodule_real_t_to_PyObject(res, IGRAPHMODULE_TYPE_FLOAT);
 }
 
 /** \ingroup python_interface_graph
@@ -3748,7 +3748,7 @@ PyObject *igraphmodule_Graph_assortativity(igraphmodule_GraphObject *self, PyObj
     return NULL;
   }
 
-  return Py_BuildValue("d", (double)(res));
+  return igraphmodule_real_t_to_PyObject(res, IGRAPHMODULE_TYPE_FLOAT);
 }
 
 /** \ingroup python_interface_graph
@@ -3769,7 +3769,7 @@ PyObject *igraphmodule_Graph_assortativity_degree(igraphmodule_GraphObject *self
     return NULL;
   }
 
-  return Py_BuildValue("d", (double)(res));
+  return igraphmodule_real_t_to_PyObject(res, IGRAPHMODULE_TYPE_FLOAT);
 }
 
 /** \ingroup python_interface_graph
@@ -3814,7 +3814,7 @@ PyObject *igraphmodule_Graph_authority_score(
   if (res_o == NULL) return igraphmodule_handle_igraph_error();
 
   if (PyObject_IsTrue(return_eigenvalue)) {
-    PyObject *ev_o = PyFloat_FromDouble((double)value);
+    PyObject *ev_o = igraphmodule_real_t_to_PyObject(value, IGRAPHMODULE_TYPE_FLOAT);
     if (ev_o == NULL) {
       Py_DECREF(res_o);
       return igraphmodule_handle_igraph_error();
@@ -4445,10 +4445,11 @@ PyObject *igraphmodule_Graph_constraint(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  if (!return_single)
+  if (!return_single) {
     list = igraphmodule_vector_t_to_PyList(&result, IGRAPHMODULE_TYPE_FLOAT);
-  else
-    list = PyFloat_FromDouble((double)VECTOR(result)[0]);
+  } else {
+    list = igraphmodule_real_t_to_PyObject(VECTOR(result)[0], IGRAPHMODULE_TYPE_FLOAT);
+  }
 
   igraph_vs_destroy(&vids);
   igraph_vector_destroy(&result);
@@ -4833,7 +4834,7 @@ PyObject *igraphmodule_Graph_eigenvector_centrality(
   if (res_o == NULL) return igraphmodule_handle_igraph_error();
 
   if (PyObject_IsTrue(return_eigenvalue)) {
-    PyObject *ev_o = PyFloat_FromDouble((double)value);
+    PyObject *ev_o = igraphmodule_real_t_to_PyObject(value, IGRAPHMODULE_TYPE_FLOAT);
     if (ev_o == NULL) {
       Py_DECREF(res_o);
       return igraphmodule_handle_igraph_error();
@@ -5196,7 +5197,7 @@ PyObject *igraphmodule_Graph_hub_score(
   if (res_o == NULL) return igraphmodule_handle_igraph_error();
 
   if (PyObject_IsTrue(return_eigenvalue)) {
-    PyObject *ev_o = PyFloat_FromDouble((double)value);
+    PyObject *ev_o = igraphmodule_real_t_to_PyObject(value, IGRAPHMODULE_TYPE_FLOAT);
     if (ev_o == NULL) {
       Py_DECREF(res_o);
       return igraphmodule_handle_igraph_error();
@@ -6065,7 +6066,7 @@ PyObject *igraphmodule_Graph_transitivity_undirected(igraphmodule_GraphObject
 {
   static char *kwlist[] = { "mode", NULL };
   igraph_real_t res;
-  PyObject *r, *mode_o = Py_None;
+  PyObject *mode_o = Py_None;
   igraph_transitivity_mode_t mode = IGRAPH_TRANSITIVITY_NAN;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &mode_o))
@@ -6080,8 +6081,7 @@ PyObject *igraphmodule_Graph_transitivity_undirected(igraphmodule_GraphObject
     return NULL;
   }
 
-  r = Py_BuildValue("d", (double)(res));
-  return r;
+  return igraphmodule_real_t_to_PyObject(res, IGRAPHMODULE_TYPE_FLOAT);
 }
 
 /** \ingroup python_interface_graph
@@ -6094,7 +6094,7 @@ PyObject *igraphmodule_Graph_transitivity_avglocal_undirected(igraphmodule_Graph
 {
   static char *kwlist[] = { "mode", NULL };
   igraph_real_t res;
-  PyObject *r, *mode_o = Py_None;
+  PyObject *mode_o = Py_None;
   igraph_transitivity_mode_t mode = IGRAPH_TRANSITIVITY_NAN;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &mode_o))
@@ -6108,8 +6108,7 @@ PyObject *igraphmodule_Graph_transitivity_avglocal_undirected(igraphmodule_Graph
     return NULL;
   }
 
-  r = Py_BuildValue("d", (double)(res));
-  return r;
+  return igraphmodule_real_t_to_PyObject(res, IGRAPHMODULE_TYPE_FLOAT);
 }
 
 /** \ingroup python_interface_graph
@@ -10162,7 +10161,8 @@ PyObject *igraphmodule_Graph_maxflow_value(igraphmodule_GraphObject * self,
   }
 
   igraph_vector_destroy(&capacity_vector);
-  return Py_BuildValue("d", (double)result);
+
+  return igraphmodule_real_t_to_PyObject(result, IGRAPHMODULE_TYPE_FLOAT);
 }
 
 /** \ingroup python_interface_graph
@@ -10443,7 +10443,8 @@ PyObject *igraphmodule_Graph_mincut_value(igraphmodule_GraphObject * self,
   }
 
   igraph_vector_destroy(&capacity_vector);
-  return Py_BuildValue("d", (double)result);
+
+  return igraphmodule_real_t_to_PyObject(result, IGRAPHMODULE_TYPE_FLOAT);
 }
 
 /** \ingroup python_interface_graph
@@ -11346,7 +11347,7 @@ PyObject *igraphmodule_Graph_modularity(igraphmodule_GraphObject *self,
     igraph_vector_destroy(weights); free(weights);
   }
 
-  return Py_BuildValue("d", (double)modularity);
+  return igraphmodule_real_t_to_PyObject(modularity, IGRAPHMODULE_TYPE_FLOAT);
 }
 
 /**

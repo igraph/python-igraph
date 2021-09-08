@@ -78,7 +78,7 @@ PyObject* igraphmodule_ARPACKOptions_getattr(
   } else if (strcmp(attrname, "nev") == 0) {
     result=PyLong_FromLong(self->params.nev);
   } else if (strcmp(attrname, "tol") == 0) {
-    result=PyFloat_FromDouble((double)self->params.tol);
+    result=PyFloat_FromDouble(self->params.tol);
   } else if (strcmp(attrname, "ncv") == 0) {
     result=PyLong_FromLong(self->params.ncv);
   } else if (strcmp(attrname, "ldv") == 0) {
