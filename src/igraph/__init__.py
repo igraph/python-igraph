@@ -2128,6 +2128,8 @@ class Graph(GraphBase):
           - a numpy 2D array or matrix (will be converted to list of lists)
           - a scipy.sparse matrix (will be converted to a COO matrix, but not
             to a dense matrix)
+          - a pandas.DataFrame (column/row names must match, and will be used
+            as vertex names).
         @param mode: the mode to be used. Possible values are:
           - C{"directed"} - the graph will be directed and a matrix
             element gives the number of edges between two vertex.
@@ -2151,13 +2153,30 @@ class Graph(GraphBase):
         except ImportError:
             sparse = None
 
+        try:
+            import pandas as pd
+        except ImportError:
+            pd = None
+
         if (sparse is not None) and isinstance(matrix, sparse.spmatrix):
             return _graph_from_sparse_matrix(cls, matrix, mode=mode)
+
+        if (pd is not None) and isinstance(matrix, pd.DataFrame):
+            vertex_names = matrix.index.tolist()
+            matrix = matrix.values
+        else:
+            vertex_names = None
 
         if (np is not None) and isinstance(matrix, np.ndarray):
             matrix = matrix.tolist()
 
-        return super().Adjacency(matrix, mode=mode)
+        graph = super().Adjacency(matrix, mode=mode)
+
+        # Add vertex names if present
+        if vertex_names is not None:
+            graph.vs['name'] = vertex_names
+
+        return graph
 
     @classmethod
     def Weighted_Adjacency(cls, matrix, mode="directed", attr="weight", loops=True):
