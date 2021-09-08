@@ -4563,4 +4563,26 @@ save = write
 
 
 config = init_configuration()
-del construct_graph_from_formula
+
+# Remove constructors from namespace
+del (
+    construct_graph_from_formula,
+    construct_graph_from_graphmlz_file,
+    construct_graph_from_dimacs_file,
+    construct_graph_from_pickle_file,
+    construct_graph_from_picklez_file,
+    construct_graph_from_adjacency_file,
+    construct_graph_from_file,
+    construct_graph_from_dict_list,
+    construct_graph_from_tuple_list,
+    construct_graph_from_sequence_dict,
+    construct_graph_from_dict_dict,
+    construct_graph_from_adjacency,
+    construct_graph_from_weighted_adjacency,
+    construct_graph_from_dataframe,
+    construct_random_geometric_graph,
+    construct_bipartite_graph,
+    construct_incidence_bipartite_graph,
+    construct_full_bipartite_graph,
+    construct_random_bipartite_graph,
+    )
