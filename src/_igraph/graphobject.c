@@ -7404,7 +7404,7 @@ PyObject *igraphmodule_Graph_layout_mds(igraphmodule_GraphObject * self,
     { "dist", "dim", "arpack_options", NULL };
   igraph_matrix_t m;
   igraph_matrix_t *dist = 0;
-  Py_ssiez_t dim = 2;
+  Py_ssize_t dim = 2;
   PyObject *dist_o = Py_None;
   PyObject *arpack_options_o = igraphmodule_arpack_options_default;
   PyObject *result;
@@ -8332,7 +8332,7 @@ PyObject *igraphmodule_Graph_write_dimacs(igraphmodule_GraphObject * self,
   };
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOO|O", kwlist, &fname,
-                                   &source, &target, &capacity_obj))
+                                   &source_o, &target_o, &capacity_obj))
     return NULL;
 
   if (igraphmodule_PyObject_to_vid(source_o, &source, &self->g)) {
@@ -11000,8 +11000,17 @@ PyObject *igraphmodule_Graph_cliques(igraphmodule_GraphObject * self,
                                    &min_size, &max_size))
     return NULL;
 
-  CHECK_SSIZE_T_RANGE(min_size, "minimum size");
-  CHECK_SSIZE_T_RANGE(max_size, "maximum size");
+  if (min_size >= 0) {
+    CHECK_SSIZE_T_RANGE(min_size, "minimum size");
+  } else {
+    min_size = -1;
+  }
+
+  if (max_size >= 0) {
+    CHECK_SSIZE_T_RANGE(max_size, "maximum size");
+  } else {
+    max_size = -1;
+  }
 
   if (igraph_vector_ptr_init(&result, 0)) {
     PyErr_SetString(PyExc_MemoryError, "");
@@ -11149,8 +11158,8 @@ PyObject *igraphmodule_Graph_maximal_cliques(igraphmodule_GraphObject * self,
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nnO", kwlist, &min, &max, &file))
     return NULL;
 
-  CHECK_SSIZE_T_RANGE(min, "minimum clique size");
-  CHECK_SSIZE_T_RANGE(max, "maximum clique size");
+  CHECK_SSIZE_T_RANGE(min, "minimum size");
+  CHECK_SSIZE_T_RANGE(max, "maximum size");
 
   if (file == Py_None) {
     if (igraph_vector_ptr_init(&result, 0)) {
@@ -11232,8 +11241,17 @@ PyObject *igraphmodule_Graph_independent_vertex_sets(igraphmodule_GraphObject
                                    &min_size, &max_size))
     return NULL;
 
-  CHECK_SSIZE_T_RANGE(min_size, "minimum size");
-  CHECK_SSIZE_T_RANGE(max_size, "maximum size");
+  if (min_size >= 0) {
+    CHECK_SSIZE_T_RANGE(min_size, "minimum size");
+  } else {
+    min_size = -1;
+  }
+
+  if (max_size >= 0) {
+    CHECK_SSIZE_T_RANGE(max_size, "maximum size");
+  } else {
+    max_size = -1;
+  }
 
   if (igraph_vector_ptr_init(&result, 0)) {
     PyErr_SetString(PyExc_MemoryError, "");
@@ -11545,7 +11563,7 @@ PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject
  */
 PyObject *igraphmodule_Graph_community_leading_eigenvector(igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds) {
   static char *kwlist[] = { "n", "weights", "arpack_options", NULL };
-  Py_ssizeE_t n = -1;
+  Py_ssize_t n = -1;
   PyObject *cl, *res, *merges, *weights_obj = Py_None;
   igraph_vector_int_t membership;
   igraph_vector_t *weights = 0;
@@ -12070,7 +12088,11 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
         &edge_weights_o, &node_weights_o, &resolution_parameter, &normalize_resolution, &beta, &initial_membership_o, &n_iterations))
     return NULL;
 
-  CHECK_SSIZE_T_RANGE_POSITIVE(n_iterations, "number of iterations");
+  if (n_iterations >= 0) {
+    CHECK_SSIZE_T_RANGE(n_iterations, "number of iterations");
+  } else {
+    n_iterations = -1;
+  }
 
   /* Get edge weights */
   if (igraphmodule_attrib_to_vector_t(edge_weights_o, self, &edge_weights,
