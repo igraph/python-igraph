@@ -9619,7 +9619,7 @@ PyObject *igraphmodule_Graph_subisomorphic_lad(igraphmodule_GraphObject * self,
   }
 
   if (igraph_subisomorphic_lad(&other->g, &self->g, p_domains, &result,
-        map, 0, PyObject_IsTrue(induced), (int)time_limit)) {
+        map, 0, PyObject_IsTrue(induced), (igraph_integer_t) time_limit)) {
     if (p_domains)
       igraph_vector_ptr_destroy_all(p_domains);
     igraphmodule_handle_igraph_error();
@@ -9681,7 +9681,7 @@ PyObject *igraphmodule_Graph_get_subisomorphisms_lad(
   }
 
   if (igraph_subisomorphic_lad(&other->g, &self->g, p_domains, 0, 0, &mappings,
-        PyObject_IsTrue(induced), (int)time_limit)) {
+        PyObject_IsTrue(induced), (igraph_integer_t) time_limit)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_ptr_destroy_all(&mappings);
     if (p_domains)

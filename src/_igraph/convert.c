@@ -58,7 +58,7 @@ int PyLong_AsInt(PyObject* obj, int* result) {
     PyErr_SetString(PyExc_OverflowError, "long integer too large for conversion to C int");
     return -1;
   }
-  *result = (int)dummy;
+  *result = dummy;
   return 0;
 }
 
@@ -379,17 +379,25 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
         igraphmodule_PyObject_to_enum(value, eigen_which_position_tt,
                                       (int*) &w->pos);
       } else if (!strcasecmp(kv, "howmany")) {
-        w->howmany = (int) PyLong_AsLong(value);
+        if (PyLong_AsInt(value, &w->howmany)) {
+          return -1;
+        }
       } else if (!strcasecmp(kv, "il")) {
-        w->il = (int) PyLong_AsLong(value);
+        if (PyLong_AsInt(value, &w->il)) {
+          return -1;
+        }
       } else if (!strcasecmp(kv, "iu")) {
-        w->iu = (int) PyLong_AsLong(value);
+        if (PyLong_AsInt(value, &w->iu)) {
+          return -1;
+        }
       } else if (!strcasecmp(kv, "vl")) {
         w->vl = PyFloat_AsDouble(value);
       } else if (!strcasecmp(kv, "vu")) {
         w->vu = PyFloat_AsDouble(value);
       } else if (!strcasecmp(kv, "vestimate")) {
-        w->vestimate = (int) PyLong_AsLong(value);
+        if (PyLong_AsInt(value, &w->vestimate)) {
+          return -1;
+        }
       } else if (!strcasecmp(kv, "balance")) {
         igraphmodule_PyObject_to_enum(value, lapack_dgeevc_balance_tt,
                                       (int*) &w->balance);
@@ -1843,43 +1851,58 @@ int igraphmodule_attrib_to_vector_int_t(PyObject *o, igraphmodule_GraphObject *s
 
   if (PyUnicode_Check(o)) {
     igraph_vector_t* dummy = 0;
-    long int i, n;
+    igraph_integer_t i, n;
 
-    if (igraphmodule_attrib_to_vector_t(o, self, &dummy, attr_type))
+    if (igraphmodule_attrib_to_vector_t(o, self, &dummy, attr_type)) {
       return 1;
+    }
 
-    if (dummy == 0)
+    if (dummy == 0) {
       return 0;
+    }
 
     n = igraph_vector_size(dummy);
 
     result = (igraph_vector_int_t*)calloc(1, sizeof(igraph_vector_int_t));
-    igraph_vector_int_init(result, n);
-    if (result==0) {
+    if (result == 0) {
       igraph_vector_destroy(dummy); free(dummy);
       PyErr_NoMemory();
       return 1;
     }
-    for (i=0; i<n; i++)
-      VECTOR(*result)[i] = (int)VECTOR(*dummy)[i];
+
+    if (igraph_vector_int_init(result, n)) {
+      igraphmodule_handle_igraph_error();
+      igraph_vector_destroy(dummy);
+      free(dummy);
+      free(result);
+      return 1;
+    }
+
+    for (i = 0; i < n; i++) {
+      VECTOR(*result)[i] = (igraph_integer_t) VECTOR(*dummy)[i];
+    }
+
     igraph_vector_destroy(dummy); free(dummy);
     *vptr = result;
   } else if (PySequence_Check(o)) {
     result = (igraph_vector_int_t*)calloc(1, sizeof(igraph_vector_int_t));
-    if (result==0) {
+    if (result == 0) {
       PyErr_NoMemory();
       return 1;
     }
+
     if (igraphmodule_PyObject_to_vector_int_t(o, result)) {
       igraph_vector_int_destroy(result);
       free(result);
       return 1;
     }
+
     *vptr = result;
   } else {
     PyErr_SetString(PyExc_TypeError, "unhandled type");
     return 1;
   }
+
   return 0;
 }
 

@@ -514,24 +514,24 @@ int igraphmodule_Vertex_set_attribute(igraphmodule_VertexObject* self, PyObject*
   /* result is NULL, check whether there was an error */
   if (!PyErr_Occurred()) {
     /* no, there wasn't, so we must simply add the attribute */
-    int n=(int)igraph_vcount(&o->g), i;
-    result=PyList_New(n);
-    for (i=0; i<n; i++) {
+    igraph_integer_t i, n = igraph_vcount(&o->g);
+    result = PyList_New(n);
+    for (i = 0; i < n; i++) {
       if (i != self->idx) {
-    Py_INCREF(Py_None);
-    if (PyList_SetItem(result, i, Py_None) == -1) {
-      Py_DECREF(Py_None);
-      Py_DECREF(result);
-      return -1;
-    }
+        Py_INCREF(Py_None);
+        if (PyList_SetItem(result, i, Py_None) == -1) {
+          Py_DECREF(Py_None);
+          Py_DECREF(result);
+          return -1;
+        }
       } else {
-    /* Same game with the reference count here */
-    Py_INCREF(v);
-    if (PyList_SetItem(result, i, v) == -1) {
-      Py_DECREF(v);
-      Py_DECREF(result);
-      return -1;
-    }
+        /* Same game with the reference count here */
+        Py_INCREF(v);
+        if (PyList_SetItem(result, i, v) == -1) {
+          Py_DECREF(v);
+          Py_DECREF(result);
+          return -1;
+        }
       }
     }
     if (PyDict_SetItem(((PyObject**)o->g.attr)[1], k, result) == -1) {
