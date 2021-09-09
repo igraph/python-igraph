@@ -44,8 +44,6 @@ typedef struct {
   int value;
 } igraphmodule_enum_translation_table_entry_t;
 
-int PyLong_AsInt(PyObject* obj, int* result);
-
 /* Conversion from PyObject to enum types */
 
 int igraphmodule_PyObject_to_enum(PyObject *o,

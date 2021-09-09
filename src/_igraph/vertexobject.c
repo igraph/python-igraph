@@ -601,17 +601,22 @@ static PyObject* _convert_to_edge_list(igraphmodule_VertexObject* vertex, PyObje
   for (i = 0; i < n; i++) {
     PyObject* idx = PyList_GET_ITEM(obj, i);
     PyObject* v;
-    int idx_int;
+    igraph_integer_t idx_int;
 
     if (!PyLong_Check(idx)) {
       PyErr_SetString(PyExc_TypeError, "_convert_to_edge_list expected list of integers");
       return NULL;
     }
 
-    if (PyLong_AsInt(idx, &idx_int))
+    if (igraphmodule_PyObject_to_integer_t(idx, &idx_int)) {
       return NULL;
+    }
 
     v = igraphmodule_Edge_New(vertex->gref, idx_int);
+    if (!v) {
+      return NULL;
+    }
+
     PyList_SetItem(obj, i, v);   /* reference to v stolen, reference to idx discarded */
   }
 
@@ -633,17 +638,22 @@ static PyObject* _convert_to_vertex_list(igraphmodule_VertexObject* vertex, PyOb
   for (i = 0; i < n; i++) {
     PyObject* idx = PyList_GET_ITEM(obj, i);
     PyObject* v;
-    int idx_int;
+    igraph_integer_t idx_int;
 
     if (!PyLong_Check(idx)) {
       PyErr_SetString(PyExc_TypeError, "_convert_to_vertex_list expected list of integers");
       return NULL;
     }
 
-    if (PyLong_AsInt(idx, &idx_int))
+    if (igraphmodule_PyObject_to_integer_t(idx, &idx_int)) {
       return NULL;
+    }
 
     v = igraphmodule_Vertex_New(vertex->gref, idx_int);
+    if (!v) {
+      return NULL;
+    }
+
     PyList_SetItem(obj, i, v);   /* reference to v stolen, reference to idx discarded */
   }
 

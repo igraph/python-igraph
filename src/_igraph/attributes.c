@@ -136,7 +136,6 @@ int igraphmodule_PyObject_matches_attribute_record(PyObject* object, igraph_attr
 int igraphmodule_get_vertex_id_by_name(igraph_t *graph, PyObject* o, igraph_integer_t* vid) {
   igraphmodule_i_attribute_struct* attrs = ATTR_STRUCT(graph);
   PyObject* o_vid = NULL;
-  int tmp;
 
   if (graph) {
     attrs = ATTR_STRUCT(graph);
@@ -155,10 +154,9 @@ int igraphmodule_get_vertex_id_by_name(igraph_t *graph, PyObject* o, igraph_inte
     return 1;
   }
   
-  if (PyLong_AsInt(o_vid, &tmp))
+  if (igraphmodule_PyObject_to_integer_t(o_vid, vid)) {
     return 1;
-  
-  *vid = tmp;
+  }
 
   return 0;
 }

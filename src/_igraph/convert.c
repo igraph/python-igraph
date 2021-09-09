@@ -43,7 +43,8 @@
  * \brief Converts a Python long to a C int
  *
  * This is similar to PyLong_AsLong, but it checks for overflow first and
- * throws an exception if necessary.
+ * throws an exception if necessary. This variant is needed for enum conversions
+ * because we assume that enums fit into an int.
  *
  * Returns -1 if there was an error, 0 otherwise.
  */
@@ -799,11 +800,21 @@ int PyLong_to_integer_t(PyObject* obj, igraph_integer_t* v) {
     /* here the assumption is that sizeof(long long) == 64 bits; anyhow, this
      * is the widest integer type that we can convert a PyLong to so we cannot
      * do any better than this */
-    *v = PyLong_AsLongLong(obj);
+    long long int dummy = PyLong_AsLongLong(obj);
+    if (PyErr_Occurred()) {
+      return 1;
+    }
+    *v = dummy;
   } else {
-    int dummy;
-    PyLong_AsInt(obj, &dummy);
-    *v = (igraph_integer_t)dummy;
+    /* this is either 32-bit igraph, or some weird, officially not-yet-supported
+     * igraph flavour. Let's try to be on the safe side and assume 32-bit. long
+     * ints are at least 32 bits so we will fit, otherwise Python will raise
+     * an OverflowError on its own */
+    long int dummy = PyLong_AsLong(obj);
+    if (PyErr_Occurred()) {
+      return 1;
+    }
+    *v = dummy;
   }
   return 0;
 }
@@ -2706,8 +2717,6 @@ int igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t_with_type(PyObject *it,
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *graph) {
-  int retval, tmp;
-
   if (o == Py_None || o == 0) {
     *vid = 0;
   } else if (PyLong_Check(o)) {
@@ -2727,20 +2736,19 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
     PyObject* num = PyNumber_Index(o);
     if (num) {
       if (PyLong_Check(num)) {
-        retval = PyLong_AsInt(num, &tmp);
-        if (retval) {
+        if (igraphmodule_PyObject_to_integer_t(num, vid)) {
           Py_DECREF(num);
           return 1;
         }
-        *vid = tmp;
       } else {
         PyErr_SetString(PyExc_TypeError, "PyNumber_Index returned invalid type");
         Py_DECREF(num);
         return 1;
       }
       Py_DECREF(num);
-    } else
+    } else {
       return 1;
+    }
   } else {
     PyErr_SetString(PyExc_TypeError, "only numbers, strings or igraph.Vertex objects can be converted to vertex IDs");
     return 1;
@@ -2921,7 +2929,7 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *graph) {
-  int retval, tmp;
+  int retval;
   igraph_integer_t vid1, vid2;
 
   if (o == Py_None || o == 0) {
@@ -2939,35 +2947,38 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
     PyObject* num = PyNumber_Index(o);
     if (num) {
       if (PyLong_Check(num)) {
-        retval = PyLong_AsInt(num, &tmp);
-        if (retval) {
+        if (igraphmodule_PyObject_to_integer_t(num, eid)) {
           Py_DECREF(num);
           return 1;
         }
-        *eid = tmp;
       } else {
         PyErr_SetString(PyExc_TypeError, "PyNumber_Index returned invalid type");
         Py_DECREF(num);
         return 1;
       }
       Py_DECREF(num);
-    } else
+    } else {
       return 1;
+    }
   } else if (graph != 0 && PyTuple_Check(o)) {
     PyObject *o1, *o2;
 
     o1 = PyTuple_GetItem(o, 0);
-    if (!o1)
+    if (!o1) {
       return 1;
+    }
 
-    o2 = PyTuple_GetItem(o, 1);
+    o2 = PyTuple_GetItem(o, 1); {
     if (!o2)
       return 1;
+    }
 
-    if (igraphmodule_PyObject_to_vid(o1, &vid1, graph))
+    if (igraphmodule_PyObject_to_vid(o1, &vid1, graph)) {
       return 1;
-    if (igraphmodule_PyObject_to_vid(o2, &vid2, graph))
+    }
+    if (igraphmodule_PyObject_to_vid(o2, &vid2, graph)) {
       return 1;
+    }
 
     retval = igraph_get_eid(graph, eid, vid1, vid2, 1, 0);
     if (retval == IGRAPH_EINVVID) {
