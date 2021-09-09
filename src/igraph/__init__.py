@@ -112,21 +112,29 @@ from igraph.drawing.colors import (
 )
 from igraph.datatypes import Matrix, DyadCensus, TriadCensus, UniqueIdGenerator
 from igraph.formula import construct_graph_from_formula
-from igraph.graph_constructors import (
+from igraph.constructors.from_file import (
     construct_graph_from_graphmlz_file,
     construct_graph_from_dimacs_file,
     construct_graph_from_pickle_file,
     construct_graph_from_picklez_file,
     construct_graph_from_adjacency_file,
     construct_graph_from_file,
+)
+from igraph.constructors.from_object import (
     construct_graph_from_dict_list,
     construct_graph_from_tuple_list,
     construct_graph_from_sequence_dict,
     construct_graph_from_dict_dict,
+    construct_graph_from_dataframe,
+)
+from igraph.constructors.from_adjacency import (
     construct_graph_from_adjacency,
     construct_graph_from_weighted_adjacency,
-    construct_graph_from_dataframe,
+)
+from igraph.constructors.random import (
     construct_random_geometric_graph,
+)
+from igraph.constructors.bipartite import (
     construct_bipartite_graph,
     construct_incidence_bipartite_graph,
     construct_full_bipartite_graph,

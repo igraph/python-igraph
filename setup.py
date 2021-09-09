@@ -821,7 +821,13 @@ options = dict(
     author_email="ntamas@gmail.com",
     ext_modules=[igraph_extension],
     package_dir={"igraph": "src/igraph"},
-    packages=["igraph", "igraph.app", "igraph.drawing", "igraph.remote"],
+    packages=[
+        "igraph",
+        "igraph.app",
+        "igraph.drawing",
+        "igraph.remote",
+        "igraph.constructors",
+        ],
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
     extras_require={
