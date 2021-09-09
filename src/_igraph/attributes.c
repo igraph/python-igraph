@@ -24,17 +24,18 @@
 #include "attributes.h"
 #include "common.h"
 #include "convert.h"
+#include "platform.h"
 #include "pyhelpers.h"
 
-static inline int PyObject_allowed_in_boolean_attribute(PyObject* o) {
+static INLINE int PyObject_allowed_in_boolean_attribute(PyObject* o) {
   return o == Py_None || o == Py_False || o == Py_True;
 }
 
-static inline int PyObject_allowed_in_numeric_attribute(PyObject* o) {
+static INLINE int PyObject_allowed_in_numeric_attribute(PyObject* o) {
   return o == Py_None || PyNumber_Check(o);
 }
 
-static inline int PyObject_allowed_in_string_attribute(PyObject* o) {
+static INLINE int PyObject_allowed_in_string_attribute(PyObject* o) {
   return o == Py_None || PyBaseString_Check(o);
 }
 
