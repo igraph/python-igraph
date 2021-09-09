@@ -33,6 +33,7 @@
 #include "edgeseqobject.h"
 #include "error.h"
 #include "graphobject.h"
+#include "pyhelpers.h"
 #include "random.h"
 #include "vertexobject.h"
 #include "vertexseqobject.h"
@@ -807,6 +808,9 @@ PyObject* PyInit__igraph(void)
   PyObject* m;
   static void *PyIGraph_API[PyIGraph_API_pointers];
   PyObject *c_api_object;
+
+  /* Prevent linking 64-bit igraph to 32-bit Python */
+  PY_IGRAPH_ASSERT_AT_BUILD_TIME(sizeof(igraph_integer_t) >= sizeof(Py_ssize_t));
 
   /* Check if the module is already initialized (possibly in another Python
    * interpreter. If so, bail out as we don't support this. */

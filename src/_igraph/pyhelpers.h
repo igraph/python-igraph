@@ -40,6 +40,8 @@ long igraphmodule_Py_HashPointer(void *p);
         (PyUnicode_CompareWithASCIIString(uni, string) == 0)
 char* PyUnicode_CopyAsString(PyObject* string);
 
+#define PY_IGRAPH_ASSERT_AT_BUILD_TIME(condition) \
+  ((void)sizeof(char[1 - 2*!(condition)]))
 #define PY_IGRAPH_DEPRECATED(msg) \
   PyErr_WarnEx(PyExc_DeprecationWarning, (msg), 1)
 #define PY_IGRAPH_WARN(msg) \
