@@ -26,6 +26,18 @@
 #include "convert.h"
 #include "pyhelpers.h"
 
+static inline int PyObject_allowed_in_boolean_attribute(PyObject* o) {
+  return o == Py_None || o == Py_False || o == Py_True;
+}
+
+static inline int PyObject_allowed_in_numeric_attribute(PyObject* o) {
+  return o == Py_None || PyNumber_Check(o);
+}
+
+static inline int PyObject_allowed_in_string_attribute(PyObject* o) {
+  return o == Py_None || PyBaseString_Check(o);
+}
+
 int igraphmodule_i_attribute_struct_init(igraphmodule_i_attribute_struct *attrs) {
   int i;
   for (i=0; i<3; i++) {
@@ -1359,31 +1371,28 @@ static int igraphmodule_i_attribute_get_info(const igraph_t *graph,
         if (PyList_Check(values)) {
           m = PyList_Size(values);
           for (l = 0; l < m && is_numeric; l++) {
-            o = PyList_GetItem(values, l);
-            if (o != Py_None && !PyNumber_Check(o)) {
-              is_numeric=0;
+            if (!PyObject_allowed_in_numeric_attribute(PyList_GetItem(values, l))) {
+              is_numeric = 0;
             }
           }
           for (l = 0; l < m && is_string; l++) {
-            o = PyList_GetItem(values, l);
-            if (o != Py_None && !PyBaseString_Check(o)) {
+            if (!PyObject_allowed_in_string_attribute(PyList_GetItem(values, l))) {
               is_string = 0;
             }
           }
           for (l = 0; l < m && is_boolean; l++) {
-            o = PyList_GetItem(values, l);
-            if (o != Py_None && o != Py_False && o != Py_True) {
+            if (!PyObject_allowed_in_boolean_attribute(PyList_GetItem(values, l))) {
               is_boolean = 0;
             }
           }
         } else {
-          if (values != Py_None && !PyNumber_Check(values)) {
+          if (!PyObject_allowed_in_numeric_attribute(values)) {
             is_numeric = 0;
           }
-          if (values != Py_None && !PyBaseString_Check(values)) {
+          if (!PyObject_allowed_in_string_attribute(values)) {
             is_string = 0;
           }
-          if (values != Py_None && values != Py_False && values != Py_True) {
+          if (!PyObject_allowed_in_boolean_attribute(values)) {
             is_boolean = 0;
           }
         }
@@ -1461,33 +1470,29 @@ int igraphmodule_i_attribute_get_type(const igraph_t *graph,
   /* Go on with the checks */
   is_numeric = is_string = is_boolean = 1;
   if (attrnum > 0) {
-
     for (i = 0; i < j && is_numeric; i++) {
-      PyObject *item = PyList_GET_ITEM(o, i);
-      if (item != Py_None && !PyNumber_Check(item)) {
+      if (!PyObject_allowed_in_numeric_attribute(PyList_GET_ITEM(o, i))) {
         is_numeric = 0;
       }
     }
     for (i = 0; i < j && is_string; i++) {
-      PyObject *item = PyList_GET_ITEM(o, i);
-      if (item != Py_None && !PyBaseString_Check(item)) {
+      if (!PyObject_allowed_in_string_attribute(PyList_GET_ITEM(o, i))) {
         is_string = 0;
       }
     }
     for (i = 0; i < j && is_boolean; i++) {
-      PyObject *item = PyList_GET_ITEM(o, i);
-      if (item != Py_None && item != Py_True && item != Py_False) {
+      if (!PyObject_allowed_in_boolean_attribute(PyList_GET_ITEM(o, i))) {
         is_boolean = 0;
       }
     }
   } else {
-    if (o != Py_None && !PyNumber_Check(o)) {
+    if (!PyObject_allowed_in_numeric_attribute(o)) {
       is_numeric = 0;
     }
-    if (o != Py_None && !PyBaseString_Check(o)) {
+    if (!PyObject_allowed_in_string_attribute(o)) {
       is_string = 0;
     }
-    if (o != Py_None && o != Py_True && o != Py_False) {
+    if (!PyObject_allowed_in_boolean_attribute(o)) {
       is_boolean = 0;
     }
   }
