@@ -542,7 +542,7 @@ PyObject* igraphmodule_VertexSeq_find(igraphmodule_VertexSeqObject *self, PyObje
     /* Call the callable for every vertex in the current sequence and return
      * the first one for which it evaluates to True */
     n = PySequence_Size((PyObject*)self);
-    for (i=0; i<n; i++) {
+    for (i = 0; i < n; i++) {
       PyObject *vertex = PySequence_GetItem((PyObject*)self, i);
       PyObject *call_result;
       if (vertex == 0)
@@ -562,7 +562,12 @@ PyObject* igraphmodule_VertexSeq_find(igraphmodule_VertexSeqObject *self, PyObje
   } else if (PyLong_Check(item)) {
     /* Integers are interpreted as indices on the vertex set and NOT on the
      * original, untouched vertex sequence of the graph */
-    return PySequence_GetItem((PyObject*)self, PyLong_AsLong(item));
+    Py_ssize_t index = PyLong_AsSsize_t(item);
+    if (PyErr_Occurred()) {
+      return NULL;
+    } else {
+      return PySequence_GetItem((PyObject*)self, index);
+    }
   } else if (PyBaseString_Check(item)) {
     /* Strings are interpreted as vertex names */
     if (igraphmodule_get_vertex_id_by_name(&self->gref->g, item, &i))

@@ -220,7 +220,7 @@ static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph,
  */
 static INLINE igraph_bool_t deleting_edge(PyObject* value) {
   return value == Py_None || value == Py_False ||
-      (PyLong_Check(value) && PyLong_AsLong(value) == 0);
+      (PyLong_Check(value) && PyLong_AsLongLong(value) == 0);
 }
 
 /**

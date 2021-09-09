@@ -21,6 +21,7 @@
 */
 
 #include "arpackobject.h"
+#include "convert.h"
 #include "graphobject.h"
 #include "error.h"
 
@@ -120,6 +121,8 @@ PyObject* igraphmodule_ARPACKOptions_getattr(
 int igraphmodule_ARPACKOptions_setattr(
   igraphmodule_ARPACKOptionsObject* self, char* attrname,
   PyObject* value) {
+  igraph_integer_t igraph_int;
+
   if (value == 0) {
     PyErr_SetString(PyExc_TypeError, "attribute can not be deleted");
     return -1;
@@ -127,10 +130,13 @@ int igraphmodule_ARPACKOptions_setattr(
   if (strcmp(attrname, "maxiter") == 0 ||
       strcmp(attrname, "mxiter") == 0) {
     if (PyLong_Check(value)) {
-      long int n=PyLong_AsLong(value);
-      if (n>0)
-          self->params.mxiter=(igraph_integer_t)n;
-      else {
+      if (igraphmodule_PyObject_to_integer_t(value, &igraph_int)) {
+        return -1;
+      }
+
+      if (igraph_int > 0) {
+        self->params.mxiter = igraph_int;
+      } else {
         PyErr_SetString(PyExc_ValueError, "maxiter must be positive");
         return -1;
       }
@@ -140,7 +146,10 @@ int igraphmodule_ARPACKOptions_setattr(
     }
   } else if (strcmp(attrname, "tol") == 0) {
     if (PyLong_Check(value)) {
-      self->params.tol = (igraph_real_t) PyLong_AsLong(value);
+      if (igraphmodule_PyObject_to_integer_t(value, &igraph_int)) {
+        return -1;
+      }
+      self->params.tol = igraph_int;
     } else if (PyFloat_Check(value)) {
       self->params.tol = (igraph_real_t) PyFloat_AsDouble(value);
     } else {

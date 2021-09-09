@@ -2025,8 +2025,9 @@ PyObject *igraphmodule_Graph_Barabasi(PyTypeObject * type,
 {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  long n, m = 1;
+  long n;
   float power = 1.0f, zero_appeal = 1.0f;
+  igraph_integer_t m = 1;
   igraph_vector_int_t outseq;
   igraph_t *start_from = 0;
   igraph_barabasi_algorithm_t algo = IGRAPH_BARABASI_PSUMTREE;
@@ -2044,8 +2045,7 @@ PyObject *igraphmodule_Graph_Barabasi(PyTypeObject * type,
                                    &start_from_o))
     return NULL;
 
-  if (igraphmodule_PyObject_to_barabasi_algorithm_t(implementation_o,
-        &algo))
+  if (igraphmodule_PyObject_to_barabasi_algorithm_t(implementation_o, &algo))
     return NULL;
 
   if (igraphmodule_PyObject_to_igraph_t(start_from_o, &start_from))
@@ -2062,12 +2062,13 @@ PyObject *igraphmodule_Graph_Barabasi(PyTypeObject * type,
   } else if (m_obj != 0) {
     /* let's check whether we have a constant out-degree or a list */
     if (PyLong_Check(m_obj)) {
-      m = PyLong_AsLong(m_obj);
+      if (igraphmodule_PyObject_to_integer_t(m_obj, &m)) {
+        return NULL;
+      }
       igraph_vector_int_init(&outseq, 0);
     } else if (PyList_Check(m_obj)) {
       if (igraphmodule_PyObject_to_vector_int_t(m_obj, &outseq)) {
-        /* something bad happened during conversion */
-       return NULL;
+        return NULL;
       }
     } else {
       PyErr_SetString(PyExc_TypeError, "m must be an integer or a list of integers");
@@ -2077,7 +2078,7 @@ PyObject *igraphmodule_Graph_Barabasi(PyTypeObject * type,
 
   if (igraph_barabasi_game(&g, (igraph_integer_t) n,
                            (igraph_real_t) power,
-                           (igraph_integer_t) m,
+                           m,
                            &outseq, PyObject_IsTrue(outpref),
                            (igraph_real_t) zero_appeal,
                            PyObject_IsTrue(directed), algo,
@@ -3174,8 +3175,9 @@ PyObject *igraphmodule_Graph_Recent_Degree(PyTypeObject * type,
 {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  long n, m = 0, window = 0;
+  long n, window = 0;
   float power = 0.0f, zero_appeal = 0.0f;
+  igraph_integer_t m = 0;
   igraph_vector_int_t outseq;
   PyObject *m_obj, *outpref = Py_False, *directed = Py_False;
 
@@ -3195,7 +3197,9 @@ NULL };
 
   // let's check whether we have a constant out-degree or a list
   if (PyLong_Check(m_obj)) {
-    m = PyLong_AsLong(m_obj);
+    if (igraphmodule_PyObject_to_integer_t(m_obj, &m)) {
+      return NULL;
+    }
     igraph_vector_int_init(&outseq, 0);
   }
   else if (PyList_Check(m_obj)) {
@@ -3208,7 +3212,7 @@ NULL };
   if (igraph_recent_degree_game(&g, (igraph_integer_t) n,
                                 (igraph_real_t) power,
                                 (igraph_integer_t) window,
-                                (igraph_integer_t) m, &outseq,
+                                m, &outseq,
                                 PyObject_IsTrue(outpref),
                                 (igraph_real_t) zero_appeal,
                                 PyObject_IsTrue(directed))) {
@@ -6516,9 +6520,12 @@ PyObject *igraphmodule_Graph_motifs_randesu_estimate(igraphmodule_GraphObject *s
 
   if (PyLong_Check(sample)) {
     /* samples chosen randomly */
-    long int ns = PyLong_AsLong(sample);
-    if (igraph_motifs_randesu_estimate(&self->g, &result, (igraph_integer_t) size,
-          &cut_prob, (igraph_integer_t) ns, 0)) {
+    igraph_integer_t ns;
+    if (igraphmodule_PyObject_to_integer_t(sample, &ns)) {
+      igraph_vector_destroy(&cut_prob);
+      return NULL;
+    }
+    if (igraph_motifs_randesu_estimate(&self->g, &result, size, &cut_prob, ns, 0)) {
       igraphmodule_handle_igraph_error();
       igraph_vector_destroy(&cut_prob);
       return NULL;
