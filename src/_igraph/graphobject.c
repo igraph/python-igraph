@@ -3319,7 +3319,7 @@ PyObject *igraphmodule_Graph_SBM(PyTypeObject * type,
 PyObject *igraphmodule_Graph_Star(PyTypeObject * type,
                                   PyObject * args, PyObject * kwds)
 {
-  long n, center = 0;
+  Py_ssize_t n, center = 0;
   igraph_star_mode_t mode = IGRAPH_STAR_UNDIRECTED;
   PyObject* mode_o = Py_None;
   igraphmodule_GraphObject *self;
@@ -3327,28 +3327,22 @@ PyObject *igraphmodule_Graph_Star(PyTypeObject * type,
 
   static char *kwlist[] = { "n", "mode", "center", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "l|Ol", kwlist,
-                                   &n, &mode_o, &center))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "n|On", kwlist, &n, &mode_o, &center))
     return NULL;
 
-  if (n < 0) {
-    PyErr_SetString(PyExc_ValueError, "Number of vertices must be positive.");
-    return NULL;
-  }
+  CHECK_SSIZE_T_RANGE(n, "vertex count");
+  CHECK_SSIZE_T_RANGE(center, "central vertex ID");
 
-  if (center >= n || center < 0) {
-    PyErr_SetString(PyExc_ValueError,
-                    "Central vertex ID should be between 0 and n-1");
+  if (center >= n) {
+    PyErr_SetString(PyExc_ValueError, "central vertex ID should be between 0 and n-1");
     return NULL;
   }
 
   if (igraphmodule_PyObject_to_star_mode_t(mode_o, &mode)) {
-    PyErr_SetString(PyExc_ValueError,
-                    "Mode should be either \"in\", \"out\", \"mutual\" or \"undirected\"");
     return NULL;
   }
 
-  if (igraph_star(&g, (igraph_integer_t) n, mode, (igraph_integer_t) center)) {
+  if (igraph_star(&g, n, mode, center)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -3368,7 +3362,7 @@ PyObject *igraphmodule_Graph_Static_Fitness(PyTypeObject *type,
     PyObject* args, PyObject* kwds) {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  long int m;
+  Py_ssize_t m;
   PyObject *fitness_out_o = Py_None, *fitness_in_o = Py_None;
   PyObject *fitness_o = Py_None;
   PyObject *multiple = Py_False, *loops = Py_False;
@@ -3377,10 +3371,12 @@ PyObject *igraphmodule_Graph_Static_Fitness(PyTypeObject *type,
   static char *kwlist[] = { "m", "fitness_out", "fitness_in",
     "loops", "multiple", "fitness", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "l|OOOOO", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "n|OOOOO", kwlist,
                                    &m, &fitness_out_o, &fitness_in_o,
                                    &loops, &multiple, &fitness_o))
     return NULL;
+
+  CHECK_SSIZE_T_RANGE(m, "edge count");
 
   /* This trickery allows us to use "fitness" or "fitness_out" as
    * keyword argument, with "fitness_out" taking precedence over
@@ -3403,7 +3399,7 @@ PyObject *igraphmodule_Graph_Static_Fitness(PyTypeObject *type,
     }
   }
 
-  if (igraph_static_fitness_game(&g, (igraph_integer_t) m, &fitness_out,
+  if (igraph_static_fitness_game(&g, m, &fitness_out,
         fitness_in_o == Py_None ? 0 : &fitness_in,
         PyObject_IsTrue(loops), PyObject_IsTrue(multiple))) {
     igraph_vector_destroy(&fitness_out);
@@ -3431,7 +3427,7 @@ PyObject *igraphmodule_Graph_Static_Power_Law(PyTypeObject *type,
     PyObject* args, PyObject* kwds) {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  long int n, m;
+  Py_ssize_t n, m;
   float exponent_out = -1.0f, exponent_in = -1.0f, exponent = -1.0f;
   PyObject *multiple = Py_False, *loops = Py_False;
   PyObject *finite_size_correction = Py_True;
@@ -3439,11 +3435,14 @@ PyObject *igraphmodule_Graph_Static_Power_Law(PyTypeObject *type,
   static char *kwlist[] = { "n", "m", "exponent_out", "exponent_in",
     "loops", "multiple", "finite_size_correction", "exponent", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "ll|ffOOOf", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nn|ffOOOf", kwlist,
                                    &n, &m, &exponent_out, &exponent_in,
                                    &loops, &multiple, &finite_size_correction,
                                    &exponent))
     return NULL;
+
+  CHECK_SSIZE_T_RANGE(n, "vertex count");
+  CHECK_SSIZE_T_RANGE(m, "edge count");
 
   /* This trickery allows us to use "exponent" or "exponent_out" as
    * keyword argument, with "exponent_out" taking precedence over
@@ -3456,8 +3455,7 @@ PyObject *igraphmodule_Graph_Static_Power_Law(PyTypeObject *type,
     return NULL;
   }
 
-  if (igraph_static_power_law_game(&g, (igraph_integer_t) n, (igraph_integer_t) m,
-        exponent_out, exponent_in,
+  if (igraph_static_power_law_game(&g, n, m, exponent_out, exponent_in,
         PyObject_IsTrue(loops), PyObject_IsTrue(multiple),
         PyObject_IsTrue(finite_size_correction))) {
     igraphmodule_handle_igraph_error();
@@ -3465,6 +3463,7 @@ PyObject *igraphmodule_Graph_Static_Power_Law(PyTypeObject *type,
   }
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
+
   return (PyObject *) self;
 }
 
@@ -3476,34 +3475,31 @@ PyObject *igraphmodule_Graph_Static_Power_Law(PyTypeObject *type,
 PyObject *igraphmodule_Graph_Tree(PyTypeObject * type,
                                   PyObject * args, PyObject * kwds)
 {
-  long int n, children;
-  PyObject *tree_mode_o = Py_None, *tree_type_o = Py_None;
+  Py_ssize_t n, children;
+  PyObject *tree_mode_o = Py_None;
   igraph_tree_mode_t mode = IGRAPH_TREE_UNDIRECTED;
   igraphmodule_GraphObject *self;
   igraph_t g;
 
-  static char *kwlist[] = { "n", "children", "mode", "type", NULL };
+  static char *kwlist[] = { "n", "children", "mode", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "ll|OO", kwlist,
-                                   &n, &children,
-                                   &tree_mode_o, &tree_type_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nn|O", kwlist,
+                                   &n, &children, &tree_mode_o))
     return NULL;
+
+  CHECK_SSIZE_T_RANGE(n, "vertex count");
+  CHECK_SSIZE_T_RANGE(children, "number of children per vertex");
 
   if (n < 0) {
     PyErr_SetString(PyExc_ValueError, "Number of vertices must be positive.");
     return NULL;
   }
 
-  if (tree_mode_o == Py_None && tree_type_o != Py_None) {
-    tree_mode_o = tree_type_o;
-    PY_IGRAPH_DEPRECATED("type=... keyword argument is deprecated since igraph 0.6, use mode=... instead");
-  }
-
   if (igraphmodule_PyObject_to_tree_mode_t(tree_mode_o, &mode)) {
     return NULL;
   }
 
-  if (igraph_tree(&g, (igraph_integer_t) n, (igraph_integer_t) children, mode)) {
+  if (igraph_tree(&g, n, children, mode)) {
       igraphmodule_handle_igraph_error();
       return NULL;
   }
@@ -3531,31 +3527,25 @@ PyObject *igraphmodule_Graph_Tree(PyTypeObject * type,
 PyObject *igraphmodule_Graph_Tree_Game(PyTypeObject * type,
                                        PyObject * args, PyObject * kwds)
 {
-  long int n;
-  PyObject *directed_o = Py_False, *tree_method_o = Py_None;
-  igraph_bool_t directed;
+  Py_ssize_t n;
+  PyObject *directed = Py_False, *tree_method_o = Py_None;
   igraph_random_tree_t tree_method = IGRAPH_RANDOM_TREE_LERW;
   igraphmodule_GraphObject *self;
   igraph_t g;
 
   static char *kwlist[] = { "n", "directed", "method", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "l|OO", kwlist,
-                                   &n, &directed_o, &tree_method_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "n|OO", kwlist,
+                                   &n, &directed, &tree_method_o))
     return NULL;
 
-  if (n < 0) {
-    PyErr_SetString(PyExc_ValueError, "Number of vertices must be positive.");
+  CHECK_SSIZE_T_RANGE(n, "vertex count");
+
+  if (igraphmodule_PyObject_to_random_tree_t(tree_method_o, &tree_method)) {
     return NULL;
   }
 
-  directed = PyObject_IsTrue(directed_o);
-
-  if (igraphmodule_PyObject_to_random_tree_t(tree_method_o, &tree_method))
-    return NULL;
-
-  if (igraph_tree_game(&g, (igraph_integer_t) n, directed,
-        tree_method)) {
+  if (igraph_tree_game(&g, n, PyObject_IsTrue(directed), tree_method)) {
       igraphmodule_handle_igraph_error();
       return NULL;
   }
@@ -3573,7 +3563,7 @@ PyObject *igraphmodule_Graph_Tree_Game(PyTypeObject * type,
 PyObject *igraphmodule_Graph_Watts_Strogatz(PyTypeObject * type,
                                             PyObject * args, PyObject * kwds)
 {
-  long int nei = 1, dim, size;
+  Py_ssize_t dim, size, nei;
   double p;
   PyObject* loops = Py_False;
   PyObject* multiple = Py_False;
@@ -3582,13 +3572,15 @@ PyObject *igraphmodule_Graph_Watts_Strogatz(PyTypeObject * type,
 
   static char *kwlist[] = { "dim", "size", "nei", "p", "loops", "multiple", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "llld|OO", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nnnd|OO", kwlist,
                                    &dim, &size, &nei, &p, &loops, &multiple))
     return NULL;
 
-  if (igraph_watts_strogatz_game(&g, (igraph_integer_t) dim,
-        (igraph_integer_t) size, (igraph_integer_t) nei, p,
-        PyObject_IsTrue(loops), PyObject_IsTrue(multiple))) {
+  CHECK_SSIZE_T_RANGE(dim, "dimensionality");
+  CHECK_SSIZE_T_RANGE(size, "size");
+  CHECK_SSIZE_T_RANGE(nei, "number of neighbors");
+
+  if (igraph_watts_strogatz_game(&g, dim, size, nei, p, PyObject_IsTrue(loops), PyObject_IsTrue(multiple))) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
