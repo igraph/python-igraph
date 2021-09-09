@@ -230,64 +230,78 @@ PyObject* igraphmodule_set_status_handler(PyObject* self, PyObject* o) {
 
 PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwds) {
   static char* kwlist[] = {"vs", "coords", NULL};
-  PyObject *vs, *o, *o1=0, *o2=0, *coords = Py_False;
+  PyObject *vs, *o, *o1, *o2, *o1_float, *o2_float, *coords = Py_False;
   igraph_matrix_t mtrx;
   igraph_vector_int_t result;
   igraph_matrix_t resmat;
-  long no_of_nodes, i;
+  Py_ssize_t no_of_nodes, i;
   
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O", kwlist, &PyList_Type, &vs, &coords))
     return NULL;
   
-  no_of_nodes=PyList_Size(vs);
+  no_of_nodes = PyList_Size(vs);
   if (igraph_matrix_init(&mtrx, no_of_nodes, 2)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
-  for (i=0; i<no_of_nodes; i++) {
-    o=PyList_GetItem(vs, i);
-    if (PyList_Check(o)) {
-      if (PyList_Size(o) >= 2) {
-        o1=PyList_GetItem(o, 0);
-        o2=PyList_GetItem(o, 1);
-        if (PyList_Size(o) > 2)
+
+  for (i = 0; i < no_of_nodes; i++) {
+    o = PyList_GetItem(vs, i);
+
+    if (PySequence_Check(o)) {
+      if (PySequence_Size(o) >= 2) {
+        o1 = PySequence_GetItem(o, 0);
+        if (!o1) {
+          igraph_matrix_destroy(&mtrx);
+          return NULL;
+        }
+
+        o2 = PySequence_GetItem(o, 1);
+        if (!o2) {
+          Py_DECREF(o1);
+          igraph_matrix_destroy(&mtrx);
+          return NULL;
+        }
+
+        if (PySequence_Size(o) > 2) {
           PyErr_Warn(PyExc_Warning, "vertex with more than 2 coordinates found, considering only the first 2");
+        }
       } else {
         PyErr_SetString(PyExc_TypeError, "vertex with less than 2 coordinates found");
         igraph_matrix_destroy(&mtrx);
-	    return NULL;
-      }
-    } else if (PyTuple_Check(o)) {
-      if (PyTuple_Size(o) >= 2) {
-	    o1=PyTuple_GetItem(o, 0);
-	    o2=PyTuple_GetItem(o, 1);
-	    if (PyTuple_Size(o) > 2)
-	      PyErr_Warn(PyExc_Warning, "vertex with more than 2 coordinates found, considering only the first 2");
-       } else {
-	      PyErr_SetString(PyExc_TypeError, "vertex with less than 2 coordinates found");
-	    igraph_matrix_destroy(&mtrx);
-	    return NULL;
+        return NULL;
       }
     }
     
     if (!PyNumber_Check(o1) || !PyNumber_Check(o2)) {
       PyErr_SetString(PyExc_TypeError, "vertex coordinates must be numeric");
+      Py_DECREF(o2);
+      Py_DECREF(o1);
       igraph_matrix_destroy(&mtrx);
       return NULL;
     }
-    /* o, o1 and o2 were borrowed, but now o1 and o2 are actual references! */
-    o1=PyNumber_Float(o1); o2=PyNumber_Float(o2);
-    if (!o1 || !o2) {
-      PyErr_SetString(PyExc_TypeError, "vertex coordinate conversion to float failed");
-      Py_XDECREF(o1);
-      Py_XDECREF(o2);
+
+    o1_float = PyNumber_Float(o1);
+    if (!o1_float) {
+      Py_DECREF(o2);
+      Py_DECREF(o1);
       igraph_matrix_destroy(&mtrx);
       return NULL;
     }
-    MATRIX(mtrx, i, 0) = PyFloat_AsDouble(o1);
-    MATRIX(mtrx, i, 1) = PyFloat_AsDouble(o2);
     Py_DECREF(o1);
+
+    o2_float = PyNumber_Float(o2);
+    if (!o2_float) {
+      Py_DECREF(o2);
+      igraph_matrix_destroy(&mtrx);
+      return NULL;
+    }
     Py_DECREF(o2);
+
+    MATRIX(mtrx, i, 0) = PyFloat_AsDouble(o1_float);
+    MATRIX(mtrx, i, 1) = PyFloat_AsDouble(o2_float);
+    Py_DECREF(o1_float);
+    Py_DECREF(o2_float);
   }
 
   if (!PyObject_IsTrue(coords)) {
@@ -302,7 +316,7 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
       igraph_vector_int_destroy(&result);
       return NULL;
     }    
-    o=igraphmodule_vector_int_t_to_PyList(&result);
+    o = igraphmodule_vector_int_t_to_PyList(&result);
     igraph_vector_int_destroy(&result);
   } else {
     if (igraph_matrix_init(&resmat, 0, 0)) {
@@ -316,7 +330,7 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
       igraph_matrix_destroy(&resmat);
       return NULL;
     }        
-    o=igraphmodule_matrix_t_to_PyList(&resmat, IGRAPHMODULE_TYPE_FLOAT);
+    o = igraphmodule_matrix_t_to_PyList(&resmat, IGRAPHMODULE_TYPE_FLOAT);
     igraph_matrix_destroy(&resmat);
   }
   
