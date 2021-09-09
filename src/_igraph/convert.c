@@ -2373,7 +2373,7 @@ int igraphmodule_PyList_to_matrix_int_t(PyObject* o, igraph_matrix_int_t *m) {
 int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, igraph_matrix_int_t *m, int min_cols) {
   Py_ssize_t nr, nc, n, i, j;
   PyObject *row, *item;
-  int was_warned = 0;
+  int ok, was_warned = 0;
 
   /* calculate the matrix dimensions */
   if (!PySequence_Check(o) || PyUnicode_Check(o)) {
@@ -2403,16 +2403,22 @@ int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, i
     n = PySequence_Size(row);
     for (j = 0; j < n; j++) {
       item = PySequence_GetItem(row, j);
+      ok = 1;
       if (PyLong_Check(item)) {
-        MATRIX(*m, i, j) = (igraph_integer_t)PyLong_AsLong(item);
-      } else if (PyLong_Check(item)) {
-        MATRIX(*m, i, j) = (igraph_integer_t)PyLong_AsLong(item);
+        if (igraphmodule_PyObject_to_integer_t(item, &MATRIX(*m, i, j))) {
+          ok = 0;
+        }
       } else if (PyFloat_Check(item)) {
         MATRIX(*m, i, j) = (igraph_integer_t)PyFloat_AsDouble(item);
-      } else if (!was_warned) {
-        PyErr_Warn(PyExc_Warning, "non-numeric value in matrix ignored");
-        was_warned=1;
+      } else {
+        ok = 0;
       }
+      
+      if (!ok && !was_warned) {
+        PyErr_Warn(PyExc_Warning, "non-numeric value in matrix ignored");
+        was_warned = 1;
+      }
+      
       Py_DECREF(item);
     }
     Py_DECREF(row);

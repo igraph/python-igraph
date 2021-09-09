@@ -47,4 +47,26 @@ char* PyUnicode_CopyAsString(PyObject* string);
 #define PY_IGRAPH_WARN(msg) \
   PyErr_WarnEx(PyExc_RuntimeWarning, (msg), 1)
 
+#define CHECK_SSIZE_T_RANGE(value, message) {   \
+  if ((value) < 0) {                             \
+    PyErr_SetString(PyExc_ValueError, message " must be non-negative"); \
+    return NULL;                                 \
+  }                                              \
+  if ((value) > IGRAPH_INTEGER_MAX) {            \
+    PyErr_SetString(PyExc_OverflowError, message " too large"); \
+    return NULL;                                 \
+  } \
+}
+
+#define CHECK_SSIZE_T_RANGE_POSITIVE(value, message) {   \
+  if ((value) <= 0) {                             \
+    PyErr_SetString(PyExc_ValueError, message " must be positive"); \
+    return NULL;                                 \
+  }                                              \
+  if ((value) > IGRAPH_INTEGER_MAX) {            \
+    PyErr_SetString(PyExc_OverflowError, message " too large"); \
+    return NULL;                                 \
+  } \
+}
+
 #endif

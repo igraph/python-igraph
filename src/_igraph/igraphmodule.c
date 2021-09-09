@@ -332,12 +332,15 @@ PyObject* igraphmodule_community_to_membership(PyObject *self,
   PyObject *merges_o, *return_csize = Py_False, *result_o;
   igraph_matrix_int_t merges;
   igraph_vector_int_t result, csize, *csize_p = 0;
-  long int nodes, steps;
+  Py_ssize_t nodes, steps;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!ll|O", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!nn|O", kwlist,
       &PyList_Type, &merges_o, &nodes, &steps, &return_csize)) return NULL;
 
   if (igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(merges_o, &merges, 2)) return NULL;
+
+  CHECK_SSIZE_T_RANGE(nodes, "number of nodes");
+  CHECK_SSIZE_T_RANGE(steps, "number of steps");
 
   if (igraph_vector_int_init(&result, nodes)) {
     igraphmodule_handle_igraph_error();
@@ -350,8 +353,7 @@ PyObject* igraphmodule_community_to_membership(PyObject *self,
     csize_p = &csize;
   }
 
-  if (igraph_community_to_membership(&merges, (igraph_integer_t)nodes,
-        (igraph_integer_t)steps, &result, csize_p)) {
+  if (igraph_community_to_membership(&merges, nodes, steps, &result, csize_p)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_int_destroy(&result);
     if (csize_p) igraph_vector_int_destroy(csize_p);

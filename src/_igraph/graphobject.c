@@ -201,13 +201,13 @@ void igraphmodule_Graph_dealloc(igraphmodule_GraphObject * self)
 int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
                             PyObject * args, PyObject * kwds) {
   static char *kwlist[] = { "n", "edges", "directed", "__ptr", NULL };
-  long int n = 0;
   PyObject *edges = NULL, *dir = Py_False, *ptr_o = 0;
   void* ptr = 0;
+  Py_ssize_t n = 0;
   igraph_vector_int_t edges_vector;
   igraph_bool_t edges_vector_owned = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|lOOO!", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nOOO!", kwlist,
                                    &n, &edges, &dir,
                                    &PyCapsule_Type, &ptr_o))
     return -1;
@@ -219,6 +219,15 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
     PyErr_SetString(PyExc_ValueError, "neither n nor edges should be given "
                     "in the call to Graph.__init__() when the graph is "
                     "pre-initialized with a C pointer");
+    return -1;
+  }
+
+  if (n < 0) {
+    PyErr_SetString(PyExc_OverflowError, "vertex count must be non-negative");
+    return -1;
+  }
+  if (n > IGRAPH_INTEGER_MAX) {
+    PyErr_SetString(PyExc_OverflowError, "vertex count too large");
     return -1;
   }
 
@@ -238,8 +247,7 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
       return -1;
     }
 
-    if (igraph_create
-        (&self->g, &edges_vector, (igraph_integer_t) n, PyObject_IsTrue(dir))) {
+    if (igraph_create(&self->g, &edges_vector, n, PyObject_IsTrue(dir))) {
       igraphmodule_handle_igraph_error();
       if (edges_vector_owned) {
         igraph_vector_int_destroy(&edges_vector);
@@ -253,7 +261,7 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
   } else {
     /* No edge list was specified, and no previously initialized graph object
      * was fed into our object, so let's use igraph_empty */
-    if (igraph_empty(&self->g, (igraph_integer_t) n, PyObject_IsTrue(dir))) {
+    if (igraph_empty(&self->g, n, PyObject_IsTrue(dir))) {
       igraphmodule_handle_igraph_error();
       return -1;
     }
@@ -575,12 +583,15 @@ PyObject *igraphmodule_Graph_is_tree(igraphmodule_GraphObject * self,
  */
 PyObject *igraphmodule_Graph_add_vertices(igraphmodule_GraphObject * self,
                                           PyObject * args, PyObject * kwds) {
-  long n;
+  Py_ssize_t n;
 
-  if (!PyArg_ParseTuple(args, "l", &n))
+  if (!PyArg_ParseTuple(args, "n", &n)) {
     return NULL;
+  }
 
-  if (igraph_add_vertices(&self->g, (igraph_integer_t) n, 0)) {
+  CHECK_SSIZE_T_RANGE(n, "vertex count");
+
+  if (igraph_add_vertices(&self->g, n, 0)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -605,15 +616,16 @@ PyObject *igraphmodule_Graph_delete_vertices(igraphmodule_GraphObject * self,
 
   /* no arguments means delete all. */
 
-  /*Py_None also means all for now, but it is deprecated */
+  /* Py_None used to mean 'all', but not any more */
   if (list == Py_None) {
-    PyErr_Warn(PyExc_DeprecationWarning, "Graph.delete_vertices(None) is "
-               "deprecated since igraph 0.8.3, please use "
-               "Graph.delete_vertices() instead");
+    PyErr_SetString(PyExc_ValueError, "expected number of vertices to delete, got None");
+    return NULL;
   }
 
-  /* this already converts no arguments and Py_None to all vertices */
-  if (igraphmodule_PyObject_to_vs_t(list, &vs, &self->g, 0, 0)) return NULL;
+  /* this already converts no arguments to all vertices */
+  if (igraphmodule_PyObject_to_vs_t(list, &vs, &self->g, 0, 0)) {
+    return NULL;
+  }
 
   if (igraph_delete_vertices(&self->g, vs)) {
     igraphmodule_handle_igraph_error();
@@ -1994,14 +2006,15 @@ PyObject *igraphmodule_Graph_Adjacency(PyTypeObject * type,
  */
 PyObject *igraphmodule_Graph_Atlas(PyTypeObject * type, PyObject * args)
 {
-  long n;
+  Py_ssize_t n;
   igraphmodule_GraphObject *self;
   igraph_t g;
 
-  if (!PyArg_ParseTuple(args, "l", &n))
+  if (!PyArg_ParseTuple(args, "n", &n)) {
     return NULL;
+  }
 
-  if (igraph_atlas(&g, (igraph_integer_t) n)) {
+  if (igraph_atlas(&g, n)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -2025,7 +2038,7 @@ PyObject *igraphmodule_Graph_Barabasi(PyTypeObject * type,
 {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  long n;
+  Py_ssize_t n;
   float power = 1.0f, zero_appeal = 1.0f;
   igraph_integer_t m = 1;
   igraph_vector_int_t outseq;
@@ -2039,7 +2052,7 @@ PyObject *igraphmodule_Graph_Barabasi(PyTypeObject * type,
     { "n", "m", "outpref", "directed", "power", "zero_appeal",
       "implementation", "start_from", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "l|OOOffOO", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "n|OOOffOO", kwlist,
                                    &n, &m_obj, &outpref, &directed, &power,
                                    &zero_appeal, &implementation_o,
                                    &start_from_o))
@@ -2051,10 +2064,7 @@ PyObject *igraphmodule_Graph_Barabasi(PyTypeObject * type,
   if (igraphmodule_PyObject_to_igraph_t(start_from_o, &start_from))
     return NULL;
 
-  if (n < 0) {
-    PyErr_SetString(PyExc_ValueError, "Number of vertices must be positive.");
-    return NULL;
-  }
+  CHECK_SSIZE_T_RANGE(n, "vertex count");
 
   if (m_obj == 0) {
     igraph_vector_int_init(&outseq, 0);
@@ -2076,11 +2086,9 @@ PyObject *igraphmodule_Graph_Barabasi(PyTypeObject * type,
     }
   }
 
-  if (igraph_barabasi_game(&g, (igraph_integer_t) n,
-                           (igraph_real_t) power,
-                           m,
+  if (igraph_barabasi_game(&g, n, power, m,
                            &outseq, PyObject_IsTrue(outpref),
-                           (igraph_real_t) zero_appeal,
+                           zero_appeal,
                            PyObject_IsTrue(directed), algo,
                            start_from)) {
     igraphmodule_handle_igraph_error();
@@ -2149,15 +2157,18 @@ PyObject *igraphmodule_Graph_Bipartite(PyTypeObject * type,
  */
 PyObject *igraphmodule_Graph_De_Bruijn(PyTypeObject *type, PyObject *args,
   PyObject *kwds) {
-  long int m, n;
+  Py_ssize_t m, n;
   igraphmodule_GraphObject *self;
   igraph_t g;
 
   static char *kwlist[] = {"m", "n", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "ll", kwlist, &m, &n))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nn", kwlist, &m, &n))
     return NULL;
 
-  if (igraph_de_bruijn(&g, (igraph_integer_t) m, (igraph_integer_t) n)) {
+  CHECK_SSIZE_T_RANGE(m, "alphabet size (m)");
+  CHECK_SSIZE_T_RANGE(n, "label length (n)");
+
+  if (igraph_de_bruijn(&g, m, n)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -2231,18 +2242,21 @@ PyObject *igraphmodule_Graph_Erdos_Renyi(PyTypeObject * type,
 {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  long n, m = -1;
+  Py_ssize_t n, m = -1;
   double p = -1.0;
   igraph_erdos_renyi_t t;
   PyObject *loops = Py_False, *directed = Py_False;
 
   static char *kwlist[] = { "n", "p", "m", "directed", "loops", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "l|dlOO", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "n|dnOO", kwlist,
                                    &n, &p, &m,
                                    &directed,
                                    &loops))
     return NULL;
+
+  CHECK_SSIZE_T_RANGE(n, "vertex count");
+  CHECK_SSIZE_T_RANGE((m < 0 ? 0 : m), "edge count");
 
   if (m == -1 && p == -1.0) {
     /* no density parameters were given, throw exception */
@@ -2257,8 +2271,7 @@ PyObject *igraphmodule_Graph_Erdos_Renyi(PyTypeObject * type,
 
   t = (m == -1) ? IGRAPH_ERDOS_RENYI_GNP : IGRAPH_ERDOS_RENYI_GNM;
 
-  if (igraph_erdos_renyi_game(&g, t, (igraph_integer_t) n,
-                              (igraph_real_t) (m == -1 ? p : m),
+  if (igraph_erdos_renyi_game(&g, t, n, (m == -1 ? p : m),
                               PyObject_IsTrue(directed),
                               PyObject_IsTrue(loops))) {
     igraphmodule_handle_igraph_error();
@@ -2280,7 +2293,7 @@ PyObject *igraphmodule_Graph_Establishment(PyTypeObject * type,
 {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  long n, types, k;
+  Py_ssize_t n, types, k;
   PyObject *type_dist, *pref_matrix;
   PyObject *directed = Py_False;
   igraph_matrix_t pm;
@@ -2288,7 +2301,7 @@ PyObject *igraphmodule_Graph_Establishment(PyTypeObject * type,
 
   char *kwlist[] = { "n", "k", "type_dist", "pref_matrix", "directed", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "llO!O!|O", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nnO!O!|O", kwlist,
                                    &n, &k, &PyList_Type, &type_dist,
                                    &PyList_Type, &pref_matrix, &directed))
     return NULL;
@@ -2298,6 +2311,10 @@ PyObject *igraphmodule_Graph_Establishment(PyTypeObject * type,
                     "Number of vertices and the amount of connection trials per step must be positive.");
     return NULL;
   }
+
+  CHECK_SSIZE_T_RANGE(n, "vertex count");
+  CHECK_SSIZE_T_RANGE(k, "connection trials per set");
+
   types = PyList_Size(type_dist);
 
   if (igraphmodule_PyList_to_matrix_t(pref_matrix, &pm)) {
@@ -2319,10 +2336,7 @@ PyObject *igraphmodule_Graph_Establishment(PyTypeObject * type,
     return NULL;
   }
 
-  if (igraph_establishment_game(&g, (igraph_integer_t) n,
-                                (igraph_integer_t) types,
-                                (igraph_integer_t) k, &td, &pm,
-                                PyObject_IsTrue(directed), 0)) {
+  if (igraph_establishment_game(&g, n, types, k, &td, &pm, PyObject_IsTrue(directed), 0)) {
     igraphmodule_handle_igraph_error();
     igraph_matrix_destroy(&pm);
     igraph_vector_destroy(&td);
@@ -2374,20 +2388,20 @@ PyObject *igraphmodule_Graph_Forest_Fire(PyTypeObject * type,
 {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  long n, ambs=1;
+  Py_ssize_t n, ambs = 1;
   double fw_prob, bw_factor=0.0;
   PyObject *directed = Py_False;
 
   static char *kwlist[] = {"n", "fw_prob", "bw_factor", "ambs", "directed", NULL};
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "ld|dlO", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nd|dnO", kwlist,
                                    &n, &fw_prob, &bw_factor, &ambs, &directed))
     return NULL;
 
-  if (igraph_forest_fire_game(&g, (igraph_integer_t)n,
-                              (igraph_real_t)fw_prob, (igraph_real_t)bw_factor,
-                              (igraph_integer_t)ambs,
-                              (igraph_bool_t)(PyObject_IsTrue(directed)))) {
+  CHECK_SSIZE_T_RANGE(n, "number of nodes");
+  CHECK_SSIZE_T_RANGE(n, "number of ambassadors");
+
+  if (igraph_forest_fire_game(&g, n, fw_prob, bw_factor, ambs, PyObject_IsTrue(directed))) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -2408,22 +2422,17 @@ PyObject *igraphmodule_Graph_Full(PyTypeObject * type,
 {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  long n;
+  Py_ssize_t n;
   PyObject *loops = Py_False, *directed = Py_False;
 
   char *kwlist[] = { "n", "directed", "loops", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "l|OO", kwlist, &n,
-                                   &directed, &loops))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "n|OO", kwlist, &n, &directed, &loops))
     return NULL;
 
-  if (n < 0) {
-    PyErr_SetString(PyExc_ValueError, "Number of vertices must be positive.");
-    return NULL;
-  }
+  CHECK_SSIZE_T_RANGE(n, "number of nodes");
 
-  if (igraph_full(&g, (igraph_integer_t) n, PyObject_IsTrue(directed),
-                  PyObject_IsTrue(loops))) {
+  if (igraph_full(&g, n, PyObject_IsTrue(directed), PyObject_IsTrue(loops))) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -2444,31 +2453,28 @@ PyObject *igraphmodule_Graph_Full_Bipartite(PyTypeObject * type,
   igraph_t g;
   igraph_vector_bool_t vertex_types;
   igraph_neimode_t mode = IGRAPH_ALL;
-  long int n1, n2;
+  Py_ssize_t n1, n2;
   PyObject *mode_o = Py_None, *directed = Py_False, *vertex_types_o = 0;
 
   static char *kwlist[] = { "n1", "n2", "directed", "mode", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "ll|OO", kwlist, &n1, &n2,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nn|OO", kwlist, &n1, &n2,
                                    &directed, &mode_o))
     return NULL;
 
-  if (n1 < 0 || n2 < 0) {
-    PyErr_SetString(PyExc_ValueError, "Number of vertices must be positive.");
+  CHECK_SSIZE_T_RANGE(n1, "number of vertices in first partition");
+  CHECK_SSIZE_T_RANGE(n2, "number of vertices in second partition");
+
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) {
     return NULL;
   }
-
-  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
-      return NULL;
 
   if (igraph_vector_bool_init(&vertex_types, n1+n2)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
-  if (igraph_full_bipartite(&g, &vertex_types,
-        (igraph_integer_t) n1, (igraph_integer_t) n2,
-        PyObject_IsTrue(directed), mode)) {
+  if (igraph_full_bipartite(&g, &vertex_types, n1, n2, PyObject_IsTrue(directed), mode)) {
     igraph_vector_bool_destroy(&vertex_types);
     igraphmodule_handle_igraph_error();
     return NULL;
@@ -2492,16 +2498,17 @@ PyObject *igraphmodule_Graph_Full_Citation(PyTypeObject *type,
 {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  long n;
+  Py_ssize_t n;
   PyObject *directed = Py_False;
 
   char *kwlist[] = { "n", "directed", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "l|O", kwlist, &n, &directed))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "n|O", kwlist, &n, &directed))
     return NULL;
 
-  if (igraph_full_citation(&g, (igraph_integer_t) n,
-                           (igraph_bool_t) PyObject_IsTrue(directed))) {
+  CHECK_SSIZE_T_RANGE(n, "vertex count");
+
+  if (igraph_full_citation(&g, n, PyObject_IsTrue(directed))) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -2521,7 +2528,7 @@ PyObject *igraphmodule_Graph_GRG(PyTypeObject * type,
 {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  long n;
+  Py_ssize_t n;
   double r;
   PyObject *torus = Py_False;
   PyObject *o_xs, *o_ys;
@@ -2529,7 +2536,7 @@ PyObject *igraphmodule_Graph_GRG(PyTypeObject * type,
 
   static char *kwlist[] = { "n", "radius", "torus", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "ld|O", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nd|O", kwlist,
                                    &n, &r, &torus))
     return NULL;
 
@@ -2542,8 +2549,9 @@ PyObject *igraphmodule_Graph_GRG(PyTypeObject * type,
     return NULL;
   }
 
-  if (igraph_grg_game(&g, (igraph_integer_t) n, (igraph_real_t) r,
-                      PyObject_IsTrue(torus), &xs, &ys)) {
+  CHECK_SSIZE_T_RANGE(n, "vertex count");
+
+  if (igraph_grg_game(&g, n, r, PyObject_IsTrue(torus), &xs, &ys)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_destroy(&xs);
     igraph_vector_destroy(&ys);
@@ -2557,6 +2565,7 @@ PyObject *igraphmodule_Graph_GRG(PyTypeObject * type,
     igraph_vector_destroy(&ys);
     return NULL;
   }
+
   o_ys = igraphmodule_vector_t_to_PyList(&ys, IGRAPHMODULE_TYPE_FLOAT);
   igraph_vector_destroy(&ys);
   if (!o_ys) {
@@ -2566,6 +2575,7 @@ PyObject *igraphmodule_Graph_GRG(PyTypeObject * type,
   }
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
+
   return Py_BuildValue("NNN", (PyObject*)self, o_xs, o_ys);
 }
 
@@ -2577,33 +2587,21 @@ PyObject *igraphmodule_Graph_GRG(PyTypeObject * type,
 PyObject *igraphmodule_Graph_Growing_Random(PyTypeObject * type,
                                             PyObject * args, PyObject * kwds)
 {
-  long n, m;
-  PyObject *directed = NULL, *citation = NULL;
+  Py_ssize_t n, m;
+  PyObject *directed = Py_False, *citation = Py_False;
   igraphmodule_GraphObject *self;
   igraph_t g;
 
   static char *kwlist[] = { "n", "m", "directed", "citation", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "ll|O!O!", kwlist, &n, &m,
-                                   &PyBool_Type, &directed,
-                                   &PyBool_Type, &citation))
-    return NULL;
-
-  if (n < 0) {
-    PyErr_SetString(PyExc_ValueError, "Number of vertices must be positive.");
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nn|OO", kwlist, &n, &m, &directed, &citation)) {
     return NULL;
   }
 
-  if (m < 0) {
-    PyErr_SetString(PyExc_ValueError,
-                    "Number of new edges per iteration must be positive.");
-    return NULL;
-  }
+  CHECK_SSIZE_T_RANGE(n, "vertex count");
+  CHECK_SSIZE_T_RANGE_POSITIVE(m, "number of new edges per iteration");
 
-  if (igraph_growing_random_game(&g, (igraph_integer_t) n,
-                                 (igraph_integer_t) m,
-                                 (directed == Py_True),
-                                 (citation == Py_True))) {
+  if (igraph_growing_random_game(&g, n, m, PyObject_IsTrue(directed), PyObject_IsTrue(citation))) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }

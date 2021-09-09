@@ -127,7 +127,7 @@ int igraphmodule_VertexSeq_init(igraphmodule_VertexSeqObject *self,
       return -1;
     }
 
-    igraph_vs_1(&vs, (igraph_integer_t)idx);
+    igraph_vs_1(&vs, idx);
   } else {
     igraph_vector_int_t v;
     igraph_integer_t n = igraph_vcount(&((igraphmodule_GraphObject*)g)->g);
@@ -199,15 +199,19 @@ PyObject* igraphmodule_VertexSeq_sq_item(igraphmodule_VertexSeqObject* self,
   igraph_t *g;
   igraph_integer_t idx = -1;
 
-  if (!self->gref) return NULL;
-  g=&GET_GRAPH(self);
+  if (!self->gref) {
+    return NULL;
+  }
+
+  g = &GET_GRAPH(self);
+
   switch (igraph_vs_type(&self->vs)) {
     case IGRAPH_VS_ALL:
       if (i < 0) {
         i = igraph_vcount(g) + i;
       }
       if (i >= 0 && i < igraph_vcount(g)) {
-        idx = (igraph_integer_t)i;
+        idx = i;
       }
       break;
     case IGRAPH_VS_VECTOR:
@@ -216,7 +220,7 @@ PyObject* igraphmodule_VertexSeq_sq_item(igraphmodule_VertexSeqObject* self,
         i = igraph_vector_int_size(self->vs.data.vecptr) + i;
       }
       if (i >= 0 && i < igraph_vector_int_size(self->vs.data.vecptr)) {
-        idx = (igraph_integer_t)VECTOR(*self->vs.data.vecptr)[i];
+        idx = VECTOR(*self->vs.data.vecptr)[i];
       }
       break;
     case IGRAPH_VS_1:
@@ -231,7 +235,7 @@ PyObject* igraphmodule_VertexSeq_sq_item(igraphmodule_VertexSeqObject* self,
         i = self->vs.data.seq.to - self->vs.data.seq.from + i;
       }
       if (i >= 0 && i < self->vs.data.seq.to - self->vs.data.seq.from) {
-        idx = self->vs.data.seq.from + (igraph_integer_t)i;
+        idx = self->vs.data.seq.from + i;
       }
       break;
     /* TODO: IGRAPH_VS_ADJ, IGRAPH_VS_NONADJ - someday :) They are unused

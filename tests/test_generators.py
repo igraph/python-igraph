@@ -127,7 +127,7 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(g.is_directed())
         self.assertTrue(el == [(x, y) for x in range(1, 20) for y in range(x)])
 
-        self.assertRaises(InternalError, Graph.Full_Citation, -2)
+        self.assertRaises(ValueError, Graph.Full_Citation, -2)
 
     def testLCF(self):
         g1 = Graph.LCF(12, (5, -5), 6)

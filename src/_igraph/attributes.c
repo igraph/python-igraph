@@ -1341,13 +1341,12 @@ static int igraphmodule_i_attribute_get_info(const igraph_t *graph,
   int i, retval;
   Py_ssize_t j, k, l, m;
   
-  for (i=0; i<3; i++) {
+  for (i = 0; i < 3; i++) {
     igraph_strvector_t *n = names[i];
     igraph_vector_int_t *t = types[i];
     PyObject *dict = ATTR_STRUCT_DICT(graph)[i];
     PyObject *keys;
     PyObject *values;
-    PyObject *o = 0;
 
     keys = PyDict_Keys(dict);
     if (!keys) {
