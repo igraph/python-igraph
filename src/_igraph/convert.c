@@ -2748,12 +2748,14 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
     *vid = 0;
   } else if (PyLong_Check(o)) {
     /* Single vertex ID */
-    if (igraphmodule_PyObject_to_integer_t(o, vid)) 
+    if (igraphmodule_PyObject_to_integer_t(o, vid)) {
       return 1;
+    }
   } else if (graph != 0 && PyBaseString_Check(o)) {
     /* Single vertex ID from vertex name */
-    if (igraphmodule_get_vertex_id_by_name(graph, o, vid))
+    if (igraphmodule_get_vertex_id_by_name(graph, o, vid)) {
       return 1;
+    }
   } else if (PyObject_IsInstance(o, (PyObject*)&igraphmodule_VertexType)) {
     /* Single vertex ID from Vertex object */
     igraphmodule_VertexObject *vo = (igraphmodule_VertexObject*)o;
