@@ -883,20 +883,18 @@ int igraphmodule_PyObject_to_real_t(PyObject *object, igraph_real_t *v) {
 
   if (object == NULL) {
   } else if (PyLong_Check(object)) {
-    double d = PyLong_AsDouble(object);
-    *v=(igraph_real_t)d;
+    *v = PyLong_AsDouble(object);
     return 0;
   } else if (PyFloat_Check(object)) {
-    double d = PyFloat_AS_DOUBLE((PyFloatObject*)object);
-    *v=(igraph_real_t)d;
+    *v = PyFloat_AS_DOUBLE((PyFloatObject*)object);
     return 0;
   } else if (PyNumber_Check(object)) {
     PyObject *i = PyNumber_Float(object);
-    double d;
-    if (i == NULL) return 1;
-    d = PyFloat_AS_DOUBLE((PyFloatObject*)i);
+    if (i == NULL) {
+      return 1;
+    }
+    *v = PyFloat_AS_DOUBLE((PyFloatObject*)i);
     Py_DECREF(i);
-    *v = (igraph_real_t)d;
     return 0;
   }
   PyErr_BadArgument();
@@ -2331,11 +2329,11 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igrap
     for (j = 0; j < n; j++) {
       item = PySequence_GetItem(row, j);
       if (PyLong_Check(item)) {
-        MATRIX(*m, i, j) = (igraph_real_t)PyLong_AsLong(item);
+        MATRIX(*m, i, j) = PyLong_AsLong(item);
       } else if (PyLong_Check(item)) {
-        MATRIX(*m, i, j) = (igraph_real_t)PyLong_AsLong(item);
+        MATRIX(*m, i, j) = PyLong_AsLong(item);
       } else if (PyFloat_Check(item)) {
-        MATRIX(*m, i, j) = (igraph_real_t)PyFloat_AsDouble(item);
+        MATRIX(*m, i, j) = PyFloat_AsDouble(item);
       } else if (!was_warned) {
         PyErr_Warn(PyExc_Warning, "non-numeric value in matrix ignored");
         was_warned=1;
@@ -2418,7 +2416,7 @@ int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, i
         PyErr_Warn(PyExc_Warning, "non-numeric value in matrix ignored");
         was_warned = 1;
       }
-      
+
       Py_DECREF(item);
     }
     Py_DECREF(row);

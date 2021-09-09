@@ -151,7 +151,7 @@ int igraphmodule_ARPACKOptions_setattr(
       }
       self->params.tol = igraph_int;
     } else if (PyFloat_Check(value)) {
-      self->params.tol = (igraph_real_t) PyFloat_AsDouble(value);
+      self->params.tol = PyFloat_AsDouble(value);
     } else {
       PyErr_SetString(PyExc_ValueError, "integer or float expected");
       return -1;

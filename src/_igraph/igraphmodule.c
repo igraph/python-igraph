@@ -284,8 +284,8 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
       igraph_matrix_destroy(&mtrx);
       return NULL;
     }
-    MATRIX(mtrx, i, 0)=(igraph_real_t)PyFloat_AsDouble(o1);
-    MATRIX(mtrx, i, 1)=(igraph_real_t)PyFloat_AsDouble(o2);
+    MATRIX(mtrx, i, 0) = PyFloat_AsDouble(o1);
+    MATRIX(mtrx, i, 1) = PyFloat_AsDouble(o2);
     Py_DECREF(o1);
     Py_DECREF(o2);
   }
