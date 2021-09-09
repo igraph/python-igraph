@@ -4918,8 +4918,7 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
   igraph_vector_t *weights=0;
   igraph_vector_int_t *res;
   igraph_neimode_t mode = IGRAPH_OUT;
-  long int i, j;
-  igraph_integer_t from, no_of_target_nodes;
+  igraph_integer_t from, i, j, no_of_target_nodes;
   igraph_vs_t to;
   PyObject *list, *item, *mode_o=Py_None, *weights_o=Py_None,
            *output_o=Py_None, *from_o = Py_None, *to_o=Py_None;
@@ -5043,8 +5042,7 @@ PyObject *igraphmodule_Graph_get_all_shortest_paths(igraphmodule_GraphObject *
   igraph_vector_ptr_t res;
   igraph_vector_t *weights = 0;
   igraph_neimode_t mode = IGRAPH_OUT;
-  long int i, j;
-  igraph_integer_t from;
+  igraph_integer_t from, i, j;
   igraph_vs_t to;
   PyObject *list, *item, *from_o, *mode_o=Py_None, *to_o=Py_None, *weights_o=Py_None;
 

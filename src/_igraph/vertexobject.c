@@ -261,22 +261,24 @@ PyObject* igraphmodule_Vertex_attribute_names(igraphmodule_VertexObject* self) {
 PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self) {
   igraphmodule_GraphObject *o = self->gref;
   PyObject *names, *dict;
-  long i, n;
+  Py_ssize_t i, n;
 
   if (!igraphmodule_Vertex_Validate((PyObject*)self))
     return 0;
 
-  dict=PyDict_New();
-  if (!dict) return NULL;
+  dict = PyDict_New();
+  if (!dict) {
+    return NULL;
+  }
 
-  names=igraphmodule_Graph_vertex_attributes(o);
+  names = igraphmodule_Graph_vertex_attributes(o);
   if (!names) {
     Py_DECREF(dict);
     return NULL;
   }
 
-  n=PyList_Size(names);
-  for (i=0; i<n; i++) {
+  n = PyList_Size(names);
+  for (i = 0; i < n; i++) {
     PyObject *name = PyList_GetItem(names, i);
     if (name) {
       PyObject *dictit;

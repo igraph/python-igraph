@@ -1741,14 +1741,19 @@ int igraphmodule_attrib_to_vector_t(PyObject *o, igraphmodule_GraphObject *self,
   igraph_vector_t *result;
 
   *vptr = 0;
-  if (attr_type != ATTRIBUTE_TYPE_EDGE && attr_type != ATTRIBUTE_TYPE_VERTEX)
+  if (attr_type != ATTRIBUTE_TYPE_EDGE && attr_type != ATTRIBUTE_TYPE_VERTEX) {
     return 1;
-  if (o == Py_None) return 0;
+  }
+
+  if (o == Py_None) {
+    return 0;
+  }
+
   if (PyUnicode_Check(o)) {
     /* Check whether the attribute exists and is numeric */
     igraph_attribute_type_t at;
     igraph_attribute_elemtype_t et;
-    long int n;
+    igraph_integer_t n;
     char *name = PyUnicode_CopyAsString(o);
 
     if (attr_type == ATTRIBUTE_TYPE_VERTEX) {
@@ -1772,7 +1777,7 @@ int igraphmodule_attrib_to_vector_t(PyObject *o, igraphmodule_GraphObject *self,
     /* Now that the attribute type has been checked, allocate the target
      * vector */
     result = (igraph_vector_t*)calloc(1, sizeof(igraph_vector_t));
-    if (result==0) {
+    if (result == 0) {
       PyErr_NoMemory();
       free(name);
       return 1;
@@ -1801,7 +1806,7 @@ int igraphmodule_attrib_to_vector_t(PyObject *o, igraphmodule_GraphObject *self,
     *vptr = result;
   } else if (PySequence_Check(o)) {
     result = (igraph_vector_t*)calloc(1, sizeof(igraph_vector_t));
-    if (result==0) {
+    if (result == 0) {
       PyErr_NoMemory();
       return 1;
     }
@@ -1942,7 +1947,7 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
     return 0;
 
   if (PyUnicode_Check(o)) {
-    long int i, n;
+    igraph_integer_t i, n;
 
     /* First, check if the attribute is a "real" boolean */
     igraph_attribute_type_t at;
@@ -1967,7 +1972,7 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
       /* The attribute is a real Boolean attribute. Allocate the target
        * vector */
       result = (igraph_vector_bool_t*)calloc(1, sizeof(igraph_vector_bool_t));
-      if (result==0) {
+      if (result == 0) {
         PyErr_NoMemory();
         free(name);
         return 1;
@@ -2009,12 +2014,12 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
       n = igraph_vector_size(dummy);
       result = (igraph_vector_bool_t*)calloc(1, sizeof(igraph_vector_bool_t));
       igraph_vector_bool_init(result, n);
-      if (result==0) {
+      if (result == 0) {
         igraph_vector_destroy(dummy); free(dummy);
         PyErr_NoMemory();
         return 1;
       }
-      for (i=0; i<n; i++) {
+      for (i = 0; i < n; i++) {
         VECTOR(*result)[i] = (VECTOR(*dummy)[i] != 0 &&
             VECTOR(*dummy)[i] == VECTOR(*dummy)[i]);
       }
@@ -2029,7 +2034,7 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
 
   } else if (PySequence_Check(o)) {
     result = (igraph_vector_bool_t*)calloc(1, sizeof(igraph_vector_bool_t));
-    if (result==0) {
+    if (result == 0) {
       PyErr_NoMemory();
       return 1;
     }
@@ -3181,17 +3186,26 @@ int igraphmodule_PyObject_to_attribute_values(PyObject *o,
                           igraphmodule_GraphObject* g,
                           int type, igraph_real_t def) {
   PyObject* list = o;
-  long i, n;
+  Py_ssize_t i, n;
 
-  if (o==NULL) return 1;
-
+  if (o == NULL) {
+    return 1;
+  }
+  
   if (o == Py_None) {
-    if (type == ATTRHASH_IDX_VERTEX) n=igraph_vcount(&g->g);
-    else if (type == ATTRHASH_IDX_EDGE) n=igraph_ecount(&g->g);
-    else n=1;
+    if (type == ATTRHASH_IDX_VERTEX) {
+      n = igraph_vcount(&g->g);
+    } else if (type == ATTRHASH_IDX_EDGE) {
+      n = igraph_ecount(&g->g);
+    } else {
+      n = 1;
+    }
 
-    if (igraph_vector_init(v, n)) return 1;
-    for (i=0; i<n; i++) VECTOR(*v)[i] = def;
+    if (igraph_vector_init(v, n)) {
+      return 1;
+    }
+
+    igraph_vector_fill(v, def);
     return 0;
   }
 
@@ -3204,24 +3218,25 @@ int igraphmodule_PyObject_to_attribute_values(PyObject *o,
     }
   }
 
-  n=PyList_Size(list);
-  if (igraph_vector_init(v, n)) return 1;
+  n = PyList_Size(list);
+  if (igraph_vector_init(v, n)) {
+    return 1;
+  }
 
-  for (i=0; i<n; i++) {
+  for (i = 0; i < n; i++) {
     PyObject *item = PyList_GetItem(list, i);
     if (!item) {
       igraph_vector_destroy(v);
       return 1;
     }
 
-    if (PyLong_Check(item))
+    if (PyLong_Check(item)) {
       VECTOR(*v)[i] = PyLong_AsLong(item);
-    else if (PyLong_Check(item))
-      VECTOR(*v)[i] = PyLong_AsLong(item);
-    else if (PyFloat_Check(item))
+    } else if (PyFloat_Check(item)) {
       VECTOR(*v)[i] = PyFloat_AsDouble(item);
-    else
+    } else {
       VECTOR(*v)[i] = def;
+    }
   }
 
   return 0;
