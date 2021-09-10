@@ -1,6 +1,7 @@
 # Functions adapted from matplotlib.testing. Credit for the original functions
 # goes to the amazing folks over at matplotlib.
 from pathlib import Path
+import os
 import sys
 import inspect
 import functools
@@ -37,8 +38,8 @@ def _load_baseline_image(filename, fmt):
     raise NotImplementedError(f"Image format {fmt} not implemented yet")
 
 
-def _load_baseline_images(filenames, engine, fmt="json"):
-    baseline_folder = Path(__file__).parent / ".." / "baseline_images" / engine
+def _load_baseline_images(filenames, fmt="json"):
+    baseline_folder = Path(__file__).parent / "baseline_images"
 
     images = []
     for fn in filenames:
@@ -62,8 +63,8 @@ def _store_result_image_json(fig, result_fn):
         json.dump(fig_json, handle, indent=2, sort_keys=True)
 
 
-def _store_result_image(image, filename, engine, fmt="json"):
-    result_folder = Path("result_images") / engine
+def _store_result_image(image, filename, fmt="json"):
+    result_folder = Path("result_images") / 'plotly'
     result_fn = result_folder / (filename + f".{fmt}")
 
     if fmt == "json":
@@ -113,7 +114,7 @@ def _unittest_image_comparison(
 
             # Store images (used to bootstrap new tests)
             for fig, image_file in zip(figs, baseline_images):
-                _store_result_image(fig, image_file, "plotly")
+                _store_result_image(fig, image_file)
 
             assert len(baseline_images) == len(
                 figs
@@ -122,7 +123,7 @@ def _unittest_image_comparison(
             )
 
             # 2. load the control images
-            baselines = _load_baseline_images(baseline_images, "plotly")
+            baselines = _load_baseline_images(baseline_images)
 
             # 3. compare them one by one
             for i, (baseline, fig) in enumerate(zip(baselines, figs)):

@@ -1,6 +1,7 @@
 # Functions adapted from matplotlib.testing. Credit for the original functions
 # goes to the amazing folks over at matplotlib.
 from pathlib import Path
+import os
 import sys
 import inspect
 import functools
@@ -57,8 +58,8 @@ def _load_image(filename, fmt):
     raise NotImplementedError(f'Image format {fmt} not implemented yet')
 
 
-def _load_baseline_images(filenames, engine, fmt='png'):
-    baseline_folder = Path(__file__).parent / '..' / 'baseline_images' / engine
+def _load_baseline_images(filenames, fmt='png'):
+    baseline_folder = Path(__file__).parent / 'baseline_images'
 
     images = []
     for fn in filenames:
@@ -69,11 +70,12 @@ def _load_baseline_images(filenames, engine, fmt='png'):
     return images
 
 
-def _load_result_images(filenames, engine, fmt='png'):
+def _load_result_images(filenames, fmt='png'):
     images = []
     for fn in filenames:
         fn_abs = result_image_folder / f'{fn}.{fmt}'
         image = _load_image(fn_abs, fmt)
+        assert image is not None
         images.append(image)
     return images
 
@@ -120,8 +122,8 @@ def _unittest_image_comparison(
             func(*args, **kwargs)
 
             # 2. locate the control and result images
-            baselines = _load_baseline_images(baseline_images, 'cairo')
-            figs = _load_result_images(baseline_images, 'cairo')
+            baselines = _load_baseline_images(baseline_images)
+            figs = _load_result_images(baseline_images)
 
             # 3. compare them one by one
             for i, (baseline, fig) in enumerate(zip(baselines, figs)):
