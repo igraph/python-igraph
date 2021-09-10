@@ -23,10 +23,6 @@ def find_image_comparison():
     return image_comparison
 
 
-# NOTE: Parametrizing this requires pytest (see matplotlib's test suite)
-_default_extension = "svg"
-
-
 def _load_baseline_image(filename, fmt):
     import json
 
