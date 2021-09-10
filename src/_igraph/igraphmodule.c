@@ -230,7 +230,7 @@ PyObject* igraphmodule_set_status_handler(PyObject* self, PyObject* o) {
 
 PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwds) {
   static char* kwlist[] = {"vs", "coords", NULL};
-  PyObject *vs, *o, *o1, *o2, *o1_float, *o2_float, *coords = Py_False;
+  PyObject *vs, *o, *o1 = 0, *o2 = 0, *o1_float, *o2_float, *coords = Py_False;
   igraph_matrix_t mtrx;
   igraph_vector_int_t result;
   igraph_matrix_t resmat;
