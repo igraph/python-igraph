@@ -31,8 +31,7 @@
  * \ingroup python_interface_bfsiter
  * \brief A structure representing a BFS iterator of a graph
  */
-typedef struct
-{
+typedef struct {
   PyObject_HEAD
   igraphmodule_GraphObject* gref;
   igraph_dqueue_int_t queue;
@@ -43,12 +42,13 @@ typedef struct
   igraph_bool_t advanced;
 } igraphmodule_BFSIterObject;
 
-PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *o, igraph_neimode_t mode, igraph_bool_t advanced);
-int igraphmodule_BFSIter_traverse(igraphmodule_BFSIterObject *self,
-				  visitproc visit, void *arg);
-int igraphmodule_BFSIter_clear(igraphmodule_BFSIterObject *self);
-void igraphmodule_BFSIter_dealloc(igraphmodule_BFSIterObject* self);
+extern PyTypeObject* igraphmodule_BFSIterType;
 
-extern PyTypeObject igraphmodule_BFSIterType;
+int igraphmodule_BFSIter_register_type(void);
+
+PyObject* igraphmodule_BFSIter_new(
+  igraphmodule_GraphObject *g, PyObject *o, igraph_neimode_t mode,
+  igraph_bool_t advanced
+);
 
 #endif

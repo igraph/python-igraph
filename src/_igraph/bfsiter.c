@@ -20,6 +20,8 @@
 
 */
 
+#define Py_LIMITED_API 0x03060000
+
 #include "bfsiter.h"
 #include "common.h"
 #include "convert.h"
@@ -31,7 +33,7 @@
  * \defgroup python_interface_bfsiter BFS iterator object
  */
 
-PyTypeObject igraphmodule_BFSIterType;
+PyTypeObject* igraphmodule_BFSIterType;
 
 /**
  * \ingroup python_interface_bfsiter
@@ -45,10 +47,10 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   igraphmodule_BFSIterObject* o;
   igraph_integer_t no_of_nodes, r;
   
-  o = PyObject_GC_New(igraphmodule_BFSIterObject, &igraphmodule_BFSIterType);
+  o = PyObject_GC_New(igraphmodule_BFSIterObject, igraphmodule_BFSIterType);
   Py_INCREF(g);
-  o->gref=g;
-  o->graph=&g->g;
+  o->gref = g;
+  o->graph = &g->g;
   
   if (!PyLong_Check(root) && !PyObject_IsInstance(root, (PyObject*)&igraphmodule_VertexType)) {
     PyErr_SetString(PyExc_TypeError, "root must be integer or igraph.Vertex");
@@ -56,7 +58,7 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   }
   
   no_of_nodes = igraph_vcount(&g->g);
-  o->visited=(char*)calloc(no_of_nodes, sizeof(char));
+  o->visited = (char*)calloc(no_of_nodes, sizeof(char));
   if (o->visited == 0) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
@@ -91,14 +93,14 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
-  o->visited[r]=1;
+  o->visited[r] = 1;
   
   if (!igraph_is_directed(&g->g)) {
     mode=IGRAPH_ALL;
   }
 
-  o->mode=mode;
-  o->advanced=advanced;
+  o->mode = mode;
+  o->advanced = advanced;
   
   PyObject_GC_Track(o);
   
@@ -116,15 +118,9 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
  */
 int igraphmodule_BFSIter_traverse(igraphmodule_BFSIterObject *self,
 				  visitproc visit, void *arg) {
-  int vret;
-
   RC_TRAVERSE("BFSIter", self);
-  
-  if (self->gref) {
-    vret=visit((PyObject*)self->gref, arg);
-    if (vret != 0) return vret;
-  }
-  
+  Py_VISIT(self->gref);
+  Py_VISIT(Py_TYPE(self));   /* needed because heap-allocated types are refcounted */
   return 0;
 }
 
@@ -137,12 +133,13 @@ int igraphmodule_BFSIter_clear(igraphmodule_BFSIterObject *self) {
 
   PyObject_GC_UnTrack(self);
   
-  tmp=(PyObject*)self->gref;
-  self->gref=NULL;
+  tmp = (PyObject*)self->gref;
+  self->gref = NULL;
   Py_XDECREF(tmp);
 
   igraph_dqueue_int_destroy(&self->queue);
   igraph_vector_int_destroy(&self->neis);
+
   free(self->visited);
   self->visited=0;
   
@@ -154,11 +151,14 @@ int igraphmodule_BFSIter_clear(igraphmodule_BFSIterObject *self) {
  * \brief Deallocates a Python representation of a given BFS iterator object
  */
 void igraphmodule_BFSIter_dealloc(igraphmodule_BFSIterObject* self) {
+  PyTypeObject *tp = Py_TYPE(self);
+
   igraphmodule_BFSIter_clear(self);
 
   RC_DEALLOC("BFSIter", self);
   
   PyObject_GC_Del(self);
+  Py_DECREF(tp);  /* needed because heap-allocated types are refcounted */
 }
 
 PyObject* igraphmodule_BFSIter_iter(igraphmodule_BFSIterObject* self) {
@@ -214,58 +214,30 @@ PyObject* igraphmodule_BFSIter_iternext(igraphmodule_BFSIterObject* self) {
   }
 }
 
-/**
- * \ingroup python_interface_bfsiter
- * Method table for the \c igraph.BFSIter object
- */
-PyMethodDef igraphmodule_BFSIter_methods[] = {
-  {NULL}
-};
+PyDoc_STRVAR(
+  igraphmodule_BFSIter_doc,
+  "igraph BFS iterator object"
+);
 
-/** \ingroup python_interface_bfsiter
- * Python type object referencing the methods Python calls when it performs various operations on
- * a BFS iterator of a graph
- */
-PyTypeObject igraphmodule_BFSIterType =
-{
-  PyVarObject_HEAD_INIT(0, 0)
-  "igraph.BFSIter",                         // tp_name
-  sizeof(igraphmodule_BFSIterObject),       // tp_basicsize
-  0,                                        // tp_itemsize
-  (destructor)igraphmodule_BFSIter_dealloc, // tp_dealloc
-  0,                                        // tp_print
-  0,                                        // tp_getattr
-  0,                                        // tp_setattr
-  0,                                        /* tp_compare (2.x) / tp_reserved (3.x) */
-  0,                                        // tp_repr
-  0,                                        // tp_as_number
-  0,                                        // tp_as_sequence
-  0,                                        // tp_as_mapping
-  0,                                        // tp_hash
-  0,                                        // tp_call
-  0,                                        // tp_str
-  0,                                        // tp_getattro
-  0,                                        // tp_setattro
-  0,                                        // tp_as_buffer
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC, // tp_flags
-  "igraph BFS iterator object",             // tp_doc
-  (traverseproc) igraphmodule_BFSIter_traverse, /* tp_traverse */
-  (inquiry) igraphmodule_BFSIter_clear,     /* tp_clear */
-  0,                                        // tp_richcompare
-  0,                                        // tp_weaklistoffset
-  (getiterfunc)igraphmodule_BFSIter_iter,   /* tp_iter */
-  (iternextfunc)igraphmodule_BFSIter_iternext, /* tp_iternext */
-  0,                                        /* tp_methods */
-  0,                                        /* tp_members */
-  0,                                        /* tp_getset */
-  0,                                        /* tp_base */
-  0,                                        /* tp_dict */
-  0,                                        /* tp_descr_get */
-  0,                                        /* tp_descr_set */
-  0,                                        /* tp_dictoffset */
-  0,                                        /* tp_init */
-  0,                                        /* tp_alloc */
-  0,                                        /* tp_new */
-  0,                                        /* tp_free */
-};
+int igraphmodule_BFSIter_register_type() {
+  PyType_Slot slots[] = {
+    { Py_tp_dealloc, igraphmodule_BFSIter_dealloc },
+    { Py_tp_traverse, igraphmodule_BFSIter_traverse },
+    { Py_tp_clear, igraphmodule_BFSIter_clear },
+    { Py_tp_iter, igraphmodule_BFSIter_iter },
+    { Py_tp_iternext, igraphmodule_BFSIter_iternext },
+    { Py_tp_doc, (void*) igraphmodule_BFSIter_doc },
+    { 0 }
+  };
 
+  PyType_Spec spec = {
+    "igraph.BFSIter",                           /* name */
+    sizeof(igraphmodule_BFSIterObject),         /* basicsize */
+    0,                                          /* itemsize */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,   /* flags */
+    slots,                                      /* slots */
+  };
+
+  igraphmodule_BFSIterType = (PyTypeObject*) PyType_FromSpec(&spec);
+  return igraphmodule_BFSIterType == 0;
+}

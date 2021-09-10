@@ -20,6 +20,8 @@
 
 */
 
+#define Py_LIMITED_API 0x03060000
+
 #include "convert.h"
 #include "dfsiter.h"
 #include "common.h"
@@ -31,7 +33,7 @@
  * \defgroup python_interface_dfsiter DFS iterator object
  */
 
-PyTypeObject igraphmodule_DFSIterType;
+PyTypeObject* igraphmodule_DFSIterType;
 
 /**
  * \ingroup python_interface_dfsiter
@@ -45,10 +47,10 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   igraphmodule_DFSIterObject* o;
   igraph_integer_t no_of_nodes, r;
 
-  o=PyObject_GC_New(igraphmodule_DFSIterObject, &igraphmodule_DFSIterType);
+  o = PyObject_GC_New(igraphmodule_DFSIterObject, igraphmodule_DFSIterType);
   Py_INCREF(g);
-  o->gref=g;
-  o->graph=&g->g;
+  o->gref = g;
+  o->graph = &g->g;
   
   if (!PyLong_Check(root) && !PyObject_IsInstance(root, (PyObject*)&igraphmodule_VertexType)) {
     PyErr_SetString(PyExc_TypeError, "root must be integer or igraph.Vertex");
@@ -117,17 +119,9 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
  */
 int igraphmodule_DFSIter_traverse(igraphmodule_DFSIterObject *self,
 				  visitproc visit, void *arg) {
-  int vret;
-
   RC_TRAVERSE("DFSIter", self);
-  
-  if (self->gref) {
-    vret = visit((PyObject*)self->gref, arg);
-    if (vret != 0) {
-      return vret;
-    }
-  }
-  
+  Py_VISIT(self->gref);
+  Py_VISIT(Py_TYPE(self));   /* needed because heap-allocated types are refcounted */
   return 0;
 }
 
@@ -157,11 +151,14 @@ int igraphmodule_DFSIter_clear(igraphmodule_DFSIterObject *self) {
  * \brief Deallocates a Python representation of a given DFS iterator object
  */
 void igraphmodule_DFSIter_dealloc(igraphmodule_DFSIterObject* self) {
+  PyTypeObject *tp = Py_TYPE(self);
+
   igraphmodule_DFSIter_clear(self);
 
   RC_DEALLOC("DFSIter", self);
   
   PyObject_GC_Del(self);
+  Py_DECREF(tp);  /* needed because heap-allocated types are refcounted */
 }
 
 PyObject* igraphmodule_DFSIter_iter(igraphmodule_DFSIterObject* self) {
@@ -252,58 +249,30 @@ PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self) {
   }
 }
 
-/**
- * \ingroup python_interface_dfsiter
- * Method table for the \c igraph.DFSIter object
- */
-PyMethodDef igraphmodule_DFSIter_methods[] = {
-  {NULL}
-};
+PyDoc_STRVAR(
+  igraphmodule_DFSIter_doc,
+  "igraph DFS iterator object"
+);
 
-/** \ingroup python_interface_dfsiter
- * Python type object referencing the methods Python calls when it performs various operations on
- * a DFS iterator of a graph
- */
-PyTypeObject igraphmodule_DFSIterType =
-{
-  PyVarObject_HEAD_INIT(0, 0)
-  "igraph.DFSIter",                         // tp_name
-  sizeof(igraphmodule_DFSIterObject),       // tp_basicsize
-  0,                                        // tp_itemsize
-  (destructor)igraphmodule_DFSIter_dealloc, // tp_dealloc
-  0,                                        // tp_print
-  0,                                        // tp_getattr
-  0,                                        // tp_setattr
-  0,                                        /* tp_compare (2.x) / tp_reserved (3.x) */
-  0,                                        // tp_repr
-  0,                                        // tp_as_number
-  0,                                        // tp_as_sequence
-  0,                                        // tp_as_mapping
-  0,                                        // tp_hash
-  0,                                        // tp_call
-  0,                                        // tp_str
-  0,                                        // tp_getattro
-  0,                                        // tp_setattro
-  0,                                        // tp_as_buffer
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC, // tp_flags
-  "igraph DFS iterator object",             // tp_doc
-  (traverseproc) igraphmodule_DFSIter_traverse, /* tp_traverse */
-  (inquiry) igraphmodule_DFSIter_clear,     /* tp_clear */
-  0,                                        // tp_richcompare
-  0,                                        // tp_weaklistoffset
-  (getiterfunc)igraphmodule_DFSIter_iter,   /* tp_iter */
-  (iternextfunc)igraphmodule_DFSIter_iternext, /* tp_iternext */
-  0,                                        /* tp_methods */
-  0,                                        /* tp_members */
-  0,                                        /* tp_getset */
-  0,                                        /* tp_base */
-  0,                                        /* tp_dict */
-  0,                                        /* tp_descr_get */
-  0,                                        /* tp_descr_set */
-  0,                                        /* tp_dictoffset */
-  0,                                        /* tp_init */
-  0,                                        /* tp_alloc */
-  0,                                        /* tp_new */
-  0,                                        /* tp_free */
-};
+int igraphmodule_DFSIter_register_type() {
+  PyType_Slot slots[] = {
+    { Py_tp_dealloc, igraphmodule_DFSIter_dealloc },
+    { Py_tp_traverse, igraphmodule_DFSIter_traverse },
+    { Py_tp_clear, igraphmodule_DFSIter_clear },
+    { Py_tp_iter, igraphmodule_DFSIter_iter },
+    { Py_tp_iternext, igraphmodule_DFSIter_iternext },
+    { Py_tp_doc, (void*) igraphmodule_DFSIter_doc },
+    { 0 }
+  };
 
+  PyType_Spec spec = {
+    "igraph.DFSIter",                           /* name */
+    sizeof(igraphmodule_DFSIterObject),         /* basicsize */
+    0,                                          /* itemsize */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,   /* flags */
+    slots,                                      /* slots */
+  };
+
+  igraphmodule_DFSIterType = (PyTypeObject*) PyType_FromSpec(&spec);
+  return igraphmodule_DFSIterType == 0;
+}

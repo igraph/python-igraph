@@ -133,21 +133,13 @@ int igraphmodule_Graph_clear(igraphmodule_GraphObject * self)
 int igraphmodule_Graph_traverse(igraphmodule_GraphObject * self,
                                 visitproc visit, void *arg)
 {
-  int vret, i;
-
   RC_TRAVERSE("Graph", self);
 
-  if (self->destructor) {
-    vret = visit(self->destructor, arg);
-    if (vret != 0)
-      return vret;
-  }
+  Py_VISIT(self->destructor);
 
   if (self->g.attr) {
-    for (i = 0; i < 3; i++) {
-      vret = visit(((PyObject **) (self->g.attr))[i], arg);
-      if (vret != 0)
-        return vret;
+    for (int i = 0; i < 3; i++) {
+      Py_VISIT(((PyObject**)self->g.attr)[i]);
     }
   }
 

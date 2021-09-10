@@ -208,28 +208,25 @@ PyDoc_STRVAR(
   " - C{numreo}: total number of steps of re-orthogonalization\n\n"
 );
 
-PyType_Slot igraphmodule_ARPACKOptions_slots[] = {
-  { Py_tp_new, igraphmodule_ARPACKOptions_new },
-  { Py_tp_dealloc, igraphmodule_ARPACKOptions_dealloc },
-  { Py_tp_getattr, igraphmodule_ARPACKOptions_getattr },
-  { Py_tp_setattr, igraphmodule_ARPACKOptions_setattr },
-  { Py_tp_str, igraphmodule_ARPACKOptions_str },
-  { Py_tp_doc, (void*) igraphmodule_ARPACKOptions_doc },
-  { 0 }
-};
-
-/** \ingroup python_interface_arpack
- * Python type specification for \c igraph.ARPACKOptions
- */
-PyType_Spec igraphmodule_ARPACKOptions_spec = {
-  "igraph.ARPACKOptions",                     /* name */
-  sizeof(igraphmodule_ARPACKOptionsObject),   /* basicsize */
-  0,                                          /* itemsize */
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /* flags */
-  igraphmodule_ARPACKOptions_slots,           /* slots */
-};
-
 int igraphmodule_ARPACKOptions_register_type() {
-  igraphmodule_ARPACKOptionsType = (PyTypeObject*) PyType_FromSpec(&igraphmodule_ARPACKOptions_spec);
+  PyType_Slot slots[] = {
+    { Py_tp_new, igraphmodule_ARPACKOptions_new },
+    { Py_tp_dealloc, igraphmodule_ARPACKOptions_dealloc },
+    { Py_tp_getattr, igraphmodule_ARPACKOptions_getattr },
+    { Py_tp_setattr, igraphmodule_ARPACKOptions_setattr },
+    { Py_tp_str, igraphmodule_ARPACKOptions_str },
+    { Py_tp_doc, (void*) igraphmodule_ARPACKOptions_doc },
+    { 0 }
+  };
+
+  PyType_Spec spec = {
+    "igraph.ARPACKOptions",                     /* name */
+    sizeof(igraphmodule_ARPACKOptionsObject),   /* basicsize */
+    0,                                          /* itemsize */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /* flags */
+    slots,                                      /* slots */
+  };
+
+  igraphmodule_ARPACKOptionsType = (PyTypeObject*) PyType_FromSpec(&spec);
   return igraphmodule_ARPACKOptionsType == 0;
 }
