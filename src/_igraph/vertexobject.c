@@ -121,12 +121,7 @@ PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_integer
  * \brief Clears the vertex's subobject (before deallocation)
  */
 static int igraphmodule_Vertex_clear(igraphmodule_VertexObject *self) {
-  PyObject *tmp;
-
-  tmp=(PyObject*)self->gref;
-  self->gref=NULL;
-  Py_XDECREF(tmp);
-
+  Py_CLEAR(self->gref);
   return 0;
 }
 

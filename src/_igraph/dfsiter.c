@@ -130,16 +130,13 @@ static int igraphmodule_DFSIter_traverse(igraphmodule_DFSIterObject *self,
  * \brief Clears the iterator's subobject (before deallocation)
  */
 static int igraphmodule_DFSIter_clear(igraphmodule_DFSIterObject *self) {
-  PyObject *tmp;
-
   PyObject_GC_UnTrack(self);
-  
-  tmp = (PyObject*)self->gref;
-  self->gref = NULL;
-  Py_XDECREF(tmp);
+
+  Py_CLEAR(self->gref);
 
   igraph_stack_int_destroy(&self->stack);
   igraph_vector_int_destroy(&self->neis);
+
   free(self->visited);
   self->visited = 0;
   

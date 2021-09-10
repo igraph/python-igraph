@@ -118,12 +118,7 @@ PyObject* igraphmodule_Edge_New(igraphmodule_GraphObject *gref, igraph_integer_t
  * \brief Clears the edge's subobject (before deallocation)
  */
 static int igraphmodule_Edge_clear(igraphmodule_EdgeObject *self) {
-  PyObject *tmp;
-
-  tmp=(PyObject*)self->gref;
-  self->gref=NULL;
-  Py_XDECREF(tmp);
-
+  Py_CLEAR(self->gref);
   return 0;
 }
 

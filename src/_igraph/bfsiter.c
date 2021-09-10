@@ -132,10 +132,8 @@ int igraphmodule_BFSIter_clear(igraphmodule_BFSIterObject *self) {
   PyObject *tmp;
 
   PyObject_GC_UnTrack(self);
-  
-  tmp = (PyObject*)self->gref;
-  self->gref = NULL;
-  Py_XDECREF(tmp);
+
+  Py_CLEAR(self->gref);  
 
   igraph_dqueue_int_destroy(&self->queue);
   igraph_vector_int_destroy(&self->neis);
