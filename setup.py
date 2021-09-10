@@ -230,7 +230,7 @@ class IgraphCCoreCMakeBuilder:
         args = [cmake]
 
         # Build the Python interface with vendored libraries
-        for deps in "ARPACK BLAS CXSPARSE GLPK GMP LAPACK".split():
+        for deps in "ARPACK BLAS GLPK GMP LAPACK".split():
             args.append("-DIGRAPH_USE_INTERNAL_" + deps + "=ON")
 
         # -fPIC is needed on Linux so we can link to a static igraph lib from a
