@@ -154,7 +154,7 @@ jobs:
           IGRAPH_STATIC_EXTENSION: True
           IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset
           IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
-          CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest -vvv"
+          CIBW_TEST_COMMAND: "cd /d {project} && python -m pytest tests"
 
       - uses: actions/upload-artifact@v2
         with:
@@ -196,8 +196,8 @@ jobs:
 
       - name: Test
         run: |
-          pip install numpy scipy pandas networkx
-          python -m unittest -vvv
+          pip install numpy scipy pandas networkx pytest
+          python -m pytest tests
 
       - uses: actions/upload-artifact@v2
         with:
