@@ -16,7 +16,7 @@ except ImportError:
 
 cairo = find_cairo()
 if not hasattr(cairo, 'version'):
-    cairo = None
+    raise unittest.SkipTest("cairo not found, skipping tests")
 
 image_comparison = find_image_comparison()
 
@@ -26,19 +26,16 @@ class GraphTestRunner(unittest.TestCase):
     def setUpClass(self):
         result_image_folder.mkdir(parents=True, exist_ok=True)
 
-    @unittest.skipIf(cairo is None, "test case depends on cairo")
     @image_comparison(baseline_images=["graph_basic"])
     def test_basic(self):
         g = Graph.Ring(5)
         plot(g, target=result_image_folder / 'graph_basic.png')
 
-    @unittest.skipIf(cairo is None, "test case depends on cairo")
     @image_comparison(baseline_images=["graph_directed"])
     def test_directed(self):
         g = Graph.Ring(5, directed=True)
         plot(g, target=result_image_folder / 'graph_directed.png')
 
-    @unittest.skipIf(cairo is None, "test case depends on cairo")
     @image_comparison(baseline_images=["graph_mark_groups_directed"])
     def test_mark_groups(self):
         g = Graph.Ring(5, directed=True)
@@ -47,7 +44,6 @@ class GraphTestRunner(unittest.TestCase):
             target=result_image_folder / 'graph_mark_groups_directed.png',
             mark_groups=True)
 
-    @unittest.skipIf(cairo is None, "test case depends on cairo")
     @image_comparison(
         baseline_images=["graph_mark_groups_squares_directed"]
     )
@@ -62,7 +58,6 @@ class GraphTestRunner(unittest.TestCase):
 
 
 class ClusteringTestRunner(unittest.TestCase):
-    @unittest.skipIf(cairo is None, "test case depends on cairo")
     @image_comparison(baseline_images=["clustering_directed"])
     def test_clustering_directed_small(self):
         g = Graph.Ring(5, directed=True)
@@ -73,7 +68,6 @@ class ClusteringTestRunner(unittest.TestCase):
             mark_groups=True,
         )
 
-    @unittest.skipIf(cairo is None, "test case depends on cairo")
     @image_comparison(baseline_images=["clustering_directed_large"])
     def test_clustering_directed_large(self):
         g = Graph.Ring(50, directed=True)

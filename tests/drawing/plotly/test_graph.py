@@ -14,13 +14,13 @@ except ImportError:
 try:
     import plotly
 except ImportError:
-    plotly = None
+    raise unittest.SkipTest("plotly not found, skipping tests")
+
 
 image_comparison = find_image_comparison()
 
 
 class GraphTestRunner(unittest.TestCase):
-    @unittest.skipIf(plotly is None, "test case depends on plotly")
     @image_comparison(baseline_images=["graph_basic"])
     def test_basic(self):
         g = Graph.Ring(5)
@@ -28,7 +28,6 @@ class GraphTestRunner(unittest.TestCase):
         plot(g, target=fig)
         return fig
 
-    @unittest.skipIf(plotly is None, "test case depends on plotly")
     @image_comparison(baseline_images=["graph_directed"])
     def test_directed(self):
         g = Graph.Ring(5, directed=True)
@@ -36,7 +35,6 @@ class GraphTestRunner(unittest.TestCase):
         plot(g, target=fig)
         return fig
 
-    @unittest.skipIf(plotly is None, "test case depends on plotly")
     @image_comparison(baseline_images=["graph_mark_groups_directed"])
     def test_mark_groups(self):
         g = Graph.Ring(5, directed=True)
@@ -44,7 +42,6 @@ class GraphTestRunner(unittest.TestCase):
         plot(g, target=fig, mark_groups=True)
         return fig
 
-    @unittest.skipIf(plotly is None, "test case depends on plotly")
     @image_comparison(
         baseline_images=["graph_mark_groups_squares_directed"]
     )
@@ -54,7 +51,6 @@ class GraphTestRunner(unittest.TestCase):
         plot(g, target=fig, mark_groups=True, vertex_shape="square")
         return fig
 
-    @unittest.skipIf(plotly is None, "test case depends on plotly")
     @image_comparison(baseline_images=["graph_edit_children"])
     def test_mark_groups_squares(self):
         g = Graph.Ring(5)
@@ -68,7 +64,6 @@ class GraphTestRunner(unittest.TestCase):
 
 
 class ClusteringTestRunner(unittest.TestCase):
-    @unittest.skipIf(plotly is None, "test case depends on plotly")
     @image_comparison(baseline_images=["clustering_directed"])
     def test_clustering_directed_small(self):
         g = Graph.Ring(5, directed=True)
@@ -77,7 +72,6 @@ class ClusteringTestRunner(unittest.TestCase):
         plot(clu, target=fig, mark_groups=True)
         return fig
 
-    @unittest.skipIf(plotly is None, "test case depends on plotly")
     @image_comparison(baseline_images=["clustering_directed_large"])
     def test_clustering_directed_large(self):
         g = Graph.Ring(50, directed=True)
