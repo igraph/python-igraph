@@ -23,7 +23,8 @@
 #ifndef PYTHON_FILEHANDLE_H
 #define PYTHON_FILEHANDLE_H
 
-#include <Python.h>
+#include "preamble.h"
+
 #include <stdio.h>
 
 /**

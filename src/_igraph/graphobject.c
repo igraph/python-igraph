@@ -3784,7 +3784,7 @@ PyObject *igraphmodule_Graph_authority_score(
   igraph_vector_t res, *weights = 0;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO!O", kwlist, &weights_o,
-                                   &scale_o, &igraphmodule_ARPACKOptionsType,
+                                   &scale_o, igraphmodule_ARPACKOptionsType,
                                    &arpack_options_o, &return_eigenvalue))
     return NULL;
 
@@ -4664,7 +4664,7 @@ PyObject* igraphmodule_Graph_eigen_adjacency(igraphmodule_GraphObject *self,
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO!", kwlist,
                                    &algorithm_o, &which_o,
-                                   &igraphmodule_ARPACKOptionsType,
+                                   igraphmodule_ARPACKOptionsType,
                                    &arpack_options)) {
     return NULL;
   }
@@ -4823,7 +4823,7 @@ PyObject *igraphmodule_Graph_eigenvector_centrality(
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO!O", kwlist,
                                    &directed_o, &scale_o, &weights_o,
-                                   &igraphmodule_ARPACKOptionsType,
+                                   igraphmodule_ARPACKOptionsType,
                                    &arpack_options, &return_eigenvalue))
     return NULL;
 
@@ -5188,7 +5188,7 @@ PyObject *igraphmodule_Graph_hub_score(
   igraph_vector_t res, *weights = 0;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO!O", kwlist, &weights_o,
-                                   &scale_o, &igraphmodule_ARPACKOptionsType,
+                                   &scale_o, igraphmodule_ARPACKOptionsType,
                                    &arpack_options, &return_eigenvalue))
     return NULL;
 
@@ -5389,7 +5389,7 @@ PyObject *igraphmodule_Graph_personalized_pagerank(igraphmodule_GraphObject *sel
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOdOOOO!Onf", kwlist, &vobj,
                                    &directed, &damping, &robj,
                                    &rvsobj, &wobj,
-                                   &igraphmodule_ARPACKOptionsType,
+                                   igraphmodule_ARPACKOptionsType,
                                    &arpack_options_o, &algo_o, &niter, &eps))
 
 
@@ -7411,7 +7411,7 @@ PyObject *igraphmodule_Graph_layout_mds(igraphmodule_GraphObject * self,
    * compatibility */
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OnO!", kwlist, &dist_o,
-                                   &dim, &igraphmodule_ARPACKOptionsType,
+                                   &dim, igraphmodule_ARPACKOptionsType,
                                    &arpack_options_o))
     return NULL;
 
@@ -11571,7 +11571,7 @@ PyObject *igraphmodule_Graph_community_leading_eigenvector(igraphmodule_GraphObj
   PyObject *arpack_options_o = igraphmodule_arpack_options_default;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nOO!", kwlist, &n, &weights_obj,
-        &igraphmodule_ARPACKOptionsType, &arpack_options_o)) {
+        igraphmodule_ARPACKOptionsType, &arpack_options_o)) {
     return NULL;
   }
 

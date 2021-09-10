@@ -24,7 +24,7 @@
 #ifndef PYTHON_HELPERS_H
 #define PYTHON_HELPERS_H
 
-#include <Python.h>
+#include "preamble.h"
 
 int igraphmodule_PyFile_Close(PyObject* fileObj);
 PyObject* igraphmodule_PyFile_FromObject(PyObject* filename, const char* mode);

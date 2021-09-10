@@ -23,7 +23,8 @@
 #ifndef PYTHON_GRAPHOBJECT_H
 #define PYTHON_GRAPHOBJECT_H
 
-#include <Python.h>
+#include "preamble.h"
+
 #include <igraph.h>
 #include "structmember.h"
 #include "common.h"

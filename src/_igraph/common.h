@@ -23,7 +23,7 @@
 #ifndef PYTHON_COMMON_H
 #define PYTHON_COMMON_H
 
-#include <Python.h>
+#include "preamble.h"
 
 #ifdef RC_DEBUG
 #  define RC_ALLOC(T, P) fprintf(stderr, "[ alloc ] " T " @ %p\n", P)
