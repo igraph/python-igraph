@@ -52,7 +52,7 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   o->gref = g;
   o->graph = &g->g;
   
-  if (!PyLong_Check(root) && !PyObject_IsInstance(root, (PyObject*)&igraphmodule_VertexType)) {
+  if (!PyLong_Check(root) && !igraphmodule_Vertex_Check(root)) {
     PyErr_SetString(PyExc_TypeError, "root must be integer or igraph.Vertex");
     return NULL;
   }
@@ -117,7 +117,7 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
  * This is necessary because the \c igraph.DFSIter object contains several
  * other \c PyObject pointers and they might point back to itself.
  */
-int igraphmodule_DFSIter_traverse(igraphmodule_DFSIterObject *self,
+static int igraphmodule_DFSIter_traverse(igraphmodule_DFSIterObject *self,
 				  visitproc visit, void *arg) {
   RC_TRAVERSE("DFSIter", self);
   Py_VISIT(self->gref);
@@ -129,7 +129,7 @@ int igraphmodule_DFSIter_traverse(igraphmodule_DFSIterObject *self,
  * \ingroup python_interface_dfsiter
  * \brief Clears the iterator's subobject (before deallocation)
  */
-int igraphmodule_DFSIter_clear(igraphmodule_DFSIterObject *self) {
+static int igraphmodule_DFSIter_clear(igraphmodule_DFSIterObject *self) {
   PyObject *tmp;
 
   PyObject_GC_UnTrack(self);
@@ -150,7 +150,7 @@ int igraphmodule_DFSIter_clear(igraphmodule_DFSIterObject *self) {
  * \ingroup python_interface_dfsiter
  * \brief Deallocates a Python representation of a given DFS iterator object
  */
-void igraphmodule_DFSIter_dealloc(igraphmodule_DFSIterObject* self) {
+static void igraphmodule_DFSIter_dealloc(igraphmodule_DFSIterObject* self) {
   PyTypeObject *tp = Py_TYPE(self);
 
   igraphmodule_DFSIter_clear(self);
@@ -161,12 +161,12 @@ void igraphmodule_DFSIter_dealloc(igraphmodule_DFSIterObject* self) {
   Py_DECREF(tp);  /* needed because heap-allocated types are refcounted */
 }
 
-PyObject* igraphmodule_DFSIter_iter(igraphmodule_DFSIterObject* self) {
+static PyObject* igraphmodule_DFSIter_iter(igraphmodule_DFSIterObject* self) {
   Py_INCREF(self);
   return (PyObject*)self;
 }
 
-PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self) {
+static PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self) {
   /* the design is to return the top of the stack and then proceed until
    * we have found an unvisited neighbor and push that on top */
   igraph_integer_t parent_out, dist_out, vid_out;

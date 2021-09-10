@@ -22,6 +22,8 @@
 
 */
 
+#define Py_LIMITED_API 0x03060000
+
 #include "attributes.h"
 #include "convert.h"
 #include "edgeobject.h"
@@ -35,7 +37,9 @@
  * \defgroup python_interface_vertex Vertex object
  */
 
-PyTypeObject igraphmodule_VertexType;
+PyTypeObject* igraphmodule_VertexType;
+
+PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self);
 
 /**
  * \ingroup python_interface_vertex
@@ -45,7 +49,7 @@ int igraphmodule_Vertex_Check(PyObject* obj) {
   if (!obj)
     return 0;
   
-  return PyObject_IsInstance(obj, (PyObject*)(&igraphmodule_VertexType));
+  return PyObject_IsInstance(obj, (PyObject*)igraphmodule_VertexType);
 }
 
 /**
@@ -101,13 +105,13 @@ int igraphmodule_Vertex_Validate(PyObject* obj) {
  */
 PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_integer_t idx) {
   igraphmodule_VertexObject* self;
-  self=PyObject_New(igraphmodule_VertexObject, &igraphmodule_VertexType);
+  self = PyObject_New(igraphmodule_VertexObject, igraphmodule_VertexType);
   if (self) {
     RC_ALLOC("Vertex", self);
     Py_INCREF(gref);
-    self->gref=gref;
-    self->idx=idx;
-    self->hash=-1;
+    self->gref = gref;
+    self->idx = idx;
+    self->hash = -1;
   }
   return (PyObject*)self;
 }
@@ -130,12 +134,15 @@ int igraphmodule_Vertex_clear(igraphmodule_VertexObject *self) {
  * \ingroup python_interface_vertex
  * \brief Deallocates a Python representation of a given vertex object
  */
-void igraphmodule_Vertex_dealloc(igraphmodule_VertexObject* self) {
+static void igraphmodule_Vertex_dealloc(igraphmodule_VertexObject* self) {
+  PyTypeObject* tp = Py_TYPE(self);
+
   igraphmodule_Vertex_clear(self);
 
   RC_DEALLOC("Vertex", self);
 
   PyObject_Del((PyObject*)self);
+  Py_DECREF(tp);  /* needed because heap-allocated types are refcounted */
 }
 
 /** \ingroup python_interface_vertex
@@ -143,13 +150,14 @@ void igraphmodule_Vertex_dealloc(igraphmodule_VertexObject* self) {
  * 
  * \return the formatted textual representation as a \c PyObject
  */
-PyObject* igraphmodule_Vertex_repr(igraphmodule_VertexObject *self) {
+static PyObject* igraphmodule_Vertex_repr(igraphmodule_VertexObject *self) {
   PyObject *s;
   PyObject *attrs;
 
   attrs = igraphmodule_Vertex_attributes(self);
-  if (attrs == 0)
+  if (attrs == 0) {
     return NULL;
+  }
 
   s = PyUnicode_FromFormat("igraph.Vertex(%R, %" IGRAPH_PRId ", %R)",
       (PyObject*)self->gref, self->idx, attrs);
@@ -161,7 +169,7 @@ PyObject* igraphmodule_Vertex_repr(igraphmodule_VertexObject *self) {
 /** \ingroup python_interface_vertex
  * \brief Returns the hash code of the vertex
  */
-long igraphmodule_Vertex_hash(igraphmodule_VertexObject* self) {
+static long igraphmodule_Vertex_hash(igraphmodule_VertexObject* self) {
   long hash_graph;
   long hash_index;
   long result;
@@ -198,7 +206,7 @@ long igraphmodule_Vertex_hash(igraphmodule_VertexObject* self) {
 /** \ingroup python_interface_vertex
  * \brief Rich comparison of a vertex with another
  */
-PyObject* igraphmodule_Vertex_richcompare(igraphmodule_VertexObject *a,
+static PyObject* igraphmodule_Vertex_richcompare(igraphmodule_VertexObject *a,
     PyObject *b, int op) {
 
   igraphmodule_VertexObject* self = a;
@@ -242,17 +250,18 @@ PyObject* igraphmodule_Vertex_richcompare(igraphmodule_VertexObject *a,
 Py_ssize_t igraphmodule_Vertex_attribute_count(igraphmodule_VertexObject* self) {
   igraphmodule_GraphObject *o = self->gref;
   
-  if (!o) return 0;
-  if (!((PyObject**)o->g.attr)[1]) return 0;
-  return PyDict_Size(((PyObject**)o->g.attr)[1]);
+  if (!o || !((PyObject**)o->g.attr)[1]) {
+    return 0;
+  } else {
+    return PyDict_Size(((PyObject**)o->g.attr)[1]);
+  }
 }
 
 /** \ingroup python_interface_vertex
  * \brief Returns the list of attribute names
  */
 PyObject* igraphmodule_Vertex_attribute_names(igraphmodule_VertexObject* self) {
-  if (!self->gref) return NULL;
-  return igraphmodule_Graph_vertex_attributes(self->gref);
+  return self->gref ? igraphmodule_Graph_vertex_attributes(self->gref) : 0;
 }
 
 /** \ingroup python_interface_vertex
@@ -263,8 +272,9 @@ PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self) {
   PyObject *names, *dict;
   Py_ssize_t i, n;
 
-  if (!igraphmodule_Vertex_Validate((PyObject*)self))
+  if (!igraphmodule_Vertex_Validate((PyObject*)self)) {
     return 0;
+  }
 
   dict = PyDict_New();
   if (!dict) {
@@ -289,7 +299,15 @@ PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self) {
           /* No need to Py_INCREF, PyDict_SetItem will do that */
           PyDict_SetItem(dict, name, value);
         }
+      } else {
+        Py_DECREF(dict);
+        Py_DECREF(names);
+        return NULL;
       }
+    } else {
+      Py_DECREF(dict);
+      Py_DECREF(names);
+      return NULL;
     }
   }
 
@@ -601,10 +619,14 @@ static PyObject* _convert_to_edge_list(igraphmodule_VertexObject* vertex, PyObje
 
   n = PyList_Size(obj);
   for (i = 0; i < n; i++) {
-    PyObject* idx = PyList_GET_ITEM(obj, i);
-    PyObject* v;
+    PyObject* idx = PyList_GetItem(obj, i);
+    PyObject* edge;
     igraph_integer_t idx_int;
 
+    if (!idx) {
+      return NULL;
+    }
+  
     if (!PyLong_Check(idx)) {
       PyErr_SetString(PyExc_TypeError, "_convert_to_edge_list expected list of integers");
       return NULL;
@@ -614,15 +636,19 @@ static PyObject* _convert_to_edge_list(igraphmodule_VertexObject* vertex, PyObje
       return NULL;
     }
 
-    v = igraphmodule_Edge_New(vertex->gref, idx_int);
-    if (!v) {
+    edge = igraphmodule_Edge_New(vertex->gref, idx_int);
+    if (!edge) {
       return NULL;
     }
 
-    PyList_SetItem(obj, i, v);   /* reference to v stolen, reference to idx discarded */
+    if (PyList_SetItem(obj, i, edge)) {  /* reference to v stolen, reference to idx discarded */
+      Py_DECREF(edge);
+      return NULL;
+    }
   }
 
   Py_INCREF(obj);
+
   return obj;
 }
 
@@ -638,10 +664,14 @@ static PyObject* _convert_to_vertex_list(igraphmodule_VertexObject* vertex, PyOb
 
   n = PyList_Size(obj);
   for (i = 0; i < n; i++) {
-    PyObject* idx = PyList_GET_ITEM(obj, i);
+    PyObject* idx = PyList_GetItem(obj, i);
     PyObject* v;
     igraph_integer_t idx_int;
 
+    if (!idx) {
+      return NULL;
+    }
+  
     if (!PyLong_Check(idx)) {
       PyErr_SetString(PyExc_TypeError, "_convert_to_vertex_list expected list of integers");
       return NULL;
@@ -656,7 +686,10 @@ static PyObject* _convert_to_vertex_list(igraphmodule_VertexObject* vertex, PyOb
       return NULL;
     }
 
-    PyList_SetItem(obj, i, v);   /* reference to v stolen, reference to idx discarded */
+    if (PyList_SetItem(obj, i, v)) {  /* reference to v stolen, reference to idx discarded */
+      Py_DECREF(v);
+      return NULL;
+    }
   }
 
   Py_INCREF(obj);
@@ -666,18 +699,25 @@ static PyObject* _convert_to_vertex_list(igraphmodule_VertexObject* vertex, PyOb
 #define GRAPH_PROXY_METHOD_PP(FUNC, METHODNAME, POSTPROCESS) \
     PyObject* igraphmodule_Vertex_##FUNC(igraphmodule_VertexObject* self, PyObject* args, PyObject* kwds) { \
       PyObject *new_args, *item, *result;                     \
-      Py_ssize_t i, num_args = args ? PyTuple_Size(args)+1 : 1; \
+      Py_ssize_t i, num_args = args ? PyTuple_Size(args) + 1 : 1; \
                                                               \
       /* Prepend ourselves to args */                         \
       new_args = PyTuple_New(num_args);                       \
-      Py_INCREF(self); PyTuple_SET_ITEM(new_args, 0, (PyObject*)self);   \
+      Py_INCREF(self);                                        \
+      PyTuple_SetItem(new_args, 0, (PyObject*)self);          \
       for (i = 1; i < num_args; i++) {                        \
-        item = PyTuple_GET_ITEM(args, i-1);                   \
-        Py_INCREF(item); PyTuple_SET_ITEM(new_args, i, item); \
+        item = PyTuple_GetItem(args, i - 1);                  \
+        Py_INCREF(item);                                      \
+        PyTuple_SetItem(new_args, i, item);                   \
       }                                                       \
                                                               \
       /* Get the method instance */                           \
       item = PyObject_GetAttrString((PyObject*)(self->gref), METHODNAME);  \
+      if (item == 0) {                                        \
+        Py_DECREF(new_args);                                  \
+        return 0;                                             \
+      }                                                       \
+                                                              \
       result = PyObject_Call(item, new_args, kwds);           \
       Py_DECREF(item);                                        \
       Py_DECREF(new_args);                                    \
@@ -688,6 +728,7 @@ static PyObject* _convert_to_vertex_list(igraphmodule_VertexObject* vertex, PyOb
         Py_DECREF(result);                                    \
         return pp_result;                                     \
       }                                                       \
+                                                              \
       return NULL;                                            \
     }
 
@@ -799,20 +840,6 @@ PyMethodDef igraphmodule_Vertex_methods[] = {
 #undef GRAPH_PROXY_METHOD_SPEC
 #undef GRAPH_PROXY_METHOD_SPEC_2
 
-/** \ingroup python_interface_vertex
- * This structure is the collection of functions necessary to implement
- * the vertex as a mapping (i.e. to allow the retrieval and setting of
- * igraph attributes in Python as if it were of a Python mapping type)
- */
-PyMappingMethods igraphmodule_Vertex_as_mapping = {
-  // returns the number of vertex attributes
-  (lenfunc)igraphmodule_Vertex_attribute_count,
-  // returns an attribute by name
-  (binaryfunc)igraphmodule_Vertex_get_attribute,
-  // sets an attribute by name
-  (objobjargproc)igraphmodule_Vertex_set_attribute
-};
-
 /**
  * \ingroup python_interface_vertex
  * Getter/setter table for the \c igraph.Vertex object
@@ -827,32 +854,8 @@ PyGetSetDef igraphmodule_Vertex_getseters[] = {
   {NULL}
 };
 
-/** \ingroup python_interface_vertex
- * Python type object referencing the methods Python calls when it performs various operations on
- * a vertex of a graph
- */
-PyTypeObject igraphmodule_VertexType =
-{
-  PyVarObject_HEAD_INIT(0, 0)
-  "igraph.Vertex",                            /* tp_name */
-  sizeof(igraphmodule_VertexObject),          /* tp_basicsize */
-  0,                                          /* tp_itemsize */
-  (destructor)igraphmodule_Vertex_dealloc,    /* tp_dealloc */
-  0,                                          /* tp_print */
-  0,                                          /* tp_getattr */
-  0,                                          /* tp_setattr */
-  0,                                          /* tp_compare (2.x) / tp_reserved (3.x) */
-  (reprfunc)igraphmodule_Vertex_repr,         /* tp_repr */
-  0,                                          /* tp_as_number */
-  0,                                          /* tp_as_sequence */
-  &igraphmodule_Vertex_as_mapping,            /* tp_as_mapping */
-  (hashfunc)igraphmodule_Vertex_hash,         /* tp_hash */
-  0,                                          /* tp_call */
-  0,                                          /* tp_str */
-  0,                                          /* tp_getattro */
-  0,                                          /* tp_setattro */
-  0,                                          /* tp_as_buffer */
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /* tp_flags */
+PyDoc_STRVAR(
+  igraphmodule_Vertex_doc,
   "Class representing a single vertex in a graph.\n\n"
   "The vertex is referenced by its index, so if the underlying graph\n"
   "changes, the semantics of the vertex object might change as well\n"
@@ -861,15 +864,34 @@ PyTypeObject igraphmodule_VertexType =
   "as a hash:\n\n"
   "  >>> v[\"color\"] = \"red\"                  #doctest: +SKIP\n"
   "  >>> print(v[\"color\"])                     #doctest: +SKIP\n"
-  "  red\n", /* tp_doc */
-  0,                                          /* tp_traverse */
-  0,                                          /* tp_clear */
-  (richcmpfunc)igraphmodule_Vertex_richcompare, /* tp_richcompare */
-  0,                                          /* tp_weaklistoffset */
-  0,                                          /* tp_iter */
-  0,                                          /* tp_iternext */
-  igraphmodule_Vertex_methods,                /* tp_methods */
-  0,                                          /* tp_members */
-  igraphmodule_Vertex_getseters,              /* tp_getset */
-};
+  "  red\n"
+);
 
+int igraphmodule_Vertex_register_type() {
+  PyType_Slot slots[] = {
+    { Py_tp_dealloc, igraphmodule_Vertex_dealloc },
+    { Py_tp_hash, igraphmodule_Vertex_hash },
+    { Py_tp_repr, igraphmodule_Vertex_repr },
+    { Py_tp_richcompare, igraphmodule_Vertex_richcompare },
+    { Py_tp_methods, igraphmodule_Vertex_methods },
+    { Py_tp_getset, igraphmodule_Vertex_getseters },
+    { Py_tp_doc, (void*) igraphmodule_Vertex_doc },
+
+    { Py_mp_length, igraphmodule_Vertex_attribute_count },
+    { Py_mp_subscript, igraphmodule_Vertex_get_attribute },
+    { Py_mp_ass_subscript, igraphmodule_Vertex_set_attribute },
+  
+    { 0 }
+  };
+
+  PyType_Spec spec = {
+    "igraph.Vertex",                            /* name */
+    sizeof(igraphmodule_VertexObject),          /* basicsize */
+    0,                                          /* itemsize */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /* flags */
+    slots,                                      /* slots */
+  };
+
+  igraphmodule_VertexType = (PyTypeObject*) PyType_FromSpec(&spec);
+  return igraphmodule_VertexType == 0;
+}

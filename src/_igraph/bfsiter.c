@@ -52,7 +52,7 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   o->gref = g;
   o->graph = &g->g;
   
-  if (!PyLong_Check(root) && !PyObject_IsInstance(root, (PyObject*)&igraphmodule_VertexType)) {
+  if (!PyLong_Check(root) && !igraphmodule_Vertex_Check(root)) {
     PyErr_SetString(PyExc_TypeError, "root must be integer or igraph.Vertex");
     return NULL;
   }
@@ -116,7 +116,7 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
  * This is necessary because the \c igraph.BFSIter object contains several
  * other \c PyObject pointers and they might point back to itself.
  */
-int igraphmodule_BFSIter_traverse(igraphmodule_BFSIterObject *self,
+static int igraphmodule_BFSIter_traverse(igraphmodule_BFSIterObject *self,
 				  visitproc visit, void *arg) {
   RC_TRAVERSE("BFSIter", self);
   Py_VISIT(self->gref);
@@ -150,7 +150,7 @@ int igraphmodule_BFSIter_clear(igraphmodule_BFSIterObject *self) {
  * \ingroup python_interface_bfsiter
  * \brief Deallocates a Python representation of a given BFS iterator object
  */
-void igraphmodule_BFSIter_dealloc(igraphmodule_BFSIterObject* self) {
+static void igraphmodule_BFSIter_dealloc(igraphmodule_BFSIterObject* self) {
   PyTypeObject *tp = Py_TYPE(self);
 
   igraphmodule_BFSIter_clear(self);
@@ -161,12 +161,12 @@ void igraphmodule_BFSIter_dealloc(igraphmodule_BFSIterObject* self) {
   Py_DECREF(tp);  /* needed because heap-allocated types are refcounted */
 }
 
-PyObject* igraphmodule_BFSIter_iter(igraphmodule_BFSIterObject* self) {
+static PyObject* igraphmodule_BFSIter_iter(igraphmodule_BFSIterObject* self) {
   Py_INCREF(self);
   return (PyObject*)self;
 }
 
-PyObject* igraphmodule_BFSIter_iternext(igraphmodule_BFSIterObject* self) {
+static PyObject* igraphmodule_BFSIter_iternext(igraphmodule_BFSIterObject* self) {
   if (!igraph_dqueue_int_empty(&self->queue)) {
     igraph_integer_t vid = igraph_dqueue_int_pop(&self->queue);
     igraph_integer_t dist = igraph_dqueue_int_pop(&self->queue);

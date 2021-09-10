@@ -39,20 +39,13 @@ typedef struct
   long hash;
 } igraphmodule_VertexObject;
 
-int igraphmodule_Vertex_clear(igraphmodule_VertexObject *self);
-void igraphmodule_Vertex_dealloc(igraphmodule_VertexObject* self);
+extern PyTypeObject* igraphmodule_VertexType;
 
-int igraphmodule_Vertex_Check(PyObject *obj);
-int igraphmodule_Vertex_Validate(PyObject *obj);
+int igraphmodule_Vertex_register_type(void);
 
+int igraphmodule_Vertex_Check(PyObject* obj);
 PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_integer_t idx);
-PyObject* igraphmodule_Vertex_repr(igraphmodule_VertexObject *self);
-PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self);
-PyObject* igraphmodule_Vertex_attribute_names(igraphmodule_VertexObject* self);
 igraph_integer_t igraphmodule_Vertex_get_index_igraph_integer(igraphmodule_VertexObject* self);
-PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
-    PyObject* kwds);
-
-extern PyTypeObject igraphmodule_VertexType;
+PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args, PyObject* kwds);
 
 #endif

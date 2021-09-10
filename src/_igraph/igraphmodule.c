@@ -842,20 +842,13 @@ PyObject* PyInit__igraph(void)
   if (PyType_Ready(&igraphmodule_EdgeSeqType) < 0)
     INITERROR;
   
-  /* Initialize Vertex, Edge */
-  igraphmodule_VertexType.tp_clear = (inquiry)igraphmodule_Vertex_clear;
-  if (PyType_Ready(&igraphmodule_VertexType) < 0)
-    INITERROR;
-  
-  igraphmodule_EdgeType.tp_clear = (inquiry)igraphmodule_Edge_clear;
-  if (PyType_Ready(&igraphmodule_EdgeType) < 0)
-    INITERROR;
-
-  /* Initialize Graph, BFSIter, ARPACKOptions etc */
+  /* Initialize types */
   if (
     igraphmodule_ARPACKOptions_register_type() ||
     igraphmodule_BFSIter_register_type() ||
-    igraphmodule_DFSIter_register_type()
+    igraphmodule_DFSIter_register_type() ||
+    igraphmodule_Edge_register_type() ||
+    igraphmodule_Vertex_register_type()
   ) {
     INITERROR;
   }
@@ -875,9 +868,9 @@ PyObject* PyInit__igraph(void)
   PyModule_AddObject(m, "BFSIter", (PyObject*)igraphmodule_BFSIterType);
   PyModule_AddObject(m, "DFSIter", (PyObject*)igraphmodule_DFSIterType);
   PyModule_AddObject(m, "ARPACKOptions", (PyObject*)igraphmodule_ARPACKOptionsType);
-  PyModule_AddObject(m, "Edge", (PyObject*)&igraphmodule_EdgeType);
+  PyModule_AddObject(m, "Edge", (PyObject*)igraphmodule_EdgeType);
   PyModule_AddObject(m, "EdgeSeq", (PyObject*)&igraphmodule_EdgeSeqType);
-  PyModule_AddObject(m, "Vertex", (PyObject*)&igraphmodule_VertexType);
+  PyModule_AddObject(m, "Vertex", (PyObject*)igraphmodule_VertexType);
   PyModule_AddObject(m, "VertexSeq", (PyObject*)&igraphmodule_VertexSeqType);
  
   /* Internal error exception type */
