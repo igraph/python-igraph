@@ -46,7 +46,7 @@ PyObject* igraphmodule_Edge_attributes(igraphmodule_EdgeObject* self);
  * \brief Checks whether the given Python object is an edge
  */
 int igraphmodule_Edge_Check(PyObject* obj) {
-  return obj ? PyObject_IsInstance(obj, (PyObject*)(igraphmodule_EdgeType)) : 0;
+  return obj ? PyObject_IsInstance(obj, (PyObject*)igraphmodule_EdgeType) : 0;
 }
 
 /**
@@ -102,14 +102,18 @@ int igraphmodule_Edge_Validate(PyObject* obj) {
  */
 PyObject* igraphmodule_Edge_New(igraphmodule_GraphObject *gref, igraph_integer_t idx) {
   igraphmodule_EdgeObject* self;
+
+
   self = PyObject_New(igraphmodule_EdgeObject, igraphmodule_EdgeType);
   if (self) {
     RC_ALLOC("Edge", self);
+    Py_INCREF(igraphmodule_EdgeType);
     Py_INCREF(gref);
     self->gref = gref;
     self->idx = idx;
     self->hash = -1;
   }
+
   return (PyObject*)self;
 }
 

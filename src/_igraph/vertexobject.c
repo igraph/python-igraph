@@ -46,10 +46,7 @@ PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self);
  * \brief Checks whether the given Python object is a vertex
  */
 int igraphmodule_Vertex_Check(PyObject* obj) {
-  if (!obj)
-    return 0;
-  
-  return PyObject_IsInstance(obj, (PyObject*)igraphmodule_VertexType);
+  return obj ? PyObject_IsInstance(obj, (PyObject*)igraphmodule_VertexType) : 0;
 }
 
 /**
@@ -108,6 +105,7 @@ PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_integer
   self = PyObject_New(igraphmodule_VertexObject, igraphmodule_VertexType);
   if (self) {
     RC_ALLOC("Vertex", self);
+    Py_INCREF(igraphmodule_VertexType);
     Py_INCREF(gref);
     self->gref = gref;
     self->idx = idx;

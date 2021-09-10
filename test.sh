@@ -1,6 +1,5 @@
 #!/bin/bash
 
-VENV_DIR=.venv
 PYTHON=python3
 
 ###############################################################################
@@ -8,18 +7,22 @@ PYTHON=python3
 set -e
 
 CLEAN=0
+VENV_DIR=.venv
 
-while getopts ":c" OPTION; do
+while getopts ":ce:" OPTION; do
     case $OPTION in
         c)
             CLEAN=1
+            ;;
+        e)
+			VENV_DIR=$OPTARG
             ;;
         \?)
             echo "Usage: $0 [-c]"
             ;;
     esac
+    shift $((OPTIND -1))
 done
-shift $((OPTIND -1))
 
 if [ ! -d $VENV_DIR ]; then
     $PYTHON -m venv $VENV_DIR

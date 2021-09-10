@@ -48,6 +48,12 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   igraph_integer_t no_of_nodes, r;
   
   o = PyObject_GC_New(igraphmodule_BFSIterObject, igraphmodule_BFSIterType);
+  if (!o) {
+    return NULL;
+  }
+  
+  Py_INCREF(igraphmodule_BFSIterType);
+
   Py_INCREF(g);
   o->gref = g;
   o->graph = &g->g;
@@ -129,8 +135,6 @@ static int igraphmodule_BFSIter_traverse(igraphmodule_BFSIterObject *self,
  * \brief Clears the iterator's subobject (before deallocation)
  */
 int igraphmodule_BFSIter_clear(igraphmodule_BFSIterObject *self) {
-  PyObject *tmp;
-
   PyObject_GC_UnTrack(self);
 
   Py_CLEAR(self->gref);  

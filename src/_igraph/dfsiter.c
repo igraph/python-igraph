@@ -48,6 +48,11 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   igraph_integer_t no_of_nodes, r;
 
   o = PyObject_GC_New(igraphmodule_DFSIterObject, igraphmodule_DFSIterType);
+  if (!o) {
+    return NULL;
+  }
+  Py_INCREF(igraphmodule_DFSIterType);
+
   Py_INCREF(g);
   o->gref = g;
   o->graph = &g->g;

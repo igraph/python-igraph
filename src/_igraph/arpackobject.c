@@ -36,6 +36,7 @@ PyObject* igraphmodule_ARPACKOptions_new() {
   igraphmodule_ARPACKOptionsObject* self;
   self = PyObject_New(igraphmodule_ARPACKOptionsObject, igraphmodule_ARPACKOptionsType);
   if (self) {
+    Py_INCREF(igraphmodule_ARPACKOptionsType);  /* needed because heap-allocated types are refcounted */
     igraph_arpack_options_init(&self->params);
     igraph_arpack_options_init(&self->params_out);
   }
