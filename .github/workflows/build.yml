@@ -4,7 +4,7 @@ on: [push, pull_request]
 env:
   CIBW_TEST_COMMAND: "cd {project} && python -m pytest tests"
   CIBW_TEST_EXTRAS: "test"
-  CIBW_SKIP: "cp27-* pp27-* cp35-* cp36-* cp37-*"
+  CIBW_SKIP: "cp27-* pp27-* cp35-*"
 
 jobs:
   build_wheels:
