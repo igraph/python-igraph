@@ -20,8 +20,8 @@
 
 */
 
-#include <Python.h>
-#include <pythonrun.h>
+#include "preamble.h"
+
 #include <igraph.h>
 #include "arpackobject.h"
 #include "attributes.h"
@@ -822,13 +822,13 @@ PyObject* PyInit__igraph(void)
     INITERROR;
 
   /* Initialize Graph, BFSIter, ARPACKOptions etc */
+  if (igraphmodule_ARPACKOptions_register_type())
+    INITERROR;
   if (PyType_Ready(&igraphmodule_GraphType) < 0)
     INITERROR;
   if (PyType_Ready(&igraphmodule_BFSIterType) < 0)
     INITERROR;
   if (PyType_Ready(&igraphmodule_DFSIterType) < 0)
-    INITERROR;
-  if (PyType_Ready(&igraphmodule_ARPACKOptionsType) < 0)
     INITERROR;
 
   /* Initialize the core module */
@@ -843,7 +843,7 @@ PyObject* PyInit__igraph(void)
   PyModule_AddObject(m, "GraphBase", (PyObject*)&igraphmodule_GraphType);
   PyModule_AddObject(m, "BFSIter", (PyObject*)&igraphmodule_BFSIterType);
   PyModule_AddObject(m, "DFSIter", (PyObject*)&igraphmodule_DFSIterType);
-  PyModule_AddObject(m, "ARPACKOptions", (PyObject*)&igraphmodule_ARPACKOptionsType);
+  PyModule_AddObject(m, "ARPACKOptions", (PyObject*)igraphmodule_ARPACKOptionsType);
   PyModule_AddObject(m, "Edge", (PyObject*)&igraphmodule_EdgeType);
   PyModule_AddObject(m, "EdgeSeq", (PyObject*)&igraphmodule_EdgeSeqType);
   PyModule_AddObject(m, "Vertex", (PyObject*)&igraphmodule_VertexType);

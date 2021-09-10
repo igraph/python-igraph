@@ -23,7 +23,8 @@
 #ifndef PYTHON_EDGESEQOBJECT_H
 #define PYTHON_EDGESEQOBJECT_H
 
-#include <Python.h>
+#include "preamble.h"
+
 #include "graphobject.h"
 
 /**

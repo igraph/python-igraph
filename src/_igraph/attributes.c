@@ -20,7 +20,6 @@
 
 */
 
-#include <Python.h>
 #include "attributes.h"
 #include "common.h"
 #include "convert.h"

@@ -23,7 +23,9 @@
 #ifndef PYTHON_ARPACKOBJECT_H
 #define PYTHON_ARPACKOBJECT_H
 
-#include <Python.h>
+#define Py_LIMITED_API 0x03060000
+#include "preamble.h"
+
 #include <igraph_arpack.h>
 #include "graphobject.h"
 
@@ -31,7 +33,6 @@
  * \ingroup python_interface
  * \defgroup python_interface_arpack ARPACK parameters object
  */
-extern PyTypeObject igraphmodule_ARPACKOptionsType;
 
 /**
  * \ingroup python_interface_arpack
@@ -43,13 +44,12 @@ typedef struct {
   igraph_arpack_options_t params_out;
 } igraphmodule_ARPACKOptionsObject;
 
+extern PyTypeObject* igraphmodule_ARPACKOptionsType;
 extern PyObject* igraphmodule_arpack_options_default;
 
-void igraphmodule_ARPACKOptions_dealloc(igraphmodule_ARPACKOptionsObject* self);
+int igraphmodule_ARPACKOptions_register_type();
 
 PyObject* igraphmodule_ARPACKOptions_new(void);
-PyObject* igraphmodule_ARPACKOptions_str(igraphmodule_ARPACKOptionsObject *self);
-#define igraphmodule_ARPACKOptions_CheckExact(ob) ((ob)->ob_type == &igraphmodule_ARPACKOptionsType)
 igraph_arpack_options_t *igraphmodule_ARPACKOptions_get(igraphmodule_ARPACKOptionsObject *self);
-int igraphmodule_ARPACKOptions_Check(PyObject *ob);
+
 #endif

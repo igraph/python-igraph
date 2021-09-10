@@ -23,7 +23,8 @@
 #ifndef PYTHON_VERTEXSEQOBJECT_H
 #define PYTHON_VERTEXSEQOBJECT_H
 
-#include <Python.h>
+#include "preamble.h"
+
 #include "graphobject.h"
 
 /**

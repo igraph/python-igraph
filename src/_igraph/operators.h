@@ -23,7 +23,7 @@
 #ifndef PYTHON_OPERATORS_H
 #define PYTHON_OPERATORS_H
 
-#include <Python.h>
+#include "preamble.h"
 
 PyObject* igraphmodule__disjoint_union(PyObject* self, PyObject* args, PyObject* kwds);
 PyObject* igraphmodule__union(PyObject* self, PyObject* args, PyObject* kwds);
