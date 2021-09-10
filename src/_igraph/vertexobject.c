@@ -120,7 +120,7 @@ PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_integer
  * \ingroup python_interface_vertex
  * \brief Clears the vertex's subobject (before deallocation)
  */
-int igraphmodule_Vertex_clear(igraphmodule_VertexObject *self) {
+static int igraphmodule_Vertex_clear(igraphmodule_VertexObject *self) {
   PyObject *tmp;
 
   tmp=(PyObject*)self->gref;
@@ -869,6 +869,7 @@ PyDoc_STRVAR(
 
 int igraphmodule_Vertex_register_type() {
   PyType_Slot slots[] = {
+    { Py_tp_clear, igraphmodule_Vertex_clear },
     { Py_tp_dealloc, igraphmodule_Vertex_dealloc },
     { Py_tp_hash, igraphmodule_Vertex_hash },
     { Py_tp_repr, igraphmodule_Vertex_repr },

@@ -117,7 +117,7 @@ PyObject* igraphmodule_Edge_New(igraphmodule_GraphObject *gref, igraph_integer_t
  * \ingroup python_interface_edge
  * \brief Clears the edge's subobject (before deallocation)
  */
-int igraphmodule_Edge_clear(igraphmodule_EdgeObject *self) {
+static int igraphmodule_Edge_clear(igraphmodule_EdgeObject *self) {
   PyObject *tmp;
 
   tmp=(PyObject*)self->gref;
@@ -727,6 +727,7 @@ PyDoc_STRVAR(
 int igraphmodule_Edge_register_type() {
   PyType_Slot slots[] = {
     { Py_tp_dealloc, igraphmodule_Edge_dealloc },
+    { Py_tp_clear, igraphmodule_Edge_clear },
     { Py_tp_hash, igraphmodule_Edge_hash },
     { Py_tp_repr, igraphmodule_Edge_repr },
     { Py_tp_richcompare, igraphmodule_Edge_richcompare },
