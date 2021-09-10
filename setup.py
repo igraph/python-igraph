@@ -826,7 +826,7 @@ options = dict(
         "igraph.app",
         "igraph.drawing",
         "igraph.remote",
-        "igraph.constructors",
+        "igraph.io",
         ],
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],

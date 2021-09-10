@@ -28,6 +28,13 @@ from warnings import warn
 
 from igraph.datatypes import UniqueIdGenerator
 
+
+def _first(iterable, default=None):
+    for item in iterable:
+        return item
+    return default
+
+
 def construct_graph_from_dict_list(
     cls,
     vertices,
@@ -261,9 +268,8 @@ def construct_graph_from_sequence_dict(
     If names are used, the order of vertices is not guaranteed, and each
     vertex will be given the vertex_name_attr attribute.
     """
-    # Check if we are using names or integers
-    for item in edges:
-        break
+    item = _first(edges, default=0)
+
     if not isinstance(item, (int, str)):
         raise ValueError("Keys must be integers or strings")
 
@@ -280,7 +286,7 @@ def construct_graph_from_sequence_dict(
 
     else:
         edge_list = []
-        n = 0
+        n = -1
         for source, sequence in edges.items():
             n = max(n, source, *sequence)
             for target in sequence:
@@ -309,13 +315,12 @@ def construct_graph_from_dict_dict(
     {'Alice': {'Bob': {'weight': 1.5}, 'David': {'weight': 2}}}
 
     creates a graph with three vertices (Alice, Bob, and David) and two edges:
-    
+
     - Alice - Bob (with weight 1.5)
     - Alice - David (with weight 2)
     """
-    # Check if we are using names or integers
-    for item in edges:
-        break
+    item = _first(edges, default=0)
+
     if not isinstance(item, (int, str)):
         raise ValueError("Keys must be integers or strings")
 
@@ -334,7 +339,7 @@ def construct_graph_from_dict_dict(
 
     else:
         edge_list = []
-        n = 0
+        n = -1
         for source, target_dict in edges.items():
             n = max(n, source, *target_dict)
             for target, edge_attrs in target_dict.items():
@@ -460,3 +465,80 @@ def construct_graph_from_dataframe(cls, edges, directed=True, vertices=None, use
     g.add_edges(e_list, e_attr)
 
     return g
+
+
+def export_vertex_dataframe(self):
+    """Export vertices with attributes to pandas.DataFrame
+
+    If you want to use vertex names as index, you can do:
+
+    >>> from string import ascii_letters
+    >>> graph = Graph.GRG(25, 0.4)
+    >>> graph.vs["name"] = ascii_letters[:graph.vcount()]
+    >>> df = graph.get_vertex_dataframe()
+    >>> df.set_index('name', inplace=True)
+
+    @return: a pandas.DataFrame representing vertices and their attributes.
+      The index uses vertex IDs, from 0 to N - 1 where N is the number of
+      vertices.
+    """
+    try:
+        import pandas as pd
+    except ImportError:
+        raise ImportError("You should install pandas in order to use this function")
+
+    df = pd.DataFrame(
+        {attr: self.vs[attr] for attr in self.vertex_attributes()},
+        index=list(range(self.vcount())),
+    )
+    df.index.name = "vertex ID"
+
+    return df
+
+
+def export_edge_dataframe(self):
+    """Export edges with attributes to pandas.DataFrame
+
+    If you want to use source and target vertex IDs as index, you can do:
+
+    >>> from string import ascii_letters
+    >>> graph = Graph.GRG(25, 0.4)
+    >>> graph.vs["name"] = ascii_letters[:graph.vcount()]
+    >>> df = graph.get_edge_dataframe()
+    >>> df.set_index(['source', 'target'], inplace=True)
+
+    The index will be a pandas.MultiIndex. You can use the `drop=False`
+    option to keep the `source` and `target` columns.
+
+    If you want to use vertex names in the source and target columns:
+
+    >>> df = graph.get_edge_dataframe()
+    >>> df_vert = graph.get_vertex_dataframe()
+    >>> df['source'].replace(df_vert['name'], inplace=True)
+    >>> df['target'].replace(df_vert['name'], inplace=True)
+    >>> df_vert.set_index('name', inplace=True)  # Optional
+
+    @return: a pandas.DataFrame representing edges and their attributes.
+      The index uses edge IDs, from 0 to M - 1 where M is the number of
+      edges. The first two columns of the dataframe represent the IDs of
+      source and target vertices for each edge. These columns have names
+      "source" and "target". If your edges have attributes with the same
+      names, they will be present in the dataframe, but not in the first
+      two columns.
+    """
+    try:
+        import pandas as pd
+    except ImportError:
+        raise ImportError("You should install pandas in order to use this function")
+
+    df = pd.DataFrame(
+        {attr: self.es[attr] for attr in self.edge_attributes()},
+        index=list(range(self.ecount())),
+    )
+    df.index.name = "edge ID"
+
+    df.insert(0, "source", [e.source for e in self.es], allow_duplicates=True)
+    df.insert(1, "target", [e.target for e in self.es], allow_duplicates=True)
+
+    return df
+
