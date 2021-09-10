@@ -265,26 +265,36 @@ class IgraphCCoreCMakeBuilder(IgraphCCoreBuilder):
 
         print("Running build...")
         # We are _not_ using a parallel build; this is intentional, see igraph/igraph#1755
-        retcode = subprocess.call(
-            [cmake, "--build", ".", "--config", "Release"]
-        )
+        retcode = subprocess.call([cmake, "--build", ".", "--config", "Release"])
         if retcode:
             return False
 
         print("Installing build...")
-        retcode = subprocess.call([cmake, "--install", ".", "--prefix", str(install_folder), "--config", "Release"])
+        retcode = subprocess.call(
+            [
+                cmake,
+                "--install",
+                ".",
+                "--prefix",
+                str(install_folder),
+                "--config",
+                "Release",
+            ]
+        )
         if retcode:
             return False
 
         pkgconfig_candidates = [
             install_folder / "lib" / "pkgconfig" / "igraph.pc",
-            install_folder / "lib64" / "pkgconfig" / "igraph.pc"
+            install_folder / "lib64" / "pkgconfig" / "igraph.pc",
         ]
         for candidate in pkgconfig_candidates:
             if candidate.exists():
                 return self.parse_pkgconfig_file(candidate)
 
-        raise RuntimeError("no igraph.pc was found in the installation folder of igraph")
+        raise RuntimeError(
+            "no igraph.pc was found in the installation folder of igraph"
+        )
 
 
 ###########################################################################
@@ -395,12 +405,16 @@ class BuildConfiguration:
 
                 # Add extra libraries that may have been specified
                 if "IGRAPH_EXTRA_LIBRARIES" in os.environ:
-                    extra_libraries = os.environ["IGRAPH_EXTRA_LIBRARIES"].split(',')
+                    extra_libraries = os.environ["IGRAPH_EXTRA_LIBRARIES"].split(",")
                     buildcfg.libraries.extend(extra_libraries)
 
                 # Override static specification based on environment variable
                 if "IGRAPH_STATIC_EXTENSION" in os.environ:
-                    if os.environ["IGRAPH_STATIC_EXTENSION"].lower() in ['true', '1', 'on']:
+                    if os.environ["IGRAPH_STATIC_EXTENSION"].lower() in [
+                        "true",
+                        "1",
+                        "on",
+                    ]:
                         buildcfg.static_extension = True
                     else:
                         buildcfg.static_extension = False
@@ -417,7 +431,9 @@ class BuildConfiguration:
 
                 # Add extra libraries that may have been specified
                 if "IGRAPH_EXTRA_DYNAMIC_LIBRARIES" in os.environ:
-                    extra_libraries = os.environ["IGRAPH_EXTRA_DYNAMIC_LIBRARIES"].split(',')
+                    extra_libraries = os.environ[
+                        "IGRAPH_EXTRA_DYNAMIC_LIBRARIES"
+                    ].split(",")
                     buildcfg.libraries.extend(extra_libraries)
 
                 # Remove C++ standard library as we will use the C++ linker
@@ -485,24 +501,38 @@ class BuildConfiguration:
                     cwd = os.getcwd()
                     try:
                         os.chdir(igraph_source_repo)
-                        version = subprocess.check_output("git describe", shell=True).decode("utf-8").strip()
+                        version = (
+                            subprocess.check_output("git describe", shell=True)
+                            .decode("utf-8")
+                            .strip()
+                        )
                     finally:
                         os.chdir(cwd)
 
                 # If we still don't have a version number, try to parse it from
                 # include/igraph_version.h
                 if not version:
-                    version_header = os.path.join(igraph_build_dir, "include", "igraph_version.h")
+                    version_header = os.path.join(
+                        igraph_build_dir, "include", "igraph_version.h"
+                    )
                     if not os.path.exists(version_header):
-                        raise RuntimeError("You need to build the C core of igraph first before generating a source tarball of python-igraph")
+                        raise RuntimeError(
+                            "You need to build the C core of igraph first before generating a source tarball of python-igraph"
+                        )
 
                     with open(version_header, "r") as fp:
-                        lines = [line.strip() for line in fp if line.startswith("#define IGRAPH_VERSION ")]
+                        lines = [
+                            line.strip()
+                            for line in fp
+                            if line.startswith("#define IGRAPH_VERSION ")
+                        ]
                         if len(lines) == 1:
                             version = lines[0].split('"')[1]
 
                 if not isinstance(version, str) or len(version) < 5:
-                    raise RuntimeError(f"Cannot determine the version number of the C core in {igraph_source_repo}")
+                    raise RuntimeError(
+                        f"Cannot determine the version number of the C core in {igraph_source_repo}"
+                    )
 
                 if not is_git_repo(igraph_source_repo):
                     # python-igraph was extracted from an official tarball so
@@ -515,9 +545,14 @@ class BuildConfiguration:
                     # Copy the generated parser sources from the build folder
                     parser_dir = os.path.join(igraph_build_dir, "src", "io", "parsers")
                     if os.path.isdir(parser_dir):
-                        shutil.copytree(parser_dir, os.path.join(igraph_source_repo, "src", "io", "parsers"))
+                        shutil.copytree(
+                            parser_dir,
+                            os.path.join(igraph_source_repo, "src", "io", "parsers"),
+                        )
                     else:
-                        raise RuntimeError(f"You need to build the C core of igraph first before generating a source tarball of python-igraph")
+                        raise RuntimeError(
+                            f"You need to build the C core of igraph first before generating a source tarball of python-igraph"
+                        )
 
                     # Add a version file to the tarball
                     with open(version_file, "w") as fp:
@@ -700,7 +735,9 @@ class BuildConfiguration:
                 buildcfg.library_dirs.append(str(candidate))
                 break
         else:
-            raise RuntimeError("cannot detect igraph library dir within " + str(vendor_dir))
+            raise RuntimeError(
+                "cannot detect igraph library dir within " + str(vendor_dir)
+            )
 
         if not buildcfg.static_extension:
             buildcfg.static_extension = "only_igraph"
@@ -754,7 +791,6 @@ buildcfg = BuildConfiguration()
 buildcfg.process_args_from_command_line()
 
 
-
 # Define the extension
 sources = glob.glob(os.path.join("src", "_igraph", "*.c"))
 sources.append(os.path.join("src", "_igraph", "force_cpp_linker.cpp"))
@@ -793,8 +829,16 @@ options = dict(
         "matplotlib": ["matplotlib>=3.4.0"],
         "plotly": ["plotly>=5.3.0"],
         # compatibility alias to 'cairo' for python-igraph <= 0.9.6
-        "plotting": ["cairocffi>=1.2.0"]
+        "plotting": ["cairocffi>=1.2.0"],
+        "test": [
+            "networkx>=2.5",
+            "pytest>=6.2.5",
+            "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
+            "pandas>=1.1.0,<1.3.1; platform_python_implementation != 'PyPy'",
+            "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
+        ],
     },
+    python_requires=">=3.6",
     headers=headers,
     platforms="ALL",
     keywords=[
