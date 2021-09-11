@@ -28,7 +28,7 @@ jobs:
       - name: Build wheels
         uses: joerick/cibuildwheel@v1.10.0
         env:
-          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel ghostscript && pip install cmake && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
 
       - uses: actions/upload-artifact@v2
@@ -52,7 +52,7 @@ jobs:
       - name: Build wheels
         uses: joerick/cibuildwheel@v1.10.0
         env:
-          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel ghostscript && pip install cmake && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
 
@@ -91,7 +91,7 @@ jobs:
         uses: joerick/cibuildwheel@v1.10.0
         env:
           CIBW_ARCHS_MACOS: "x86_64 arm64"
-          CIBW_BEFORE_BUILD: "python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "brew install ghostscript && python setup.py build_c_core"
 
       - uses: actions/upload-artifact@v2
         with:
@@ -137,6 +137,9 @@ jobs:
       - name: Install build dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
         run: choco install winflexbison3 ninja
+
+      - name: Install Ghostscript to test matplotlib plotting
+        run: choco install ghostscript
 
       - name: Install VCPKG libraries
         run: |
@@ -196,6 +199,7 @@ jobs:
 
       - name: Test
         run: |
+          sudo apt install ghostscript
           pip install numpy scipy pandas networkx
           python -m unittest -vvv
 

@@ -26,7 +26,7 @@ def find_image_comparison():
 
 
 # NOTE: Parametrizing this requires pytest (see matplotlib's test suite)
-_default_extension = "png"
+_default_extension = "pdf"
 
 
 def _unittest_image_comparison(
