@@ -201,7 +201,6 @@ jobs:
 
       - name: Test
         run: |
-          sudo apt install ghostscript
           pip install numpy scipy pandas networkx
           python -m unittest -vvv
 
