@@ -116,8 +116,9 @@ class _GSConverter(_Converter):
 
 
 # Overload the default PDF converter
-from matplotlib.testing.compare import converter
-converter['pdf'] = _GSConverter()
+if matplotlib is not None:
+    from matplotlib.testing.compare import converter
+    converter['pdf'] = _GSConverter()
 
 
 
