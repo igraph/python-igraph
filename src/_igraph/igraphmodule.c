@@ -264,7 +264,7 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
         }
 
         if (PySequence_Size(o) > 2) {
-          PyErr_Warn(PyExc_Warning, "vertex with more than 2 coordinates found, considering only the first 2");
+          PY_IGRAPH_WARN("vertex with more than 2 coordinates found, considering only the first 2");
         }
       } else {
         PyErr_SetString(PyExc_TypeError, "vertex with less than 2 coordinates found");

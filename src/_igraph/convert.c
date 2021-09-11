@@ -131,8 +131,7 @@ int igraphmodule_PyObject_to_enum(PyObject *o,
   free(s);
 
   if (best_unique) {
-    PyErr_Warn(
-      PyExc_DeprecationWarning,
+    PY_IGRAPH_DEPRECATED(
       "Partial string matches of enum members are deprecated since igraph 0.9.3; "
       "use strings that identify an enum member unambiguously."
     );
@@ -2339,7 +2338,7 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igrap
       } else if (PyFloat_Check(item)) {
         MATRIX(*m, i, j) = PyFloat_AsDouble(item);
       } else if (!was_warned) {
-        PyErr_Warn(PyExc_Warning, "non-numeric value in matrix ignored");
+        PY_IGRAPH_WARN("non-numeric value in matrix ignored");
         was_warned=1;
       }
       Py_DECREF(item);
@@ -2417,7 +2416,7 @@ int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, i
       }
       
       if (!ok && !was_warned) {
-        PyErr_Warn(PyExc_Warning, "non-numeric value in matrix ignored");
+        PY_IGRAPH_WARN("non-numeric value in matrix ignored");
         was_warned = 1;
       }
 

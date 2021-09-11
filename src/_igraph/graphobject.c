@@ -639,11 +639,9 @@ PyObject *igraphmodule_Graph_delete_edges(igraphmodule_GraphObject * self,
 
   /* no arguments means delete all. */
 
-  /*Py_None also means all for now, but it is deprecated */
+  /* Py_None means "do nothing" since igraph 0.10 */
   if (list == Py_None) {
-        PyErr_Warn(PyExc_DeprecationWarning, "Graph.delete_vertices(None) is "
-                   "deprecated since igraph 0.8.3, please use "
-                   "Graph.delete_vertices() instead");
+    Py_RETURN_NONE;
   }
 
   /* this already converts no arguments and Py_None to all vertices */
@@ -676,23 +674,17 @@ PyObject *igraphmodule_Graph_degree(igraphmodule_GraphObject * self,
 {
   PyObject *list = Py_None;
   PyObject *loops = Py_True;
-  PyObject *dtype_o = Py_None;
   PyObject *dmode_o = Py_None;
   igraph_neimode_t dmode = IGRAPH_ALL;
   igraph_vector_int_t result;
   igraph_vs_t vs;
   igraph_bool_t return_single = 0;
 
-  static char *kwlist[] = { "vertices", "mode", "loops", "type", NULL };
+  static char *kwlist[] = { "vertices", "mode", "loops", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
-                                   &list, &dmode_o, &loops, &dtype_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist,
+                                   &list, &dmode_o, &loops))
     return NULL;
-
-  if (dmode_o == Py_None && dtype_o != Py_None) {
-    dmode_o = dtype_o;
-    PY_IGRAPH_DEPRECATED("type=... keyword argument is deprecated since igraph 0.6, use mode=... instead");
-  }
 
   if (igraphmodule_PyObject_to_neimode_t(dmode_o, &dmode)) {
     return NULL;
@@ -813,7 +805,6 @@ PyObject *igraphmodule_Graph_strength(igraphmodule_GraphObject * self,
 {
   PyObject *list = Py_None;
   PyObject *loops = Py_True;
-  PyObject *dtype_o = Py_None;
   PyObject *dmode_o = Py_None;
   PyObject *weights_o = Py_None;
   igraph_neimode_t dmode = IGRAPH_ALL;
@@ -821,21 +812,15 @@ PyObject *igraphmodule_Graph_strength(igraphmodule_GraphObject * self,
   igraph_vs_t vs;
   igraph_bool_t return_single = 0;
 
-  static char *kwlist[] = { "vertices", "mode", "loops", "weights",
-    "type", NULL };
+  static char *kwlist[] = { "vertices", "mode", "loops", "weights", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOOO", kwlist,
-                                   &list, &dmode_o, &loops, &weights_o,
-                                   &dtype_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
+                                   &list, &dmode_o, &loops, &weights_o))
     return NULL;
 
-  if (dmode_o == Py_None && dtype_o != Py_None) {
-    dmode_o = dtype_o;
-    PY_IGRAPH_DEPRECATED("type=... keyword argument is deprecated since igraph 0.6, use mode=... instead");
+  if (igraphmodule_PyObject_to_neimode_t(dmode_o, &dmode)) {
+    return NULL;
   }
-
-  if (igraphmodule_PyObject_to_neimode_t(dmode_o, &dmode))
-    return NULL;
 
   if (igraphmodule_PyObject_to_vs_t(list, &vs, &self->g, &return_single, 0)) {
     igraphmodule_handle_igraph_error();
@@ -909,33 +894,27 @@ PyObject *igraphmodule_Graph_maxdegree(igraphmodule_GraphObject * self,
 {
   PyObject *list = Py_None;
   igraph_neimode_t dmode = IGRAPH_ALL;
-  PyObject *dtype_o = Py_None;
   PyObject *dmode_o = Py_None;
   PyObject *loops = Py_False;
   igraph_integer_t result;
   igraph_vs_t vs;
   igraph_bool_t return_single = 0;
 
-  static char *kwlist[] = { "vertices", "mode", "loops", "type", NULL };
+  static char *kwlist[] = { "vertices", "mode", "loops", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
-                                   &list, &dmode_o, &loops, &dtype_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist, &list, &dmode_o, &loops))
     return NULL;
 
-  if (dmode_o == Py_None && dtype_o != Py_None) {
-    dmode_o = dtype_o;
-    PY_IGRAPH_DEPRECATED("type=... keyword argument is deprecated since igraph 0.6, use mode=... instead");
+  if (igraphmodule_PyObject_to_neimode_t(dmode_o, &dmode)) {
+    return NULL;
   }
-
-  if (igraphmodule_PyObject_to_neimode_t(dmode_o, &dmode)) return NULL;
 
   if (igraphmodule_PyObject_to_vs_t(list, &vs, &self->g, &return_single, 0)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
-  if (igraph_maxdegree(&self->g, &result, vs,
-                       dmode, PyObject_IsTrue(loops))) {
+  if (igraph_maxdegree(&self->g, &result, vs, dmode, PyObject_IsTrue(loops))) {
     igraphmodule_handle_igraph_error();
     igraph_vs_destroy(&vs);
     return NULL;
@@ -1168,30 +1147,28 @@ PyObject *igraphmodule_Graph_count_multiple(igraphmodule_GraphObject *self,
 PyObject *igraphmodule_Graph_neighbors(igraphmodule_GraphObject * self,
                                        PyObject * args, PyObject * kwds)
 {
-  PyObject *list, *dtype_o=Py_None, *dmode_o=Py_None, *index_o;
+  PyObject *list, *dmode_o = Py_None, *index_o;
   igraph_neimode_t dmode = IGRAPH_ALL;
   igraph_integer_t idx;
   igraph_vector_int_t result;
 
-  static char *kwlist[] = { "vertex", "mode", "type", NULL };
+  static char *kwlist[] = { "vertex", "mode", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist,
-        &index_o, &dmode_o, &dtype_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &index_o, &dmode_o))
     return NULL;
 
-  if (dmode_o == Py_None && dtype_o != Py_None) {
-    dmode_o = dtype_o;
-    PY_IGRAPH_DEPRECATED("type=... keyword argument is deprecated since igraph 0.6, use mode=... instead");
+  if (igraphmodule_PyObject_to_neimode_t(dmode_o, &dmode)) {
+    return NULL;
   }
 
-  if (igraphmodule_PyObject_to_neimode_t(dmode_o, &dmode))
+  if (igraphmodule_PyObject_to_vid(index_o, &idx, &self->g)) {
     return NULL;
+  }
 
-  if (igraphmodule_PyObject_to_vid(index_o, &idx, &self->g))
+  if (igraph_vector_int_init(&result, 1)) {
+    igraphmodule_handle_igraph_error();
     return NULL;
-
-  if (igraph_vector_int_init(&result, 1))
-    return igraphmodule_handle_igraph_error();
+  }
 
   if (igraph_neighbors(&self->g, &result, idx, dmode)) {
     igraphmodule_handle_igraph_error();
@@ -1219,29 +1196,29 @@ PyObject *igraphmodule_Graph_neighbors(igraphmodule_GraphObject * self,
 PyObject *igraphmodule_Graph_incident(igraphmodule_GraphObject * self,
                                        PyObject * args, PyObject * kwds)
 {
-  PyObject *list, *dmode_o = Py_None, *dtype_o = Py_None, *index_o;
+  PyObject *list, *dmode_o = Py_None, *index_o;
   igraph_neimode_t dmode = IGRAPH_OUT;
   igraph_integer_t idx;
   igraph_vector_int_t result;
 
-  static char *kwlist[] = { "vertex", "mode", "type", NULL };
+  static char *kwlist[] = { "vertex", "mode", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist,
-        &index_o, &dmode_o, &dtype_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &index_o, &dmode_o))
     return NULL;
 
-  if (dmode_o == Py_None && dtype_o != Py_None) {
-    dmode_o = dtype_o;
-    PY_IGRAPH_DEPRECATED("type=... keyword argument is deprecated since igraph 0.6, use mode=... instead");
+  if (igraphmodule_PyObject_to_neimode_t(dmode_o, &dmode)) {
+    return NULL;
   }
 
-  if (igraphmodule_PyObject_to_neimode_t(dmode_o, &dmode))
+  if (igraphmodule_PyObject_to_vid(index_o, &idx, &self->g)) {
     return NULL;
+  }
 
-  if (igraphmodule_PyObject_to_vid(index_o, &idx, &self->g))
+  if (igraph_vector_int_init(&result, 1)) {
+    igraphmodule_handle_igraph_error();
     return NULL;
+  }
 
-  igraph_vector_int_init(&result, 1);
   if (igraph_incident(&self->g, &result, idx, dmode)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_int_destroy(&result);
@@ -7028,10 +7005,11 @@ PyObject* igraphmodule_Graph_layout_drl(igraphmodule_GraphObject *self,
   if (fixed_o != 0 && fixed_o != Py_None) {
     /* Apparently the "fixed" argument does not do anything in the DrL
      * implementation so we throw a warning if the user tries to use it */
-    PyErr_Warn(PyExc_DeprecationWarning, "The fixed=... argument of the DrL "
-               "layout is ignored; it is kept only for sake of backwards "
-               "compatibility. The DrL layout algorithm does not support "
-               "permanently fixed nodes.");
+    PY_IGRAPH_DEPRECATED(
+      "The fixed=... argument of the DrL layout is ignored; it is kept only "
+      "for sake of backwards compatibility. The DrL layout algorithm does not "
+      "support permanently fixed nodes."
+    );
     fixed = (igraph_vector_bool_t*)malloc(sizeof(igraph_vector_bool_t));
     if (!fixed) {
       PyErr_NoMemory();
@@ -7890,8 +7868,10 @@ PyObject *igraphmodule_Graph_to_directed(igraphmodule_GraphObject * self,
       mode = IGRAPH_TO_DIRECTED_MUTUAL;
     } else {
       mode = PyObject_IsTrue(mutual_o) ? IGRAPH_TO_DIRECTED_MUTUAL : IGRAPH_TO_DIRECTED_ARBITRARY;
-      PyErr_Warn(PyExc_DeprecationWarning, "The 'mutual' argument is deprecated since "
-                 "igraph 0.9.3, please use mode=... instead");
+      PY_IGRAPH_DEPRECATED(
+        "The 'mutual' argument is deprecated since igraph 0.9.3, please use "
+        "mode=... instead"
+      );
     }
   } else {
     if (igraphmodule_PyObject_to_to_directed_t(mode_o, &mode)) {

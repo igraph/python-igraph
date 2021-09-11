@@ -349,9 +349,10 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
       IGRAPH_VIT_NEXT(vit);
     }
     if (!IGRAPH_VIT_END(vit)) {
-      PyErr_WarnEx(PyExc_RuntimeWarning,
-          "iterable was shorter than the number of vertices in the vertex "
-          "sequence", 1);
+      PY_IGRAPH_WARN(
+        "iterable was shorter than the number of vertices in the vertex "
+        "sequence"
+      );
     }
   } else {
     /* The new value is not an iterable; setting the same value for
