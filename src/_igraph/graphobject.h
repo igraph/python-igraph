@@ -50,7 +50,6 @@ typedef struct
   PyObject* weakreflist;
 } igraphmodule_GraphObject;
 
-void igraphmodule_Graph_init_internal(igraphmodule_GraphObject *self);
 PyObject* igraphmodule_Graph_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 int igraphmodule_Graph_clear(igraphmodule_GraphObject *self);
 int igraphmodule_Graph_traverse(igraphmodule_GraphObject *self, visitproc visit, void *arg);

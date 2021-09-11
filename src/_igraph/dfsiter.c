@@ -20,12 +20,13 @@
 
 */
 
-#define Py_LIMITED_API 0x03060000
+#define Py_LIMITED_API 0x03060100
 
 #include "convert.h"
-#include "dfsiter.h"
 #include "common.h"
+#include "dfsiter.h"
 #include "error.h"
+#include "pyhelpers.h"
 #include "vertexobject.h"
 
 /**
@@ -44,18 +45,17 @@ PyTypeObject* igraphmodule_DFSIterType;
  * \return the allocated PyObject
  */
 PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, igraph_neimode_t mode, igraph_bool_t advanced) {
-  igraphmodule_DFSIterObject* o;
+  igraphmodule_DFSIterObject* self;
   igraph_integer_t no_of_nodes, r;
 
-  o = PyObject_GC_New(igraphmodule_DFSIterObject, igraphmodule_DFSIterType);
-  if (!o) {
+  self = (igraphmodule_DFSIterObject*) PyType_GenericNew(igraphmodule_DFSIterType, 0, 0);
+  if (!self) {
     return NULL;
   }
-  Py_INCREF(igraphmodule_DFSIterType);
 
   Py_INCREF(g);
-  o->gref = g;
-  o->graph = &g->g;
+  self->gref = g;
+  self->graph = &g->g;
   
   if (!PyLong_Check(root) && !igraphmodule_Vertex_Check(root)) {
     PyErr_SetString(PyExc_TypeError, "root must be integer or igraph.Vertex");
@@ -63,27 +63,27 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   }
   
   no_of_nodes = igraph_vcount(&g->g);
-  o->visited = (char*)calloc(no_of_nodes, sizeof(char));
-  if (o->visited == 0) {
+  self->visited = (char*)calloc(no_of_nodes, sizeof(char));
+  if (self->visited == 0) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
   
-  if (igraph_stack_int_init(&o->stack, 100)) {
+  if (igraph_stack_int_init(&self->stack, 100)) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
 
-  if (igraph_vector_int_init(&o->neis, 0)) {
+  if (igraph_vector_int_init(&self->neis, 0)) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
-    igraph_stack_int_destroy(&o->stack);
+    igraph_stack_int_destroy(&self->stack);
     return NULL;
   }
   
   if (PyLong_Check(root)) {
     if (igraphmodule_PyObject_to_integer_t(root, &r)) {
-      igraph_stack_int_destroy(&o->stack);
-      igraph_vector_int_destroy(&o->neis);
+      igraph_stack_int_destroy(&self->stack);
+      igraph_vector_int_destroy(&self->neis);
       return NULL;
     }
   } else {
@@ -91,28 +91,26 @@ PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   }
 
   /* push the root onto the stack */
-  if (igraph_stack_int_push(&o->stack, r) ||
-      igraph_stack_int_push(&o->stack, 0) ||
-      igraph_stack_int_push(&o->stack, -1)) {
-    igraph_stack_int_destroy(&o->stack);
-    igraph_vector_int_destroy(&o->neis);
+  if (igraph_stack_int_push(&self->stack, r) ||
+      igraph_stack_int_push(&self->stack, 0) ||
+      igraph_stack_int_push(&self->stack, -1)) {
+    igraph_stack_int_destroy(&self->stack);
+    igraph_vector_int_destroy(&self->neis);
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
-  o->visited[r] = 1;
+  self->visited[r] = 1;
   
   if (!igraph_is_directed(&g->g)) {
     mode = IGRAPH_ALL;
   }
 
-  o->mode = mode;
-  o->advanced = advanced;
+  self->mode = mode;
+  self->advanced = advanced;
   
-  PyObject_GC_Track(o);
+  RC_ALLOC("DFSIter", self);
   
-  RC_ALLOC("DFSIter", o);
-  
-  return (PyObject*)o;
+  return (PyObject*)self;
 }
 
 /**
@@ -153,14 +151,9 @@ static int igraphmodule_DFSIter_clear(igraphmodule_DFSIterObject *self) {
  * \brief Deallocates a Python representation of a given DFS iterator object
  */
 static void igraphmodule_DFSIter_dealloc(igraphmodule_DFSIterObject* self) {
-  PyTypeObject *tp = Py_TYPE(self);
-
-  igraphmodule_DFSIter_clear(self);
-
   RC_DEALLOC("DFSIter", self);
-  
-  PyObject_GC_Del(self);
-  Py_DECREF(tp);  /* needed because heap-allocated types are refcounted */
+  igraphmodule_DFSIter_clear(self);
+  PY_FREE_AND_DECREF_TYPE(self);
 }
 
 static PyObject* igraphmodule_DFSIter_iter(igraphmodule_DFSIterObject* self) {

@@ -2764,7 +2764,7 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
     /* Single vertex ID from Vertex object */
     igraphmodule_VertexObject *vo = (igraphmodule_VertexObject*)o;
     *vid = igraphmodule_Vertex_get_index_igraph_integer(vo);
-  } else if (PyIndex_Check(o)) {
+  } else {
     /* Other numeric type that can be converted to an index */
     PyObject* num = PyNumber_Index(o);
     if (num) {
@@ -2774,17 +2774,15 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
           return 1;
         }
       } else {
-        PyErr_SetString(PyExc_TypeError, "PyNumber_Index returned invalid type");
+        PyErr_SetString(PyExc_TypeError, "PyNumber_Index() returned invalid type");
         Py_DECREF(num);
         return 1;
       }
       Py_DECREF(num);
     } else {
+      PyErr_SetString(PyExc_TypeError, "only numbers, strings or igraph.Vertex objects can be converted to vertex IDs");
       return 1;
     }
-  } else {
-    PyErr_SetString(PyExc_TypeError, "only numbers, strings or igraph.Vertex objects can be converted to vertex IDs");
-    return 1;
   }
 
   if (*vid < 0) {
@@ -2823,7 +2821,7 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
     return 0;
   }
 
-  if (PyObject_IsInstance(o, (PyObject*)&igraphmodule_VertexSeqType)) {
+  if (igraphmodule_VertexSeq_Check(o)) {
     /* Returns a vertex sequence from a VertexSeq object */
     igraphmodule_VertexSeqObject *vso = (igraphmodule_VertexSeqObject*)o;
 
@@ -2975,24 +2973,6 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
     /* Single edge ID from Edge object */
     igraphmodule_EdgeObject *eo = (igraphmodule_EdgeObject*)o;
     *eid = igraphmodule_Edge_get_index_as_igraph_integer(eo);
-  } else if (PyIndex_Check(o)) {
-    /* Other numeric type that can be converted to an index */
-    PyObject* num = PyNumber_Index(o);
-    if (num) {
-      if (PyLong_Check(num)) {
-        if (igraphmodule_PyObject_to_integer_t(num, eid)) {
-          Py_DECREF(num);
-          return 1;
-        }
-      } else {
-        PyErr_SetString(PyExc_TypeError, "PyNumber_Index returned invalid type");
-        Py_DECREF(num);
-        return 1;
-      }
-      Py_DECREF(num);
-    } else {
-      return 1;
-    }
   } else if (graph != 0 && PyTuple_Check(o)) {
     PyObject *o1, *o2;
 
@@ -3001,8 +2981,8 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
       return 1;
     }
 
-    o2 = PyTuple_GetItem(o, 1); {
-    if (!o2)
+    o2 = PyTuple_GetItem(o, 1);
+    if (!o2) {
       return 1;
     }
 
@@ -3035,10 +3015,26 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
       return 1;
     }
   } else {
-    PyErr_SetString(PyExc_TypeError,
-        "only numbers, igraph.Edge objects or tuples of vertex IDs can be "
-        "converted to edge IDs");
-    return 1;
+    /* Other numeric type that can be converted to an index */
+    PyObject* num = PyNumber_Index(o);
+    if (num) {
+      if (PyLong_Check(num)) {
+        if (igraphmodule_PyObject_to_integer_t(num, eid)) {
+          Py_DECREF(num);
+          return 1;
+        }
+      } else {
+        PyErr_SetString(PyExc_TypeError, "PyNumber_Index() returned invalid type");
+        Py_DECREF(num);
+        return 1;
+      }
+      Py_DECREF(num);
+    } else {
+      PyErr_SetString(PyExc_TypeError,
+          "only numbers, igraph.Edge objects or tuples of vertex IDs can be "
+          "converted to edge IDs");
+      return 1;
+    }
   }
 
   if (*eid < 0) {
@@ -3075,7 +3071,7 @@ int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
     return 0;
   }
 
-  if (PyObject_IsInstance(o, (PyObject*)&igraphmodule_EdgeSeqType)) {
+  if (igraphmodule_EdgeSeq_Check(o)) {
     /* Returns an edge sequence from an EdgeSeq object */
     igraphmodule_EdgeSeqObject *eso = (igraphmodule_EdgeSeqObject*)o;
     if (igraph_es_copy(es, &eso->es)) {

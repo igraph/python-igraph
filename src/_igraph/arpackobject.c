@@ -22,8 +22,9 @@
 
 #include "arpackobject.h"
 #include "convert.h"
-#include "graphobject.h"
 #include "error.h"
+#include "graphobject.h"
+#include "pyhelpers.h"
 
 PyTypeObject* igraphmodule_ARPACKOptionsType;
 PyObject* igraphmodule_arpack_options_default;
@@ -32,15 +33,17 @@ PyObject* igraphmodule_arpack_options_default;
  * \ingroup python_interface_arpack
  * \brief Allocates a new ARPACK parameters object
  */
-PyObject* igraphmodule_ARPACKOptions_new() {
-  igraphmodule_ARPACKOptionsObject* self;
-  self = PyObject_New(igraphmodule_ARPACKOptionsObject, igraphmodule_ARPACKOptionsType);
-  if (self) {
-    Py_INCREF(igraphmodule_ARPACKOptionsType);  /* needed because heap-allocated types are refcounted */
-    igraph_arpack_options_init(&self->params);
-    igraph_arpack_options_init(&self->params_out);
+int igraphmodule_ARPACKOptions_init(igraphmodule_ARPACKOptionsObject *self, PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = { NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
+    return -1;
   }
-  return (PyObject*)self;
+
+  igraph_arpack_options_init(&self->params);
+  igraph_arpack_options_init(&self->params_out);
+
+  return 0;
 }
 
 /**
@@ -48,9 +51,8 @@ PyObject* igraphmodule_ARPACKOptions_new() {
  * \brief Deallocates a Python representation of a given ARPACK parameters object
  */
 static void igraphmodule_ARPACKOptions_dealloc(igraphmodule_ARPACKOptionsObject* self) {
-  PyTypeObject *tp = Py_TYPE(self);
-  PyObject_Del((PyObject*)self);
-  Py_DECREF(tp);  /* needed because heap-allocated types are refcounted */
+  RC_DEALLOC("ARPACKOptions", self);
+  PY_FREE_AND_DECREF_TYPE(self);
 }
 
 /** \ingroup python_interface_arpack
@@ -211,7 +213,7 @@ PyDoc_STRVAR(
 
 int igraphmodule_ARPACKOptions_register_type() {
   PyType_Slot slots[] = {
-    { Py_tp_new, igraphmodule_ARPACKOptions_new },
+    { Py_tp_init, igraphmodule_ARPACKOptions_init },
     { Py_tp_dealloc, igraphmodule_ARPACKOptions_dealloc },
     { Py_tp_getattr, igraphmodule_ARPACKOptions_getattr },
     { Py_tp_setattr, igraphmodule_ARPACKOptions_setattr },

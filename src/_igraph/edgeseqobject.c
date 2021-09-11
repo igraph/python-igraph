@@ -22,6 +22,8 @@
 
 */
 
+#define Py_LIMITED_API 0x03060100
+
 #include "attributes.h"
 #include "common.h"
 #include "convert.h"
@@ -37,28 +39,16 @@
  * \defgroup python_interface_edgeseq Edge sequence object
  */
 
-PyTypeObject igraphmodule_EdgeSeqType;
+PyTypeObject* igraphmodule_EdgeSeqType;
+
+PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject *args);
 
 /**
  * \ingroup python_interface_edgeseq
- * \brief Allocate a new edge sequence object for a given graph
- * \param g the graph object being referenced
- * \return the allocated PyObject
+ * \brief Checks whether the given Python object is an edge sequence
  */
-PyObject* igraphmodule_EdgeSeq_new(PyTypeObject *subtype,
-  PyObject *args, PyObject *kwds) {
-  igraphmodule_EdgeSeqObject* o;
-
-  o=(igraphmodule_EdgeSeqObject*)PyType_GenericNew(subtype, args, kwds);
-  if (o == NULL) return NULL;
-
-  igraph_es_all(&o->es, IGRAPH_EDGEORDER_ID);
-  o->gref=0;
-  o->weakreflist=0;
-
-  RC_ALLOC("EdgeSeq", o);
-
-  return (PyObject*)o;
+int igraphmodule_EdgeSeq_Check(PyObject* obj) {
+  return obj ? PyObject_IsInstance(obj, (PyObject*)igraphmodule_EdgeSeqType) : 0;
 }
 
 /**
@@ -70,8 +60,10 @@ igraphmodule_EdgeSeqObject*
 igraphmodule_EdgeSeq_copy(igraphmodule_EdgeSeqObject* o) {
   igraphmodule_EdgeSeqObject *copy;
 
-  copy=(igraphmodule_EdgeSeqObject*)PyType_GenericNew(Py_TYPE(o), 0, 0);
-  if (copy == NULL) return NULL;
+  copy = (igraphmodule_EdgeSeqObject*) PyType_GenericNew(Py_TYPE(o), 0, 0);
+  if (copy == NULL) {
+    return NULL;
+  }
 
   if (igraph_es_type(&o->es) == IGRAPH_ES_VECTOR) {
     igraph_vector_int_t v;
@@ -90,7 +82,10 @@ igraphmodule_EdgeSeq_copy(igraphmodule_EdgeSeqObject* o) {
   }
 
   copy->gref = o->gref;
-  if (o->gref) Py_INCREF(o->gref);
+  if (o->gref) {
+    Py_INCREF(o->gref);
+  }
+
   RC_ALLOC("EdgeSeq(copy)", copy);
 
   return copy;
@@ -102,15 +97,15 @@ igraphmodule_EdgeSeq_copy(igraphmodule_EdgeSeqObject* o) {
  * \brief Initialize a new edge sequence object for a given graph
  * \return the initialized PyObject
  */
-int igraphmodule_EdgeSeq_init(igraphmodule_EdgeSeqObject *self,
-  PyObject *args, PyObject *kwds) {
+int igraphmodule_EdgeSeq_init(igraphmodule_EdgeSeqObject *self, PyObject *args, PyObject *kwds) {
   static char *kwlist[] = { "graph", "edges", NULL };
-  PyObject *g, *esobj=Py_None;
+  PyObject *g, *esobj = Py_None;
   igraph_es_t es;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O", kwlist,
-    &igraphmodule_GraphType, &g, &esobj))
-      return -1;
+    &igraphmodule_GraphType, &g, &esobj)) {
+    return -1;
+  }
 
   if (esobj == Py_None) {
     /* If es is None, we are selecting all the edges */
@@ -130,11 +125,12 @@ int igraphmodule_EdgeSeq_init(igraphmodule_EdgeSeqObject *self,
 
     igraph_es_1(&es, idx);
   } else {
-  /* We selected multiple edges */
+   /* We selected multiple edges */
     igraph_vector_int_t v;
     igraph_integer_t n = igraph_ecount(&((igraphmodule_GraphObject*)g)->g);
-    if (igraphmodule_PyObject_to_vector_int_t(esobj, &v))
+    if (igraphmodule_PyObject_to_vector_int_t(esobj, &v)) {
       return -1;
+    }
     if (!igraph_vector_int_isininterval(&v, 0, n-1)) {
       igraph_vector_int_destroy(&v);
       PyErr_SetString(PyExc_ValueError, "edge index out of range");
@@ -160,16 +156,19 @@ int igraphmodule_EdgeSeq_init(igraphmodule_EdgeSeqObject *self,
  * \brief Deallocates a Python representation of a given edge sequence object
  */
 void igraphmodule_EdgeSeq_dealloc(igraphmodule_EdgeSeqObject* self) {
-  if (self->weakreflist != NULL)
+  RC_DEALLOC("EdgeSeq", self);
+
+  if (self->weakreflist != NULL) {
     PyObject_ClearWeakRefs((PyObject *)self);
+  }
+
   if (self->gref) {
     igraph_es_destroy(&self->es);
     Py_DECREF(self->gref);
     self->gref=0;
   }
-  Py_TYPE(self)->tp_free((PyObject*)self);
 
-  RC_DEALLOC("EdgeSeq", self);
+  PY_FREE_AND_DECREF_TYPE(self);
 }
 
 /**
@@ -180,11 +179,13 @@ Py_ssize_t igraphmodule_EdgeSeq_sq_length(igraphmodule_EdgeSeqObject* self) {
   igraph_t *g;
   igraph_integer_t result;
 
-  g=&GET_GRAPH(self);
+  g = &GET_GRAPH(self);
+
   if (igraph_es_size(g, &self->es, &result)) {
     igraphmodule_handle_igraph_error();
     return -1;
   }
+
   return result;
 }
 
@@ -197,8 +198,12 @@ PyObject* igraphmodule_EdgeSeq_sq_item(igraphmodule_EdgeSeqObject* self,
   igraph_t *g;
   igraph_integer_t idx = -1;
 
-  if (!self->gref) return NULL;
-  g=&GET_GRAPH(self);
+  if (!self->gref) {
+    return NULL;
+  }
+
+  g = &GET_GRAPH(self);
+
   switch (igraph_es_type(&self->es)) {
     case IGRAPH_ES_ALL:
       if (i < 0) {
@@ -246,6 +251,7 @@ PyObject* igraphmodule_EdgeSeq_sq_item(igraphmodule_EdgeSeqObject* self,
         igraphmodule_InternalError, "unsupported edge selector type: %d", igraph_es_type(&self->es)
       );
   }
+
   if (idx < 0) {
     PyErr_SetString(PyExc_IndexError, "edge index out of range");
     return NULL;
@@ -269,8 +275,9 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
   PyObject *result=0, *values, *item;
   Py_ssize_t i, n;
 
-  if (!igraphmodule_attribute_name_check(o))
+  if (!igraphmodule_attribute_name_check(o)) {
     return 0;
+  }
 
   PyErr_Clear();
   values = PyDict_GetItem(ATTR_STRUCT_DICT(&gr->g)[ATTRHASH_IDX_EDGE], o);
@@ -298,9 +305,19 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
       }
 
       for (i = 0; i < n; i++) {
-        item = PyList_GET_ITEM(values, i);
+        item = PyList_GetItem(values, i);
+        if (!item) {
+          Py_DECREF(result);
+          return 0;
+        }
+
         Py_INCREF(item);
-        PyList_SET_ITEM(result, i, item);
+
+        if (PyList_SetItem(result, i, item)) {
+          Py_DECREF(item);
+          Py_DECREF(result);
+          return 0;
+        }
       }
       break;
 
@@ -313,9 +330,19 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
       }
 
       for (i = 0; i < n; i++) {
-        item = PyList_GET_ITEM(values, VECTOR(*self->es.data.vecptr)[i]);
+        item = PyList_GetItem(values, VECTOR(*self->es.data.vecptr)[i]);
+        if (!item) {
+          Py_DECREF(result);
+          return 0;
+        }
+
         Py_INCREF(item);
-        PyList_SET_ITEM(result, i, item);
+
+        if (PyList_SetItem(result, i, item)) {
+          Py_DECREF(item);
+          Py_DECREF(result);
+          return 0;
+        }
       }
       break;
 
@@ -327,9 +354,19 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
       }
 
       for (i = 0; i < n; i++) {
-        item = PyList_GET_ITEM(values, self->es.data.seq.from + i);
+        item = PyList_GetItem(values, self->es.data.seq.from + i);
+        if (!item) {
+          Py_DECREF(result);
+          return 0;
+        }
+        
         Py_INCREF(item);
-        PyList_SET_ITEM(result, i, item);
+
+        if (PyList_SetItem(result, i, item)) {
+          Py_DECREF(item);
+          Py_DECREF(result);
+          return 0;
+        }
       }
       break;
 
@@ -341,33 +378,51 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
 }
 
 PyObject* igraphmodule_EdgeSeq_is_all(igraphmodule_EdgeSeqObject* self) {
-  if (igraph_es_is_all(&self->es))
+  if (igraph_es_is_all(&self->es)) {
     Py_RETURN_TRUE;
-  Py_RETURN_FALSE;
+  } else {
+    Py_RETURN_FALSE;
+  }
 }
 
 PyObject* igraphmodule_EdgeSeq_get_attribute_values_mapping(igraphmodule_EdgeSeqObject *self, PyObject *o) {
   Py_ssize_t index;
-
-  /* Handle integer indices according to the sequence protocol */
-  if (PyIndex_Check(o)) {
-    index = PyNumber_AsSsize_t(o, 0);
-    return igraphmodule_EdgeSeq_sq_item(self, index);
-  }
+  PyObject *index_o;
 
   /* Handle strings according to the mapping protocol */
-  if (PyBaseString_Check(o))
+  if (PyBaseString_Check(o)) {
     return igraphmodule_EdgeSeq_get_attribute_values(self, o);
+  }
 
   /* Handle iterables and slices by calling the select() method */
   if (PySlice_Check(o) || PyObject_HasAttrString(o, "__iter__")) {
     PyObject *result, *args;
-    args = Py_BuildValue("(O)", o);
-    if (!args)
+    args = PyTuple_Pack(1, o);
+
+    if (!args) {
       return NULL;
+    }
+
     result = igraphmodule_EdgeSeq_select(self, args);
     Py_DECREF(args);
+
     return result;
+  }
+
+  /* Handle integer indices according to the sequence protocol */
+  index_o = PyNumber_Index(o);
+  if (index_o) {
+    index = PyLong_AsSsize_t(index_o);
+    if (PyErr_Occurred()) {
+      Py_DECREF(index_o);
+      return NULL;
+    } else {
+      Py_DECREF(index_o);
+      return igraphmodule_EdgeSeq_sq_item(self, index);
+    }
+  } else {
+    /* clear TypeError raised by PyNumber_Index() */
+    PyErr_Clear();
   }
 
   /* Handle everything else according to the mapping protocol */
@@ -387,12 +442,14 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
   gr = self->gref;
   dict = ATTR_STRUCT_DICT(&gr->g)[ATTRHASH_IDX_EDGE];
 
-  if (!igraphmodule_attribute_name_check(attrname))
+  if (!igraphmodule_attribute_name_check(attrname)) {
     return -1;
+  }
 
   if (values == 0) {
-    if (igraph_es_type(&self->es) == IGRAPH_ES_ALL)
+    if (igraph_es_type(&self->es) == IGRAPH_ES_ALL) {
       return PyDict_DelItem(dict, attrname);
+    }
     PyErr_SetString(PyExc_TypeError, "can't delete attribute from an edge sequence not representing the whole graph");
     return -1;
   }
@@ -406,7 +463,11 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
       return -1;
     }
     Py_INCREF(values);
-    PyList_SET_ITEM(newList, 0, values);    /* reference stolen here */
+
+    if (PyList_SetItem(newList, 0, values)) {  /* reference stolen here */
+      return -1;
+    }
+
     result = igraphmodule_EdgeSeq_set_attribute_values_mapping(self, attrname, newList);
     Py_DECREF(newList);
     return result;
@@ -458,7 +519,11 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
           Py_DECREF(list); return -1;
         }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
-        PyList_SET_ITEM(list, i, item);
+        if (PyList_SetItem(list, i, item)) {
+          Py_DECREF(item);
+          Py_DECREF(list);
+          return -1;
+        }
         /* PyList_SET_ITEM stole a reference to the item automatically */
       }
       if (PyDict_SetItem(dict, attrname, list)) {
@@ -512,11 +577,16 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
       igraph_integer_t n2 = igraph_ecount(&gr->g);
       list = PyList_New(n2);
       if (list == 0) {
-        igraph_vector_int_destroy(&es); return -1;
+        igraph_vector_int_destroy(&es);
+        return -1;
       }
       for (i = 0; i < n2; i++) {
         Py_INCREF(Py_None);
-        PyList_SET_ITEM(list, i, Py_None);
+        if (PyList_SetItem(list, i, Py_None)) {
+          Py_DECREF(Py_None);
+          Py_DECREF(list);
+          return -1;
+        }
       }
       for (i = 0, j = 0; i < no_of_edges; i++, j++) {
         if (j == n) {
@@ -525,10 +595,15 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
         item = PySequence_GetItem(values, j);
         if (item == 0) {
           igraph_vector_int_destroy(&es);
-          Py_DECREF(list); return -1;
+          Py_DECREF(list);
+          return -1;
         }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
-        PyList_SET_ITEM(list, VECTOR(es)[i], item);
+        if (PyList_SetItem(list, VECTOR(es)[i], item)) {
+          Py_DECREF(item);
+          Py_DECREF(list);
+          return -1;
+        }
         /* PyList_SET_ITEM stole a reference to the item automatically */
       }
       igraph_vector_int_destroy(&es);
@@ -614,16 +689,20 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
   igraph_integer_t igraph_idx;
   Py_ssize_t i, j, n, m;
 
-  gr=self->gref;
-  result=igraphmodule_EdgeSeq_copy(self);
-  if (result == 0)
+  gr = self->gref;
+  result = igraphmodule_EdgeSeq_copy(self);
+  if (result == 0) {
     return NULL;
+  }
 
   /* First, filter by positional arguments */
   n = PyTuple_Size(args);
   for (i = 0; i < n; i++) {
-    PyObject *item = PyTuple_GET_ITEM(args, i);
-    if (item == Py_None) {
+    PyObject *item = PyTuple_GetItem(args, i);
+    if (item == 0) {
+      Py_DECREF(result);
+      return NULL;
+    } else if (item == Py_None) {
       /* None means: select nothing */
       igraph_es_destroy(&result->es);
       igraph_es_none(&result->es);
@@ -698,8 +777,15 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
       }
       m = igraph_vector_int_size(&v2);
       for (; i<n; i++) {
-        PyObject *item2 = PyTuple_GET_ITEM(args, i);
+        PyObject *item2 = PyTuple_GetItem(args, i);
         igraph_integer_t idx;
+
+        if (item2 == 0) {
+          Py_DECREF(result);
+          igraph_vector_int_destroy(&v);
+          igraph_vector_int_destroy(&v2);
+          return NULL;
+        }
         if (!PyLong_Check(item2)) {
           Py_DECREF(result);
           PyErr_SetString(PyExc_TypeError, "edge indices expected");
@@ -709,6 +795,8 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
         }
         if (igraphmodule_PyObject_to_integer_t(item2, &idx)) {
           Py_DECREF(result);
+          igraph_vector_int_destroy(&v);
+          igraph_vector_int_destroy(&v2);
           return NULL;
         }
         if (idx >= m || idx < 0) {
@@ -888,39 +976,6 @@ PyMethodDef igraphmodule_EdgeSeq_methods[] = {
 
 /**
  * \ingroup python_interface_edgeseq
- * This is the collection of functions necessary to implement the
- * edge sequence as a real sequence (e.g. allowing to reference
- * edges by indices)
- */
-static PySequenceMethods igraphmodule_EdgeSeq_as_sequence = {
-  (lenfunc)igraphmodule_EdgeSeq_sq_length,
-  0,               /* sq_concat */
-  0,               /* sq_repeat */
-  (ssizeargfunc)igraphmodule_EdgeSeq_sq_item, /* sq_item */
-  0,                                          /* sq_slice */
-  0,                                          /* sq_ass_item */
-  0,                                          /* sq_ass_slice */
-  0,                                          /* sq_contains */
-  0,                                          /* sq_inplace_concat */
-  0,                                          /* sq_inplace_repeat */
-};
-
-/**
- * \ingroup python_interface_edgeseq
- * This is the collection of functions necessary to implement the
- * edge sequence as a mapping (which maps attribute names to values)
- */
-static PyMappingMethods igraphmodule_EdgeSeq_as_mapping = {
-    /* returns the number of edge attributes */
-    (lenfunc) 0,
-    /* returns the values of an attribute by name */
-    (binaryfunc) igraphmodule_EdgeSeq_get_attribute_values_mapping,
-    /* sets the values of an attribute by name */
-    (objobjargproc) igraphmodule_EdgeSeq_set_attribute_values_mapping,
-};
-
-/**
- * \ingroup python_interface_edgeseq
  * Returns the graph where the edge sequence belongs
  */
 PyObject* igraphmodule_EdgeSeq_get_graph(igraphmodule_EdgeSeqObject* self,
@@ -968,57 +1023,48 @@ PyGetSetDef igraphmodule_EdgeSeq_getseters[] = {
   {NULL}
 };
 
-/** \ingroup python_interface_edgeseq
- * Python type object referencing the methods Python calls when it performs various operations on
- * an edge sequence of a graph
+/**
+ * \ingroup python_interface_edgeseq
+ * Member table for the \c igraph.EdgeSeq object
  */
-PyTypeObject igraphmodule_EdgeSeqType =
-{
-  PyVarObject_HEAD_INIT(0, 0)
-  "igraph._igraph.EdgeSeq",                 /* tp_name */
-  sizeof(igraphmodule_EdgeSeqObject),       /* tp_basicsize */
-  0,                                        /* tp_itemsize */
-  (destructor)igraphmodule_EdgeSeq_dealloc, /* tp_dealloc */
-  0,                                        /* tp_print */
-  0,                                        /* tp_getattr */
-  0,                                        /* tp_setattr */
-  0,                                        /* tp_compare (2.x) / tp_reserved (3.x) */
-  0,                                        /* tp_repr */
-  0,                                        /* tp_as_number */
-  &igraphmodule_EdgeSeq_as_sequence,        /* tp_as_sequence */
-  &igraphmodule_EdgeSeq_as_mapping,         /* tp_as_mapping */
-  0,                                        /* tp_hash */
-  0,                                        /* tp_call */
-  0,                                        /* tp_str */
-  0,                                        /* tp_getattro */
-  0,                                        /* tp_setattro */
-  0,                                        /* tp_as_buffer */
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
+PyMemberDef igraphmodule_EdgeSeq_members[] = {
+  {"__weaklistoffset__", T_PYSSIZET, offsetof(igraphmodule_EdgeSeqObject, weakreflist), READONLY},
+  { 0 }
+};
+
+PyDoc_STRVAR(
+  igraphmodule_EdgeSeq_doc,
   "Low-level representation of an edge sequence.\n\n" /* tp_doc */
   "Don't use it directly, use L{igraph.EdgeSeq} instead.\n\n"
-  "@deffield ref: Reference",
-  0,                                          /* tp_traverse */
-  0,                                          /* tp_clear */
-  0,                                          /* tp_richcompare */
-  offsetof(igraphmodule_EdgeSeqObject, weakreflist), /* tp_weaklistoffset */
-  0,                                          /* tp_iter */
-  0,                                          /* tp_iternext */
-  igraphmodule_EdgeSeq_methods,               /* tp_methods */
-  0,                                          /* tp_members */
-  igraphmodule_EdgeSeq_getseters,             /* tp_getset */
-  0,                                          /* tp_base */
-  0,                                          /* tp_dict */
-  0,                                          /* tp_descr_get */
-  0,                                          /* tp_descr_set */
-  0,                                          /* tp_dictoffset */
-  (initproc) igraphmodule_EdgeSeq_init,       /* tp_init */
-  0,                                          /* tp_alloc */
-  (newfunc) igraphmodule_EdgeSeq_new,         /* tp_new */
-  0,                                          /* tp_free */
-  0,                                          /* tp_is_gc */
-  0,                                          /* tp_bases */
-  0,                                          /* tp_mro */
-  0,                                          /* tp_cache  */
-  0,                                          /* tp_subclasses */
-  0,                                          /* tp_weakreflist */
-};
+  "@deffield ref: Reference"
+);
+
+int igraphmodule_EdgeSeq_register_type() {
+  PyType_Slot slots[] = {
+    { Py_tp_init, igraphmodule_EdgeSeq_init },
+    { Py_tp_dealloc, igraphmodule_EdgeSeq_dealloc },
+    { Py_tp_members, igraphmodule_EdgeSeq_members },
+    { Py_tp_methods, igraphmodule_EdgeSeq_methods },
+    { Py_tp_getset, igraphmodule_EdgeSeq_getseters },
+    { Py_tp_doc, (void*) igraphmodule_EdgeSeq_doc },
+
+    { Py_sq_length, igraphmodule_EdgeSeq_sq_length },
+    { Py_sq_item, igraphmodule_EdgeSeq_sq_item },
+
+    { Py_mp_subscript, igraphmodule_EdgeSeq_get_attribute_values_mapping },
+    { Py_mp_ass_subscript, igraphmodule_EdgeSeq_set_attribute_values_mapping },
+  
+    { 0 }
+  };
+
+  PyType_Spec spec = {
+    "igraph._igraph.EdgeSeq",                   /* name */
+    sizeof(igraphmodule_EdgeSeqObject),         /* basicsize */
+    0,                                          /* itemsize */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /* flags */
+    slots,                                      /* slots */
+  };
+
+  igraphmodule_EdgeSeqType = (PyTypeObject*) PyType_FromSpec(&spec);
+  return igraphmodule_EdgeSeqType == 0;
+}

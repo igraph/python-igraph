@@ -7,9 +7,11 @@ PYTHON=python3
 set -e
 
 CLEAN=0
+PYTEST_ARGS=
 VENV_DIR=.venv
 
-while getopts ":ce:" OPTION; do
+while getopts ":ce:k:" OPTION; do
+    echo "$OPTION"
     case $OPTION in
         c)
             CLEAN=1
@@ -17,12 +19,15 @@ while getopts ":ce:" OPTION; do
         e)
 			VENV_DIR=$OPTARG
             ;;
+		k)
+			PYTEST_ARGS="${PYTEST_ARGS} -k $OPTARG"
+			;;
         \?)
             echo "Usage: $0 [-c]"
             ;;
     esac
-    shift $((OPTIND -1))
 done
+shift $((OPTIND -1))
 
 if [ ! -d $VENV_DIR ]; then
     $PYTHON -m venv $VENV_DIR
@@ -36,5 +41,5 @@ fi
 
 $VENV_DIR/bin/python setup.py build
 $VENV_DIR/bin/pip install --use-feature=in-tree-build .[plotting,test]
-$VENV_DIR/bin/pytest tests
+$VENV_DIR/bin/pytest tests ${PYTEST_ARGS}
 

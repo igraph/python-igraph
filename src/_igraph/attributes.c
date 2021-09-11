@@ -20,7 +20,7 @@
 
 */
 
-#define Py_LIMITED_API 0x03060000
+#define Py_LIMITED_API 0x03060100
 
 #include "attributes.h"
 #include "common.h"
@@ -2025,12 +2025,13 @@ void igraphmodule_initialize_attribute_handler(void) {
  * Also raises a suitable Python exception if needed.
  */
 int igraphmodule_attribute_name_check(PyObject* obj) {
-  PyObject* type_obj;
+  PyTypeObject* type_obj;
 
-  if (obj != 0 && PyBaseString_Check(obj))
+  if (obj != 0 && PyBaseString_Check(obj)) {
     return 1;
+  }
 
-  type_obj = obj ? ((PyObject*)obj->ob_type) : 0;
+  type_obj = Py_TYPE(obj);
   if (type_obj != 0) {
     PyErr_Format(PyExc_TypeError, "igraph supports string attribute names only, got %R", type_obj);
   } else {

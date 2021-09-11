@@ -23,7 +23,7 @@
 #ifndef PYTHON_ARPACKOBJECT_H
 #define PYTHON_ARPACKOBJECT_H
 
-#define Py_LIMITED_API 0x03060000
+#define Py_LIMITED_API 0x03060100
 #include "preamble.h"
 
 #include <igraph_arpack.h>
@@ -49,7 +49,6 @@ extern PyObject* igraphmodule_arpack_options_default;
 
 int igraphmodule_ARPACKOptions_register_type(void);
 
-PyObject* igraphmodule_ARPACKOptions_new(void);
 igraph_arpack_options_t *igraphmodule_ARPACKOptions_get(igraphmodule_ARPACKOptionsObject *self);
 
 #endif

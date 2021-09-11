@@ -20,12 +20,13 @@
 
 */
 
-#define Py_LIMITED_API 0x03060000
+#define Py_LIMITED_API 0x03060100
 
 #include "bfsiter.h"
 #include "common.h"
 #include "convert.h"
 #include "error.h"
+#include "pyhelpers.h"
 #include "vertexobject.h"
 
 /**
@@ -44,19 +45,17 @@ PyTypeObject* igraphmodule_BFSIterType;
  * \return the allocated PyObject
  */
 PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, igraph_neimode_t mode, igraph_bool_t advanced) {
-  igraphmodule_BFSIterObject* o;
+  igraphmodule_BFSIterObject* self;
   igraph_integer_t no_of_nodes, r;
   
-  o = PyObject_GC_New(igraphmodule_BFSIterObject, igraphmodule_BFSIterType);
-  if (!o) {
+  self = (igraphmodule_BFSIterObject*) PyType_GenericNew(igraphmodule_BFSIterType, 0, 0);
+  if (!self) {
     return NULL;
   }
-  
-  Py_INCREF(igraphmodule_BFSIterType);
 
   Py_INCREF(g);
-  o->gref = g;
-  o->graph = &g->g;
+  self->gref = g;
+  self->graph = &g->g;
   
   if (!PyLong_Check(root) && !igraphmodule_Vertex_Check(root)) {
     PyErr_SetString(PyExc_TypeError, "root must be integer or igraph.Vertex");
@@ -64,55 +63,53 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   }
   
   no_of_nodes = igraph_vcount(&g->g);
-  o->visited = (char*)calloc(no_of_nodes, sizeof(char));
-  if (o->visited == 0) {
+  self->visited = (char*)calloc(no_of_nodes, sizeof(char));
+  if (self->visited == 0) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
   
-  if (igraph_dqueue_int_init(&o->queue, 100)) {
+  if (igraph_dqueue_int_init(&self->queue, 100)) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
 
-  if (igraph_vector_int_init(&o->neis, 0)) {
+  if (igraph_vector_int_init(&self->neis, 0)) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
-    igraph_dqueue_int_destroy(&o->queue);
+    igraph_dqueue_int_destroy(&self->queue);
     return NULL;
   }
   
   if (PyLong_Check(root)) {
     if (igraphmodule_PyObject_to_integer_t(root, &r)) {
-      igraph_dqueue_int_destroy(&o->queue);
-      igraph_vector_int_destroy(&o->neis);
+      igraph_dqueue_int_destroy(&self->queue);
+      igraph_vector_int_destroy(&self->neis);
       return NULL;
     }
   } else {
     r = ((igraphmodule_VertexObject*)root)->idx;
   }
 
-  if (igraph_dqueue_int_push(&o->queue, r) ||
-      igraph_dqueue_int_push(&o->queue, 0) ||
-      igraph_dqueue_int_push(&o->queue, -1)) {
-    igraph_dqueue_int_destroy(&o->queue);
-    igraph_vector_int_destroy(&o->neis);
+  if (igraph_dqueue_int_push(&self->queue, r) ||
+      igraph_dqueue_int_push(&self->queue, 0) ||
+      igraph_dqueue_int_push(&self->queue, -1)) {
+    igraph_dqueue_int_destroy(&self->queue);
+    igraph_vector_int_destroy(&self->neis);
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
-  o->visited[r] = 1;
+  self->visited[r] = 1;
   
   if (!igraph_is_directed(&g->g)) {
     mode=IGRAPH_ALL;
   }
 
-  o->mode = mode;
-  o->advanced = advanced;
+  self->mode = mode;
+  self->advanced = advanced;
   
-  PyObject_GC_Track(o);
+  RC_ALLOC("BFSIter", self);
   
-  RC_ALLOC("BFSIter", o);
-  
-  return (PyObject*)o;
+  return (PyObject*)self;
 }
 
 /**
@@ -153,14 +150,11 @@ int igraphmodule_BFSIter_clear(igraphmodule_BFSIterObject *self) {
  * \brief Deallocates a Python representation of a given BFS iterator object
  */
 static void igraphmodule_BFSIter_dealloc(igraphmodule_BFSIterObject* self) {
-  PyTypeObject *tp = Py_TYPE(self);
+  RC_DEALLOC("BFSIter", self);
 
   igraphmodule_BFSIter_clear(self);
 
-  RC_DEALLOC("BFSIter", self);
-  
-  PyObject_GC_Del(self);
-  Py_DECREF(tp);  /* needed because heap-allocated types are refcounted */
+  PY_FREE_AND_DECREF_TYPE(self);
 }
 
 static PyObject* igraphmodule_BFSIter_iter(igraphmodule_BFSIterObject* self) {

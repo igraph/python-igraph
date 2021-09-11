@@ -58,56 +58,6 @@ PyTypeObject igraphmodule_GraphType;
  * \ingroup python_interface */
 
 /**
- * \ingroup python_interface_internal
- * \brief Initializes the internal structures in an \c igraph.Graph object's
- * C representation.
- *
- * This function must be called whenever we create a new Graph object with
- * \c tp_alloc
- */
-void igraphmodule_Graph_init_internal(igraphmodule_GraphObject * self)
-{
-  if (!self) return;
-
-  self->destructor = NULL;
-  self->weakreflist = NULL;
-}
-
-/**
- * \ingroup python_interface_graph
- * \brief Creates a new igraph object in Python
- *
- * This function is called whenever a new \c igraph.Graph object is created in
- * Python. An optional \c n parameter can be passed from Python,
- * representing the number of vertices in the graph. If it is omitted,
- * the default value is 0.
- *
- * <b>Example call from Python:</b>
-\verbatim
-g = igraph.Graph(5);
-\endverbatim
- *
- * In fact, the parameters are processed by \c igraphmodule_Graph_init
- *
- * \return the new \c igraph.Graph object or NULL if an error occurred.
- *
- * \sa igraphmodule_Graph_init
- * \sa igraph_empty
- */
-PyObject *igraphmodule_Graph_new(PyTypeObject * type, PyObject * args,
-                                 PyObject * kwds)
-{
-  igraphmodule_GraphObject *self;
-
-  self = (igraphmodule_GraphObject *) type->tp_alloc(type, 0);
-  RC_ALLOC("Graph", self);
-
-  igraphmodule_Graph_init_internal(self);
-
-  return (PyObject *) self;
-}
-
-/**
  * \ingroup python_interface_graph
  * \brief Clears the graph object's subobject (before deallocation)
  */
@@ -198,6 +148,9 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
   Py_ssize_t n = 0;
   igraph_vector_int_t edges_vector;
   igraph_bool_t edges_vector_owned = 0;
+
+  self->destructor = NULL;
+  self->weakreflist = NULL;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nOOO!", kwlist,
                                    &n, &edges, &dir,
@@ -741,8 +694,9 @@ PyObject *igraphmodule_Graph_degree(igraphmodule_GraphObject * self,
     PY_IGRAPH_DEPRECATED("type=... keyword argument is deprecated since igraph 0.6, use mode=... instead");
   }
 
-  if (igraphmodule_PyObject_to_neimode_t(dmode_o, &dmode))
+  if (igraphmodule_PyObject_to_neimode_t(dmode_o, &dmode)) {
     return NULL;
+  }
 
   if (igraphmodule_PyObject_to_vs_t(list, &vs, &self->g, &return_single, 0)) {
     return NULL;
@@ -16481,7 +16435,7 @@ PyTypeObject igraphmodule_GraphType = {
   0,                            /* tp_dictoffset */
   (initproc) igraphmodule_Graph_init, /* tp_init */
   0,                            /* tp_alloc */
-  igraphmodule_Graph_new,       /* tp_new */
+  PyType_GenericNew,            /* tp_new */
   0,                            /* tp_free */
 };
 

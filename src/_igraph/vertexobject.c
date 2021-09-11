@@ -22,7 +22,7 @@
 
 */
 
-#define Py_LIMITED_API 0x03060000
+#define Py_LIMITED_API 0x03060100
 
 #include "attributes.h"
 #include "convert.h"
@@ -102,15 +102,17 @@ int igraphmodule_Vertex_Validate(PyObject* obj) {
  */
 PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_integer_t idx) {
   igraphmodule_VertexObject* self;
-  self = PyObject_New(igraphmodule_VertexObject, igraphmodule_VertexType);
+
+  self = (igraphmodule_VertexObject*) PyType_GenericNew(igraphmodule_VertexType, 0, 0);
+
   if (self) {
     RC_ALLOC("Vertex", self);
-    Py_INCREF(igraphmodule_VertexType);
     Py_INCREF(gref);
     self->gref = gref;
     self->idx = idx;
     self->hash = -1;
   }
+
   return (PyObject*)self;
 }
 
@@ -128,14 +130,9 @@ static int igraphmodule_Vertex_clear(igraphmodule_VertexObject *self) {
  * \brief Deallocates a Python representation of a given vertex object
  */
 static void igraphmodule_Vertex_dealloc(igraphmodule_VertexObject* self) {
-  PyTypeObject* tp = Py_TYPE(self);
-
-  igraphmodule_Vertex_clear(self);
-
   RC_DEALLOC("Vertex", self);
-
-  PyObject_Del((PyObject*)self);
-  Py_DECREF(tp);  /* needed because heap-allocated types are refcounted */
+  igraphmodule_Vertex_clear(self);
+  PY_FREE_AND_DECREF_TYPE(self);
 }
 
 /** \ingroup python_interface_vertex

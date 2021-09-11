@@ -22,7 +22,7 @@
 
 */
 
-#define Py_LIMITED_API 0x03060000
+#define Py_LIMITED_API 0x03060100
 
 #include "attributes.h"
 #include "convert.h"
@@ -103,11 +103,10 @@ int igraphmodule_Edge_Validate(PyObject* obj) {
 PyObject* igraphmodule_Edge_New(igraphmodule_GraphObject *gref, igraph_integer_t idx) {
   igraphmodule_EdgeObject* self;
 
+  self = (igraphmodule_EdgeObject*) PyType_GenericNew(igraphmodule_EdgeType, 0, 0);
 
-  self = PyObject_New(igraphmodule_EdgeObject, igraphmodule_EdgeType);
   if (self) {
     RC_ALLOC("Edge", self);
-    Py_INCREF(igraphmodule_EdgeType);
     Py_INCREF(gref);
     self->gref = gref;
     self->idx = idx;
@@ -131,14 +130,9 @@ static int igraphmodule_Edge_clear(igraphmodule_EdgeObject *self) {
  * \brief Deallocates a Python representation of a given edge object
  */
 static void igraphmodule_Edge_dealloc(igraphmodule_EdgeObject* self) {
-  PyTypeObject* tp = Py_TYPE(self);
-
-  igraphmodule_Edge_clear(self);
-
   RC_DEALLOC("Edge", self);
-
-  PyObject_Del((PyObject*)self);
-  Py_DECREF(tp);  /* needed because heap-allocated types are refcounted */
+  igraphmodule_Edge_clear(self);
+  PY_FREE_AND_DECREF_TYPE(self);
 }
 
 /** \ingroup python_interface_edge

@@ -836,19 +836,15 @@ PyObject* PyInit__igraph(void)
     INITERROR;
   }
 
-  /* Initialize VertexSeq, EdgeSeq */
-  if (PyType_Ready(&igraphmodule_VertexSeqType) < 0)
-    INITERROR;
-  if (PyType_Ready(&igraphmodule_EdgeSeqType) < 0)
-    INITERROR;
-  
   /* Initialize types */
   if (
     igraphmodule_ARPACKOptions_register_type() ||
     igraphmodule_BFSIter_register_type() ||
     igraphmodule_DFSIter_register_type() ||
     igraphmodule_Edge_register_type() ||
-    igraphmodule_Vertex_register_type()
+    igraphmodule_EdgeSeq_register_type() ||
+    igraphmodule_Vertex_register_type() ||
+    igraphmodule_VertexSeq_register_type()
   ) {
     INITERROR;
   }
@@ -869,9 +865,9 @@ PyObject* PyInit__igraph(void)
   PyModule_AddObject(m, "DFSIter", (PyObject*)igraphmodule_DFSIterType);
   PyModule_AddObject(m, "ARPACKOptions", (PyObject*)igraphmodule_ARPACKOptionsType);
   PyModule_AddObject(m, "Edge", (PyObject*)igraphmodule_EdgeType);
-  PyModule_AddObject(m, "EdgeSeq", (PyObject*)&igraphmodule_EdgeSeqType);
+  PyModule_AddObject(m, "EdgeSeq", (PyObject*)igraphmodule_EdgeSeqType);
   PyModule_AddObject(m, "Vertex", (PyObject*)igraphmodule_VertexType);
-  PyModule_AddObject(m, "VertexSeq", (PyObject*)&igraphmodule_VertexSeqType);
+  PyModule_AddObject(m, "VertexSeq", (PyObject*)igraphmodule_VertexSeqType);
  
   /* Internal error exception type */
   igraphmodule_InternalError =
@@ -879,7 +875,10 @@ PyObject* PyInit__igraph(void)
   PyModule_AddObject(m, "InternalError", igraphmodule_InternalError);
 
   /* ARPACK default options variable */
-  igraphmodule_arpack_options_default = igraphmodule_ARPACKOptions_new();
+  igraphmodule_arpack_options_default = PyObject_CallFunction((PyObject*) igraphmodule_ARPACKOptionsType, 0);
+  if (igraphmodule_arpack_options_default == NULL)
+    INITERROR;
+
   PyModule_AddObject(m, "arpack_options", igraphmodule_arpack_options_default);
 
   /* Useful constants */
