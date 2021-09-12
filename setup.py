@@ -826,7 +826,7 @@ options = dict(
     install_requires=["texttable>=1.6.2"],
     extras_require={
         "cairo": ["cairocffi>=1.2.0"],
-        "matplotlib": ["matplotlib>=3.4.0"],
+        "matplotlib": ["matplotlib>=3.4.0; platform_python_implementation != 'PyPy'"],
         "plotly": ["plotly>=5.3.0"],
         # compatibility alias to 'cairo' for python-igraph <= 0.9.6
         "plotting": ["cairocffi>=1.2.0"],
@@ -836,6 +836,10 @@ options = dict(
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0,<1.3.1; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
+            "matplotlib>=3.4.0; platform_python_implementation != 'PyPy'",
+            "pytest; platform_python_implementation != 'PyPy'",
+            "plotly>=5.3.0",
+            "cairocffi>=1.2.0",
         ],
     },
     python_requires=">=3.6",
