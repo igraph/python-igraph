@@ -31,24 +31,24 @@
  * \ingroup python_interface_dfsiter
  * \brief A structure representing a DFS iterator of a graph
  */
-typedef struct
-{
+typedef struct {
   PyObject_HEAD
   igraphmodule_GraphObject* gref;
-  igraph_stack_t stack;
-  igraph_vector_t neis;
+  igraph_stack_int_t stack;
+  igraph_vector_int_t neis;
   igraph_t *graph;
   char *visited;
   igraph_neimode_t mode;
   igraph_bool_t advanced;
 } igraphmodule_DFSIterObject;
 
-PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *o, igraph_neimode_t mode, igraph_bool_t advanced);
-int igraphmodule_DFSIter_traverse(igraphmodule_DFSIterObject *self,
-				  visitproc visit, void *arg);
-int igraphmodule_DFSIter_clear(igraphmodule_DFSIterObject *self);
-void igraphmodule_DFSIter_dealloc(igraphmodule_DFSIterObject* self);
+extern PyTypeObject* igraphmodule_DFSIterType;
 
-extern PyTypeObject igraphmodule_DFSIterType;
+int igraphmodule_DFSIter_register_type(void);
+
+PyObject* igraphmodule_DFSIter_new(
+  igraphmodule_GraphObject *g, PyObject *o, igraph_neimode_t mode,
+  igraph_bool_t advanced
+);
 
 #endif

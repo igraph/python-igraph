@@ -230,7 +230,7 @@ class IgraphCCoreCMakeBuilder:
         args = [cmake]
 
         # Build the Python interface with vendored libraries
-        for deps in "ARPACK BLAS CXSPARSE GLPK GMP LAPACK".split():
+        for deps in "ARPACK BLAS GLPK GMP LAPACK".split():
             args.append("-DIGRAPH_USE_INTERNAL_" + deps + "=ON")
 
         # -fPIC is needed on Linux so we can link to a static igraph lib from a
@@ -792,7 +792,7 @@ buildcfg.process_args_from_command_line()
 # Define the extension
 sources = glob.glob(os.path.join("src", "_igraph", "*.c"))
 sources.append(os.path.join("src", "_igraph", "force_cpp_linker.cpp"))
-igraph_extension = Extension("igraph._igraph", sources)
+igraph_extension = Extension("igraph._igraph", sources, py_limited_api=True)
 
 description = """Python interface to the igraph high performance graph
 library, primarily aimed at complex network research and analysis.

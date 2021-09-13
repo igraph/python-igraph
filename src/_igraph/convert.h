@@ -34,15 +34,16 @@
 #include <igraph_types.h>
 #include "graphobject.h"
 
-typedef enum { IGRAPHMODULE_TYPE_INT=0, IGRAPHMODULE_TYPE_FLOAT }
-igraphmodule_conv_t;
+typedef enum {
+  IGRAPHMODULE_TYPE_INT = 0,
+  IGRAPHMODULE_TYPE_FLOAT = 1,
+  IGRAPHMODULE_TYPE_FLOAT_IF_FRACTIONAL_ELSE_INT = 2
+} igraphmodule_conv_t;
 
 typedef struct {
   const char* name;
   int value;
 } igraphmodule_enum_translation_table_entry_t;
-
-int PyLong_AsInt(PyObject* obj, int* result);
 
 /* Conversion from PyObject to enum types */
 
@@ -92,18 +93,20 @@ int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v,
 		igraph_bool_t need_non_negative);
 int igraphmodule_PyObject_float_to_vector_t(PyObject *list, igraph_vector_t *v);
 int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v);
-int igraphmodule_PyObject_to_vector_long_t(PyObject *list, igraph_vector_long_t *v);
 int igraphmodule_PyObject_to_vector_bool_t(PyObject *list, igraph_vector_bool_t *v);
 int igraphmodule_PyObject_to_vector_ptr_t(PyObject *list, igraph_vector_ptr_t *v,
 		igraph_bool_t need_non_negative);
+int igraphmodule_PyObject_to_vector_int_ptr_t(PyObject *list, igraph_vector_ptr_t *v);
 
 int igraphmodule_PyObject_to_edgelist(
-    PyObject *list, igraph_vector_t *v, igraph_t *graph,
+    PyObject *list, igraph_vector_int_t *v, igraph_t *graph,
     igraph_bool_t *list_is_owned
 );
 
 int igraphmodule_PyList_to_matrix_t(PyObject *o, igraph_matrix_t *m);
 int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igraph_matrix_t *m, int min_cols);
+int igraphmodule_PyList_to_matrix_int_t(PyObject *o, igraph_matrix_int_t *m);
+int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, igraph_matrix_int_t *m, int min_cols);
 PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v);
 int igraphmodule_PyList_to_strvector_t(PyObject* v, igraph_strvector_t *result);
 int igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t(PyObject *it,
@@ -137,24 +140,27 @@ int igraphmodule_attrib_to_vector_t(PyObject *o, igraphmodule_GraphObject *self,
   igraph_vector_t **vptr, int attr_type);
 int igraphmodule_attrib_to_vector_int_t(PyObject *o, igraphmodule_GraphObject *self,
   igraph_vector_int_t **vptr, int attr_type);
-int igraphmodule_attrib_to_vector_long_t(PyObject *o, igraphmodule_GraphObject *self,
-  igraph_vector_long_t **vptr, int attr_type);
 int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *self,
   igraph_vector_bool_t **vptr, int attr_type);
 
 /* Conversion from igraph types to PyObjects */
 
+PyObject* igraphmodule_integer_t_to_PyObject(igraph_integer_t value);
+PyObject* igraphmodule_real_t_to_PyObject(igraph_real_t value, igraphmodule_conv_t type);
+
 PyObject* igraphmodule_vector_bool_t_to_PyList(const igraph_vector_bool_t *v);
-PyObject* igraphmodule_vector_t_to_PyList(const igraph_vector_t *v,
-        igraphmodule_conv_t type);
-PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v);
-PyObject* igraphmodule_vector_t_pair_to_PyList(const igraph_vector_t *v1,
-        const igraph_vector_t *v2);
-PyObject* igraphmodule_vector_t_to_PyList_pairs(const igraph_vector_t *v);
+PyObject* igraphmodule_vector_t_to_PyList(const igraph_vector_t *v, igraphmodule_conv_t type);
+PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v,  igraphmodule_conv_t type);
+PyObject* igraphmodule_vector_int_t_to_PyTuple(const igraph_vector_int_t *v);
+PyObject* igraphmodule_vector_int_t_pair_to_PyList(const igraph_vector_int_t *v1,
+        const igraph_vector_int_t *v2);
+PyObject* igraphmodule_vector_int_t_to_PyList_pairs(const igraph_vector_int_t *v);
+PyObject* igraphmodule_vector_int_t_to_PyList_with_nan(const igraph_vector_int_t *v, const igraph_integer_t nanvalue);
 PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
         igraphmodule_conv_t type);
+PyObject* igraphmodule_vector_int_ptr_t_to_PyList(const igraph_vector_ptr_t *v);
 PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v);
-PyObject* igraphmodule_vector_long_t_to_PyList(const igraph_vector_long_t *v);
 PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
         igraphmodule_conv_t type);
+PyObject* igraphmodule_matrix_int_t_to_PyList(const igraph_matrix_int_t *m);
 #endif

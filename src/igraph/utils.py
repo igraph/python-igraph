@@ -5,7 +5,7 @@
 from contextlib import contextmanager
 
 from collections.abc import MutableMapping
-from ctypes import c_double, sizeof
+from ctypes import sizeof
 from itertools import chain
 
 import os
@@ -59,15 +59,17 @@ def numpy_to_contiguous_memoryview(obj):
     directly when constructing a Graph.
     """
     # Deferred import to prevent a hard dependency on NumPy
-    from numpy import float32, float64, require
+    from numpy import int32, int64, require
+    from igraph._igraph import INTEGER_SIZE
 
-    size = sizeof(c_double)
-    if size == 8:
-        dtype = float64
-    elif size == 4:
-        dtype = float32
+    if INTEGER_SIZE == 64:
+        dtype = int64
+    elif INTEGER_SIZE == 32:
+        dtype = int32
     else:
-        raise TypeError("size of C double (%d bytes) is not supported" % size)
+        raise TypeError(
+            f"size of igraph_integer_t in the C layer ({INTEGER_SIZE} bits) is not supported"
+        )
 
     return memoryview(require(obj, dtype=dtype, requirements="AC"))
 

@@ -21,6 +21,8 @@
 */
 
 #include "error.h"
+#include "pyhelpers.h"
+
 #include <igraph.h>
 
 /** \ingroup python_interface_errors
@@ -60,7 +62,7 @@ void igraphmodule_igraph_warning_hook(const char *reason, const char *file,
                                       int line, int igraph_errno) {
   char buf[4096];
   snprintf(buf, sizeof(buf), "%s at %s:%i", reason, file, line);
-  PyErr_Warn(PyExc_RuntimeWarning, buf);
+  PY_IGRAPH_WARN(buf);
 }
 
 /**

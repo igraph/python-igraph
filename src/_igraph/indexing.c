@@ -133,20 +133,18 @@ PyObject* igraphmodule_Graph_adjmatrix_get_index(igraph_t* graph,
 static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph, 
     igraph_integer_t from, igraph_vs_t* to, igraph_neimode_t neimode,
     PyObject* values) {
-  igraph_vector_t eids;
-  igraph_integer_t eid;
+  igraph_vector_int_t eids;
+  igraph_integer_t eid, i, n, v;
   igraph_vit_t vit;
   PyObject *result = 0, *item;
-  long int i, n;
-  igraph_integer_t v;
 
   if (igraph_vs_is_all(to)) {
     /* Simple case: all edges */
-    IGRAPH_PYCHECK(igraph_vector_init(&eids, 0));
-    IGRAPH_FINALLY(igraph_vector_destroy, &eids);
+    IGRAPH_PYCHECK(igraph_vector_int_init(&eids, 0));
+    IGRAPH_FINALLY(igraph_vector_int_destroy, &eids);
     IGRAPH_PYCHECK(igraph_incident(graph, &eids, from, neimode));
     
-    n = igraph_vector_size(&eids);
+    n = igraph_vector_int_size(&eids);
     result = igraphmodule_PyList_Zeroes(igraph_vcount(graph));
     if (result == 0) {
       IGRAPH_FINALLY_FREE();
@@ -154,18 +152,19 @@ static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph,
     }
 
     for (i = 0; i < n; i++) {
-      eid = (igraph_integer_t)VECTOR(eids)[i];
+      eid = VECTOR(eids)[i];
       v = IGRAPH_OTHER(graph, eid, from);
-      if (values)
+      if (values) {
         item = PyList_GetItem(values, eid);
-      else
+      } else {
         item = PyLong_FromLong(1);
+      }
       Py_INCREF(item);
       PyList_SetItem(result, v, item);   /* reference stolen here */
     }
 
     IGRAPH_FINALLY_CLEAN(1);
-    igraph_vector_destroy(&eids);
+    igraph_vector_int_destroy(&eids);
 
     return result;
   }
@@ -220,7 +219,7 @@ static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph,
  */
 static INLINE igraph_bool_t deleting_edge(PyObject* value) {
   return value == Py_None || value == Py_False ||
-      (PyLong_Check(value) && PyLong_AsLong(value) == 0);
+      (PyLong_Check(value) && PyLong_AsLongLong(value) == 0);
 }
 
 /**
@@ -228,28 +227,28 @@ static INLINE igraph_bool_t deleting_edge(PyObject* value) {
  * adjacency matrix assignment.
  */
 typedef struct {
-  igraph_vector_t to_add;
+  igraph_vector_int_t to_add;
   PyObject* to_add_values;
-  igraph_vector_t to_delete;
+  igraph_vector_int_t to_delete;
 } igraphmodule_i_Graph_adjmatrix_set_index_data_t;
 
 int igraphmodule_i_Graph_adjmatrix_set_index_data_init(
     igraphmodule_i_Graph_adjmatrix_set_index_data_t* data) {
-  if (igraph_vector_init(&data->to_add, 0)) {
+  if (igraph_vector_int_init(&data->to_add, 0)) {
     igraphmodule_handle_igraph_error();
     return -1;
   }
 
-  if (igraph_vector_init(&data->to_delete, 0)) {
+  if (igraph_vector_int_init(&data->to_delete, 0)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&data->to_delete);
+    igraph_vector_int_destroy(&data->to_delete);
     return -1;
   }
 
   data->to_add_values = PyList_New(0);
   if (data->to_add_values == 0) {
-    igraph_vector_destroy(&data->to_add);
-    igraph_vector_destroy(&data->to_delete);
+    igraph_vector_int_destroy(&data->to_add);
+    igraph_vector_int_destroy(&data->to_delete);
     return -1;
   }
 
@@ -258,8 +257,8 @@ int igraphmodule_i_Graph_adjmatrix_set_index_data_init(
 
 void igraphmodule_i_Graph_adjmatrix_set_index_data_destroy(
     igraphmodule_i_Graph_adjmatrix_set_index_data_t* data) {
-  igraph_vector_destroy(&data->to_add);
-  igraph_vector_destroy(&data->to_delete);
+  igraph_vector_int_destroy(&data->to_add);
+  igraph_vector_int_destroy(&data->to_delete);
   Py_DECREF(data->to_add_values);
 }
 
@@ -311,9 +310,9 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
       if (deleting_edge(item)) {
         /* Deleting edges if eid != -1 */
         if (eid != -1) {
-          if (igraph_vector_push_back(&data->to_delete, eid)) {
+          if (igraph_vector_int_push_back(&data->to_delete, eid)) {
             igraphmodule_handle_igraph_error();
-            igraph_vector_clear(&data->to_delete);
+            igraph_vector_int_clear(&data->to_delete);
             ok = 0;
             break;
           }
@@ -321,10 +320,10 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
       } else {
         if (eid == -1) {
           /* Adding edges */
-          if (igraph_vector_push_back(&data->to_add, v1) ||
-              igraph_vector_push_back(&data->to_add, v2)) {
+          if (igraph_vector_int_push_back(&data->to_add, v1) ||
+              igraph_vector_int_push_back(&data->to_add, v2)) {
             igraphmodule_handle_igraph_error();
-            igraph_vector_clear(&data->to_add);
+            igraph_vector_int_clear(&data->to_add);
             ok = 0;
             break;
           }
@@ -332,7 +331,7 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
             Py_INCREF(new_value);
             if (PyList_Append(data->to_add_values, new_value)) {
               Py_DECREF(new_value);
-              igraph_vector_clear(&data->to_add);
+              igraph_vector_int_clear(&data->to_add);
               ok = 0;
               break;
             }
@@ -342,7 +341,7 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
           Py_INCREF(item);
           if (PyList_SetItem(values, eid, item)) {
             Py_DECREF(item);
-            igraph_vector_clear(&data->to_add);
+            igraph_vector_int_clear(&data->to_add);
           }
         }
       }
@@ -350,9 +349,10 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
       IGRAPH_VIT_NEXT(vit);
     }
     if (!IGRAPH_VIT_END(vit)) {
-      PyErr_WarnEx(PyExc_RuntimeWarning,
-          "iterable was shorter than the number of vertices in the vertex "
-          "sequence", 1);
+      PY_IGRAPH_WARN(
+        "iterable was shorter than the number of vertices in the vertex "
+        "sequence"
+      );
     }
   } else {
     /* The new value is not an iterable; setting the same value for
@@ -372,9 +372,9 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
       if (deleting) {
         /* Deleting edges if eid != -1 */
         if (eid != -1) {
-          if (igraph_vector_push_back(&data->to_delete, eid)) {
+          if (igraph_vector_int_push_back(&data->to_delete, eid)) {
             igraphmodule_handle_igraph_error();
-            igraph_vector_clear(&data->to_delete);
+            igraph_vector_int_clear(&data->to_delete);
             ok = 0;
             break;
           }
@@ -382,10 +382,10 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
       } else {
         if (eid == -1) {
           /* Adding edges */
-          if (igraph_vector_push_back(&data->to_add, v1) ||
-              igraph_vector_push_back(&data->to_add, v2)) {
+          if (igraph_vector_int_push_back(&data->to_add, v1) ||
+              igraph_vector_int_push_back(&data->to_add, v2)) {
             igraphmodule_handle_igraph_error();
-            igraph_vector_clear(&data->to_add);
+            igraph_vector_int_clear(&data->to_add);
             ok = 0;
             break;
           }
@@ -393,7 +393,7 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
             Py_INCREF(new_value);
             if (PyList_Append(data->to_add_values, new_value)) {
               Py_DECREF(new_value);
-              igraph_vector_clear(&data->to_add);
+              igraph_vector_int_clear(&data->to_add);
               ok = 0;
               break;
             }
@@ -403,7 +403,7 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
           Py_INCREF(new_value);
           if (PyList_SetItem(values, eid, new_value)) {
             Py_DECREF(new_value);
-            igraph_vector_clear(&data->to_add);
+            igraph_vector_int_clear(&data->to_add);
           }
         }
       }
@@ -517,7 +517,7 @@ int igraphmodule_Graph_adjmatrix_set_index(igraph_t* graph,
 
     if (ok) {
       /* Third phase: add the new edges in one batch */
-      if (!igraph_vector_empty(&data.to_add)) {
+      if (!igraph_vector_int_empty(&data.to_add)) {
         eid = igraph_ecount(graph);
         igraph_add_edges(graph, &data.to_add, 0);
         if (values != 0) {

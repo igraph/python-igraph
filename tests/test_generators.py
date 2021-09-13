@@ -127,13 +127,13 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(g.is_directed())
         self.assertTrue(el == [(x, y) for x in range(1, 20) for y in range(x)])
 
-        self.assertRaises(InternalError, Graph.Full_Citation, -2)
+        self.assertRaises(ValueError, Graph.Full_Citation, -2)
 
     def testLCF(self):
         g1 = Graph.LCF(12, (5, -5), 6)
         g2 = Graph.Famous("Franklin")
         self.assertTrue(g1.isomorphic(g2))
-        self.assertRaises(InternalError, Graph.LCF, 12, (5, -5), -3)
+        self.assertRaises(ValueError, Graph.LCF, 12, (5, -5), -3)
 
     def testRealizeDegreeSequence(self):
         # Test case insensitivity of options too
@@ -229,7 +229,7 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(sum(g.is_loop()) == 0)
 
         # Check error conditions
-        self.assertRaises(InternalError, Graph.SBM, -1, pref_matrix, types)
+        self.assertRaises(ValueError, Graph.SBM, -1, pref_matrix, types)
         self.assertRaises(InternalError, Graph.SBM, 61, pref_matrix, types)
         pref_matrix[0][1] = 0.7
         self.assertRaises(InternalError, Graph.SBM, 60, pref_matrix, types)

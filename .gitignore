@@ -12,6 +12,7 @@ result_images/
 .eggs/
 .tox
 .venv/
+.venv-*/
 .vscode/
 vendor/build/
 vendor/install/
