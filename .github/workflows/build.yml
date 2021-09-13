@@ -4,7 +4,6 @@ on: [push, pull_request]
 env:
   CIBW_TEST_COMMAND: "cd {project} && python -m pytest tests"
   CIBW_TEST_EXTRAS: "test"
-  CIBW_SKIP: "cp27-* pp27-* cp35-*"
 
 jobs:
   build_wheels:
@@ -26,7 +25,7 @@ jobs:
           python-version: '3.8'
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v1.10.0
+        uses: joerick/cibuildwheel@v2.1.1
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
@@ -50,7 +49,7 @@ jobs:
         uses: docker/setup-qemu-action@v1
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v1.10.0
+        uses: joerick/cibuildwheel@v2.1.1
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -88,7 +87,7 @@ jobs:
           brew install ninja autoconf automake libtool cmake
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v1.10.0
+        uses: joerick/cibuildwheel@v2.1.1
         env:
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
@@ -145,7 +144,7 @@ jobs:
         shell: cmd
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v1.11.0
+        uses: joerick/cibuildwheel@v2.1.1
         env:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
