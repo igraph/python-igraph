@@ -1,4 +1,4 @@
-def construct_incidence_bipartite_graph(
+def _construct_incidence_bipartite_graph(
     cls,
     matrix,
     directed=False,
@@ -52,17 +52,13 @@ def construct_incidence_bipartite_graph(
         for edge in result.es:
             source, target = edge.tuple
             if source in rows:
-                edge[weight_attr] = matrix[source][
-                    target - num_vertices_of_first_kind
-                ]
+                edge[weight_attr] = matrix[source][target - num_vertices_of_first_kind]
             else:
-                edge[weight_attr] = matrix[target][
-                    source - num_vertices_of_first_kind
-                ]
+                edge[weight_attr] = matrix[target][source - num_vertices_of_first_kind]
     return result
 
 
-def construct_bipartite_graph(cls, types, edges, directed=False, *args, **kwds):
+def _construct_bipartite_graph(cls, types, edges, directed=False, *args, **kwds):
     """Creates a bipartite graph with the given vertex types and edges.
     This is similar to the default constructor of the graph, the
     only difference is that it checks whether all the edges go
@@ -93,7 +89,9 @@ def construct_bipartite_graph(cls, types, edges, directed=False, *args, **kwds):
     return result
 
 
-def construct_full_bipartite_graph(cls, n1, n2, directed=False, mode="all", *args, **kwds):
+def _construct_full_bipartite_graph(
+    cls, n1, n2, directed=False, mode="all", *args, **kwds
+):
     """Generates a full bipartite graph (directed or undirected, with or
     without loops).
 
@@ -118,7 +116,7 @@ def construct_full_bipartite_graph(cls, n1, n2, directed=False, mode="all", *arg
     return result
 
 
-def construct_random_bipartite_graph(
+def _construct_random_bipartite_graph(
     cls, n1, n2, p=None, m=None, directed=False, neimode="all", *args, **kwds
 ):
     """Generates a random bipartite graph with the given number of vertices and
@@ -152,4 +150,3 @@ def construct_random_bipartite_graph(
     )
     result.vs["type"] = types
     return result
-

@@ -1,4 +1,4 @@
-def construct_random_geometric_graph(cls, n, radius, torus=False):
+def _construct_random_geometric_graph(cls, n, radius, torus=False):
     """Generates a random geometric graph.
 
     The algorithm drops the vertices randomly on the 2D unit square and

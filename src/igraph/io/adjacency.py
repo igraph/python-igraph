@@ -4,7 +4,7 @@ from igraph.sparse_matrix import (
 )
 
 
-def construct_graph_from_adjacency(cls, matrix, mode="directed", *args, **kwargs):
+def _construct_graph_from_adjacency(cls, matrix, mode="directed", *args, **kwargs):
     """Generates a graph from its adjacency matrix.
 
     @param matrix: the adjacency matrix. Possible types are:
@@ -61,12 +61,14 @@ def construct_graph_from_adjacency(cls, matrix, mode="directed", *args, **kwargs
 
     # Add vertex names if present
     if vertex_names is not None:
-        graph.vs['name'] = vertex_names
+        graph.vs["name"] = vertex_names
 
     return graph
 
 
-def construct_graph_from_weighted_adjacency(cls, matrix, mode="directed", attr="weight", loops=True):
+def _construct_graph_from_weighted_adjacency(
+    cls, matrix, mode="directed", attr="weight", loops=True
+):
     """Generates a graph from its weighted adjacency matrix.
 
     @param matrix: the adjacency matrix. Possible types are:
@@ -139,8 +141,6 @@ def construct_graph_from_weighted_adjacency(cls, matrix, mode="directed", attr="
 
     # Add vertex names if present
     if vertex_names is not None:
-        graph.vs['name'] = vertex_names
+        graph.vs["name"] = vertex_names
 
     return graph
-
-
