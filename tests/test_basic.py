@@ -22,6 +22,8 @@ from igraph import (
 )
 from igraph._igraph import EdgeSeq as _EdgeSeq, VertexSeq as _VertexSeq
 
+from .utils import is_pypy
+
 try:
     import numpy as np
 except ImportError:
@@ -826,7 +828,8 @@ def suite():
     graph_tuple_list_suite = unittest.makeSuite(GraphTupleListTests)
     degree_sequence_suite = unittest.makeSuite(DegreeSequenceTests)
     inheritance_suite = unittest.makeSuite(InheritanceTests)
-    refcount_suite = unittest.makeSuite(ReferenceCountTests)
+    if not is_pypy:
+        refcount_suite = unittest.makeSuite(ReferenceCountTests)
     return unittest.TestSuite(
         [
             basic_suite,

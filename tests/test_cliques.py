@@ -2,10 +2,7 @@ import unittest
 
 from igraph import *
 
-try:
-    from .utils import temporary_file
-except ImportError:
-    from utils import temporary_file
+from .utils import temporary_file
 
 
 class CliqueTests(unittest.TestCase):
