@@ -13,6 +13,7 @@ import tempfile
 
 __all__ = (
     "dbl_epsilon",
+    "first",
     "multidict",
     "named_temporary_file",
     "numpy_to_contiguous_memoryview",
@@ -33,6 +34,15 @@ def _is_running_in_ipython():
         return get_ipython() is not None
     except ImportError:
         return False
+
+
+def first(iterable, default=None):
+    """Returns the first item of the given iterable, or the given default item
+    if the iterable is empty.
+    """
+    for item in iterable:
+        return item
+    return default
 
 
 @contextmanager

@@ -1,12 +1,7 @@
 from warnings import warn
 
 from igraph.datatypes import UniqueIdGenerator
-
-
-def _first(iterable, default=None):
-    for item in iterable:
-        return item
-    return default
+from igraph.utils import first
 
 
 def _construct_graph_from_dict_list(
@@ -240,7 +235,7 @@ def _construct_graph_from_sequence_dict(
     If names are used, the order of vertices is not guaranteed, and each
     vertex will be given the vertex_name_attr attribute.
     """
-    item = _first(edges, default=0)
+    item = first(edges, default=0)
 
     if not isinstance(item, (int, str)):
         raise ValueError("Keys must be integers or strings")
@@ -291,7 +286,7 @@ def _construct_graph_from_dict_dict(
     - Alice - Bob (with weight 1.5)
     - Alice - David (with weight 2)
     """
-    item = _first(edges, default=0)
+    item = first(edges, default=0)
 
     if not isinstance(item, (int, str)):
         raise ValueError("Keys must be integers or strings")
