@@ -781,6 +781,7 @@ def assert_reference_not_leaked(case, *args):
         case.assertListEqual(refs_before, refs_after)
 
 
+@unittest.skipIf(is_pypy, "reference counts are not relevant for PyPy")
 class ReferenceCountTests(unittest.TestCase):
     def testEdgeReferenceCounting(self):
         with assert_reference_not_leaked(self, Edge, EdgeSeq, _EdgeSeq):
@@ -828,8 +829,7 @@ def suite():
     graph_tuple_list_suite = unittest.makeSuite(GraphTupleListTests)
     degree_sequence_suite = unittest.makeSuite(DegreeSequenceTests)
     inheritance_suite = unittest.makeSuite(InheritanceTests)
-    if not is_pypy:
-        refcount_suite = unittest.makeSuite(ReferenceCountTests)
+    refcount_suite = unittest.makeSuite(ReferenceCountTests)
     return unittest.TestSuite(
         [
             basic_suite,
