@@ -99,27 +99,36 @@ int igraphmodule_Edge_Validate(PyObject* obj) {
  * (or they might even get invalidated).
  */
 PyObject* igraphmodule_Edge_New(igraphmodule_GraphObject *gref, igraph_integer_t idx) {
-  igraphmodule_EdgeObject* self;
-
-  self = (igraphmodule_EdgeObject*) PyType_GenericNew(igraphmodule_EdgeType, 0, 0);
-
-  if (self) {
-    RC_ALLOC("Edge", self);
-    Py_INCREF(gref);
-    self->gref = gref;
-    self->idx = idx;
-    self->hash = -1;
-  }
-
-  return (PyObject*)self;
+  return PyObject_CallFunction(igraphmodule_EdgeType, "On", gref, (Py_ssize_t) idx);
 }
 
 /**
  * \ingroup python_interface_edge
- * \brief Clears the edge's subobject (before deallocation)
+ * \brief Initialize a new edge object for a given graph
+ * \return the initialized PyObject
  */
-static int igraphmodule_Edge_clear(igraphmodule_EdgeObject *self) {
-  Py_CLEAR(self->gref);
+static int igraphmodule_Edge_init(igraphmodule_EdgeObject *self, PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = { "graph", "eid", NULL };
+  PyObject *g, *index_o = Py_None;
+  igraph_integer_t eid;
+  igraph_t *graph;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O", kwlist,
+    igraphmodule_GraphType, &g, &index_o)) {
+    return -1;
+  }
+
+  graph = &((igraphmodule_GraphObject*)g)->g;
+
+  if (igraphmodule_PyObject_to_eid(index_o, &eid, graph)) {
+    return -1;
+  }
+
+  Py_INCREF(g);
+  self->gref = (igraphmodule_GraphObject*)g;
+  self->idx = eid;
+  self->hash = -1;
+
   return 0;
 }
 
@@ -129,7 +138,7 @@ static int igraphmodule_Edge_clear(igraphmodule_EdgeObject *self) {
  */
 static void igraphmodule_Edge_dealloc(igraphmodule_EdgeObject* self) {
   RC_DEALLOC("Edge", self);
-  igraphmodule_Edge_clear(self);
+  Py_CLEAR(self->gref);
   PY_FREE_AND_DECREF_TYPE(self);
 }
 
@@ -717,8 +726,8 @@ PyDoc_STRVAR(
 
 int igraphmodule_Edge_register_type() {
   PyType_Slot slots[] = {
+    { Py_tp_init, igraphmodule_Edge_init },
     { Py_tp_dealloc, igraphmodule_Edge_dealloc },
-    { Py_tp_clear, igraphmodule_Edge_clear },
     { Py_tp_hash, igraphmodule_Edge_hash },
     { Py_tp_repr, igraphmodule_Edge_repr },
     { Py_tp_richcompare, igraphmodule_Edge_richcompare },

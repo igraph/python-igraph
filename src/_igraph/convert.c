@@ -2789,8 +2789,9 @@ int igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t_with_type(PyObject *it,
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *graph) {
-  if (o == Py_None || o == 0) {
-    *vid = 0;
+  if (o == 0) {
+    PyErr_SetString(PyExc_TypeError, "only numbers, strings or igraph.Vertex objects can be converted to vertex IDs");
+    return 1;
   } else if (PyLong_Check(o)) {
     /* Single vertex ID */
     if (igraphmodule_PyObject_to_integer_t(o, vid)) {
@@ -3004,12 +3005,16 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
   int retval;
   igraph_integer_t vid1, vid2;
 
-  if (o == Py_None || o == 0) {
-    *eid = 0;
+  if (!o) {
+    PyErr_SetString(PyExc_TypeError,
+        "only numbers, igraph.Edge objects or tuples of vertex IDs can be "
+        "converted to edge IDs");
+    return 1;
   } else if (PyLong_Check(o)) {
     /* Single edge ID */
-    if (igraphmodule_PyObject_to_integer_t(o, eid)) 
+    if (igraphmodule_PyObject_to_integer_t(o, eid)) {
       return 1;
+    }
   } else if (igraphmodule_Edge_Check(o)) {
     /* Single edge ID from Edge object */
     igraphmodule_EdgeObject *eo = (igraphmodule_EdgeObject*)o;

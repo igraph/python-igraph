@@ -99,27 +99,36 @@ int igraphmodule_Vertex_Validate(PyObject* obj) {
  * (or they might even get invalidated).
  */
 PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_integer_t idx) {
-  igraphmodule_VertexObject* self;
-
-  self = (igraphmodule_VertexObject*) PyType_GenericNew(igraphmodule_VertexType, 0, 0);
-
-  if (self) {
-    RC_ALLOC("Vertex", self);
-    Py_INCREF(gref);
-    self->gref = gref;
-    self->idx = idx;
-    self->hash = -1;
-  }
-
-  return (PyObject*)self;
+  return PyObject_CallFunction(igraphmodule_VertexType, "On", gref, (Py_ssize_t) idx);
 }
 
 /**
  * \ingroup python_interface_vertex
- * \brief Clears the vertex's subobject (before deallocation)
+ * \brief Initialize a new vertex object for a given graph
+ * \return the initialized PyObject
  */
-static int igraphmodule_Vertex_clear(igraphmodule_VertexObject *self) {
-  Py_CLEAR(self->gref);
+static int igraphmodule_Vertex_init(igraphmodule_EdgeObject *self, PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = { "graph", "vid", NULL };
+  PyObject *g, *index_o = Py_None;
+  igraph_integer_t vid;
+  igraph_t *graph;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O", kwlist,
+    igraphmodule_GraphType, &g, &index_o)) {
+    return -1;
+  }
+
+  graph = &((igraphmodule_GraphObject*)g)->g;
+
+  if (igraphmodule_PyObject_to_vid(index_o, &vid, graph)) {
+    return -1;
+  }
+
+  Py_INCREF(g);
+  self->gref = (igraphmodule_GraphObject*)g;
+  self->idx = vid;
+  self->hash = -1;
+
   return 0;
 }
 
@@ -129,7 +138,7 @@ static int igraphmodule_Vertex_clear(igraphmodule_VertexObject *self) {
  */
 static void igraphmodule_Vertex_dealloc(igraphmodule_VertexObject* self) {
   RC_DEALLOC("Vertex", self);
-  igraphmodule_Vertex_clear(self);
+  Py_CLEAR(self->gref);
   PY_FREE_AND_DECREF_TYPE(self);
 }
 
@@ -857,7 +866,7 @@ PyDoc_STRVAR(
 
 int igraphmodule_Vertex_register_type() {
   PyType_Slot slots[] = {
-    { Py_tp_clear, igraphmodule_Vertex_clear },
+    { Py_tp_init, igraphmodule_Vertex_init },
     { Py_tp_dealloc, igraphmodule_Vertex_dealloc },
     { Py_tp_hash, igraphmodule_Vertex_hash },
     { Py_tp_repr, igraphmodule_Vertex_repr },

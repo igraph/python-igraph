@@ -89,7 +89,6 @@ igraphmodule_EdgeSeq_copy(igraphmodule_EdgeSeqObject* o) {
   return copy;
 }
 
-
 /**
  * \ingroup python_interface_edgeseq
  * \brief Initialize a new edge sequence object for a given graph
@@ -162,10 +161,9 @@ void igraphmodule_EdgeSeq_dealloc(igraphmodule_EdgeSeqObject* self) {
 
   if (self->gref) {
     igraph_es_destroy(&self->es);
-    Py_DECREF(self->gref);
-    self->gref=0;
   }
 
+  Py_CLEAR(self->gref);
   PY_FREE_AND_DECREF_TYPE(self);
 }
 
