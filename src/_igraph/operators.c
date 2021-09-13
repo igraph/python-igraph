@@ -154,16 +154,26 @@ PyObject *igraphmodule__union(PyObject *self,
       Py_ssize_t no_of_edges = igraph_ecount(VECTOR(gs)[i]);
       igraph_vector_int_t *map = VECTOR(edgemaps)[i];
       PyObject *emi = PyList_New(no_of_edges);
-      for (j = 0; j < no_of_edges; j++) {
-        PyObject *dest = igraphmodule_integer_t_to_PyObject(VECTOR(*map)[j]);
-        if (!dest) {
-          Py_DECREF(emi);
-          Py_DECREF(em_list);
-          return NULL;
+      if (emi) {
+        for (j = 0; j < no_of_edges; j++) {
+          PyObject *dest = igraphmodule_integer_t_to_PyObject(VECTOR(*map)[j]);
+          if (!dest || PyList_SetItem(emi, j, dest)) {
+            igraph_vector_ptr_destroy(&gs);
+            igraph_vector_ptr_destroy(&edgemaps);
+            Py_XDECREF(dest);
+            Py_DECREF(emi);
+            Py_DECREF(em_list);
+            return NULL;
+          }
         }
-        PyList_SET_ITEM(emi, j, dest);
       }
-      PyList_SET_ITEM(em_list, i, emi);
+      if (!emi || PyList_SetItem(em_list, i, emi)) {
+        igraph_vector_ptr_destroy(&gs);
+        igraph_vector_ptr_destroy(&edgemaps);
+        Py_XDECREF(emi);
+        Py_DECREF(em_list);
+        return NULL;
+      }
     }
     igraph_vector_ptr_destroy(&edgemaps);
   } else {
@@ -266,16 +276,26 @@ PyObject *igraphmodule__intersection(PyObject *self,
       Py_ssize_t no_of_edges = igraph_ecount(VECTOR(gs)[i]);
       igraph_vector_int_t *map = VECTOR(edgemaps)[i];
       PyObject *emi = PyList_New(no_of_edges);
-      for (j = 0; j < no_of_edges; j++) {
-        PyObject *dest = igraphmodule_integer_t_to_PyObject(VECTOR(*map)[j]);
-        if (!dest) {
-          Py_DECREF(emi);
-          Py_DECREF(em_list);
-          return NULL;
+      if (emi) {
+        for (j = 0; j < no_of_edges; j++) {
+          PyObject *dest = igraphmodule_integer_t_to_PyObject(VECTOR(*map)[j]);
+          if (!dest || PyList_SetItem(emi, j, dest)) {
+            igraph_vector_ptr_destroy(&gs);
+            igraph_vector_ptr_destroy(&edgemaps);
+            Py_XDECREF(dest);
+            Py_DECREF(emi);
+            Py_DECREF(em_list);
+            return NULL;
+          }
         }
-        PyList_SET_ITEM(emi, j, dest);
       }
-      PyList_SET_ITEM(em_list, i, emi);
+      if (!emi || PyList_SetItem(em_list, i, emi)) {
+        igraph_vector_ptr_destroy(&gs);
+        igraph_vector_ptr_destroy(&edgemaps);
+        Py_XDECREF(emi);
+        Py_DECREF(em_list);
+        return NULL;
+      }
     }
     igraph_vector_ptr_destroy(&edgemaps);
 

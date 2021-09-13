@@ -36,7 +36,7 @@
 #include "vertexseqobject.h"
 #include <float.h>
 
-PyTypeObject igraphmodule_GraphType;
+PyTypeObject* igraphmodule_GraphType;
 
 #define CREATE_GRAPH_FROM_TYPE(py_graph, c_graph, py_type) { \
   py_graph = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t( \
@@ -93,6 +93,8 @@ int igraphmodule_Graph_traverse(igraphmodule_GraphObject * self,
     }
   }
 
+  Py_VISIT(Py_TYPE(self));
+
   return 0;
 }
 
@@ -104,9 +106,12 @@ void igraphmodule_Graph_dealloc(igraphmodule_GraphObject * self)
 {
   PyObject *r;
 
+  RC_DEALLOC("Graph", self);
+
   /* Clear weak references */
-  if (self->weakreflist != NULL)
+  if (self->weakreflist != NULL) {
      PyObject_ClearWeakRefs((PyObject *) self);
+  }
 
   igraph_destroy(&self->g);
 
@@ -119,9 +124,7 @@ void igraphmodule_Graph_dealloc(igraphmodule_GraphObject * self)
 
   igraphmodule_Graph_clear(self);
 
-  RC_DEALLOC("Graph", self);
-
-  Py_TYPE(self)->tp_free((PyObject*)self);
+  PY_FREE_AND_DECREF_TYPE(self);
 }
 
 /**
@@ -136,7 +139,6 @@ void igraphmodule_Graph_dealloc(igraphmodule_GraphObject * self)
  * Throws \c AssertionError in Python if \c vcount is less than or equal to zero.
  * \return the new \c igraph.Graph object or NULL if an error occurred.
  *
- * \sa igraphmodule_Graph_new
  * \sa igraph_empty
  * \sa igraph_create
  */
@@ -231,7 +233,7 @@ PyObject* igraphmodule_Graph_subclass_from_igraph_t(
   PyObject* args;
   PyObject* kwds;
 
-  if (!PyType_IsSubtype(type, &igraphmodule_GraphType)) {
+  if (!PyType_IsSubtype(type, igraphmodule_GraphType)) {
     PyErr_SetString(PyExc_TypeError, "igraph._igraph.GraphBase expected");
     return 0;
   }
@@ -284,7 +286,7 @@ PyObject* igraphmodule_Graph_subclass_from_igraph_t(
  */
 PyObject* igraphmodule_Graph_from_igraph_t(igraph_t *graph) {
   return igraphmodule_Graph_subclass_from_igraph_t(
-    &igraphmodule_GraphType, graph
+    igraphmodule_GraphType, graph
   );
 }
 
@@ -4511,8 +4513,15 @@ PyObject *igraphmodule_Graph_decompose(igraphmodule_GraphObject * self,
   for (i = 0; i < n; i++) {
     g = (igraph_t *) VECTOR(components)[i];
     CREATE_GRAPH(o, *g);
-    PyList_SET_ITEM(list, i, (PyObject *) o);
-    /* reference has been transferred by PyList_SET_ITEM, no need to DECREF
+
+    if (PyList_SetItem(list, i, (PyObject *) o)) {
+      Py_DECREF(o);
+      Py_DECREF(list);
+      igraph_vector_ptr_destroy(&components);
+      return 0;
+    }
+
+    /* reference has been transferred by PyList_SetItem, no need to DECREF.
      *
      * we mustn't call igraph_destroy here, because it would free the vertices
      * and the edges as well, but we need them in o->g. So just call free */
@@ -4937,12 +4946,12 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
   for (i = 0; i < no_of_target_nodes; i++) {
     item = igraphmodule_vector_int_t_to_PyList(&res[i]);
     if (!item || PyList_SetItem(list, i, item)) {
-      if (item) {
-        Py_DECREF(item);
+      for (j = 0; j < no_of_target_nodes; j++) {
+        igraph_vector_int_destroy(&res[j]);
       }
-      Py_DECREF(list);
-      for (j = 0; j < no_of_target_nodes; j++) igraph_vector_int_destroy(&res[j]);
       free(res);
+      Py_XDECREF(item);
+      Py_DECREF(list);
       return NULL;
     }
   }
@@ -8693,7 +8702,7 @@ PyObject *igraphmodule_Graph_isomorphic(igraphmodule_GraphObject * self,
   static char *kwlist[] = { "other", NULL };
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O!", kwlist,
-      &igraphmodule_GraphType, &o))
+      igraphmodule_GraphType, &o))
     return NULL;
   if (o == Py_None) other = self; else other = (igraphmodule_GraphObject *) o;
 
@@ -8732,7 +8741,7 @@ PyObject *igraphmodule_Graph_isomorphic_bliss(igraphmodule_GraphObject * self,
                 "return_mapping_21", "sh1", "sh2", "color1", "color2", NULL };
   /* TODO: convert igraph_bliss_info_t when needed */
   if (!PyArg_ParseTupleAndKeywords
-      (args, kwds, "|O!OOOOOO", kwlist, &igraphmodule_GraphType, &o,
+      (args, kwds, "|O!OOOOOO", kwlist, igraphmodule_GraphType, &o,
        &return1, &return2, &sho1, &sho2, &color1_o, &color2_o))
     return NULL;
   if (igraphmodule_PyObject_to_bliss_sh_t(sho1, &sh1)) return NULL;
@@ -8929,7 +8938,7 @@ PyObject *igraphmodule_Graph_isomorphic_vf2(igraphmodule_GraphObject * self,
   };
 
   if (!PyArg_ParseTupleAndKeywords
-      (args, kwds, "|O!OOOOOOOOO", kwlist, &igraphmodule_GraphType, &o,
+      (args, kwds, "|O!OOOOOOOOO", kwlist, igraphmodule_GraphType, &o,
        &color1_o, &color2_o, &edge_color1_o, &edge_color2_o, &return1, &return2,
        &callback_fn, &node_compat_fn, &edge_compat_fn))
     return NULL;
@@ -9064,7 +9073,7 @@ PyObject *igraphmodule_Graph_count_isomorphisms_vf2(igraphmodule_GraphObject *se
     "node_compat_fn", "edge_compat_fn", NULL };
 
   if (!PyArg_ParseTupleAndKeywords
-      (args, kwds, "|O!OOOOOO", kwlist, &igraphmodule_GraphType, &o,
+      (args, kwds, "|O!OOOOOO", kwlist, igraphmodule_GraphType, &o,
        &color1_o, &color2_o, &edge_color1_o, &edge_color2_o,
        &node_compat_fn, &edge_compat_fn))
     return NULL;
@@ -9157,7 +9166,7 @@ PyObject *igraphmodule_Graph_get_isomorphisms_vf2(igraphmodule_GraphObject *self
     "edge_color1", "edge_color2", "node_compat_fn", "edge_compat_fn", NULL };
 
   if (!PyArg_ParseTupleAndKeywords
-      (args, kwds, "|O!OOOOOO", kwlist, &igraphmodule_GraphType, &o,
+      (args, kwds, "|O!OOOOOO", kwlist, igraphmodule_GraphType, &o,
          &color1_o, &color2_o, &edge_color1_o, &edge_color2_o,
          &node_compat_fn, &edge_compat_fn))
     return NULL;
@@ -9267,7 +9276,7 @@ PyObject *igraphmodule_Graph_subisomorphic_vf2(igraphmodule_GraphObject * self,
     NULL };
 
   if (!PyArg_ParseTupleAndKeywords
-      (args, kwds, "O!|OOOOOOOOO", kwlist, &igraphmodule_GraphType, &o,
+      (args, kwds, "O!|OOOOOOOOO", kwlist, igraphmodule_GraphType, &o,
        &color1_o, &color2_o, &edge_color1_o, &edge_color2_o, &return1, &return2,
        &callback_fn, &node_compat_fn, &edge_compat_fn))
     return NULL;
@@ -9404,7 +9413,7 @@ PyObject *igraphmodule_Graph_count_subisomorphisms_vf2(igraphmodule_GraphObject 
     "edge_color2", "node_compat_fn", "edge_compat_fn", NULL };
 
   if (!PyArg_ParseTupleAndKeywords
-      (args, kwds, "O!|OOOOOO", kwlist, &igraphmodule_GraphType, &o,
+      (args, kwds, "O!|OOOOOO", kwlist, igraphmodule_GraphType, &o,
          &color1_o, &color2_o, &edge_color1_o, &edge_color2_o,
          &node_compat_fn, &edge_compat_fn))
     return NULL;
@@ -9494,7 +9503,7 @@ PyObject *igraphmodule_Graph_get_subisomorphisms_vf2(igraphmodule_GraphObject *s
     "edge_color2", "node_compat_fn", "edge_compat_fn", NULL };
 
   if (!PyArg_ParseTupleAndKeywords
-      (args, kwds, "O!|OOOOOO", kwlist, &igraphmodule_GraphType, &o,
+      (args, kwds, "O!|OOOOOO", kwlist, igraphmodule_GraphType, &o,
        &color1_o, &color2_o, &edge_color1_o, &edge_color2_o,
        &node_compat_fn, &edge_compat_fn))
     return NULL;
@@ -9590,7 +9599,7 @@ PyObject *igraphmodule_Graph_subisomorphic_lad(igraphmodule_GraphObject * self,
       "return_mapping", NULL };
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OOfO", kwlist,
-        &igraphmodule_GraphType, &o, &domains_o, &induced,
+        igraphmodule_GraphType, &o, &domains_o, &induced,
         &time_limit, &return_mapping))
     return NULL;
 
@@ -9656,7 +9665,7 @@ PyObject *igraphmodule_Graph_get_subisomorphisms_lad(
   static char *kwlist[] = { "pattern", "domains", "induced", "time_limit", NULL };
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OOf", kwlist,
-        &igraphmodule_GraphType, &o, &domains_o, &induced, &time_limit))
+        igraphmodule_GraphType, &o, &domains_o, &induced, &time_limit))
     return NULL;
 
   other=(igraphmodule_GraphObject*)o;
@@ -9720,14 +9729,21 @@ PyObject *igraphmodule_Graph_mp_subscript(igraphmodule_GraphObject * self,
 
   if (PyTuple_Check(s) && PyTuple_Size(s) >= 2) {
     /* Adjacency matrix representation */
-    PyObject *ri = PyTuple_GET_ITEM(s, 0);
-    PyObject *ci = PyTuple_GET_ITEM(s, 1);
+    PyObject *ri = PyTuple_GetItem(s, 0);
+    PyObject *ci = PyTuple_GetItem(s, 1);
     PyObject *attr;
+
+    if (ri == 0 || ci == 0) {
+      return 0;
+    }
 
     if (PyTuple_Size(s) == 2) {
       attr = 0;
     } else if (PyTuple_Size(s) == 3) {
-      attr = PyTuple_GET_ITEM(s, 2);
+      attr = PyTuple_GetItem(s, 2);
+      if (attr == 0) {
+        return 0;
+      }
     } else {
       PyErr_SetString(PyExc_TypeError, "adjacency matrix indexing must use at most three arguments");
       return 0;
@@ -9773,13 +9789,20 @@ int igraphmodule_Graph_mp_assign_subscript(igraphmodule_GraphObject * self,
       return -1;
     }
 
-    ri = PyTuple_GET_ITEM(k, 0);
-    ci = PyTuple_GET_ITEM(k, 1);
+    ri = PyTuple_GetItem(k, 0);
+    ci = PyTuple_GetItem(k, 1);
+
+    if (ri == 0 || ci == 0) {
+      return -1;
+    }
 
     if (PyTuple_Size(k) == 2) {
       attr = 0;
     } else if (PyTuple_Size(k) == 3) {
-      attr = PyTuple_GET_ITEM(k, 2);
+      attr = PyTuple_GetItem(k, 2);
+      if (attr == 0) {
+        return -1;
+      }
     } else {
       PyErr_SetString(PyExc_TypeError, "adjacency matrix indexing must use at most three arguments");
       return 0;
@@ -9836,7 +9859,7 @@ PyObject *igraphmodule_Graph_difference(igraphmodule_GraphObject * self,
   igraphmodule_GraphObject *o, *result;
   igraph_t g;
 
-  if (!PyObject_TypeCheck(other, &igraphmodule_GraphType)) {
+  if (!PyObject_TypeCheck(other, igraphmodule_GraphType)) {
     Py_INCREF(Py_NotImplemented);
     return Py_NotImplemented;
   }
@@ -9911,7 +9934,7 @@ PyObject *igraphmodule_Graph_compose(igraphmodule_GraphObject * self,
   igraphmodule_GraphObject *o, *result;
   igraph_t g;
 
-  if (!PyObject_TypeCheck(other, &igraphmodule_GraphType)) {
+  if (!PyObject_TypeCheck(other, igraphmodule_GraphType)) {
     Py_INCREF(Py_NotImplemented);
     return Py_NotImplemented;
   }
@@ -10955,15 +10978,14 @@ PyObject *igraphmodule_Graph_cliques(igraphmodule_GraphObject * self,
   for (i = 0; i < n; i++) {
     igraph_vector_int_t *vec = (igraph_vector_int_t *) VECTOR(result)[i];
     item = igraphmodule_vector_int_t_to_PyTuple(vec);
-    if (!item) {
+    if (!item || PyList_SetItem(list, i, item)) {
       for (j = i; j < n; j++) {
         igraph_vector_int_destroy((igraph_vector_int_t *) VECTOR(result)[j]);
       }
       igraph_vector_ptr_destroy_all(&result);
+      Py_XDECREF(item);
       Py_DECREF(list);
       return NULL;
-    } else {
-      PyList_SET_ITEM(list, i, item);
     }
     igraph_vector_int_destroy(vec);
   }
@@ -11000,15 +11022,14 @@ PyObject *igraphmodule_Graph_largest_cliques(igraphmodule_GraphObject * self)
   for (i = 0; i < n; i++) {
     igraph_vector_int_t *vec = (igraph_vector_int_t *) VECTOR(result)[i];
     item = igraphmodule_vector_int_t_to_PyTuple(vec);
-    if (!item) {
+    if (!item || PyList_SetItem(list, i, item)) {
       for (j = i; j < n; j++) {
         igraph_vector_int_destroy((igraph_vector_int_t *) VECTOR(result)[j]);
       }
       igraph_vector_ptr_destroy_all(&result);
+      Py_XDECREF(item);
       Py_DECREF(list);
       return NULL;
-    } else {
-      PyList_SET_ITEM(list, i, item);
     }
     igraph_vector_int_destroy(vec);
   }
@@ -11105,15 +11126,14 @@ PyObject *igraphmodule_Graph_maximal_cliques(igraphmodule_GraphObject * self,
     for (i = 0; i < n; i++) {
       igraph_vector_int_t *vec = (igraph_vector_int_t *) VECTOR(result)[i];
       item = igraphmodule_vector_int_t_to_PyTuple(vec);
-      if (!item) {
+      if (!item || PyList_SetItem(list, i, item)) {
         for (j = i; j < n; j++) {
           igraph_vector_int_destroy((igraph_vector_int_t *) VECTOR(result)[j]);
         }
         igraph_vector_ptr_destroy_all(&result);
+        Py_XDECREF(item);
         Py_DECREF(list);
         return NULL;
-      } else {
-        PyList_SET_ITEM(list, i, item);
       }
       igraph_vector_int_destroy(vec);
     }
@@ -11196,15 +11216,14 @@ PyObject *igraphmodule_Graph_independent_vertex_sets(igraphmodule_GraphObject
   for (i = 0; i < n; i++) {
     igraph_vector_int_t *vec = (igraph_vector_int_t *) VECTOR(result)[i];
     item = igraphmodule_vector_int_t_to_PyTuple(vec);
-    if (!item) {
+    if (!item || PyList_SetItem(list, i, item)) {
       for (j = i; j < n; j++) {
         igraph_vector_int_destroy((igraph_vector_int_t *) VECTOR(result)[j]);
       }
       igraph_vector_ptr_destroy_all(&result);
+      Py_XDECREF(item);
       Py_DECREF(list);
       return NULL;
-    } else {
-      PyList_SET_ITEM(list, i, item);
     }
     igraph_vector_int_destroy(vec);
   }
@@ -11242,15 +11261,14 @@ PyObject
   for (i = 0; i < n; i++) {
     igraph_vector_int_t *vec = (igraph_vector_int_t *) VECTOR(result)[i];
     item = igraphmodule_vector_int_t_to_PyTuple(vec);
-    if (!item) {
+    if (!item || PyList_SetItem(list, i, item)) {
       for (j = i; j < n; j++) {
         igraph_vector_int_destroy((igraph_vector_int_t *) VECTOR(result)[j]);
       }
       igraph_vector_ptr_destroy_all(&result);
+      Py_XDECREF(item);
       Py_DECREF(list);
       return NULL;
-    } else {
-      PyList_SET_ITEM(list, i, item);
     }
     igraph_vector_int_destroy(vec);
   }
@@ -11289,15 +11307,14 @@ PyObject
   for (i = 0; i < n; i++) {
     igraph_vector_int_t *vec = (igraph_vector_int_t *) VECTOR(result)[i];
     item = igraphmodule_vector_int_t_to_PyTuple(vec);
-    if (!item) {
+    if (!item || PyList_SetItem(list, i, item)) {
       for (j = i; j < n; j++) {
         igraph_vector_int_destroy((igraph_vector_int_t *) VECTOR(result)[j]);
       }
       igraph_vector_ptr_destroy_all(&result);
+      Py_XDECREF(item);
       Py_DECREF(list);
       return NULL;
-    } else {
-      PyList_SET_ITEM(list, i, item);
     }
     igraph_vector_int_destroy(vec);
   }
@@ -16312,111 +16329,52 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {NULL}
 };
 
-/** \ingroup python_interface_graph
- * This structure is the collection of functions necessary to implement
- * the graph as a mapping (i.e. to allow the retrieval and setting of
- * igraph attributes in Python as if it were of a Python mapping type)
+/**
+ * \ingroup python_interface_graph
+ * Member table for the \c igraph._igraph.GraphBase object
  */
-PyMappingMethods igraphmodule_Graph_as_mapping = {
-  /* __len__ function intentionally left unimplemented */
-  0,
-  /* returns an attribute by name or returns part of the adjacency matrix */
-  (binaryfunc) igraphmodule_Graph_mp_subscript,
-  /* sets an attribute by name or sets part of the adjacency matrix */
-  (objobjargproc) igraphmodule_Graph_mp_assign_subscript
+PyMemberDef igraphmodule_Graph_members[] = {
+  {"__weaklistoffset__", T_PYSSIZET, offsetof(igraphmodule_GraphObject, weakreflist), READONLY},
+  { 0 }
 };
 
-/** \ingroup python_interface
- * \brief Collection of methods to allow numeric operators to be used on the graph
- */
-PyNumberMethods igraphmodule_Graph_as_number = {
-  0,                            /* nb_add */
-  0,                            /*nb_subtract */
-  0,                            /*nb_multiply */
-  0,                            /*nb_remainder */
-  0,                            /*nb_divmod */
-  0,                            /*nb_power */
-  0,                            /*nb_negative */
-  0,                            /*nb_positive */
-  0,                            /*nb_absolute */
-  0,                            /*nb_nonzero (2.x) / nb_bool (3.x) */
-  (unaryfunc) igraphmodule_Graph_complementer_op, /*nb_invert */
-  0,                            /*nb_lshift */
-  0,                            /*nb_rshift */
-  0,                            /*nb_and */
-  0,                            /*nb_xor */
-  0,                            /*nb_or */
-  0,                            /*nb_int */
-  0,                            /*nb_long (2.x) / nb_reserved (3.x)*/
-  0,                            /*nb_float */
-  0,                            /*nb_inplace_add */
-  0,                            /*nb_inplace_subtract */
-  0,                            /*nb_inplace_multiply */
-  0,                            /*nb_inplace_remainder */
-  0,                            /*nb_inplace_power */
-  0,                            /*nb_inplace_lshift */
-  0,                            /*nb_inplace_rshift */
-  0,                            /*nb_inplace_and */
-  0,                            /*nb_inplace_xor */
-  0,                            /*nb_inplace_or */
-  0,                            /*nb_floor_divide */
-  0,                            /*nb_true_divide */
-  0,                            /*nb_inplace_floor_divide */
-  0,                            /*nb_inplace_true_divide */
-  0,                            /*nb_index */
-};
-
-/** \ingroup python_interface_graph
- * Python type object referencing the methods Python calls when it performs various operations on an igraph (creating, printing and so on)
- */
-PyTypeObject igraphmodule_GraphType = {
-  PyVarObject_HEAD_INIT(0, 0)
-  "igraph._igraph.GraphBase",   /* tp_name */
-  sizeof(igraphmodule_GraphObject), /* tp_basicsize */
-  0,                            /* tp_itemsize */
-  (destructor) igraphmodule_Graph_dealloc,  /* tp_dealloc */
-  0,                            /* tp_print */
-  0,                            /* tp_getattr */
-  0,                            /* tp_setattr */
-  0,                            /* tp_compare (2.x) / tp_reserved (3.x) */
-  0,                            /* tp_repr */
-  &igraphmodule_Graph_as_number,  /* tp_as_number */
-  0,                            /* tp_as_sequence */
-  &igraphmodule_Graph_as_mapping, /* tp_as_mapping */
-#ifndef PYPY_VERSION
-  (hashfunc) PyObject_HashNotImplemented,     /* tp_hash */
-#else
-  /* PyObject_HashNotImplemented raises an exception but it is not handled
-   * properly by PyPy so we don't use it */
-  0,                            /* tp_hash */
-#endif
-  0,                            /* tp_call */
-  (reprfunc) igraphmodule_Graph_str,  /* tp_str */
-  0,                            /* tp_getattro */
-  0,                            /* tp_setattro */
-  0,                            /* tp_as_buffer */
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,  /* tp_flags */
+PyDoc_STRVAR(
+  igraphmodule_Graph_doc,
   "Low-level representation of a graph.\n\n"
   "Don't use it directly, use L{igraph.Graph} instead.\n\n"
-  "@deffield ref: Reference",  /* tp_doc */
-  (traverseproc) igraphmodule_Graph_traverse, /* tp_traverse */
-  (inquiry) igraphmodule_Graph_clear, /* tp_clear */
-  0,                            /* tp_richcompare */
-  offsetof(igraphmodule_GraphObject, weakreflist),  /* tp_weaklistoffset */
-  0,                            /* tp_iter */
-  0,                            /* tp_iternext */
-  igraphmodule_Graph_methods,   /* tp_methods */
-  0,                            /* tp_members */
-  0,                            /* tp_getset */
-  0,                            /* tp_base */
-  0,                            /* tp_dict */
-  0,                            /* tp_descr_get */
-  0,                            /* tp_descr_set */
-  0,                            /* tp_dictoffset */
-  (initproc) igraphmodule_Graph_init, /* tp_init */
-  0,                            /* tp_alloc */
-  PyType_GenericNew,            /* tp_new */
-  0,                            /* tp_free */
-};
+  "@deffield ref: Reference"  /* tp_doc */
+);
+
+int igraphmodule_Graph_register_type() {
+  PyType_Slot slots[] = {
+    { Py_tp_init, igraphmodule_Graph_init },
+    { Py_tp_dealloc, igraphmodule_Graph_dealloc },
+    { Py_tp_members, igraphmodule_Graph_members },
+    { Py_tp_methods, igraphmodule_Graph_methods },
+    { Py_tp_hash, PyObject_HashNotImplemented },
+    { Py_tp_traverse, igraphmodule_Graph_traverse },
+    { Py_tp_clear, igraphmodule_Graph_clear },
+    { Py_tp_str, igraphmodule_Graph_str },
+    { Py_tp_doc, (void*) igraphmodule_Graph_doc },
+
+    { Py_nb_invert, igraphmodule_Graph_complementer_op },
+
+    { Py_mp_subscript, igraphmodule_Graph_mp_subscript },
+    { Py_mp_ass_subscript, igraphmodule_Graph_mp_assign_subscript },
+  
+    { 0 }
+  };
+
+  PyType_Spec spec = {
+    "igraph._igraph.GraphBase",                 /* name */
+    sizeof(igraphmodule_GraphObject),           /* basicsize */
+    0,                                          /* itemsize */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC, /* flags */
+    slots,                                      /* slots */
+  };
+
+  igraphmodule_GraphType = (PyTypeObject*) PyType_FromSpec(&spec);
+  return igraphmodule_GraphType == 0;
+}
 
 #undef CREATE_GRAPH

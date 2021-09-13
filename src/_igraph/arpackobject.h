@@ -23,7 +23,6 @@
 #ifndef PYTHON_ARPACKOBJECT_H
 #define PYTHON_ARPACKOBJECT_H
 
-#define Py_LIMITED_API 0x03060100
 #include "preamble.h"
 
 #include <igraph_arpack.h>

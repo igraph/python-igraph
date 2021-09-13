@@ -22,8 +22,6 @@
 
 */
 
-#define Py_LIMITED_API 0x03060100
-
 #include "attributes.h"
 #include "common.h"
 #include "convert.h"
@@ -100,7 +98,7 @@ int igraphmodule_VertexSeq_init(igraphmodule_VertexSeqObject *self,
   igraph_vs_t vs;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O", kwlist,
-    &igraphmodule_GraphType, &g, &vsobj))
+    igraphmodule_GraphType, &g, &vsobj))
       return -1;
 
   if (vsobj == Py_None) {

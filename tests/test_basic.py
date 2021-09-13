@@ -1,10 +1,15 @@
+import gc
+import sys
 import unittest
 import warnings
 
+from contextlib import contextmanager
 from functools import partial
 
 from igraph import (
     ALL,
+    Edge,
+    EdgeSeq,
     Graph,
     IN,
     InternalError,
@@ -12,7 +17,10 @@ from igraph import (
     is_graphical,
     is_graphical_degree_sequence,
     Matrix,
+    Vertex,
+    VertexSeq
 )
+from igraph._igraph import EdgeSeq as _EdgeSeq, VertexSeq as _VertexSeq
 
 try:
     import numpy as np
@@ -721,7 +729,7 @@ class InheritedGraph(Graph):
         self.init_called = True
 
     def __new__(cls, *args, **kwds):
-        result = Graph.__new__(cls, *args, **kwds)
+        result = Graph.__new__(cls)
         result.new_called = True
         return result
 
@@ -759,6 +767,58 @@ class InheritanceTests(unittest.TestCase):
         self.assertTrue(getattr(g, "adjacency_called", True))
 
 
+@contextmanager
+def assert_reference_not_leaked(case, *args):
+    gc.collect()
+    refs_before = [sys.getrefcount(obj) for obj in args]
+    try:
+        yield
+    finally:
+        gc.collect()
+        refs_after = [sys.getrefcount(obj) for obj in args]
+        case.assertListEqual(refs_before, refs_after)
+
+
+class ReferenceCountTests(unittest.TestCase):
+    def testEdgeReferenceCounting(self):
+        with assert_reference_not_leaked(self, Edge, EdgeSeq, _EdgeSeq):
+            g = Graph.Tree(3, 2)
+            edge = g.es[1]
+            del edge, g
+
+    def testEdgeSeqReferenceCounting(self):
+        with assert_reference_not_leaked(self, Edge, EdgeSeq, _EdgeSeq):
+            g = Graph.Tree(3, 2)
+            es = g.es
+            es2 = EdgeSeq(g)
+            del es, es2, g
+
+    def testGraphReferenceCounting(self):
+        with assert_reference_not_leaked(self, Graph, InheritedGraph):
+            g = Graph.Tree(3, 2)
+            self.assertTrue(gc.is_tracked(g))
+            del g
+
+    def testInheritedGraphReferenceCounting(self):
+        with assert_reference_not_leaked(self, Graph, InheritedGraph):
+            g = InheritedGraph.Tree(3, 2)
+            self.assertTrue(gc.is_tracked(g))
+            del g
+    
+    def testVertexReferenceCounting(self):
+        with assert_reference_not_leaked(self, Vertex, VertexSeq, _VertexSeq):
+            g = Graph.Tree(3, 2)
+            vertex = g.vs[2]
+            del vertex, g
+    
+    def testVertexSeqReferenceCounting(self):
+        with assert_reference_not_leaked(self, Vertex, VertexSeq, _VertexSeq):
+            g = Graph.Tree(3, 2)
+            vs = g.vs
+            vs2 = VertexSeq(g)
+            del vs2, vs, g
+
+
 def suite():
     basic_suite = unittest.makeSuite(BasicTests)
     datatype_suite = unittest.makeSuite(DatatypeTests)
@@ -766,6 +826,7 @@ def suite():
     graph_tuple_list_suite = unittest.makeSuite(GraphTupleListTests)
     degree_sequence_suite = unittest.makeSuite(DegreeSequenceTests)
     inheritance_suite = unittest.makeSuite(InheritanceTests)
+    refcount_suite = unittest.makeSuite(ReferenceCountTests)
     return unittest.TestSuite(
         [
             basic_suite,
@@ -774,6 +835,7 @@ def suite():
             graph_tuple_list_suite,
             degree_sequence_suite,
             inheritance_suite,
+            refcount_suite
         ]
     )
 

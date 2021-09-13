@@ -22,8 +22,6 @@
 
 */
 
-#define Py_LIMITED_API 0x03060100
-
 #include "attributes.h"
 #include "convert.h"
 #include "edgeobject.h"

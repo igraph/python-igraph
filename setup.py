@@ -792,7 +792,7 @@ buildcfg.process_args_from_command_line()
 # Define the extension
 sources = glob.glob(os.path.join("src", "_igraph", "*.c"))
 sources.append(os.path.join("src", "_igraph", "force_cpp_linker.cpp"))
-igraph_extension = Extension("igraph._igraph", sources)
+igraph_extension = Extension("igraph._igraph", sources, py_limited_api=True)
 
 description = """Python interface to the igraph high performance graph
 library, primarily aimed at complex network research and analysis.

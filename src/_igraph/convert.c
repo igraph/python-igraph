@@ -371,7 +371,15 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
         /* Exception set already by PyUnicode_AsEncodedString */
         return -1;
       }
-      kv = strdup(PyBytes_AS_STRING(temp_bytes));
+      kv = PyBytes_AsString(temp_bytes);
+      if (kv == 0) {
+        /* Exception set already by PyBytes_AsString */
+        return -1;
+      }
+      kv = strdup(kv);
+      if (kv == 0) {
+        PyErr_SetString(PyExc_MemoryError, "Not enough memory");
+      }
       Py_DECREF(temp_bytes);
       if (!strcasecmp(kv, "pos")) {
         igraphmodule_PyObject_to_enum(value, eigen_which_position_tt,
@@ -779,9 +787,8 @@ int igraphmodule_PyObject_to_igraph_t(PyObject *o, igraph_t **result) {
   if (o == Py_None)
     return 0;
 
-  if (!PyObject_TypeCheck(o, &igraphmodule_GraphType)) {
-    PyErr_Format(PyExc_TypeError,
-        "expected graph object, got %s", o->ob_type->tp_name);
+  if (!PyObject_TypeCheck(o, igraphmodule_GraphType)) {
+    PyErr_Format(PyExc_TypeError, "expected graph object, got %R", Py_TYPE(o));
     return 1;
   }
 
@@ -872,31 +879,31 @@ int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_integer_t *v) {
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyObject_to_real_t(PyObject *object, igraph_real_t *v) {
-#ifdef PYPY_VERSION
-  /* PyFloatObject is not defined in pypy, but PyFloat_AS_DOUBLE() is
-   * supported on PyObject: /pypy/module/cpyext/floatobject.py. Also,
-   * don't worry, the typedef is local to this function. */
-  typedef PyObject PyFloatObject;
-#endif   /* PYPY_VERSION */
+  igraph_real_t value;
 
   if (object == NULL) {
   } else if (PyLong_Check(object)) {
-    *v = PyLong_AsDouble(object);
-    return 0;
+    value = PyLong_AsDouble(object);
   } else if (PyFloat_Check(object)) {
-    *v = PyFloat_AS_DOUBLE((PyFloatObject*)object);
-    return 0;
+    value = PyFloat_AsDouble(object);
   } else if (PyNumber_Check(object)) {
     PyObject *i = PyNumber_Float(object);
     if (i == NULL) {
       return 1;
     }
-    *v = PyFloat_AS_DOUBLE((PyFloatObject*)i);
+    value = PyFloat_AsDouble(i);
     Py_DECREF(i);
+  } else {
+    PyErr_BadArgument();
+    return 1;
+  }
+
+  if (PyErr_Occurred()) {
+    return 1;
+  } else {
+    *v = value;
     return 0;
   }
-  PyErr_BadArgument();
-  return 1;
 }
 
 /**
@@ -1346,7 +1353,7 @@ PyObject* igraphmodule_vector_bool_t_to_PyList(const igraph_vector_bool_t *v) {
   for (i = 0; i < n; i++) {
     item = VECTOR(*v)[i] ? Py_True : Py_False;
     Py_INCREF(item);
-    PyList_SET_ITEM(list, i, item);
+    PyList_SetItem(list, i, item);  /* will not fail */
   }
 
   return list;
@@ -1379,7 +1386,7 @@ PyObject* igraphmodule_vector_t_to_PyList(const igraph_vector_t *v, igraphmodule
       Py_DECREF(list);
       return NULL;
     }
-    PyList_SET_ITEM(list, i, item);
+    PyList_SetItem(list, i, item);  /* will not fail */
   }
 
   return list;
@@ -1412,7 +1419,7 @@ PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v) {
       Py_DECREF(list);
       return NULL;
     }
-    PyList_SET_ITEM(list, i, item);
+    PyList_SetItem(list, i, item);  /* will not fail */
   }
 
   return list;
@@ -1446,7 +1453,7 @@ PyObject* igraphmodule_vector_int_t_to_PyList_with_nan(const igraph_vector_int_t
   for (i = 0; i < n; i++) {
     val = VECTOR(*v)[i];
     if (val == nanvalue) {
-      item = Py_BuildValue("d", NAN);
+      item = PyFloat_FromDouble(NAN);
     } else {
       item = igraphmodule_integer_t_to_PyObject(VECTOR(*v)[i]);
     }
@@ -1454,7 +1461,7 @@ PyObject* igraphmodule_vector_int_t_to_PyList_with_nan(const igraph_vector_int_t
       Py_DECREF(list);
       return NULL;
     }
-    PyList_SET_ITEM(list, i, item);
+    PyList_SetItem(list, i, item);  /* will not fail */
   }
 
   return list;
@@ -1490,7 +1497,7 @@ PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v, igraphmodul
       return NULL;
     }
 
-    PyTuple_SET_ITEM(tuple, i, item);
+    PyTuple_SetItem(tuple, i, item);  /* will not fail */
   }
 
   return tuple;
@@ -1523,7 +1530,7 @@ PyObject* igraphmodule_vector_int_t_to_PyTuple(const igraph_vector_int_t *v) {
       Py_DECREF(tuple);
       return NULL;
     }
-    PyTuple_SET_ITEM(tuple, i, item);
+    PyTuple_SetItem(tuple, i, item);  /* will not fail */
   }
 
   return tuple;
@@ -1579,7 +1586,7 @@ PyObject* igraphmodule_vector_int_t_to_PyList_pairs(const igraph_vector_int_t *v
     Py_DECREF(second);
     first = second = 0;
 
-    PyList_SET_ITEM(list, i, pair);
+    PyList_SetItem(list, i, pair);  /* will not fail */
   }
 
   return list;
@@ -1609,8 +1616,7 @@ int igraphmodule_PyObject_to_edgelist(
     PyObject *list, igraph_vector_int_t *v, igraph_t *graph,
     igraph_bool_t* list_is_owned
 ) {
-  PyObject *item, *i1, *i2, *it;
-  Py_buffer *buffer;
+  PyObject *item, *i1, *i2, *it, *expected;
   int ok;
   igraph_integer_t idx1=0, idx2=0;
 
@@ -1626,35 +1632,75 @@ int igraphmodule_PyObject_to_edgelist(
    * way items are laid out in an igraph_vector_int_t, and that's an implementation
    * detail that we don't want to commit ourselves to */
   if (PyMemoryView_Check(list)) {
-    buffer = PyMemoryView_GET_BUFFER(list);
-
-    if (buffer->itemsize != sizeof(igraph_integer_t)) {
+    item = PyObject_GetAttrString(list, "itemsize");
+    expected = PyLong_FromSize_t(sizeof(igraph_integer_t));
+    ok = item && PyObject_RichCompareBool(item, expected, Py_EQ);
+    Py_XDECREF(expected);
+    Py_XDECREF(item);
+    if (!ok) {
       PyErr_SetString(
         PyExc_TypeError, "item size of buffer must match the size of igraph_integer_t"
       );
       return 1;
     }
 
-    if (buffer->ndim != 2) {
+    item = PyObject_GetAttrString(list, "ndim");
+    expected = PyLong_FromSize_t(2);
+    ok = item && PyObject_RichCompareBool(item, expected, Py_EQ);
+    Py_XDECREF(expected);
+    Py_XDECREF(item);
+    if (!ok) {
       PyErr_SetString(PyExc_TypeError, "edge list buffers must be two-dimensional");
       return 1;
     }
 
-    if (buffer->shape[1] != 2) {
+    item = PyObject_GetAttrString(list, "shape");
+    it = item && PySequence_Check(item) ? PySequence_GetItem(item, 1) : 0;
+    expected = PyLong_FromSize_t(2);
+    ok = it && PyObject_RichCompareBool(it, expected, Py_EQ);
+    Py_XDECREF(expected);
+    Py_XDECREF(item);
+    Py_XDECREF(it);
+    if (!ok) {
       PyErr_SetString(PyExc_TypeError, "edge list buffers must have two columns");
       return 1;
     }
 
-    if (buffer->strides[0] != 2 * buffer->itemsize ||
-        buffer->strides[1] != buffer->itemsize) {
+    item = PyObject_GetAttrString(list, "c_contiguous");
+    ok = item == Py_True;
+    Py_XDECREF(item);
+    if (!ok) {
       PyErr_SetString(PyExc_TypeError, "edge list buffers must be contiguous");
       return 1;
     }
 
-    igraph_vector_int_view(v, buffer->buf, buffer->len / buffer->itemsize);
+    /* If we are allowed to use the entire Python API, we can extract the buffer
+     * from the memoryview here and return a _view_ into the buffer so we can
+     * avoid copying. However, if we need to use the limited Python API, we
+     * cannot get access to the buffer so we need to convert the memoryview
+     * into a list first, and then cast that list into a _real_ igraph vector.
+     */
+    {
+#ifdef PY_IGRAPH_ALLOW_ENTIRE_PYTHON_API
+      Py_buffer *buffer = PyMemoryView_GET_BUFFER(item);
+      igraph_vector_int_view(v, buffer->buf, buffer->len / buffer->itemsize);
 
-    if (list_is_owned) {
-      *list_is_owned = 0;
+      if (list_is_owned) {
+        *list_is_owned = 0;
+      }
+#else
+      PyObject *unfolded_list = PyObject_CallMethod(list, "tolist", 0);
+      if (!unfolded_list) {
+        return 1;
+      }
+
+      if (igraphmodule_PyObject_to_edgelist(unfolded_list, v, graph, list_is_owned)) {
+        Py_DECREF(unfolded_list);
+        return 1;
+      }
+
+      Py_DECREF(unfolded_list);
+#endif
     }
 
     return 0;
@@ -1673,14 +1719,10 @@ int igraphmodule_PyObject_to_edgelist(
     ok = 1;
     if (!PySequence_Check(item) || PySequence_Size(item) != 2) {
       PyErr_SetString(PyExc_TypeError, "iterable must return pairs of integers or strings");
-      ok=0;
+      ok = 0;
     } else {
-      i1 = PySequence_ITEM(item, 0);
-      if (i1 == 0) {
-        i2 = 0;
-      } else {
-        i2 = PySequence_ITEM(item, 1);
-      }
+      i1 = PySequence_GetItem(item, 0);
+      i2 = i1 ? PySequence_GetItem(item, 1) : 0;
       ok = (i1 != 0 && i2 != 0);
       ok = ok && !igraphmodule_PyObject_to_vid(i1, &idx1, graph);
       ok = ok && !igraphmodule_PyObject_to_vid(i2, &idx2, graph);
@@ -2100,7 +2142,7 @@ PyObject* igraphmodule_vector_int_t_pair_to_PyList(const igraph_vector_int_t *v1
     Py_DECREF(second);
     first = second = 0;
 
-    PyList_SET_ITEM(list, i, pair);
+    PyList_SetItem(list, i, pair);  /* will not fail */
   }
 
   return list;
@@ -2148,10 +2190,10 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
         return NULL;
       }
 
-      PyList_SET_ITEM(row, j, item);
+      PyList_SetItem(row, j, item);  /* will not fail */
     }
 
-    PyList_SET_ITEM(list, i, row);   
+    PyList_SetItem(list, i, row);  /* will not fail */   
   }
 
   // return the list
@@ -2198,10 +2240,10 @@ PyObject* igraphmodule_matrix_int_t_to_PyList(const igraph_matrix_int_t *m) {
         return NULL;
       }
 
-      PyList_SET_ITEM(row, j, item);
+      PyList_SetItem(row, j, item);  /* will not fail */
     }
 
-    PyList_SET_ITEM(list, i, row);   
+    PyList_SetItem(list, i, row);  /* will not fail */   
   }
 
   // return the list
@@ -2236,7 +2278,7 @@ PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
       Py_DECREF(list);
       return NULL;
     }
-    PyList_SET_ITEM(list, i, item);
+    PyList_SetItem(list, i, item);  /* will not fail */
   }
 
   return list;
@@ -2269,7 +2311,7 @@ PyObject* igraphmodule_vector_int_ptr_t_to_PyList(const igraph_vector_ptr_t *v) 
       Py_DECREF(list);
       return NULL;
     }
-    PyList_SET_ITEM(list, i, item);
+    PyList_SetItem(list, i, item);  /* will not fail */
   }
 
   return list;
@@ -2599,7 +2641,7 @@ PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v) {
       return NULL;
     }
 
-    PyList_SET_ITEM(list, i, item);
+    PyList_SetItem(list, i, item);  /* will not fail */
   }
 
   /* return the list */
@@ -2688,7 +2730,7 @@ int igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t(PyObject *it,
   PyObject *t;
 
   while ((t=PyIter_Next(it))) {
-    if (!PyObject_TypeCheck(t, &igraphmodule_GraphType)) {
+    if (!PyObject_TypeCheck(t, igraphmodule_GraphType)) {
       PyErr_SetString(PyExc_TypeError, "iterable argument must contain graphs");
       Py_DECREF(t);
       return 1;
@@ -2718,8 +2760,8 @@ int igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t_with_type(PyObject *it,
   PyObject *t;
   int first = 1;
 
-  while ((t=PyIter_Next(it))) {
-    if (!PyObject_TypeCheck(t, &igraphmodule_GraphType)) {
+  while ((t = PyIter_Next(it))) {
+    if (!PyObject_TypeCheck(t, igraphmodule_GraphType)) {
       PyErr_SetString(PyExc_TypeError, "iterable argument must contain graphs");
       Py_DECREF(t);
       return 1;

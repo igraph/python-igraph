@@ -62,10 +62,6 @@ def numpy_to_contiguous_memoryview(obj):
     from numpy import int32, int64, require
     from igraph._igraph import INTEGER_SIZE
 
-    # TODO: we used to export to double, which is only dependent on the
-    # architecture. Now with integers and a compile-time flag, we have
-    # to figure out what is the integer bitness of the underlying C core.
-    # Think of how to do that, for now default to 64 bit ints!
     if INTEGER_SIZE == 64:
         dtype = int64
     elif INTEGER_SIZE == 32:

@@ -843,13 +843,12 @@ PyObject* PyInit__igraph(void)
     igraphmodule_DFSIter_register_type() ||
     igraphmodule_Edge_register_type() ||
     igraphmodule_EdgeSeq_register_type() ||
+    igraphmodule_Graph_register_type() ||
     igraphmodule_Vertex_register_type() ||
     igraphmodule_VertexSeq_register_type()
   ) {
     INITERROR;
   }
-  if (PyType_Ready(&igraphmodule_GraphType) < 0)
-    INITERROR;
 
   /* Initialize the core module */
   m = PyModule_Create(&moduledef);
@@ -860,7 +859,7 @@ PyObject* PyInit__igraph(void)
   igraphmodule_init_rng(m);
 
   /* Add the types to the core module */
-  PyModule_AddObject(m, "GraphBase", (PyObject*)&igraphmodule_GraphType);
+  PyModule_AddObject(m, "GraphBase", (PyObject*)igraphmodule_GraphType);
   PyModule_AddObject(m, "BFSIter", (PyObject*)igraphmodule_BFSIterType);
   PyModule_AddObject(m, "DFSIter", (PyObject*)igraphmodule_DFSIterType);
   PyModule_AddObject(m, "ARPACKOptions", (PyObject*)igraphmodule_ARPACKOptionsType);

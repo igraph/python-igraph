@@ -22,8 +22,6 @@
 
 */
 
-#define Py_LIMITED_API 0x03060100
-
 #include "attributes.h"
 #include "common.h"
 #include "convert.h"
@@ -103,7 +101,7 @@ int igraphmodule_EdgeSeq_init(igraphmodule_EdgeSeqObject *self, PyObject *args, 
   igraph_es_t es;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O", kwlist,
-    &igraphmodule_GraphType, &g, &esobj)) {
+    igraphmodule_GraphType, &g, &esobj)) {
     return -1;
   }
 

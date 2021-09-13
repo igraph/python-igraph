@@ -66,12 +66,17 @@ PyObject* igraphmodule_PyList_NewFill(Py_ssize_t len, PyObject* item) {
 	Py_ssize_t i;
 	PyObject* result = PyList_New(len);
 
-	if (result == 0)
+	if (result == 0) {
 		return 0;
+  }
 
 	for (i = 0; i < len; i++) {
 		Py_INCREF(item);
-		PyList_SET_ITEM(result, i, item);  /* reference to item stolen */
+		if (PyList_SetItem(result, i, item)) {
+      Py_DECREF(item);
+      Py_DECREF(result);
+      return 0;
+    }
 	}
 
 	return result;
@@ -161,14 +166,21 @@ char* PyUnicode_CopyAsString(PyObject* string) {
     bytes = PyUnicode_AsUTF8String(string);
   }
 
-  if (bytes == 0)
+  if (bytes == 0) {
     return 0;
-  
-  result = strdup(PyBytes_AS_STRING(bytes));
+  }
+
+  result = PyBytes_AsString(bytes);
+  if (result == 0) {
+    Py_DECREF(bytes);
+    return 0;
+  }
   Py_DECREF(bytes);
 
-  if (result == 0)
+  result = strdup(result);
+  if (result == 0) {
     PyErr_NoMemory();
+  }
 
   return result;
 }
