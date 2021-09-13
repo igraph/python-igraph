@@ -24,7 +24,8 @@
 #ifndef PYTHON_INDEXING_H
 #define PYTHON_INDEXING_H
 
-#include <Python.h>
+#include "preamble.h"
+
 #include <igraph_datatype.h>
 
 PyObject* igraphmodule_Graph_adjmatrix_get_index(igraph_t* graph,

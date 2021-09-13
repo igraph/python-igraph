@@ -23,7 +23,8 @@
 #ifndef PYTHON_DFSITER_H
 #define PYTHON_DFSITER_H
 
-#include <Python.h>
+#include "preamble.h"
+
 #include "graphobject.h"
 
 /**

@@ -23,7 +23,8 @@
 #ifndef PY_IGRAPH_ATTRIBUTES_H
 #define PY_IGRAPH_ATTRIBUTES_H
 
-#include <Python.h>
+#include "preamble.h"
+
 #include <igraph_attributes.h>
 #include <igraph_datatype.h>
 #include <igraph_iterators.h>

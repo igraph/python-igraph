@@ -23,7 +23,8 @@
 #ifndef PYTHON_BFSITER_H
 #define PYTHON_BFSITER_H
 
-#include <Python.h>
+#include "preamble.h"
+
 #include "graphobject.h"
 
 /**

@@ -20,7 +20,8 @@
 
 */
 
-#include <Python.h>
+#define Py_LIMITED_API 0x03060000
+
 #include "attributes.h"
 #include "common.h"
 #include "convert.h"
@@ -74,10 +75,15 @@ int igraphmodule_i_attribute_struct_index_vertex_names(
 
   n = PyList_Size(name_list) - 1;
   while (n >= 0) {
-    key = PyList_GET_ITEM(name_list, n);    /* we don't own a reference to key */
-    value = PyLong_FromLong(n);              /* we do own a reference to value */
-    if (value == 0)
+    key = PyList_GetItem(name_list, n);      /* we don't own a reference to key */
+    if (key == 0) {
       return 1;
+    }
+
+    value = PyLong_FromLong(n);              /* we do own a reference to value */
+    if (value == 0) {
+      return 1;
+    }
 
     if (PyDict_SetItem(attrs->vertex_name_index, key, value)) {
       /* probably unhashable vertex name. If the error is a TypeError, convert
@@ -228,7 +234,11 @@ PyObject* igraphmodule_create_edge_attribute(const igraph_t* graph,
 
   for (i = 0; i < n; i++) {
     Py_INCREF(Py_None);
-    PyList_SET_ITEM(values, i, Py_None);   /* reference stolen */
+    if (PyList_SetItem(values, i, Py_None)) {  /* reference stolen */
+      Py_DECREF(values);
+      Py_DECREF(Py_None);
+      return 0;
+    }
   }
 
   if (PyDict_SetItemString(dict, name, values)) {
@@ -394,8 +404,8 @@ static int igraphmodule_i_attribute_copy(igraph_t *to, const igraph_t *from,
       while (PyDict_Next(fromattrs->attrs[i], &pos, &key, &value)) {
         /* value is only borrowed, so copy it */
         if (i>0) {
-          newval=PyList_New(PyList_GET_SIZE(value));
-          for (j=0; j<PyList_GET_SIZE(value); j++) {
+          newval=PyList_New(PyList_Size(value));
+          for (j=0; j < PyList_Size(value); j++) {
             o=PyList_GetItem(value, j);
             Py_INCREF(o);
             PyList_SetItem(newval, j, o);
@@ -511,7 +521,7 @@ static int igraphmodule_i_attribute_add_vertices(igraph_t *graph, long int nv, i
 
       for (i=0; i<j; i++) {
         Py_INCREF(Py_None);
-        PyList_SET_ITEM(value, i, Py_None);
+        PyList_SetItem(value, i, Py_None);
       }
 
       for (i=0; i<nv; i++) {
@@ -534,7 +544,7 @@ static int igraphmodule_i_attribute_add_vertices(igraph_t *graph, long int nv, i
           o=0;
           break;
         }
-        if (o) PyList_SET_ITEM(value, i+j, o);
+        if (o) PyList_SetItem(value, i+j, o);
       }
 
       /* Invalidate the vertex name index if needed */
@@ -572,11 +582,18 @@ static int igraphmodule_i_attribute_permute_vertices(const igraph_t *graph,
     for (i=0; i<n; i++) {
       o = PyList_GetItem(value, (Py_ssize_t)VECTOR(*idx)[i]);
       if (!o) {
+        Py_DECREF(newlist);
+        Py_DECREF(newdict);
         PyErr_Clear();
         return 1;
       }
       Py_INCREF(o);
-      PyList_SET_ITEM(newlist, i, o);
+      if (PyList_SetItem(newlist, i, o)) {
+        Py_DECREF(o);
+        Py_DECREF(newlist);
+        Py_DECREF(newdict);
+        return 1;
+      }
     }
     PyDict_SetItem(newdict, key, newlist);
     Py_DECREF(newlist);
@@ -694,7 +711,7 @@ static int igraphmodule_i_attribute_add_edges(igraph_t *graph, const igraph_vect
 
       for (i=0; i<j; i++) {
         Py_INCREF(Py_None);
-        PyList_SET_ITEM(value, i, Py_None);
+        PyList_SetItem(value, i, Py_None);
       }
 
       for (i=0; i<ne; i++) {
@@ -717,7 +734,9 @@ static int igraphmodule_i_attribute_add_edges(igraph_t *graph, const igraph_vect
           o=0;
           break;
         }
-        if (o) PyList_SET_ITEM(value, i+j, o);
+        if (o) {
+          PyList_SetItem(value, i+j, o);
+        }
       }
 
       PyDict_SetItemString(dict, attr_rec->name, value);
@@ -790,11 +809,18 @@ static int igraphmodule_i_attribute_permute_edges(const igraph_t *graph,
     for (i=0; i<n; i++) {
       o=PyList_GetItem(value, (Py_ssize_t)VECTOR(*idx)[i]);
       if (!o) {
+        Py_DECREF(newlist);
+        Py_DECREF(newdict);
         PyErr_Clear();
         return 1;
       }
       Py_INCREF(o);
-      PyList_SET_ITEM(newlist, i, o);
+      if (PyList_SetItem(newlist, i, o)) {
+        Py_DECREF(o);
+        Py_DECREF(newlist);
+        Py_DECREF(newdict);
+        return 1;
+      }
     }
     PyDict_SetItem(newdict, key, newlist);
     Py_DECREF(newlist);
@@ -827,9 +853,20 @@ static PyObject* igraphmodule_i_ac_func(PyObject* values,
 
     list = PyList_New(n);
     for (j = 0; j < n; j++) {
-      item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
+      item = PyList_GetItem(values, (Py_ssize_t)VECTOR(*v)[j]);
+      if (item == 0) {
+        Py_DECREF(list);
+        Py_DECREF(res);
+        return 0;
+      }
+
       Py_INCREF(item);
-      PyList_SET_ITEM(list, j, item);   /* reference to item stolen */
+
+      if (PyList_SetItem(list, j, item)) {   /* reference to item stolen */
+        Py_DECREF(item);
+        Py_DECREF(res);
+        return 0;
+      }
     }
     item = PyObject_CallFunctionObjArgs(func, list, 0);
     Py_DECREF(list);
@@ -839,7 +876,11 @@ static PyObject* igraphmodule_i_ac_func(PyObject* values,
       return 0;
     }
 
-    PyList_SET_ITEM(res, i, item);   /* reference to item stolen */
+    if (PyList_SetItem(res, i, item)) {   /* reference to item stolen */
+      Py_DECREF(item);
+      Py_DECREF(res);
+      return 0;
+    }
   }
 
   return res;
@@ -894,7 +935,12 @@ static PyObject* igraphmodule_i_ac_sum(PyObject* values,
     long int j, n = igraph_vector_size(v);
 
     for (j = 0; j < n; j++) {
-      item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
+      item = PyList_GetItem(values, (Py_ssize_t)VECTOR(*v)[j]);
+      if (item == 0) {
+        Py_DECREF(res);
+        return 0;
+      }
+
       if (igraphmodule_PyObject_to_real_t(item, &num)) {
         PyErr_SetString(PyExc_TypeError, "product can only be invoked on numeric attributes");
         Py_DECREF(res);
@@ -903,8 +949,12 @@ static PyObject* igraphmodule_i_ac_sum(PyObject* values,
       sum += num;
     }
 
-    /* reference to new float stolen */
-    PyList_SET_ITEM(res, i, PyFloat_FromDouble((double)sum));
+    item = PyFloat_FromDouble(sum);
+    if (PyList_SetItem(res, i, item)) {   /* reference to item stolen */
+      Py_DECREF(item);
+      Py_DECREF(res);
+      return 0;
+    }
   }
 
   return res;
@@ -928,7 +978,12 @@ static PyObject* igraphmodule_i_ac_prod(PyObject* values,
     long int j, n = igraph_vector_size(v);
 
     for (j = 0; j < n; j++) {
-      item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
+      item = PyList_GetItem(values, (Py_ssize_t)VECTOR(*v)[j]);
+      if (item == 0) {
+        Py_DECREF(res);
+        return 0;
+      }
+
       if (igraphmodule_PyObject_to_real_t(item, &num)) {
         PyErr_SetString(PyExc_TypeError, "product can only be invoked on numeric attributes");
         Py_DECREF(res);
@@ -938,7 +993,12 @@ static PyObject* igraphmodule_i_ac_prod(PyObject* values,
     }
 
     /* reference to new float stolen */
-    PyList_SET_ITEM(res, i, PyFloat_FromDouble((double)prod));
+    item = PyFloat_FromDouble((double)prod);
+    if (PyList_SetItem(res, i, item)) {   /* reference to item stolen */
+      Py_DECREF(item);
+      Py_DECREF(res);
+      return 0;
+    }
   }
 
   return res;
@@ -960,9 +1020,18 @@ static PyObject* igraphmodule_i_ac_first(PyObject* values,
     igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
     long int n = igraph_vector_size(v);
 
-    item = n > 0 ? PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[0]) : Py_None;
+    item = n > 0 ? PyList_GetItem(values, (Py_ssize_t)VECTOR(*v)[0]) : Py_None;
+    if (item == 0) {
+      Py_DECREF(res);
+      return 0;
+    }
+    
     Py_INCREF(item);
-    PyList_SET_ITEM(res, i, item);   /* reference to item stolen */
+    if (PyList_SetItem(res, i, item)) {  /* reference to item stolen */
+      Py_DECREF(item);
+      Py_DECREF(res);
+      return 0;
+    }
   }
 
   return res;
@@ -1002,14 +1071,26 @@ static PyObject* igraphmodule_i_ac_random(PyObject* values,
         Py_DECREF(res);
         return 0;
       }
-      item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[(long int)(n*PyFloat_AsDouble(num))]);
+
+      item = PyList_GetItem(values, (Py_ssize_t)VECTOR(*v)[(long int)(n*PyFloat_AsDouble(num))]);
+      if (item == 0) {
+        Py_DECREF(random_func);
+        Py_DECREF(res);
+        return 0;
+      }
+
       Py_DECREF(num);
     } else {
       item = Py_None;
     }
 
     Py_INCREF(item);
-    PyList_SET_ITEM(res, i, item);   /* reference to item stolen */
+    if (PyList_SetItem(res, i, item)) {  /* reference to item stolen */
+      Py_DECREF(item);
+      Py_DECREF(random_func);
+      Py_DECREF(res);
+      return 0;
+    }
   }
 
   Py_DECREF(random_func);
@@ -1033,9 +1114,19 @@ static PyObject* igraphmodule_i_ac_last(PyObject* values,
     igraph_vector_t *v = (igraph_vector_t*)VECTOR(*merges)[i];
     long int n = igraph_vector_size(v);
 
-    item = (n > 0) ? PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[n-1]) : Py_None;
+    item = (n > 0) ? PyList_GetItem(values, (Py_ssize_t)VECTOR(*v)[n-1]) : Py_None;
+    if (item == 0) {
+      Py_DECREF(res);
+      return 0;
+    }
+
     Py_INCREF(item);
-    PyList_SET_ITEM(res, i, item);   /* reference to item stolen */
+
+    if (PyList_SetItem(res, i, item)) {   /* reference to item stolen */
+      Py_DECREF(item);
+      Py_DECREF(res);
+      return 0;
+    }
   }
 
   return res;
@@ -1059,7 +1150,12 @@ static PyObject* igraphmodule_i_ac_mean(PyObject* values,
     long int j, n = igraph_vector_size(v);
 
     for (j = 0; j < n; ) {
-      item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
+      item = PyList_GetItem(values, (Py_ssize_t)VECTOR(*v)[j]);
+      if (item == 0) {
+        Py_DECREF(res);
+        return 0;
+      }
+      
       if (igraphmodule_PyObject_to_real_t(item, &num)) {
         PyErr_SetString(PyExc_TypeError, "mean can only be invoked on numeric attributes");
         Py_DECREF(res);
@@ -1071,7 +1167,12 @@ static PyObject* igraphmodule_i_ac_mean(PyObject* values,
     }
 
     /* reference to new float stolen */
-    PyList_SET_ITEM(res, i, PyFloat_FromDouble((double)mean));
+    item = PyFloat_FromDouble((double)mean);
+    if (PyList_SetItem(res, i, item)) {   /* reference to item stolen */
+      Py_DECREF(item);
+      Py_DECREF(res);
+      return 0;
+    }
   }
 
   return res;
@@ -1094,40 +1195,78 @@ static PyObject* igraphmodule_i_ac_median(PyObject* values,
     long int j, n = igraph_vector_size(v);
     list = PyList_New(n);
     for (j = 0; j < n; j++) {
-      item = PyList_GET_ITEM(values, (Py_ssize_t)VECTOR(*v)[j]);
+      item = PyList_GetItem(values, (Py_ssize_t)VECTOR(*v)[j]);
+      if (item == 0) {
+        Py_DECREF(res);
+        return 0;
+      }
+
       Py_INCREF(item);
-      PyList_SET_ITEM(list, j, item);   /* reference to item stolen */
+      if (PyList_SetItem(list, j, item)) {  /* reference to item stolen */
+        Py_DECREF(item);
+        Py_DECREF(list);
+        Py_DECREF(res);
+        return 0;
+      }
     }
+
     /* sort the list */
     if (PyList_Sort(list)) {
       Py_DECREF(list);
       Py_DECREF(res);
       return 0;
     }
+
     if (n == 0) {
       item = Py_None;
       Py_INCREF(item);
     } else if (n % 2 == 1) {
-      item = PyList_GET_ITEM(list, n / 2);
+      item = PyList_GetItem(list, n / 2);
+      if (item == 0) {
+        Py_DECREF(list);
+        Py_DECREF(res);
+        return 0;
+      }
+
       Py_INCREF(item);
     } else {
       igraph_real_t num1, num2;
-      item = PyList_GET_ITEM(list, n / 2 - 1);
+      item = PyList_GetItem(list, n / 2 - 1);
+      if (item == 0) {
+        Py_DECREF(list);
+        Py_DECREF(res);
+        return 0;
+      }
+
       if (igraphmodule_PyObject_to_real_t(item, &num1)) {
         Py_DECREF(list);
         Py_DECREF(res);
         return 0;
       }
-      item = PyList_GET_ITEM(list, n / 2);
+
+      item = PyList_GetItem(list, n / 2);
+      if (item == 0) {
+        Py_DECREF(list);
+        Py_DECREF(res);
+        return 0;
+      }
+
       if (igraphmodule_PyObject_to_real_t(item, &num2)) {
         Py_DECREF(list);
         Py_DECREF(res);
         return 0;
       }
+
       item = PyFloat_FromDouble((num1 + num2) / 2);
     }
+
     /* reference to item stolen */
-    PyList_SET_ITEM(res, i, item);
+    if (PyList_SetItem(res, i, item)) {
+      Py_DECREF(item);
+      Py_DECREF(list);
+      Py_DECREF(res);
+      return 0;
+    }
   }
 
   return res;
@@ -1444,16 +1583,16 @@ int igraphmodule_i_attribute_get_type(const igraph_t *graph,
   if (attrnum>0) {
 
     for (i=0; i<j && is_numeric; i++) {
-      PyObject *item = PyList_GET_ITEM(o, i);
+      PyObject *item = PyList_GetItem(o, i);
       if (item != Py_None && !PyNumber_Check(item)) is_numeric=0;
     }
     for (i=0; i<j && is_string; i++) {
-      PyObject *item = PyList_GET_ITEM(o, i);
+      PyObject *item = PyList_GetItem(o, i);
       if (item != Py_None && !PyBaseString_Check(item))
         is_string=0;
     }
     for (i=0; i<j && is_boolean; i++) {
-      PyObject *item = PyList_GET_ITEM(o, i);
+      PyObject *item = PyList_GetItem(o, i);
       if (item != Py_None && item != Py_True && item != Py_False)
         is_boolean=0;
     }
@@ -1546,8 +1685,13 @@ int igraphmodule_i_get_string_graph_attr(const igraph_t *graph,
     IGRAPH_ERROR("Internal error in PyObject_Str", IGRAPH_EINVAL);
   }
   
-  c_str = PyBytes_AS_STRING(str);
+  c_str = PyBytes_AsString(str);
+  if (c_str == 0) {
+    IGRAPH_ERROR("Internal error in PyBytes_AsString", IGRAPH_EINVAL);
+  }
+
   IGRAPH_CHECK(igraph_strvector_set(value, 0, c_str));
+
   Py_XDECREF(str);
 
   return 0;
