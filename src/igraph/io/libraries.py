@@ -75,6 +75,7 @@ def _construct_graph_from_networkx(cls, g):
 
     return graph
 
+
 def _export_graph_to_graph_tool(
     graph, graph_attributes=None, vertex_attributes=None, edge_attributes=None
 ):

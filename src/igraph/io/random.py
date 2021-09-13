@@ -15,4 +15,3 @@ def _construct_random_geometric_graph(cls, n, radius, torus=False):
     result.vs["x"] = xs
     result.vs["y"] = ys
     return result
-

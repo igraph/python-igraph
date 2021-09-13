@@ -311,7 +311,9 @@ def _write_graph_to_adjacency_file(graph, f, sep=" ", eol="\n", *args, **kwds):
     f.close()
 
 
-def _write_graph_to_dimacs_file(graph, f, source=None, target=None, capacity="capacity"):
+def _write_graph_to_dimacs_file(
+    graph, f, source=None, target=None, capacity="capacity"
+):
     """Writes the graph in DIMACS format to the given file.
 
     @param f: the name of the file to be written or a Python file handle.
@@ -483,5 +485,3 @@ def _write_graph_to_file(graph, f, format=None, *args, **kwds):
         raise IOError("no writer method for file format: %s" % str(format))
     writer = getattr(graph, writer)
     return writer(f, *args, **kwds)
-
-
