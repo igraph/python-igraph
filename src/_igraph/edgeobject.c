@@ -99,7 +99,7 @@ int igraphmodule_Edge_Validate(PyObject* obj) {
  * (or they might even get invalidated).
  */
 PyObject* igraphmodule_Edge_New(igraphmodule_GraphObject *gref, igraph_integer_t idx) {
-  return PyObject_CallFunction(igraphmodule_EdgeType, "On", gref, (Py_ssize_t) idx);
+  return PyObject_CallFunction((PyObject*) igraphmodule_EdgeType, "On", gref, (Py_ssize_t) idx);
 }
 
 /**
@@ -139,7 +139,7 @@ static int igraphmodule_Edge_init(igraphmodule_EdgeObject *self, PyObject *args,
 static void igraphmodule_Edge_dealloc(igraphmodule_EdgeObject* self) {
   RC_DEALLOC("Edge", self);
   Py_CLEAR(self->gref);
-  PY_FREE_AND_DECREF_TYPE(self);
+  PY_FREE_AND_DECREF_TYPE(self, igraphmodule_EdgeType);
 }
 
 /** \ingroup python_interface_edge

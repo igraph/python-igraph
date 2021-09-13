@@ -124,7 +124,7 @@ void igraphmodule_Graph_dealloc(igraphmodule_GraphObject * self)
 
   igraphmodule_Graph_clear(self);
 
-  PY_FREE_AND_DECREF_TYPE(self);
+  PY_FREE_AND_DECREF_TYPE(self, igraphmodule_GraphType);
 }
 
 /**

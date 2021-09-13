@@ -151,7 +151,7 @@ static int igraphmodule_DFSIter_clear(igraphmodule_DFSIterObject *self) {
 static void igraphmodule_DFSIter_dealloc(igraphmodule_DFSIterObject* self) {
   RC_DEALLOC("DFSIter", self);
   igraphmodule_DFSIter_clear(self);
-  PY_FREE_AND_DECREF_TYPE(self);
+  PY_FREE_AND_DECREF_TYPE(self, igraphmodule_DFSIterType);
 }
 
 static PyObject* igraphmodule_DFSIter_iter(igraphmodule_DFSIterObject* self) {

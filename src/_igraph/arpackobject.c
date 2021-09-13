@@ -52,7 +52,7 @@ int igraphmodule_ARPACKOptions_init(igraphmodule_ARPACKOptionsObject *self, PyOb
  */
 static void igraphmodule_ARPACKOptions_dealloc(igraphmodule_ARPACKOptionsObject* self) {
   RC_DEALLOC("ARPACKOptions", self);
-  PY_FREE_AND_DECREF_TYPE(self);
+  PY_FREE_AND_DECREF_TYPE(self, igraphmodule_ARPACKOptionsType);
 }
 
 /** \ingroup python_interface_arpack

@@ -99,7 +99,7 @@ int igraphmodule_Vertex_Validate(PyObject* obj) {
  * (or they might even get invalidated).
  */
 PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_integer_t idx) {
-  return PyObject_CallFunction(igraphmodule_VertexType, "On", gref, (Py_ssize_t) idx);
+  return PyObject_CallFunction((PyObject*) igraphmodule_VertexType, "On", gref, (Py_ssize_t) idx);
 }
 
 /**
@@ -139,7 +139,7 @@ static int igraphmodule_Vertex_init(igraphmodule_EdgeObject *self, PyObject *arg
 static void igraphmodule_Vertex_dealloc(igraphmodule_VertexObject* self) {
   RC_DEALLOC("Vertex", self);
   Py_CLEAR(self->gref);
-  PY_FREE_AND_DECREF_TYPE(self);
+  PY_FREE_AND_DECREF_TYPE(self, igraphmodule_VertexType);
 }
 
 /** \ingroup python_interface_vertex

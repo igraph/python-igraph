@@ -164,7 +164,7 @@ void igraphmodule_EdgeSeq_dealloc(igraphmodule_EdgeSeqObject* self) {
   }
 
   Py_CLEAR(self->gref);
-  PY_FREE_AND_DECREF_TYPE(self);
+  PY_FREE_AND_DECREF_TYPE(self, igraphmodule_EdgeSeqType);
 }
 
 /**

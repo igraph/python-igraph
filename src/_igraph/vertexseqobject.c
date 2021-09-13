@@ -159,7 +159,7 @@ void igraphmodule_VertexSeq_dealloc(igraphmodule_VertexSeqObject* self) {
   }
 
   Py_CLEAR(self->gref);
-  PY_FREE_AND_DECREF_TYPE(self);
+  PY_FREE_AND_DECREF_TYPE(self, igraphmodule_VertexSeqType);
 }
 
 /**

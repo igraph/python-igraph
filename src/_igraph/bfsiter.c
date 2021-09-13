@@ -152,7 +152,7 @@ static void igraphmodule_BFSIter_dealloc(igraphmodule_BFSIterObject* self) {
 
   igraphmodule_BFSIter_clear(self);
 
-  PY_FREE_AND_DECREF_TYPE(self);
+  PY_FREE_AND_DECREF_TYPE(self, igraphmodule_BFSIterType);
 }
 
 static PyObject* igraphmodule_BFSIter_iter(igraphmodule_BFSIterObject* self) {
