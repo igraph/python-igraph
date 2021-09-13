@@ -836,7 +836,6 @@ options = dict(
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
             "matplotlib>=3.3.4; platform_python_implementation != 'PyPy'",
             "plotly>=5.3.0",
-            "cairocffi>=1.2.0",
         ],
     },
     python_requires=">=3.6",
