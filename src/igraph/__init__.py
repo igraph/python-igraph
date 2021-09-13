@@ -4,8 +4,7 @@ IGraph library.
 
 
 __license__ = """
-Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
-Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
+Copyright (C) 2006- The igraph development team
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
