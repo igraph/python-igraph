@@ -8,6 +8,9 @@
   [@fwitter](https://github.com/user/fwitter). See PR
   [#418](https://github.com/igraph/python-igraph/pull/418) for more details.
 
+- Changed default value of the `use_vids=...` argument of `Graph.DataFrame()`
+  to `True`, thanks to [@fwitter](https://github.com/user/fwitter).
+
 ### Removed
 
 - Removed deprecated `UbiGraphDrawer`.
