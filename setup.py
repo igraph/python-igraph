@@ -824,7 +824,7 @@ options = dict(
     install_requires=["texttable>=1.6.2"],
     extras_require={
         "cairo": ["cairocffi>=1.2.0"],
-        "matplotlib": ["matplotlib>=3.4.0; platform_python_implementation != 'PyPy'"],
+        "matplotlib": ["matplotlib>=3.3.0; platform_python_implementation != 'PyPy'"],
         "plotly": ["plotly>=5.3.0"],
         # compatibility alias to 'cairo' for python-igraph <= 0.9.6
         "plotting": ["cairocffi>=1.2.0"],
