@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Additional auxiliary data types"""
 
-from itertools import islice
+__all__ = ("Matrix",)
 
 
 class Matrix:
@@ -271,8 +271,8 @@ class Matrix:
         the original matrix."""
         return (list(row) for row in self._data)
 
-    def __plot__(self, context, bbox, palette, **kwds):
-        """Plots the matrix to the given Cairo context in the given box
+    def __plot__(self, backend, context, **kwds):
+        """Plots the matrix to the given Cairo context or matplotlib Axes.
 
         Besides the usual self-explanatory plotting parameters (C{context},
         C{bbox}, C{palette}), it accepts the following keyword arguments:
@@ -322,157 +322,10 @@ class Matrix:
         is square-shaped, the same names are used for both column and row
         names.
         """
-        grid_width = float(kwds.get("grid_width", 1.0))
-        border_width = float(kwds.get("border_width", 1.0))
-        style = kwds.get("style", "boolean")
-        row_names = kwds.get("row_names")
-        col_names = kwds.get("col_names", row_names)
-        values = kwds.get("values")
-        value_format = kwds.get("value_format", str)
+        from igraph.drawing import DrawerDirectory
 
-        # Validations
-        if style not in ("boolean", "palette", "none", None):
-            raise ValueError("invalid style")
-        if style == "none":
-            style = None
-        if row_names is None and col_names is not None:
-            row_names = col_names
-        if row_names is not None:
-            row_names = [str(name) for name in islice(row_names, self._nrow)]
-            if len(row_names) < self._nrow:
-                row_names.extend([""] * (self._nrow - len(row_names)))
-        if col_names is not None:
-            col_names = [str(name) for name in islice(col_names, self._ncol)]
-            if len(col_names) < self._ncol:
-                col_names.extend([""] * (self._ncol - len(col_names)))
-        if values is False:
-            values = None
-        if values is True:
-            values = self
-        if isinstance(values, list):
-            values = Matrix(list)
-        if values is not None and not isinstance(values, Matrix):
-            raise TypeError("values must be None, False, True or a matrix")
-        if values is not None and values.shape != self.shape:
-            raise ValueError("values must be a matrix of size %s" % self.shape)
-
-        # Calculate text extents if needed
-        if row_names is not None or col_names is not None:
-            te = context.text_extents
-            space_width = te(" ")[4]
-            max_row_name_width = max([te(s)[4] for s in row_names]) + space_width
-            max_col_name_width = max([te(s)[4] for s in col_names]) + space_width
-        else:
-            max_row_name_width, max_col_name_width = 0, 0
-
-        # Calculate sizes
-        total_width = float(bbox.width) - max_row_name_width
-        total_height = float(bbox.height) - max_col_name_width
-        dx = total_width / self.shape[1]
-        dy = total_height / self.shape[0]
-        if kwds.get("square", True):
-            dx, dy = min(dx, dy), min(dx, dy)
-        total_width, total_height = dx * self.shape[1], dy * self.shape[0]
-        ox = bbox.left + (bbox.width - total_width - max_row_name_width) / 2.0
-        oy = bbox.top + (bbox.height - total_height - max_col_name_width) / 2.0
-        ox += max_row_name_width
-        oy += max_col_name_width
-
-        # Determine rescaling factors for the palette if needed
-        if style == "palette":
-            mi, ma = self.min(), self.max()
-            color_offset = mi
-            color_ratio = (len(palette) - 1) / float(ma - mi)
-
-        # Validate grid width
-        if dx < 3 * grid_width or dy < 3 * grid_width:
-            grid_width = 0.0
-        if grid_width > 0:
-            context.set_line_width(grid_width)
-        else:
-            # When the grid width is zero, we will still stroke the
-            # rectangles, but with the same color as the fill color
-            # of the cell - otherwise we would get thin white lines
-            # between the cells as a drawing artifact
-            context.set_line_width(1)
-
-        # Draw row names (if any)
-        context.set_source_rgb(0.0, 0.0, 0.0)
-        if row_names is not None:
-            x, y = ox, oy
-            for heading in row_names:
-                _, _, _, h, xa, _ = context.text_extents(heading)
-                context.move_to(x - xa - space_width, y + (dy + h) / 2.0)
-                context.show_text(heading)
-                y += dy
-
-        # Draw column names (if any)
-        if col_names is not None:
-            context.save()
-            context.translate(ox, oy)
-            context.rotate(-1.5707963285)  # pi/2
-            x, y = 0.0, 0.0
-            for heading in col_names:
-                _, _, _, h, _, _ = context.text_extents(heading)
-                context.move_to(x + space_width, y + (dx + h) / 2.0)
-                context.show_text(heading)
-                y += dx
-            context.restore()
-
-        # Draw matrix
-        x, y = ox, oy
-        if style is None:
-            fill = lambda: None  # noqa: E731
-        else:
-            fill = context.fill_preserve
-        for row in self:
-            for item in row:
-                if item is None:
-                    x += dx
-                    continue
-                if style == "boolean":
-                    if item:
-                        context.set_source_rgb(0.0, 0.0, 0.0)
-                    else:
-                        context.set_source_rgb(1.0, 1.0, 1.0)
-                elif style == "palette":
-                    cidx = int((item - color_offset) * color_ratio)
-                    if cidx < 0:
-                        cidx = 0
-                    context.set_source_rgba(*palette.get(cidx))
-                context.rectangle(x, y, dx, dy)
-                if grid_width > 0:
-                    fill()
-                    context.set_source_rgb(0.5, 0.5, 0.5)
-                    context.stroke()
-                else:
-                    fill()
-                    context.stroke()
-                x += dx
-            x, y = ox, y + dy
-
-        # Draw cell values
-        if values is not None:
-            x, y = ox, oy
-            context.set_source_rgb(0.0, 0.0, 0.0)
-            for row in values.data:
-                if hasattr(value_format, "__call__"):
-                    values = [value_format(item) for item in row]
-                else:
-                    values = [value_format % item for item in row]
-                for item in values:
-                    th, tw = context.text_extents(item)[3:5]
-                    context.move_to(x + (dx - tw) / 2.0, y + (dy + th) / 2.0)
-                    context.show_text(item)
-                    x += dx
-                x, y = ox, y + dy
-
-        # Draw borders
-        if border_width > 0:
-            context.set_line_width(border_width)
-            context.set_source_rgb(0.0, 0.0, 0.0)
-            context.rectangle(ox, oy, dx * self.shape[1], dy * self.shape[0])
-            context.stroke()
+        drawer = DrawerDirectory.resolve(self, backend)(context)
+        drawer.draw(self, **kwds)
 
     def min(self, dim=None):
         """Returns the minimum of the matrix along the given dimension
@@ -716,7 +569,7 @@ class UniqueIdGenerator:
         self._ids[item] = value
 
     def __len__(self):
-        """"Returns the number of items"""
+        """ "Returns the number of items"""
         return len(self._ids)
 
     def reverse_dict(self):

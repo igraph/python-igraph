@@ -2,11 +2,21 @@
 Utility classes for drawing routines.
 """
 
+from math import atan2, cos, hypot, sin
+from typing import NamedTuple
 
-from math import atan2, cos, sin
-from operator import itemgetter
+from igraph.utils import consecutive_pairs
 
-__all__ = ("BoundingBox", "Point", "Rectangle")
+__all__ = (
+    "BoundingBox",
+    "Point",
+    "Rectangle",
+    "calculate_corner_radii",
+    "euclidean_distance",
+    "evaluate_cubic_bezier",
+    "intersect_bezier_curve_and_circle",
+    "str_to_orientation",
+)
 
 #####################################################################
 
@@ -400,6 +410,7 @@ class BoundingBox(Rectangle):
 
 #####################################################################
 
+
 class FakeModule:
     """Fake module that raises an exception for everything"""
 
@@ -426,90 +437,8 @@ class FakeModule:
 #####################################################################
 
 
-def find_cairo():
-    """Tries to import the ``cairo`` Python module if it is installed,
-    also trying ``cairocffi`` (a drop-in replacement of ``cairo``).
-    Returns a fake module if everything fails.
-    """
-    module_names = ["cairo", "cairocffi"]
-    module = FakeModule("Plotting not available; please install pycairo or cairocffi")
-    for module_name in module_names:
-        try:
-            module = __import__(module_name)
-            break
-        except ImportError:
-            pass
-    return module
-
-
-#####################################################################
-
-
-def find_matplotlib():
-    """Tries to import the ``matplotlib`` Python module if it is installed.
-    Returns a fake module if everything fails.
-    """
-    try:
-        import matplotlib as mpl
-
-        has_mpl = True
-    except ImportError:
-        mpl = FakeModule("You need to install matplotlib to use this functionality")
-        has_mpl = False
-
-    if has_mpl:
-        import matplotlib.pyplot as plt
-    else:
-        plt = FakeModule(
-            "You need to install matplotlib.pyplot to use this functionality"
-        )
-
-    return mpl, plt
-
-
-#####################################################################
-
-
-class Point(tuple):
+class Point(NamedTuple("_Point", [("x", float), ("y", float)])):
     """Class representing a point on the 2D plane."""
-
-    __slots__ = ()
-    _fields = ("x", "y")
-
-    def __new__(cls, x, y):
-        """Creates a new point with the given coordinates"""
-        return tuple.__new__(cls, (x, y))
-
-    @classmethod
-    def _make(cls, iterable, new=tuple.__new__, len=len):
-        """Creates a new point from a sequence or iterable"""
-        result = new(cls, iterable)
-        if len(result) != 2:
-            raise TypeError("Expected 2 arguments, got %d" % len(result))
-        return result
-
-    def __repr__(self):
-        """Returns a nicely formatted representation of the point"""
-        return "Point(x=%r, y=%r)" % self
-
-    def _asdict(self):
-        """Returns a new dict which maps field names to their values"""
-        return dict(zip(self._fields, self))
-
-    def _replace(self, **kwds):
-        """Returns a new point object replacing specified fields with new
-        values"""
-        result = self._make(map(kwds.pop, ("x", "y"), self))
-        if kwds:
-            raise ValueError("Got unexpected field names: %r" % list(kwds.keys()))
-        return result
-
-    def __getnewargs__(self):
-        """Return self as a plain tuple. Used by copy and pickle."""
-        return tuple(self)
-
-    x = property(itemgetter(0), doc="Alias for field number 0")
-    y = property(itemgetter(1), doc="Alias for field number 1")
 
     def __add__(self, other):
         """Adds the coordinates of a point to another one"""
@@ -558,7 +487,7 @@ class Point(tuple):
           return this point, 1 will return the other point.
         """
         ratio = float(ratio)
-        return Point(
+        return self.__class__(
             x=self.x * (1.0 - ratio) + other.x * ratio,
             y=self.y * (1.0 - ratio) + other.y * ratio,
         )
@@ -573,8 +502,8 @@ class Point(tuple):
         after normalization. Returns the normalized point."""
         len = self.length()
         if len == 0:
-            return Point(x=self.x, y=self.y)
-        return Point(x=self.x / len, y=self.y / len)
+            return self.__class__(x=self.x, y=self.y)
+        return self.__class__(x=self.x / len, y=self.y / len)
 
     def sq_length(self):
         """Returns the squared length of the vector pointing from the origin
@@ -588,7 +517,9 @@ class Point(tuple):
             return self
 
         angle = atan2(other.y - self.y, other.x - self.x)
-        return Point(self.x + distance * cos(angle), self.y + distance * sin(angle))
+        return self.__class__(
+            self.x + distance * cos(angle), self.y + distance * sin(angle)
+        )
 
     @classmethod
     def FromPolar(cls, radius, angle):
@@ -599,3 +530,138 @@ class Point(tuple):
         the origin.
         """
         return cls(radius * cos(angle), radius * sin(angle))
+
+
+def calculate_corner_radii(points, corner_radius):
+    """Given a list of points and a desired corner radius, returns a list
+    containing proposed corner radii for each of the points such that it is
+    ensured that the corner radius at a point is never larger than half of
+    the minimum distance between the point and its neighbors.
+    """
+    points = [Point(*point) for point in points]
+    side_vecs = [v - u for u, v in consecutive_pairs(points, circular=True)]
+    half_side_lengths = [side.length() / 2 for side in side_vecs]
+    corner_radii = [corner_radius] * len(points)
+    for idx in range(len(corner_radii)):
+        prev_idx = -1 if idx == 0 else idx - 1
+        radii = [corner_radius, half_side_lengths[prev_idx], half_side_lengths[idx]]
+        corner_radii[idx] = min(radii)
+    return corner_radii
+
+
+def euclidean_distance(x1, y1, x2, y2):
+    """Computes the Euclidean distance between points (x1,y1) and (x2,y2)."""
+    return hypot(x2 - x1, y2 - y1)
+
+
+def evaluate_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3, t):
+    """Evaluates the Bezier curve from point (x0,y0) to (x3,y3)
+    via control points (x1,y1) and (x2,y2) at t. t is typically in the range
+    [0; 1] such that 0 returns (x0, y0) and 1 returns (x3, y3).
+    """
+    xt = (
+        (1.0 - t) ** 3 * x0
+        + 3.0 * t * (1.0 - t) ** 2 * x1
+        + 3.0 * t ** 2 * (1.0 - t) * x2
+        + t ** 3 * x3
+    )
+    yt = (
+        (1.0 - t) ** 3 * y0
+        + 3.0 * t * (1.0 - t) ** 2 * y1
+        + 3.0 * t ** 2 * (1.0 - t) * y2
+        + t ** 3 * y3
+    )
+    return xt, yt
+
+
+def intersect_bezier_curve_and_circle(
+    x0, y0, x1, y1, x2, y2, x3, y3, radius, max_iter=10
+):
+    """Binary search solver for finding the intersection of a Bezier curve
+    and a circle centered at the curve's end point.
+
+    Returns the x, y coordinates of the intersection point.
+    """
+    # The exact formulation of the problem is a quartic equation and it is
+    # probably not worth coding up an exact quartic solver. The solution below
+    # uses binary search. Another solution would be simply to intersect the
+    # circle with the line pointing from (x2, y2) to (x3, y3) as the difference
+    # is likely to be negligible.
+
+    precision = radius / 20.0
+    source_target_distance = euclidean_distance(x0, y0, x3, y3)
+    radius = float(radius)
+    t0 = 1.0
+    t1 = 1.0 - radius / source_target_distance
+
+    xt1, yt1 = evaluate_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3, t1)
+
+    distance_t0 = 0
+    distance_t1 = euclidean_distance(x3, y3, xt1, yt1)
+    counter = 0
+    while abs(distance_t1 - radius) > precision and counter < max_iter:
+        if ((distance_t1 - radius) > 0) != ((distance_t0 - radius) > 0):
+            t_new = (t0 + t1) / 2.0
+        else:
+            if abs(distance_t1 - radius) < abs(distance_t0 - radius):
+                # If t1 gets us closer to the circumference step in the
+                # same direction
+                t_new = t1 + (t1 - t0) / 2.0
+            else:
+                t_new = t1 - (t1 - t0)
+        t_new = 1 if t_new > 1 else (0 if t_new < 0 else t_new)
+        t0, t1 = t1, t_new
+        distance_t0 = distance_t1
+        xt1, yt1 = evaluate_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3, t1)
+        distance_t1 = euclidean_distance(x3, y3, xt1, yt1)
+        counter += 1
+
+    return evaluate_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3, t1)
+
+
+def str_to_orientation(value, reversed_horizontal=False, reversed_vertical=False):
+    """Tries to interpret a string as an orientation value.
+
+    The following basic values are understood: ``left-right``, ``bottom-top``,
+    ``right-left``, ``top-bottom``. Possible aliases are:
+
+      - ``horizontal``, ``horiz``, ``h`` and ``lr`` for ``left-right``
+
+      - ``vertical``, ``vert``, ``v`` and ``tb`` for top-bottom.
+
+      - ``lr`` for ``left-right``.
+
+      - ``rl`` for ``right-left``.
+
+    ``reversed_horizontal`` reverses the meaning of ``horizontal``, ``horiz``
+    and ``h`` to ``rl`` (instead of ``lr``); similarly, ``reversed_vertical``
+    reverses the meaning of ``vertical``, ``vert`` and ``v`` to ``bt``
+    (instead of ``tb``).
+
+    Returns one of ``lr``, ``rl``, ``tb`` or ``bt``, or throws ``ValueError``
+    if the string cannot be interpreted as an orientation.
+    """
+
+    aliases = {
+        "left-right": "lr",
+        "right-left": "rl",
+        "top-bottom": "tb",
+        "bottom-top": "bt",
+        "top-down": "tb",
+        "bottom-up": "bt",
+        "top-bottom": "tb",
+        "bottom-top": "bt",
+        "td": "tb",
+        "bu": "bt",
+    }
+
+    dir = ["lr", "rl"][reversed_horizontal]
+    aliases.update(horizontal=dir, horiz=dir, h=dir)
+
+    dir = ["tb", "bt"][reversed_vertical]
+    aliases.update(vertical=dir, vert=dir, v=dir)
+
+    result = aliases.get(value, value)
+    if result not in ("lr", "rl", "tb", "bt"):
+        raise ValueError("unknown orientation: %s" % result)
+    return result

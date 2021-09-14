@@ -4,8 +4,7 @@
 Color handling functions.
 """
 
-from igraph.datatypes import Matrix
-from igraph.utils import str_to_orientation
+from abc import ABCMeta, abstractmethod
 from math import ceil
 
 __all__ = (
@@ -26,11 +25,12 @@ __all__ = (
     "rgb_to_hsl",
     "rgba_to_hsla",
     "palettes",
+    "default_edge_colors",
     "known_colors",
 )
 
 
-class Palette:
+class Palette(metaclass=ABCMeta):
     """Base class of color palettes.
 
     Color palettes are mappings that assign integers from the range
@@ -117,6 +117,7 @@ class Palette:
         # Multiple colors
         return [self.get(color) for color in colors]
 
+    @abstractmethod
     def _get(self, v):
         """Override this method in a subclass to create a custom palette.
 
@@ -125,7 +126,7 @@ class Palette:
 
         @param v: numerical index of the color to be retrieved
         @return: a 4-tuple containing the RGBA values"""
-        raise NotImplementedError("abstract class")
+        raise NotImplementedError
 
     __getitem__ = get
 
@@ -138,10 +139,19 @@ class Palette:
         """Returns the number of colors in this palette"""
         return self._length
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Plots the colors of the palette on the given Cairo context
+    def __plot__(self, backend, context, *args, **kwds):
+        """Plots the colors of the palette on the given Cairo context/mpl Axes
 
-        Supported keyword arguments are:
+        Supported keywork arguments in both Cairo and matplotlib are:
+
+          - C{orientation}: the orientation of the palette. Must be one of
+            the following values: C{left-right}, C{bottom-top}, C{right-left}
+            or C{top-bottom}. Possible aliases: C{horizontal} = C{left-right},
+            C{vertical} = C{bottom-top}, C{lr} = C{left-right},
+            C{rl} = C{right-left}, C{tb} = C{top-bottom}, C{bt} = C{bottom-top}.
+            The default is C{left-right}.
+
+        Additional supported keyword arguments in Cairo are:
 
           - C{border_width}: line width of the border shown around the palette.
             If zero or negative, the border is turned off. Default is C{1}.
@@ -151,35 +161,12 @@ class Palette:
             turned off if the size of a cell is less than three times the given
             line width. Default is C{0}.  Fractional widths are also allowed.
 
-          - C{orientation}: the orientation of the palette. Must be one of
-            the following values: C{left-right}, C{bottom-top}, C{right-left}
-            or C{top-bottom}. Possible aliases: C{horizontal} = C{left-right},
-            C{vertical} = C{bottom-top}, C{lr} = C{left-right},
-            C{rl} = C{right-left}, C{tb} = C{top-bottom}, C{bt} = C{bottom-top}.
-            The default is C{left-right}.
+        Keyword arguments in matplotlib are passes to Axes.imshow.
         """
-        border_width = float(kwds.get("border_width", 1.0))
-        grid_width = float(kwds.get("grid_width", 0.0))
-        orientation = str_to_orientation(kwds.get("orientation", "lr"))
+        from igraph.drawing import DrawerDirectory
 
-        # Construct a matrix and plot that
-        indices = list(range(len(self)))
-        if orientation in ("rl", "bt"):
-            indices.reverse()
-        if orientation in ("lr", "rl"):
-            matrix = Matrix([indices])
-        else:
-            matrix = Matrix([[i] for i in indices])
-
-        return matrix.__plot__(
-            context,
-            bbox,
-            self,
-            style="palette",
-            square=False,
-            grid_width=grid_width,
-            border_width=border_width,
-        )
+        drawer = DrawerDirectory.resolve(self, backend)(context)
+        drawer.draw(self, **kwds)
 
     def __repr__(self):
         return "<%s with %d colors>" % (self.__class__.__name__, self._length)
@@ -726,6 +713,13 @@ def lighten(color, ratio=0.5):
         blue + (1.0 - blue) * ratio,
         alpha,
     )
+
+
+default_edge_colors = {
+    "cairo": ["grey20", "grey80"],
+    "matplotlib": ["dimgrey", "silver"],
+    "plotly": ["rgb(51,51,51)", "rgb(204,204,204)"],
+}
 
 
 known_colors = {

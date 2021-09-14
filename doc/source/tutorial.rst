@@ -659,8 +659,9 @@ the screen or to a PDF, PNG or SVG file using the `Cairo library <http://www.cai
 
 .. important::
    To follow the examples of this subsection, you need the Python bindings of the
-   Cairo library. The previous chapter (:ref:`installing-igraph`) tells you more
-   about how to install Cairo's Python bindings.
+   Cairo library or matplotlib (depending on what backend is selected). The previous
+   chapter (:ref:`installing-igraph`) tells you more about how to install Cairo's Python
+   bindings.
 
 Layout algorithms
 ^^^^^^^^^^^^^^^^^
@@ -745,7 +746,7 @@ something like the one on the following figure (although the exact placement of
 nodes may be different on your machine since the layout is not deterministic):
 
 .. figure:: figures/tutorial_social_network_1.png
-   :alt: The visual representation of our social network
+   :alt: The visual representation of our social network (Cairo backend)
    :align: center
 
    Our social network with the Kamada-Kawai layout algorithm
@@ -757,6 +758,10 @@ If you prefer to use `matplotlib`_ as a plotting engine, create an axes and use 
 >>> fig, ax = plt.subplots()
 >>> plot(g, layout=layout, target=ax)
 
+.. figure:: figures/tutorial_social_network_1_mpl.png
+   :alt: The visual representation of our social network (matplotlib backend)
+   :align: center
+
 Hmm, this is not too pretty so far. A trivial addition would be to use the names as the
 vertex labels and to color the vertices according to the gender. Vertex labels are taken
 from the ``label`` attribute by default and vertex colors are determined by the
@@ -765,14 +770,22 @@ from the ``label`` attribute by default and vertex colors are determined by the
 >>> g.vs["label"] = g.vs["name"]
 >>> color_dict = {"m": "blue", "f": "pink"}
 >>> g.vs["color"] = [color_dict[gender] for gender in g.vs["gender"]]
->>> plot(g, layout=layout, bbox=(300, 300), margin=20)
->>> plot(g, layout=layout, bbox=(300, 300), margin=20, target=ax) # matplotlib version
+>>> plot(g, layout=layout, bbox=(300, 300), margin=20) # Cairo backend
+>>> plot(g, layout=layout, target=ax) # matplotlib backend
 
 Note that we are simply re-using the previous layout object here, but we also specified
 that we need a smaller plot (300 x 300 pixels) and a larger margin around the graph
 to fit the labels (20 pixels). The result is:
 
 .. figure:: figures/tutorial_social_network_2.png
+   :alt: The visual representation of our social network - with names and genders
+   :align: center
+
+   Our social network - with names as labels and genders as colors
+
+and for matplotlib:
+
+.. figure:: figures/tutorial_social_network_2_mpl.png
    :alt: The visual representation of our social network - with names and genders
    :align: center
 

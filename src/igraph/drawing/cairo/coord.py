@@ -2,7 +2,9 @@
 Coordinate systems and related plotting routines
 """
 
-from igraph.drawing.baseclasses import AbstractCairoDrawer
+from abc import abstractmethod
+
+from igraph.drawing.cairo.base import AbstractCairoDrawer
 from igraph.drawing.utils import BoundingBox
 
 #####################################################################
@@ -18,29 +20,21 @@ class CoordinateSystem(AbstractCairoDrawer):
     implement an own coordinate system not present in igraph yet.
     """
 
-    def __init__(self, context, bbox):
-        """Initializes the coordinate system.
-
-        @param context: the context on which the coordinate system will
-          be drawn.
-        @param bbox: the bounding box that will contain the coordinate
-          system.
-        """
-        AbstractCairoDrawer.__init__(self, context, bbox)
-
+    @abstractmethod
     def draw(self):
         """Draws the coordinate system.
 
         This method must be overridden in derived classes.
         """
-        raise NotImplementedError("abstract class")
+        raise NotImplementedError
 
+    @abstractmethod
     def local_to_context(self, x, y):
         """Converts local coordinates to the context coordinate system (given
         by the bounding box).
 
         This method must be overridden in derived classes."""
-        raise NotImplementedError("abstract class")
+        raise NotImplementedError
 
 
 class DescartesCoordinateSystem(CoordinateSystem):
@@ -59,7 +53,7 @@ class DescartesCoordinateSystem(CoordinateSystem):
         self._sx, self._sy = None, None
         self._ox, self._oy, self._ox2, self._oy2 = None, None, None, None
 
-        CoordinateSystem.__init__(self, context, bbox)
+        super().__init__(context, bbox)
 
         self.bbox = bbox
         self.bounds = bounds

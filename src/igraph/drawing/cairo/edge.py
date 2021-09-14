@@ -2,48 +2,40 @@
 Drawers for various edge styles in graph plots.
 """
 
+from math import atan2, cos, pi, sin
+
+from igraph.drawing.baseclasses import AbstractEdgeDrawer
+from igraph.drawing.colors import clamp
+from igraph.drawing.metamagic import AttributeCollectorBase
+from igraph.drawing.utils import euclidean_distance, intersect_bezier_curve_and_circle
+
+from .utils import find_cairo
+
 __all__ = (
-    "AbstractEdgeDrawer",
+    "AbstractCairoEdgeDrawer",
     "AlphaVaryingEdgeDrawer",
-    "ArrowEdgeDrawer",
+    "CairoArrowEdgeDrawer",
     "DarkToLightEdgeDrawer",
     "LightToDarkEdgeDrawer",
     "TaperedEdgeDrawer",
 )
 
-from igraph.drawing.colors import clamp
-from igraph.drawing.metamagic import AttributeCollectorBase
-from igraph.drawing.text import TextAlignment
-from igraph.drawing.utils import find_cairo
-from math import atan2, cos, pi, sin, sqrt
-
 cairo = find_cairo()
 
 
-class AbstractEdgeDrawer:
-    """Abstract edge drawer object from which all concrete edge drawer
-    implementations are derived."""
+class AbstractCairoEdgeDrawer(AbstractEdgeDrawer):
+    """Cairo-specific abstract edge drawer object."""
 
     def __init__(self, context, palette):
         """Constructs the edge drawer.
 
         @param context: a Cairo context on which the edges will be drawn.
-        @param palette: the palette that can be used to map integer
-                        color indices to colors when drawing edges
+        @param palette: the palette that can be used to map integer color
+            indices to colors when drawing edges
         """
         self.context = context
         self.palette = palette
         self.VisualEdgeBuilder = self._construct_visual_edge_builder()
-
-    @staticmethod
-    def _curvature_to_float(value):
-        """Converts values given to the 'curved' edge style argument
-        in plotting calls to floating point values."""
-        if value is None or value is False:
-            return 0.0
-        if value is True:
-            return 0.5
-        return float(value)
 
     def _construct_visual_edge_builder(self):
         """Construct the visual edge builder that will collect the visual
@@ -65,18 +57,6 @@ class AbstractEdgeDrawer:
             width = 1.0
 
         return VisualEdgeBuilder
-
-    def draw_directed_edge(self, edge, src_vertex, dest_vertex):
-        """Draws a directed edge.
-
-        @param edge: the edge to be drawn. Visual properties of the edge
-          are defined by the attributes of this object.
-        @param src_vertex: the source vertex. Visual properties are given
-          again as attributes.
-        @param dest_vertex: the target vertex. Visual properties are given
-          again as attributes.
-        """
-        raise NotImplementedError()
 
     def draw_loop_edge(self, edge, vertex):
         """Draws a loop edge.
@@ -132,69 +112,8 @@ class AbstractEdgeDrawer:
 
         ctx.stroke()
 
-    def get_label_position(self, edge, src_vertex, dest_vertex):
-        """Returns the position where the label of an edge should be drawn. The
-        default implementation returns the midpoint of the edge and an alignment
-        that tries to avoid overlapping the label with the edge.
 
-        @param edge: the edge to be drawn. Visual properties of the edge
-          are defined by the attributes of this object.
-        @param src_vertex: the source vertex. Visual properties are given
-          again as attributes.
-        @param dest_vertex: the target vertex. Visual properties are given
-          again as attributes.
-        @return: a tuple containing two more tuples: the desired position of the
-          label and the desired alignment of the label, where the position is
-          given as C{(x, y)} and the alignment is given as C{(horizontal, vertical)}.
-          Members of the alignment tuple are taken from constants in the
-          L{TextAlignment} class.
-        """
-        # Determine the angle of the line
-        dx = dest_vertex.position[0] - src_vertex.position[0]
-        dy = dest_vertex.position[1] - src_vertex.position[1]
-        if dx != 0 or dy != 0:
-            # Note that we use -dy because the Y axis points downwards
-            angle = atan2(-dy, dx) % (2 * pi)
-        else:
-            angle = None
-
-        # Determine the midpoint
-        pos = (
-            (src_vertex.position[0] + dest_vertex.position[0]) / 2.0,
-            (src_vertex.position[1] + dest_vertex.position[1]) / 2,
-        )
-
-        # Determine the alignment based on the angle
-        pi4 = pi / 4
-        if angle is None:
-            halign, valign = TextAlignment.CENTER, TextAlignment.CENTER
-        else:
-            index = int((angle / pi4) % 8)
-            halign = [
-                TextAlignment.RIGHT,
-                TextAlignment.RIGHT,
-                TextAlignment.RIGHT,
-                TextAlignment.RIGHT,
-                TextAlignment.LEFT,
-                TextAlignment.LEFT,
-                TextAlignment.LEFT,
-                TextAlignment.LEFT,
-            ][index]
-            valign = [
-                TextAlignment.BOTTOM,
-                TextAlignment.CENTER,
-                TextAlignment.CENTER,
-                TextAlignment.TOP,
-                TextAlignment.TOP,
-                TextAlignment.CENTER,
-                TextAlignment.CENTER,
-                TextAlignment.BOTTOM,
-            ][index]
-
-        return pos, (halign, valign)
-
-
-class ArrowEdgeDrawer(AbstractEdgeDrawer):
+class CairoArrowEdgeDrawer(AbstractCairoEdgeDrawer):
     """Edge drawer implementation that draws undirected edges as
     straight lines and directed edges as arrows.
     """
@@ -206,65 +125,6 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
         ctx = self.context
         (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
         (x_src, y_src), (x_dest, y_dest) = src_vertex.position, dest_vertex.position
-
-        def bezier_cubic(x0, y0, x1, y1, x2, y2, x3, y3, t):
-            """Computes the Bezier curve from point (x0,y0) to (x3,y3)
-            via control points (x1,y1) and (x2,y2) with parameter t.
-            """
-            xt = (
-                (1.0 - t) ** 3 * x0
-                + 3.0 * t * (1.0 - t) ** 2 * x1
-                + 3.0 * t ** 2 * (1.0 - t) * x2
-                + t ** 3 * x3
-            )
-            yt = (
-                (1.0 - t) ** 3 * y0
-                + 3.0 * t * (1.0 - t) ** 2 * y1
-                + 3.0 * t ** 2 * (1.0 - t) * y2
-                + t ** 3 * y3
-            )
-            return xt, yt
-
-        def euclidean_distance(x1, y1, x2, y2):
-            """Computes the Euclidean distance between points (x1,y1) and (x2,y2)."""
-            return sqrt((1.0 * x1 - x2) ** 2 + (1.0 * y1 - y2) ** 2)
-
-        def intersect_bezier_circle(
-            x0, y0, x1, y1, x2, y2, x3, y3, radius, max_iter=10
-        ):
-            """Binary search solver for finding the intersection of a Bezier curve
-            and a circle centered at the curve's end point.
-            Returns the x,y of the intersection point.
-            TODO: implement safeguard to ensure convergence in ALL possible cases.
-            """
-            precision = radius / 20.0
-            source_target_distance = euclidean_distance(x0, y0, x3, y3)
-            radius = float(radius)
-            t0 = 1.0
-            t1 = 1.0 - radius / source_target_distance
-
-            xt1, yt1 = bezier_cubic(x0, y0, x1, y1, x2, y2, x3, y3, t1)
-
-            distance_t0 = 0
-            distance_t1 = euclidean_distance(x3, y3, xt1, yt1)
-            counter = 0
-            while abs(distance_t1 - radius) > precision and counter < max_iter:
-                if ((distance_t1 - radius) > 0) != ((distance_t0 - radius) > 0):
-                    t_new = (t0 + t1) / 2.0
-                else:
-                    if abs(distance_t1 - radius) < abs(distance_t0 - radius):
-                        # If t1 gets us closer to the circumference step in the
-                        # same direction
-                        t_new = t1 + (t1 - t0) / 2.0
-                    else:
-                        t_new = t1 - (t1 - t0)
-                t_new = 1 if t_new > 1 else (0 if t_new < 0 else t_new)
-                t0, t1 = t1, t_new
-                distance_t0 = distance_t1
-                xt1, yt1 = bezier_cubic(x0, y0, x1, y1, x2, y2, x3, y3, t1)
-                distance_t1 = euclidean_distance(x3, y3, xt1, yt1)
-                counter += 1
-            return bezier_cubic(x0, y0, x1, y1, x2, y2, x3, y3, t1)
 
         # Draw the edge
         ctx.set_source_rgba(*edge.color)
@@ -286,7 +146,7 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
 
             # Determine where the edge intersects the circumference of the
             # vertex shape: Tip of the arrow
-            x2, y2 = intersect_bezier_circle(
+            x2, y2 = intersect_bezier_curve_and_circle(
                 x_src, y_src, xc1, yc1, xc2, yc2, x_dest, y_dest, dest_vertex.size / 2.0
             )
 
@@ -386,7 +246,7 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
         ctx.fill()
 
 
-class TaperedEdgeDrawer(AbstractEdgeDrawer):
+class TaperedEdgeDrawer(AbstractCairoEdgeDrawer):
     """Edge drawer implementation that draws undirected edges as
     straight lines and directed edges as tapered lines that are
     wider at the source and narrow at the destination.
@@ -427,14 +287,14 @@ class TaperedEdgeDrawer(AbstractEdgeDrawer):
         ctx.fill()
 
 
-class AlphaVaryingEdgeDrawer(AbstractEdgeDrawer):
+class AlphaVaryingEdgeDrawer(AbstractCairoEdgeDrawer):
     """Edge drawer implementation that draws undirected edges as
     straight lines and directed edges by varying the alpha value
     of the specified edge color between the source and the destination.
     """
 
-    def __init__(self, context, alpha_at_src, alpha_at_dest):
-        super().__init__(context)
+    def __init__(self, context, palette, alpha_at_src, alpha_at_dest):
+        super().__init__(context, palette)
         self.alpha_at_src = (clamp(float(alpha_at_src), 0.0, 1.0),)
         self.alpha_at_dest = (clamp(float(alpha_at_dest), 0.0, 1.0),)
 
@@ -468,8 +328,8 @@ class LightToDarkEdgeDrawer(AlphaVaryingEdgeDrawer):
     interpolated in-between.
     """
 
-    def __init__(self, context):
-        super().__init__(context, 0.0, 1.0)
+    def __init__(self, context, palette):
+        super().__init__(context, palette, 0.0, 1.0)
 
 
 class DarkToLightEdgeDrawer(AlphaVaryingEdgeDrawer):
@@ -480,5 +340,5 @@ class DarkToLightEdgeDrawer(AlphaVaryingEdgeDrawer):
     interpolated in-between.
     """
 
-    def __init__(self, context):
-        super().__init__(context, 1.0, 0.0)
+    def __init__(self, context, palette):
+        super().__init__(context, palette, 1.0, 0.0)

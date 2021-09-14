@@ -13,7 +13,7 @@ if sys.version_info < (3, 6):
 
 ###########################################################################
 
-from setuptools import setup, Command, Extension
+from setuptools import find_packages, setup, Command, Extension
 
 import glob
 import shlex
@@ -819,10 +819,14 @@ options = dict(
     author_email="ntamas@gmail.com",
     ext_modules=[igraph_extension],
     package_dir={"igraph": "src/igraph"},
-    packages=["igraph", "igraph.app", "igraph.drawing", "igraph.remote"],
+    packages=find_packages(where="src"),
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
     extras_require={
+        "cairo": ["cairocffi>=1.2.0"],
+        "matplotlib": ["matplotlib>=3.3.0; platform_python_implementation != 'PyPy'"],
+        "plotly": ["plotly>=5.3.0"],
+        # compatibility alias to 'cairo' for python-igraph <= 0.9.6
         "plotting": ["cairocffi>=1.2.0"],
         "test": [
             "networkx>=2.5",
@@ -830,6 +834,8 @@ options = dict(
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0,<1.3.1; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
+            "matplotlib>=3.3.4; platform_python_implementation != 'PyPy'",
+            "plotly>=5.3.0",
         ],
     },
     python_requires=">=3.6",
