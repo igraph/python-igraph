@@ -1,32 +1,4 @@
-"""
-IGraph library.
-"""
-
-
-__license__ = """
-Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
-Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
-
-Copyright (C) 2021- igraph development team
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301 USA
-"""
-
-
-def construct_incidence_bipartite_graph(
+def _construct_incidence_bipartite_graph(
     cls,
     matrix,
     directed=False,
@@ -80,17 +52,13 @@ def construct_incidence_bipartite_graph(
         for edge in result.es:
             source, target = edge.tuple
             if source in rows:
-                edge[weight_attr] = matrix[source][
-                    target - num_vertices_of_first_kind
-                ]
+                edge[weight_attr] = matrix[source][target - num_vertices_of_first_kind]
             else:
-                edge[weight_attr] = matrix[target][
-                    source - num_vertices_of_first_kind
-                ]
+                edge[weight_attr] = matrix[target][source - num_vertices_of_first_kind]
     return result
 
 
-def construct_bipartite_graph(cls, types, edges, directed=False, *args, **kwds):
+def _construct_bipartite_graph(cls, types, edges, directed=False, *args, **kwds):
     """Creates a bipartite graph with the given vertex types and edges.
     This is similar to the default constructor of the graph, the
     only difference is that it checks whether all the edges go
@@ -121,7 +89,9 @@ def construct_bipartite_graph(cls, types, edges, directed=False, *args, **kwds):
     return result
 
 
-def construct_full_bipartite_graph(cls, n1, n2, directed=False, mode="all", *args, **kwds):
+def _construct_full_bipartite_graph(
+    cls, n1, n2, directed=False, mode="all", *args, **kwds
+):
     """Generates a full bipartite graph (directed or undirected, with or
     without loops).
 
@@ -146,7 +116,7 @@ def construct_full_bipartite_graph(cls, n1, n2, directed=False, mode="all", *arg
     return result
 
 
-def construct_random_bipartite_graph(
+def _construct_random_bipartite_graph(
     cls, n1, n2, p=None, m=None, directed=False, neimode="all", *args, **kwds
 ):
     """Generates a random bipartite graph with the given number of vertices and
@@ -180,4 +150,3 @@ def construct_random_bipartite_graph(
     )
     result.vs["type"] = types
     return result
-

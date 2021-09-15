@@ -1,29 +1,3 @@
-"""
-IGraph library.
-"""
-
-
-__license__ = """
-Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
-Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
-
-Copyright (C) 2021- igraph development team
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301 USA
-"""
 import gzip
 from shutil import copyfileobj
 from warnings import warn
@@ -120,7 +94,7 @@ def _identify_format(filename):
             return "adjacency"
 
 
-def construct_graph_from_adjacency_file(
+def _construct_graph_from_adjacency_file(
     cls, f, sep=None, comment_char="#", attribute=None, *args, **kwds
 ):
     """Constructs a graph based on an adjacency matrix from the given file.
@@ -163,7 +137,7 @@ def construct_graph_from_adjacency_file(
     return graph
 
 
-def construct_graph_from_dimacs_file(cls, f, directed=False):
+def _construct_graph_from_dimacs_file(cls, f, directed=False):
     """Reads a graph from a file conforming to the DIMACS minimum-cost flow
     file format.
 
@@ -197,7 +171,7 @@ def construct_graph_from_dimacs_file(cls, f, directed=False):
     return graph
 
 
-def construct_graph_from_graphmlz_file(cls, f, directed=True, index=0):
+def _construct_graph_from_graphmlz_file(cls, f, directed=True, index=0):
     """Reads a graph from a zipped GraphML file.
 
     @param f: the name of the file
@@ -212,7 +186,7 @@ def construct_graph_from_graphmlz_file(cls, f, directed=True, index=0):
         return cls.Read_GraphML(tmpfile, directed=directed, index=index)
 
 
-def construct_graph_from_pickle_file(cls, fname=None):
+def _construct_graph_from_pickle_file(cls, fname=None):
     """Reads a graph from Python pickled format
 
     @param fname: the name of the file, a stream to read from, or
@@ -257,7 +231,7 @@ def construct_graph_from_pickle_file(cls, fname=None):
     return result
 
 
-def construct_graph_from_picklez_file(cls, fname):
+def _construct_graph_from_picklez_file(cls, fname):
     """Reads a graph from compressed Python pickled format, uncompressing
     it on-the-fly.
 
@@ -281,7 +255,7 @@ def construct_graph_from_picklez_file(cls, fname):
     return result
 
 
-def construct_graph_from_file(cls, f, format=None, *args, **kwds):
+def _construct_graph_from_file(cls, f, format=None, *args, **kwds):
     """Unified reading function for graphs.
 
     This method tries to identify the format of the graph given in
@@ -316,7 +290,7 @@ def construct_graph_from_file(cls, f, format=None, *args, **kwds):
     return reader(f, *args, **kwds)
 
 
-def write_graph_to_adjacency_file(self, f, sep=" ", eol="\n", *args, **kwds):
+def _write_graph_to_adjacency_file(graph, f, sep=" ", eol="\n", *args, **kwds):
     """Writes the adjacency matrix of the graph to the given file
 
     All the remaining arguments not mentioned here are passed intact
@@ -330,14 +304,16 @@ def write_graph_to_adjacency_file(self, f, sep=" ", eol="\n", *args, **kwds):
     """
     if isinstance(f, str):
         f = open(f, "w")
-    matrix = self.get_adjacency(*args, **kwds)
+    matrix = graph.get_adjacency(*args, **kwds)
     for row in matrix:
         f.write(sep.join(map(str, row)))
         f.write(eol)
     f.close()
 
 
-def write_graph_to_dimacs_file(self, f, source=None, target=None, capacity="capacity"):
+def _write_graph_to_dimacs_file(
+    graph, f, source=None, target=None, capacity="capacity"
+):
     """Writes the graph in DIMACS format to the given file.
 
     @param f: the name of the file to be written or a Python file handle.
@@ -351,7 +327,7 @@ def write_graph_to_dimacs_file(self, f, source=None, target=None, capacity="capa
     """
     if source is None:
         try:
-            source = self["source"]
+            source = graph["source"]
         except KeyError:
             raise ValueError(
                 "source vertex must be provided in the 'source' graph "
@@ -360,21 +336,21 @@ def write_graph_to_dimacs_file(self, f, source=None, target=None, capacity="capa
 
     if target is None:
         try:
-            target = self["target"]
+            target = graph["target"]
         except KeyError:
             raise ValueError(
                 "target vertex must be provided in the 'target' graph "
                 "attribute or in the 'target' argument of write_dimacs()"
             )
 
-    if isinstance(capacity, str) and capacity not in self.edge_attributes():
+    if isinstance(capacity, str) and capacity not in graph.edge_attributes():
         warn("'%s' edge attribute does not exist" % capacity)
-        capacity = [1] * self.ecount()
+        capacity = [1] * graph.ecount()
 
-    return GraphBase.write_dimacs(self, f, source, target, capacity)
+    return GraphBase.write_dimacs(graph, f, source, target, capacity)
 
 
-def write_graph_to_graphmlz_file(self, f, compresslevel=9):
+def _write_graph_to_graphmlz_file(graph, f, compresslevel=9):
     """Writes the graph to a zipped GraphML file.
 
     The library uses the gzip compression algorithm, so the resulting
@@ -391,13 +367,13 @@ def write_graph_to_graphmlz_file(self, f, compresslevel=9):
       produces the least compression, and 9 is slowest and produces
       the most compression."""
     with named_temporary_file() as tmpfile:
-        self.write_graphml(tmpfile)
+        graph.write_graphml(tmpfile)
         outf = gzip.GzipFile(f, "wb", compresslevel)
         copyfileobj(open(tmpfile, "rb"), outf)
         outf.close()
 
 
-def write_graph_to_pickle_file(self, fname=None, version=-1):
+def _write_graph_to_pickle_file(graph, fname=None, version=-1):
     """Saves the graph in Python pickled format
 
     @param fname: the name of the file or a stream to save to. If
@@ -410,19 +386,19 @@ def write_graph_to_pickle_file(self, fname=None, version=-1):
     import pickle as pickle
 
     if fname is None:
-        return pickle.dumps(self, version)
+        return pickle.dumps(graph, version)
     if not hasattr(fname, "write"):
         file_was_opened = True
         fname = open(fname, "wb")
     else:
         file_was_opened = False
-    result = pickle.dump(self, fname, version)
+    result = pickle.dump(graph, fname, version)
     if file_was_opened:
         fname.close()
     return result
 
 
-def write_graph_to_picklez_file(self, fname=None, version=-1):
+def _write_graph_to_picklez_file(graph, fname=None, version=-1):
     """Saves the graph in Python pickled format, compressed with
     gzip.
 
@@ -447,7 +423,7 @@ def write_graph_to_picklez_file(self, fname=None, version=-1):
         file_was_opened = True
         fname = gzip.GzipFile(mode="wb", fileobj=fname)
 
-    result = pickle.dump(self, fname, version)
+    result = pickle.dump(graph, fname, version)
 
     if file_was_opened:
         fname.close()
@@ -455,7 +431,7 @@ def write_graph_to_picklez_file(self, fname=None, version=-1):
     return result
 
 
-def write_graph_to_file(self, f, format=None, *args, **kwds):
+def _write_graph_to_file(graph, f, format=None, *args, **kwds):
     """Unified writing function for graphs.
 
     This method tries to identify the format of the graph given in
@@ -502,12 +478,10 @@ def write_graph_to_file(self, f, format=None, *args, **kwds):
     if format is None:
         format = _identify_format(f)
     try:
-        writer = self._format_mapping[format][1]
+        writer = graph._format_mapping[format][1]
     except (KeyError, IndexError):
         raise IOError("unknown file format: %s" % str(format))
     if writer is None:
         raise IOError("no writer method for file format: %s" % str(format))
-    writer = getattr(self, writer)
+    writer = getattr(graph, writer)
     return writer(f, *args, **kwds)
-
-

@@ -1,37 +1,10 @@
-"""
-IGraph library.
-"""
-
-
-__license__ = """
-Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
-Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
-
-Copyright (C) 2021- igraph development team
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301 USA
-"""
-
 from igraph.sparse_matrix import (
     _graph_from_sparse_matrix,
     _graph_from_weighted_sparse_matrix,
 )
 
 
-def construct_graph_from_adjacency(cls, matrix, mode="directed", *args, **kwargs):
+def _construct_graph_from_adjacency(cls, matrix, mode="directed", *args, **kwargs):
     """Generates a graph from its adjacency matrix.
 
     @param matrix: the adjacency matrix. Possible types are:
@@ -88,12 +61,14 @@ def construct_graph_from_adjacency(cls, matrix, mode="directed", *args, **kwargs
 
     # Add vertex names if present
     if vertex_names is not None:
-        graph.vs['name'] = vertex_names
+        graph.vs["name"] = vertex_names
 
     return graph
 
 
-def construct_graph_from_weighted_adjacency(cls, matrix, mode="directed", attr="weight", loops=True):
+def _construct_graph_from_weighted_adjacency(
+    cls, matrix, mode="directed", attr="weight", loops=True
+):
     """Generates a graph from its weighted adjacency matrix.
 
     @param matrix: the adjacency matrix. Possible types are:
@@ -166,8 +141,6 @@ def construct_graph_from_weighted_adjacency(cls, matrix, mode="directed", attr="
 
     # Add vertex names if present
     if vertex_names is not None:
-        graph.vs['name'] = vertex_names
+        graph.vs["name"] = vertex_names
 
     return graph
-
-

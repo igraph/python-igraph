@@ -1,31 +1,4 @@
-"""
-IGraph library.
-"""
-
-
-__license__ = """
-Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
-Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
-
-Copyright (C) 2021- igraph development team
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301 USA
-"""
-
-def export_graph_to_networkx(self, create_using=None):
+def _export_graph_to_networkx(graph, create_using=None):
     """Converts the graph to networkx format.
 
     @param create_using: specifies which NetworkX graph class to use when
@@ -37,31 +10,31 @@ def export_graph_to_networkx(self, create_using=None):
 
     # Graph: decide on directness and mutliplicity
     if create_using is None:
-        if self.has_multiple():
-            cls = nx.MultiDiGraph if self.is_directed() else nx.MultiGraph
+        if graph.has_multiple():
+            cls = nx.MultiDiGraph if graph.is_directed() else nx.MultiGraph
         else:
-            cls = nx.DiGraph if self.is_directed() else nx.Graph
+            cls = nx.DiGraph if graph.is_directed() else nx.Graph
     else:
         cls = create_using
 
     # Graph attributes
-    kw = {x: self[x] for x in self.attributes()}
+    kw = {x: graph[x] for x in graph.attributes()}
     g = cls(**kw)
 
     # Nodes and node attributes
-    for i, v in enumerate(self.vs):
+    for i, v in enumerate(graph.vs):
         # TODO: use _nx_name if the attribute is present so we can achieve
         # a lossless round-trip in terms of vertex names
         g.add_node(i, **v.attributes())
 
     # Edges and edge attributes
-    for edge in self.es:
+    for edge in graph.es:
         g.add_edge(edge.source, edge.target, **edge.attributes())
 
     return g
 
 
-def construct_graph_from_networkx(cls, g):
+def _construct_graph_from_networkx(cls, g):
     """Converts the graph from networkx
 
     Vertex names will be converted to "_nx_name" attribute and the vertices
@@ -102,8 +75,9 @@ def construct_graph_from_networkx(cls, g):
 
     return graph
 
-def export_graph_to_graph_tool(
-    self, graph_attributes=None, vertex_attributes=None, edge_attributes=None
+
+def _export_graph_to_graph_tool(
+    graph, graph_attributes=None, vertex_attributes=None, edge_attributes=None
 ):
     """Converts the graph to graph-tool
 
@@ -132,10 +106,10 @@ def export_graph_to_graph_tool(
     import graph_tool as gt
 
     # Graph
-    g = gt.Graph(directed=self.is_directed())
+    g = gt.Graph(directed=graph.is_directed())
 
     # Nodes
-    vc = self.vcount()
+    vc = graph.vcount()
     g.add_vertex(vc)
 
     # Graph attributes
@@ -144,7 +118,7 @@ def export_graph_to_graph_tool(
             # Strange syntax for setting internal properties
             gprop = g.new_graph_property(str(dtype))
             g.graph_properties[x] = gprop
-            g.graph_properties[x] = self[x]
+            g.graph_properties[x] = graph[x]
 
     # Vertex attributes
     if vertex_attributes is not None:
@@ -153,13 +127,13 @@ def export_graph_to_graph_tool(
             g.vertex_properties[x] = g.new_vertex_property(str(dtype))
             # Fill the values from the igraph.Graph
             for i in range(vc):
-                g.vertex_properties[x][g.vertex(i)] = self.vs[i][x]
+                g.vertex_properties[x][g.vertex(i)] = graph.vs[i][x]
 
     # Edges and edge attributes
     if edge_attributes is not None:
         for x, dtype in list(edge_attributes.items()):
             g.edge_properties[x] = g.new_edge_property(str(dtype))
-    for edge in self.es:
+    for edge in graph.es:
         e = g.add_edge(edge.source, edge.target)
         if edge_attributes is not None:
             for x, dtype in list(edge_attributes.items()):
@@ -169,7 +143,7 @@ def export_graph_to_graph_tool(
     return g
 
 
-def construct_graph_from_graph_tool(cls, g):
+def _construct_graph_from_graph_tool(cls, g):
     """Converts the graph from graph-tool
 
     @param g: graph-tool Graph

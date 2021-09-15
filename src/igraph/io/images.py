@@ -1,37 +1,10 @@
-"""
-IGraph library.
-"""
-
-
-__license__ = """
-Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
-Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
-
-Copyright (C) 2021- igraph development team
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301 USA
-"""
-
 import math
 
 from igraph.drawing import BoundingBox
 
 
-def write_graph_to_svg(
-    self,
+def _write_graph_to_svg(
+    graph,
     fname,
     layout="auto",
     width=None,
@@ -98,39 +71,39 @@ def write_graph_to_svg(
         raise ValueError("width and height must be positive")
 
     if isinstance(layout, str):
-        layout = self.layout(layout, *args, **kwds)
+        layout = graph.layout(layout, *args, **kwds)
 
     if isinstance(labels, str):
         try:
-            labels = self.vs.get_attribute_values(labels)
+            labels = graph.vs.get_attribute_values(labels)
         except KeyError:
-            labels = [x + 1 for x in range(self.vcount())]
+            labels = [x + 1 for x in range(graph.vcount())]
     elif labels is None:
-        labels = [""] * self.vcount()
+        labels = [""] * graph.vcount()
 
     if isinstance(colors, str):
         try:
-            colors = self.vs.get_attribute_values(colors)
+            colors = graph.vs.get_attribute_values(colors)
         except KeyError:
-            colors = ["red"] * self.vcount()
+            colors = ["red"] * graph.vcount()
 
     if isinstance(shapes, str):
         try:
-            shapes = self.vs.get_attribute_values(shapes)
+            shapes = graph.vs.get_attribute_values(shapes)
         except KeyError:
-            shapes = [1] * self.vcount()
+            shapes = [1] * graph.vcount()
 
     if isinstance(edge_colors, str):
         try:
-            edge_colors = self.es.get_attribute_values(edge_colors)
+            edge_colors = graph.es.get_attribute_values(edge_colors)
         except KeyError:
-            edge_colors = ["black"] * self.ecount()
+            edge_colors = ["black"] * graph.ecount()
 
     if isinstance(edge_stroke_widths, str):
         try:
-            edge_stroke_widths = self.es.get_attribute_values(edge_stroke_widths)
+            edge_stroke_widths = graph.es.get_attribute_values(edge_stroke_widths)
         except KeyError:
-            edge_stroke_widths = [2] * self.ecount()
+            edge_stroke_widths = [2] * graph.ecount()
 
     if not isinstance(font_size, str):
         font_size = "%spx" % str(font_size)
@@ -138,7 +111,7 @@ def write_graph_to_svg(
         if ";" in font_size:
             raise ValueError("font size can't contain a semicolon")
 
-    vcount = self.vcount()
+    vcount = graph.vcount()
     labels.extend(str(i + 1) for i in range(len(labels), vcount))
     colors.extend(["red"] * (vcount - len(colors)))
 
@@ -172,7 +145,7 @@ def write_graph_to_svg(
         for row in layout
     ]
 
-    directed = self.is_directed()
+    directed = graph.is_directed()
 
     print('<?xml version="1.0" encoding="UTF-8" standalone="no"?>', file=f)
     print(
@@ -233,7 +206,7 @@ def write_graph_to_svg(
         file=f,
     )
 
-    for eidx, edge in enumerate(self.es):
+    for eidx, edge in enumerate(graph.es):
         vidxs = edge.tuple
         x1 = layout[vidxs[0]][0]
         y1 = layout[vidxs[0]][1]
@@ -301,7 +274,7 @@ def write_graph_to_svg(
     else:
         tk_window = None
 
-    for vidx in range(self.vcount()):
+    for vidx in range(graph.vcount()):
         print(
             '    <g id="g{0}" transform="translate({1},{2})">'.format(
                 vidx, layout[vidx][0], layout[vidx][1]

@@ -1,41 +1,10 @@
-"""
-IGraph library.
-"""
-
-
-__license__ = """
-Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
-Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
-
-Copyright (C) 2021- igraph development team
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301 USA
-"""
 from warnings import warn
 
 from igraph.datatypes import UniqueIdGenerator
+from igraph.utils import first
 
 
-def _first(iterable, default=None):
-    for item in iterable:
-        return item
-    return default
-
-
-def construct_graph_from_dict_list(
+def _construct_graph_from_dict_list(
     cls,
     vertices,
     edges,
@@ -156,7 +125,7 @@ def construct_graph_from_dict_list(
         return cls(n, edge_list, directed, {}, vertex_attrs, edge_attrs)
 
 
-def construct_graph_from_tuple_list(
+def _construct_graph_from_tuple_list(
     cls,
     edges,
     directed=False,
@@ -216,9 +185,7 @@ def construct_graph_from_tuple_list(
             edge_attrs = [weights]
     else:
         if weights:
-            raise ValueError(
-                "`weights` must be False if `edge_attrs` is " "not None"
-            )
+            raise ValueError("`weights` must be False if `edge_attrs` is " "not None")
 
     if isinstance(edge_attrs, str):
         edge_attrs = [edge_attrs]
@@ -249,7 +216,7 @@ def construct_graph_from_tuple_list(
     return cls(n, edge_list, directed, {}, vertex_attributes, edge_attributes)
 
 
-def construct_graph_from_sequence_dict(
+def _construct_graph_from_sequence_dict(
     cls,
     edges,
     directed=False,
@@ -276,7 +243,7 @@ def construct_graph_from_sequence_dict(
     # The graph has three vertices with names and three edges connecting
     # each pair.
     """
-    item = _first(edges, default=0)
+    item = first(edges, default=0)
 
     if not isinstance(item, (int, str)):
         raise ValueError("Keys must be integers or strings")
@@ -305,7 +272,7 @@ def construct_graph_from_sequence_dict(
     return cls(n, edge_list, directed, {}, vertex_attributes, {})
 
 
-def construct_graph_from_dict_dict(
+def _construct_graph_from_dict_dict(
     cls,
     edges,
     directed=False,
@@ -327,7 +294,7 @@ def construct_graph_from_dict_dict(
     - Alice - Bob (with weight 1.5)
     - Alice - David (with weight 2)
     """
-    item = _first(edges, default=0)
+    item = first(edges, default=0)
 
     if not isinstance(item, (int, str)):
         raise ValueError("Keys must be integers or strings")
@@ -342,7 +309,7 @@ def construct_graph_from_dict_dict(
             for target, edge_attrs in target_dict.items():
                 edge_list.append((source_id, name_map[target]))
                 edge_attribute_list.append(edge_attrs)
-        vertex_attributes['name'] = name_map.values()
+        vertex_attributes["name"] = name_map.values()
         n = len(name_map)
 
     else:
@@ -366,7 +333,13 @@ def construct_graph_from_dict_dict(
     return graph
 
 
-def construct_graph_from_dataframe(cls, edges, directed=True, vertices=None, use_vids=True):
+def _construct_graph_from_dataframe(
+    cls,
+    edges,
+    directed=True,
+    vertices=None,
+    use_vids=True,
+):
     """Generates a graph from one or two dataframes.
 
     @param edges: pandas DataFrame containing edges and metadata. The first
@@ -412,23 +385,36 @@ def construct_graph_from_dataframe(cls, edges, directed=True, vertices=None, use
         raise ValueError("The 'vertices' DataFrame must contain at least one column")
 
     if use_vids:
-        if not (str(edges.dtypes[0]).startswith("int") and str(edges.dtypes[1]).startswith("int")):
-            raise TypeError(f"Source and target IDs must be 0-based integers, found types {edges.dtypes.tolist()[:2]}")
+        if not (
+            str(edges.dtypes[0]).startswith("int")
+            and str(edges.dtypes[1]).startswith("int")
+        ):
+            raise TypeError(
+                f"Source and target IDs must be 0-based integers, found types {edges.dtypes.tolist()[:2]}"
+            )
         elif (edges.iloc[:, :2] < 0).any(axis=None):
             raise ValueError("Source and target IDs must not be negative")
         if vertices is not None:
             vertices = vertices.sort_index()
-            if not vertices.index.equals(pd.RangeIndex.from_range(range(vertices.shape[0]))):
+            if not vertices.index.equals(
+                pd.RangeIndex.from_range(range(vertices.shape[0]))
+            ):
                 if not str(vertices.index.dtype).startswith("int"):
-                    raise TypeError(f"Vertex IDs must be 0-based integers, found type {vertices.index.dtype}")
+                    raise TypeError(
+                        f"Vertex IDs must be 0-based integers, found type {vertices.index.dtype}"
+                    )
                 elif (vertices.index < 0).any(axis=None):
                     raise ValueError("Vertex IDs must not be negative")
                 else:
-                    raise ValueError(f"Vertex IDs must be an integer sequence from 0 to {vertices.shape[0] - 1}")
+                    raise ValueError(
+                        f"Vertex IDs must be an integer sequence from 0 to {vertices.shape[0] - 1}"
+                    )
     else:
         # Handle if some source and target names in 'edges' are 'NA'
         if edges.iloc[:, :2].isna().any(axis=None):
-            warn("In the first two columns of 'edges' NA elements were replaced with string \"NA\"")
+            warn(
+                "In the first two columns of 'edges' NA elements were replaced with string \"NA\""
+            )
             edges = edges.copy()
             edges.iloc[:, :2].fillna("NA", inplace=True)
 
@@ -437,7 +423,9 @@ def construct_graph_from_dataframe(cls, edges, directed=True, vertices=None, use
             vertices = pd.DataFrame({"name": np.unique(edges.values[:, :2])})
 
         if vertices.iloc[:, 0].isna().any():
-            warn("In the first column of 'vertices' NA elements were replaced with string \"NA\"")
+            warn(
+                "In the first column of 'vertices' NA elements were replaced with string \"NA\""
+            )
             vertices = vertices.copy()
             vertices.iloc[:, 0].fillna("NA", inplace=True)
 
@@ -445,9 +433,13 @@ def construct_graph_from_dataframe(cls, edges, directed=True, vertices=None, use
             raise ValueError("Vertex names must be unique")
 
         if vertices.shape[1] > 1 and "name" in vertices.columns[1:]:
-            raise ValueError("Vertex attribute conflict: DataFrame already contains column 'name'")
+            raise ValueError(
+                "Vertex attribute conflict: DataFrame already contains column 'name'"
+            )
 
-        vertices = vertices.rename({vertices.columns[0]: "name"}, axis=1).reset_index(drop=True)
+        vertices = vertices.rename({vertices.columns[0]: "name"}, axis=1).reset_index(
+            drop=True
+        )
 
         # Map source and target names in 'edges' to IDs
         vid_map = pd.Series(vertices.index, index=vertices.iloc[:, 0])
@@ -458,25 +450,27 @@ def construct_graph_from_dataframe(cls, edges, directed=True, vertices=None, use
     # Create graph
     if vertices is None:
         nv = edges.iloc[:, :2].max().max() + 1
-        g = Graph(n=nv, directed=directed)
+        g = cls(n=nv, directed=directed)
     else:
         if not edges.iloc[:, :2].isin(vertices.index).all(axis=None):
-            raise ValueError("Some vertices in the edge DataFrame are missing from vertices DataFrame")
+            raise ValueError(
+                "Some vertices in the edge DataFrame are missing from vertices DataFrame"
+            )
         nv = vertices.shape[0]
-        g = Graph(n=nv, directed=directed)
+        g = cls(n=nv, directed=directed)
         # Add vertex attributes
         for col in vertices.columns:
             g.vs[col] = vertices[col].tolist()
 
     # add edges including optional attributes
     e_list = list(edges.iloc[:, :2].itertuples(index=False, name=None))
-    e_attr = edges.iloc[:, 2:].to_dict(orient='list') if edges.shape[1] > 2 else None
+    e_attr = edges.iloc[:, 2:].to_dict(orient="list") if edges.shape[1] > 2 else None
     g.add_edges(e_list, e_attr)
 
     return g
 
 
-def export_vertex_dataframe(self):
+def _export_vertex_dataframe(graph):
     """Export vertices with attributes to pandas.DataFrame
 
     If you want to use vertex names as index, you can do:
@@ -497,15 +491,15 @@ def export_vertex_dataframe(self):
         raise ImportError("You should install pandas in order to use this function")
 
     df = pd.DataFrame(
-        {attr: self.vs[attr] for attr in self.vertex_attributes()},
-        index=list(range(self.vcount())),
+        {attr: graph.vs[attr] for attr in graph.vertex_attributes()},
+        index=list(range(graph.vcount())),
     )
     df.index.name = "vertex ID"
 
     return df
 
 
-def export_edge_dataframe(self):
+def _export_edge_dataframe(graph):
     """Export edges with attributes to pandas.DataFrame
 
     If you want to use source and target vertex IDs as index, you can do:
@@ -541,19 +535,19 @@ def export_edge_dataframe(self):
         raise ImportError("You should install pandas in order to use this function")
 
     df = pd.DataFrame(
-        {attr: self.es[attr] for attr in self.edge_attributes()},
-        index=list(range(self.ecount())),
+        {attr: graph.es[attr] for attr in graph.edge_attributes()},
+        index=list(range(graph.ecount())),
     )
     df.index.name = "edge ID"
 
-    df.insert(0, "source", [e.source for e in self.es], allow_duplicates=True)
-    df.insert(1, "target", [e.target for e in self.es], allow_duplicates=True)
+    df.insert(0, "source", [e.source for e in graph.es], allow_duplicates=True)
+    df.insert(1, "target", [e.target for e in graph.es], allow_duplicates=True)
 
     return df
 
 
-def export_graph_to_sequence_dict(self, use_vids=True, sequence_constructor=list):
-    '''Export graph to a dictionary of sequences
+def _export_graph_to_sequence_dict(self, use_vids=True, sequence_constructor=list):
+    """Export graph to a dictionary of sequences
 
     This function is the reverse of SequenceDict.
 
@@ -566,10 +560,10 @@ def export_graph_to_sequence_dict(self, use_vids=True, sequence_constructor=list
 
     g.vs['name'] = ['apple', 'pear', 'peach']
     g.to_sequence_dict(use_vids=False) -> {'apple': ['pear', 'peach'], 'pear': ['peach']}
-    '''
+    """
     from collections import defaultdict
 
-    if (not use_vids) and ('name' not in self.vertex_attributes()):
+    if (not use_vids) and ("name" not in self.vertex_attributes()):
         raise AttributeError('Vertices do not have a "name" attribute')
 
     # Temporary output data structure
@@ -579,8 +573,8 @@ def export_graph_to_sequence_dict(self, use_vids=True, sequence_constructor=list
         source, target = edge.tuple
 
         if not use_vids:
-            source = self.vs[source]['name']
-            target = self.vs[target]['name']
+            source = self.vs[source]["name"]
+            target = self.vs[target]["name"]
 
         res[source].append(target)
 

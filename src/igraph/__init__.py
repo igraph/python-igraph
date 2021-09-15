@@ -4,8 +4,7 @@ IGraph library.
 
 
 __license__ = """
-Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
-Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
+Copyright (C) 2006- The igraph development team
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -122,50 +121,49 @@ from igraph.drawing.colors import (
 from igraph.datatypes import Matrix, DyadCensus, TriadCensus, UniqueIdGenerator
 from igraph.formula import construct_graph_from_formula
 from igraph.io.files import (
-    construct_graph_from_graphmlz_file,
-    construct_graph_from_dimacs_file,
-    construct_graph_from_pickle_file,
-    construct_graph_from_picklez_file,
-    construct_graph_from_adjacency_file,
-    construct_graph_from_file,
-    write_graph_to_adjacency_file,
-    write_graph_to_dimacs_file,
-    write_graph_to_graphmlz_file,
-    write_graph_to_pickle_file,
-    write_graph_to_picklez_file,
-    write_graph_to_file,
-
+    _construct_graph_from_graphmlz_file,
+    _construct_graph_from_dimacs_file,
+    _construct_graph_from_pickle_file,
+    _construct_graph_from_picklez_file,
+    _construct_graph_from_adjacency_file,
+    _construct_graph_from_file,
+    _write_graph_to_adjacency_file,
+    _write_graph_to_dimacs_file,
+    _write_graph_to_graphmlz_file,
+    _write_graph_to_pickle_file,
+    _write_graph_to_picklez_file,
+    _write_graph_to_file,
 )
 from igraph.io.objects import (
-    construct_graph_from_dict_list,
-    construct_graph_from_tuple_list,
-    construct_graph_from_sequence_dict,
-    construct_graph_from_dict_dict,
-    construct_graph_from_dataframe,
-    export_vertex_dataframe,
-    export_edge_dataframe,
-    export_graph_to_sequence_dict,
+    _construct_graph_from_dict_list,
+    _construct_graph_from_tuple_list,
+    _construct_graph_from_sequence_dict,
+    _construct_graph_from_dict_dict,
+    _construct_graph_from_dataframe,
+    _export_vertex_dataframe,
+    _export_edge_dataframe,
+    _export_graph_to_sequence_dict,
 )
 from igraph.io.adjacency import (
-    construct_graph_from_adjacency,
-    construct_graph_from_weighted_adjacency,
+    _construct_graph_from_adjacency,
+    _construct_graph_from_weighted_adjacency,
 )
 from igraph.io.libraries import (
-    construct_graph_from_networkx,
-    export_graph_to_networkx,
-    construct_graph_from_graph_tool,
-    export_graph_to_graph_tool,
+    _construct_graph_from_networkx,
+    _export_graph_to_networkx,
+    _construct_graph_from_graph_tool,
+    _export_graph_to_graph_tool,
 )
 from igraph.io.random import (
-    construct_random_geometric_graph,
+    _construct_random_geometric_graph,
 )
 from igraph.io.bipartite import (
-    construct_bipartite_graph,
-    construct_incidence_bipartite_graph,
-    construct_full_bipartite_graph,
-    construct_random_bipartite_graph,
+    _construct_bipartite_graph,
+    _construct_incidence_bipartite_graph,
+    _construct_full_bipartite_graph,
+    _construct_random_bipartite_graph,
 )
-from igraph.io.images import write_graph_to_svg
+from igraph.io.images import _write_graph_to_svg
 from igraph.layout import Layout
 from igraph.matching import Matching
 from igraph.operators import disjoint_union, union, intersection
@@ -1917,72 +1915,70 @@ class Graph(GraphBase):
     # Auxiliary I/O functions
 
     # Graph libraries
-    from_networkx = classmethod(construct_graph_from_networkx)
-    to_networkx = export_graph_to_networkx
+    from_networkx = classmethod(_construct_graph_from_networkx)
+    to_networkx = _export_graph_to_networkx
 
-    from_graph_tool = classmethod(construct_graph_from_graph_tool)
-    to_graph_tool = export_graph_to_graph_tool
+    from_graph_tool = classmethod(_construct_graph_from_graph_tool)
+    to_graph_tool = _export_graph_to_graph_tool
 
     # Files
-    Read_DIMACS = classmethod(construct_graph_from_dimacs_file)
-    write_dimacs = write_graph_to_dimacs_file
+    Read_DIMACS = classmethod(_construct_graph_from_dimacs_file)
+    write_dimacs = _write_graph_to_dimacs_file
 
-    Read_GraphMLz = classmethod(construct_graph_from_graphmlz_file)
-    write_graphmlz = write_graph_to_graphmlz_file
+    Read_GraphMLz = classmethod(_construct_graph_from_graphmlz_file)
+    write_graphmlz = _write_graph_to_graphmlz_file
 
-    Read_Pickle = classmethod(construct_graph_from_pickle_file)
-    write_pickle = write_graph_to_pickle_file
+    Read_Pickle = classmethod(_construct_graph_from_pickle_file)
+    write_pickle = _write_graph_to_pickle_file
 
-    Read_Picklez = classmethod(construct_graph_from_picklez_file)
-    write_picklez = write_graph_to_picklez_file
+    Read_Picklez = classmethod(_construct_graph_from_picklez_file)
+    write_picklez = _write_graph_to_picklez_file
 
-    Read_Adjacency = classmethod(construct_graph_from_adjacency_file)
-    write_adjacency = write_graph_to_adjacency_file
+    Read_Adjacency = classmethod(_construct_graph_from_adjacency_file)
+    write_adjacency = _write_graph_to_adjacency_file
 
-    write_svg = write_graph_to_svg
-
-    Read = classmethod(construct_graph_from_file)
+    Read = classmethod(_construct_graph_from_file)
     Load = Read
-    write = write_graph_to_file
+    write = _write_graph_to_file
     save = write
 
     # Various objects
     # list of dict representation of graphs
-    DictList = classmethod(construct_graph_from_dict_list)
+    DictList = classmethod(_construct_graph_from_dict_list)
 
     # tuple-like representation of graphs
-    TupleList = classmethod(construct_graph_from_tuple_list)
+    TupleList = classmethod(_construct_graph_from_tuple_list)
 
     # dict of sequence representation of graphs
-    SequenceDict = classmethod(construct_graph_from_sequence_dict)
-    to_sequence_dict = export_graph_to_sequence_dict
+    SequenceDict = classmethod(_construct_graph_from_sequence_dict)
+    to_sequence_dict = _export_graph_to_sequence_dict
 
     # dict of dicts representation of graphs
-    DictDict = classmethod(construct_graph_from_dict_dict)
+    DictDict = classmethod(_construct_graph_from_dict_dict)
 
     # adjacency matrix
-    Adjacency = classmethod(construct_graph_from_adjacency)
+    Adjacency = classmethod(_construct_graph_from_adjacency)
 
-    Weighted_Adjacency = classmethod(construct_graph_from_weighted_adjacency)
+    Weighted_Adjacency = classmethod(_construct_graph_from_weighted_adjacency)
 
     # pandas dataframe(s)
-    DataFrame = classmethod(construct_graph_from_dataframe)
+    DataFrame = classmethod(_construct_graph_from_dataframe)
 
-    get_vertex_dataframe = export_vertex_dataframe
+    get_vertex_dataframe = _export_vertex_dataframe
 
-    get_edge_dataframe = export_edge_dataframe
+    get_edge_dataframe = _export_edge_dataframe
 
     # Bipartite graphs
-    Bipartite = classmethod(construct_bipartite_graph)
+    Bipartite = classmethod(_construct_bipartite_graph)
 
-    Incidence = classmethod(construct_incidence_bipartite_graph)
+    Incidence = classmethod(_construct_incidence_bipartite_graph)
 
-    Full_Bipartite = classmethod(construct_full_bipartite_graph)
+    Full_Bipartite = classmethod(_construct_full_bipartite_graph)
 
-    Random_Bipartite = classmethod(construct_random_bipartite_graph)
+    Random_Bipartite = classmethod(_construct_random_bipartite_graph)
 
     # Other constructors
-    GRG = classmethod(construct_random_geometric_graph)
+    GRG = classmethod(_construct_random_geometric_graph)
 
     # Graph formulae
     Formula = classmethod(construct_graph_from_formula)
@@ -2580,7 +2576,6 @@ class Graph(GraphBase):
         drawer = kwds.pop(
             "drawer_factory",
             DrawerDirectory.resolve(self, backend)(context),
-
         )
         drawer.draw(self, *args, **kwds)
 
@@ -3712,26 +3707,27 @@ config = init_configuration()
 # Remove constructors from namespace
 del (
     construct_graph_from_formula,
-    construct_graph_from_graphmlz_file,
-    construct_graph_from_dimacs_file,
-    construct_graph_from_pickle_file,
-    construct_graph_from_picklez_file,
-    construct_graph_from_adjacency_file,
-    construct_graph_from_file,
-    construct_graph_from_dict_list,
-    construct_graph_from_tuple_list,
-    construct_graph_from_sequence_dict,
-    construct_graph_from_dict_dict,
-    construct_graph_from_adjacency,
-    construct_graph_from_weighted_adjacency,
-    construct_graph_from_dataframe,
-    construct_random_geometric_graph,
-    construct_bipartite_graph,
-    construct_incidence_bipartite_graph,
-    construct_full_bipartite_graph,
-    construct_random_bipartite_graph,
-    construct_graph_from_networkx,
-    export_graph_to_networkx,
-    construct_graph_from_graph_tool,
-    export_graph_to_graph_tool,
-    )
+    _construct_graph_from_graphmlz_file,
+    _construct_graph_from_dimacs_file,
+    _construct_graph_from_pickle_file,
+    _construct_graph_from_picklez_file,
+    _construct_graph_from_adjacency_file,
+    _construct_graph_from_file,
+    _construct_graph_from_dict_list,
+    _construct_graph_from_tuple_list,
+    _construct_graph_from_sequence_dict,
+    _construct_graph_from_dict_dict,
+    _construct_graph_from_adjacency,
+    _construct_graph_from_weighted_adjacency,
+    _construct_graph_from_dataframe,
+    _construct_random_geometric_graph,
+    _construct_bipartite_graph,
+    _construct_incidence_bipartite_graph,
+    _construct_full_bipartite_graph,
+    _construct_random_bipartite_graph,
+    _construct_graph_from_networkx,
+    _export_graph_to_networkx,
+    _construct_graph_from_graph_tool,
+    _export_graph_to_graph_tool,
+    _export_graph_to_sequence_dict,
+)
