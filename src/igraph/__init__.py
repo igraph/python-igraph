@@ -144,6 +144,7 @@ from igraph.io.objects import (
     construct_graph_from_dataframe,
     export_vertex_dataframe,
     export_edge_dataframe,
+    export_graph_to_sequence_dict,
 )
 from igraph.io.adjacency import (
     construct_graph_from_adjacency,
@@ -1916,42 +1917,34 @@ class Graph(GraphBase):
     # Auxiliary I/O functions
 
     # Graph libraries
+    from_networkx = classmethod(construct_graph_from_networkx)
     to_networkx = export_graph_to_networkx
 
-    from_networkx = classmethod(construct_graph_from_networkx)
-
+    from_graph_tool = classmethod(construct_graph_from_graph_tool)
     to_graph_tool = export_graph_to_graph_tool
 
-    from_graph_tool = classmethod(construct_graph_from_graph_tool)
-
     # Files
-    write_adjacency = write_graph_to_adjacency_file
-
+    Read_DIMACS = classmethod(construct_graph_from_dimacs_file)
     write_dimacs = write_graph_to_dimacs_file
 
+    Read_GraphMLz = classmethod(construct_graph_from_graphmlz_file)
     write_graphmlz = write_graph_to_graphmlz_file
 
+    Read_Pickle = classmethod(construct_graph_from_pickle_file)
     write_pickle = write_graph_to_pickle_file
 
+    Read_Picklez = classmethod(construct_graph_from_picklez_file)
     write_picklez = write_graph_to_picklez_file
+
+    Read_Adjacency = classmethod(construct_graph_from_adjacency_file)
+    write_adjacency = write_graph_to_adjacency_file
 
     write_svg = write_graph_to_svg
 
-    write = write_graph_to_file
-    save = write
-
-    Read_DIMACS = classmethod(construct_graph_from_dimacs_file)
-
-    Read_GraphMLz = classmethod(construct_graph_from_graphmlz_file)
-
-    Read_Pickle = classmethod(construct_graph_from_pickle_file)
-
-    Read_Picklez = classmethod(construct_graph_from_picklez_file)
-
-    Read_Adjacency = classmethod(construct_graph_from_adjacency_file)
-
     Read = classmethod(construct_graph_from_file)
     Load = Read
+    write = write_graph_to_file
+    save = write
 
     # Various objects
     # list of dict representation of graphs
@@ -1962,6 +1955,7 @@ class Graph(GraphBase):
 
     # dict of sequence representation of graphs
     SequenceDict = classmethod(construct_graph_from_sequence_dict)
+    to_sequence_dict = export_graph_to_sequence_dict
 
     # dict of dicts representation of graphs
     DictDict = classmethod(construct_graph_from_dict_dict)

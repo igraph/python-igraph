@@ -405,6 +405,26 @@ class ForeignTests(unittest.TestCase):
             self.assertTrue(g.vcount() == 3 and g.ecount() == 1 and not g.is_directed())
             g.write_pickle(tmpfname)
 
+    def testSequenceDict(self):
+        g = Graph.Full(3)
+
+        # Check with vertex ids
+        self.assertEqual(g.to_sequence_dict(), {0: [1, 2], 1: [2]})
+        self.assertEqual(
+            g.to_sequence_dict(sequence_constructor=tuple),
+            {0: (1, 2), 1: (2,)},
+        )
+
+        # Check failure for vertex names
+        self.assertRaises(AttributeError, g.to_sequence_dict, False)
+
+        # Check with vertex names
+        g.vs['name'] = ['apple', 'pear', 'peach']
+        self.assertEqual(
+            g.to_sequence_dict(use_vids=False),
+            {'apple': ['pear', 'peach'], 'pear': ['peach']},
+        )
+
     @unittest.skipIf(pd is None, "test case depends on Pandas")
     def testVertexDataFrames(self):
         g = Graph([(0, 1), (0, 2), (0, 3), (1, 2), (2, 4)])
@@ -482,7 +502,6 @@ class ForeignTests(unittest.TestCase):
 
         i = 2 + list(df.columns[2:]).index("source")
         self.assertEqual(list(df.iloc[:, i]), g.es["source"])
-
 
     @unittest.skipIf(nx is None, "test case depends on networkx")
     def testGraphNetworkx(self):

@@ -267,6 +267,14 @@ def construct_graph_from_sequence_dict(
 
     If names are used, the order of vertices is not guaranteed, and each
     vertex will be given the vertex_name_attr attribute.
+
+    Example:
+
+    mydict = {'apple': ['pear', 'peach'], 'pear': ['peach']}
+    g = Graph.SequenceDict(mydict)
+
+    # The graph has three vertices with names and three edges connecting
+    # each pair.
     """
     item = _first(edges, default=0)
 
@@ -358,7 +366,7 @@ def construct_graph_from_dict_dict(
     return graph
 
 
-def construct_graph_from_dataframe(cls, edges, directed=True, vertices=None, use_vids=False):
+def construct_graph_from_dataframe(cls, edges, directed=True, vertices=None, use_vids=True):
     """Generates a graph from one or two dataframes.
 
     @param edges: pandas DataFrame containing edges and metadata. The first
@@ -542,3 +550,38 @@ def export_edge_dataframe(self):
 
     return df
 
+
+def export_graph_to_sequence_dict(self, use_vids=True, sequence_constructor=list):
+    '''Export graph to a dictionary of sequences
+
+    This function is the reverse of SequenceDict.
+
+    Example:
+
+    g = Graph.Full(3)
+    g.to_sequence_dict() -> {0: [1, 2], 1: [2]}
+
+    g.to_sequence_dict(sequence_constructor=tuple) -> {0: (1, 2), 1: (2,)}
+
+    g.vs['name'] = ['apple', 'pear', 'peach']
+    g.to_sequence_dict(use_vids=False) -> {'apple': ['pear', 'peach'], 'pear': ['peach']}
+    '''
+    from collections import defaultdict
+
+    if (not use_vids) and ('name' not in self.vertex_attributes()):
+        raise AttributeError('Vertices do not have a "name" attribute')
+
+    # Temporary output data structure
+    res = defaultdict(list)
+
+    for edge in self.es:
+        source, target = edge.tuple
+
+        if not use_vids:
+            source = self.vs[source]['name']
+            target = self.vs[target]['name']
+
+        res[source].append(target)
+
+    res = {key: sequence_constructor(val) for key, val in res.items()}
+    return res

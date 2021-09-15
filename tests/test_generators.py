@@ -389,11 +389,12 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(g.vs["name"] == [1, 2, 3, 4, 5, 6])
         self.assertTrue(g.vs["label"] == ["1", "2", "3", "4", "5", "6"])
 
-        # Vertex ids
+        # Vertex names
         edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
         g = Graph.DataFrame(edges, use_vids=False)
         self.assertTrue(g.vcount() == 6)
 
+        # Vertex ids
         edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
         g = Graph.DataFrame(edges)
         self.assertTrue(g.vcount() == 7)
