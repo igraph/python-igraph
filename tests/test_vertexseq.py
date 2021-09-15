@@ -4,10 +4,7 @@ import unittest
 
 from igraph import *
 
-try:
-    from .utils import is_pypy
-except ImportError:
-    from utils import is_pypy
+from .utils import is_pypy
 
 try:
     import numpy as np

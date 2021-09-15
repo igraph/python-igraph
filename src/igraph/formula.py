@@ -75,8 +75,7 @@ def generate_edges(formula):
             else:
                 msg = (
                     "invalid token found in edge specification: %s; "
-                    "token_type=%r; tok=%r"
-                    % (formula, token_type, tok)
+                    "token_type=%r; tok=%r" % (formula, token_type, tok)
                 )
                 raise SyntaxError(msg)
         else:

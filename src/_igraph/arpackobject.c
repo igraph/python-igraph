@@ -21,49 +21,44 @@
 */
 
 #include "arpackobject.h"
-#include "graphobject.h"
+#include "convert.h"
 #include "error.h"
+#include "graphobject.h"
+#include "pyhelpers.h"
 
+PyTypeObject* igraphmodule_ARPACKOptionsType;
 PyObject* igraphmodule_arpack_options_default;
-
-/**
- * \ingroup python_interface_arpack
- * \brief Checks if the object is an ARPACK parameter object
- */
-int igraphmodule_ARPACKOptions_Check(PyObject *ob) {
-  if (ob) return PyType_IsSubtype(ob->ob_type, &igraphmodule_ARPACKOptionsType);
-  return 0;
-}
 
 /**
  * \ingroup python_interface_arpack
  * \brief Allocates a new ARPACK parameters object
  */
-PyObject* igraphmodule_ARPACKOptions_new() {
-  igraphmodule_ARPACKOptionsObject* self;
-  self=PyObject_New(igraphmodule_ARPACKOptionsObject,
-    &igraphmodule_ARPACKOptionsType);
-  if (self) {
-    igraph_arpack_options_init(&self->params);
-    igraph_arpack_options_init(&self->params_out);
+int igraphmodule_ARPACKOptions_init(igraphmodule_ARPACKOptionsObject *self, PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = { NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
+    return -1;
   }
-  return (PyObject*)self;
+
+  igraph_arpack_options_init(&self->params);
+  igraph_arpack_options_init(&self->params_out);
+
+  return 0;
 }
 
 /**
  * \ingroup python_interface_arpack
  * \brief Deallocates a Python representation of a given ARPACK parameters object
  */
-void igraphmodule_ARPACKOptions_dealloc(
-  igraphmodule_ARPACKOptionsObject* self) {
-  /*igraph_arpack_options_destroy(&self->params);*/
-  PyObject_Del((PyObject*)self);
+static void igraphmodule_ARPACKOptions_dealloc(igraphmodule_ARPACKOptionsObject* self) {
+  RC_DEALLOC("ARPACKOptions", self);
+  PY_FREE_AND_DECREF_TYPE(self, igraphmodule_ARPACKOptionsType);
 }
 
 /** \ingroup python_interface_arpack
  * \brief Returns one of the attributes of a given ARPACK parameters object
  */
-PyObject* igraphmodule_ARPACKOptions_getattr(
+static PyObject* igraphmodule_ARPACKOptions_getattr(
   igraphmodule_ARPACKOptionsObject* self, char* attrname) {
   PyObject *result = NULL;
 
@@ -78,7 +73,7 @@ PyObject* igraphmodule_ARPACKOptions_getattr(
   } else if (strcmp(attrname, "nev") == 0) {
     result=PyLong_FromLong(self->params.nev);
   } else if (strcmp(attrname, "tol") == 0) {
-    result=PyFloat_FromDouble((double)self->params.tol);
+    result=PyFloat_FromDouble(self->params.tol);
   } else if (strcmp(attrname, "ncv") == 0) {
     result=PyLong_FromLong(self->params.ncv);
   } else if (strcmp(attrname, "ldv") == 0) {
@@ -117,9 +112,11 @@ PyObject* igraphmodule_ARPACKOptions_getattr(
 /** \ingroup python_interface_arpack
  * \brief Sets one of the attributes of a given ARPACK parameters object
  */
-int igraphmodule_ARPACKOptions_setattr(
+static int igraphmodule_ARPACKOptions_setattr(
   igraphmodule_ARPACKOptionsObject* self, char* attrname,
   PyObject* value) {
+  igraph_integer_t igraph_int;
+
   if (value == 0) {
     PyErr_SetString(PyExc_TypeError, "attribute can not be deleted");
     return -1;
@@ -127,10 +124,13 @@ int igraphmodule_ARPACKOptions_setattr(
   if (strcmp(attrname, "maxiter") == 0 ||
       strcmp(attrname, "mxiter") == 0) {
     if (PyLong_Check(value)) {
-      long int n=PyLong_AsLong(value);
-      if (n>0)
-          self->params.mxiter=(igraph_integer_t)n;
-      else {
+      if (igraphmodule_PyObject_to_integer_t(value, &igraph_int)) {
+        return -1;
+      }
+
+      if (igraph_int > 0) {
+        self->params.mxiter = igraph_int;
+      } else {
         PyErr_SetString(PyExc_ValueError, "maxiter must be positive");
         return -1;
       }
@@ -140,9 +140,12 @@ int igraphmodule_ARPACKOptions_setattr(
     }
   } else if (strcmp(attrname, "tol") == 0) {
     if (PyLong_Check(value)) {
-      self->params.tol = (igraph_real_t) PyLong_AsLong(value);
+      if (igraphmodule_PyObject_to_integer_t(value, &igraph_int)) {
+        return -1;
+      }
+      self->params.tol = igraph_int;
     } else if (PyFloat_Check(value)) {
-      self->params.tol = (igraph_real_t) PyFloat_AsDouble(value);
+      self->params.tol = PyFloat_AsDouble(value);
     } else {
       PyErr_SetString(PyExc_ValueError, "integer or float expected");
       return -1;
@@ -175,63 +178,12 @@ igraph_arpack_options_t *igraphmodule_ARPACKOptions_get(
  * 
  * \return the formatted textual representation as a \c PyObject
  */
-PyObject* igraphmodule_ARPACKOptions_str(
-  igraphmodule_ARPACKOptionsObject *self) {
-  PyObject *s;
-  
-  s=PyUnicode_FromFormat("ARPACK parameters");
-  return s;
+PyObject* igraphmodule_ARPACKOptions_str(igraphmodule_ARPACKOptionsObject *self) {
+  return PyUnicode_FromString("ARPACK parameters");
 }
 
-/**
- * \ingroup python_interface_arpack
- * Method table for the \c igraph.ARPACKOptions object
- */
-PyMethodDef igraphmodule_ARPACKOptions_methods[] = {
-  /*{"attributes", (PyCFunction)igraphmodule_Edge_attributes,
-      METH_NOARGS,
-      "attributes()\n--\n\n"
-      "Returns the attribute list of the graph's edges\n"
-  },*/
-  {NULL}
-};
-
-/**
- * \ingroup python_interface_edge
- * Getter/setter table for the \c igraph.ARPACKOptions object
- */
-PyGetSetDef igraphmodule_ARPACKOptions_getseters[] = {
-  /*{"tuple", (getter)igraphmodule_Edge_get_tuple, NULL,
-      "Source and target node index of this edge as a tuple", NULL
-  },*/
-  {NULL}
-};
-
-/** \ingroup python_interface_edge
- * Python type object referencing the methods Python calls when it performs
- * various operations on an ARPACK parameters object
- */
-PyTypeObject igraphmodule_ARPACKOptionsType = {
-  PyVarObject_HEAD_INIT(0, 0)
-  "igraph.ARPACKOptions",                     /* tp_name */
-  sizeof(igraphmodule_ARPACKOptionsObject),   /* tp_basicsize */
-  0,                                          /* tp_itemsize */
-  (destructor)igraphmodule_ARPACKOptions_dealloc,      /* tp_dealloc */
-  0,                                          /* tp_print */
-  (getattrfunc)igraphmodule_ARPACKOptions_getattr,     /* tp_getattr */
-  (setattrfunc)igraphmodule_ARPACKOptions_setattr,     /* tp_setattr */
-  0,                                          /* tp_compare (2.x) / tp_reserved (3.x) */
-  0,                                          /* tp_repr */
-  0,                                          /* tp_as_number */
-  0,                                          /* tp_as_sequence */
-  0,                                          /* tp_as_mapping */
-  0,                                          /* tp_hash */
-  0,                                          /* tp_call */
-  (reprfunc)igraphmodule_ARPACKOptions_str,   /* tp_str */
-  0,                                          /* tp_getattro */
-  0,                                          /* tp_setattro */
-  0,                                          /* tp_as_buffer */
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /* tp_flags */
+PyDoc_STRVAR(
+  igraphmodule_ARPACKOptions_doc,
   "Class representing the parameters of the ARPACK module.\n\n"
   "ARPACK is a Fortran implementation of the implicitly restarted\n"
   "Arnoldi method, an algorithm for calculating some of the\n"
@@ -257,24 +209,27 @@ PyTypeObject igraphmodule_ARPACKOptionsType = {
   " - C{numop}: total number of OP*x operations\n\n"
   " - C{numopb}: total number of B*x operations if C{bmat} is C{'G'}\n\n"
   " - C{numreo}: total number of steps of re-orthogonalization\n\n"
-  "",                              /* tp_doc */
-  0,                                          /* tp_traverse */
-  0,                                          /* tp_clear */
-  0,                                          /* tp_richcompare */
-  0,                                          /* tp_weaklistoffset */
-  0,                                          /* tp_iter */
-  0,                                          /* tp_iternext */
-  igraphmodule_ARPACKOptions_methods,         /* tp_methods */
-  0,                                          /* tp_members */
-  igraphmodule_ARPACKOptions_getseters,       /* tp_getset */
-  0,                                          /* tp_base */
-  0,                                          /* tp_dict */
-  0,                                          /* tp_descr_get */
-  0,                                          /* tp_descr_set */
-  0,                                          /* tp_dictoffset */
-  0,                                          /* tp_init */
-  0,                                          /* tp_alloc */
-  (newfunc)igraphmodule_ARPACKOptions_new,    /* tp_new */
-  0,                                          /* tp_free */
-};
+);
 
+int igraphmodule_ARPACKOptions_register_type() {
+  PyType_Slot slots[] = {
+    { Py_tp_init, igraphmodule_ARPACKOptions_init },
+    { Py_tp_dealloc, igraphmodule_ARPACKOptions_dealloc },
+    { Py_tp_getattr, igraphmodule_ARPACKOptions_getattr },
+    { Py_tp_setattr, igraphmodule_ARPACKOptions_setattr },
+    { Py_tp_str, igraphmodule_ARPACKOptions_str },
+    { Py_tp_doc, (void*) igraphmodule_ARPACKOptions_doc },
+    { 0 }
+  };
+
+  PyType_Spec spec = {
+    "igraph.ARPACKOptions",                     /* name */
+    sizeof(igraphmodule_ARPACKOptionsObject),   /* basicsize */
+    0,                                          /* itemsize */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /* flags */
+    slots,                                      /* slots */
+  };
+
+  igraphmodule_ARPACKOptionsType = (PyTypeObject*) PyType_FromSpec(&spec);
+  return igraphmodule_ARPACKOptionsType == 0;
+}

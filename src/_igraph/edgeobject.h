@@ -23,7 +23,8 @@
 #ifndef PYTHON_EDGEOBJECT_H
 #define PYTHON_EDGEOBJECT_H
 
-#include <Python.h>
+#include "preamble.h"
+
 #include "graphobject.h"
 
 /**
@@ -37,20 +38,12 @@ typedef struct {
   long hash;
 } igraphmodule_EdgeObject;
 
-int igraphmodule_Edge_clear(igraphmodule_EdgeObject *self);
-void igraphmodule_Edge_dealloc(igraphmodule_EdgeObject* self);
+extern PyTypeObject* igraphmodule_EdgeType;
 
-int igraphmodule_Edge_Check(PyObject *obj);
-int igraphmodule_Edge_Validate(PyObject *obj);
+int igraphmodule_Edge_register_type(void);
 
+int igraphmodule_Edge_Check(PyObject* obj);
 PyObject* igraphmodule_Edge_New(igraphmodule_GraphObject *gref, igraph_integer_t idx);
-PyObject* igraphmodule_Edge_repr(igraphmodule_EdgeObject *self);
-PyObject* igraphmodule_Edge_attributes(igraphmodule_EdgeObject* self);
-PyObject* igraphmodule_Edge_attribute_names(igraphmodule_EdgeObject* self);
 igraph_integer_t igraphmodule_Edge_get_index_as_igraph_integer(igraphmodule_EdgeObject* self);
-PyObject* igraphmodule_Edge_update_attributes(PyObject* self, PyObject* args,
-    PyObject* kwds);
-
-extern PyTypeObject igraphmodule_EdgeType;
 
 #endif

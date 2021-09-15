@@ -1,44 +1,16 @@
-"""
-Drawing routines to draw the vertices of graphs.
-
-This module provides implementations of vertex drawers, i.e. drawers that the
-default graph drawer will use to draw vertices.
+"""This module provides implementations of Cairo-specific vertex drawers, i.e.
+drawers that the Cairo graph drawer will use to draw vertices.
 """
 
-from igraph.drawing.baseclasses import AbstractDrawer, AbstractCairoDrawer
-from igraph.drawing.metamagic import AttributeCollectorBase
-from igraph.drawing.shapes import ShapeDrawerDirectory
 from math import pi
 
-__all__ = ("AbstractVertexDrawer", "AbstractCairoVertexDrawer", "DefaultVertexDrawer")
+from igraph.drawing.baseclasses import AbstractVertexDrawer
+from igraph.drawing.metamagic import AttributeCollectorBase
+from igraph.drawing.shapes import ShapeDrawerDirectory
 
+from .base import AbstractCairoDrawer
 
-class AbstractVertexDrawer(AbstractDrawer):
-    """Abstract vertex drawer object from which all concrete vertex drawer
-    implementations are derived."""
-
-    def __init__(self, palette, layout):
-        """Constructs the vertex drawer and associates it to the given
-        palette.
-
-        @param palette: the palette that can be used to map integer
-                        color indices to colors when drawing vertices
-        @param layout:  the layout of the vertices in the graph being drawn
-        """
-        self.layout = layout
-        self.palette = palette
-
-    def draw(self, visual_vertex, vertex, coords):
-        """Draws the given vertex.
-
-        @param visual_vertex: object specifying the visual properties of the
-            vertex. Its structure is defined by the VisualVertexBuilder of the
-            L{DefaultGraphDrawer}; see its source code.
-        @param vertex: the raw igraph vertex being drawn
-        @param coords: the X and Y coordinates of the vertex as specified by the
-            layout algorithm, scaled into the bounding box.
-        """
-        raise NotImplementedError("abstract class")
+__all__ = ("AbstractCairoVertexDrawer", "CairoVertexDrawer")
 
 
 class AbstractCairoVertexDrawer(AbstractVertexDrawer, AbstractCairoDrawer):
@@ -61,11 +33,11 @@ class AbstractCairoVertexDrawer(AbstractVertexDrawer, AbstractCairoDrawer):
         AbstractVertexDrawer.__init__(self, palette, layout)
 
 
-class DefaultVertexDrawer(AbstractCairoVertexDrawer):
+class CairoVertexDrawer(AbstractCairoVertexDrawer):
     """The default vertex drawer implementation of igraph."""
 
     def __init__(self, context, bbox, palette, layout):
-        AbstractCairoVertexDrawer.__init__(self, context, bbox, palette, layout)
+        super().__init__(context, bbox, palette, layout)
         self.VisualVertexBuilder = self._construct_visual_vertex_builder()
 
     def _construct_visual_vertex_builder(self):

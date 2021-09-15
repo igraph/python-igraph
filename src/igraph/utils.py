@@ -62,10 +62,6 @@ def numpy_to_contiguous_memoryview(obj):
     from numpy import int32, int64, require
     from igraph._igraph import INTEGER_SIZE
 
-    # TODO: we used to export to double, which is only dependent on the
-    # architecture. Now with integers and a compile-time flag, we have
-    # to figure out what is the integer bitness of the underlying C core.
-    # Think of how to do that, for now default to 64 bit ints!
     if INTEGER_SIZE == 64:
         dtype = int64
     elif INTEGER_SIZE == 32:
@@ -144,54 +140,6 @@ def rescale(values, out_range=(0.0, 1.0), in_range=None, clamp=False, scale=None
         return [max(min(x, max_out), min_out) for x in result]
     else:
         return result
-
-
-def str_to_orientation(value, reversed_horizontal=False, reversed_vertical=False):
-    """Tries to interpret a string as an orientation value.
-
-    The following basic values are understood: ``left-right``, ``bottom-top``,
-    ``right-left``, ``top-bottom``. Possible aliases are:
-
-      - ``horizontal``, ``horiz``, ``h`` and ``lr`` for ``left-right``
-
-      - ``vertical``, ``vert``, ``v`` and ``tb`` for top-bottom.
-
-      - ``lr`` for ``left-right``.
-
-      - ``rl`` for ``right-left``.
-
-    ``reversed_horizontal`` reverses the meaning of ``horizontal``, ``horiz``
-    and ``h`` to ``rl`` (instead of ``lr``); similarly, ``reversed_vertical``
-    reverses the meaning of ``vertical``, ``vert`` and ``v`` to ``bt``
-    (instead of ``tb``).
-
-    Returns one of ``lr``, ``rl``, ``tb`` or ``bt``, or throws ``ValueError``
-    if the string cannot be interpreted as an orientation.
-    """
-
-    aliases = {
-        "left-right": "lr",
-        "right-left": "rl",
-        "top-bottom": "tb",
-        "bottom-top": "bt",
-        "top-down": "tb",
-        "bottom-up": "bt",
-        "top-bottom": "tb",
-        "bottom-top": "bt",
-        "td": "tb",
-        "bu": "bt",
-    }
-
-    dir = ["lr", "rl"][reversed_horizontal]
-    aliases.update(horizontal=dir, horiz=dir, h=dir)
-
-    dir = ["tb", "bt"][reversed_vertical]
-    aliases.update(vertical=dir, vert=dir, v=dir)
-
-    result = aliases.get(value, value)
-    if result not in ("lr", "rl", "tb", "bt"):
-        raise ValueError("unknown orientation: %s" % result)
-    return result
 
 
 def consecutive_pairs(iterable, circular=False):

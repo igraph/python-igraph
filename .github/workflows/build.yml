@@ -4,7 +4,8 @@ on: [push, pull_request]
 env:
   CIBW_TEST_COMMAND: "cd {project} && python -m pytest tests"
   CIBW_TEST_EXTRAS: "test"
-  CIBW_SKIP: "cp27-* pp27-* cp35-*"
+  # skip testing on Python 3.10 until NumPy/SciPy/Pandas publish wheels
+  CIBW_TEST_SKIP: "cp310-*"
 
 jobs:
   build_wheels:
@@ -26,7 +27,7 @@ jobs:
           python-version: '3.8'
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v1.10.0
+        uses: joerick/cibuildwheel@v2.1.1
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
@@ -50,7 +51,7 @@ jobs:
         uses: docker/setup-qemu-action@v1
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v1.10.0
+        uses: joerick/cibuildwheel@v2.1.1
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -88,7 +89,7 @@ jobs:
           brew install ninja autoconf automake libtool cmake
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v1.10.0
+        uses: joerick/cibuildwheel@v2.1.1
         env:
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
@@ -145,16 +146,16 @@ jobs:
         shell: cmd
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v1.11.0
+        uses: joerick/cibuildwheel@v2.1.1
         env:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
+          CIBW_TEST_COMMAND: "cd /d {project} && python -m pytest tests"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
           IGRAPH_STATIC_EXTENSION: True
           IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset
           IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
-          CIBW_TEST_COMMAND: "cd /d {project} && python -m unittest -vvv"
 
       - uses: actions/upload-artifact@v2
         with:
@@ -196,8 +197,8 @@ jobs:
 
       - name: Test
         run: |
-          pip install numpy scipy pandas networkx
-          python -m unittest -vvv
+          pip install numpy scipy pandas networkx pytest
+          python -m pytest tests
 
       - uses: actions/upload-artifact@v2
         with:

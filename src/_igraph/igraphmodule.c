@@ -20,8 +20,8 @@
 
 */
 
-#include <Python.h>
-#include <pythonrun.h>
+#include "preamble.h"
+
 #include <igraph.h>
 #include "arpackobject.h"
 #include "attributes.h"
@@ -33,6 +33,7 @@
 #include "edgeseqobject.h"
 #include "error.h"
 #include "graphobject.h"
+#include "pyhelpers.h"
 #include "random.h"
 #include "vertexobject.h"
 #include "vertexseqobject.h"
@@ -152,16 +153,16 @@ static int igraphmodule_igraph_interrupt_hook(void* data) {
 int igraphmodule_igraph_progress_hook(const char* message, igraph_real_t percent,
 				       void* data) {
   PyObject* progress_handler = GETSTATE(0)->progress_handler;
+  PyObject *result;
 
   if (progress_handler) {
-    PyObject *result;
     if (PyCallable_Check(progress_handler)) {
-      result=PyObject_CallFunction(progress_handler,
-				   "sd", message, (double)percent);
-      if (result)
+      result = PyObject_CallFunction(progress_handler, "sd", message, (double)percent);
+      if (result) {
         Py_DECREF(result);
-      else
+      } else {
         return IGRAPH_INTERRUPTED;
+      }
     }
   }
   
@@ -229,64 +230,78 @@ PyObject* igraphmodule_set_status_handler(PyObject* self, PyObject* o) {
 
 PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwds) {
   static char* kwlist[] = {"vs", "coords", NULL};
-  PyObject *vs, *o, *o1=0, *o2=0, *coords = Py_False;
+  PyObject *vs, *o, *o1 = 0, *o2 = 0, *o1_float, *o2_float, *coords = Py_False;
   igraph_matrix_t mtrx;
   igraph_vector_int_t result;
   igraph_matrix_t resmat;
-  long no_of_nodes, i;
+  Py_ssize_t no_of_nodes, i;
   
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O", kwlist, &PyList_Type, &vs, &coords))
     return NULL;
   
-  no_of_nodes=PyList_Size(vs);
+  no_of_nodes = PyList_Size(vs);
   if (igraph_matrix_init(&mtrx, no_of_nodes, 2)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
-  for (i=0; i<no_of_nodes; i++) {
-    o=PyList_GetItem(vs, i);
-    if (PyList_Check(o)) {
-      if (PyList_Size(o) >= 2) {
-        o1=PyList_GetItem(o, 0);
-        o2=PyList_GetItem(o, 1);
-        if (PyList_Size(o) > 2)
-          PyErr_Warn(PyExc_Warning, "vertex with more than 2 coordinates found, considering only the first 2");
+
+  for (i = 0; i < no_of_nodes; i++) {
+    o = PyList_GetItem(vs, i);
+
+    if (PySequence_Check(o)) {
+      if (PySequence_Size(o) >= 2) {
+        o1 = PySequence_GetItem(o, 0);
+        if (!o1) {
+          igraph_matrix_destroy(&mtrx);
+          return NULL;
+        }
+
+        o2 = PySequence_GetItem(o, 1);
+        if (!o2) {
+          Py_DECREF(o1);
+          igraph_matrix_destroy(&mtrx);
+          return NULL;
+        }
+
+        if (PySequence_Size(o) > 2) {
+          PY_IGRAPH_WARN("vertex with more than 2 coordinates found, considering only the first 2");
+        }
       } else {
         PyErr_SetString(PyExc_TypeError, "vertex with less than 2 coordinates found");
         igraph_matrix_destroy(&mtrx);
-	    return NULL;
-      }
-    } else if (PyTuple_Check(o)) {
-      if (PyTuple_Size(o) >= 2) {
-	    o1=PyTuple_GetItem(o, 0);
-	    o2=PyTuple_GetItem(o, 1);
-	    if (PyTuple_Size(o) > 2)
-	      PyErr_Warn(PyExc_Warning, "vertex with more than 2 coordinates found, considering only the first 2");
-       } else {
-	      PyErr_SetString(PyExc_TypeError, "vertex with less than 2 coordinates found");
-	    igraph_matrix_destroy(&mtrx);
-	    return NULL;
+        return NULL;
       }
     }
     
     if (!PyNumber_Check(o1) || !PyNumber_Check(o2)) {
       PyErr_SetString(PyExc_TypeError, "vertex coordinates must be numeric");
+      Py_DECREF(o2);
+      Py_DECREF(o1);
       igraph_matrix_destroy(&mtrx);
       return NULL;
     }
-    /* o, o1 and o2 were borrowed, but now o1 and o2 are actual references! */
-    o1=PyNumber_Float(o1); o2=PyNumber_Float(o2);
-    if (!o1 || !o2) {
-      PyErr_SetString(PyExc_TypeError, "vertex coordinate conversion to float failed");
-      Py_XDECREF(o1);
-      Py_XDECREF(o2);
+
+    o1_float = PyNumber_Float(o1);
+    if (!o1_float) {
+      Py_DECREF(o2);
+      Py_DECREF(o1);
       igraph_matrix_destroy(&mtrx);
       return NULL;
     }
-    MATRIX(mtrx, i, 0)=(igraph_real_t)PyFloat_AsDouble(o1);
-    MATRIX(mtrx, i, 1)=(igraph_real_t)PyFloat_AsDouble(o2);
     Py_DECREF(o1);
+
+    o2_float = PyNumber_Float(o2);
+    if (!o2_float) {
+      Py_DECREF(o2);
+      igraph_matrix_destroy(&mtrx);
+      return NULL;
+    }
     Py_DECREF(o2);
+
+    MATRIX(mtrx, i, 0) = PyFloat_AsDouble(o1_float);
+    MATRIX(mtrx, i, 1) = PyFloat_AsDouble(o2_float);
+    Py_DECREF(o1_float);
+    Py_DECREF(o2_float);
   }
 
   if (!PyObject_IsTrue(coords)) {
@@ -301,7 +316,7 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
       igraph_vector_int_destroy(&result);
       return NULL;
     }    
-    o=igraphmodule_vector_int_t_to_PyList(&result);
+    o = igraphmodule_vector_int_t_to_PyList(&result);
     igraph_vector_int_destroy(&result);
   } else {
     if (igraph_matrix_init(&resmat, 0, 0)) {
@@ -315,7 +330,7 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
       igraph_matrix_destroy(&resmat);
       return NULL;
     }        
-    o=igraphmodule_matrix_t_to_PyList(&resmat, IGRAPHMODULE_TYPE_FLOAT);
+    o = igraphmodule_matrix_t_to_PyList(&resmat, IGRAPHMODULE_TYPE_FLOAT);
     igraph_matrix_destroy(&resmat);
   }
   
@@ -331,12 +346,15 @@ PyObject* igraphmodule_community_to_membership(PyObject *self,
   PyObject *merges_o, *return_csize = Py_False, *result_o;
   igraph_matrix_int_t merges;
   igraph_vector_int_t result, csize, *csize_p = 0;
-  long int nodes, steps;
+  Py_ssize_t nodes, steps;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!ll|O", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!nn|O", kwlist,
       &PyList_Type, &merges_o, &nodes, &steps, &return_csize)) return NULL;
 
   if (igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(merges_o, &merges, 2)) return NULL;
+
+  CHECK_SSIZE_T_RANGE(nodes, "number of nodes");
+  CHECK_SSIZE_T_RANGE(steps, "number of steps");
 
   if (igraph_vector_int_init(&result, nodes)) {
     igraphmodule_handle_igraph_error();
@@ -349,8 +367,7 @@ PyObject* igraphmodule_community_to_membership(PyObject *self,
     csize_p = &csize;
   }
 
-  if (igraph_community_to_membership(&merges, (igraph_integer_t)nodes,
-        (igraph_integer_t)steps, &result, csize_p)) {
+  if (igraph_community_to_membership(&merges, nodes, steps, &result, csize_p)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_int_destroy(&result);
     if (csize_p) igraph_vector_int_destroy(csize_p);
@@ -383,14 +400,18 @@ PyObject* igraphmodule_compare_communities(PyObject *self,
   igraph_real_t result;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|O", kwlist,
-      &comm1_o, &comm2_o, &method_o))
+      &comm1_o, &comm2_o, &method_o)) {
     return NULL;
+  }
 
-  if (igraphmodule_PyObject_to_community_comparison_t(method_o, &method))
+  if (igraphmodule_PyObject_to_community_comparison_t(method_o, &method)) {
     return NULL;
+  }
 
-  if (igraphmodule_PyObject_to_vector_int_t(comm1_o, &comm1))
+  if (igraphmodule_PyObject_to_vector_int_t(comm1_o, &comm1)) {
     return NULL;
+  }
+
   if (igraphmodule_PyObject_to_vector_int_t(comm2_o, &comm2)) {
     igraph_vector_int_destroy(&comm1);
     return NULL;
@@ -402,10 +423,11 @@ PyObject* igraphmodule_compare_communities(PyObject *self,
     igraph_vector_int_destroy(&comm2);
     return NULL;
   }
+
   igraph_vector_int_destroy(&comm1);
   igraph_vector_int_destroy(&comm2);
 
-  return PyFloat_FromDouble((double)result);
+  return igraphmodule_real_t_to_PyObject(result, IGRAPHMODULE_TYPE_FLOAT);
 }
 
 
@@ -803,6 +825,9 @@ PyObject* PyInit__igraph(void)
   static void *PyIGraph_API[PyIGraph_API_pointers];
   PyObject *c_api_object;
 
+  /* Prevent linking 64-bit igraph to 32-bit Python */
+  PY_IGRAPH_ASSERT_AT_BUILD_TIME(sizeof(igraph_integer_t) >= sizeof(Py_ssize_t));
+
   /* Check if the module is already initialized (possibly in another Python
    * interpreter. If so, bail out as we don't support this. */
   if (igraphmodule_initialized) {
@@ -811,30 +836,19 @@ PyObject* PyInit__igraph(void)
     INITERROR;
   }
 
-  /* Initialize VertexSeq, EdgeSeq */
-  if (PyType_Ready(&igraphmodule_VertexSeqType) < 0)
+  /* Initialize types */
+  if (
+    igraphmodule_ARPACKOptions_register_type() ||
+    igraphmodule_BFSIter_register_type() ||
+    igraphmodule_DFSIter_register_type() ||
+    igraphmodule_Edge_register_type() ||
+    igraphmodule_EdgeSeq_register_type() ||
+    igraphmodule_Graph_register_type() ||
+    igraphmodule_Vertex_register_type() ||
+    igraphmodule_VertexSeq_register_type()
+  ) {
     INITERROR;
-  if (PyType_Ready(&igraphmodule_EdgeSeqType) < 0)
-    INITERROR;
-  
-  /* Initialize Vertex, Edge */
-  igraphmodule_VertexType.tp_clear = (inquiry)igraphmodule_Vertex_clear;
-  if (PyType_Ready(&igraphmodule_VertexType) < 0)
-    INITERROR;
-  
-  igraphmodule_EdgeType.tp_clear = (inquiry)igraphmodule_Edge_clear;
-  if (PyType_Ready(&igraphmodule_EdgeType) < 0)
-    INITERROR;
-
-  /* Initialize Graph, BFSIter, ARPACKOptions etc */
-  if (PyType_Ready(&igraphmodule_GraphType) < 0)
-    INITERROR;
-  if (PyType_Ready(&igraphmodule_BFSIterType) < 0)
-    INITERROR;
-  if (PyType_Ready(&igraphmodule_DFSIterType) < 0)
-    INITERROR;
-  if (PyType_Ready(&igraphmodule_ARPACKOptionsType) < 0)
-    INITERROR;
+  }
 
   /* Initialize the core module */
   m = PyModule_Create(&moduledef);
@@ -845,14 +859,14 @@ PyObject* PyInit__igraph(void)
   igraphmodule_init_rng(m);
 
   /* Add the types to the core module */
-  PyModule_AddObject(m, "GraphBase", (PyObject*)&igraphmodule_GraphType);
-  PyModule_AddObject(m, "BFSIter", (PyObject*)&igraphmodule_BFSIterType);
-  PyModule_AddObject(m, "DFSIter", (PyObject*)&igraphmodule_DFSIterType);
-  PyModule_AddObject(m, "ARPACKOptions", (PyObject*)&igraphmodule_ARPACKOptionsType);
-  PyModule_AddObject(m, "Edge", (PyObject*)&igraphmodule_EdgeType);
-  PyModule_AddObject(m, "EdgeSeq", (PyObject*)&igraphmodule_EdgeSeqType);
-  PyModule_AddObject(m, "Vertex", (PyObject*)&igraphmodule_VertexType);
-  PyModule_AddObject(m, "VertexSeq", (PyObject*)&igraphmodule_VertexSeqType);
+  PyModule_AddObject(m, "GraphBase", (PyObject*)igraphmodule_GraphType);
+  PyModule_AddObject(m, "BFSIter", (PyObject*)igraphmodule_BFSIterType);
+  PyModule_AddObject(m, "DFSIter", (PyObject*)igraphmodule_DFSIterType);
+  PyModule_AddObject(m, "ARPACKOptions", (PyObject*)igraphmodule_ARPACKOptionsType);
+  PyModule_AddObject(m, "Edge", (PyObject*)igraphmodule_EdgeType);
+  PyModule_AddObject(m, "EdgeSeq", (PyObject*)igraphmodule_EdgeSeqType);
+  PyModule_AddObject(m, "Vertex", (PyObject*)igraphmodule_VertexType);
+  PyModule_AddObject(m, "VertexSeq", (PyObject*)igraphmodule_VertexSeqType);
  
   /* Internal error exception type */
   igraphmodule_InternalError =
@@ -860,7 +874,10 @@ PyObject* PyInit__igraph(void)
   PyModule_AddObject(m, "InternalError", igraphmodule_InternalError);
 
   /* ARPACK default options variable */
-  igraphmodule_arpack_options_default = igraphmodule_ARPACKOptions_new();
+  igraphmodule_arpack_options_default = PyObject_CallFunction((PyObject*) igraphmodule_ARPACKOptionsType, 0);
+  if (igraphmodule_arpack_options_default == NULL)
+    INITERROR;
+
   PyModule_AddObject(m, "arpack_options", igraphmodule_arpack_options_default);
 
   /* Useful constants */

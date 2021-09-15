@@ -6,11 +6,13 @@ build/
 dist/
 doc/api/
 src/igraph/*.so
+result_images/
 *.egg-info/
 .python-version
 .eggs/
 .tox
 .venv/
+.venv-*/
 .vscode/
 vendor/build/
 vendor/install/

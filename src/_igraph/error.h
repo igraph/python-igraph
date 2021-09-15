@@ -23,7 +23,8 @@
 #ifndef PYTHON_ERROR_H
 #define PYTHON_ERROR_H
 
-#include <Python.h>
+#include "preamble.h"
+
 #include <igraph_error.h>
 
 /** \defgroup python_interface_errors Error handling

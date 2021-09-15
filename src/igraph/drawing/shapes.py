@@ -19,15 +19,16 @@ name in the C{shape} attribute of vertices.
 
 __all__ = ("ShapeDrawerDirectory",)
 
+from abc import ABCMeta, abstractmethod
 from math import atan2, copysign, cos, pi, sin
 import sys
 
-from igraph.drawing.baseclasses import AbstractCairoDrawer
-from igraph.drawing.utils import Point
-from igraph.utils import consecutive_pairs
+from igraph.drawing.matplotlib.utils import find_matplotlib
+
+mpl, plt = find_matplotlib()
 
 
-class ShapeDrawer:
+class ShapeDrawer(metaclass=ABCMeta):
     """Static class, the ancestor of all vertex shape drawer classes.
 
     Custom shapes must implement at least the C{draw_path} method of the class.
@@ -35,7 +36,8 @@ class ShapeDrawer:
     Cairo path appropriately."""
 
     @staticmethod
-    def draw_path(ctx, center_x, center_y, width, height=None):
+    @abstractmethod
+    def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws the path of the shape on the given Cairo context, without
         stroking or filling it.
 
@@ -48,7 +50,7 @@ class ShapeDrawer:
         @param width: the width of the object
         @param height: the height of the object. If C{None}, equals to the width.
         """
-        raise NotImplementedError("abstract class")
+        raise NotImplementedError
 
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
@@ -84,15 +86,20 @@ class NullDrawer(ShapeDrawer):
 class RectangleDrawer(ShapeDrawer):
     """Static class which draws rectangular vertices"""
 
-    names = "rectangle rect rectangular square box"
+    names = "rectangle rect rectangular square box s"
 
     @staticmethod
-    def draw_path(ctx, center_x, center_y, width, height=None):
+    def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws a rectangle-shaped path on the Cairo context without stroking
         or filling it.
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        ctx.rectangle(center_x - width / 2, center_y - height / 2, width, height)
+        if isinstance(ctx, plt.Axes):
+            return mpl.patches.Rectangle(
+                (center_x - width / 2, center_y - height / 2), width, height, **kwargs
+            )
+        else:
+            ctx.rectangle(center_x - width / 2, center_y - height / 2, width, height)
 
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
@@ -145,17 +152,20 @@ class RectangleDrawer(ShapeDrawer):
 class CircleDrawer(ShapeDrawer):
     """Static class which draws circular vertices"""
 
-    names = "circle circular"
+    names = "circle circular o"
 
     @staticmethod
-    def draw_path(ctx, center_x, center_y, width, height=None):
+    def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws a circular path on the Cairo context without stroking or
         filling it.
 
         Height is ignored, it is the width that determines the diameter of the circle.
 
         @see: ShapeDrawer.draw_path"""
-        ctx.arc(center_x, center_y, width / 2, 0, 2 * pi)
+        if isinstance(ctx, plt.Axes):
+            return mpl.patches.Circle((center_x, center_y), width / 2, **kwargs)
+        else:
+            ctx.arc(center_x, center_y, width / 2, 0, 2 * pi)
 
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
@@ -172,19 +182,27 @@ class CircleDrawer(ShapeDrawer):
 class UpTriangleDrawer(ShapeDrawer):
     """Static class which draws upright triangles"""
 
-    names = "triangle triangle-up up-triangle arrow arrow-up up-arrow"
+    names = "triangle triangle-up up-triangle arrow arrow-up up-arrow ^"
 
     @staticmethod
-    def draw_path(ctx, center_x, center_y, width, height=None):
+    def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws an upright triangle on the Cairo context without stroking or
         filling it.
 
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        ctx.move_to(center_x - width / 2, center_y + height / 2)
-        ctx.line_to(center_x, center_y - height / 2)
-        ctx.line_to(center_x + width / 2, center_y + height / 2)
-        ctx.close_path()
+        if isinstance(ctx, plt.Axes):
+            vertices = [
+                [center_x - 0.5 * width, center_y - 0.333 * height],
+                [center_x + 0.5 * width, center_y - 0.333 * height],
+                [center_x, center_x + 0.667 * height],
+            ]
+            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
+        else:
+            ctx.move_to(center_x - width / 2, center_y + height / 2)
+            ctx.line_to(center_x, center_y - height / 2)
+            ctx.line_to(center_x + width / 2, center_y + height / 2)
+            ctx.close_path()
 
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
@@ -201,19 +219,28 @@ class UpTriangleDrawer(ShapeDrawer):
 class DownTriangleDrawer(ShapeDrawer):
     """Static class which draws triangles pointing down"""
 
-    names = "down-triangle triangle-down arrow-down down-arrow"
+    names = "down-triangle triangle-down arrow-down down-arrow v"
 
     @staticmethod
-    def draw_path(ctx, center_x, center_y, width, height=None):
+    def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws a triangle on the Cairo context without stroking or
         filling it.
 
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        ctx.move_to(center_x - width / 2, center_y - height / 2)
-        ctx.line_to(center_x, center_y + height / 2)
-        ctx.line_to(center_x + width / 2, center_y - height / 2)
-        ctx.close_path()
+        if isinstance(ctx, plt.Axes):
+            vertices = [
+                [center_x - 0.5 * width, center_y + 0.333 * height],
+                [center_x + 0.5 * width, center_y + 0.333 * height],
+                [center_x, center_y - 0.667 * height],
+            ]
+            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
+
+        else:
+            ctx.move_to(center_x - width / 2, center_y - height / 2)
+            ctx.line_to(center_x, center_y + height / 2)
+            ctx.line_to(center_x + width / 2, center_y - height / 2)
+            ctx.close_path()
 
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
@@ -230,20 +257,29 @@ class DownTriangleDrawer(ShapeDrawer):
 class DiamondDrawer(ShapeDrawer):
     """Static class which draws diamonds (i.e. rhombuses)"""
 
-    names = "diamond rhombus"
+    names = "diamond rhombus d"
 
     @staticmethod
-    def draw_path(ctx, center_x, center_y, width, height=None):
+    def draw_path(ctx, center_x, center_y, width, height=None, **kwargs):
         """Draws a rhombus on the Cairo context without stroking or
         filling it.
 
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        ctx.move_to(center_x - width / 2, center_y)
-        ctx.line_to(center_x, center_y + height / 2)
-        ctx.line_to(center_x + width / 2, center_y)
-        ctx.line_to(center_x, center_y - height / 2)
-        ctx.close_path()
+        if isinstance(ctx, plt.Axes):
+            vertices = [
+                [center_x - 0.5 * width, center_y],
+                [center_x, center_y - 0.5 * height],
+                [center_x + 0.5 * width, center_y],
+                [center_x, center_y + 0.5 * height],
+            ]
+            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
+        else:
+            ctx.move_to(center_x - width / 2, center_y)
+            ctx.line_to(center_x, center_y + height / 2)
+            ctx.line_to(center_x + width / 2, center_y)
+            ctx.line_to(center_x, center_y - height / 2)
+            ctx.close_path()
 
     @staticmethod
     def intersection_point(center_x, center_y, source_x, source_y, width, height=None):
@@ -271,102 +307,6 @@ class DiamondDrawer(ShapeDrawer):
 
         f = height / (height + width * delta_y / delta_x)
         return center_x + f * width / 2, center_y + (1 - f) * height / 2
-
-
-#####################################################################
-
-
-class PolygonDrawer(AbstractCairoDrawer):
-    """Class that is used to draw polygons.
-
-    The corner points of the polygon can be set by the C{points}
-    property of the drawer, or passed at construction time. Most
-    drawing methods in this class also have an extra C{points}
-    argument that can be used to override the set of points in the
-    C{points} property."""
-
-    def __init__(self, context, bbox=(1, 1), points=[]):
-        """Constructs a new polygon drawer that draws on the given
-        Cairo context.
-
-        @param  context: the Cairo context to draw on
-        @param  bbox:    ignored, leave it at its default value
-        @param  points:  the list of corner points
-        """
-        super().__init__(context, bbox)
-        self.points = points
-
-    def draw_path(self, points=None, corner_radius=0):
-        """Sets up a Cairo path for the outline of a polygon on the given
-        Cairo context.
-
-        @param points: the coordinates of the corners of the polygon,
-          in clockwise or counter-clockwise order, or C{None} if we are
-          about to use the C{points} property of the class.
-        @param corner_radius: if zero, an ordinary polygon will be drawn.
-          If positive, the corners of the polygon will be rounded with
-          the given radius.
-        """
-        if points is None:
-            points = self.points
-
-        self.context.new_path()
-
-        if len(points) < 2:
-            # Well, a polygon must have at least two corner points
-            return
-
-        ctx = self.context
-        if corner_radius <= 0:
-            # No rounded corners, this is simple
-            ctx.move_to(*points[-1])
-            for point in points:
-                ctx.line_to(*point)
-            return
-
-        # Rounded corners. First, we will take each side of the
-        # polygon and find what the corner radius should be on
-        # each corner. If the side is longer than 2r (where r is
-        # equal to corner_radius), the radius allowed by that side
-        # is r; if the side is shorter, the radius is the length
-        # of the side / 2. For each corner, the final corner radius
-        # is the smaller of the radii on the two sides adjacent to
-        # the corner.
-        points = [Point(*point) for point in points]
-        side_vecs = [v - u for u, v in consecutive_pairs(points, circular=True)]
-        half_side_lengths = [side.length() / 2 for side in side_vecs]
-        corner_radii = [corner_radius] * len(points)
-        for idx in range(len(corner_radii)):
-            prev_idx = -1 if idx == 0 else idx - 1
-            radii = [corner_radius, half_side_lengths[prev_idx], half_side_lengths[idx]]
-            corner_radii[idx] = min(radii)
-
-        # Okay, move to the last corner, adjusted by corner_radii[-1]
-        # towards the first corner
-        ctx.move_to(*(points[-1].towards(points[0], corner_radii[-1])))
-        # Now, for each point in points, draw a line towards the
-        # corner, stopping before it in a distance of corner_radii[idx],
-        # then draw the corner
-        u = points[-1]
-        for idx, (v, w) in enumerate(consecutive_pairs(points, True)):
-            radius = corner_radii[idx]
-            ctx.line_to(*v.towards(u, radius))
-            aux1 = v.towards(u, radius / 2)
-            aux2 = v.towards(w, radius / 2)
-            ctx.curve_to(
-                aux1.x, aux1.y, aux2.x, aux2.y, *v.towards(w, corner_radii[idx])
-            )
-            u = v
-
-    def draw(self, points=None):
-        """Draws the polygon using the current stroke of the Cairo context.
-
-        @param points: the coordinates of the corners of the polygon,
-          in clockwise or counter-clockwise order, or C{None} if we are
-          about to use the C{points} property of the class.
-        """
-        self.draw_path(points)
-        self.context.stroke()
 
 
 #####################################################################

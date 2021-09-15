@@ -74,7 +74,7 @@ from igraph._igraph import (
     set_progress_handler,
     set_random_number_generator,
     set_status_handler,
-    __igraph_version__
+    __igraph_version__,
 )
 from igraph.clustering import (
     Clustering,
@@ -89,7 +89,16 @@ from igraph.clustering import (
 )
 from igraph.cut import Cut, Flow
 from igraph.configuration import Configuration, init as init_configuration
-from igraph.drawing import BoundingBox, DefaultGraphDrawer, Plot, Point, Rectangle, plot
+from igraph.drawing import (
+    BoundingBox,
+    CairoGraphDrawer,
+    DefaultGraphDrawer,
+    MatplotlibGraphDrawer,
+    Plot,
+    Point,
+    Rectangle,
+    plot,
+)
 from igraph.drawing.colors import (
     Palette,
     GradientPalette,
@@ -770,9 +779,7 @@ class Graph(GraphBase):
         try:
             from scipy import sparse
         except ImportError:
-            raise ImportError(
-                "You should install scipy in order to use this function"
-            )
+            raise ImportError("You should install scipy in order to use this function")
 
         edges = self.get_edgelist()
         if attribute is None:
@@ -2383,8 +2390,8 @@ class Graph(GraphBase):
     __iter__ = None  # needed for PyPy
     __hash__ = None  # needed for PyPy
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Plots the graph to the given Cairo context in the given bounding box
+    def __plot__(self, backend, context, *args, **kwds):
+        """Plots the graph to the given Cairo context or matplotlib Axes.
 
         The visual style of vertices and edges can be modified at three
         places in the following order of precedence (lower indices override
@@ -2574,11 +2581,14 @@ class Graph(GraphBase):
             specifies whether the order is reversed (C{True}, C{False},
             C{"asc"} and C{"desc"} are accepted values).
         """
-        drawer_factory = kwds.get("drawer_factory", DefaultGraphDrawer)
-        if "drawer_factory" in kwds:
-            del kwds["drawer_factory"]
-        drawer = drawer_factory(context, bbox)
-        drawer.draw(self, palette, *args, **kwds)
+        from igraph.drawing import DrawerDirectory
+
+        drawer = kwds.pop(
+            "drawer_factory",
+            DrawerDirectory.resolve(self, backend)(context),
+
+        )
+        drawer.draw(self, *args, **kwds)
 
     def __str__(self):
         """Returns a string representation of the graph.

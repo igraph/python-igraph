@@ -3,16 +3,16 @@
 """Classes related to graph clustering."""
 
 from copy import deepcopy
-from math import pi
 from io import StringIO
 
 from igraph import community_to_membership
 from igraph.configuration import Configuration
 from igraph.datatypes import UniqueIdGenerator
 from igraph.drawing.colors import ClusterColoringPalette
+from igraph.drawing.cairo.dendrogram import CairoDendrogramDrawer
+from igraph.drawing.matplotlib.dendrogram import MatplotlibDendrogramDrawer
 from igraph.statistics import Histogram
 from igraph.summary import _get_wrapper_for_width
-from igraph.utils import str_to_orientation
 
 
 class Clustering:
@@ -427,9 +427,8 @@ class VertexClustering(Clustering):
         max_size = max(ss)
         return self.subgraph(ss.index(max_size))
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Plots the clustering to the given Cairo context in the given
-        bounding box.
+    def __plot__(self, backend, context, *args, **kwds):
+        """Plots the clustering to the given Cairo context or matplotlib Axes.
 
         This is done by calling L{Graph.__plot__()} with the same arguments, but
         coloring the graph vertices according to the current clustering (unless
@@ -476,15 +475,18 @@ class VertexClustering(Clustering):
 
         @see: L{Graph.__plot__()} for more supported keyword arguments.
         """
+        from igraph.drawing.colors import default_edge_colors
+
         if "edge_color" not in kwds and "color" not in self.graph.edge_attributes():
             # Set up a default edge coloring based on internal vs external edges
-            colors = ["grey20", "grey80"]
+            colors = default_edge_colors[backend]
             kwds["edge_color"] = [
                 colors[is_crossing] for is_crossing in self.crossing()
             ]
 
+        palette = kwds.get('palette', None)
         if palette is None:
-            palette = ClusterColoringPalette(len(self))
+            kwds['palette'] = ClusterColoringPalette(len(self))
 
         if "mark_groups" not in kwds:
             if Configuration.instance()["plotting.mark_groups"]:
@@ -496,8 +498,9 @@ class VertexClustering(Clustering):
 
         if "vertex_color" not in kwds:
             kwds["vertex_color"] = self.membership
+        result = self._graph.__plot__(backend, context, *args, **kwds)
 
-        return self._graph.__plot__(context, bbox, palette, *args, **kwds)
+        return result
 
     def _formatted_cluster_iterator(self):
         """Iterates over the clusters and formats them into a string to be
@@ -723,46 +726,8 @@ class Dendrogram:
 
         return out.getvalue().strip()
 
-    def _item_box_size(self, context, horiz, idx):
-        """Calculates the amount of space needed for drawing an
-        individual vertex at the bottom of the dendrogram."""
-        if self._names is None or self._names[idx] is None:
-            x_bearing, _, _, height, x_advance, _ = context.text_extents("")
-        else:
-            x_bearing, _, _, height, x_advance, _ = context.text_extents(
-                str(self._names[idx])
-            )
-
-        if horiz:
-            return x_advance - x_bearing, height
-        return height, x_advance - x_bearing
-
-    def _plot_item(self, context, horiz, idx, x, y):
-        """Plots a dendrogram item to the given Cairo context
-
-        @param context: the Cairo context we are plotting on
-        @param horiz: whether the dendrogram is horizontally oriented
-        @param idx: the index of the item
-        @param x: the X position of the item
-        @param y: the Y position of the item
-        """
-        if self._names is None or self._names[idx] is None:
-            return
-
-        height = self._item_box_size(context, True, idx)[1]
-        if horiz:
-            context.move_to(x, y + height)
-            context.show_text(str(self._names[idx]))
-        else:
-            context.save()
-            context.translate(x, y)
-            context.rotate(-pi / 2.0)
-            context.move_to(0, height)
-            context.show_text(str(self._names[idx]))
-            context.restore()
-
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Draws the dendrogram on the given Cairo context
+    def __plot__(self, backend, context, *args, **kwds):
+        """Draws the dendrogram on the given Cairo context or matplotlib Axes.
 
         Supported keyword arguments are:
 
@@ -776,131 +741,18 @@ class Dendrogram:
             The default is C{left-right}.
 
         """
-        from igraph.layout import Layout
-
-        if self._names is None:
-            self._names = [str(x) for x in range(self._nitems)]
-
-        orientation = str_to_orientation(
-            kwds.get("orientation", "lr"), reversed_vertical=True
-        )
-        horiz = orientation in ("lr", "rl")
-
-        # Get the font height
-        font_height = context.font_extents()[2]
-
-        # Calculate space needed for individual items at the
-        # bottom of the dendrogram
-        item_boxes = [
-            self._item_box_size(context, horiz, idx) for idx in range(self._nitems)
-        ]
-
-        # Small correction for cases when the right edge of the labels is
-        # aligned with the tips of the dendrogram branches
-        ygap = 2 if orientation == "bt" else 0
-        xgap = 2 if orientation == "lr" else 0
-        item_boxes = [(x + xgap, y + ygap) for x, y in item_boxes]
-
-        # Calculate coordinates
-        layout = Layout([(0, 0)] * self._nitems, dim=2)
-        inorder = self._traverse_inorder()
-        if not horiz:
-            x, y = 0, 0
-            for idx, element in enumerate(inorder):
-                layout[element] = (x, 0)
-                x += max(font_height, item_boxes[element][0])
-
-            for id1, id2 in self._merges:
-                y += 1
-                layout.append(((layout[id1][0] + layout[id2][0]) / 2.0, y))
-
-            # Mirror or rotate the layout if necessary
-            if orientation == "bt":
-                layout.mirror(1)
+        if backend == "matplotlib":
+            drawer = MatplotlibDendrogramDrawer(context)
         else:
-            x, y = 0, 0
-            for idx, element in enumerate(inorder):
-                layout[element] = (0, y)
-                y += max(font_height, item_boxes[element][1])
+            bbox = kwds.pop('bbox', None)
+            palette = kwds.pop('palette', None)
+            if bbox is None:
+                raise ValueError('bbox is required for cairo plots')
+            if palette is None:
+                raise ValueError('palette is required for cairo plots')
+            drawer = CairoDendrogramDrawer(context, bbox, palette)
 
-            for id1, id2 in self._merges:
-                x += 1
-                layout.append((x, (layout[id1][1] + layout[id2][1]) / 2.0))
-
-            # Mirror or rotate the layout if necessary
-            if orientation == "rl":
-                layout.mirror(0)
-
-        # Rescale layout to the bounding box
-        maxw = max(e[0] for e in item_boxes)
-        maxh = max(e[1] for e in item_boxes)
-
-        # w, h: width and height of the area containing the dendrogram
-        # tree without the items.
-        # delta_x, delta_y: displacement of the dendrogram tree
-        width, height = float(bbox.width), float(bbox.height)
-        delta_x, delta_y = 0, 0
-        if horiz:
-            width -= maxw
-            if orientation == "lr":
-                delta_x = maxw
-        else:
-            height -= maxh
-            if orientation == "tb":
-                delta_y = maxh
-
-        if horiz:
-            delta_y += font_height / 2.0
-        else:
-            delta_x += font_height / 2.0
-        layout.fit_into(
-            (delta_x, delta_y, width - delta_x, height - delta_y),
-            keep_aspect_ratio=False,
-        )
-
-        context.save()
-
-        context.translate(bbox.left, bbox.top)
-        context.set_source_rgb(0.0, 0.0, 0.0)
-        context.set_line_width(1)
-
-        # Draw items
-        if horiz:
-            sgn = 0 if orientation == "rl" else -1
-            for idx in range(self._nitems):
-                x = layout[idx][0] + sgn * item_boxes[idx][0]
-                y = layout[idx][1] - item_boxes[idx][1] / 2.0
-                self._plot_item(context, horiz, idx, x, y)
-        else:
-            sgn = 1 if orientation == "bt" else 0
-            for idx in range(self._nitems):
-                x = layout[idx][0] - item_boxes[idx][0] / 2.0
-                y = layout[idx][1] + sgn * item_boxes[idx][1]
-                self._plot_item(context, horiz, idx, x, y)
-
-        # Draw dendrogram lines
-        if not horiz:
-            for idx, (id1, id2) in enumerate(self._merges):
-                x0, y0 = layout[id1]
-                x1, y1 = layout[id2]
-                x2, y2 = layout[idx + self._nitems]
-                context.move_to(x0, y0)
-                context.line_to(x0, y2)
-                context.line_to(x1, y2)
-                context.line_to(x1, y1)
-                context.stroke()
-        else:
-            for idx, (id1, id2) in enumerate(self._merges):
-                x0, y0 = layout[id1]
-                x1, y1 = layout[id2]
-                x2, y2 = layout[idx + self._nitems]
-                context.move_to(x0, y0)
-                context.line_to(x2, y0)
-                context.line_to(x2, y1)
-                context.line_to(x1, y1)
-                context.stroke()
-
-        context.restore()
+        drawer.draw(self, **kwds)
 
     @property
     def merges(self):
@@ -1008,8 +860,8 @@ class VertexDendrogram(Dendrogram):
     def optimal_count(self, value):
         self._optimal_count = max(int(value), 1)
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Draws the vertex dendrogram on the given Cairo context
+    def __plot__(self, backend, context, *args, **kwds):
+        """Draws the vertex dendrogram on the given Cairo context or matplotlib Axes
 
         See L{Dendrogram.__plot__} for the list of supported keyword
         arguments."""
@@ -1025,7 +877,9 @@ class VertexDendrogram(Dendrogram):
             name if name is not None else str(idx)
             for idx, name in enumerate(self._names)
         ]
-        result = Dendrogram.__plot__(self, context, bbox, palette, *args, **kwds)
+        result = Dendrogram.__plot__(
+            self, backend, context, *args, **kwds
+        )
         del self._names
 
         return result
@@ -1272,9 +1126,8 @@ class VertexCover(Cover):
         """
         return [self._graph.subgraph(cl) for cl in self]
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Plots the cover to the given Cairo context in the given
-        bounding box.
+    def __plot__(self, backend, context, *args, **kwds):
+        """Plots the cover to the given Cairo context or matplotlib Axes.
 
         This is done by calling L{Graph.__plot__()} with the same arguments, but
         drawing nice colored blobs around the vertex groups.
@@ -1322,15 +1175,18 @@ class VertexCover(Cover):
         """
         if "edge_color" not in kwds and "color" not in self.graph.edge_attributes():
             # Set up a default edge coloring based on internal vs external edges
-            colors = ["grey20", "grey80"]
+            if backend == 'matplotlib':
+                colors = ["dimgrey", "silver"]
+            else:
+                colors = ["grey20", "grey80"]
+
             kwds["edge_color"] = [
                 colors[is_crossing] for is_crossing in self.crossing()
             ]
 
-        if "palette" in kwds:
-            palette = kwds["palette"]
-        else:
-            palette = ClusterColoringPalette(len(self))
+        palette = kwds.get("palette", None)
+        if palette is None:
+            kwds["palette"] = ClusterColoringPalette(len(self))
 
         if "mark_groups" not in kwds:
             if Configuration.instance()["plotting.mark_groups"]:
@@ -1340,7 +1196,7 @@ class VertexCover(Cover):
                 kwds["mark_groups"], self
             )
 
-        return self._graph.__plot__(context, bbox, palette, *args, **kwds)
+        return self._graph.__plot__(backend, context, *args, **kwds)
 
     def _formatted_cluster_iterator(self):
         """Iterates over the clusters and formats them into a string to be
@@ -1447,9 +1303,9 @@ class CohesiveBlocks(VertexCover):
         if the given group is the root."""
         return self._parent[:]
 
-    def __plot__(self, context, bbox, palette, *args, **kwds):
-        """Plots the cohesive block structure to the given Cairo context in
-        the given bounding box.
+    def __plot__(self, backend, context, *args, **kwds):
+        """Plots the cohesive block structure to the given Cairo context or
+        matplotlib Axes.
 
         Since a L{CohesiveBlocks} instance is also a L{VertexCover}, keyword
         arguments accepted by L{VertexCover.__plot__()} are also accepted here.
@@ -1473,7 +1329,9 @@ class CohesiveBlocks(VertexCover):
         if "vertex_color" not in kwds:
             kwds["vertex_color"] = self.max_cohesions()
 
-        return VertexCover.__plot__(self, context, bbox, palette, *args, **kwds)
+        return VertexCover.__plot__(
+            self, backend, context, *args, **kwds
+        )
 
 
 def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):

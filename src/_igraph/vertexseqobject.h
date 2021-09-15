@@ -23,7 +23,8 @@
 #ifndef PYTHON_VERTEXSEQOBJECT_H
 #define PYTHON_VERTEXSEQOBJECT_H
 
-#include <Python.h>
+#include "preamble.h"
+
 #include "graphobject.h"
 
 /**
@@ -37,24 +38,9 @@ typedef struct {
   PyObject* weakreflist;
 } igraphmodule_VertexSeqObject;
 
-PyObject* igraphmodule_VertexSeq_new(PyTypeObject *subtype,
-  PyObject* args, PyObject* kwds);
-int igraphmodule_VertexSeq_init(igraphmodule_VertexSeqObject* self,
-  PyObject* args, PyObject* kwds);
-void igraphmodule_VertexSeq_dealloc(igraphmodule_VertexSeqObject* self);
+extern PyTypeObject* igraphmodule_VertexSeqType;
 
-Py_ssize_t igraphmodule_VertexSeq_sq_length(igraphmodule_VertexSeqObject *self);
-
-PyObject* igraphmodule_VertexSeq_find(igraphmodule_VertexSeqObject *self,
-  PyObject *args);
-PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
-  PyObject *args);
-
-int igraphmodule_VertexSeq_to_vector_t(igraphmodule_VertexSeqObject *self,
-  igraph_vector_int_t *v);
-PyObject* igraphmodule_VertexSeq_get_graph(igraphmodule_VertexSeqObject *self,
-  void* closure);
-
-extern PyTypeObject igraphmodule_VertexSeqType;
+int igraphmodule_VertexSeq_Check(PyObject* obj);
+int igraphmodule_VertexSeq_register_type(void);
 
 #endif

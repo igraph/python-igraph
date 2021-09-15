@@ -28,7 +28,8 @@
 #ifndef PYTHON_CONVERT_H
 #define PYTHON_CONVERT_H
 
-#include <Python.h>
+#include "preamble.h"
+
 #include <igraph_constants.h>
 #include <igraph_types.h>
 #include "graphobject.h"
@@ -43,8 +44,6 @@ typedef struct {
   const char* name;
   int value;
 } igraphmodule_enum_translation_table_entry_t;
-
-int PyLong_AsInt(PyObject* obj, int* result);
 
 /* Conversion from PyObject to enum types */
 

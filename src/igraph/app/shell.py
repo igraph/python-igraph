@@ -20,6 +20,7 @@ Mac OS X users are likely to invoke igraph from the command line.
 """
 
 
+from abc import ABCMeta, abstractmethod
 import re
 import sys
 
@@ -285,14 +286,15 @@ class ProgressBar:
             self.last_message = ""
 
 
-class Shell:
+class Shell(metaclass=ABCMeta):
     """Superclass of the embeddable shells supported by igraph"""
 
     def __init__(self):
         pass
 
+    @abstractmethod
     def __call__(self):
-        raise NotImplementedError("abstract class")
+        raise NotImplementedError
 
     def supports_progress_bar(self):
         """Checks whether the shell supports progress bars.

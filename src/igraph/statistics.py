@@ -230,39 +230,12 @@ class Histogram:
             yield (x, x + self._bin_width, elem)
             x += self._bin_width
 
-    def __plot__(self, context, bbox, _, **kwds):
+    def __plot__(self, backend, context, **kwds):
         """Plotting support"""
-        from igraph.drawing.coord import DescartesCoordinateSystem
+        from igraph.drawing import DrawerDirectory
 
-        coord_system = DescartesCoordinateSystem(
-            context,
-            bbox,
-            (
-                kwds.get("min", self._min),
-                0,
-                kwds.get("max", self._max),
-                kwds.get("max_value", max(self._bins)),
-            ),
-        )
-
-        # Draw the boxes
-        context.set_line_width(1)
-        context.set_source_rgb(1.0, 0.0, 0.0)
-        x = self._min
-        for value in self._bins:
-            top_left_x, top_left_y = coord_system.local_to_context(x, value)
-            x += self._bin_width
-            bottom_right_x, bottom_right_y = coord_system.local_to_context(x, 0)
-            context.rectangle(
-                top_left_x,
-                top_left_y,
-                bottom_right_x - top_left_x,
-                bottom_right_y - top_left_y,
-            )
-            context.fill()
-
-        # Draw the axes
-        coord_system.draw()
+        drawer = DrawerDirectory.resolve(self, backend)(context)
+        drawer.draw(self, **kwds)
 
     def to_string(self, max_width=78, show_bars=True, show_counts=True):
         """Returns the string representation of the histogram.

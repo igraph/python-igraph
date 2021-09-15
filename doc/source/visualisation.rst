@@ -137,12 +137,26 @@ you might want to change the size and color of the vertices:
 >>> import matplotlib.pyplot as plt
 >>> fig, ax = plt.subplots()
 >>> ig.plot(g, target=ax)
->>> dots = ax.get_children()[0] # This is a PathCollection
->>> dots.set_color('tomato')
->>> dots.set_sizes([250] * g.vcount())
+>>> dot = ax.get_children()[0] # This is a Circle for the first vertex
+>>> dot.set_color('tomato')
+>>> dot.radius *= 2 # double the default radius
 
 That also helps as a workaround if you cannot figure out how to use the plotting options below: just use the defaults and
 then customize the appearance of your graph via standard `matplotlib`_ tools.
+
+.. note:: The order of `ax.get_children()` is the following: (i) patches for clustering hulls if requested;
+   (ii) patches for vertices; (iii) patches for edges: for undirected graphs, there's one patch per edge. For directed graphs, there's a *pair* of patches, associated with the arrow body and head, respectively. 
+
+To use `matplotlib_` as your default plotting backend, you can set:
+
+>>> ig.config['plotting.backend'] = 'matplotlib'
+
+Then you don't have to specify an `Axes` anymore:
+
+>>> ig.plot(g)
+
+will automatically make a new `Axes` for you and return it.
+
 
 Plotting graphs in Jupyter notebooks
 ++++++++++++++++++++++++++++++++++++

@@ -4,10 +4,7 @@ import warnings
 
 from igraph import Graph, InternalError
 
-try:
-    from .utils import temporary_file
-except ImportError:
-    from utils import temporary_file
+from .utils import temporary_file
 
 try:
     import networkx as nx
