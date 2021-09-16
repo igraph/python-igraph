@@ -287,8 +287,7 @@ class ForeignTests(unittest.TestCase):
             self.assertEqual(g.vcount(), 6)
             self.assertEqual(g.ecount(), 12)
             self.assertTrue(g.is_directed())
-            self.assertTrue(
-                    g.es["weight"] == [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2])
+            self.assertTrue(g.es["weight"] == [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2])
 
             g.write_adjacency(tmpfname)
 
@@ -405,6 +404,87 @@ class ForeignTests(unittest.TestCase):
             self.assertTrue(g.vcount() == 3 and g.ecount() == 1 and not g.is_directed())
             g.write_pickle(tmpfname)
 
+    def testDictList(self):
+        g = Graph.Full(3)
+
+        # Check with vertex ids
+        self.assertEqual(
+            g.to_dict_list(),
+            (
+                [{}, {}, {}],
+                [
+                    {"source": 0, "target": 1},
+                    {"source": 0, "target": 2},
+                    {"source": 1, "target": 2},
+                ],
+            ),
+        )
+
+        # Check failure for vertex names
+        self.assertRaises(AttributeError, g.to_dict_list, False)
+
+        # Check with vertex names
+        g.vs["name"] = ["apple", "pear", "peach"]
+        self.assertEqual(
+            g.to_dict_list(),
+            (
+                [{"name": "apple"}, {"name": "pear"}, {"name": "peach"}],
+                [
+                    {"source": 0, "target": 1},
+                    {"source": 0, "target": 2},
+                    {"source": 1, "target": 2},
+                ],
+            ),
+        )
+        self.assertEqual(
+            g.to_dict_list(use_vids=False),
+            (
+                [{"name": "apple"}, {"name": "pear"}, {"name": "peach"}],
+                [
+                    {"source": "apple", "target": "pear"},
+                    {"source": "apple", "target": "peach"},
+                    {"source": "pear", "target": "peach"},
+                ],
+            ),
+        )
+
+    def testTupleList(self):
+        g = Graph.Full(3)
+
+        # Check with vertex ids
+        self.assertEqual(
+            g.to_tuple_list(),
+            [(0, 1), (0, 2), (1, 2)],
+        )
+
+        # Check failure for edge names
+        self.assertRaises(AttributeError, g.to_tuple_list, "name")
+
+        # Edge attributes
+        g.es["name"] = ["first_edge", "second", None]
+        self.assertEqual(
+            g.to_tuple_list("name"),
+            [(0, 1, "first_edge"), (0, 2, "second"), (1, 2, None)],
+        )
+        self.assertEqual(
+            g.to_tuple_list(["name"]),
+            [(0, 1, "first_edge"), (0, 2, "second"), (1, 2, None)],
+        )
+
+        # Missing vertex names
+        self.assertRaises(AttributeError, g.to_tuple_list, None, False)
+
+        # Vertex names
+        g.vs["name"] = ["apple", "pear", "peach"]
+        self.assertEqual(
+            g.to_tuple_list("name", use_vids=False),
+            [
+                ("apple", "pear", "first_edge"),
+                ("apple", "peach", "second"),
+                ("pear", "peach", None),
+            ],
+        )
+
     def testSequenceDict(self):
         g = Graph.Full(3)
 
@@ -419,10 +499,51 @@ class ForeignTests(unittest.TestCase):
         self.assertRaises(AttributeError, g.to_sequence_dict, False)
 
         # Check with vertex names
-        g.vs['name'] = ['apple', 'pear', 'peach']
+        g.vs["name"] = ["apple", "pear", "peach"]
         self.assertEqual(
             g.to_sequence_dict(use_vids=False),
-            {'apple': ['pear', 'peach'], 'pear': ['peach']},
+            {"apple": ["pear", "peach"], "pear": ["peach"]},
+        )
+
+    def testDictDict(self):
+        g = Graph([(0, 1), (0, 2), (1, 2)])
+
+        # Check with vertex ids, no edge attrs
+        self.assertEqual(
+            g.to_dict_dict(),
+            {0: {1: {}, 2: {}}, 1: {2: {}}},
+        )
+
+        # With vertex ids, edge attrs
+        g.es["name"] = ["first_edge", "second", None]
+        # Check with vertex ids, incomplete edge attrs
+        self.assertEqual(
+            g.to_dict_dict(),
+            {
+                0: {1: {"name": "first_edge"}, 2: {"name": "second"}},
+                1: {2: {"name": None}},
+            },
+        )
+        self.assertEqual(
+            g.to_dict_dict(skip_None=True),
+            {0: {1: {"name": "first_edge"}, 2: {"name": "second"}}, 1: {2: {}}},
+        )
+
+        # With vertex names
+        g.vs["name"] = ["apple", "pear", "peach"]
+        self.assertEqual(
+            g.to_dict_dict(use_vids=False),
+            {
+                "apple": {"pear": {"name": "first_edge"}, "peach": {"name": "second"}},
+                "pear": {"peach": {"name": None}},
+            },
+        )
+        self.assertEqual(
+            g.to_dict_dict(use_vids=False, skip_None=True),
+            {
+                "apple": {"pear": {"name": "first_edge"}, "peach": {"name": "second"}},
+                "pear": {"peach": {}},
+            },
         )
 
     @unittest.skipIf(pd is None, "test case depends on Pandas")

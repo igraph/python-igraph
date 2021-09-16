@@ -140,9 +140,12 @@ from igraph.io.objects import (
     _construct_graph_from_sequence_dict,
     _construct_graph_from_dict_dict,
     _construct_graph_from_dataframe,
+    _export_graph_to_dict_list,
+    _export_graph_to_tuple_list,
+    _export_graph_to_sequence_dict,
+    _export_graph_to_dict_dict,
     _export_vertex_dataframe,
     _export_edge_dataframe,
-    _export_graph_to_sequence_dict,
 )
 from igraph.io.adjacency import (
     _construct_graph_from_adjacency,
@@ -1945,9 +1948,11 @@ class Graph(GraphBase):
     # Various objects
     # list of dict representation of graphs
     DictList = classmethod(_construct_graph_from_dict_list)
+    to_dict_list = _export_graph_to_dict_list
 
     # tuple-like representation of graphs
     TupleList = classmethod(_construct_graph_from_tuple_list)
+    to_tuple_list = _export_graph_to_tuple_list
 
     # dict of sequence representation of graphs
     SequenceDict = classmethod(_construct_graph_from_sequence_dict)
@@ -1955,6 +1960,7 @@ class Graph(GraphBase):
 
     # dict of dicts representation of graphs
     DictDict = classmethod(_construct_graph_from_dict_dict)
+    to_dict_dict = _export_graph_to_dict_dict
 
     # adjacency matrix
     Adjacency = classmethod(_construct_graph_from_adjacency)
@@ -3730,4 +3736,7 @@ del (
     _construct_graph_from_graph_tool,
     _export_graph_to_graph_tool,
     _export_graph_to_sequence_dict,
+    _export_graph_to_dict_dict,
+    _export_graph_to_dict_list,
+    _export_graph_to_tuple_list,
 )
