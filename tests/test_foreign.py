@@ -689,8 +689,15 @@ class ForeignTests(unittest.TestCase):
 
         # Test attributes
         self.assertEqual(g.attributes(), g2.attributes())
-        self.assertEqual(sorted(["vattr", "_nx_name"]), sorted(g2.vertex_attributes()))
-        self.assertEqual(g.edge_attributes(), g2.edge_attributes())
+        self.assertEqual(
+            sorted(["vattr", "_nx_name"]),
+            sorted(g2.vertex_attributes()),
+        )
+        self.assertEqual(
+            sorted(["eattr", "_nx_multiedge_key"]),
+            sorted(g2.edge_attributes()),
+        )
+
         # Testing parallel edges is a bit more tricky
         edge2_found = set()
         for edge in g.es:

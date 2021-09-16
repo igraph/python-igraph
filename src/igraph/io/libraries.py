@@ -1,10 +1,19 @@
-def _export_graph_to_networkx(graph, create_using=None):
+def _export_graph_to_networkx(
+    graph, create_using=None, vertex_attr_hashable="_nx_name"
+):
     """Converts the graph to networkx format.
+
+    igraph has ordered vertices and edges, but networkx does not. To keep
+    track of the original order, the '_igraph_index' vertex property is
+    added to both vertices and edges.
 
     @param create_using: specifies which NetworkX graph class to use when
         constructing the graph. C{None} means to let igraph infer the most
         appropriate class based on whether the graph is directed and whether
         it has multi-edges.
+    @param vertex_attr_hashable (str): vertex attribute used to name vertices
+        in the exported network. The default "_nx_name" ensures round trip
+        conversions to/from networkx are lossless.
     """
     import networkx as nx
 
@@ -21,35 +30,85 @@ def _export_graph_to_networkx(graph, create_using=None):
     kw = {x: graph[x] for x in graph.attributes()}
     g = cls(**kw)
 
+    multigraph = isinstance(g, (nx.MultiGraph, nx.MultiDiGraph))
+
     # Nodes and node attributes
     for i, v in enumerate(graph.vs):
-        # TODO: use _nx_name if the attribute is present so we can achieve
+        vattr = v.attributes()
+        vattr["_igraph_index"] = i
+
+        # use _nx_name if the attribute is present so we can achieve
         # a lossless round-trip in terms of vertex names
-        g.add_node(i, **v.attributes())
+        if vertex_attr_hashable in vattr:
+            hashable = vattr.pop(vertex_attr_hashable)
+        else:
+            hashable = i
+
+        # adding nodes one at a time is not slower in networkx
+        g.add_node(hashable, **vattr)
 
     # Edges and edge attributes
-    for edge in graph.es:
-        g.add_edge(edge.source, edge.target, **edge.attributes())
+    for i, edge in enumerate(graph.es):
+        eattr = edge.attributes()
+        eattr["_igraph_index"] = i
+
+        if multigraph and "_nx_multiedge_key" in eattr:
+            eattr["key"] = eattr.pop["_nx_multiedge_key"]
+
+        if vertex_attr_hashable in graph.vertex_attributes():
+            hashable_source = graph.vs[vertex_attr_hashable][edge.source]
+            hashable_target = graph.vs[vertex_attr_hashable][edge.target]
+        else:
+            hashable_source = edge.source
+            hashable_target = edge.target
+
+        # adding edges one at a time is not slower in networkx
+        g.add_edge(hashable_source, hashable_target, **eattr)
 
     return g
 
 
-def _construct_graph_from_networkx(cls, g):
+def _construct_graph_from_networkx(cls, g, vertex_attr_hashable="_nx_name"):
     """Converts the graph from networkx
 
-    Vertex names will be converted to "_nx_name" attribute and the vertices
-    will get new ids from 0 up (as standard in igraph).
+    Vertex names will be stored as a vertex_attr_hashable attribute (usually
+    "_nx_name", but see below). Because python-igraph stored vertices in an
+    ordered manner, vertices will get new ids from 0 up. In case of
+    multigraphs, each edge will have an "_nx_multiedge_key" attribute, to
+    distinguish edges that connect the same two vertices.
 
     @param g: networkx Graph or DiGraph
+    @param vertex_attr_hashable (str): attribute used to store the Python
+        hashable used by networkx to identify each vertex. The default value
+        '_nx_name' ensures lossless round trip conversions to/from networkx. An
+        alternative choice is 'name': in that case, using strings for vertex
+        names is recommended and, if the graph is re-exported to networkx,
+        Graph.to_networkx(vertex_attr_hashable="name") must be used to recover
+        the correct vertex nomenclature in the exported network.
+
     """
+    import networkx as nx
+
     # Graph attributes
     gattr = dict(g.graph)
 
     # Nodes
     vnames = list(g.nodes)
-    vattr = {"_nx_name": vnames}
+    vattr = {vertex_attr_hashable: vnames}
     vcount = len(vnames)
-    vd = {v: i for i, v in enumerate(vnames)}
+
+    # Dictionary connecting networkx hashables with igraph indices
+    if len(g) and "_igraph_index" in g.nodes[0]:
+        # Collect _igraph_index and fill gaps
+        idx = [x["_igraph_index"] for v, x in g.nodes.data()]
+        idx.sort()
+        idx_dict = {x: i for i, x in enumerate(idx)}
+
+        vd = {}
+        for v, datum in g.nodes.data():
+            vd[v] = idx_dict[datum["_igraph_index"]]
+    else:
+        vd = {v: i for i, v in enumerate(vnames)}
 
     # NOTE: we do not need a special class for multigraphs, it is taken
     # care for at the edge level rather than at the graph level.
@@ -57,19 +116,47 @@ def _construct_graph_from_networkx(cls, g):
         n=vcount, directed=g.is_directed(), graph_attrs=gattr, vertex_attrs=vattr
     )
 
-    # Node attributes
+    # Vertex attributes
     for v, datum in g.nodes.data():
         for key, val in list(datum.items()):
+            # Get rid of _igraph_index (we used it already)
+            if key == "_igraph_index":
+                continue
             graph.vs[vd[v]][key] = val
 
     # Edges and edge attributes
     eattr_names = {name for (_, _, data) in g.edges.data() for name in data}
     eattr = {name: [] for name in eattr_names}
     edges = []
-    for (u, v, data) in g.edges.data():
-        edges.append((vd[u], vd[v]))
-        for name in eattr_names:
-            eattr[name].append(data.get(name))
+    # Multigraphs need a hidden attribute for multiedges
+    if isinstance(g, (nx.MultiGraph, nx.MultiDiGraph)):
+        eattr["_nx_multiedge_key"] = []
+        for (u, v, edgekey, data) in g.edges.data(keys=True):
+            edges.append((vd[u], vd[v]))
+            for name in eattr_names:
+                eattr[name].append(data.get(name))
+            eattr["_nx_multiedge_key"].append(edgekey)
+
+    else:
+        for (u, v, data) in g.edges.data():
+            edges.append((vd[u], vd[v]))
+            for name in eattr_names:
+                eattr[name].append(data.get(name))
+
+    # Sort edges if there is a trace of a previous igraph ordering
+    if "_igraph_index" in eattr:
+        # Poor man's argsort
+        sortd = [(i, x) for i, x in enumerate(eattr["_igraph_index"])]
+        sortd.sort(key=lambda x: x[1])
+        idx = [i for i, x in sortd]
+
+        # Get rid of the _igraph_index now
+        del eattr["_igraph_index"]
+
+        # Sort edges
+        edges = [edges[i] for i in idx]
+        # Sort each attribute
+        eattr = {key: [val[i] for i in idx] for key, val in eattr.items()}
 
     graph.add_edges(edges, eattr)
 
