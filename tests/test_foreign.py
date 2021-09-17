@@ -458,26 +458,26 @@ class ForeignTests(unittest.TestCase):
         )
 
         # Check failure for edge names
-        self.assertRaises(AttributeError, g.to_tuple_list, "name")
+        self.assertRaises(AttributeError, g.to_tuple_list, True, "name")
 
         # Edge attributes
         g.es["name"] = ["first_edge", "second", None]
         self.assertEqual(
-            g.to_tuple_list("name"),
+            g.to_tuple_list(edge_attrs="name"),
             [(0, 1, "first_edge"), (0, 2, "second"), (1, 2, None)],
         )
         self.assertEqual(
-            g.to_tuple_list(["name"]),
+            g.to_tuple_list(edge_attrs=["name"]),
             [(0, 1, "first_edge"), (0, 2, "second"), (1, 2, None)],
         )
 
         # Missing vertex names
-        self.assertRaises(AttributeError, g.to_tuple_list, None, False)
+        self.assertRaises(AttributeError, g.to_tuple_list, False)
 
         # Vertex names
         g.vs["name"] = ["apple", "pear", "peach"]
         self.assertEqual(
-            g.to_tuple_list("name", use_vids=False),
+            g.to_tuple_list(use_vids=False, edge_attrs="name"),
             [
                 ("apple", "pear", "first_edge"),
                 ("apple", "peach", "second"),

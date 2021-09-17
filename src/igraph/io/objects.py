@@ -237,6 +237,12 @@ def _construct_graph_from_sequence_dict(
     If names are used, the order of vertices is not guaranteed, and each
     vertex will be given the vertex_name_attr attribute.
 
+    @param edges: the dict of sequences describing the edges
+    @param directed (bool): whether to create a directed graph
+    @vertex_name_attr (str): vertex attribute that will store the names
+
+    @returns: a Graph object
+
     Example:
 
     mydict = {'apple': ['pear', 'peach'], 'pear': ['peach']}
@@ -278,14 +284,24 @@ def _construct_graph_from_dict_dict(
     cls,
     edges,
     directed=False,
+    vertex_name_attr="name",
 ):
     """Constructs a graph from a dict-of-dicts representation.
 
     Each key can be an integer or a string and represent a vertex. Each value
     is a dict representing edges (outgoing if the graph is directed) from that
     vertex. Each dict key is an integer/string for a target vertex, such that
-    an edge will be created between those two vertices, while each value is
-    a dictionary of edge attributes for that edge.
+    an edge will be created between those two vertices. Integers are
+    interpreted as vertex_ids from 0 (as used in igraph), strings are
+    interpreted as vertex names, in which case vertices are given separate
+    numeric ids. Each value is a dictionary of edge attributes for that edge.
+
+    @param edges: the dict of dict of dicts specifying the edges and their
+      attributes
+    @param directed (bool): whether to create a directed graph
+    @vertex_name_attr (str): vertex attribute that will store the names
+
+    @returns: a Graph object
 
     Example:
 
@@ -311,7 +327,7 @@ def _construct_graph_from_dict_dict(
             for target, edge_attrs in target_dict.items():
                 edge_list.append((source_id, name_map[target]))
                 edge_attribute_list.append(edge_attrs)
-        vertex_attributes["name"] = name_map.values()
+        vertex_attributes[vertex_name_attr] = name_map.values()
         n = len(name_map)
 
     else:
@@ -357,7 +373,7 @@ def _construct_graph_from_dataframe(
       Vertex names should be strings for full compatibility, but many functions
       will work if you set the name with any hashable object. All other columns
       will be added as vertex attributes by column name.
-    @use_vids: whether to interpret the first two columns of the `edges`
+    @param use_vids: whether to interpret the first two columns of the `edges`
       argument as vertex ids (0-based integers) instead of vertex names.
       If this argument is set to True and the first two columns of `edges`
       are not integers, an error is thrown.
@@ -472,23 +488,33 @@ def _construct_graph_from_dataframe(
     return g
 
 
-def _export_graph_to_dict_list(self, use_vids=True, skip_None=False):
+def _export_graph_to_dict_list(graph, use_vids=True, skip_None=False):
     """Export graph as two lists of dictionaries, for vertices and edges.
 
     This function is the reverse of Graph.DictList.
 
+    @param use_vids (bool): whether to label vertices in the output data
+      structure by their ids or their "name" attribute. If use_vids=False but
+      vertices lack a "name" attribute, an AttributeError is raised.
+    @param skip_None (bool): whether to skip, for each edge, attributes that
+      have a value of None. This is useful if only some edges are expected to
+      possess an attribute.
+
+    @return: a tuple with two lists of dictionaries, representing the vertices
+      and the edges, respectively, with their attributes.
+
     Example:
 
-    g = Graph([(0, 1), (1, 2)])
-    g.vs["name"] = ["apple", "pear", "peach"]
-    g.es["name"] = ["first_edge", "second"]
+    >>> g = Graph([(0, 1), (1, 2)])
+    >>> g.vs["name"] = ["apple", "pear", "peach"]
+    >>> g.es["name"] = ["first_edge", "second"]
 
-    g.to_dict_list()
+    >>> g.to_dict_list()
     ([{"name": "apple"}, {"name": "pear"}, {"name": "peach"}],
      [{"source": 0, "target": 1, "name": "first_edge"},
       {"source" 0, "target": 2, name": "second"}])
 
-    g.to_dict_list(use_vids=False)
+    >>> g.to_dict_list(use_vids=False)
     ([{"name": "apple"}, {"name": "pear"}, {"name": "peach"}],
      [{"source": "apple", "target": "pear", "name": "first_edge"},
       {"source" "apple", "target": "peach", name": "second"}])
@@ -497,18 +523,18 @@ def _export_graph_to_dict_list(self, use_vids=True, skip_None=False):
     res_vs, res_es = [], []
 
     if not use_vids:
-        if "name" not in self.vertex_attributes():
+        if "name" not in graph.vertex_attributes():
             raise AttributeError("No vertex attribute 'name'")
 
-        vs_names = self.vs["name"]
+        vs_names = graph.vs["name"]
 
-    for vertex in self.vs:
+    for vertex in graph.vs:
         attrdic = vertex.attributes()
         if skip_None:
             attrdic = {k: v for k, v in attrdic.items() if v is not None}
         res_vs.append(attrdic)
 
-    for edge in self.es:
+    for edge in graph.es:
         source, target = edge.tuple
         if not use_vids:
             source, target = vs_names[source], vs_names[target]
@@ -523,23 +549,34 @@ def _export_graph_to_dict_list(self, use_vids=True, skip_None=False):
     return (res_vs, res_es)
 
 
-def _export_graph_to_tuple_list(self, edge_attrs=None, use_vids=True, skip_None=False):
+def _export_graph_to_tuple_list(graph, use_vids=True, edge_attrs=None):
     """Export graph to a list of edge tuples
 
     This function is the reverse of Graph.TupleList.
 
+    @param use_vids (bool): whether to label vertices in the output data
+      structure by their ids or their "name" attribute. If use_vids=False but
+      vertices lack a "name" attribute, an AttributeError is raised.
+    @param edge_attrs (str or list of str): list of edge attributes to export
+      in addition to source and target vertex, which are always the first two
+      elements of each tuple. None (default) is equivalent to an empty list. A
+      string is acceptable to signify a single attribute and will be wrapped in
+      a list internally.
+
+    @return: a list of tuples, each representing an edge of the graph.
+
     Example:
 
-    g = Graph.Full(3)
-    g.vs["name"] = ["apple", "pear", "peach"]
-    g.es["name"] = ["first_edge", "second", "third"]
+    >>> g = Graph.Full(3)
+    >>> g.vs["name"] = ["apple", "pear", "peach"]
+    >>> g.es["name"] = ["first_edge", "second", "third"]
 
     # Get name of the edge
-    g.to_tuple_list(edge_attrs=["name"])
+    >>> g.to_tuple_list(edge_attrs=["name"])
     [(0, 1, "first_edge"), (0, 2, "second"), (1, 2, "third")]
 
     # Use vertex names, no edge attributes
-    g.to_tuple_list(use_vids=False)
+    >>> g.to_tuple_list(use_vids=False)
     [("apple", "pear"), ("apple", "peach"), ("pear", "peach")]
     """
     # Output data structure
@@ -548,55 +585,66 @@ def _export_graph_to_tuple_list(self, edge_attrs=None, use_vids=True, skip_None=
     if edge_attrs is not None:
         if isinstance(edge_attrs, str):
             edge_attrs = [edge_attrs]
-        missing_attrs = list(set(edge_attrs) - set(self.edge_attributes()))
+        missing_attrs = list(set(edge_attrs) - set(graph.edge_attributes()))
         if missing_attrs:
             raise AttributeError(f"Missing attributes: {missing_attrs}")
+    else:
+        edge_attrs = []
 
     if use_vids is False:
-        if "name" not in self.vertex_attributes():
+        if "name" not in graph.vertex_attributes():
             raise AttributeError("No vertex attribute 'name'")
 
-        vs_names = self.vs["name"]
+        vs_names = graph.vs["name"]
 
-    for edge in self.es:
+    for edge in graph.es:
         source, target = edge.tuple
         if not use_vids:
             source, target = vs_names[source], vs_names[target]
         attrlist = [source, target]
-        if edge_attrs is not None:
-            attrlist += [edge[attrname] for attrname in edge_attrs]
+        attrlist += [edge[attrname] for attrname in edge_attrs]
         res.append(tuple(attrlist))
 
     return res
 
 
-def _export_graph_to_sequence_dict(self, use_vids=True, sequence_constructor=list):
+def _export_graph_to_sequence_dict(graph, use_vids=True, sequence_constructor=list):
     """Export graph to a dictionary of sequences
 
     This function is the reverse of Graph.SequenceDict.
 
+    @param use_vids (bool): whether to label vertices in the output data
+      structure by their ids or their "name" attribute. If use_vids=False but
+      vertices lack a "name" attribute, an AttributeError is raised.
+    @param sequence_constructor (function): constructor for the data structure
+      to be used as values of the dictionary. The default (list) makes a dict
+      of lists, with each list representing the neighbors of the vertex
+      specified in the respective dictionary key.
+
+    @return: dictionary of sequences, keyed by vertices, with each value
+      containing the neighbors of that vertex.
+
     Example:
 
-    g = Graph.Full(3)
-    g.to_sequence_dict() -> {0: [1, 2], 1: [2]}
-
-    g.to_sequence_dict(sequence_constructor=tuple) -> {0: (1, 2), 1: (2,)}
-
-    g.vs['name'] = ['apple', 'pear', 'peach']
-    g.to_sequence_dict(use_vids=False) -> {'apple': ['pear', 'peach'], 'pear': ['peach']}
+    >>> g = Graph.Full(3)
+    >>> g.to_sequence_dict() -> {0: [1, 2], 1: [2]}
+    >>> g.to_sequence_dict(sequence_constructor=tuple) -> {0: (1, 2), 1: (2,)}
+    >>> g.vs['name'] = ['apple', 'pear', 'peach']
+    >>> g.to_sequence_dict(use_vids=False)
+    {'apple': ['pear', 'peach'], 'pear': ['peach']}
     """
-    if (not use_vids) and ("name" not in self.vertex_attributes()):
+    if (not use_vids) and ("name" not in graph.vertex_attributes()):
         raise AttributeError('Vertices do not have a "name" attribute')
 
     # Temporary output data structure
     res = defaultdict(list)
 
-    for edge in self.es:
+    for edge in graph.es:
         source, target = edge.tuple
 
         if not use_vids:
-            source = self.vs[source]["name"]
-            target = self.vs[target]["name"]
+            source = graph.vs[source]["name"]
+            target = graph.vs[target]["name"]
 
         res[source].append(target)
 
@@ -604,31 +652,53 @@ def _export_graph_to_sequence_dict(self, use_vids=True, sequence_constructor=lis
     return res
 
 
-def _export_graph_to_dict_dict(
-    self, use_vids=True, edge_attributes=None, skip_None=False
-):
+def _export_graph_to_dict_dict(graph, use_vids=True, edge_attrs=None, skip_None=False):
     """Export graph to dictionary of dicts of edge attributes
 
     This function is the reverse of Graph.DictDict.
 
+    @param use_vids (bool): whether to label vertices in the output data
+      structure by their ids or their "name" attribute. If use_vids=False but
+      vertices lack a "name" attribute, an AttributeError is raised.
+    @param edge_attrs (str or list of str): list of edge attributes to export.
+      None (default) signified all attributes (unlike Graph.to_tuple_list). A
+      string is acceptable to signify a single attribute and will be wrapped
+      in a list internally.
+    @param skip_None (bool): whether to skip, for each edge, attributes that
+      have a value of None. This is useful if only some edges are expected to
+      possess an attribute.
+
+    @return: dictionary of dictionaries of dictionaries, with the outer keys
+      vertex ids/names, the middle keys ids/names of their neighbors, and the
+      innermost dictionary representing attributes of that edge.
+
     Example:
-    g = Graph.Full(3)
-    g.es['name'] = ['first_edge', 'second', 'third']
-    g.to_dict_dict()
+    >>> g = Graph.Full(3)
+    >>> g.es['name'] = ['first_edge', 'second', 'third']
+    >>> g.to_dict_dict()
     {0: {1: {'name': 'first_edge'}, 2: {'name': 'second'}},
      1: {2: {'name': 'third'}}}
     """
+    if edge_attrs is not None:
+        if isinstance(edge_attrs, str):
+            edge_attrs = [edge_attrs]
+        missing_attrs = list(set(edge_attrs) - set(graph.edge_attributes()))
+        if missing_attrs:
+            raise AttributeError(f"Missing attributes: {missing_attrs}")
+
     # Temporary output data structure
     res = defaultdict(lambda: defaultdict(dict))
 
-    for edge in self.es:
+    for edge in graph.es:
         source, target = edge.tuple
 
         if not use_vids:
-            source = self.vs[source]["name"]
-            target = self.vs[target]["name"]
+            source = graph.vs[source]["name"]
+            target = graph.vs[target]["name"]
 
         attrdic = edge.attributes()
+        if edge_attrs is not None:
+            attrdic = {k: attrdic[k] for k in edge_attrs}
         if skip_None:
             attrdic = {k: v for k, v in attrdic.items() if v is not None}
 
