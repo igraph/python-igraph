@@ -626,6 +626,10 @@ class GraphSequenceDictTests(unittest.TestCase):
             "David": ["Alice", "Bob"],
         }
 
+    def testEmptyGraphSequenceDict(self):
+        g = Graph.SequenceDict({})
+        self.assertEqual(g.vcount(), 0)
+
     def testGraphFromSequenceDict(self):
         g = Graph.SequenceDict(self.eids)
         self.checkIfOK(g, ())
@@ -642,6 +646,53 @@ class GraphSequenceDictTests(unittest.TestCase):
             self.assertTrue(g.vertex_attributes() == [name_attr])
             self.assertTrue(g.vs[name_attr] == ["Alice", "Bob", "Cecil", "David"])
         self.assertTrue(g.edge_attributes() == [])
+
+
+class GraphDictDictTests(unittest.TestCase):
+    def setUp(self):
+        self.eids = {
+            0: {1: {}},
+            2: {1: {}, 0: {}},
+            3: {0: {}, 1: {}},
+        }
+        self.edges = {
+            "Alice": {"Bob": {}},
+            "Cecil": {"Bob": {}, "Alice": {}},
+            "David": {"Alice": {}, "Bob": {}},
+        }
+        self.eids_with_props = {
+            0: {1: {"weight": 5.6, "additional": 'abc'}},
+            2: {1: {"weight": 3.4}, 0: {"weight": 2}},
+            3: {0: {"weight": 1}, 1: {"weight": 5.6}},
+        }
+
+    def testEmptyGraphDictDict(self):
+        g = Graph.DictDict({})
+        self.assertEqual(g.vcount(), 0)
+
+    def testGraphFromDictDict(self):
+        g = Graph.DictDict(self.eids)
+        self.checkIfOK(g, ())
+
+    def testGraphFromDictDict(self):
+        g = Graph.DictDict(self.eids_with_props)
+        self.checkIfOK(g, (), edge_attrs=["additional", "weight"])
+
+    def testGraphFromDictDictWithNames(self):
+        g = Graph.SequenceDict(self.edges)
+        self.checkIfOK(g, "name")
+
+    def checkIfOK(self, g, name_attr, edge_attrs=None):
+        self.assertTrue(g.vcount() == 4 and g.ecount() == 5 and not g.is_directed())
+        self.assertTrue(g.get_edgelist() == [(0, 1), (1, 2), (0, 2), (0, 3), (1, 3)])
+        self.assertTrue(g.attributes() == [])
+        if name_attr:
+            self.assertTrue(g.vertex_attributes() == [name_attr])
+            self.assertTrue(g.vs[name_attr] == ["Alice", "Bob", "Cecil", "David"])
+        if edge_attrs is None:
+            self.assertEqual(g.edge_attributes(), [])
+        else:
+            self.assertEqual(sorted(g.edge_attributes()), sorted(edge_attrs))
 
 
 class DegreeSequenceTests(unittest.TestCase):
@@ -859,6 +910,7 @@ def suite():
     graph_dict_list_suite = unittest.makeSuite(GraphDictListTests)
     graph_tuple_list_suite = unittest.makeSuite(GraphTupleListTests)
     graph_sequence_dict_suite = unittest.makeSuite(GraphSequenceDictTests)
+    graph_dict_dict_suite = unittest.makeSuite(GraphDictDictTests)
     degree_sequence_suite = unittest.makeSuite(DegreeSequenceTests)
     inheritance_suite = unittest.makeSuite(InheritanceTests)
     refcount_suite = unittest.makeSuite(ReferenceCountTests)
@@ -869,6 +921,7 @@ def suite():
             graph_dict_list_suite,
             graph_tuple_list_suite,
             graph_sequence_dict_suite,
+            graph_dict_dict_suite,
             degree_sequence_suite,
             inheritance_suite,
             refcount_suite
