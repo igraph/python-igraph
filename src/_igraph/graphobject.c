@@ -3582,6 +3582,24 @@ PyObject *igraphmodule_Graph_Weighted_Adjacency(PyTypeObject * type,
  * Advanced structural properties of graphs                           *
  **********************************************************************/
 
+PyObject *igraphmodule_Graph_is_chordal(igraphmodule_GraphObject *self) {
+  igraph_bool_t res;
+
+  if (igraph_is_chordal(
+        &self->g,
+        NULL, /* alpha */
+        NULL, /* alpha1 */
+        &res,
+        NULL, /* fill_in */
+        NULL /* new_graph */
+        )) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+  return res ? Py_True: Py_False;
+
+}
+
 /** \ingroup python_interface_graph
  * \brief Calculates the articulation points of a graph.
  * \return the list of articulation points in a PyObject
@@ -13123,6 +13141,17 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param v2: the ID or name of the second vertex\n"
    "@return: C{True} if there exists an edge from v1 to v2, C{False}\n"
    "  otherwise.\n"},
+
+  /* interface to igraph_is_chordal */
+  {"is_chordal", (PyCFunction)igraphmodule_Graph_is_chordal,
+   METH_NOARGS,
+   "is_chordal()\n--\n\n"
+   "Returns whether the graph is chordal or not.\n\n"
+   "A graph is chordal if each of its cycles of four or more nodes\n"
+   "has a chord, i.e. an edge joining two nodes that are not\n"
+   "adjacent in the cycle. An equivalent definition is that any\n"
+   "chordless cycles have at most three nodes.\n"
+  },
 
   /* interface to igraph_articulation_points */
   {"articulation_points", (PyCFunction)igraphmodule_Graph_articulation_points,

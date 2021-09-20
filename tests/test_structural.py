@@ -567,6 +567,22 @@ class MiscTests(unittest.TestCase):
             g.is_tree("all")
         )
 
+    def testIsChordal(self):
+        g = Graph([])
+        self.assertTrue(g.is_chordal())
+
+        g = Graph.Full(3)
+        self.assertTrue(g.is_chordal())
+
+        g = Graph.Full(5)
+        self.assertTrue(g.is_chordal())
+
+        g = Graph.Ring(4)
+        self.assertFalse(g.is_chordal())
+
+        g = Graph.Ring(5)
+        self.assertFalse(g.is_chordal())
+
     def testLineGraph(self):
         g = Graph(4, [(0, 1), (0, 2), (1, 2), (0, 3), (1, 3)])
         el = g.linegraph().get_edgelist()
