@@ -1023,20 +1023,18 @@ Pickled graph    ``pickle``    :meth:`Graph.Read_Pickle`    :meth:`Graph.write_p
 
 As an exercise, download the graph representation of the well-known
 `Zachary karate club study <http://nexus.igraph.org/api/dataset?id=1&format=GraphML>`_
-from igraph's own graph repository called `Nexus <http://nexus.igraph.org>`_,
-unzip it and try to load it into |igraph|. Since it is a GraphML file, you must
-must use the GraphML reader method from the table above (make sure you use the
-appropriate path to the downloaded file):
+from :download:`this file </assets/zachary.zip>`, unzip it and try to load it into
+|igraph|. Since it is a GraphML file, you must use the GraphML reader method from
+the table above (make sure you use the appropriate path to the downloaded file):
 
->>> karate = Graph.Read_GraphML("karate.GraphML")
+>>> karate = Graph.Read_GraphML("zachary.graphml")
 >>> summary(karate)
 IGRAPH UNW- 34 78 -- Zachary's karate club network
-+ attr: Author (g), Citation (g), name (g), Faction (v), id (v), name (v), weight (e)
 
 If you want to convert the very same graph into, say, Pajek's format, you can do it
 with the Pajek writer method from the table above:
 
->>> karate.write_pajek("karate.net")
+>>> karate.write_pajek("zachary.net")
 
 .. note:: Most of the formats have their own limitations; for instance, not all of
    them can store attributes. Your best bet is probably GraphML or GML if you
@@ -1055,9 +1053,9 @@ the preferred format is again inferred from the extension. The format detection 
 :func:`load` and :meth:`Graph.save` can be overridden by the ``format`` keyword
 argument which accepts the short names of the formats from the above table:
 
->>> karate = load("karate.GraphML")
->>> karate.save("karate.net")
->>> karate.save("karate.my_extension", format="gml")
+>>> karate = load("zachary.graphml")
+>>> karate.save("zachary.net")
+>>> karate.save("zachary.my_extension", format="gml")
 
 
 Where to go next

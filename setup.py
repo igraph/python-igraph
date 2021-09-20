@@ -837,6 +837,10 @@ options = dict(
             "matplotlib>=3.3.4; platform_python_implementation != 'PyPy'",
             "plotly>=5.3.0",
         ],
+        "doc": [
+            "Sphinx>=4.2.0",
+            "sphinxbootstrap4theme>=0.6.0"
+        ]
     },
     python_requires=">=3.6",
     headers=headers,
