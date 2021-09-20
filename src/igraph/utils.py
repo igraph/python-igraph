@@ -36,15 +36,6 @@ def _is_running_in_ipython():
         return False
 
 
-def first(iterable, default=None):
-    """Returns the first item of the given iterable, or the given default item
-    if the iterable is empty.
-    """
-    for item in iterable:
-        return item
-    return default
-
-
 @contextmanager
 def named_temporary_file(*args, **kwds):
     """Context manager that creates a named temporary file and

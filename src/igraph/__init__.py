@@ -136,14 +136,14 @@ from igraph.io.files import (
 )
 from igraph.io.objects import (
     _construct_graph_from_dict_list,
-    _construct_graph_from_tuple_list,
-    _construct_graph_from_sequence_dict,
-    _construct_graph_from_dict_dict,
-    _construct_graph_from_dataframe,
     _export_graph_to_dict_list,
+    _construct_graph_from_tuple_list,
     _export_graph_to_tuple_list,
-    _export_graph_to_sequence_dict,
+    _construct_graph_from_list_dict,
+    _export_graph_to_list_dict,
+    _construct_graph_from_dict_dict,
     _export_graph_to_dict_dict,
+    _construct_graph_from_dataframe,
     _export_vertex_dataframe,
     _export_edge_dataframe,
 )
@@ -1955,8 +1955,8 @@ class Graph(GraphBase):
     to_tuple_list = _export_graph_to_tuple_list
 
     # dict of sequence representation of graphs
-    SequenceDict = classmethod(_construct_graph_from_sequence_dict)
-    to_sequence_dict = _export_graph_to_sequence_dict
+    ListDict = classmethod(_construct_graph_from_list_dict)
+    to_list_dict = _export_graph_to_list_dict
 
     # dict of dicts representation of graphs
     DictDict = classmethod(_construct_graph_from_dict_dict)
@@ -3721,7 +3721,7 @@ del (
     _construct_graph_from_file,
     _construct_graph_from_dict_list,
     _construct_graph_from_tuple_list,
-    _construct_graph_from_sequence_dict,
+    _construct_graph_from_list_dict,
     _construct_graph_from_dict_dict,
     _construct_graph_from_adjacency,
     _construct_graph_from_weighted_adjacency,
@@ -3735,7 +3735,7 @@ del (
     _export_graph_to_networkx,
     _construct_graph_from_graph_tool,
     _export_graph_to_graph_tool,
-    _export_graph_to_sequence_dict,
+    _export_graph_to_list_dict,
     _export_graph_to_dict_dict,
     _export_graph_to_dict_list,
     _export_graph_to_tuple_list,

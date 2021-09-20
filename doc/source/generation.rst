@@ -35,16 +35,16 @@ From Python builtin structures (lists, tuples, dicts)
 +++++++++++++++++++++++++++++++++++++++++++++++++++++
 |igraph| supports a number of "conversion" methods to import graphs from Python builtin data structures such as dictionaries, lists, and tuple:
 
- - :meth:`Graph.DictList`: from a list-of-dictionaries
- - :meth:`Graph.TupleList`: from a list-of-tuples
- - :meth:`Graph.SequenceDict`: from a dict of sequences (e.g. lists)
+ - :meth:`Graph.DictList`: from a list of dictionaries
+ - :meth:`Graph.TupleList`: from a list of tuples
+ - :meth:`Graph.ListDict`: from a dict of lists
  - :meth:`Graph.DictDict`: from a dict of dictionaries
 
 Equivalent methods are available to export a graph, i.e. "reverse" those operations:
 
  - :meth:`Graph.to_dict_list`
  - :meth:`Graph.to_tuple_list`
- - :meth:`Graph.to_sequence_dict`
+ - :meth:`Graph.to_list_dict`
  - :meth:`Graph.to_dict_dict`
 
 See the `API documentation`_ of each function for details and examples.

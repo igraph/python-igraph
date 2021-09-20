@@ -613,7 +613,7 @@ class GraphTupleListTests(unittest.TestCase):
             self.assertTrue(g.edge_attributes() == [])
 
 
-class GraphSequenceDictTests(unittest.TestCase):
+class GraphListDictTests(unittest.TestCase):
     def setUp(self):
         self.eids = {
             0: [1],
@@ -626,16 +626,16 @@ class GraphSequenceDictTests(unittest.TestCase):
             "David": ["Alice", "Bob"],
         }
 
-    def testEmptyGraphSequenceDict(self):
-        g = Graph.SequenceDict({})
+    def testEmptyGraphListDict(self):
+        g = Graph.ListDict({})
         self.assertEqual(g.vcount(), 0)
 
-    def testGraphFromSequenceDict(self):
-        g = Graph.SequenceDict(self.eids)
+    def testGraphFromListDict(self):
+        g = Graph.ListDict(self.eids)
         self.checkIfOK(g, ())
 
-    def testGraphFromSequenceDictWithNames(self):
-        g = Graph.SequenceDict(self.edges)
+    def testGraphFromListDictWithNames(self):
+        g = Graph.ListDict(self.edges)
         self.checkIfOK(g, "name")
 
     def checkIfOK(self, g, name_attr):
@@ -679,7 +679,7 @@ class GraphDictDictTests(unittest.TestCase):
         self.checkIfOK(g, (), edge_attrs=["additional", "weight"])
 
     def testGraphFromDictDictWithNames(self):
-        g = Graph.SequenceDict(self.edges)
+        g = Graph.DictDict(self.edges)
         self.checkIfOK(g, "name")
 
     def checkIfOK(self, g, name_attr, edge_attrs=None):
@@ -909,7 +909,7 @@ def suite():
     datatype_suite = unittest.makeSuite(DatatypeTests)
     graph_dict_list_suite = unittest.makeSuite(GraphDictListTests)
     graph_tuple_list_suite = unittest.makeSuite(GraphTupleListTests)
-    graph_sequence_dict_suite = unittest.makeSuite(GraphSequenceDictTests)
+    graph_list_dict_suite = unittest.makeSuite(GraphListDictTests)
     graph_dict_dict_suite = unittest.makeSuite(GraphDictDictTests)
     degree_sequence_suite = unittest.makeSuite(DegreeSequenceTests)
     inheritance_suite = unittest.makeSuite(InheritanceTests)
@@ -920,7 +920,7 @@ def suite():
             datatype_suite,
             graph_dict_list_suite,
             graph_tuple_list_suite,
-            graph_sequence_dict_suite,
+            graph_list_dict_suite,
             graph_dict_dict_suite,
             degree_sequence_suite,
             inheritance_suite,

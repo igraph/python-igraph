@@ -17,35 +17,44 @@ def _construct_graph_from_dict_list(
 ):
     """Constructs a graph from a list-of-dictionaries representation.
 
-    This representation assumes that vertices and edges are encoded in
-    two lists, each list containing a Python dict for each vertex and
-    each edge, respectively. A distinguished element of the vertex dicts
-    contain a vertex ID which is used in the edge dicts to refer to
-    source and target vertices. All the remaining elements of the dict
-    are considered vertex and edge attributes. Note that the implementation
-    does not assume that the objects passed to this method are indeed
-    lists of dicts, but they should be iterable and they should yield
-    objects that behave as dicts. So, for instance, a database query
-    result is likely to be fit as long as it's iterable and yields
-    dict-like objects with every iteration.
+    This function is useful when you have two lists of dictionaries, one for
+    vertices and one for edges, each containing their attributes (e.g. name,
+    weight). Of course, the edge dictionary must also contain two special keys
+    that indicate the source and target vertices connected by that edge.
+    Non-list iterables should work as long as they yield dictionaries or
+    dict-like objects (they should have the 'items' and '__getitem__' methods).
+    For instance, a database query result is likely to be fit as long as it's
+    iterable and yields dict-like objects with every iteration.
 
-    @param vertices: the data source for the vertices or C{None} if
+    @param vertices: the list of dictionaries for the vertices or C{None} if
       there are no special attributes assigned to vertices and we
       should simply use the edge list of dicts to infer vertex names.
-    @param edges: the data source for the edges.
+    @param edges: the list of dictionaries for the edges. Each dict must have
+      at least the two keys specified by edge_foreign_keys to label the source
+      and target vertices, while additional items will be treated as edge
+      attributes.
     @param directed: whether the constructed graph will be directed
     @param vertex_name_attr: the name of the distinguished key in the
       dicts in the vertex data source that contains the vertex names.
       Ignored if C{vertices} is C{None}.
-    @param edge_foreign_keys: the name of the attributes in the dicts
-      in the edge data source that contain the source and target
-      vertex names.
+    @param edge_foreign_keys: tuple specifying the attributes in each edge
+      dictionary that contain the source (1st) and target (2nd) vertex names.
+      These items of each dictionary are also added as edge_attributes.
     @param iterative: whether to add the edges to the graph one by one,
       iteratively, or to build a large edge list first and use that to
       construct the graph. The latter approach is faster but it may
       not be suitable if your dataset is large. The default is to
       add the edges in a batch from an edge list.
     @return: the graph that was constructed
+
+    Example:
+
+    >>> vertices = [{'name': 'apple'}, {'name': 'pear'}, {'name': 'peach'}]
+    >>> edges = [{'source': 'apple', 'target': 'pear', 'weight': 1.2},
+    ...          {'source': 'apple', 'target': 'peach', 'weight': 0.9}]
+    >>> g = Graph.DictList(vertices, edges)
+
+    The graph has three vertices with names and two edges with weights.
     """
 
     def create_list_from_indices(indices, n):
@@ -55,7 +64,8 @@ def _construct_graph_from_dict_list(
         return result
 
     # Construct the vertices
-    vertex_attrs, n = {}, 0
+    vertex_attrs = {}
+    n = 0
     if vertices:
         for idx, vertex_data in enumerate(vertices):
             for k, v in vertex_data.items():
@@ -69,7 +79,12 @@ def _construct_graph_from_dict_list(
     else:
         vertex_attrs[vertex_name_attr] = []
 
+    if vertex_name_attr not in vertex_attrs:
+        raise AttributeError(
+            f'{vertex_name_attr} is not a key of your vertex dictionaries',
+        )
     vertex_names = vertex_attrs[vertex_name_attr]
+
     # Check for duplicates in vertex_names
     if len(vertex_names) != len(set(vertex_names)):
         raise ValueError("vertex names are not unique")
@@ -81,7 +96,8 @@ def _construct_graph_from_dict_list(
     if iterative:
         g = cls(n, [], directed, {}, vertex_attrs)
         for idx, edge_data in enumerate(edges):
-            src_name, dst_name = edge_data[efk_src], edge_data[efk_dest]
+            src_name = edge_data[efk_src]
+            dst_name = edge_data[efk_dest]
             v1 = vertex_name_map[src_name]
             if v1 == n:
                 g.add_vertices(1)
@@ -98,7 +114,9 @@ def _construct_graph_from_dict_list(
 
         return g
     else:
-        edge_list, edge_attrs, m = [], {}, 0
+        edge_list = []
+        edge_attrs = {}
+        m = 0
         for idx, edge_data in enumerate(edges):
             v1 = vertex_name_map[edge_data[efk_src]]
             v2 = vertex_name_map[edge_data[efk_dest]]
@@ -165,10 +183,10 @@ def _construct_graph_from_tuple_list(
       contain the vertex names.
     @param edge_attrs: the names of the edge attributes that are filled
       with the extra items in the edge list (starting from index 2, since
-      the first two items are the source and target vertices). C{None}
-      means that only the source and target vertices will be extracted
-      from each item. If you pass a string here, it will be wrapped in
-      a list for convenience.
+      the first two items are the source and target vertices). If C{None}
+      or an empty sequence, only the source and target vertices will be
+      extracted and additional tuple items will be ignored. If a string, it is
+      interpreted as a single edge attribute.
     @param weights: alternative way to specify that the graph is
       weighted. If you set C{weights} to C{true} and C{edge_attrs} is
       not given, it will be assumed that C{edge_attrs} is C{["weight"]}
@@ -218,18 +236,19 @@ def _construct_graph_from_tuple_list(
     return cls(n, edge_list, directed, {}, vertex_attributes, edge_attributes)
 
 
-def _construct_graph_from_sequence_dict(
+def _construct_graph_from_list_dict(
     cls,
     edges,
     directed=False,
     vertex_name_attr="name",
 ):
-    """Constructs a graph from a dict-of-sequences representation.
+    """Constructs a graph from a dict-of-lists representation.
 
     This function is used to construct a graph from a dictionary of
-    sequences (e.g. of lists). For each key x, its corresponding value is
-    a sequence of multiple objects: for each y, the edge (x,y) will be
-    created in the graph. x and y must be either one of:
+    lists. Other, non-list sequences (e.g. tuples) and lazy iterators are
+    are accepted. For each key x, its corresponding value must be a sequence of
+    multiple values y: the edge (x,y) will be created in the graph. x and y
+    must be either one of:
 
     - two integers: the vertices with those ids will be connected
     - two strings: the vertices with those names will be connected
@@ -245,19 +264,19 @@ def _construct_graph_from_sequence_dict(
 
     Example:
 
-    mydict = {'apple': ['pear', 'peach'], 'pear': ['peach']}
-    g = Graph.SequenceDict(mydict)
+    >>> mydict = {'apple': ['pear', 'peach'], 'pear': ['peach']}
+    >>> g = Graph.ListDict(mydict)
 
     # The graph has three vertices with names and three edges connecting
     # each pair.
     """
-    item = first(edges, default=0)
+    first_item = next(iter(edges), 0)
 
-    if not isinstance(item, (int, str)):
+    if not isinstance(first_item, (int, str)):
         raise ValueError("Keys must be integers or strings")
 
     vertex_attributes = {}
-    if isinstance(item, str):
+    if isinstance(first_item, str):
         name_map = UniqueIdGenerator()
         edge_list = []
         for source, sequence in edges.items():
@@ -312,14 +331,14 @@ def _construct_graph_from_dict_dict(
     - Alice - Bob (with weight 1.5)
     - Alice - David (with weight 2)
     """
-    item = first(edges, default=0)
+    first_item = next(iter(edges), 0)
 
-    if not isinstance(item, (int, str)):
+    if not isinstance(first_item, (int, str)):
         raise ValueError("Keys must be integers or strings")
 
     vertex_attributes = {}
     edge_attribute_list = []
-    if isinstance(item, str):
+    if isinstance(first_item, str):
         name_map = UniqueIdGenerator()
         edge_list = []
         for source, target_dict in edges.items():
@@ -535,18 +554,20 @@ def _export_graph_to_dict_list(
         vs_names = graph.vs[vertex_name_attr]
 
     for vertex in graph.vs:
-        attrdic = vertex.attributes()
         if skip_None:
-            attrdic = {k: v for k, v in attrdic.items() if v is not None}
+            attrdic = {k: v for k, v in vertex.attributes() if v is not None}
+        else:
+            attrdic = vertex.attributes()
         res_vs.append(attrdic)
 
     for edge in graph.es:
         source, target = edge.tuple
         if not use_vids:
             source, target = vs_names[source], vs_names[target]
-        attrdic = edge.attributes()
         if skip_None:
-            attrdic = {k: v for k, v in attrdic.items() if v is not None}
+            attrdic = {k: v for k, v in edge.attributes() if v is not None}
+        else:
+            attrdic = edge.attributes()
 
         attrdic["source"] = source
         attrdic["target"] = target
@@ -620,12 +641,12 @@ def _export_graph_to_tuple_list(
     return res
 
 
-def _export_graph_to_sequence_dict(
+def _export_graph_to_list_dict(
     graph, use_vids=True, sequence_constructor=list, vertex_name_attr="name",
 ):
-    """Export graph to a dictionary of sequences
+    """Export graph to a dictionary of lists (or other sequences).
 
-    This function is the reverse of Graph.SequenceDict.
+    This function is the reverse of Graph.ListDict.
 
     @param use_vids (bool): whether to label vertices in the output data
       structure by their ids or their vertex_name_attr attribute. If
