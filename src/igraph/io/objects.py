@@ -3,7 +3,6 @@ from collections import defaultdict
 
 
 from igraph.datatypes import UniqueIdGenerator
-from igraph.utils import first
 
 
 def _construct_graph_from_dict_list(

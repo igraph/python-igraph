@@ -489,19 +489,19 @@ class ForeignTests(unittest.TestCase):
         g = Graph.Full(3)
 
         # Check with vertex ids
-        self.assertEqual(g.to_sequence_dict(), {0: [1, 2], 1: [2]})
+        self.assertEqual(g.to_list_dict(), {0: [1, 2], 1: [2]})
         self.assertEqual(
-            g.to_sequence_dict(sequence_constructor=tuple),
+            g.to_list_dict(sequence_constructor=tuple),
             {0: (1, 2), 1: (2,)},
         )
 
         # Check failure for vertex names
-        self.assertRaises(AttributeError, g.to_sequence_dict, False)
+        self.assertRaises(AttributeError, g.to_list_dict, False)
 
         # Check with vertex names
         g.vs["name"] = ["apple", "pear", "peach"]
         self.assertEqual(
-            g.to_sequence_dict(use_vids=False),
+            g.to_list_dict(use_vids=False),
             {"apple": ["pear", "peach"], "pear": ["peach"]},
         )
 
