@@ -36,7 +36,7 @@ following:
 
 >>> import igraph
 >>> print(igraph.__version__)
-0.6
+0.9.6
 
 Another way to make use of |igraph| is to import all its objects and methods into the main
 Python namespace (so you do not have to type the namespace-qualification every time).
@@ -57,7 +57,7 @@ When you start the script, you will see something like this::
 
   $ igraph
   No configuration file, using defaults
-  igraph 0.9.4 running inside Python 3.9.6 (default, Jun 29 2021, 05:25:02)
+  igraph 0.9.6 running inside Python 3.9.6 (default, Jun 29 2021, 05:25:02)
   Type "copyright", "credits" or "license" for more information.
   >>>
 
