@@ -3582,22 +3582,67 @@ PyObject *igraphmodule_Graph_Weighted_Adjacency(PyTypeObject * type,
  * Advanced structural properties of graphs                           *
  **********************************************************************/
 
-PyObject *igraphmodule_Graph_is_chordal(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph_is_chordal(
+  igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds
+) {
+  static char *kwlist[] = { "alpha", "alpham1", NULL };
+  PyObject *alpha_o = Py_None, *alpham1_o = Py_None;
+  igraph_vector_int_t alpha, alpham1;
+  igraph_vector_int_t *alpha_ptr = 0, *alpham1_ptr = 0;
   igraph_bool_t res;
 
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &alpha_o, &alpham1_o)) {
+    return NULL;
+  }
+
+  if (alpha_o != Py_None) {
+    if (igraphmodule_PyObject_to_vector_int_t(alpha_o, &alpha)) {
+      return NULL;
+    }
+
+    alpha_ptr = &alpha;
+  }
+
+  if (alpham1_o != Py_None) {
+    if (igraphmodule_PyObject_to_vector_int_t(alpham1_o, &alpham1)) {
+      if (alpha_ptr) {
+        igraph_vector_int_destroy(alpha_ptr);
+      }
+      return NULL;
+    }
+
+    alpham1_ptr = &alpham1;
+  }
+  
   if (igraph_is_chordal(
         &self->g,
-        NULL, /* alpha */
-        NULL, /* alpha1 */
+        alpha_ptr, /* alpha */
+        alpham1_ptr, /* alpham1 */
         &res,
         NULL, /* fill_in */
         NULL /* new_graph */
-        )) {
+  )) {
+    if (alpha_ptr) {
+      igraph_vector_int_destroy(alpha_ptr);
+    }
+
+    if (alpham1_ptr) {
+      igraph_vector_int_destroy(alpham1_ptr);
+    }
+
     igraphmodule_handle_igraph_error();
     return NULL;
   }
-  return res ? Py_True: Py_False;
 
+  if (alpha_ptr) {
+    igraph_vector_int_destroy(alpha_ptr);
+  }
+
+  if (alpham1_ptr) {
+    igraph_vector_int_destroy(alpham1_ptr);
+  }
+
+  return res ? Py_True : Py_False;
 }
 
 /** \ingroup python_interface_graph
@@ -13142,17 +13187,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: C{True} if there exists an edge from v1 to v2, C{False}\n"
    "  otherwise.\n"},
 
-  /* interface to igraph_is_chordal */
-  {"is_chordal", (PyCFunction)igraphmodule_Graph_is_chordal,
-   METH_NOARGS,
-   "is_chordal()\n--\n\n"
-   "Returns whether the graph is chordal or not.\n\n"
-   "A graph is chordal if each of its cycles of four or more nodes\n"
-   "has a chord, i.e. an edge joining two nodes that are not\n"
-   "adjacent in the cycle. An equivalent definition is that any\n"
-   "chordless cycles have at most three nodes.\n"
-  },
-
   /* interface to igraph_articulation_points */
   {"articulation_points", (PyCFunction)igraphmodule_Graph_articulation_points,
    METH_NOARGS,
@@ -13793,6 +13827,26 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: C{True} if the graph is bipartite, C{False} if not.\n"
    "  If C{return_types} is C{True}, the group assignment is also\n"
    "  returned.\n"
+  },
+
+  /* interface to igraph_is_chordal */
+  {"is_chordal", (PyCFunction)igraphmodule_Graph_is_chordal,
+   METH_VARARGS | METH_KEYWORDS,
+   "is_chordal(alpha=None, alpham1=None)\n--\n\n"
+   "Returns whether the graph is chordal or not.\n\n"
+   "A graph is chordal if each of its cycles of four or more nodes\n"
+   "has a chord, i.e. an edge joining two nodes that are not\n"
+   "adjacent in the cycle. An equivalent definition is that any\n"
+   "chordless cycles have at most three nodes.\n\n"
+   "@param alpha: the alpha vector from the result of calling\n"
+   "  L{maximum_cardinality_search()} on the graph. Useful only if you already\n"
+   "  have the alpha vector; simply passing C{None} here will make igraph\n"
+   "  calculate the alpha vector on its own.\n"
+   "@param alpham1: the inverse alpha vector from the result of calling\n"
+   "  L{maximum_cardinality_search()} on the graph. Useful only if you already\n"
+   "  have the inverse alpha vector; simply passing C{None} here will make\n"
+   "  igraph calculate the inverse alpha vector on its own.\n"
+   "@return: C{True} if the graph is chordal, C{False} otherwise.\n"
   },
 
   /* interface to igraph_avg_nearest_neighbor_degree */
