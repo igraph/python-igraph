@@ -831,6 +831,10 @@ options = dict(
             "pandas>=1.1.0,<1.3.1; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
         ],
+        "doc": [
+            "Sphinx>=4.2.0",
+            "sphinxbootstrap4theme>=0.6.0"
+        ]
     },
     python_requires=">=3.6",
     headers=headers,
