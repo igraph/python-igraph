@@ -525,6 +525,45 @@ class MiscTests(unittest.TestCase):
         g = Graph(3, [(0, 1), (1, 2), (2, 3)])
         self.assertEqual(g.bridges(), [0, 1, 2])
 
+    def testChordalCompletion(self):
+        g = Graph()
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Full(3)
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Full(5)
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Ring(4)
+        cc = g.chordal_completion()
+        self.assertEqual(len(cc), 1)
+        g += cc
+        self.assertTrue(g.is_chordal())
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Ring(5)
+        cc = g.chordal_completion()
+        self.assertEqual(len(cc), 2)
+        g += cc
+        self.assertListEqual([], g.chordal_completion())
+
+    def testChordalCompletionWithHints(self):
+        g = Graph.Ring(4)
+        alpha, _ = g.maximum_cardinality_search()
+        cc = g.chordal_completion(alpha=alpha)
+        self.assertEqual(len(cc), 1)
+        g += cc
+        self.assertTrue(g.is_chordal())
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Ring(5)
+        _, alpham1 = g.maximum_cardinality_search()
+        cc = g.chordal_completion(alpham1=alpham1)
+        self.assertEqual(len(cc), 2)
+        g += cc
+        self.assertListEqual([], g.chordal_completion())
+
     def testConstraint(self):
         g = Graph(4, [(0, 1), (0, 2), (1, 2), (0, 3), (1, 3)])
         self.assertTrue(isinstance(g.constraint(), list))  # TODO check more
