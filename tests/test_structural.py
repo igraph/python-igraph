@@ -496,6 +496,27 @@ class NeighborhoodTests(unittest.TestCase):
 
 
 class MiscTests(unittest.TestCase):
+    def assert_valid_maximum_cardinality_search_result(self, graph, alpha, alpham1):
+        visited = []
+        n = graph.vcount()
+        not_visited = list(range(n))
+
+        # Check if alpham1 is a valid visiting order
+        for vertex in reversed(alpham1):
+            neis = graph.neighbors(vertex)
+            visited_neis = sum(1 for v in neis if v in visited)
+            for other_vertex in not_visited:
+                neis = graph.neighbors(other_vertex)
+                other_visited_neis = sum(1 for v in neis if v in visited)
+                self.assertTrue(other_visited_neis <= visited_neis)
+
+            visited.append(vertex)
+            not_visited.remove(vertex)
+
+        # Check if alpha is the inverse of alpham1
+        for index, vertex in enumerate(alpham1):
+            self.assertEqual(alpha[vertex], index)
+
     def testBridges(self):
         g = Graph(5, [(0, 1), (1, 2), (2, 0), (0, 3), (3, 4)])
         self.assertTrue(g.bridges() == [3, 4])
@@ -503,6 +524,45 @@ class MiscTests(unittest.TestCase):
         self.assertTrue(g.bridges() == [3])
         g = Graph(3, [(0, 1), (1, 2), (2, 3)])
         self.assertTrue(g.bridges() == [0, 1, 2])
+
+    def testChordalCompletion(self):
+        g = Graph()
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Full(3)
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Full(5)
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Ring(4)
+        cc = g.chordal_completion()
+        self.assertEqual(len(cc), 1)
+        g += cc
+        self.assertTrue(g.is_chordal())
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Ring(5)
+        cc = g.chordal_completion()
+        self.assertEqual(len(cc), 2)
+        g += cc
+        self.assertListEqual([], g.chordal_completion())
+
+    def testChordalCompletionWithHints(self):
+        g = Graph.Ring(4)
+        alpha, _ = g.maximum_cardinality_search()
+        cc = g.chordal_completion(alpha=alpha)
+        self.assertEqual(len(cc), 1)
+        g += cc
+        self.assertTrue(g.is_chordal())
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Ring(5)
+        _, alpham1 = g.maximum_cardinality_search()
+        cc = g.chordal_completion(alpham1=alpham1)
+        self.assertEqual(len(cc), 2)
+        g += cc
+        self.assertListEqual([], g.chordal_completion())
 
     def testConstraint(self):
         g = Graph(4, [(0, 1), (0, 2), (1, 2), (0, 3), (1, 3)])
@@ -567,6 +627,43 @@ class MiscTests(unittest.TestCase):
             g.is_tree("all")
         )
 
+    def testIsChordal(self):
+        g = Graph()
+        self.assertTrue(g.is_chordal())
+
+        g = Graph.Full(3)
+        self.assertTrue(g.is_chordal())
+
+        g = Graph.Full(5)
+        self.assertTrue(g.is_chordal())
+
+        g = Graph.Ring(4)
+        self.assertFalse(g.is_chordal())
+
+        g = Graph.Ring(5)
+        self.assertFalse(g.is_chordal())
+
+    def testIsChordalWithHint(self):
+        g = Graph()
+        alpha, _ = g.maximum_cardinality_search()
+        self.assertTrue(g.is_chordal(alpha=alpha))
+
+        g = Graph.Full(3)
+        alpha, _ = g.maximum_cardinality_search()
+        self.assertTrue(g.is_chordal(alpha=alpha))
+
+        g = Graph.Ring(5)
+        alpha, _ = g.maximum_cardinality_search()
+        self.assertFalse(g.is_chordal(alpha=alpha))
+
+        g = Graph.Ring(4)
+        _, alpham1 = g.maximum_cardinality_search()
+        self.assertFalse(g.is_chordal(alpham1=alpham1))
+
+        g = Graph.Full(5)
+        _, alpham1 = g.maximum_cardinality_search()
+        self.assertTrue(g.is_chordal(alpham1=alpham1))
+
     def testLineGraph(self):
         g = Graph(4, [(0, 1), (0, 2), (1, 2), (0, 3), (1, 3)])
         el = g.linegraph().get_edgelist()
@@ -579,6 +676,23 @@ class MiscTests(unittest.TestCase):
         el = g.linegraph().get_edgelist()
         el.sort()
         self.assertTrue(el == [(0, 2), (0, 4)])
+
+    def testMaximumCardinalitySearch(self):
+        g = Graph()
+        alpha, alpham1 = g.maximum_cardinality_search()
+        self.assertListEqual([], alpha)
+        self.assertListEqual([], alpham1)
+
+        g = Graph.Famous("petersen")
+        alpha, alpham1 = g.maximum_cardinality_search()
+
+        print(repr(alpha), repr(alpham1))
+        self.assert_valid_maximum_cardinality_search_result(g, alpha, alpham1)
+
+        g = Graph.GRG(100, 0.2)
+        alpha, alpham1 = g.maximum_cardinality_search()
+
+        self.assert_valid_maximum_cardinality_search_result(g, alpha, alpham1)
 
 
 class PathTests(unittest.TestCase):
