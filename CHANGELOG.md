@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Added 
+
+* Added `Graph.is_chordal()` to test whether a graph is chordal and
+  `Graph.chordal_completion()` to return a possible (not necessary minimal)
+  chordal completion of a graph.
+
+* Added `Graph.maximum_cardinality_search()`, primarily as an aid for
+  `Graph.is_chordal()`.
+
 ### Changed
 
 * Improved performance of `Graph.DataFrame()`, thanks to
