@@ -4134,6 +4134,84 @@ PyObject *igraphmodule_Graph_bridges(igraphmodule_GraphObject *self) {
   return o;
 }
 
+PyObject *igraphmodule_Graph_chordal_completion(
+  igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds
+) {
+  static char *kwlist[] = { "alpha", "alpham1", NULL };
+  PyObject *alpha_o = Py_None, *alpham1_o = Py_None, *res_o;
+  igraph_vector_int_t alpha, alpham1, edges;
+  igraph_vector_int_t *alpha_ptr = 0, *alpham1_ptr = 0;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &alpha_o, &alpham1_o)) {
+    return NULL;
+  }
+
+  if (alpha_o != Py_None) {
+    if (igraphmodule_PyObject_to_vector_int_t(alpha_o, &alpha)) {
+      return NULL;
+    }
+
+    alpha_ptr = &alpha;
+  }
+
+  if (alpham1_o != Py_None) {
+    if (igraphmodule_PyObject_to_vector_int_t(alpham1_o, &alpham1)) {
+      if (alpha_ptr) {
+        igraph_vector_int_destroy(alpha_ptr);
+      }
+      return NULL;
+    }
+
+    alpham1_ptr = &alpham1;
+  }
+  
+  if (igraph_vector_int_init(&edges, 0)) {
+    igraphmodule_handle_igraph_error();
+    if (alpham1_ptr) {
+      igraph_vector_int_destroy(alpham1_ptr);
+    }
+    if (alpha_ptr) {
+      igraph_vector_int_destroy(alpha_ptr);
+    }
+    return NULL;
+  }
+
+  if (igraph_is_chordal(
+        &self->g,
+        alpha_ptr, /* alpha */
+        alpham1_ptr, /* alpham1 */
+        0, /* chordal */
+        &edges, /* fill_in */
+        NULL /* new_graph */
+  )) {
+    igraph_vector_int_destroy(&edges);
+
+    if (alpha_ptr) {
+      igraph_vector_int_destroy(alpha_ptr);
+    }
+
+    if (alpham1_ptr) {
+      igraph_vector_int_destroy(alpham1_ptr);
+    }
+
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (alpha_ptr) {
+    igraph_vector_int_destroy(alpha_ptr);
+  }
+
+  if (alpham1_ptr) {
+    igraph_vector_int_destroy(alpham1_ptr);
+  }
+
+  res_o = igraphmodule_vector_int_t_to_PyList_pairs(&edges);
+  igraph_vector_int_destroy(&edges);
+
+  return res_o;
+}
+
 /** \ingroup python_interface_graph
  * \brief Calculates the closeness centrality of some vertices in a graph.
  * \return the closeness centralities as a list (or a single float)
@@ -5159,6 +5237,68 @@ PyObject *igraphmodule_Graph_hub_score(
   return res_o;
 }
 
+PyObject *igraphmodule_Graph_is_chordal(
+  igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds
+) {
+  static char *kwlist[] = { "alpha", "alpham1", NULL };
+  PyObject *alpha_o = Py_None, *alpham1_o = Py_None;
+  igraph_vector_int_t alpha, alpham1;
+  igraph_vector_int_t *alpha_ptr = 0, *alpham1_ptr = 0;
+  igraph_bool_t res;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &alpha_o, &alpham1_o)) {
+    return NULL;
+  }
+
+  if (alpha_o != Py_None) {
+    if (igraphmodule_PyObject_to_vector_int_t(alpha_o, &alpha)) {
+      return NULL;
+    }
+
+    alpha_ptr = &alpha;
+  }
+
+  if (alpham1_o != Py_None) {
+    if (igraphmodule_PyObject_to_vector_int_t(alpham1_o, &alpham1)) {
+      if (alpha_ptr) {
+        igraph_vector_int_destroy(alpha_ptr);
+      }
+      return NULL;
+    }
+
+    alpham1_ptr = &alpham1;
+  }
+  
+  if (igraph_is_chordal(
+        &self->g,
+        alpha_ptr, /* alpha */
+        alpham1_ptr, /* alpham1 */
+        &res,
+        NULL, /* fill_in */
+        NULL /* new_graph */
+  )) {
+    if (alpha_ptr) {
+      igraph_vector_int_destroy(alpha_ptr);
+    }
+
+    if (alpham1_ptr) {
+      igraph_vector_int_destroy(alpham1_ptr);
+    }
+
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (alpha_ptr) {
+    igraph_vector_int_destroy(alpha_ptr);
+  }
+
+  if (alpham1_ptr) {
+    igraph_vector_int_destroy(alpham1_ptr);
+  }
+
+  return res ? Py_True : Py_False;
+}
 
 /** \ingroup python_interface_graph
  * \brief Returns the line graph of the graph
@@ -5177,6 +5317,51 @@ PyObject *igraphmodule_Graph_linegraph(igraphmodule_GraphObject * self) {
   CREATE_GRAPH(result, lg);
 
   return (PyObject *) result;
+}
+
+/**
+ * \ingroup python_interface_graph
+ * \brief Conducts a maximum cardinality search on the graph.
+ * \sa igraph_maximum_cardinality_search
+ */
+PyObject *igraphmodule_Graph_maximum_cardinality_search(igraphmodule_GraphObject *self) {
+  igraph_vector_int_t alpha, alpham1;
+  PyObject *alpha_o, *alpham1_o;
+
+  if (igraph_vector_int_init(&alpha, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+  
+  if (igraph_vector_int_init(&alpham1, 0)) {
+    igraph_vector_int_destroy(&alpha);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_maximum_cardinality_search(&self->g, &alpha, &alpham1)) {
+    igraph_vector_int_destroy(&alpha);
+    igraph_vector_int_destroy(&alpham1);
+    return NULL;
+  }
+
+  alpha_o = igraphmodule_vector_int_t_to_PyList(&alpha);
+  igraph_vector_int_destroy(&alpha);
+
+  if (!alpha_o) {
+    igraph_vector_int_destroy(&alpham1);
+    return NULL;
+  }
+
+  alpham1_o = igraphmodule_vector_int_t_to_PyList(&alpham1);
+  igraph_vector_int_destroy(&alpham1);
+
+  if (!alpham1_o) {
+    Py_DECREF(alpha_o);
+    return NULL;
+  }
+
+  return PyTuple_Pack(2, alpha_o, alpham1_o);
 }
 
 /**
@@ -13284,6 +13469,33 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "components in the graph.\n"
   },
 
+  /* interface to igraph_is_chordal with alternative arguments */
+  {"chordal_completion", (PyCFunction)igraphmodule_Graph_chordal_completion,
+   METH_VARARGS | METH_KEYWORDS,
+   "chordal_complation(alpha=None, alpham1=None)\n--\n\n"
+   "Returns the list of edges needed to be added to the graph to make it chordal.\n\n"
+   "A graph is chordal if each of its cycles of four or more nodes\n"
+   "has a chord, i.e. an edge joining two nodes that are not\n"
+   "adjacent in the cycle. An equivalent definition is that any\n"
+   "chordless cycles have at most three nodes.\n\n"
+   "The chordal completion of a graph is the list of edges that needed to be\n"
+   "added to the graph to make it chordal. It is an empty list if the graph is\n"
+   "already chordal.\n\n"
+   "Note that at the moment igraph does not guarantee that the returned\n"
+   "chordal completion is I{minimal}; there may exist a subset of the returned\n"
+   "chordal completion that is still a valid chordal completion.\n\n"
+   "@param alpha: the alpha vector from the result of calling\n"
+   "  L{maximum_cardinality_search()} on the graph. Useful only if you already\n"
+   "  have the alpha vector; simply passing C{None} here will make igraph\n"
+   "  calculate the alpha vector on its own.\n"
+   "@param alpham1: the inverse alpha vector from the result of calling\n"
+   "  L{maximum_cardinality_search()} on the graph. Useful only if you already\n"
+   "  have the inverse alpha vector; simply passing C{None} here will make\n"
+   "  igraph calculate the inverse alpha vector on its own.\n"
+   "@return: the list of edges to add to the graph; each item in the list is a\n"
+   "  source-target pair of vertex indices.\n"
+  },
+
   /* interface to igraph_closeness */
   {"closeness", (PyCFunction) igraphmodule_Graph_closeness,
    METH_VARARGS | METH_KEYWORDS,
@@ -13766,6 +13978,26 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  returned.\n"
   },
 
+  /* interface to igraph_is_chordal */
+  {"is_chordal", (PyCFunction)igraphmodule_Graph_is_chordal,
+   METH_VARARGS | METH_KEYWORDS,
+   "is_chordal(alpha=None, alpham1=None)\n--\n\n"
+   "Returns whether the graph is chordal or not.\n\n"
+   "A graph is chordal if each of its cycles of four or more nodes\n"
+   "has a chord, i.e. an edge joining two nodes that are not\n"
+   "adjacent in the cycle. An equivalent definition is that any\n"
+   "chordless cycles have at most three nodes.\n\n"
+   "@param alpha: the alpha vector from the result of calling\n"
+   "  L{maximum_cardinality_search()} on the graph. Useful only if you already\n"
+   "  have the alpha vector; simply passing C{None} here will make igraph\n"
+   "  calculate the alpha vector on its own.\n"
+   "@param alpham1: the inverse alpha vector from the result of calling\n"
+   "  L{maximum_cardinality_search()} on the graph. Useful only if you already\n"
+   "  have the inverse alpha vector; simply passing C{None} here will make\n"
+   "  igraph calculate the inverse alpha vector on its own.\n"
+   "@return: C{True} if the graph is chordal, C{False} otherwise.\n"
+  },
+
   /* interface to igraph_avg_nearest_neighbor_degree */
   {"knn", (PyCFunction) igraphmodule_Graph_knn,
    METH_VARARGS | METH_KEYWORDS,
@@ -13824,6 +14056,23 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  out-degrees, C{\"in\"} IN for in-degrees or C{\"all\"} for the sum of\n"
    "  them).\n"
    "@param loops: whether self-loops should be counted.\n"},
+
+  /* interface to maximum_cardinality_search */
+  {"maximum_cardinality_search", (PyCFunction) igraphmodule_Graph_maximum_cardinality_search,
+   METH_NOARGS,
+   "maximum_cardinality_search()\n--\n\n"
+   "Conducts a maximum cardinality search on the graph. The function computes\n"
+   "a rank I{alpha} for each vertex such that visiting vertices in decreasing\n"
+   "rank order corresponds to always choosing the vertex with the most already\n"
+   "visited neighbors as the next one to visit.\n\n"
+   "Maximum cardinality search is useful in deciding the chordality of a graph:\n"
+   "a graph is chordal if and only if any two neighbors of a vertex that are\n"
+   "higher in rank than the original vertex are connected to each other.\n\n"
+   "The result of this function can be passed to L{is_chordal()} to speed up\n"
+   "the chordality computation if you also need the result of the maximum\n"
+   "cardinality search for other purposes.\n\n"
+   "@return: a tuple consisting of the rank vector and its inverse.\n"
+  },
 
   /* interface to igraph_neighborhood */
   {"neighborhood", (PyCFunction) igraphmodule_Graph_neighborhood,
