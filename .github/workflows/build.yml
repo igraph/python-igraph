@@ -8,7 +8,7 @@ env:
   CIBW_TEST_SKIP: "cp310-*"
 
 jobs:
-  build_wheels:
+  build_wheel_linux:
     name: Build wheels on Linux (${{ matrix.wheel_arch }})
     runs-on: ubuntu-20.04
     strategy:
@@ -36,8 +36,8 @@ jobs:
         with:
           path: ./wheelhouse/*.whl
 
-  build_aarch64_wheels:
-    name: Build wheels on Linux AArch64
+  build_wheel_linux_aarch64:
+    name: Build wheels on Linux (aarch64)
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     runs-on: ubuntu-20.04
     steps:
@@ -62,8 +62,15 @@ jobs:
           path: ./wheelhouse/*.whl
 
   build_wheel_macos:
-    name: Build wheels on macOS
+    name: Build wheels on macOS (${{ matrix.wheel_arch }})
     runs-on: macos-10.15
+    strategy:
+      matrix:
+        include:
+          - cmake_arch: x86_64
+            wheel_arch: x86_64
+          - cmake_arch: arm64
+            wheel_arch: arm64
 
     steps:
       - uses: actions/checkout@v2
@@ -76,7 +83,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: vendor/install
-          key: C-core-${{ runner.os }}-${{ hashFiles('.gitmodules') }}
+          key: C-core-cache-v1-${{ runner.os }}-${{ matrix.cmake_arch }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
 
       - uses: actions/setup-python@v2
         name: Install Python
@@ -91,8 +98,9 @@ jobs:
       - name: Build wheels
         uses: joerick/cibuildwheel@v2.1.1
         env:
-          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
+          IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_APPLE_SILICON_PROCESSOR=${{ matrix.cmake_arch }}
 
       - uses: actions/upload-artifact@v2
         with:
