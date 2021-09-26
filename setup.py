@@ -817,6 +817,12 @@ options = dict(
     license="GNU General Public License (GPL)",
     author="Tamas Nepusz",
     author_email="ntamas@gmail.com",
+    project_urls={
+        "Bug Tracker": "https://github.com/igraph/python-igraph/issues",
+        "CI": "https://github.com/igraph/python-igraph/actions",
+        "Documentation": "https://igraph.org/python/doc",
+        "Source Code": "https://github.com/igraph/python-igraph",
+    },
     ext_modules=[igraph_extension],
     package_dir={"igraph": "src/igraph"},
     packages=["igraph", "igraph.app", "igraph.drawing", "igraph.remote"],
