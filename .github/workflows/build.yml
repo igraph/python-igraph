@@ -70,7 +70,7 @@ jobs:
           - cmake_arch: x86_64
             wheel_arch: x86_64
           - cmake_arch: arm64
-            cmake_extra_args: -DF2C_EXTERNAL_ARITH_HEADER=etc/arith_apple_m1.h
+            cmake_extra_args: -DF2C_EXTERNAL_ARITH_HEADER=../../../etc/arith_apple_m1.h
             wheel_arch: arm64
 
     steps:
