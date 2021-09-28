@@ -70,6 +70,7 @@ jobs:
           - cmake_arch: x86_64
             wheel_arch: x86_64
           - cmake_arch: arm64
+            cmake_extra_args: -DF2C_EXTERNAL_ARITH_HEADER=etc/arith_apple_m1.h
             wheel_arch: arm64
 
     steps:
@@ -83,7 +84,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: vendor/install
-          key: C-core-cache-v1-${{ runner.os }}-${{ matrix.cmake_arch }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
+          key: C-core-cache-v2-${{ runner.os }}-${{ matrix.cmake_arch }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
 
       - uses: actions/setup-python@v2
         name: Install Python
@@ -100,7 +101,7 @@ jobs:
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
-          IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_APPLE_SILICON_PROCESSOR=${{ matrix.cmake_arch }}
+          IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }}
 
       - uses: actions/upload-artifact@v2
         with:
