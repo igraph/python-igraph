@@ -13,7 +13,6 @@ import tempfile
 
 __all__ = (
     "dbl_epsilon",
-    "first",
     "multidict",
     "named_temporary_file",
     "numpy_to_contiguous_memoryview",

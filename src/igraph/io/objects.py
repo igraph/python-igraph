@@ -1,6 +1,6 @@
-from warnings import warn
 from collections import defaultdict
-
+from itertools import repeat
+from warnings import warn
 
 from igraph.datatypes import UniqueIdGenerator
 
@@ -280,8 +280,7 @@ def _construct_graph_from_list_dict(
         edge_list = []
         for source, sequence in edges.items():
             source_id = name_map[source]
-            for target in sequence:
-                edge_list.append((source_id, name_map[target]))
+            edge_list.extend((source_id, name_map[target]) for target in sequence)
         vertex_attributes[vertex_name_attr] = name_map.values()
         n = len(name_map)
 
@@ -290,8 +289,7 @@ def _construct_graph_from_list_dict(
         n = -1
         for source, sequence in edges.items():
             n = max(n, source, *sequence)
-            for target in sequence:
-                edge_list.append((source, target))
+            edge_list.extend(zip(repeat(source), sequence))
         n += 1
 
     # Construct the graph
@@ -507,7 +505,7 @@ def _construct_graph_from_dataframe(
 
 
 def _export_graph_to_dict_list(
-    graph, use_vids=True, skip_None=False, vertex_name_attr="name"
+    graph, use_vids=True, skip_none=False, vertex_name_attr="name"
 ):
     """Export graph as two lists of dictionaries, for vertices and edges.
 
@@ -517,7 +515,7 @@ def _export_graph_to_dict_list(
       structure by their ids or their vertex_name_attr attribute. If
       use_vids=False but vertices lack a vertex_name_attr attribute, an
       AttributeError is raised.
-    @param skip_None (bool): whether to skip, for each edge, attributes that
+    @param skip_none (bool): whether to skip, for each edge, attributes that
       have a value of None. This is useful if only some edges are expected to
       possess an attribute.
     @vertex_name_attr (str): only used with use_vids=False to choose what
@@ -553,7 +551,7 @@ def _export_graph_to_dict_list(
         vs_names = graph.vs[vertex_name_attr]
 
     for vertex in graph.vs:
-        if skip_None:
+        if skip_none:
             attrdic = {k: v for k, v in vertex.attributes() if v is not None}
         else:
             attrdic = vertex.attributes()
@@ -563,7 +561,7 @@ def _export_graph_to_dict_list(
         source, target = edge.tuple
         if not use_vids:
             source, target = vs_names[source], vs_names[target]
-        if skip_None:
+        if skip_none:
             attrdic = {k: v for k, v in edge.attributes() if v is not None}
         else:
             attrdic = edge.attributes()
@@ -692,7 +690,7 @@ def _export_graph_to_list_dict(
     return res
 
 
-def _export_graph_to_dict_dict(graph, use_vids=True, edge_attrs=None, skip_None=False, vertex_name_attr="name"):
+def _export_graph_to_dict_dict(graph, use_vids=True, edge_attrs=None, skip_none=False, vertex_name_attr="name"):
     """Export graph to dictionary of dicts of edge attributes
 
     This function is the reverse of Graph.DictDict.
@@ -705,7 +703,7 @@ def _export_graph_to_dict_dict(graph, use_vids=True, edge_attrs=None, skip_None=
       None (default) signified all attributes (unlike Graph.to_tuple_list). A
       string is acceptable to signify a single attribute and will be wrapped
       in a list internally.
-    @param skip_None (bool): whether to skip, for each edge, attributes that
+    @param skip_none (bool): whether to skip, for each edge, attributes that
       have a value of None. This is useful if only some edges are expected to
       possess an attribute.
     @vertex_name_attr (str): only used with use_vids=False to choose what
@@ -748,7 +746,7 @@ def _export_graph_to_dict_dict(graph, use_vids=True, edge_attrs=None, skip_None=
         attrdic = edge.attributes()
         if edge_attrs is not None:
             attrdic = {k: attrdic[k] for k in edge_attrs}
-        if skip_None:
+        if skip_none:
             attrdic = {k: v for k, v in attrdic.items() if v is not None}
 
         res[source][target] = attrdic

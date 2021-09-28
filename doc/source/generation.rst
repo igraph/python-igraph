@@ -33,14 +33,15 @@ To create a bipartite graph from a list of types and a list of edges, use :meth:
 
 From Python builtin structures (lists, tuples, dicts)
 +++++++++++++++++++++++++++++++++++++++++++++++++++++
-|igraph| supports a number of "conversion" methods to import graphs from Python builtin data structures such as dictionaries, lists, and tuple:
+|igraph| supports a number of "conversion" methods to import graphs from Python builtin data structures such as dictionaries, lists and tuples:
 
  - :meth:`Graph.DictList`: from a list of dictionaries
  - :meth:`Graph.TupleList`: from a list of tuples
  - :meth:`Graph.ListDict`: from a dict of lists
  - :meth:`Graph.DictDict`: from a dict of dictionaries
 
-Equivalent methods are available to export a graph, i.e. "reverse" those operations:
+Equivalent methods are available to export a graph, i.e. to convert a graph into
+a representation that uses Python builtin data structures:
 
  - :meth:`Graph.to_dict_list`
  - :meth:`Graph.to_tuple_list`
@@ -51,7 +52,7 @@ See the `API documentation`_ of each function for details and examples.
 
 From matrices
 +++++++++++++
-To create a graph from an adjecency matrix, use :meth:`Graph.Adjacency` or, for weighted matrices, :meth:`Graph.Weighted_Adjacency`:
+To create a graph from an adjacency matrix, use :meth:`Graph.Adjacency` or, for weighted matrices, :meth:`Graph.Weighted_Adjacency`:
 
 >>> g = Graph.Adjacency([[0, 1, 1], [0, 0, 0], [0, 0, 1]])
 

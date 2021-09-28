@@ -525,7 +525,7 @@ class ForeignTests(unittest.TestCase):
             },
         )
         self.assertEqual(
-            g.to_dict_dict(skip_None=True),
+            g.to_dict_dict(skip_none=True),
             {0: {1: {"name": "first_edge"}, 2: {"name": "second"}}, 1: {2: {}}},
         )
 
@@ -539,7 +539,7 @@ class ForeignTests(unittest.TestCase):
             },
         )
         self.assertEqual(
-            g.to_dict_dict(use_vids=False, skip_None=True),
+            g.to_dict_dict(use_vids=False, skip_none=True),
             {
                 "apple": {"pear": {"name": "first_edge"}, "peach": {"name": "second"}},
                 "pear": {"peach": {}},
