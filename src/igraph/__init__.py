@@ -4,8 +4,7 @@ IGraph library.
 
 
 __license__ = """
-Copyright (C) 2006-2012  Tamás Nepusz <ntamas@gmail.com>
-Pázmány Péter sétány 1/a, 1117 Budapest, Hungary
+Copyright (C) 2006- The igraph development team
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -121,6 +120,53 @@ from igraph.drawing.colors import (
 )
 from igraph.datatypes import Matrix, DyadCensus, TriadCensus, UniqueIdGenerator
 from igraph.formula import construct_graph_from_formula
+from igraph.io.files import (
+    _construct_graph_from_graphmlz_file,
+    _construct_graph_from_dimacs_file,
+    _construct_graph_from_pickle_file,
+    _construct_graph_from_picklez_file,
+    _construct_graph_from_adjacency_file,
+    _construct_graph_from_file,
+    _write_graph_to_adjacency_file,
+    _write_graph_to_dimacs_file,
+    _write_graph_to_graphmlz_file,
+    _write_graph_to_pickle_file,
+    _write_graph_to_picklez_file,
+    _write_graph_to_file,
+)
+from igraph.io.objects import (
+    _construct_graph_from_dict_list,
+    _export_graph_to_dict_list,
+    _construct_graph_from_tuple_list,
+    _export_graph_to_tuple_list,
+    _construct_graph_from_list_dict,
+    _export_graph_to_list_dict,
+    _construct_graph_from_dict_dict,
+    _export_graph_to_dict_dict,
+    _construct_graph_from_dataframe,
+    _export_vertex_dataframe,
+    _export_edge_dataframe,
+)
+from igraph.io.adjacency import (
+    _construct_graph_from_adjacency,
+    _construct_graph_from_weighted_adjacency,
+)
+from igraph.io.libraries import (
+    _construct_graph_from_networkx,
+    _export_graph_to_networkx,
+    _construct_graph_from_graph_tool,
+    _export_graph_to_graph_tool,
+)
+from igraph.io.random import (
+    _construct_random_geometric_graph,
+)
+from igraph.io.bipartite import (
+    _construct_bipartite_graph,
+    _construct_incidence_bipartite_graph,
+    _construct_full_bipartite_graph,
+    _construct_random_bipartite_graph,
+)
+from igraph.io.images import _write_graph_to_svg
 from igraph.layout import Layout
 from igraph.matching import Matching
 from igraph.operators import disjoint_union, union, intersection
@@ -145,14 +191,8 @@ from igraph.utils import (
     safemax,
 )
 from igraph.version import __version__, __version_info__
-from igraph.sparse_matrix import (
-    _graph_from_sparse_matrix,
-    _graph_from_weighted_sparse_matrix,
-)
 
 import os
-import math
-import gzip
 import sys
 import operator
 
@@ -1877,1339 +1917,76 @@ class Graph(GraphBase):
     #############################################
     # Auxiliary I/O functions
 
-    def to_networkx(self, create_using=None):
-        """Converts the graph to networkx format.
+    # Graph libraries
+    from_networkx = classmethod(_construct_graph_from_networkx)
+    to_networkx = _export_graph_to_networkx
 
-        @param create_using: specifies which NetworkX graph class to use when
-            constructing the graph. C{None} means to let igraph infer the most
-            appropriate class based on whether the graph is directed and whether
-            it has multi-edges.
-        """
-        import networkx as nx
+    from_graph_tool = classmethod(_construct_graph_from_graph_tool)
+    to_graph_tool = _export_graph_to_graph_tool
 
-        # Graph: decide on directness and mutliplicity
-        if create_using is None:
-            if self.has_multiple():
-                cls = nx.MultiDiGraph if self.is_directed() else nx.MultiGraph
-            else:
-                cls = nx.DiGraph if self.is_directed() else nx.Graph
-        else:
-            cls = create_using
+    # Files
+    Read_DIMACS = classmethod(_construct_graph_from_dimacs_file)
+    write_dimacs = _write_graph_to_dimacs_file
 
-        # Graph attributes
-        kw = {x: self[x] for x in self.attributes()}
-        g = cls(**kw)
+    Read_GraphMLz = classmethod(_construct_graph_from_graphmlz_file)
+    write_graphmlz = _write_graph_to_graphmlz_file
 
-        # Nodes and node attributes
-        for i, v in enumerate(self.vs):
-            # TODO: use _nx_name if the attribute is present so we can achieve
-            # a lossless round-trip in terms of vertex names
-            g.add_node(i, **v.attributes())
+    Read_Pickle = classmethod(_construct_graph_from_pickle_file)
+    write_pickle = _write_graph_to_pickle_file
 
-        # Edges and edge attributes
-        for edge in self.es:
-            g.add_edge(edge.source, edge.target, **edge.attributes())
+    Read_Picklez = classmethod(_construct_graph_from_picklez_file)
+    write_picklez = _write_graph_to_picklez_file
 
-        return g
+    Read_Adjacency = classmethod(_construct_graph_from_adjacency_file)
+    write_adjacency = _write_graph_to_adjacency_file
 
-    @classmethod
-    def from_networkx(cls, g):
-        """Converts the graph from networkx
-
-        Vertex names will be converted to "_nx_name" attribute and the vertices
-        will get new ids from 0 up (as standard in igraph).
-
-        @param g: networkx Graph or DiGraph
-        """
-        # Graph attributes
-        gattr = dict(g.graph)
-
-        # Nodes
-        vnames = list(g.nodes)
-        vattr = {"_nx_name": vnames}
-        vcount = len(vnames)
-        vd = {v: i for i, v in enumerate(vnames)}
-
-        # NOTE: we do not need a special class for multigraphs, it is taken
-        # care for at the edge level rather than at the graph level.
-        graph = cls(
-            n=vcount, directed=g.is_directed(), graph_attrs=gattr, vertex_attrs=vattr
-        )
-
-        # Node attributes
-        for v, datum in g.nodes.data():
-            for key, val in list(datum.items()):
-                graph.vs[vd[v]][key] = val
-
-        # Edges and edge attributes
-        eattr_names = {name for (_, _, data) in g.edges.data() for name in data}
-        eattr = {name: [] for name in eattr_names}
-        edges = []
-        for (u, v, data) in g.edges.data():
-            edges.append((vd[u], vd[v]))
-            for name in eattr_names:
-                eattr[name].append(data.get(name))
-
-        graph.add_edges(edges, eattr)
-
-        return graph
-
-    def to_graph_tool(
-        self, graph_attributes=None, vertex_attributes=None, edge_attributes=None
-    ):
-        """Converts the graph to graph-tool
-
-        Data types: graph-tool only accepts specific data types. See the
-        following web page for a list:
-
-        https://graph-tool.skewed.de/static/doc/quickstart.html
-
-        Note: because of the restricted data types in graph-tool, vertex and
-        edge attributes require to be type-consistent across all vertices or
-        edges. If you set the property for only some vertices/edges, the other
-        will be tagged as None in python-igraph, so they can only be converted
-        to graph-tool with the type 'object' and any other conversion will
-        fail.
-
-        @param graph_attributes: dictionary of graph attributes to transfer.
-          Keys are attributes from the graph, values are data types (see
-          below). C{None} means no graph attributes are transferred.
-        @param vertex_attributes: dictionary of vertex attributes to transfer.
-          Keys are attributes from the vertices, values are data types (see
-          below). C{None} means no vertex attributes are transferred.
-        @param edge_attributes: dictionary of edge attributes to transfer.
-          Keys are attributes from the edges, values are data types (see
-          below). C{None} means no vertex attributes are transferred.
-        """
-        import graph_tool as gt
-
-        # Graph
-        g = gt.Graph(directed=self.is_directed())
-
-        # Nodes
-        vc = self.vcount()
-        g.add_vertex(vc)
-
-        # Graph attributes
-        if graph_attributes is not None:
-            for x, dtype in list(graph_attributes.items()):
-                # Strange syntax for setting internal properties
-                gprop = g.new_graph_property(str(dtype))
-                g.graph_properties[x] = gprop
-                g.graph_properties[x] = self[x]
-
-        # Vertex attributes
-        if vertex_attributes is not None:
-            for x, dtype in list(vertex_attributes.items()):
-                # Create a new vertex property
-                g.vertex_properties[x] = g.new_vertex_property(str(dtype))
-                # Fill the values from the igraph.Graph
-                for i in range(vc):
-                    g.vertex_properties[x][g.vertex(i)] = self.vs[i][x]
-
-        # Edges and edge attributes
-        if edge_attributes is not None:
-            for x, dtype in list(edge_attributes.items()):
-                g.edge_properties[x] = g.new_edge_property(str(dtype))
-        for edge in self.es:
-            e = g.add_edge(edge.source, edge.target)
-            if edge_attributes is not None:
-                for x, dtype in list(edge_attributes.items()):
-                    prop = edge.attributes().get(x, None)
-                    g.edge_properties[x][e] = prop
-
-        return g
-
-    @classmethod
-    def from_graph_tool(cls, g):
-        """Converts the graph from graph-tool
-
-        @param g: graph-tool Graph
-        """
-        # Graph attributes
-        gattr = dict(g.graph_properties)
-
-        # Nodes
-        vcount = g.num_vertices()
-
-        # Graph
-        graph = cls(n=vcount, directed=g.is_directed(), graph_attrs=gattr)
-
-        # Node attributes
-        for key, val in g.vertex_properties.items():
-            prop = val.get_array()
-            for i in range(vcount):
-                graph.vs[i][key] = prop[i]
-
-        # Edges and edge attributes
-        # NOTE: graph-tool is quite strongly typed, so each property is always
-        # defined for all edges, using default values for the type. E.g. for a
-        # string property/attribute the missing edges get an empty string.
-        edges = []
-        eattr_names = list(g.edge_properties)
-        eattr = {name: [] for name in eattr_names}
-        for e in g.edges():
-            edges.append((int(e.source()), int(e.target())))
-            for name, attr_map in g.edge_properties.items():
-                eattr[name].append(attr_map[e])
-
-        graph.add_edges(edges, eattr)
-
-        return graph
-
-    def write_adjacency(self, f, sep=" ", eol="\n", *args, **kwds):
-        """Writes the adjacency matrix of the graph to the given file
-
-        All the remaining arguments not mentioned here are passed intact
-        to L{Graph.get_adjacency}.
-
-        @param f: the name of the file to be written.
-        @param sep: the string that separates the matrix elements in a row
-        @param eol: the string that separates the rows of the matrix. Please
-          note that igraph is able to read back the written adjacency matrix
-          if and only if this is a single newline character
-        """
-        if isinstance(f, str):
-            f = open(f, "w")
-        matrix = self.get_adjacency(*args, **kwds)
-        for row in matrix:
-            f.write(sep.join(map(str, row)))
-            f.write(eol)
-        f.close()
-
-    @classmethod
-    def Read_Adjacency(
-        cls, f, sep=None, comment_char="#", attribute=None, *args, **kwds
-    ):
-        """Constructs a graph based on an adjacency matrix from the given file.
-
-        Additional positional and keyword arguments not mentioned here are
-        passed intact to L{Adjacency}.
-
-        @param f: the name of the file to be read or a file object
-        @param sep: the string that separates the matrix elements in a row.
-          C{None} means an arbitrary sequence of whitespace characters.
-        @param comment_char: lines starting with this string are treated
-          as comments.
-        @param attribute: an edge attribute name where the edge weights are
-          stored in the case of a weighted adjacency matrix. If C{None},
-          no weights are stored, values larger than 1 are considered as
-          edge multiplicities.
-        @return: the created graph"""
-        if isinstance(f, str):
-            f = open(f)
-
-        matrix, ri = [], 0
-        for line in f:
-            line = line.strip()
-            if len(line) == 0:
-                continue
-            if line.startswith(comment_char):
-                continue
-            row = [float(x) for x in line.split(sep)]
-            matrix.append(row)
-            ri += 1
-
-        f.close()
-
-        if attribute is None:
-            graph = cls.Adjacency(matrix, *args, **kwds)
-        else:
-            kwds["attr"] = attribute
-            graph = cls.Weighted_Adjacency(matrix, *args, **kwds)
-
-        return graph
-
-    @classmethod
-    def Adjacency(cls, matrix, mode="directed", *args, **kwargs):
-        """Generates a graph from its adjacency matrix.
-
-        @param matrix: the adjacency matrix. Possible types are:
-          - a list of lists
-          - a numpy 2D array or matrix (will be converted to list of lists)
-          - a scipy.sparse matrix (will be converted to a COO matrix, but not
-            to a dense matrix)
-        @param mode: the mode to be used. Possible values are:
-          - C{"directed"} - the graph will be directed and a matrix
-            element gives the number of edges between two vertex.
-          - C{"undirected"} - alias to C{"max"} for convenience.
-          - C{"max"} - undirected graph will be created and the number of
-            edges between vertex M{i} and M{j} is M{max(A(i,j), A(j,i))}
-          - C{"min"} - like C{"max"}, but with M{min(A(i,j), A(j,i))}
-          - C{"plus"}  - like C{"max"}, but with M{A(i,j) + A(j,i)}
-          - C{"upper"} - undirected graph with the upper right triangle of
-            the matrix (including the diagonal)
-          - C{"lower"} - undirected graph with the lower left triangle of
-            the matrix (including the diagonal)
-        """
-        try:
-            import numpy as np
-        except ImportError:
-            np = None
-
-        try:
-            from scipy import sparse
-        except ImportError:
-            sparse = None
-
-        if (sparse is not None) and isinstance(matrix, sparse.spmatrix):
-            return _graph_from_sparse_matrix(cls, matrix, mode=mode)
-
-        if (np is not None) and isinstance(matrix, np.ndarray):
-            matrix = matrix.tolist()
-
-        return super().Adjacency(matrix, mode=mode)
-
-    @classmethod
-    def Weighted_Adjacency(cls, matrix, mode="directed", attr="weight", loops=True):
-        """Generates a graph from its weighted adjacency matrix.
-
-        @param matrix: the adjacency matrix. Possible types are:
-          - a list of lists
-          - a numpy 2D array or matrix (will be converted to list of lists)
-          - a scipy.sparse matrix (will be converted to a COO matrix, but not
-            to a dense matrix)
-        @param mode: the mode to be used. Possible values are:
-          - C{"directed"} - the graph will be directed and a matrix
-            element gives the number of edges between two vertex.
-          - C{"undirected"} - alias to C{"max"} for convenience.
-          - C{"max"}   - undirected graph will be created and the number of
-            edges between vertex M{i} and M{j} is M{max(A(i,j), A(j,i))}
-          - C{"min"}   - like C{"max"}, but with M{min(A(i,j), A(j,i))}
-          - C{"plus"}  - like C{"max"}, but with M{A(i,j) + A(j,i)}
-          - C{"upper"} - undirected graph with the upper right triangle of
-            the matrix (including the diagonal)
-          - C{"lower"} - undirected graph with the lower left triangle of
-            the matrix (including the diagonal)
-
-          These values can also be given as strings without the C{ADJ} prefix.
-        @param attr: the name of the edge attribute that stores the edge
-          weights.
-        @param loops: whether to include loop edges. When C{False}, the diagonal
-          of the adjacency matrix will be ignored.
-
-        """
-        try:
-            import numpy as np
-        except ImportError:
-            np = None
-
-        try:
-            from scipy import sparse
-        except ImportError:
-            sparse = None
-
-        if sparse is not None and isinstance(matrix, sparse.spmatrix):
-            return _graph_from_weighted_sparse_matrix(
-                cls,
-                matrix,
-                mode=mode,
-                attr=attr,
-                loops=loops,
-            )
-
-        if np is not None and isinstance(matrix, np.ndarray):
-            matrix = matrix.tolist()
-
-        return super().Weighted_Adjacency(
-            matrix,
-            mode=mode,
-            attr=attr,
-            loops=loops,
-        )
-
-    def write_dimacs(self, f, source=None, target=None, capacity="capacity"):
-        """Writes the graph in DIMACS format to the given file.
-
-        @param f: the name of the file to be written or a Python file handle.
-        @param source: the source vertex ID. If C{None}, igraph will try to
-          infer it from the C{source} graph attribute.
-        @param target: the target vertex ID. If C{None}, igraph will try to
-          infer it from the C{target} graph attribute.
-        @param capacity: the capacities of the edges in a list or the name of
-          an edge attribute that holds the capacities. If there is no such
-          edge attribute, every edge will have a capacity of 1.
-        """
-        if source is None:
-            try:
-                source = self["source"]
-            except KeyError:
-                raise ValueError(
-                    "source vertex must be provided in the 'source' graph "
-                    "attribute or in the 'source' argument of write_dimacs()"
-                )
-
-        if target is None:
-            try:
-                target = self["target"]
-            except KeyError:
-                raise ValueError(
-                    "target vertex must be provided in the 'target' graph "
-                    "attribute or in the 'target' argument of write_dimacs()"
-                )
-
-        if isinstance(capacity, str) and capacity not in self.edge_attributes():
-            warn("'%s' edge attribute does not exist" % capacity)
-            capacity = [1] * self.ecount()
-
-        return GraphBase.write_dimacs(self, f, source, target, capacity)
-
-    def write_graphmlz(self, f, compresslevel=9):
-        """Writes the graph to a zipped GraphML file.
-
-        The library uses the gzip compression algorithm, so the resulting
-        file can be unzipped with regular gzip uncompression (like
-        C{gunzip} or C{zcat} from Unix command line) or the Python C{gzip}
-        module.
-
-        Uses a temporary file to store intermediate GraphML data, so
-        make sure you have enough free space to store the unzipped
-        GraphML file as well.
-
-        @param f: the name of the file to be written.
-        @param compresslevel: the level of compression. 1 is fastest and
-          produces the least compression, and 9 is slowest and produces
-          the most compression."""
-        with named_temporary_file() as tmpfile:
-            self.write_graphml(tmpfile)
-            outf = gzip.GzipFile(f, "wb", compresslevel)
-            copyfileobj(open(tmpfile, "rb"), outf)
-            outf.close()
-
-    @classmethod
-    def Read_DIMACS(cls, f, directed=False):
-        """Reads a graph from a file conforming to the DIMACS minimum-cost flow
-        file format.
-
-        For the exact definition of the format, see
-        U{http://lpsolve.sourceforge.net/5.5/DIMACS.htm}.
-
-        Restrictions compared to the official description of the format are
-        as follows:
-
-          - igraph's DIMACS reader requires only three fields in an arc
-            definition, describing the edge's source and target node and
-            its capacity.
-          - Source vertices are identified by 's' in the FLOW field, target
-            vertices are identified by 't'.
-          - Node indices start from 1. Only a single source and target node
-            is allowed.
-
-        @param f: the name of the file or a Python file handle
-        @param directed: whether the generated graph should be directed.
-        @return: the generated graph. The indices of the source and target
-          vertices are attached as graph attributes C{source} and C{target},
-          the edge capacities are stored in the C{capacity} edge attribute.
-        """
-        graph, source, target, cap = super().Read_DIMACS(f, directed)
-        graph.es["capacity"] = cap
-        graph["source"] = source
-        graph["target"] = target
-        return graph
-
-    @classmethod
-    def Read_GraphMLz(cls, f, directed=True, index=0):
-        """Reads a graph from a zipped GraphML file.
-
-        @param f: the name of the file
-        @param index: if the GraphML file contains multiple graphs,
-          specified the one that should be loaded. Graph indices
-          start from zero, so if you want to load the first graph,
-          specify 0 here.
-        @return: the loaded graph object"""
-        with named_temporary_file() as tmpfile:
-            with open(tmpfile, "wb") as outf:
-                copyfileobj(gzip.GzipFile(f, "rb"), outf)
-            return cls.Read_GraphML(tmpfile, directed=directed, index=index)
-
-    def write_pickle(self, fname=None, version=-1):
-        """Saves the graph in Python pickled format
-
-        @param fname: the name of the file or a stream to save to. If
-          C{None}, saves the graph to a string and returns the string.
-        @param version: pickle protocol version to be used. If -1, uses
-          the highest protocol available
-        @return: C{None} if the graph was saved successfully to the
-          given file, or a string if C{fname} was C{None}.
-        """
-        import pickle as pickle
-
-        if fname is None:
-            return pickle.dumps(self, version)
-        if not hasattr(fname, "write"):
-            file_was_opened = True
-            fname = open(fname, "wb")
-        else:
-            file_was_opened = False
-        result = pickle.dump(self, fname, version)
-        if file_was_opened:
-            fname.close()
-        return result
-
-    def write_picklez(self, fname=None, version=-1):
-        """Saves the graph in Python pickled format, compressed with
-        gzip.
-
-        Saving in this format is a bit slower than saving in a Python pickle
-        without compression, but the final file takes up much less space on
-        the hard drive.
-
-        @param fname: the name of the file or a stream to save to.
-        @param version: pickle protocol version to be used. If -1, uses
-          the highest protocol available
-        @return: C{None} if the graph was saved successfully to the
-          given file.
-        """
-        import pickle as pickle
-
-        file_was_opened = False
-
-        if not hasattr(fname, "write"):
-            file_was_opened = True
-            fname = gzip.open(fname, "wb")
-        elif not isinstance(fname, gzip.GzipFile):
-            file_was_opened = True
-            fname = gzip.GzipFile(mode="wb", fileobj=fname)
-
-        result = pickle.dump(self, fname, version)
-
-        if file_was_opened:
-            fname.close()
-
-        return result
-
-    @classmethod
-    def Read_Pickle(cls, fname=None):
-        """Reads a graph from Python pickled format
-
-        @param fname: the name of the file, a stream to read from, or
-          a string containing the pickled data.
-        @return: the created graph object.
-        """
-        import pickle as pickle
-
-        if hasattr(fname, "read"):
-            # Probably a file or a file-like object
-            result = pickle.load(fname)
-        else:
-            try:
-                fp = open(fname, "rb")
-            except UnicodeDecodeError:
-                try:
-                    # We are on Python 3.6 or above and we are passing a pickled
-                    # stream that cannot be decoded as Unicode. Try unpickling
-                    # directly.
-                    result = pickle.loads(fname)
-                except TypeError:
-                    raise IOError(
-                        "Cannot load file. If fname is a file name, that "
-                        "filename may be incorrect."
-                    )
-            except IOError:
-                try:
-                    # No file with the given name, try unpickling directly.
-                    result = pickle.loads(fname)
-                except TypeError:
-                    raise IOError(
-                        "Cannot load file. If fname is a file name, that "
-                        "filename may be incorrect."
-                    )
-            else:
-                result = pickle.load(fp)
-                fp.close()
-
-        if not isinstance(result, cls):
-            raise TypeError("unpickled object is not a %s" % cls.__name__)
-
-        return result
-
-    @classmethod
-    def Read_Picklez(cls, fname):
-        """Reads a graph from compressed Python pickled format, uncompressing
-        it on-the-fly.
-
-        @param fname: the name of the file or a stream to read from.
-        @return: the created graph object.
-        """
-        import pickle as pickle
-
-        if hasattr(fname, "read"):
-            # Probably a file or a file-like object
-            if isinstance(fname, gzip.GzipFile):
-                result = pickle.load(fname)
-            else:
-                result = pickle.load(gzip.GzipFile(mode="rb", fileobj=fname))
-        else:
-            result = pickle.load(gzip.open(fname, "rb"))
-
-        if not isinstance(result, cls):
-            raise TypeError("unpickled object is not a %s" % cls.__name__)
-
-        return result
-
-    def write_svg(
-        self,
-        fname,
-        layout="auto",
-        width=None,
-        height=None,
-        labels="label",
-        colors="color",
-        shapes="shape",
-        vertex_size=10,
-        edge_colors="color",
-        edge_stroke_widths="width",
-        font_size=16,
-        *args,
-        **kwds,
-    ):
-        """Saves the graph as an SVG (Scalable Vector Graphics) file
-
-        The file will be Inkscape (http://inkscape.org) compatible.
-        In Inkscape, as nodes are rearranged, the edges auto-update.
-
-        @param fname: the name of the file or a Python file handle
-        @param layout: the layout of the graph. Can be either an
-          explicitly specified layout (using a list of coordinate
-          pairs) or the name of a layout algorithm (which should
-          refer to a method in the L{Graph} object, but without
-          the C{layout_} prefix.
-        @param width: the preferred width in pixels (default: 400)
-        @param height: the preferred height in pixels (default: 400)
-        @param labels: the vertex labels. Either it is the name of
-          a vertex attribute to use, or a list explicitly specifying
-          the labels. It can also be C{None}.
-        @param colors: the vertex colors. Either it is the name of
-          a vertex attribute to use, or a list explicitly specifying
-          the colors. A color can be anything acceptable in an SVG
-          file.
-        @param shapes: the vertex shapes. Either it is the name of
-          a vertex attribute to use, or a list explicitly specifying
-          the shapes as integers. Shape 0 means hidden (nothing is drawn),
-          shape 1 is a circle, shape 2 is a rectangle and shape 3 is a
-          rectangle that automatically sizes to the inner text.
-        @param vertex_size: vertex size in pixels
-        @param edge_colors: the edge colors. Either it is the name
-          of an edge attribute to use, or a list explicitly specifying
-          the colors. A color can be anything acceptable in an SVG
-          file.
-        @param edge_stroke_widths: the stroke widths of the edges. Either
-          it is the name of an edge attribute to use, or a list explicitly
-          specifying the stroke widths. The stroke width can be anything
-          acceptable in an SVG file.
-        @param font_size: font size. If it is a string, it is written into
-          the SVG file as-is (so you can specify anything which is valid
-          as the value of the C{font-size} style). If it is a number, it
-          is interpreted as pixel size and converted to the proper attribute
-          value accordingly.
-        """
-        if width is None and height is None:
-            width = 400
-            height = 400
-        elif width is None:
-            width = height
-        elif height is None:
-            height = width
-
-        if width <= 0 or height <= 0:
-            raise ValueError("width and height must be positive")
-
-        if isinstance(layout, str):
-            layout = self.layout(layout, *args, **kwds)
-
-        if isinstance(labels, str):
-            try:
-                labels = self.vs.get_attribute_values(labels)
-            except KeyError:
-                labels = [x + 1 for x in range(self.vcount())]
-        elif labels is None:
-            labels = [""] * self.vcount()
-
-        if isinstance(colors, str):
-            try:
-                colors = self.vs.get_attribute_values(colors)
-            except KeyError:
-                colors = ["red"] * self.vcount()
-
-        if isinstance(shapes, str):
-            try:
-                shapes = self.vs.get_attribute_values(shapes)
-            except KeyError:
-                shapes = [1] * self.vcount()
-
-        if isinstance(edge_colors, str):
-            try:
-                edge_colors = self.es.get_attribute_values(edge_colors)
-            except KeyError:
-                edge_colors = ["black"] * self.ecount()
-
-        if isinstance(edge_stroke_widths, str):
-            try:
-                edge_stroke_widths = self.es.get_attribute_values(edge_stroke_widths)
-            except KeyError:
-                edge_stroke_widths = [2] * self.ecount()
-
-        if not isinstance(font_size, str):
-            font_size = "%spx" % str(font_size)
-        else:
-            if ";" in font_size:
-                raise ValueError("font size can't contain a semicolon")
-
-        vcount = self.vcount()
-        labels.extend(str(i + 1) for i in range(len(labels), vcount))
-        colors.extend(["red"] * (vcount - len(colors)))
-
-        if isinstance(fname, str):
-            f = open(fname, "w")
-            our_file = True
-        else:
-            f = fname
-            our_file = False
-
-        bbox = BoundingBox(layout.bounding_box())
-
-        sizes = [width - 2 * vertex_size, height - 2 * vertex_size]
-        w, h = bbox.width, bbox.height
-
-        ratios = []
-        if w == 0:
-            ratios.append(1.0)
-        else:
-            ratios.append(sizes[0] / w)
-        if h == 0:
-            ratios.append(1.0)
-        else:
-            ratios.append(sizes[1] / h)
-
-        layout = [
-            [
-                (row[0] - bbox.left) * ratios[0] + vertex_size,
-                (row[1] - bbox.top) * ratios[1] + vertex_size,
-            ]
-            for row in layout
-        ]
-
-        directed = self.is_directed()
-
-        print('<?xml version="1.0" encoding="UTF-8" standalone="no"?>', file=f)
-        print(
-            "<!-- Created by igraph (http://igraph.org/) -->",
-            file=f,
-        )
-        print(file=f)
-        print(
-            '<svg xmlns:dc="http://purl.org/dc/elements/1.1/" '
-            'xmlns:cc="http://creativecommons.org/ns#" '
-            'xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" '
-            'xmlns:svg="http://www.w3.org/2000/svg" '
-            'xmlns="http://www.w3.org/2000/svg" '
-            'xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" '
-            'xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"',
-            file=f,
-        )
-        print('width="{0}px" height="{1}px">'.format(width, height), end=" ", file=f)
-
-        edge_color_dict = {}
-        print('<defs id="defs3">', file=f)
-        for e_col in set(edge_colors):
-            if e_col == "#000000":
-                marker_index = ""
-            else:
-                marker_index = str(len(edge_color_dict))
-            # Print an arrow marker for each possible line color
-            # This is a copy of Inkscape's standard Arrow 2 marker
-            print("<marker", file=f)
-            print('   inkscape:stockid="Arrow2Lend{0}"'.format(marker_index), file=f)
-            print('   orient="auto"', file=f)
-            print('   refY="0.0"', file=f)
-            print('   refX="0.0"', file=f)
-            print('   id="Arrow2Lend{0}"'.format(marker_index), file=f)
-            print('   style="overflow:visible;">', file=f)
-            print("  <path", file=f)
-            print('     id="pathArrow{0}"'.format(marker_index), file=f)
-            print(
-                '     style="font-size:12.0;fill-rule:evenodd;'
-                "stroke-width:0.62500000;stroke-linejoin:round;"
-                'fill:{0}"'.format(e_col),
-                file=f,
-            )
-            print(
-                '     d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 '
-                "L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 "
-                '6.9831476,1.6157441 8.7185878,4.0337352 z "',
-                file=f,
-            )
-            print('     transform="scale(1.1) rotate(180) translate(1,0)" />', file=f)
-            print("</marker>", file=f)
-
-            edge_color_dict[e_col] = "Arrow2Lend{0}".format(marker_index)
-        print("</defs>", file=f)
-        print(
-            '<g inkscape:groupmode="layer" id="layer2" inkscape:label="Lines" '
-            'sodipodi:insensitive="true">',
-            file=f,
-        )
-
-        for eidx, edge in enumerate(self.es):
-            vidxs = edge.tuple
-            x1 = layout[vidxs[0]][0]
-            y1 = layout[vidxs[0]][1]
-            x2 = layout[vidxs[1]][0]
-            y2 = layout[vidxs[1]][1]
-            angle = math.atan2(y2 - y1, x2 - x1)
-            x2 = x2 - vertex_size * math.cos(angle)
-            y2 = y2 - vertex_size * math.sin(angle)
-
-            print("<path", file=f)
-            print(
-                '    style="fill:none;stroke:{0};stroke-width:{2};'
-                "stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;"
-                'stroke-opacity:1;stroke-dasharray:none{1}"'.format(
-                    edge_colors[eidx],
-                    ";marker-end:url(#{0})".format(edge_color_dict[edge_colors[eidx]])
-                    if directed
-                    else "",
-                    edge_stroke_widths[eidx],
-                ),
-                file=f,
-            )
-            print('    d="M {0},{1} {2},{3}"'.format(x1, y1, x2, y2), file=f)
-            print('    id="path{0}"'.format(eidx), file=f)
-            print('    inkscape:connector-type="polyline"', file=f)
-            print('    inkscape:connector-curvature="0"', file=f)
-            print('    inkscape:connection-start="#g{0}"'.format(edge.source), file=f)
-            print('    inkscape:connection-start-point="d4"', file=f)
-            print('    inkscape:connection-end="#g{0}"'.format(edge.target), file=f)
-            print('    inkscape:connection-end-point="d4" />', file=f)
-
-        print("  </g>", file=f)
-        print(file=f)
-
-        print(
-            '  <g inkscape:label="Nodes" \
-                    inkscape:groupmode="layer" id="layer1">',
-            file=f,
-        )
-        print("  <!-- Vertices -->", file=f)
-
-        if any(x == 3 for x in shapes):
-            # Only import tkFont if we really need it. Unfortunately, this will
-            # flash up an unneccesary Tk window in some cases
-            import tkinter.font
-            import tkinter as tk
-
-            # This allows us to dynamically size the width of the nodes.
-            # Unfortunately this works only with font sizes specified in pixels.
-            if font_size.endswith("px"):
-                font_size_in_pixels = int(font_size[:-2])
-            else:
-                try:
-                    font_size_in_pixels = int(font_size)
-                except Exception:
-                    raise ValueError(
-                        "font sizes must be specified in pixels "
-                        "when any of the nodes has shape=3 (i.e. "
-                        "node size determined by text size)"
-                    )
-            tk_window = tk.Tk()
-            font = tkinter.font.Font(
-                root=tk_window, font=("Sans", font_size_in_pixels, tkinter.font.NORMAL)
-            )
-        else:
-            tk_window = None
-
-        for vidx in range(self.vcount()):
-            print(
-                '    <g id="g{0}" transform="translate({1},{2})">'.format(
-                    vidx, layout[vidx][0], layout[vidx][1]
-                ),
-                file=f,
-            )
-            if shapes[vidx] == 1:
-                # Undocumented feature: can handle two colors but only for circles
-                c = str(colors[vidx])
-                if " " in c:
-                    c = c.split(" ")
-                    vs = str(vertex_size)
-                    print(
-                        '     <path d="M -{0},0 A{0},{0} 0 0,0 {0},0 L \
-                                -{0},0" fill="{1}"/>'.format(
-                            vs, c[0]
-                        ),
-                        file=f,
-                    )
-                    print(
-                        '     <path d="M -{0},0 A{0},{0} 0 0,1 {0},0 L \
-                                -{0},0" fill="{1}"/>'.format(
-                            vs, c[1]
-                        ),
-                        file=f,
-                    )
-                    print(
-                        '     <circle cx="0" cy="0" r="{0}" fill="none"/>'.format(vs),
-                        file=f,
-                    )
-                else:
-                    print(
-                        '     <circle cx="0" cy="0" r="{0}" fill="{1}"/>'.format(
-                            str(vertex_size), str(colors[vidx])
-                        ),
-                        file=f,
-                    )
-            elif shapes[vidx] == 2:
-                print(
-                    '      <rect x="-{0}" y="-{0}" width="{1}" height="{1}" '
-                    'id="rect{2}" style="fill:{3};fill-opacity:1" />'.format(
-                        vertex_size, vertex_size * 2, vidx, colors[vidx]
-                    ),
-                    file=f,
-                )
-            elif shapes[vidx] == 3:
-                (vertex_width, vertex_height) = (
-                    font.measure(str(labels[vidx])) + 2,
-                    font.metrics("linespace") + 2,
-                )
-                print(
-                    '      <rect ry="5" rx="5" x="-{0}" y="-{1}" width="{2}" '
-                    'height="{3}" id="rect{4}" style="fill:{5};fill-opacity:1" '
-                    "/>".format(
-                        vertex_width / 2.0,
-                        vertex_height / 2.0,
-                        vertex_width,
-                        vertex_height,
-                        vidx,
-                        colors[vidx],
-                    ),
-                    file=f,
-                )
-
-            print(
-                '      <text sodipodi:linespacing="125%" y="{0}" x="0" '
-                'id="text{1}" style="font-size:{2};font-style:normal;'
-                "font-weight:normal;text-align:center;line-height:125%;"
-                "letter-spacing:0px;word-spacing:0px;text-anchor:middle;"
-                "fill:#000000;fill-opacity:1;stroke:none;"
-                'font-family:Sans">'.format(vertex_size / 2.0, vidx, font_size),
-                file=f,
-            )
-            print(
-                '<tspan y="{0}" x="0" id="tspan{1}" sodipodi:role="line">'
-                "{2}</tspan></text>".format(vertex_size / 2.0, vidx, str(labels[vidx])),
-                file=f,
-            )
-            print("    </g>", file=f)
-
-        print("</g>", file=f)
-        print(file=f)
-        print("</svg>", file=f)
-
-        if our_file:
-            f.close()
-        if tk_window:
-            tk_window.destroy()
-
-    @classmethod
-    def _identify_format(cls, filename):
-        """_identify_format(filename)
-
-        Tries to identify the format of the graph stored in the file with the
-        given filename. It identifies most file formats based on the extension
-        of the file (and not on syntactic evaluation). The only exception is
-        the adjacency matrix format and the edge list format: the first few
-        lines of the file are evaluated to decide between the two.
-
-        @note: Internal function, should not be called directly.
-
-        @param filename: the name of the file or a file object whose C{name}
-          attribute is set.
-        @return: the format of the file as a string.
-        """
-        import os.path
-
-        if hasattr(filename, "name") and hasattr(filename, "read"):
-            # It is most likely a file
-            try:
-                filename = filename.name
-            except Exception:
-                return None
-
-        root, ext = os.path.splitext(filename)
-        ext = ext.lower()
-
-        if ext == ".gz":
-            _, ext2 = os.path.splitext(root)
-            ext2 = ext2.lower()
-            if ext2 == ".pickle":
-                return "picklez"
-            elif ext2 == ".graphml":
-                return "graphmlz"
-
-        if ext in [
-            ".graphml",
-            ".graphmlz",
-            ".lgl",
-            ".ncol",
-            ".pajek",
-            ".gml",
-            ".dimacs",
-            ".edgelist",
-            ".edges",
-            ".edge",
-            ".net",
-            ".pickle",
-            ".picklez",
-            ".dot",
-            ".gw",
-            ".lgr",
-            ".dl",
-        ]:
-            return ext[1:]
-
-        if ext == ".txt" or ext == ".dat":
-            # Most probably an adjacency matrix or an edge list
-            f = open(filename, "r")
-            line = f.readline()
-            if line is None:
-                return "edges"
-            parts = line.strip().split()
-            if len(parts) == 2:
-                line = f.readline()
-                if line is None:
-                    return "edges"
-                parts = line.strip().split()
-                if len(parts) == 2:
-                    line = f.readline()
-                    if line is None:
-                        # This is a 2x2 matrix, it can be a matrix or an edge
-                        # list as well and we cannot decide
-                        return None
-                    else:
-                        parts = line.strip().split()
-                        if len(parts) == 0:
-                            return None
-                    return "edges"
-                else:
-                    # Not a matrix
-                    return None
-            else:
-                return "adjacency"
-
-    @classmethod
-    def Read(cls, f, format=None, *args, **kwds):
-        """Unified reading function for graphs.
-
-        This method tries to identify the format of the graph given in
-        the first parameter and calls the corresponding reader method.
-
-        The remaining arguments are passed to the reader method without
-        any changes.
-
-        @param f: the file containing the graph to be loaded
-        @param format: the format of the file (if known in advance).
-          C{None} means auto-detection. Possible values are: C{"ncol"}
-          (NCOL format), C{"lgl"} (LGL format), C{"graphdb"} (GraphDB
-          format), C{"graphml"}, C{"graphmlz"} (GraphML and gzipped
-          GraphML format), C{"gml"} (GML format), C{"net"}, C{"pajek"}
-          (Pajek format), C{"dimacs"} (DIMACS format), C{"edgelist"},
-          C{"edges"} or C{"edge"} (edge list), C{"adjacency"}
-          (adjacency matrix), C{"dl"} (DL format used by UCINET),
-          C{"pickle"} (Python pickled format),
-          C{"picklez"} (gzipped Python pickled format)
-        @raises IOError: if the file format can't be identified and
-          none was given.
-        """
-        if format is None:
-            format = cls._identify_format(f)
-        try:
-            reader = cls._format_mapping[format][0]
-        except (KeyError, IndexError):
-            raise IOError("unknown file format: %s" % str(format))
-        if reader is None:
-            raise IOError("no reader method for file format: %s" % str(format))
-        reader = getattr(cls, reader)
-        return reader(f, *args, **kwds)
-
+    Read = classmethod(_construct_graph_from_file)
     Load = Read
-
-    def write(self, f, format=None, *args, **kwds):
-        """Unified writing function for graphs.
-
-        This method tries to identify the format of the graph given in
-        the first parameter (based on extension) and calls the corresponding
-        writer method.
-
-        The remaining arguments are passed to the writer method without
-        any changes.
-
-        @param f: the file containing the graph to be saved
-        @param format: the format of the file (if one wants to override the
-          format determined from the filename extension, or the filename itself
-          is a stream). C{None} means auto-detection. Possible values are:
-
-            - C{"adjacency"}: adjacency matrix format
-
-            - C{"dimacs"}: DIMACS format
-
-            - C{"dot"}, C{"graphviz"}: GraphViz DOT format
-
-            - C{"edgelist"}, C{"edges"} or C{"edge"}: numeric edge list format
-
-            - C{"gml"}: GML format
-
-            - C{"graphml"} and C{"graphmlz"}: standard and gzipped GraphML
-              format
-
-            - C{"gw"}, C{"leda"}, C{"lgr"}: LEDA native format
-
-            - C{"lgl"}: LGL format
-
-            - C{"ncol"}: NCOL format
-
-            - C{"net"}, C{"pajek"}: Pajek format
-
-            - C{"pickle"}, C{"picklez"}: standard and gzipped Python pickled
-              format
-
-            - C{"svg"}: SVG format
-
-        @raises IOError: if the file format can't be identified and
-          none was given.
-        """
-        if format is None:
-            format = self._identify_format(f)
-        try:
-            writer = self._format_mapping[format][1]
-        except (KeyError, IndexError):
-            raise IOError("unknown file format: %s" % str(format))
-        if writer is None:
-            raise IOError("no writer method for file format: %s" % str(format))
-        writer = getattr(self, writer)
-        return writer(f, *args, **kwds)
-
+    write = _write_graph_to_file
     save = write
 
-    #####################################################
-    # Constructor for dict-like representation of graphs
+    # Various objects
+    # list of dict representation of graphs
+    DictList = classmethod(_construct_graph_from_dict_list)
+    to_dict_list = _export_graph_to_dict_list
 
-    @classmethod
-    def DictList(
-        cls,
-        vertices,
-        edges,
-        directed=False,
-        vertex_name_attr="name",
-        edge_foreign_keys=("source", "target"),
-        iterative=False,
-    ):
-        """Constructs a graph from a list-of-dictionaries representation.
+    # tuple-like representation of graphs
+    TupleList = classmethod(_construct_graph_from_tuple_list)
+    to_tuple_list = _export_graph_to_tuple_list
 
-        This representation assumes that vertices and edges are encoded in
-        two lists, each list containing a Python dict for each vertex and
-        each edge, respectively. A distinguished element of the vertex dicts
-        contain a vertex ID which is used in the edge dicts to refer to
-        source and target vertices. All the remaining elements of the dict
-        are considered vertex and edge attributes. Note that the implementation
-        does not assume that the objects passed to this method are indeed
-        lists of dicts, but they should be iterable and they should yield
-        objects that behave as dicts. So, for instance, a database query
-        result is likely to be fit as long as it's iterable and yields
-        dict-like objects with every iteration.
+    # dict of sequence representation of graphs
+    ListDict = classmethod(_construct_graph_from_list_dict)
+    to_list_dict = _export_graph_to_list_dict
 
-        @param vertices: the data source for the vertices or C{None} if
-          there are no special attributes assigned to vertices and we
-          should simply use the edge list of dicts to infer vertex names.
-        @param edges: the data source for the edges.
-        @param directed: whether the constructed graph will be directed
-        @param vertex_name_attr: the name of the distinguished key in the
-          dicts in the vertex data source that contains the vertex names.
-          Ignored if C{vertices} is C{None}.
-        @param edge_foreign_keys: the name of the attributes in the dicts
-          in the edge data source that contain the source and target
-          vertex names.
-        @param iterative: whether to add the edges to the graph one by one,
-          iteratively, or to build a large edge list first and use that to
-          construct the graph. The latter approach is faster but it may
-          not be suitable if your dataset is large. The default is to
-          add the edges in a batch from an edge list.
-        @return: the graph that was constructed
-        """
+    # dict of dicts representation of graphs
+    DictDict = classmethod(_construct_graph_from_dict_dict)
+    to_dict_dict = _export_graph_to_dict_dict
 
-        def create_list_from_indices(indices, n):
-            result = [None] * n
-            for i, v in indices:
-                result[i] = v
-            return result
+    # adjacency matrix
+    Adjacency = classmethod(_construct_graph_from_adjacency)
 
-        # Construct the vertices
-        vertex_attrs, n = {}, 0
-        if vertices:
-            for idx, vertex_data in enumerate(vertices):
-                for k, v in vertex_data.items():
-                    try:
-                        vertex_attrs[k].append((idx, v))
-                    except KeyError:
-                        vertex_attrs[k] = [(idx, v)]
-                n += 1
-            for k, v in vertex_attrs.items():
-                vertex_attrs[k] = create_list_from_indices(v, n)
-        else:
-            vertex_attrs[vertex_name_attr] = []
+    Weighted_Adjacency = classmethod(_construct_graph_from_weighted_adjacency)
 
-        vertex_names = vertex_attrs[vertex_name_attr]
-        # Check for duplicates in vertex_names
-        if len(vertex_names) != len(set(vertex_names)):
-            raise ValueError("vertex names are not unique")
-        # Create a reverse mapping from vertex names to indices
-        vertex_name_map = UniqueIdGenerator(initial=vertex_names)
+    # pandas dataframe(s)
+    DataFrame = classmethod(_construct_graph_from_dataframe)
 
-        # Construct the edges
-        efk_src, efk_dest = edge_foreign_keys
-        if iterative:
-            g = cls(n, [], directed, {}, vertex_attrs)
-            for idx, edge_data in enumerate(edges):
-                src_name, dst_name = edge_data[efk_src], edge_data[efk_dest]
-                v1 = vertex_name_map[src_name]
-                if v1 == n:
-                    g.add_vertices(1)
-                    g.vs[n][vertex_name_attr] = src_name
-                    n += 1
-                v2 = vertex_name_map[dst_name]
-                if v2 == n:
-                    g.add_vertices(1)
-                    g.vs[n][vertex_name_attr] = dst_name
-                    n += 1
-                g.add_edge(v1, v2)
-                for k, v in edge_data.items():
-                    g.es[idx][k] = v
+    get_vertex_dataframe = _export_vertex_dataframe
 
-            return g
-        else:
-            edge_list, edge_attrs, m = [], {}, 0
-            for idx, edge_data in enumerate(edges):
-                v1 = vertex_name_map[edge_data[efk_src]]
-                v2 = vertex_name_map[edge_data[efk_dest]]
+    get_edge_dataframe = _export_edge_dataframe
 
-                edge_list.append((v1, v2))
-                for k, v in edge_data.items():
-                    try:
-                        edge_attrs[k].append((idx, v))
-                    except KeyError:
-                        edge_attrs[k] = [(idx, v)]
-                m += 1
-            for k, v in edge_attrs.items():
-                edge_attrs[k] = create_list_from_indices(v, m)
+    # Bipartite graphs
+    Bipartite = classmethod(_construct_bipartite_graph)
 
-            # It may have happened that some vertices were added during
-            # the process
-            if len(vertex_name_map) > n:
-                diff = len(vertex_name_map) - n
-                more = [None] * diff
-                for k, v in vertex_attrs.items():
-                    v.extend(more)
-                vertex_attrs[vertex_name_attr] = list(vertex_name_map.values())
-                n = len(vertex_name_map)
+    Incidence = classmethod(_construct_incidence_bipartite_graph)
 
-            # Create the graph
-            return cls(n, edge_list, directed, {}, vertex_attrs, edge_attrs)
+    Full_Bipartite = classmethod(_construct_full_bipartite_graph)
 
-    #####################################################
-    # Constructor for tuple-like representation of graphs
+    Random_Bipartite = classmethod(_construct_random_bipartite_graph)
 
-    @classmethod
-    def TupleList(
-        cls,
-        edges,
-        directed=False,
-        vertex_name_attr="name",
-        edge_attrs=None,
-        weights=False,
-    ):
-        """Constructs a graph from a list-of-tuples representation.
+    # Other constructors
+    GRG = classmethod(_construct_random_geometric_graph)
 
-        This representation assumes that the edges of the graph are encoded
-        in a list of tuples (or lists). Each item in the list must have at least
-        two elements, which specify the source and the target vertices of the edge.
-        The remaining elements (if any) specify the edge attributes of that edge,
-        where the names of the edge attributes originate from the C{edge_attrs}
-        list. The names of the vertices will be stored in the vertex attribute
-        given by C{vertex_name_attr}.
-
-        The default parameters of this function are suitable for creating
-        unweighted graphs from lists where each item contains the source vertex
-        and the target vertex. If you have a weighted graph, you can use items
-        where the third item contains the weight of the edge by setting
-        C{edge_attrs} to C{"weight"} or C{["weight"]}. If you have even more
-        edge attributes, add them to the end of each item in the C{edges}
-        list and also specify the corresponding edge attribute names in
-        C{edge_attrs} as a list.
-
-        @param edges: the data source for the edges. This must be a list
-          where each item is a tuple (or list) containing at least two
-          items: the name of the source and the target vertex. Note that
-          names will be assigned to the C{name} vertex attribute (or another
-          vertex attribute if C{vertex_name_attr} is specified), even if
-          all the vertex names in the list are in fact numbers.
-        @param directed: whether the constructed graph will be directed
-        @param vertex_name_attr: the name of the vertex attribute that will
-          contain the vertex names.
-        @param edge_attrs: the names of the edge attributes that are filled
-          with the extra items in the edge list (starting from index 2, since
-          the first two items are the source and target vertices). C{None}
-          means that only the source and target vertices will be extracted
-          from each item. If you pass a string here, it will be wrapped in
-          a list for convenience.
-        @param weights: alternative way to specify that the graph is
-          weighted. If you set C{weights} to C{true} and C{edge_attrs} is
-          not given, it will be assumed that C{edge_attrs} is C{["weight"]}
-          and igraph will parse the third element from each item into an
-          edge weight. If you set C{weights} to a string, it will be assumed
-          that C{edge_attrs} contains that string only, and igraph will
-          store the edge weights in that attribute.
-        @return: the graph that was constructed
-        """
-        if edge_attrs is None:
-            if not weights:
-                edge_attrs = ()
-            else:
-                if not isinstance(weights, str):
-                    weights = "weight"
-                edge_attrs = [weights]
-        else:
-            if weights:
-                raise ValueError(
-                    "`weights` must be False if `edge_attrs` is " "not None"
-                )
-
-        if isinstance(edge_attrs, str):
-            edge_attrs = [edge_attrs]
-
-        # Set up a vertex ID generator
-        idgen = UniqueIdGenerator()
-
-        # Construct the edges and the edge attributes
-        edge_list = []
-        edge_attributes = {}
-        for name in edge_attrs:
-            edge_attributes[name] = []
-
-        for item in edges:
-            edge_list.append((idgen[item[0]], idgen[item[1]]))
-            for index, name in enumerate(edge_attrs, 2):
-                try:
-                    edge_attributes[name].append(item[index])
-                except IndexError:
-                    edge_attributes[name].append(None)
-
-        # Set up the "name" vertex attribute
-        vertex_attributes = {}
-        vertex_attributes[vertex_name_attr] = list(idgen.values())
-        n = len(idgen)
-
-        # Construct the graph
-        return cls(n, edge_list, directed, {}, vertex_attributes, edge_attributes)
-
-    #################################
-    # Constructor for graph formulae
+    # Graph formulae
     Formula = classmethod(construct_graph_from_formula)
 
     ###########################
@@ -3224,390 +2001,6 @@ class Graph(GraphBase):
     def es(self):
         """The edge sequence of the graph"""
         return EdgeSeq(self)
-
-    #############################################
-    # Friendlier interface for bipartite methods
-
-    @classmethod
-    def Bipartite(cls, types, edges, directed=False, *args, **kwds):
-        """Creates a bipartite graph with the given vertex types and edges.
-        This is similar to the default constructor of the graph, the
-        only difference is that it checks whether all the edges go
-        between the two vertex classes and it assigns the type vector
-        to a C{type} attribute afterwards.
-
-        Examples:
-
-        >>> g = Graph.Bipartite([0, 1, 0, 1], [(0, 1), (2, 3), (0, 3)])
-        >>> g.is_bipartite()
-        True
-        >>> g.vs["type"]
-        [False, True, False, True]
-
-        @param types: the vertex types as a boolean list. Anything that
-          evaluates to C{False} will denote a vertex of the first kind,
-          anything that evaluates to C{True} will denote a vertex of the
-          second kind.
-        @param edges: the edges as a list of tuples.
-        @param directed: whether to create a directed graph. Bipartite
-          networks are usually undirected, so the default is C{False}
-
-        @return: the graph with a binary vertex attribute named C{"type"} that
-          stores the vertex classes.
-        """
-        result = cls._Bipartite(types, edges, directed, *args, **kwds)
-        result.vs["type"] = [bool(x) for x in types]
-        return result
-
-    @classmethod
-    def Full_Bipartite(cls, n1, n2, directed=False, mode="all", *args, **kwds):
-        """Generates a full bipartite graph (directed or undirected, with or
-        without loops).
-
-        >>> g = Graph.Full_Bipartite(2, 3)
-        >>> g.is_bipartite()
-        True
-        >>> g.vs["type"]
-        [False, False, True, True, True]
-
-        @param n1: the number of vertices of the first kind.
-        @param n2: the number of vertices of the second kind.
-        @param directed: whether tp generate a directed graph.
-        @param mode: if C{"out"}, then all vertices of the first kind are
-          connected to the others; C{"in"} specifies the opposite direction,
-          C{"all"} creates mutual edges. Ignored for undirected graphs.
-
-        @return: the graph with a binary vertex attribute named C{"type"} that
-          stores the vertex classes.
-        """
-        result, types = cls._Full_Bipartite(n1, n2, directed, mode, *args, **kwds)
-        result.vs["type"] = types
-        return result
-
-    @classmethod
-    def Random_Bipartite(
-        cls, n1, n2, p=None, m=None, directed=False, neimode="all", *args, **kwds
-    ):
-        """Generates a random bipartite graph with the given number of vertices and
-        edges (if m is given), or with the given number of vertices and the given
-        connection probability (if p is given).
-
-        If m is given but p is not, the generated graph will have n1 vertices of
-        type 1, n2 vertices of type 2 and m randomly selected edges between them. If
-        p is given but m is not, the generated graph will have n1 vertices of type 1
-        and n2 vertices of type 2, and each edge will exist between them with
-        probability p.
-
-        @param n1: the number of vertices of type 1.
-        @param n2: the number of vertices of type 2.
-        @param p: the probability of edges. If given, C{m} must be missing.
-        @param m: the number of edges. If given, C{p} must be missing.
-        @param directed: whether to generate a directed graph.
-        @param neimode: if the graph is directed, specifies how the edges will be
-          generated. If it is C{"all"}, edges will be generated in both directions
-          (from type 1 to type 2 and vice versa) independently. If it is C{"out"}
-          edges will always point from type 1 to type 2. If it is C{"in"}, edges
-          will always point from type 2 to type 1. This argument is ignored for
-          undirected graphs.
-        """
-        if p is None:
-            p = -1
-        if m is None:
-            m = -1
-        result, types = cls._Random_Bipartite(
-            n1, n2, p, m, directed, neimode, *args, **kwds
-        )
-        result.vs["type"] = types
-        return result
-
-    @classmethod
-    def GRG(cls, n, radius, torus=False):
-        """Generates a random geometric graph.
-
-        The algorithm drops the vertices randomly on the 2D unit square and
-        connects them if they are closer to each other than the given radius.
-        The coordinates of the vertices are stored in the vertex attributes C{x}
-        and C{y}.
-
-        @param n: The number of vertices in the graph
-        @param radius: The given radius
-        @param torus: This should be C{True} if we want to use a torus instead of a
-          square.
-        """
-        result, xs, ys = cls._GRG(n, radius, torus)
-        result.vs["x"] = xs
-        result.vs["y"] = ys
-        return result
-
-    @classmethod
-    def Incidence(
-        cls,
-        matrix,
-        directed=False,
-        mode="out",
-        multiple=False,
-        weighted=None,
-        *args,
-        **kwds,
-    ):
-        """Creates a bipartite graph from an incidence matrix.
-
-        Example:
-
-        >>> g = Graph.Incidence([[0, 1, 1], [1, 1, 0]])
-
-        @param matrix: the incidence matrix.
-        @param directed: whether to create a directed graph.
-        @param mode: defines the direction of edges in the graph. If
-          C{"out"}, then edges go from vertices of the first kind
-          (corresponding to rows of the matrix) to vertices of the
-          second kind (the columns of the matrix). If C{"in"}, the
-          opposite direction is used. C{"all"} creates mutual edges.
-          Ignored for undirected graphs.
-        @param multiple: defines what to do with non-zero entries in the
-          matrix. If C{False}, non-zero entries will create an edge no matter
-          what the value is. If C{True}, non-zero entries are rounded up to
-          the nearest integer and this will be the number of multiple edges
-          created.
-        @param weighted: defines whether to create a weighted graph from the
-          incidence matrix. If it is c{None} then an unweighted graph is created
-          and the multiple argument is used to determine the edges of the graph.
-          If it is a string then for every non-zero matrix entry, an edge is created
-          and the value of the entry is added as an edge attribute named by the
-          weighted argument. If it is C{True} then a weighted graph is created and
-          the name of the edge attribute will be ‘weight’.
-
-        @raise ValueError: if the weighted and multiple are passed together.
-
-        @return: the graph with a binary vertex attribute named C{"type"} that
-          stores the vertex classes.
-        """
-        is_weighted = True if weighted or weighted == "" else False
-        if is_weighted and multiple:
-            raise ValueError("arguments weighted and multiple can not co-exist")
-        result, types = cls._Incidence(matrix, directed, mode, multiple, *args, **kwds)
-        result.vs["type"] = types
-        if is_weighted:
-            weight_attr = "weight" if weighted is True else weighted
-            _, rows, _ = result.get_incidence()
-            num_vertices_of_first_kind = len(rows)
-            for edge in result.es:
-                source, target = edge.tuple
-                if source in rows:
-                    edge[weight_attr] = matrix[source][
-                        target - num_vertices_of_first_kind
-                    ]
-                else:
-                    edge[weight_attr] = matrix[target][
-                        source - num_vertices_of_first_kind
-                    ]
-        return result
-
-    @classmethod
-    def DataFrame(cls, edges, directed=True, vertices=None, use_vids=True):
-        """Generates a graph from one or two dataframes.
-
-        @param edges: pandas DataFrame containing edges and metadata. The first
-          two columns of this DataFrame contain the source and target vertices
-          for each edge. These indicate the vertex IDs as nonnegative integers
-          rather than vertex *names* unless `use_vids` is False. Further columns
-          may contain edge attributes.
-        @param directed: bool setting whether the graph is directed
-        @param vertices: None (default) or pandas DataFrame containing vertex
-          metadata. The DataFrame's index must contain the vertex IDs as a
-          sequence of intergers from `0` to `len(vertices) - 1`. If `use_vids`
-          is False, the first column must contain the unique vertex *names*.
-          Although vertex names are usually strings, they can be any hashable
-          object. All other columns will be added as vertex attributes by column
-          name.
-        @use_vids: whether to interpret the first two columns of the `edges`
-          argument as vertex ids (0-based integers) instead of vertex names.
-          If this argument is set to True and the first two columns of `edges`
-          are not integers, an error is thrown.
-
-        @return: the graph
-
-        Vertex names in either the `edges` or `vertices` arguments that are set
-        to NaN (not a number) will be set to the string "NA". That might lead
-        to unexpected behaviour: fill your NaNs with values before calling this
-        function to mitigate.
-        """
-        try:
-            import pandas as pd
-        except ImportError:
-            raise ImportError("You should install pandas in order to use this function")
-        try:
-            import numpy as np
-        except:
-            raise ImportError("You should install numpy in order to use this function")
-
-        if edges.shape[1] < 2:
-            raise ValueError("The 'edges' DataFrame must contain at least two columns")
-        if vertices is not None and vertices.shape[1] < 1:
-            raise ValueError(
-                "The 'vertices' DataFrame must contain at least one column"
-            )
-
-        if use_vids:
-            if not (
-                str(edges.dtypes[0]).startswith("int")
-                and str(edges.dtypes[1]).startswith("int")
-            ):
-                raise TypeError(
-                    f"Source and target IDs must be 0-based integers, found types {edges.dtypes.tolist()[:2]}"
-                )
-            elif (edges.iloc[:, :2] < 0).any(axis=None):
-                raise ValueError("Source and target IDs must not be negative")
-            if vertices is not None:
-                vertices = vertices.sort_index()
-                if not vertices.index.equals(
-                    pd.RangeIndex.from_range(range(vertices.shape[0]))
-                ):
-                    if not str(vertices.index.dtype).startswith("int"):
-                        raise TypeError(
-                            f"Vertex IDs must be 0-based integers, found type {vertices.index.dtype}"
-                        )
-                    elif (vertices.index < 0).any(axis=None):
-                        raise ValueError("Vertex IDs must not be negative")
-                    else:
-                        raise ValueError(
-                            f"Vertex IDs must be an integer sequence from 0 to {vertices.shape[0] - 1}"
-                        )
-        else:
-            # Handle if some source and target names in 'edges' are 'NA'
-            if edges.iloc[:, :2].isna().any(axis=None):
-                warn(
-                    "In the first two columns of 'edges' NA elements were replaced with string \"NA\""
-                )
-                edges = edges.copy()
-                edges.iloc[:, :2].fillna("NA", inplace=True)
-
-            # Bring DataFrame(s) into same format as with 'use_vids=True'
-            if vertices is None:
-                vertices = pd.DataFrame({"name": np.unique(edges.values[:, :2])})
-
-            if vertices.iloc[:, 0].isna().any():
-                warn(
-                    "In the first column of 'vertices' NA elements were replaced with string \"NA\""
-                )
-                vertices = vertices.copy()
-                vertices.iloc[:, 0].fillna("NA", inplace=True)
-
-            if vertices.iloc[:, 0].duplicated().any():
-                raise ValueError("Vertex names must be unique")
-
-            if vertices.shape[1] > 1 and "name" in vertices.columns[1:]:
-                raise ValueError(
-                    "Vertex attribute conflict: DataFrame already contains column 'name'"
-                )
-
-            vertices = vertices.rename(
-                {vertices.columns[0]: "name"}, axis=1
-            ).reset_index(drop=True)
-
-            # Map source and target names in 'edges' to IDs
-            vid_map = pd.Series(vertices.index, index=vertices.iloc[:, 0])
-            edges = edges.copy()
-            edges.iloc[:, 0] = edges.iloc[:, 0].map(vid_map)
-            edges.iloc[:, 1] = edges.iloc[:, 1].map(vid_map)
-
-        # Create graph
-        if vertices is None:
-            nv = edges.iloc[:, :2].max().max() + 1
-            g = Graph(n=nv, directed=directed)
-        else:
-            if not edges.iloc[:, :2].isin(vertices.index).all(axis=None):
-                raise ValueError(
-                    "Some vertices in the edge DataFrame are missing from vertices DataFrame"
-                )
-            nv = vertices.shape[0]
-            g = Graph(n=nv, directed=directed)
-            # Add vertex attributes
-            for col in vertices.columns:
-                g.vs[col] = vertices[col].tolist()
-
-        # add edges including optional attributes
-        e_list = list(edges.iloc[:, :2].itertuples(index=False, name=None))
-        e_attr = (
-            edges.iloc[:, 2:].to_dict(orient="list") if edges.shape[1] > 2 else None
-        )
-        g.add_edges(e_list, e_attr)
-
-        return g
-
-    def get_vertex_dataframe(self):
-        """Export vertices with attributes to pandas.DataFrame
-
-        If you want to use vertex names as index, you can do:
-
-        >>> from string import ascii_letters
-        >>> graph = Graph.GRG(25, 0.4)
-        >>> graph.vs["name"] = ascii_letters[:graph.vcount()]
-        >>> df = graph.get_vertex_dataframe()
-        >>> df.set_index('name', inplace=True)
-
-        @return: a pandas.DataFrame representing vertices and their attributes.
-          The index uses vertex IDs, from 0 to N - 1 where N is the number of
-          vertices.
-        """
-        try:
-            import pandas as pd
-        except ImportError:
-            raise ImportError("You should install pandas in order to use this function")
-
-        df = pd.DataFrame(
-            {attr: self.vs[attr] for attr in self.vertex_attributes()},
-            index=list(range(self.vcount())),
-        )
-        df.index.name = "vertex ID"
-
-        return df
-
-    def get_edge_dataframe(self):
-        """Export edges with attributes to pandas.DataFrame
-
-        If you want to use source and target vertex IDs as index, you can do:
-
-        >>> from string import ascii_letters
-        >>> graph = Graph.GRG(25, 0.4)
-        >>> graph.vs["name"] = ascii_letters[:graph.vcount()]
-        >>> df = graph.get_edge_dataframe()
-        >>> df.set_index(['source', 'target'], inplace=True)
-
-        The index will be a pandas.MultiIndex. You can use the `drop=False`
-        option to keep the `source` and `target` columns.
-
-        If you want to use vertex names in the source and target columns:
-
-        >>> df = graph.get_edge_dataframe()
-        >>> df_vert = graph.get_vertex_dataframe()
-        >>> df['source'].replace(df_vert['name'], inplace=True)
-        >>> df['target'].replace(df_vert['name'], inplace=True)
-        >>> df_vert.set_index('name', inplace=True)  # Optional
-
-        @return: a pandas.DataFrame representing edges and their attributes.
-          The index uses edge IDs, from 0 to M - 1 where M is the number of
-          edges. The first two columns of the dataframe represent the IDs of
-          source and target vertices for each edge. These columns have names
-          "source" and "target". If your edges have attributes with the same
-          names, they will be present in the dataframe, but not in the first
-          two columns.
-        """
-        try:
-            import pandas as pd
-        except ImportError:
-            raise ImportError("You should install pandas in order to use this function")
-
-        df = pd.DataFrame(
-            {attr: self.es[attr] for attr in self.edge_attributes()},
-            index=list(range(self.ecount())),
-        )
-        df.index.name = "edge ID"
-
-        df.insert(0, "source", [e.source for e in self.es], allow_duplicates=True)
-        df.insert(1, "target", [e.target for e in self.es], allow_duplicates=True)
-
-        return df
 
     def bipartite_projection(
         self, types="type", multiplicity=True, probe1=-1, which="both"
@@ -4189,7 +2582,6 @@ class Graph(GraphBase):
         drawer = kwds.pop(
             "drawer_factory",
             DrawerDirectory.resolve(self, backend)(context),
-
         )
         drawer.draw(self, *args, **kwds)
 
@@ -5317,4 +3709,34 @@ save = write
 
 
 config = init_configuration()
-del construct_graph_from_formula
+
+# Remove constructors from namespace
+del (
+    construct_graph_from_formula,
+    _construct_graph_from_graphmlz_file,
+    _construct_graph_from_dimacs_file,
+    _construct_graph_from_pickle_file,
+    _construct_graph_from_picklez_file,
+    _construct_graph_from_adjacency_file,
+    _construct_graph_from_file,
+    _construct_graph_from_dict_list,
+    _construct_graph_from_tuple_list,
+    _construct_graph_from_list_dict,
+    _construct_graph_from_dict_dict,
+    _construct_graph_from_adjacency,
+    _construct_graph_from_weighted_adjacency,
+    _construct_graph_from_dataframe,
+    _construct_random_geometric_graph,
+    _construct_bipartite_graph,
+    _construct_incidence_bipartite_graph,
+    _construct_full_bipartite_graph,
+    _construct_random_bipartite_graph,
+    _construct_graph_from_networkx,
+    _export_graph_to_networkx,
+    _construct_graph_from_graph_tool,
+    _export_graph_to_graph_tool,
+    _export_graph_to_list_dict,
+    _export_graph_to_dict_dict,
+    _export_graph_to_dict_list,
+    _export_graph_to_tuple_list,
+)
