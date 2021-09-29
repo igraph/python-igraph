@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+
+### Added
+
+- More robust support for Matplotlib and initial support for plotly as graph
+  plotting backends, controlled by a configuration option. See PR
+  [#425](https://github.com/igraph/python-igraph/pull/425) for more details.
+
+- Added support for additional ways to construct a graph, such as from a 
+  dictionary of dictionaries, and to export a graph object back to those
+  data structures. See PR [#434](https://github.com/igraph/python-igraph/pull/434)
+  for more details.
+
+- Added support for graph chordality which was already available in the C core:
+  `Graph.is_chordal()`, `Graph.chordal_completion()`, and
+  `Graph.maximal_cardinality_search()`. See PR
+  [#437](https://github.com/igraph/python-igraph/pull/437) for more details.
+  Thanks to [@cptwunderlich](https://github.com/cptwunderlich) for requesting
+  this.
+
 ### Changed
 
 - Improved performance of `Graph.DataFrame()`, thanks to
