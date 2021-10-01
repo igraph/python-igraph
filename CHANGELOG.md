@@ -22,6 +22,11 @@
 * Fixed the Apple Silicon wheels so they should now work out of the box on
   newer Macs with Apple M1 CPUs.
 
+* Fixed a bug that resulted in an unexpected error when plotting a graph with
+  `wrap_labels=True` if the size of one of the vertices was zero or negative,
+  thanks to [@jboynyc](https://github.com/user/jboynyc). See PR
+  [#439](https://github.com/igraph/python-igraph/pull/439) for more details.
+
 ## [0.9.6]
 
 ### Fixed
