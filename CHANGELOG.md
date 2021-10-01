@@ -17,6 +17,11 @@
   [@fwitter](https://github.com/user/fwitter). See PR
   [#418](https://github.com/igraph/python-igraph/pull/418) for more details.
 
+### Fixed
+
+* Fixed the Apple Silicon wheels so they should now work out of the box on
+  newer Macs with Apple M1 CPUs.
+
 ## [0.9.6]
 
 ### Fixed
