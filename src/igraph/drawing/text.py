@@ -107,11 +107,11 @@ class TextDrawer(AbstractCairoDrawer):
 
         line_height = ctx.font_extents()[2]
 
-        if wrap:
-            if width and width > 0:
-                iterlines = self._iterlines_wrapped(width)
-            else:
-                warn("ignoring wrap=True as no width was specified")
+        if wrap and width and width > 0:
+            iterlines = self._iterlines_wrapped(width)
+        elif wrap:
+            warn("ignoring wrap=True as no width was specified")
+            iterlines = self._iterlines()
         else:
             iterlines = self._iterlines()
 
