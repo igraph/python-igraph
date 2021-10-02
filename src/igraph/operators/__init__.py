@@ -22,6 +22,9 @@ from igraph.operators.methods import (
     __sub__,
     __mul__,
     __or__,
+    _disjoint_union,
+    _union,
+    _intersection,
 )
 
 operator_method_registry = {
@@ -32,4 +35,7 @@ operator_method_registry = {
     '__sub__': __sub__,
     '__mul__': __mul__,
     '__or__': __or__,
+    'disjoint_union': _disjoint_union,
+    'union': _union,
+    'intersection': _intersection,
 }
