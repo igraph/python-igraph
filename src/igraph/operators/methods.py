@@ -16,30 +16,30 @@ __all__ = (
 )
 
 
-def __iadd__(self, other):
+def __iadd__(graph, other):
     """In-place addition (disjoint union).
 
     @see: L{__add__}
     """
     if isinstance(other, (int, str)):
-        self.add_vertices(other)
-        return self
+        graph.add_vertices(other)
+        return graph
     elif isinstance(other, tuple) and len(other) == 2:
-        self.add_edges([other])
-        return self
+        graph.add_edges([other])
+        return graph
     elif isinstance(other, list):
         if not other:
-            return self
+            return graph
         if isinstance(other[0], tuple):
-            self.add_edges(other)
-            return self
+            graph.add_edges(other)
+            return graph
         if isinstance(other[0], str):
-            self.add_vertices(other)
-            return self
+            graph.add_vertices(other)
+            return graph
     return NotImplemented
 
 
-def __add__(self, other):
+def __add__(graph, other):
     """Copies the graph and extends the copy depending on the type of
     the other object given.
 
@@ -55,35 +55,35 @@ def __add__(self, other):
     from igraph import Graph
 
     if isinstance(other, (int, str)):
-        g = self.copy()
+        g = graph.copy()
         g.add_vertices(other)
     elif isinstance(other, tuple) and len(other) == 2:
-        g = self.copy()
+        g = graph.copy()
         g.add_edges([other])
     elif isinstance(other, list):
         if len(other) > 0:
             if isinstance(other[0], tuple):
-                g = self.copy()
+                g = graph.copy()
                 g.add_edges(other)
             elif isinstance(other[0], str):
-                g = self.copy()
+                g = graph.copy()
                 g.add_vertices(other)
             elif isinstance(other[0], Graph):
-                return self.disjoint_union(other)
+                return graph.disjoint_union(other)
             else:
                 return NotImplemented
         else:
-            return self.copy()
+            return graph.copy()
 
     elif isinstance(other, Graph):
-        return self.disjoint_union(other)
+        return graph.disjoint_union(other)
     else:
         return NotImplemented
 
     return g
 
 
-def __and__(self, other):
+def __and__(graph, other):
     """Graph intersection operator.
 
     @param other: the other graph to take the intersection with.
@@ -93,41 +93,41 @@ def __and__(self, other):
     from igraph import Graph
 
     if isinstance(other, Graph):
-        return self.intersection(other)
+        return graph.intersection(other)
     else:
         return NotImplemented
 
 
-def __isub__(self, other):
+def __isub__(graph, other):
     """In-place subtraction (difference).
 
     @see: L{__sub__}"""
     if isinstance(other, int):
-        self.delete_vertices([other])
+        graph.delete_vertices([other])
     elif isinstance(other, tuple) and len(other) == 2:
-        self.delete_edges([other])
+        graph.delete_edges([other])
     elif isinstance(other, list):
         if len(other) > 0:
             if isinstance(other[0], tuple):
-                self.delete_edges(other)
+                graph.delete_edges(other)
             elif isinstance(other[0], (int, str)):
-                self.delete_vertices(other)
+                graph.delete_vertices(other)
             else:
                 return NotImplemented
     elif isinstance(other, Vertex):
-        self.delete_vertices(other)
+        graph.delete_vertices(other)
     elif isinstance(other, VertexSeq):
-        self.delete_vertices(other)
+        graph.delete_vertices(other)
     elif isinstance(other, Edge):
-        self.delete_edges(other)
+        graph.delete_edges(other)
     elif isinstance(other, EdgeSeq):
-        self.delete_edges(other)
+        graph.delete_edges(other)
     else:
         return NotImplemented
-    return self
+    return graph
 
 
-def __sub__(self, other):
+def __sub__(graph, other):
     """Removes the given object(s) from the graph
 
     @param other: if it is an integer, removes the vertex with the given
@@ -141,9 +141,9 @@ def __sub__(self, other):
     from igraph import Graph
 
     if isinstance(other, Graph):
-        return self.difference(other)
+        return graph.difference(other)
 
-    result = self.copy()
+    result = graph.copy()
     if isinstance(other, (int, str)):
         result.delete_vertices([other])
     elif isinstance(other, tuple) and len(other) == 2:
@@ -172,7 +172,7 @@ def __sub__(self, other):
     return result
 
 
-def __mul__(self, other):
+def __mul__(graph, other):
     """Copies exact replicas of the original graph an arbitrary number of
     times.
 
@@ -187,16 +187,16 @@ def __mul__(self, other):
         if other == 0:
             return Graph()
         elif other == 1:
-            return self
+            return graph
         elif other > 1:
-            return self.disjoint_union([self] * (other - 1))
+            return graph.disjoint_union([graph] * (other - 1))
         else:
             return NotImplemented
 
     return NotImplemented
 
 
-def __or__(self, other):
+def __or__(graph, other):
     """Graph union operator.
 
     @param other: the other graph to take the union with.
@@ -206,6 +206,6 @@ def __or__(self, other):
     from igraph import Graph
 
     if isinstance(other, Graph):
-        return self.union(other)
+        return graph.union(other)
     else:
         return NotImplemented
