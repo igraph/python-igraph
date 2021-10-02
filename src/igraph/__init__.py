@@ -1640,6 +1640,12 @@ class Graph(GraphBase):
 
     __or__ = _operator_method_registry['__or__']
 
+    disjoint_union = _operator_method_registry['disjoint_union']
+
+    union = _operator_method_registry['union']
+
+    intersection = _operator_method_registry['intersection']
+
     def __bool__(self):
         """Returns True if the graph has at least one vertex, False otherwise."""
         return self.vcount() > 0
@@ -1735,41 +1741,6 @@ class Graph(GraphBase):
         @return: the summary of the graph.
         """
         return str(GraphSummary(self, verbosity, width, *args, **kwds))
-
-    def disjoint_union(self, other):
-        """Creates the disjoint union of two (or more) graphs.
-
-        @param other: graph or list of graphs to be united with the current one.
-        @return: the disjoint union graph
-        """
-        if isinstance(other, GraphBase):
-            other = [other]
-        return disjoint_union([self] + other)
-
-    def union(self, other, byname="auto"):
-        """Creates the union of two (or more) graphs.
-
-        @param other: graph or list of graphs to be united with the current one.
-        @param byname: whether to use vertex names instead of ids. See
-          L{igraph.union} for details.
-        @return: the union graph
-        """
-        if isinstance(other, GraphBase):
-            other = [other]
-        return union([self] + other, byname=byname)
-
-    def intersection(self, other, byname="auto"):
-        """Creates the intersection of two (or more) graphs.
-
-        @param other: graph or list of graphs to be intersected with
-          the current one.
-        @param byname: whether to use vertex names instead of ids. See
-          L{igraph.intersection} for details.
-        @return: the intersection graph
-        """
-        if isinstance(other, GraphBase):
-            other = [other]
-        return intersection([self] + other, byname=byname)
 
     _format_mapping = {
         "ncol": ("Read_Ncol", "write_ncol"),

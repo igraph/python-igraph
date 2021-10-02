@@ -1,8 +1,14 @@
 from igraph._igraph import (
+    GraphBase,
     Vertex,
     Edge,
 )
 from igraph.seq import VertexSeq, EdgeSeq
+from igraph.operators.functions import (
+    disjoint_union,
+    union,
+    intersection,
+)
 
 
 __all__ = (
@@ -13,7 +19,48 @@ __all__ = (
     "__sub__",
     "__mul__",
     "__or__",
+    "_disjoint_union",
+    "_union",
+    "_intersection",
 )
+
+
+def _disjoint_union(graph, other):
+    """Creates the disjoint union of two (or more) graphs.
+
+    @param other: graph or list of graphs to be united with the current one.
+    @return: the disjoint union graph
+    """
+    if isinstance(other, GraphBase):
+        other = [other]
+    return disjoint_union([graph] + other)
+
+
+def _union(graph, other, byname="auto"):
+    """Creates the union of two (or more) graphs.
+
+    @param other: graph or list of graphs to be united with the current one.
+    @param byname: whether to use vertex names instead of ids. See
+      L{igraph.union} for details.
+    @return: the union graph
+    """
+    if isinstance(other, GraphBase):
+        other = [other]
+    return union([graph] + other, byname=byname)
+
+
+def _intersection(graph, other, byname="auto"):
+    """Creates the intersection of two (or more) graphs.
+
+    @param other: graph or list of graphs to be intersected with
+      the current one.
+    @param byname: whether to use vertex names instead of ids. See
+      L{igraph.intersection} for details.
+    @return: the intersection graph
+    """
+    if isinstance(other, GraphBase):
+        other = [other]
+    return intersection([graph] + other, byname=byname)
 
 
 def __iadd__(graph, other):
