@@ -17,7 +17,7 @@ from warnings import warn
 
 from igraph.drawing.baseclasses import AbstractGraphDrawer, AbstractXMLRPCDrawer
 
-__all__ = ("CytoscapeGraphDrawer",)
+__all__ = ("CytoscapeGraphDrawer", "__plot__")
 
 
 class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
@@ -356,3 +356,203 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
             )
 
         self.streamer.post(graph, self.connection, encoder=kwds.get("encoder"))
+
+
+def __plot__(self, backend, context, *args, **kwds):
+    """Plots the graph to the given Cairo context or matplotlib Axes.
+
+    The visual style of vertices and edges can be modified at three
+    places in the following order of precedence (lower indices override
+    higher indices):
+
+      1. Keyword arguments of this function (or of L{plot()} which is
+         passed intact to C{Graph.__plot__()}.
+
+      2. Vertex or edge attributes, specified later in the list of
+         keyword arguments.
+
+      3. igraph-wide plotting defaults (see
+         L{igraph.config.Configuration})
+
+      4. Built-in defaults.
+
+    E.g., if the C{vertex_size} keyword attribute is not present,
+    but there exists a vertex attribute named C{size}, the sizes of
+    the vertices will be specified by that attribute.
+
+    Besides the usual self-explanatory plotting parameters (C{context},
+    C{bbox}, C{palette}), it accepts the following keyword arguments:
+
+      - C{autocurve}: whether to use curves instead of straight lines for
+        multiple edges on the graph plot. This argument may be C{True}
+        or C{False}; when omitted, C{True} is assumed for graphs with
+        less than 10.000 edges and C{False} otherwise.
+
+      - C{drawer_factory}: a subclass of L{AbstractCairoGraphDrawer}
+        which will be used to draw the graph. You may also provide
+        a function here which takes two arguments: the Cairo context
+        to draw on and a bounding box (an instance of L{BoundingBox}).
+        If this keyword argument is missing, igraph will use the
+        default graph drawer which should be suitable for most purposes.
+        It is safe to omit this keyword argument unless you need to use
+        a specific graph drawer.
+
+      - C{keep_aspect_ratio}: whether to keep the aspect ratio of the layout
+        that igraph calculates to place the nodes. C{True} means that the
+        layout will be scaled proportionally to fit into the bounding box
+        where the graph is to be drawn but the aspect ratio will be kept
+        the same (potentially leaving empty space next to, below or above
+        the graph). C{False} means that the layout will be scaled independently
+        along the X and Y axis in order to fill the entire bounding box.
+        The default is C{False}.
+
+      - C{layout}: the layout to be used. If not an instance of
+        L{Layout}, it will be passed to L{layout} to calculate
+        the layout. Note that if you want a deterministic layout that
+        does not change with every plot, you must either use a
+        deterministic layout function (like L{layout_circle}) or
+        calculate the layout in advance and pass a L{Layout} object here.
+
+      - C{margin}: the top, right, bottom, left margins as a 4-tuple.
+        If it has less than 4 elements or is a single float, the elements
+        will be re-used until the length is at least 4.
+
+      - C{mark_groups}: whether to highlight some of the vertex groups by
+        colored polygons. This argument can be one of the following:
+
+          - C{False}: no groups will be highlighted
+
+          - C{True}: only valid if the object plotted is a
+            L{VertexClustering} or L{VertexCover}. The vertex groups in the
+            clutering or cover will be highlighted such that the i-th
+            group will be colored by the i-th color from the current
+            palette. If used when plotting a graph, it will throw an error.
+
+          - A dict mapping tuples of vertex indices to color names.
+            The given vertex groups will be highlighted by the given
+            colors.
+
+          - A list containing pairs or an iterable yielding pairs, where
+            the first element of each pair is a list of vertex indices and
+            the second element is a color.
+
+          - A L{VertexClustering} or L{VertexCover} instance. The vertex
+            groups in the clustering or cover will be highlighted such that
+            the i-th group will be colored by the i-th color from the
+            current palette.
+
+        In place of lists of vertex indices, you may also use L{VertexSeq}
+        instances.
+
+        In place of color names, you may also use color indices into the
+        current palette. C{None} as a color name will mean that the
+        corresponding group is ignored.
+
+      - C{vertex_size}: size of the vertices. The corresponding vertex
+        attribute is called C{size}. The default is 10. Vertex sizes
+        are measured in the unit of the Cairo context on which igraph
+        is drawing.
+
+      - C{vertex_color}: color of the vertices. The corresponding vertex
+        attribute is C{color}, the default is red.  Colors can be
+        specified either by common X11 color names (see the source
+        code of L{igraph.drawing.colors} for a list of known colors), by
+        3-tuples of floats (ranging between 0 and 255 for the R, G and
+        B components), by CSS-style string specifications (C{#rrggbb})
+        or by integer color indices of the specified palette.
+
+      - C{vertex_frame_color}: color of the frame (i.e. stroke) of the
+        vertices. The corresponding vertex attribute is C{frame_color},
+        the default is black. See C{vertex_color} for the possible ways
+        of specifying a color.
+
+      - C{vertex_frame_width}: the width of the frame (i.e. stroke) of the
+        vertices. The corresponding vertex attribute is C{frame_width}.
+        The default is 1. Vertex frame widths are measured in the unit of the
+        Cairo context on which igraph is drawing.
+
+      - C{vertex_shape}: shape of the vertices. Alternatively it can
+        be specified by the C{shape} vertex attribute. Possibilities
+        are: C{square}, {circle}, {triangle}, {triangle-down} or
+        C{hidden}. See the source code of L{igraph.drawing} for a
+        list of alternative shape names that are also accepted and
+        mapped to these.
+
+      - C{vertex_label}: labels drawn next to the vertices.
+        The corresponding vertex attribute is C{label}.
+
+      - C{vertex_label_dist}: distance of the midpoint of the vertex
+        label from the center of the corresponding vertex.
+        The corresponding vertex attribute is C{label_dist}.
+
+      - C{vertex_label_color}: color of the label. Corresponding
+        vertex attribute: C{label_color}. See C{vertex_color} for
+        color specification syntax.
+
+      - C{vertex_label_size}: font size of the label, specified
+        in the unit of the Cairo context on which we are drawing.
+        Corresponding vertex attribute: C{label_size}.
+
+      - C{vertex_label_angle}: the direction of the line connecting
+        the midpoint of the vertex with the midpoint of the label.
+        This can be used to position the labels relative to the
+        vertices themselves in conjunction with C{vertex_label_dist}.
+        Corresponding vertex attribute: C{label_angle}. The
+        default is C{-math.pi/2}.
+
+      - C{vertex_order}: drawing order of the vertices. This must be
+        a list or tuple containing vertex indices; vertices are then
+        drawn according to this order.
+
+      - C{vertex_order_by}: an alternative way to specify the drawing
+        order of the vertices; this attribute is interpreted as the name
+        of a vertex attribute, and vertices are drawn such that those
+        with a smaller attribute value are drawn first. You may also
+        reverse the order by passing a tuple here; the first element of
+        the tuple should be the name of the attribute, the second element
+        specifies whether the order is reversed (C{True}, C{False},
+        C{"asc"} and C{"desc"} are accepted values).
+
+      - C{edge_color}: color of the edges. The corresponding edge
+        attribute is C{color}, the default is red. See C{vertex_color}
+        for color specification syntax.
+
+      - C{edge_curved}: whether the edges should be curved. Positive
+        numbers correspond to edges curved in a counter-clockwise
+        direction, negative numbers correspond to edges curved in a
+        clockwise direction. Zero represents straight edges. C{True}
+        is interpreted as 0.5, C{False} is interpreted as 0. The
+        default is 0 which makes all the edges straight.
+
+      - C{edge_width}: width of the edges in the default unit of the
+        Cairo context on which we are drawing. The corresponding
+        edge attribute is C{width}, the default is 1.
+
+      - C{edge_arrow_size}: arrow size of the edges. The
+        corresponding edge attribute is C{arrow_size}, the default
+        is 1.
+
+      - C{edge_arrow_width}: width of the arrowhead on the edge. The
+        corresponding edge attribute is C{arrow_width}, the default
+        is 1.
+
+      - C{edge_order}: drawing order of the edges. This must be
+        a list or tuple containing edge indices; edges are then
+        drawn according to this order.
+
+      - C{edge_order_by}: an alternative way to specify the drawing
+        order of the edges; this attribute is interpreted as the name
+        of an edge attribute, and edges are drawn such that those
+        with a smaller attribute value are drawn first. You may also
+        reverse the order by passing a tuple here; the first element of
+        the tuple should be the name of the attribute, the second element
+        specifies whether the order is reversed (C{True}, C{False},
+        C{"asc"} and C{"desc"} are accepted values).
+    """
+    from igraph.drawing import DrawerDirectory
+
+    drawer = kwds.pop(
+        "drawer_factory",
+        DrawerDirectory.resolve(self, backend)(context),
+    )
+    drawer.draw(self, *args, **kwds)
