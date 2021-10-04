@@ -476,3 +476,37 @@ def _community_leiden(
     return VertexClustering(graph, membership, modularity_params=modularity_params)
 
 
+def _modularity(self, membership, weights=None):
+    """Calculates the modularity score of the graph with respect to a given
+    clustering.
+
+    The modularity of a graph w.r.t. some division measures how good the
+    division is, or how separated are the different vertex types from each
+    other. It's defined as M{Q=1/(2m)*sum(Aij-ki*kj/(2m)delta(ci,cj),i,j)}.
+    M{m} is the number of edges, M{Aij} is the element of the M{A}
+    adjacency matrix in row M{i} and column M{j}, M{ki} is the degree of
+    node M{i}, M{kj} is the degree of node M{j}, and M{Ci} and C{cj} are
+    the types of the two vertices (M{i} and M{j}). M{delta(x,y)} is one iff
+    M{x=y}, 0 otherwise.
+
+    If edge weights are given, the definition of modularity is modified as
+    follows: M{Aij} becomes the weight of the corresponding edge, M{ki}
+    is the total weight of edges adjacent to vertex M{i}, M{kj} is the
+    total weight of edges adjacent to vertex M{j} and M{m} is the total
+    edge weight in the graph.
+
+    @param membership: a membership list or a L{VertexClustering} object
+    @param weights: optional edge weights or C{None} if all edges are
+      weighed equally. Attribute names are also allowed.
+    @return: the modularity score
+
+    @newfield ref: Reference
+    @ref: MEJ Newman and M Girvan: Finding and evaluating community
+      structure in networks. Phys Rev E 69 026113, 2004.
+    """
+    if isinstance(membership, VertexClustering):
+        if membership.graph != self:
+            raise ValueError("clustering object belongs to another graph")
+        return GraphBase.modularity(self, membership.membership, weights)
+    else:
+        return GraphBase.modularity(self, membership, weights)

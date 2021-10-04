@@ -21,6 +21,7 @@ __all__ = (
     '_layout_sugiyama',
     '_layout_method_wrapper',
     '_3d_version_for',
+    '_layout_mapping',
 )
 
 
@@ -716,3 +717,36 @@ def _3d_version_for(func):
     )
     return result
 
+
+# After adjusting something here, don't forget to update the docstring
+# of Graph.layout if necessary!
+_layout_mapping = {
+    "auto": "layout_auto",
+    "automatic": "layout_auto",
+    "bipartite": "layout_bipartite",
+    "circle": "layout_circle",
+    "circular": "layout_circle",
+    "davidson_harel": "layout_davidson_harel",
+    "dh": "layout_davidson_harel",
+    "drl": "layout_drl",
+    "fr": "layout_fruchterman_reingold",
+    "fruchterman_reingold": "layout_fruchterman_reingold",
+    "graphopt": "layout_graphopt",
+    "grid": "layout_grid",
+    "kk": "layout_kamada_kawai",
+    "kamada_kawai": "layout_kamada_kawai",
+    "lgl": "layout_lgl",
+    "large": "layout_lgl",
+    "large_graph": "layout_lgl",
+    "mds": "layout_mds",
+    "random": "layout_random",
+    "rt": "layout_reingold_tilford",
+    "tree": "layout_reingold_tilford",
+    "reingold_tilford": "layout_reingold_tilford",
+    "rt_circular": "layout_reingold_tilford_circular",
+    "reingold_tilford_circular": "layout_reingold_tilford_circular",
+    "sphere": "layout_sphere",
+    "spherical": "layout_sphere",
+    "star": "layout_star",
+    "sugiyama": "layout_sugiyama",
+}

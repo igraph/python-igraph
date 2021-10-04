@@ -142,3 +142,30 @@ def _delete_edges(graph, *args, **kwds):
     else:
         edge_seq = args[0]
     return GraphBase.delete_edges(graph, edge_seq)
+
+
+def _clear(graph):
+    """Clears the graph, deleting all vertices, edges, and attributes.
+
+    @see: L{delete_vertices} and L{delete_edges}.
+    """
+    graph.delete_vertices()
+    for attr in graph.attributes():
+        del graph[attr]
+
+
+def _as_directed(graph, *args, **kwds):
+    """Returns a directed copy of this graph. Arguments are passed on
+    to L{to_directed()} that is invoked on the copy.
+    """
+    copy = graph.copy()
+    copy.to_directed(*args, **kwds)
+    return copy
+
+def _as_undirected(graph, *args, **kwds):
+    """Returns an undirected copy of this graph. Arguments are passed on
+    to L{to_undirected()} that is invoked on the copy.
+    """
+    copy = graph.copy()
+    copy.to_undirected(*args, **kwds)
+    return copy
