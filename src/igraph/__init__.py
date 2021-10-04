@@ -2842,23 +2842,24 @@ class Graph(GraphBase):
                 return "graphmlz"
 
         if ext in [
-            ".graphml",
-            ".graphmlz",
-            ".lgl",
-            ".ncol",
-            ".pajek",
-            ".gml",
             ".dimacs",
+            ".dl",
+            ".dot",
+            ".edge",
             ".edgelist",
             ".edges",
-            ".edge",
+            ".gml",
+            ".graphml",
+            ".graphmlz",
+            ".gw",
+            ".lgl",
+            ".lgr",
+            ".ncol",
             ".net",
+            ".pajek",
             ".pickle",
             ".picklez",
-            ".dot",
-            ".gw",
-            ".lgr",
-            ".dl",
+            ".svg",
         ]:
             return ext[1:]
 
