@@ -2915,6 +2915,8 @@ class Graph(GraphBase):
         @raises IOError: if the file format can't be identified and
           none was given.
         """
+        if isinstance(f, os.PathLike):
+            f = str(f)
         if format is None:
             format = cls._identify_format(f)
         try:
@@ -2972,6 +2974,8 @@ class Graph(GraphBase):
         @raises IOError: if the file format can't be identified and
           none was given.
         """
+        if isinstance(f, os.PathLike):
+            f = str(f)
         if format is None:
             format = self._identify_format(f)
         try:
