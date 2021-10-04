@@ -1,7 +1,6 @@
 # igraph Python interface changelog
 
-## [Unreleased]
-
+## [Development branch]
 
 ### Added
 
@@ -13,6 +12,22 @@
   dictionary of dictionaries, and to export a graph object back to those
   data structures. See PR [#434](https://github.com/igraph/python-igraph/pull/434)
   for more details.
+
+### Changed
+
+- Changed default value of the `use_vids=...` argument of `Graph.DataFrame()`
+  to `True`, thanks to [@fwitter](https://github.com/user/fwitter).
+
+### Removed
+
+- Removed deprecated `UbiGraphDrawer`.
+
+- Removed deprecated `show()` method of `Plot` instances as well as the feature
+  that automatically shows the plot when `plot()` is called with no target.
+
+## [Unreleased]
+
+### Added
 
 - Added support for graph chordality which was already available in the C core:
   `Graph.is_chordal()`, `Graph.chordal_completion()`, and
@@ -27,15 +42,15 @@
   [@fwitter](https://github.com/user/fwitter). See PR
   [#418](https://github.com/igraph/python-igraph/pull/418) for more details.
 
-- Changed default value of the `use_vids=...` argument of `Graph.DataFrame()`
-  to `True`, thanks to [@fwitter](https://github.com/user/fwitter).
+### Fixed
 
-### Removed
+- Fixed the Apple Silicon wheels so they should now work out of the box on
+  newer Macs with Apple M1 CPUs.
 
-- Removed deprecated `UbiGraphDrawer`.
-
-- Removed deprecated `show()` method of `Plot` instances as well as the feature
-  that automatically shows the plot when `plot()` is called with no target.
+- Fixed a bug that resulted in an unexpected error when plotting a graph with
+  `wrap_labels=True` if the size of one of the vertices was zero or negative,
+  thanks to [@jboynyc](https://github.com/user/jboynyc). See PR
+  [#439](https://github.com/igraph/python-igraph/pull/439) for more details.
 
 ## [0.9.6]
 
@@ -200,7 +215,8 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[unreleased]: https://github.com/igraph/python-igraph/compare/0.9.6..HEAD
+[development branch]: https://github.com/igraph/python-igraph/compare/0.9.6..develop
+[unreleased]: https://github.com/igraph/python-igraph/compare/0.9.6..master
 [0.9.6]: https://github.com/igraph/python-igraph/compare/0.9.5...0.9.6
 [0.9.5]: https://github.com/igraph/python-igraph/compare/0.9.4...0.9.5
 [0.9.4]: https://github.com/igraph/python-igraph/compare/0.9.1...0.9.4

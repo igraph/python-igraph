@@ -1,4 +1,6 @@
 import gzip
+import os
+
 from shutil import copyfileobj
 from warnings import warn
 
@@ -44,23 +46,24 @@ def _identify_format(filename):
             return "graphmlz"
 
     if ext in [
+        ".dimacs",
+        ".dl",
+        ".dot",
+        ".edge",
+        ".edges",
+        ".edgelist",
+        ".gml",
         ".graphml",
         ".graphmlz",
+        ".gw",
         ".lgl",
+        ".lgr",
         ".ncol",
-        ".pajek",
-        ".gml",
-        ".dimacs",
-        ".edgelist",
-        ".edges",
-        ".edge",
         ".net",
+        ".pajek",
         ".pickle",
         ".picklez",
-        ".dot",
-        ".gw",
-        ".lgr",
-        ".dl",
+        ".svg",
     ]:
         return ext[1:]
 
@@ -278,6 +281,8 @@ def _construct_graph_from_file(cls, f, format=None, *args, **kwds):
     @raises IOError: if the file format can't be identified and
       none was given.
     """
+    if isinstance(f, os.PathLike):
+        f = str(f)
     if format is None:
         format = _identify_format(f)
     try:
@@ -475,6 +480,8 @@ def _write_graph_to_file(graph, f, format=None, *args, **kwds):
     @raises IOError: if the file format can't be identified and
       none was given.
     """
+    if isinstance(f, os.PathLike):
+        f = str(f)
     if format is None:
         format = _identify_format(f)
     try:
