@@ -107,6 +107,10 @@ from igraph.clustering import (
     compare_communities,
     split_join_distance,
 )
+from igraph.automorphisms import (
+    _count_automorphisms_vf2,
+    _get_automorphisms_vf2,
+)
 from igraph.cut import Cut, Flow
 from igraph.configuration import Configuration, init as init_configuration
 from igraph.drawing import (
@@ -1060,50 +1064,9 @@ class Graph(GraphBase):
         return TriadCensus(GraphBase.triad_census(self, *args, **kwds))
 
     # Automorphisms
-    def count_automorphisms_vf2(
-        self, color=None, edge_color=None, node_compat_fn=None, edge_compat_fn=None
-    ):
-        """Returns the number of automorphisms of the graph.
+    count_automorphisms_vf2 = _count_automorphisms_vf2
 
-        This function simply calls C{count_isomorphisms_vf2} with the graph
-        itself. See C{count_isomorphisms_vf2} for an explanation of the
-        parameters.
-
-        @return: the number of automorphisms of the graph
-        @see: Graph.count_isomorphisms_vf2
-        """
-        return self.count_isomorphisms_vf2(
-            self,
-            color1=color,
-            color2=color,
-            edge_color1=edge_color,
-            edge_color2=edge_color,
-            node_compat_fn=node_compat_fn,
-            edge_compat_fn=edge_compat_fn,
-        )
-
-    def get_automorphisms_vf2(
-        self, color=None, edge_color=None, node_compat_fn=None, edge_compat_fn=None
-    ):
-        """Returns all the automorphisms of the graph
-
-        This function simply calls C{get_isomorphisms_vf2} with the graph
-        itself. See C{get_isomorphisms_vf2} for an explanation of the
-        parameters.
-
-        @return: a list of lists, each item containing a possible mapping
-          of the graph vertices to itself according to the automorphism
-        @see: Graph.get_isomorphisms_vf2
-        """
-        return self.get_isomorphisms_vf2(
-            self,
-            color1=color,
-            color2=color,
-            edge_color1=edge_color,
-            edge_color2=edge_color,
-            node_compat_fn=node_compat_fn,
-            edge_compat_fn=edge_compat_fn,
-        )
+    get_automorphisms_vf2 = _get_automorphisms_vf2
 
     # Various clustering algorithms -- mostly wrappers around GraphBase
     community_fastgreedy = _community_fastgreedy
@@ -1822,4 +1785,6 @@ del (
     _layout_sugiyama,
     _layout_method_wrapper,
     _3d_version_for,
+    _count_automorphisms_vf2,
+    _get_automorphisms_vf2,
 )
