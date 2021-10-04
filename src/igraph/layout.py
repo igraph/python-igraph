@@ -437,7 +437,7 @@ class Layout:
         self.translate(*translations)
 
 
-def _layout(self, layout=None, *args, **kwds):
+def _layout(graph, layout=None, *args, **kwds):
     """Returns the layout of the graph according to a layout algorithm.
 
     Parameters and keyword arguments not specified here are passed to the
@@ -524,16 +524,16 @@ def _layout(self, layout=None, *args, **kwds):
         elif layout[-2:] == "3d":
             kwds["dim"] = 3
             layout = layout[:-2]
-        method = getattr(self.__class__, self._layout_mapping[layout])
+        method = getattr(graph.__class__, graph._layout_mapping[layout])
     if not hasattr(method, "__call__"):
         raise ValueError("layout method must be callable")
-    layout = method(self, *args, **kwds)
+    layout = method(graph, *args, **kwds)
     if not isinstance(layout, Layout):
         layout = Layout(layout)
     return layout
 
 
-def _layout_auto(self, *args, **kwds):
+def _layout_auto(graph, *args, **kwds):
     """Chooses and runs a suitable layout function based on simple
     topological properties of the graph.
 
@@ -570,8 +570,8 @@ def _layout_auto(self, *args, **kwds):
       3D layout.
     @return: a L{Layout} object.
     """
-    if "layout" in self.attributes():
-        layout = self["layout"]
+    if "layout" in graph.attributes():
+        layout = graph["layout"]
         if isinstance(layout, Layout):
             # Layouts are used intact
             return layout
@@ -582,27 +582,27 @@ def _layout_auto(self, *args, **kwds):
             # Callables are called
             return Layout(layout(*args, **kwds))
         # Try Graph.layout()
-        return self.layout(layout, *args, **kwds)
+        return graph.layout(layout, *args, **kwds)
 
     dim = kwds.get("dim", 2)
-    vattrs = self.vertex_attributes()
+    vattrs = graph.vertex_attributes()
     if "x" in vattrs and "y" in vattrs:
         if dim == 3 and "z" in vattrs:
-            return Layout(list(zip(self.vs["x"], self.vs["y"], self.vs["z"])))
+            return Layout(list(zip(graph.vs["x"], graph.vs["y"], graph.vs["z"])))
         else:
-            return Layout(list(zip(self.vs["x"], self.vs["y"])))
+            return Layout(list(zip(graph.vs["x"], graph.vs["y"])))
 
-    if self.vcount() <= 100 and self.is_connected():
+    if graph.vcount() <= 100 and graph.is_connected():
         algo = "kk"
-    elif self.vcount() <= 1000:
+    elif graph.vcount() <= 1000:
         algo = "fr"
     else:
         algo = "drl"
-    return self.layout(algo, *args, **kwds)
+    return graph.layout(algo, *args, **kwds)
 
 
 def _layout_sugiyama(
-    self,
+    graph,
     layers=None,
     weights=None,
     hgap=1,
@@ -665,12 +665,12 @@ def _layout_sugiyama(
     if not return_extended_graph:
         return Layout(
             GraphBase._layout_sugiyama(
-                self, layers, weights, hgap, vgap, maxiter, return_extended_graph
+                graph, layers, weights, hgap, vgap, maxiter, return_extended_graph
             )
         )
 
     layout, extd_graph, extd_to_orig_eids = GraphBase._layout_sugiyama(
-        self, layers, weights, hgap, vgap, maxiter, return_extended_graph
+        graph, layers, weights, hgap, vgap, maxiter, return_extended_graph
     )
     extd_graph.es["_original_eid"] = extd_to_orig_eids
     return Layout(layout), extd_graph
