@@ -6,25 +6,25 @@ from igraph._igraph import (
 from igraph.statistics import Histogram
 
 
-def _indegree(self, *args, **kwds):
+def _indegree(graph, *args, **kwds):
     """Returns the in-degrees in a list.
 
     See L{degree} for possible arguments.
     """
     kwds["mode"] = IN
-    return self.degree(*args, **kwds)
+    return graph.degree(*args, **kwds)
 
 
-def _outdegree(self, *args, **kwds):
+def _outdegree(graph, *args, **kwds):
     """Returns the out-degrees in a list.
 
     See L{degree} for possible arguments.
     """
     kwds["mode"] = OUT
-    return self.degree(*args, **kwds)
+    return graph.degree(*args, **kwds)
 
 
-def _degree_distribution(self, bin_width=1, *args, **kwds):
+def _degree_distribution(graph, bin_width=1, *args, **kwds):
     """Calculates the degree distribution of the graph.
 
     Unknown keyword arguments are directly passed to L{degree()}.
@@ -33,12 +33,12 @@ def _degree_distribution(self, bin_width=1, *args, **kwds):
     @return: a histogram representing the degree distribution of the
       graph.
     """
-    result = Histogram(bin_width, self.degree(*args, **kwds))
+    result = Histogram(bin_width, graph.degree(*args, **kwds))
     return result
 
 
 def _pagerank(
-    self,
+    graph,
     vertices=None,
     directed=True,
     damping=0.85,
@@ -81,7 +81,7 @@ def _pagerank(
       vertices."""
     if arpack_options is None:
         arpack_options = default_arpack_options
-    return self.personalized_pagerank(
+    return graph.personalized_pagerank(
         vertices,
         directed,
         damping,
