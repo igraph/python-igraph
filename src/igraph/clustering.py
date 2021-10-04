@@ -5,6 +5,7 @@
 from copy import deepcopy
 from io import StringIO
 
+from igraph._igraph import GraphBase
 from igraph import community_to_membership
 from igraph.configuration import Configuration
 from igraph.datatypes import UniqueIdGenerator
@@ -1530,3 +1531,63 @@ def split_join_distance(comm1, comm2, remove_none=False):
 
     vec1, vec2 = _prepare_community_comparison(comm1, comm2, remove_none)
     return igraph._igraph._split_join_distance(vec1, vec2)
+
+
+def _biconnected_components(graph, return_articulation_points=False):
+    """\
+    Calculates the biconnected components of the graph.
+
+    @param return_articulation_points: whether to return the articulation
+      points as well
+    @return: a L{VertexCover} object describing the biconnected components,
+      and optionally the list of articulation points as well
+    """
+    if return_articulation_points:
+        trees, aps = GraphBase.biconnected_components(graph, True)
+    else:
+        trees = GraphBase.biconnected_components(graph, False)
+
+    clusters = []
+    if trees:
+        edgelist = graph.get_edgelist()
+        for tree in trees:
+            cluster = set()
+            for edge_id in tree:
+                cluster.update(edgelist[edge_id])
+            clusters.append(sorted(cluster))
+
+    clustering = VertexCover(graph, clusters)
+
+    if return_articulation_points:
+        return clustering, aps
+    else:
+        return clustering
+
+
+def _cohesive_blocks(graph):
+    """Calculates the cohesive block structure of the graph.
+
+    Cohesive blocking is a method of determining hierarchical subsets of graph
+    vertices based on their structural cohesion (i.e. vertex connectivity).
+    For a given graph G, a subset of its vertices S is said to be maximally
+    k-cohesive if there is no superset of S with vertex connectivity greater
+    than or equal to k. Cohesive blocking is a process through which, given a
+    k-cohesive set of vertices, maximally l-cohesive subsets are recursively
+    identified with l > k. Thus a hierarchy of vertex subsets is obtained in
+    the end, with the entire graph G at its root.
+
+    @return: an instance of L{CohesiveBlocks}. See the documentation of
+      L{CohesiveBlocks} for more information.
+    @see: L{CohesiveBlocks}
+    """
+    return CohesiveBlocks(graph, *GraphBase.cohesive_blocks(graph))
+
+
+def _clusters(graph, mode="strong"):
+    """Calculates the (strong or weak) clusters (connected components) for
+    a given graph.
+
+    @param mode: must be either C{"strong"} or C{"weak"}, depending on the
+      clusters being sought. Optional, defaults to C{"strong"}.
+    @return: a L{VertexClustering} object"""
+    return VertexClustering(graph, GraphBase.clusters(graph, mode))

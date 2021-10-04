@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 """Classes representing cuts and flows on graphs."""
 
+from igraph._igraph import (
+    GraphBase,
+)
 from igraph.clustering import VertexClustering
 
 
@@ -187,3 +190,142 @@ class Flow(Cut):
         larger vertex ID to the smaller.
         """
         return self._flow
+
+
+def _all_st_cuts(graph, source, target):
+    """\
+    Returns all the cuts between the source and target vertices in a
+    directed graph.
+
+    This function lists all edge-cuts between a source and a target vertex.
+    Every cut is listed exactly once.
+
+    @param source: the source vertex ID
+    @param target: the target vertex ID
+    @return: a list of L{Cut} objects.
+
+    @newfield ref: Reference
+    @ref: JS Provan and DR Shier: A paradigm for listing (s,t)-cuts in
+      graphs. Algorithmica 15, 351--372, 1996.
+    """
+    return [
+        Cut(graph, cut=cut, partition=part)
+        for cut, part in zip(*GraphBase.all_st_cuts(graph, source, target))
+    ]
+
+
+def _all_st_mincuts(graph, source, target, capacity=None):
+    """\
+    Returns all the mincuts between the source and target vertices in a
+    directed graph.
+
+    This function lists all minimum edge-cuts between a source and a target
+    vertex.
+
+    @param source: the source vertex ID
+    @param target: the target vertex ID
+    @param capacity: the edge capacities (weights). If C{None}, all
+      edges have equal weight. May also be an attribute name.
+    @return: a list of L{Cut} objects.
+
+    @newfield ref: Reference
+    @ref: JS Provan and DR Shier: A paradigm for listing (s,t)-cuts in
+      graphs. Algorithmica 15, 351--372, 1996.
+    """
+    value, cuts, parts = GraphBase.all_st_mincuts(graph, source, target, capacity)
+    return [
+        Cut(graph, value, cut=cut, partition=part) for cut, part in zip(cuts, parts)
+    ]
+
+
+def _gomory_hu_tree(graph, capacity=None, flow="flow"):
+    """Calculates the Gomory-Hu tree of an undirected graph with optional
+    edge capacities.
+
+    The Gomory-Hu tree is a concise representation of the value of all the
+    maximum flows (or minimum cuts) in a graph. The vertices of the tree
+    correspond exactly to the vertices of the original graph in the same order.
+    Edges of the Gomory-Hu tree are annotated by flow values.  The value of
+    the maximum flow (or minimum cut) between an arbitrary (u,v) vertex
+    pair in the original graph is then given by the minimum flow value (i.e.
+    edge annotation) along the shortest path between u and v in the
+    Gomory-Hu tree.
+
+    @param capacity: the edge capacities (weights). If C{None}, all
+      edges have equal weight. May also be an attribute name.
+    @param flow: the name of the edge attribute in the returned graph
+      in which the flow values will be stored.
+    @return: the Gomory-Hu tree as a L{Graph} object.
+    """
+    graph, flow_values = GraphBase.gomory_hu_tree(graph, capacity)
+    graph.es[flow] = flow_values
+    return graph
+
+
+def _maxflow(graph, source, target, capacity=None):
+    """Returns a maximum flow between the given source and target vertices
+    in a graph.
+
+    A maximum flow from I{source} to I{target} is an assignment of
+    non-negative real numbers to the edges of the graph, satisfying
+    two properties:
+
+        1. For each edge, the flow (i.e. the assigned number) is not
+           more than the capacity of the edge (see the I{capacity}
+           argument)
+
+        2. For every vertex except the source and the target, the
+           incoming flow is the same as the outgoing flow.
+
+    The value of the flow is the incoming flow of the target or the
+    outgoing flow of the source (which are equal). The maximum flow
+    is the maximum possible such value.
+
+    @param capacity: the edge capacities (weights). If C{None}, all
+      edges have equal weight. May also be an attribute name.
+    @return: a L{Flow} object describing the maximum flow
+    """
+    return Flow(graph, *GraphBase.maxflow(graph, source, target, capacity))
+
+
+def _mincut(graph, source=None, target=None, capacity=None):
+    """Calculates the minimum cut between the given source and target vertices
+    or within the whole graph.
+
+    The minimum cut is the minimum set of edges that needs to be removed to
+    separate the source and the target (if they are given) or to disconnect the
+    graph (if neither the source nor the target are given). The minimum is
+    calculated using the weights (capacities) of the edges, so the cut with
+    the minimum total capacity is calculated.
+
+    For undirected graphs and no source and target, the method uses the
+    Stoer-Wagner algorithm. For a given source and target, the method uses the
+    push-relabel algorithm; see the references below.
+
+    @param source: the source vertex ID. If C{None}, the target must also be
+      C{None} and the calculation will be done for the entire graph (i.e.
+      all possible vertex pairs).
+    @param target: the target vertex ID. If C{None}, the source must also be
+      C{None} and the calculation will be done for the entire graph (i.e.
+      all possible vertex pairs).
+    @param capacity: the edge capacities (weights). If C{None}, all
+      edges have equal weight. May also be an attribute name.
+    @return: a L{Cut} object describing the minimum cut
+    """
+    return Cut(graph, *GraphBase.mincut(graph, source, target, capacity))
+
+
+def _st_mincut(graph, source, target, capacity=None):
+    """Calculates the minimum cut between the source and target vertices in a
+    graph.
+
+    @param source: the source vertex ID
+    @param target: the target vertex ID
+    @param capacity: the capacity of the edges. It must be a list or a valid
+      attribute name or C{None}. In the latter case, every edge will have the
+      same capacity.
+    @return: the value of the minimum cut, the IDs of vertices in the
+      first and second partition, and the IDs of edges in the cut,
+      packed in a 4-tuple
+    """
+    return Cut(graph, *GraphBase.st_mincut(graph, source, target, capacity))

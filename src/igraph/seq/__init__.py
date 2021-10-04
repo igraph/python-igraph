@@ -698,3 +698,107 @@ class EdgeSeq(_EdgeSeq):
         return self.select(*args, **kwds)
 
 
+def _graphmethod(func=None, name=None):
+    """Auxiliary decorator
+
+    This decorator allows some methods of L{VertexSeq} and L{EdgeSeq} to
+    call their respective counterparts in L{Graph} to avoid code duplication.
+
+    @param func: the function being decorated. This function will be
+      called on the results of the original L{Graph} method.
+      If C{None}, defaults to the identity function.
+    @param name: the name of the corresponding method in L{Graph}. If
+      C{None}, it defaults to the name of the decorated function.
+    @return: the decorated function
+    """
+    # Delay import to avoid cycles
+    from igraph import Graph
+
+    if name is None:
+        name = func.__name__
+    method = getattr(Graph, name)
+
+    if hasattr(func, "__call__"):
+
+        def decorated(*args, **kwds):
+            self = args[0].graph
+            return func(args[0], method(self, *args, **kwds))
+
+    else:
+
+        def decorated(*args, **kwds):
+            self = args[0].graph
+            return method(self, *args, **kwds)
+
+    decorated.__name__ = name
+    decorated.__doc__ = """Proxy method to L{Graph.%(name)s()}
+
+This method calls the C{%(name)s()} method of the L{Graph} class
+restricted to this sequence, and returns the result.
+
+@see: Graph.%(name)s() for details.
+""" % {
+        "name": name
+    }
+
+    return decorated
+
+
+def _add_proxy_methods():
+
+    # Proxy methods for VertexSeq and EdgeSeq that forward their arguments to
+    # the corresponding Graph method are constructed here. Proxy methods for
+    # Vertex and Edge are added in the C source code. Make sure that you update
+    # the C source whenever you add a proxy method here if that makes sense for
+    # an individual vertex or edge
+    decorated_methods = {}
+    decorated_methods[VertexSeq] = [
+        "degree",
+        "betweenness",
+        "bibcoupling",
+        "closeness",
+        "cocitation",
+        "constraint",
+        "diversity",
+        "eccentricity",
+        "get_shortest_paths",
+        "maxdegree",
+        "pagerank",
+        "personalized_pagerank",
+        "shortest_paths",
+        "similarity_dice",
+        "similarity_jaccard",
+        "subgraph",
+        "indegree",
+        "outdegree",
+        "isoclass",
+        "delete_vertices",
+        "is_separator",
+        "is_minimal_separator",
+    ]
+    decorated_methods[EdgeSeq] = [
+        "count_multiple",
+        "delete_edges",
+        "is_loop",
+        "is_multiple",
+        "is_mutual",
+        "subgraph_edges",
+    ]
+
+    rename_methods = {}
+    rename_methods[VertexSeq] = {"delete_vertices": "delete"}
+    rename_methods[EdgeSeq] = {"delete_edges": "delete", "subgraph_edges": "subgraph"}
+
+    for cls, methods in decorated_methods.items():
+        for method in methods:
+            new_method_name = rename_methods[cls].get(method, method)
+            setattr(cls, new_method_name, _graphmethod(None, method))
+
+    setattr(
+        EdgeSeq,
+        "edge_betweenness",
+        _graphmethod(
+            lambda self, result: [result[i] for i in self.indices], "edge_betweenness"
+        ),
+    )
+
