@@ -12759,7 +12759,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
      "the Chvatal graph, the Petersen graph or the Tutte graph. This method\n"
      "generates one of them based on its name (case insensitive). See the\n"
      "documentation of the C interface of C{igraph} for the names available:\n"
-     "U{http://igraph.org/doc/c}.\n\n"
+     "U{https://igraph.org/c/doc}.\n\n"
      "@param name: the name of the graph to be generated.\n"
     },
 
@@ -13113,7 +13113,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "      graphs are to be generated and execution time is not a concern.\n"
    "      igraph uses the original implementation of Fabien Viger; see the\n"
    "      following URL and the paper cited on it for the details of the\n"
-   "      algorithm: U{http://www-rp.lip6.fr/~latapy/FV/generation.html}.\n"
+   "      algorithm: U{https://www-complexnetworks.lip6.fr/~latapy/FV/generation.html}.\n"
   },
 
   /* interface to igraph_isoclass_create */
@@ -15192,8 +15192,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "It is also useful for creating graphs from \"named\" (and\n"
    "optionally weighted) edge lists.\n\n"
    "This format is used by the Large Graph Layout program. See the\n"
-   "U{documentation of LGL <http://bioinformatics.icmb.utexas.edu/lgl/>}\n"
-   "regarding the exact format description.\n\n"
+   "U{repository of LGL <https://github.com/TheOpteProject/LGL/>}\n"
+   "for more information.\n\n"
    "LGL originally cannot deal with graphs containing multiple or loop\n"
    "edges, but this condition is not checked here, as igraph is happy\n"
    "with these.\n\n"
