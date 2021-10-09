@@ -4,7 +4,7 @@ on: [push, pull_request]
 env:
   CIBW_TEST_COMMAND: "cd {project} && python -m pytest tests"
   CIBW_TEST_EXTRAS: "test"
-  # skip testing on Python 3.10 until NumPy/SciPy/Pandas publish wheels
+  # skip testing on Python 3.10 until SciPy publishes wheels
   CIBW_TEST_SKIP: "cp310-*"
 
 jobs:
