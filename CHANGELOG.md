@@ -11,6 +11,11 @@
   Thanks to [@cptwunderlich](https://github.com/cptwunderlich) for requesting
   this.
 
+- `Graph.write()` and `Graph.Read()` now accept `Path` objects as well as
+  strings. See PR [#441](https://github.com/igraph/python-igraph/pull/441) for
+  more details. Thanks to [@jboynyc](https://github.com/jboynyc) for the
+  implementation.
+
 ### Changed
 
 - Improved performance of `Graph.DataFrame()`, thanks to
