@@ -61,7 +61,7 @@ The unit tests of `python-igraph` are implemented with the standard `unittest` m
 run them like this from your virtualenv:
 
   $ python -m unittest discover
-  
+
 As usual, you can also do this without activating the virtualenv:
 
   $ venv/bin/python -m unittest discover
@@ -74,14 +74,6 @@ Users of the `Anaconda Python distribution <https://www.anaconda.com/distributio
 using conda. That can be achieved by running the following command:
 
   $ conda install -c conda-forge python-igraph
-
-To test the installed package, launch Python and run the following:
-
-  >>> import igraph.test
-  >>> igraph.test.run_tests()
-
-The above commands run the bundled test cases to ensure that everything is fine with your
-|igraph| installation.
 
 |igraph| on Windows
 -------------------
