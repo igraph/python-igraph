@@ -3143,7 +3143,8 @@ int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o, igraph_pagerank_algo_t
  * \brief Converts a Python object to an igraph \c igraph_edge_type_sw_t
  */
 int igraphmodule_PyObject_to_edge_type_sw_t(PyObject *o, igraph_edge_type_sw_t *result) {
-  int result_int, retval;
+  int result_int = *result;
+  int retval;
   static igraphmodule_enum_translation_table_entry_t edge_type_sw_tt[] = {
         {"simple", IGRAPH_SIMPLE_SW},
         {"loops", IGRAPH_LOOPS_SW},
