@@ -11,6 +11,7 @@ src/igraph/*.so
 .eggs/
 .tox
 .venv/
+.venv-*/
 .vscode/
 vendor/build/
 vendor/install/
