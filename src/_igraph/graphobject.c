@@ -2858,7 +2858,7 @@ PyObject *igraphmodule_Graph_Realize_Degree_Sequence(PyTypeObject *type,
   if (igraphmodule_PyObject_to_vector_t(outdeg_o, &outdeg, 0))
     return NULL;
 
-  /* Indegree vector, PyNone means undirected graph */
+  /* Indegree vector, Py_None means undirected graph */
   if (indeg_o != Py_None) {
     if (igraphmodule_PyObject_to_vector_t(indeg_o, &indeg, 0)) {
       igraph_vector_destroy(&outdeg);
@@ -2870,15 +2870,17 @@ PyObject *igraphmodule_Graph_Realize_Degree_Sequence(PyTypeObject *type,
   /* C function takes care of multi-sw and directed corner case */
   if (igraph_realize_degree_sequence(&g, &outdeg, indegp, allowed_edge_types, method)) {
     igraph_vector_destroy(&outdeg);
-    if (indegp != 0)
-      igraph_vector_destroy(&indeg);
+    if (indegp != 0) {
+      igraph_vector_destroy(indegp);
+    }
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
   igraph_vector_destroy(&outdeg);
-  if (indegp != 0)
-    igraph_vector_destroy(&indeg);
+  if (indegp != 0) {
+    igraph_vector_destroy(indegp);
+  }
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
 
