@@ -160,7 +160,7 @@ int igraphmodule_PyObject_to_enum(PyObject *o,
  * \param result the result is returned here. The default value must be
  *   passed in before calling this function, since this value is
  *   returned untouched if the given Python object is Py_None.
- * \return 0 if everything is OK, 1 otherwise. An appropriate exception
+ * \return 0 if everything is OK, -1 otherwise. An appropriate exception
  *   is raised in this case.
  */
 int igraphmodule_PyObject_to_enum_strict(PyObject *o,
@@ -168,32 +168,40 @@ int igraphmodule_PyObject_to_enum_strict(PyObject *o,
   int *result) {
     char *s, *s2;
 
-    if (o == 0 || o == Py_None)
+    if (o == 0 || o == Py_None) {
       return 0;
-    if (PyLong_Check(o))
+    }
+
+    if (PyLong_Check(o)) {
       return PyLong_AsInt(o, result);
+    }
+
     s = PyUnicode_CopyAsString(o);
     if (s == 0) {
-        PyErr_SetString(PyExc_TypeError, "int, long or string expected");
-        return -1;
+      PyErr_SetString(PyExc_TypeError, "int, long or string expected");
+      return -1;
     }
+
     /* Convert string to lowercase */
-    for (s2=s; *s2; s2++)
+    for (s2 = s; *s2; s2++) {
       *s2 = tolower(*s2);
+    }
+
     /* Search for exact matches */
     while (table->name != 0) {
-        if (strcmp(s, table->name) == 0) {
-          *result = table->value;
-          free(s);
-          return 0;
-        }
-        table++;
+      if (strcmp(s, table->name) == 0) {
+        *result = table->value;
+        free(s);
+        return 0;
+      }
+      table++;
     }
+
     free(s);
     PyErr_SetObject(PyExc_ValueError, o);
+
     return -1;
 }
-
 
 /**
  * \ingroup python_interface_conversion
