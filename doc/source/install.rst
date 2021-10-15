@@ -39,7 +39,7 @@ that you install it from the `Python Package Index
 and macOS. We aim to provide binary packages for the three latest minor versions of Python 3.x.
 
 To install |python-igraph| globally, use the following command (you probably need
-administrator/root priviledges)::
+administrator/root privileges)::
 
   $ pip install python-igraph
 
