@@ -104,7 +104,7 @@ Graph plotting in |igraph| is implemented using a third-party package called `Ca
 <http://www.cairographics.org>`_. If you want to create publication-quality plots in |igraph|
 on macOS, you must also install Cairo and its Python bindings. The Cairo project does not
 provide pre-compiled binaries for macOS, but the `Homebrew package manager
-<https://brew.sh/>`, so you can use it to install Cairo. After installing Homebrew itself, you
+<https://brew.sh/>`_, so you can use it to install Cairo. After installing Homebrew itself, you
 can run::
 
   $ brew install cairo
@@ -172,8 +172,8 @@ First, obtain the bleeding-edge source code from Github::
 
   $ git clone https://github.com/igraph/python-igraph.git
 
-or download a recent release from `PyPI <https://pypi.org/project/python-igraph/#files>` or from the
-`Github releases page <https://github.com/igraph/python-igraph/releases/>`. Decompress the archive if
+or download a recent release from `PyPI <https://pypi.org/project/python-igraph/#files>`_ or from the
+`Github releases page <https://github.com/igraph/python-igraph/releases/>`_. Decompress the archive if
 needed.
 
 Second, go into the folder::
