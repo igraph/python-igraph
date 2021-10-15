@@ -32,6 +32,10 @@
   thanks to [@jboynyc](https://github.com/user/jboynyc). See PR
   [#439](https://github.com/igraph/python-igraph/pull/439) for more details.
 
+- Fixed a bug that sometimes caused random crashes in
+  `Graph.Realize_Degree_Sequence()` and at other times caused weird errors in
+  `Graph.Read_Ncol()` when it received an invalid data type.
+
 ## [0.9.6]
 
 ### Fixed
