@@ -57,15 +57,6 @@ in it directly:
   $ python -m venv venv
   $ venv/bin/pip install python-igraph
 
-The unit tests of `python-igraph` are implemented with the standard `unittest` module so you can
-run them like this from your virtualenv:
-
-  $ python -m unittest discover
-
-As usual, you can also do this without activating the virtualenv:
-
-  $ venv/bin/python -m unittest discover
-
 Installing |igraph| via Conda
 -----------------------------
 
@@ -214,3 +205,11 @@ script to install it from there:
   $ python setup.py install
 
 .. note:: The `setup.py` script takes a number of options to customize the install location.
+
+Testing your installation
+-------------------------
+
+The unit tests of `python-igraph` are implemented with the standard `unittest` module so you can
+run them like this from your the source folder:
+
+  $ python -m unittest discover
