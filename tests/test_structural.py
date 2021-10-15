@@ -725,7 +725,6 @@ class MiscTests(unittest.TestCase):
         g = Graph.Famous("petersen")
         alpha, alpham1 = g.maximum_cardinality_search()
 
-        print(repr(alpha), repr(alpham1))
         self.assert_valid_maximum_cardinality_search_result(g, alpha, alpham1)
 
         g = Graph.GRG(100, 0.2)

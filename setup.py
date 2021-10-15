@@ -378,14 +378,13 @@ class BuildConfiguration:
         of igraph before compiling the Python extension.
         """
         from setuptools.command.build_ext import build_ext
-        from distutils.sysconfig import get_python_inc
 
         buildcfg = self
 
         class custom_build_ext(build_ext):
             def run(self):
                 # Bail out if we don't have the Python include files
-                include_dir = get_python_inc()
+                include_dir = sysconfig.get_path('include')
                 if not os.path.isfile(os.path.join(include_dir, "Python.h")):
                     print("You will need the Python headers to compile this extension.")
                     sys.exit(1)

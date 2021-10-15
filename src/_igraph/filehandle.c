@@ -33,6 +33,7 @@ static int igraphmodule_i_filehandle_init_cpython_3(igraphmodule_filehandle_t* h
         return 1;
     }
 
+    handle->fp = 0;
     handle->need_close = 0;
     handle->object = 0;
 
@@ -85,7 +86,9 @@ static int igraphmodule_i_filehandle_init_pypy_3(igraphmodule_filehandle_t* hand
         return 1;
     }
 
+    handle->fp = 0;
     handle->need_close = 0;
+    handle->object = 0;
 
     if (PyBaseString_Check(object)) {
         /* We have received a string; we need to open the file denoted by this
@@ -116,6 +119,7 @@ static int igraphmodule_i_filehandle_init_pypy_3(igraphmodule_filehandle_t* hand
         /* This already called Py_DECREF(handle->object), no need to call it */
         return 1;
     }
+
     handle->fp = fdopen(fp, mode);
     if (handle->fp == 0) {
         igraphmodule_filehandle_destroy(handle);
@@ -156,9 +160,8 @@ void igraphmodule_filehandle_destroy(igraphmodule_filehandle_t* handle) {
         if (handle->need_close && !handle->object) {
             fclose(handle->fp);
         }
+        handle->fp = 0;
     }
-
-    handle->fp = 0;
     
     if (handle->object != 0) {
         /* igraphmodule_PyFile_Close might mess up the stored exception, so let's

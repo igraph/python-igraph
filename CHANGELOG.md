@@ -27,6 +27,14 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- `setup.py` no longer uses `distutils`, thanks to
+  [@limburgher](https://github.com/limburgher).
+  ([#449](https://github.com/igraph/python-igraph/pull/449))
+
+## [0.9.7]
+
 ### Added
 
 - Added support for graph chordality which was already available in the C core:
@@ -35,6 +43,11 @@
   [#437](https://github.com/igraph/python-igraph/pull/437) for more details.
   Thanks to [@cptwunderlich](https://github.com/cptwunderlich) for requesting
   this.
+
+- `Graph.write()` and `Graph.Read()` now accept `Path` objects as well as
+  strings. See PR [#441](https://github.com/igraph/python-igraph/pull/441) for
+  more details. Thanks to [@jboynyc](https://github.com/jboynyc) for the
+  implementation.
 
 ### Changed
 
@@ -51,6 +64,10 @@
   `wrap_labels=True` if the size of one of the vertices was zero or negative,
   thanks to [@jboynyc](https://github.com/user/jboynyc). See PR
   [#439](https://github.com/igraph/python-igraph/pull/439) for more details.
+
+- Fixed a bug that sometimes caused random crashes in
+  `Graph.Realize_Degree_Sequence()` and at other times caused weird errors in
+  `Graph.Read_Ncol()` when it received an invalid data type.
 
 ## [0.9.6]
 
@@ -215,8 +232,9 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[development branch]: https://github.com/igraph/python-igraph/compare/0.9.6..develop
-[unreleased]: https://github.com/igraph/python-igraph/compare/0.9.6..master
+[development branch]: https://github.com/igraph/python-igraph/compare/0.9.7..develop
+[unreleased]: https://github.com/igraph/python-igraph/compare/0.9.7..master
+[0.9.7]: https://github.com/igraph/python-igraph/compare/0.9.6...0.9.7
 [0.9.6]: https://github.com/igraph/python-igraph/compare/0.9.5...0.9.6
 [0.9.5]: https://github.com/igraph/python-igraph/compare/0.9.4...0.9.5
 [0.9.4]: https://github.com/igraph/python-igraph/compare/0.9.1...0.9.4

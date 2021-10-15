@@ -201,6 +201,13 @@ class ForeignTests(unittest.TestCase):
                 "name" in g.vertex_attributes() and "weight" not in g.edge_attributes()
             )
 
+    @unittest.skipIf(pd is None, "test case depends on Pandas")
+    def testNCOLWithDataFrame(self):
+        # Regression test for https://github.com/igraph/python-igraph/issues/446
+        from pandas import DataFrame
+        df = DataFrame({'from': [1, 2], 'to': [2, 3]})
+        self.assertRaises(TypeError, Graph.Read_Ncol, df)
+
     def testLGL(self):
         with temporary_file(
             """\
