@@ -73,8 +73,6 @@ Precompiled Windows wheels for |igraph|'s Python interface are available on the 
 <http://pypi.python.org/pypi/python-igraph>`_ (see `Installing igraph from the Python Package
 Index`_).
 
-TODO: Check if Windows still requires special steps to get PyCairo running.
-
 Graph plotting in |igraph| is implemented using a third-party package called `Cairo
 <http://www.cairographics.org>`_. If you want to create publication-quality plots in |igraph|
 on Windows, you must also install Cairo and its Python bindings. The Cairo project does not
@@ -148,6 +146,7 @@ Both will be covered in the next sections.
 
 Compiling using pip
 -------------------
+
 If you want the development version of |python-igraph|, call::
 
   $ pip install git+https://github.com/igraph/python-igraph
@@ -165,6 +164,7 @@ If you want the latest release from PyPI but prefer to (or have to) install from
 
 Compiling step by step
 ----------------------
+
 This section should be rarely used in practice but explains how to compile and install |python-igraph| step
 by step without ``pip``.
 

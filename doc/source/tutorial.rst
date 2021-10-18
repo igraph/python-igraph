@@ -32,18 +32,18 @@ ordinary Python module at the Python prompt::
 This imports |igraph|'s objects and methods inside an own namespace called :mod:`igraph`. Whenever
 you would like to call any of |igraph|'s methods, you will have to provide the appropriate
 namespace-qualification. E.g., to check which |igraph| version you are using, you could do the
-following:
+following::
 
->>> import igraph
->>> print(igraph.__version__)
-0.9.6
+  >>> import igraph
+  >>> print(igraph.__version__)
+  0.9.6
 
 Another way to make use of |igraph| is to import all its objects and methods into the main
 Python namespace (so you do not have to type the namespace-qualification every time).
 This is fine as long as your own objects and methods do not conflict with the ones
-provided by |igraph|:
+provided by |igraph|::
 
->>> from igraph import *
+  >>> from igraph import *
 
 The third way to start |igraph| is to simply call the startup script that was supplied with
 the |igraph| package you installed. Not too surprisingly, the script is called :command:`igraph`,
@@ -88,32 +88,34 @@ Creating a graph from scratch
 =============================
 
 Assuming that you have started |igraph| successfully, it is time to create your first
-|igraph| graph. This is pretty simple:
+|igraph| graph. This is pretty simple::
 
->>> g = Graph()
+  >>> g = Graph()
 
 The above statement created an undirected graph with no vertices or edges and assigned it
 to the variable `g`. To confirm that it's really an |igraph| graph, we can
-print it:
+print it::
 
->>> g
-<igraph.Graph object at 0x4c87a0>
+  >>> g
+  <igraph.Graph object at 0x4c87a0>
 
 This tells us that `g` is an instance of |igraph|'s :class:`Graph` class and
 that it is currently living at the memory address ``0x4c87a0`` (the exact
 output will almost surely be different for your platform). To obtain a more
 user-friendly output, we can try to print the graph using Python's
-``print`` statement:
+``print`` statement::
 
->>> print(g)
-IGRAPH U--- 0 0 --
+  >>> print(g)
+  IGRAPH U--- 0 0 --
 
 This summary consists of `IGRAPH`, followed by a four-character long code, the number of vertices, the number of edges, two dashes (`--`) and the name of the graph (i.e. the contents of the `name` attribute, if any)
 
 This is not too exciting so far; a graph with no vertices and no edges is not really useful
 for us. Let's add some vertices first!
 
->>> g.add_vertices(3)
+::
+
+  >>> g.add_vertices(3)
 
 :meth:`Graph.add_vertices` (i.e., the :meth:`~Graph.add_vertices` method of the :class:`Graph`
 class) adds the given number of vertices to the graph.
@@ -125,20 +127,20 @@ first vertex of your graph has index zero, the second vertex has index 1 and so 
 Edges are specified by pairs of integers, so ``[(0,1), (1,2)]`` denotes a list of two
 edges: one between the first and the second, and the other one between the second and the
 third vertices of the graph. Passing this list to :meth:`Graph.add_edges` adds these two edges
-to your graph:
+to your graph::
 
->>> g.add_edges([(0,1), (1,2)])
+  >>> g.add_edges([(0,1), (1,2)])
 
 :meth:`~Graph.add_edges` is clever enough to figure out what you want to do in most of the
 cases: if you supply a single pair of integers, it will automatically assume that you want
 to add a single edge. However, if you try to add edges to vertices with invalid IDs (i.e.,
 you try to add an edge to vertex 5 when you only have three vertices), you will get an
-exception:
+exception::
 
->>> g.add_edges((5, 0))
-Traceback (most recent call last):
-  File "<stdin>", line 6, in <module>
-TypeError: iterable must return pairs of integers or strings
+  >>> g.add_edges((5, 0))
+  Traceback (most recent call last):
+    File "<stdin>", line 6, in <module>
+  TypeError: iterable must return pairs of integers or strings
 
 Most |igraph| functions will raise an :exc:`igraph.InternalError` if
 something goes wrong. The message corresponding to the exception gives you a
@@ -148,15 +150,15 @@ occurred. The exact filename and line number may not be too informative to you,
 but it is invaluable for |igraph| developers if you think you found an error in
 |igraph| and you want to report it.
 
-Let us go on with our graph ``g`` and add some more vertices and edges to it:
+Let us go on with our graph ``g`` and add some more vertices and edges to it::
 
->>> g.add_edges([(2, 0)])
->>> g.add_vertices(3)
->>> g.add_edges([(2, 3), (3, 4), (4, 5), (5, 3)])
->>> print(g)
-IGRAPH U---- 6 7 --
-+ edges:
-0--1 1--2 0--2 2--3 3--4 4--5 3--5
+  >>> g.add_edges([(2, 0)])
+  >>> g.add_vertices(3)
+  >>> g.add_edges([(2, 3), (3, 4), (4, 5), (5, 3)])
+  >>> print(g)
+  IGRAPH U---- 6 7 --
+  + edges:
+  0--1 1--2 0--2 2--3 3--4 4--5 3--5
 
 Now, this is better. We have an undirected graph with six vertices and seven
 edges, and you can also see the list of edges in |igraph|'s output.  Edges also
@@ -174,11 +176,13 @@ vertices at its two endpoints, you can use :meth:`~Graph.get_eid` to get the
 edge ID. Remember, all these are *methods* of the :class:`Graph` class and you
 must call them on the appropriate :class:`Graph` instance!
 
->>> g.get_eid(2, 3)
-3
->>> g.delete_edges(3)
->>> summary(g)
-IGRAPH U--- 6 6 --
+::
+
+  >>> g.get_eid(2, 3)
+  3
+  >>> g.delete_edges(3)
+  >>> summary(g)
+  IGRAPH U--- 6 6 --
 
 :meth:`summary` is a new command that you haven't seen before; it is a member of |igraph|'s
 own namespace and it can be used to get an overview of a given graph object. Its output
@@ -198,20 +202,20 @@ creating trees, regular lattices, rings, extended chordal rings, several famous 
 and so on, while stochastic generators are used to create Erdős-Rényi random networks,
 Barabási-Albert networks, geometric random graphs and such. |igraph| has too many
 generators to cover them all in this tutorial, so we will only try a
-deterministic and a stochastic generator instead:
+deterministic and a stochastic generator instead::
 
->>> g = Graph.Tree(127, 2)
->>> summary(g)
-IGRAPH U--- 127 126 --
+  >>> g = Graph.Tree(127, 2)
+  >>> summary(g)
+  IGRAPH U--- 127 126 --
 
 :meth:`Graph.Tree` generates a regular tree graph. The one that we generated has 127
 vertices and each vertex (apart from the leaves) has two children (and of course one
 parent). No matter how many times you call :meth:`Graph.Tree`, the generated graph will
-always be the same if you use the same parameters:
+always be the same if you use the same parameters::
 
->>> g2 = Graph.Tree(127, 2)
->>> g2.get_edgelist() == g.get_edgelist()
-True
+  >>> g2 = Graph.Tree(127, 2)
+  >>> g2.get_edgelist() == g.get_edgelist()
+  True
 
 The above code snippet also shows you that the :meth:`~Graph.get_edgelist()` method
 of :class:`Graph` graph objects return a list that contains pairs of integers, one for
@@ -219,15 +223,19 @@ each edge. The first member of the pair is the source vertex ID and the second m
 is the target vertex ID of the corresponding edge. This list is too long, so let's
 just print the first 10 elements!
 
->>> g2.get_edgelist()[0:10]
-[(0, 1), (0, 2), (1, 3), (1, 4), (2, 5), (2, 6), (3, 7), (3, 8), (4, 9), (4, 10)]
+::
+
+  >>> g2.get_edgelist()[0:10]
+  [(0, 1), (0, 2), (1, 3), (1, 4), (2, 5), (2, 6), (3, 7), (3, 8), (4, 9), (4, 10)]
 
 Let's do the same with a stochastic generator!
 
->>> g = Graph.GRG(100, 0.2)
->>> summary(g)
-IGRAPH U---- 100 516 --
-+ attr: x (v), y (v)
+::
+
+  >>> g = Graph.GRG(100, 0.2)
+  >>> summary(g)
+  IGRAPH U---- 100 516 --
+  + attr: x (v), y (v)
 
 where ``+ attr`` shows names of the attributes for vertices (v) and edges (e).
 
@@ -238,13 +246,13 @@ the random nature of the algorithm, chances are that the exact graph you got is 
 from the one that was generated when I wrote this tutorial, hence the values above in the
 summary will not match the ones you got. This is normal and expected. Even if you generate
 two geometric random graphs on the same machine, they will be different for the same parameter
-set:
+set::
 
->>> g2 = Graph.GRG(100, 0.2)
->>> g.get_edgelist() == g2.get_edgelist()
-False
->>> g.isomorphic(g2)
-False
+  >>> g2 = Graph.GRG(100, 0.2)
+  >>> g.get_edgelist() == g2.get_edgelist()
+  False
+  >>> g.isomorphic(g2)
+  False
 
 :meth:`~Graph.isomorphic()` tells you whether two graphs are isomorphic or not. In general,
 it might take quite a lot of time, especially for large graphs, but in our case, the
@@ -280,21 +288,23 @@ and the value representing the attribute itself.
 
 Let us create a simple imaginary social network the usual way by hand.
 
->>> g = Graph([(0,1), (0,2), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)])
+::
+
+  >>> g = Graph([(0,1), (0,2), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)])
 
 Now, let us assume that we want to store the names, ages and genders of people in this network as
 vertex attributes, and for every connection, we want to store whether this is an informal
 friendship tie or a formal tie. Every :class:`Graph` object contains two special members
 called :attr:`~Graph.vs` and :attr:`~Graph.es`, standing for the sequence of all vertices
 and all edges, respectively. If you try to use :attr:`~Graph.vs` or :attr:`~Graph.es` as
-a Python dictionary, you will manipulate the attribute storage area of the graph:
+a Python dictionary, you will manipulate the attribute storage area of the graph::
 
->>> g.vs
-<igraph.VertexSeq object at 0x1b23b90>
->>> g.vs["name"] = ["Alice", "Bob", "Claire", "Dennis", "Esther", "Frank", "George"]
->>> g.vs["age"] = [25, 31, 18, 47, 22, 23, 50]
->>> g.vs["gender"] = ["f", "m", "f", "m", "f", "m", "m"]
->>> g.es["is_formal"] = [False, False, True, True, True, False, True, False, False]
+  >>> g.vs
+  <igraph.VertexSeq object at 0x1b23b90>
+  >>> g.vs["name"] = ["Alice", "Bob", "Claire", "Dennis", "Esther", "Frank", "George"]
+  >>> g.vs["age"] = [25, 31, 18, 47, 22, 23, 50]
+  >>> g.vs["gender"] = ["f", "m", "f", "m", "f", "m", "m"]
+  >>> g.es["is_formal"] = [False, False, True, True, True, False, True, False, False]
 
 Whenever you use :attr:`~Graph.vs` or :attr:`~Graph.es` as a dictionary, you are assigning
 attributes to *all* vertices/edges of the graph. However, you can simply alter the attributes
@@ -303,15 +313,15 @@ with integers as if they were lists (remember, they are sequences, they contain 
 vertices or all the edges). When you index them, you obtain a :class:`Vertex` or
 :class:`Edge` object, which refers to (I am sure you already guessed that) a single vertex
 or a single edge of the graph. :class:`Vertex` and :class:`Edge` objects can also be used
-as dictionaries to alter the attributes of that single vertex or edge:
+as dictionaries to alter the attributes of that single vertex or edge::
 
->>> g.es[0]
-igraph.Edge(<igraph.Graph object at 0x4c87a0>,0,{'is_formal': False})
->>> g.es[0].attributes()
-{'is_formal': False}
->>> g.es[0]["is_formal"] = True
->>> g.es[0]
-igraph.Edge(<igraph.Graph object at 0x4c87a0>,0,{'is_formal': True})
+  >>> g.es[0]
+  igraph.Edge(<igraph.Graph object at 0x4c87a0>,0,{'is_formal': False})
+  >>> g.es[0].attributes()
+  {'is_formal': False}
+  >>> g.es[0]["is_formal"] = True
+  >>> g.es[0]
+  igraph.Edge(<igraph.Graph object at 0x4c87a0>,0,{'is_formal': True})
 
 The above snippet illustrates that indexing an :class:`EdgeSeq` object returns
 :class:`Edge` objects; the representation above shows the graph the object belongs to,
@@ -332,23 +342,23 @@ we will see methods that can filter :class:`EdgeSeq` objects and return other
 :class:`EdgeSeq` objects that are restricted to a subset of edges, and of course the same
 applies to :class:`VertexSeq` objects. But before we dive into that, let's see how we
 can assign attributes to the whole graph. Not too surprisingly, :class:`Graph` objects
-themselves can also behave as dictionaries:
+themselves can also behave as dictionaries::
 
->>> g["date"] = "2009-01-10"
->>> print(g["date"])
-2009-01-10
+  >>> g["date"] = "2009-01-10"
+  >>> print(g["date"])
+  2009-01-10
 
 Finally, it should be mentioned that attributes can be deleted by the Python keyword
-``del`` just as you would do with any member of an ordinary dictionary:
+``del`` just as you would do with any member of an ordinary dictionary::
 
->>> g.vs[3]["foo"] = "bar"
->>> g.vs["foo"]
-[None, None, None, 'bar', None, None, None]
->>> del g.vs["foo"]
->>> g.vs["foo"]
-Traceback (most recent call last):
-  File "<stdin>", line 25, in <module>
-KeyError: 'Attribute does not exist'
+  >>> g.vs[3]["foo"] = "bar"
+  >>> g.vs["foo"]
+  [None, None, None, 'bar', None, None, None]
+  >>> del g.vs["foo"]
+  >>> g.vs["foo"]
+  Traceback (most recent call last):
+    File "<stdin>", line 25, in <module>
+  KeyError: 'Attribute does not exist'
 
 Structural properties of graphs
 ===============================
@@ -363,20 +373,20 @@ Probably the simplest property one can think of is the :dfn:`vertex degree`. The
 degree of a vertex equals the number of edges adjacent to it. In case of directed
 networks, we can also define :dfn:`in-degree` (the number of edges pointing towards
 the vertex) and :dfn:`out-degree` (the number of edges originating from the vertex).
-|igraph| is able to calculate all of them using a simple syntax:
+|igraph| is able to calculate all of them using a simple syntax::
 
->>> g.degree()
-[3, 1, 4, 3, 2, 3, 2]
+  >>> g.degree()
+  [3, 1, 4, 3, 2, 3, 2]
 
 If the graph was directed, we would have been able to calculate the in- and out-degrees
 separately using ``g.degree(mode="in")`` and ``g.degree(mode="out")``. You can
 also pass a single vertex ID or a list of vertex IDs to :meth:`~Graph.degree` if you
-want to calculate the degrees for only a subset of vertices:
+want to calculate the degrees for only a subset of vertices::
 
->>> g.degree(6)
-2
->>> g.degree([2,3,4])
-[4, 3, 2]
+  >>> g.degree(6)
+  2
+  >>> g.degree([2,3,4])
+  [4, 3, 2]
 
 This calling convention applies to most of the structural properties |igraph| can
 calculate. For vertex properties, the methods accept a vertex ID or a list of vertex IDs
@@ -397,30 +407,30 @@ restrict them to exactly the vertices or edges you want.
 Besides degree, |igraph| includes built-in routines to calculate many other centrality
 properties, including vertex and edge betweenness (:meth:`Graph.betweenness`,
 :meth:`Graph.edge_betweenness`) or Google's PageRank (:meth:`Graph.pagerank`)
-just to name a few. Here we just illustrate edge betweenness:
+just to name a few. Here we just illustrate edge betweenness::
 
->>> g.edge_betweenness()
-[6.0, 6.0, 4.0, 2.0, 4.0, 3.0, 4.0, 3.0. 4.0]
+  >>> g.edge_betweenness()
+  [6.0, 6.0, 4.0, 2.0, 4.0, 3.0, 4.0, 3.0. 4.0]
 
 Now we can also figure out which connections have the highest betweenness centrality
-with some Python magic:
+with some Python magic::
 
->>> ebs = g.edge_betweenness()
->>> max_eb = max(ebs)
->>> [g.es[idx].tuple for idx, eb in enumerate(ebs) if eb == max_eb]
-[(0, 1), (0, 2)]
+  >>> ebs = g.edge_betweenness()
+  >>> max_eb = max(ebs)
+  >>> [g.es[idx].tuple for idx, eb in enumerate(ebs) if eb == max_eb]
+  [(0, 1), (0, 2)]
 
 Most structural properties can also be retrieved for a subset of vertices or edges
 or for a single vertex or edge by calling the appropriate method on the
 :class:`VertexSeq`, :class:`EdgeSeq`, :class:`Vertex` or :class:`Edge` object of
-interest:
+interest::
 
->>> g.vs.degree()
-[3, 1, 4, 3, 2, 3, 2]
->>> g.es.edge_betweenness()
-[6.0, 6.0, 4.0, 2.0, 4.0, 3.0, 4.0, 3.0. 4.0]
->>> g.vs[2].degree()
-4
+  >>> g.vs.degree()
+  [3, 1, 4, 3, 2, 3, 2]
+  >>> g.es.edge_betweenness()
+  [6.0, 6.0, 4.0, 2.0, 4.0, 3.0, 4.0, 3.0. 4.0]
+  >>> g.vs[2].degree()
+  4
 
 .. _querying_vertices_and_edges:
 
@@ -433,10 +443,10 @@ Selecting vertices and edges
 Imagine that in a given social network, you would like to find out who has the largest
 degree or betweenness centrality. You can do that with the tools presented so far and
 some basic Python knowledge, but since it is a common task to select vertices and edges
-based on attributes or structural properties, |igraph| gives you an easier way to do that:
+based on attributes or structural properties, |igraph| gives you an easier way to do that::
 
->>> g.vs.select(_degree=g.maxdegree())["name"]
-["Alice", "Bob"]
+  >>> g.vs.select(_degree=g.maxdegree())["name"]
+  ["Alice", "Bob"]
 
 The syntax may seem a little bit awkward for the first sight, so let's try to interpret
 it step by step. :meth:`~VertexSeq.select` is a method of :class:`VertexSeq` and its
@@ -446,50 +456,50 @@ arguments. Positional arguments (the ones without an explicit name like
 ``_degree`` above) are always processed before keyword arguments as follows:
 
 - If the first positional argument is ``None``, an empty sequence (containing no
-  vertices) is returned:
+  vertices) is returned::
 
-  >>> seq = g.vs.select(None)
-  >>> len(seq)
-  0
+    >>> seq = g.vs.select(None)
+    >>> len(seq)
+    0
 
 - If the first positional argument is a callable object (i.e., a function, a bound
   method or anything that behaves like a function), the object will be called for
   every vertex that's currently in the sequence. If the function returns ``True``,
-  the vertex will be included, otherwise it will be excluded:
+  the vertex will be included, otherwise it will be excluded::
 
-  >>> graph = Graph.Full(10)
-  >>> only_odd_vertices = graph.vs.select(lambda vertex: vertex.index % 2 == 1)
-  >>> len(only_odd_vertices)
-  5
+    >>> graph = Graph.Full(10)
+    >>> only_odd_vertices = graph.vs.select(lambda vertex: vertex.index % 2 == 1)
+    >>> len(only_odd_vertices)
+    5
 
 - If the first positional argument is an iterable (i.e., a list, a generator or
   anything that can be iterated over), it *must* return integers and these integers
   will be considered as indices into the current vertex set (which is *not* necessarily
   the whole graph). Only those vertices that match the given indices will be included
   in the filtered vertex set. Floats, strings, invalid vertex IDs will silently be
-  ignored:
+  ignored::
 
-  >>> seq = graph.vs.select([2, 3, 7])
-  >>> len(seq)
-  3
-  >>> [v.index for v in seq]
-  [2, 3, 7]
-  >>> seq = seq.select([0, 2])         # filtering an existing vertex set
-  >>> [v.index for v in seq]
-  [2, 7]
-  >>> seq = graph.vs.select([2, 3, 7, "foo", 3.5])
-  >>> len(seq)
-  3
+    >>> seq = graph.vs.select([2, 3, 7])
+    >>> len(seq)
+    3
+    >>> [v.index for v in seq]
+    [2, 3, 7]
+    >>> seq = seq.select([0, 2])         # filtering an existing vertex set
+    >>> [v.index for v in seq]
+    [2, 7]
+    >>> seq = graph.vs.select([2, 3, 7, "foo", 3.5])
+    >>> len(seq)
+    3
 
 - If the first positional argument is an integer, all remaining arguments are also
   expected to be integers and they are interpreted as indices into the current vertex
   set. This is just syntactic sugar, you could achieve an equivalent effect by
   passing a list as the first positional argument, but this way you can omit the
-  square brackets:
+  square brackets::
 
-  >>> seq = graph.vs.select(2, 3, 7)
-  >>> len(seq)
-  3
+    >>> seq = graph.vs.select(2, 3, 7)
+    >>> len(seq)
+    3
 
 Keyword arguments can be used to filter the vertices based on their attributes
 or their structural properties. The name of each keyword argument should consist
@@ -528,9 +538,9 @@ Keyword argument Meaning
 ================ ================================================================
 
 For instance, the following command gives you people younger than 30 years in
-our imaginary social network:
+our imaginary social network::
 
->>> g.vs.select(age_lt=30)
+  >>> g.vs.select(age_lt=30)
 
 .. note::
    Due to the syntactical constraints of Python, you cannot use the admittedly
@@ -538,26 +548,26 @@ our imaginary social network:
    allowed to appear in an argument list in Python.
 
 To save you some typing, you can even omit the :meth:`~VertexSeq.select` method if
-you wish:
+you wish::
 
->>> g.vs(age_lt=30)
+  >>> g.vs(age_lt=30)
 
 Theoretically, it can happen that there exists an attribute and a structural property
 with the same name (e.g., you could have a vertex attribute named ``degree``). In that
 case, we would not be able to decide whether the user meant ``degree`` as a structural
 property or as a vertex attribute. To resolve this ambiguity, structural property names
 *must* always be preceded by an underscore (``_``) when used for filtering. For example, to
-find vertices with degree larger than 2:
+find vertices with degree larger than 2::
 
->>> g.vs(_degree_gt=2)
+  >>> g.vs(_degree_gt=2)
 
 There are also a few special structural properties for selecting edges:
 
 - Using ``_source`` or ``_from`` in the keyword argument list of :meth:`EdgeSeq.select`
   filters based on the source vertices of the edges. E.g., to select all the edges
-  originating from Claire (who has vertex index 2):
+  originating from Claire (who has vertex index 2)::
 
-  >>> g.es.select(_source=2)
+    >>> g.es.select(_source=2)
 
 - Using ``_target`` or ``_to`` filters based on the target vertices. This is different
   from ``_source`` and ``_from`` if the graph is directed.
@@ -565,22 +575,22 @@ There are also a few special structural properties for selecting edges:
 - ``_within`` takes a :class:`VertexSeq` object or a list or set of vertex indices
   and selects all the edges that originate and terminate in the given vertex
   set. For instance, the following expression selects all the edges between
-  Claire (vertex index 2), Dennis (vertex index 3) and Esther (vertex index 4):
+  Claire (vertex index 2), Dennis (vertex index 3) and Esther (vertex index 4)::
 
-  >>> g.es.select(_within=[2,3,4])
+    >>> g.es.select(_within=[2,3,4])
 
-  We could also have used a :class:`VertexSeq` object:
+  We could also have used a :class:`VertexSeq` object::
 
-  >>> g.es.select(_within=g.vs[2:5])
+    >>> g.es.select(_within=g.vs[2:5])
 
 - ``_between`` takes a tuple consisting of two :class:`VertexSeq` objects or lists
   containing vertex indices or :class:`Vertex` objects and selects all the edges that
   originate in one of the sets and terminate in the other. E.g., to select all the
-  edges that connect men to women:
+  edges that connect men to women::
 
-  >>> men = g.vs.select(gender="m")
-  >>> women = g.vs.select(gender="f")
-  >>> g.es.select(_between=(men, women))
+    >>> men = g.vs.select(gender="m")
+    >>> women = g.vs.select(gender="f")
+    >>> g.es.select(_between=(men, women))
 
 Finding a single vertex or edge with some properties
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -593,20 +603,20 @@ looking up vertices by their names in the ``name`` property. :class:`VertexSeq` 
 :meth:`~VertexSeq.find` works similarly to :meth:`~VertexSeq.select`, but it returns
 only the first match if there are multiple matches, and throws an exception if no
 match is found. For instance, to look up the vertex corresponding to Claire, one can
-do this:
+do this::
 
->>> claire = g.vs.find(name="Claire")
->>> type(claire)
-igraph.Vertex
->>> claire.index
-2
+  >>> claire = g.vs.find(name="Claire")
+  >>> type(claire)
+  igraph.Vertex
+  >>> claire.index
+  2
 
-Looking up an unknown name will yield an exception:
+Looking up an unknown name will yield an exception::
 
->>> g.vs.find(name="Joe")
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-ValueError: no such vertex
+  >>> g.vs.find(name="Joe")
+  Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+  ValueError: no such vertex
 
 Looking up vertices by names
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -618,15 +628,15 @@ can be looked up by their names in amortized constant time. To make things even 
 |igraph| accepts vertex names (almost) anywhere where it expects vertex IDs, and also
 accepts collections (list, tuples etc) of vertex names anywhere where it expects lists
 of vertex IDs or :class:`VertexSeq` instances. E.g, you can simply look up the degree
-(number of connections) of Dennis as follows:
+(number of connections) of Dennis as follows::
 
->>> g.degree("Dennis")
-3
+  >>> g.degree("Dennis")
+  3
 
 or, alternatively:
 
->>> g.vs.find("Dennis").degree()
-3
+  >>> g.vs.find("Dennis").degree()
+  3
 
 The mapping between vertex names and IDs is maintained transparently by |igraph| in
 the background; whenever the graph changes, |igraph| also updates the internal mapping.
@@ -640,8 +650,18 @@ Treating a graph as an adjacency matrix
 Adjacency matrix is another way to form a graph. In adjacency matrix, rows and columns are labeled by graph vertices: the elements of the matrix indicate whether the vertices *i* and *j* have a common edge (*i, j*). 
 The adjacency matrix for the example graph is
 
->>> g.get_adjacency()
-Matrix([[0, 1, 1, 0, 0, 1, 0], [1, 0, 0, 0, 0, 0, 0], [1, 0, 0, 1, 1, 1, 0], [0, 0, 1, 0, 1, 0, 1], [0, 0, 1, 1, 0, 0, 0], [1, 0, 1, 0, 0, 0, 1], [0, 0, 0, 1, 0, 1, 0]])
+::
+
+  >>> g.get_adjacency()
+  Matrix([
+    [0, 1, 1, 0, 0, 1, 0],
+    [1, 0, 0, 0, 0, 0, 0],
+    [1, 0, 0, 1, 1, 1, 0],
+    [0, 0, 1, 0, 1, 0, 1],
+    [0, 0, 1, 1, 0, 0, 0],
+    [1, 0, 1, 0, 0, 0, 1],
+    [0, 0, 0, 1, 0, 1, 0]
+  ])
 
 For example, Claire (``[1, 0, 0, 1, 1, 1, 0]``) is directly connected to Alice (who has vertex index 0), Dennis (index 3),
 Esther (index 4), and Frank (index 5), but not to Bob (index 1) nor George (index 6).
@@ -711,18 +731,18 @@ Method name                          Short name      Algorithm description
 .. _Large Graph Layout: http://sourceforge.net/projects/lgl/
 
 Layout algorithms can either be called directly or using the common layout method called
-:meth:`~Graph.layout`:
+:meth:`~Graph.layout`::
 
->>> layout = g.layout_kamada_kawai()
->>> layout = g.layout("kamada_kawai")
+  >>> layout = g.layout_kamada_kawai()
+  >>> layout = g.layout("kamada_kawai")
 
 The first argument of the :meth:`~Graph.layout` method must be the short name of the
 layout algorithm (see the table above). All the remaining positional and keyword arguments
 are passed intact to the chosen layout method. For instance, the following two calls are
-completely equivalent:
+completely equivalent::
 
->>> layout = g.layout_reingold_tilford(root=[2])
->>> layout = g.layout("rt", [2])
+  >>> layout = g.layout_reingold_tilford(root=[2])
+  >>> layout = g.layout("rt", [2])
 
 Layout methods return a :class:`Layout` object which behaves mostly like a list of lists.
 Each list entry in a :class:`Layout` object corresponds to a vertex in the original graph
@@ -735,10 +755,10 @@ Drawing a graph using a layout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For instance, we can plot our imaginary social network with the Kamada-Kawai
-layout algorithm as follows:
+layout algorithm as follows::
 
->>> layout = g.layout("kk")
->>> plot(g, layout=layout)
+  >>> layout = g.layout("kk")
+  >>> plot(g, layout=layout)
 
 This should open an external image viewer showing a visual representation of the network,
 something like the one on the following figure (although the exact placement of
@@ -751,22 +771,22 @@ nodes may be different on your machine since the layout is not deterministic):
    Our social network with the Kamada-Kawai layout algorithm
 
 If you prefer to use `matplotlib`_ as a plotting engine, create an axes and use the
-``target`` argument:
+``target`` argument::
 
->>> import matplotlib.pyplot as plt
->>> fig, ax = plt.subplots()
->>> plot(g, layout=layout, target=ax)
+  >>> import matplotlib.pyplot as plt
+  >>> fig, ax = plt.subplots()
+  >>> plot(g, layout=layout, target=ax)
 
 Hmm, this is not too pretty so far. A trivial addition would be to use the names as the
 vertex labels and to color the vertices according to the gender. Vertex labels are taken
 from the ``label`` attribute by default and vertex colors are determined by the
-``color`` attribute, so we can simply create these attributes and re-plot the graph:
+``color`` attribute, so we can simply create these attributes and re-plot the graph::
 
->>> g.vs["label"] = g.vs["name"]
->>> color_dict = {"m": "blue", "f": "pink"}
->>> g.vs["color"] = [color_dict[gender] for gender in g.vs["gender"]]
->>> plot(g, layout=layout, bbox=(300, 300), margin=20)
->>> plot(g, layout=layout, bbox=(300, 300), margin=20, target=ax) # matplotlib version
+  >>> g.vs["label"] = g.vs["name"]
+  >>> color_dict = {"m": "blue", "f": "pink"}
+  >>> g.vs["color"] = [color_dict[gender] for gender in g.vs["gender"]]
+  >>> plot(g, layout=layout, bbox=(300, 300), margin=20)
+  >>> plot(g, layout=layout, bbox=(300, 300), margin=20, target=ax) # matplotlib version
 
 Note that we are simply re-using the previous layout object here, but we also specified
 that we need a smaller plot (300 x 300 pixels) and a larger margin around the graph
@@ -779,10 +799,10 @@ to fit the labels (20 pixels). The result is:
    Our social network - with names as labels and genders as colors
 
 Instead of specifying the visual properties as vertex and edge attributes, you can
-also give them as keyword arguments to :func:`plot`:
+also give them as keyword arguments to :func:`plot`::
 
->>> color_dict = {"m": "blue", "f": "pink"}
->>> plot(g, layout=layout, vertex_color=[color_dict[gender] for gender in g.vs["gender"]])
+  >>> color_dict = {"m": "blue", "f": "pink"}
+  >>> plot(g, layout=layout, vertex_color=[color_dict[gender] for gender in g.vs["gender"]])
 
 This latter approach is preferred if you want to keep the properties of the visual
 representation of your graph separate from the graph itself. You can simply set up
@@ -790,15 +810,15 @@ a Python dictionary containing the keyword arguments you would pass to :func:`pl
 and then use the double asterisk (``**``) operator to pass your specific styling
 attributes to :func:`plot`::
 
->>> visual_style = {}
->>> visual_style["vertex_size"] = 20
->>> visual_style["vertex_color"] = [color_dict[gender] for gender in g.vs["gender"]]
->>> visual_style["vertex_label"] = g.vs["name"]
->>> visual_style["edge_width"] = [1 + 2 * int(is_formal) for is_formal in g.es["is_formal"]]
->>> visual_style["layout"] = layout
->>> visual_style["bbox"] = (300, 300)
->>> visual_style["margin"] = 20
->>> plot(g, **visual_style)
+  >>> visual_style = {}
+  >>> visual_style["vertex_size"] = 20
+  >>> visual_style["vertex_color"] = [color_dict[gender] for gender in g.vs["gender"]]
+  >>> visual_style["vertex_label"] = g.vs["name"]
+  >>> visual_style["edge_width"] = [1 + 2 * int(is_formal) for is_formal in g.es["is_formal"]]
+  >>> visual_style["layout"] = layout
+  >>> visual_style["bbox"] = (300, 300)
+  >>> visual_style["margin"] = 20
+  >>> plot(g, **visual_style)
 
 The final plot shows the formal ties with thick lines while informal ones with thin lines:
 
@@ -955,7 +975,7 @@ SVG or PDF files can then later be converted to PostScript (``.ps``) or Encapsul
 PostScript (``.eps``) format if you prefer that, while PNG files can be converted to
 TIF (``.tif``)::
 
->>> plot(g, "social_network.pdf", **visual_style)
+  >>> plot(g, "social_network.pdf", **visual_style)
 
 
 |igraph| and the outside world
@@ -1012,16 +1032,16 @@ As an exercise, download the graph representation of the well-known
 `Zachary karate club study <http://nexus.igraph.org/api/dataset?id=1&format=GraphML>`_
 from :download:`this file </assets/zachary.zip>`, unzip it and try to load it into
 |igraph|. Since it is a GraphML file, you must use the GraphML reader method from
-the table above (make sure you use the appropriate path to the downloaded file):
+the table above (make sure you use the appropriate path to the downloaded file)::
 
->>> karate = Graph.Read_GraphML("zachary.graphml")
->>> summary(karate)
-IGRAPH UNW- 34 78 -- Zachary's karate club network
+  >>> karate = Graph.Read_GraphML("zachary.graphml")
+  >>> summary(karate)
+  IGRAPH UNW- 34 78 -- Zachary's karate club network
 
 If you want to convert the very same graph into, say, Pajek's format, you can do it
-with the Pajek writer method from the table above:
+with the Pajek writer method from the table above::
 
->>> karate.write_pajek("zachary.net")
+  >>> karate.write_pajek("zachary.net")
 
 .. note:: Most of the formats have their own limitations; for instance, not all of
    them can store attributes. Your best bet is probably GraphML or GML if you
@@ -1038,11 +1058,11 @@ reader methods which tries to infer the appropriate format from the file extensi
 :meth:`Graph.save` is the opposite of :func:`load`: it lets you save a graph where
 the preferred format is again inferred from the extension. The format detection of
 :func:`load` and :meth:`Graph.save` can be overridden by the ``format`` keyword
-argument which accepts the short names of the formats from the above table:
+argument which accepts the short names of the formats from the above table::
 
->>> karate = load("zachary.graphml")
->>> karate.save("zachary.net")
->>> karate.save("zachary.my_extension", format="gml")
+  >>> karate = load("zachary.graphml")
+  >>> karate.save("zachary.net")
+  >>> karate.save("zachary.my_extension", format="gml")
 
 
 Where to go next

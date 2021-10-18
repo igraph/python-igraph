@@ -14,4 +14,3 @@ Things you should know before starting out
 
 Reporting bugs and providing feedback
 =====================================
-
