@@ -401,16 +401,13 @@ def _construct_graph_from_dataframe(
     to unexpected behaviour: fill your NaNs with values before calling this
     function to mitigate.
     """
-    # Deferred import to avoid cycles
-    from igraph import Graph
-
     try:
         import pandas as pd
     except ImportError:
         raise ImportError("You should install pandas in order to use this function")
     try:
         import numpy as np
-    except:
+    except ImportError:
         raise ImportError("You should install numpy in order to use this function")
 
     if edges.shape[1] < 2:
