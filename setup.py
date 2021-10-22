@@ -842,6 +842,11 @@ options = dict(
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
             "matplotlib>=3.3.4; platform_python_implementation != 'PyPy'",
             "plotly>=5.3.0",
+            # matplotlib requires Pillow; however, Pillow >= 8.4 does not
+            # provide manylinux2010 wheels any more, but we need those in
+            # cibuildwheel for Linux so we need to restrict Pillow's version
+            # range
+            "Pillow>=8,<8.4; platform_python_implementation != 'PyPy'",
         ],
         "doc": [
             "Sphinx>=4.2.0",
