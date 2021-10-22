@@ -162,6 +162,7 @@ def _as_directed(graph, *args, **kwds):
     copy.to_directed(*args, **kwds)
     return copy
 
+
 def _as_undirected(graph, *args, **kwds):
     """Returns an undirected copy of this graph. Arguments are passed on
     to L{to_undirected()} that is invoked on the copy.

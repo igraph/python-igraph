@@ -80,7 +80,7 @@ def _construct_graph_from_dict_list(
 
     if vertex_name_attr not in vertex_attrs:
         raise AttributeError(
-            f'{vertex_name_attr} is not a key of your vertex dictionaries',
+            f"{vertex_name_attr} is not a key of your vertex dictionaries",
         )
     vertex_names = vertex_attrs[vertex_name_attr]
 
@@ -639,7 +639,10 @@ def _export_graph_to_tuple_list(
 
 
 def _export_graph_to_list_dict(
-    graph, use_vids=True, sequence_constructor=list, vertex_name_attr="name",
+    graph,
+    use_vids=True,
+    sequence_constructor=list,
+    vertex_name_attr="name",
 ):
     """Export graph to a dictionary of lists (or other sequences).
 
@@ -671,7 +674,7 @@ def _export_graph_to_list_dict(
     """
     if not use_vids:
         if vertex_name_attr not in graph.vertex_attributes():
-            raise AttributeError(f'Vertices do not have a {vertex_name_attr} attribute')
+            raise AttributeError(f"Vertices do not have a {vertex_name_attr} attribute")
         vs_names = graph.vs[vertex_name_attr]
 
     # Temporary output data structure
@@ -690,7 +693,9 @@ def _export_graph_to_list_dict(
     return res
 
 
-def _export_graph_to_dict_dict(graph, use_vids=True, edge_attrs=None, skip_none=False, vertex_name_attr="name"):
+def _export_graph_to_dict_dict(
+    graph, use_vids=True, edge_attrs=None, skip_none=False, vertex_name_attr="name"
+):
     """Export graph to dictionary of dicts of edge attributes
 
     This function is the reverse of Graph.DictDict.
@@ -730,7 +735,7 @@ def _export_graph_to_dict_dict(graph, use_vids=True, edge_attrs=None, skip_none=
 
     if not use_vids:
         if vertex_name_attr not in graph.vertex_attributes():
-            raise AttributeError(f'Vertices do not have a {vertex_name_attr} attribute')
+            raise AttributeError(f"Vertices do not have a {vertex_name_attr} attribute")
         vs_names = graph.vs[vertex_name_attr]
 
     # Temporary output data structure

@@ -1,6 +1,6 @@
 __all__ = (
-    '_count_automorphisms_vf2',
-    '_get_automorphisms_vf2',
+    "_count_automorphisms_vf2",
+    "_get_automorphisms_vf2",
 )
 
 
@@ -49,4 +49,3 @@ def _get_automorphisms_vf2(
         node_compat_fn=node_compat_fn,
         edge_compat_fn=edge_compat_fn,
     )
-

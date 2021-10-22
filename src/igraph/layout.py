@@ -15,13 +15,13 @@ from igraph.statistics import RunningMean
 
 
 __all__ = (
-    'Layout',
-    '_layout',
-    '_layout_auto',
-    '_layout_sugiyama',
-    '_layout_method_wrapper',
-    '_3d_version_for',
-    '_layout_mapping',
+    "Layout",
+    "_layout",
+    "_layout_auto",
+    "_layout_sugiyama",
+    "_layout_method_wrapper",
+    "_3d_version_for",
+    "_layout_mapping",
 )
 
 

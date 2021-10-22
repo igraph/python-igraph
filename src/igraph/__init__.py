@@ -613,16 +613,16 @@ class Graph(GraphBase):
 
     ###################
     # Graph operators
-    __iadd__ = _operator_method_registry['__iadd__']
-    __add__ = _operator_method_registry['__add__']
-    __and__ = _operator_method_registry['__and__']
-    __isub__ = _operator_method_registry['__isub__']
-    __sub__ = _operator_method_registry['__sub__']
-    __mul__ = _operator_method_registry['__mul__']
-    __or__ = _operator_method_registry['__or__']
-    disjoint_union = _operator_method_registry['disjoint_union']
-    union = _operator_method_registry['union']
-    intersection = _operator_method_registry['intersection']
+    __iadd__ = _operator_method_registry["__iadd__"]
+    __add__ = _operator_method_registry["__add__"]
+    __and__ = _operator_method_registry["__and__"]
+    __isub__ = _operator_method_registry["__isub__"]
+    __sub__ = _operator_method_registry["__sub__"]
+    __mul__ = _operator_method_registry["__mul__"]
+    __or__ = _operator_method_registry["__or__"]
+    disjoint_union = _operator_method_registry["disjoint_union"]
+    union = _operator_method_registry["union"]
+    intersection = _operator_method_registry["intersection"]
 
     #############################################
     # Adjacency/incidence

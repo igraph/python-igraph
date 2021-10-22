@@ -3,7 +3,7 @@ import operator
 from igraph._igraph import (
     EdgeSeq as _EdgeSeq,
     VertexSeq as _VertexSeq,
-)    
+)
 
 
 class VertexSeq(_VertexSeq):
@@ -801,4 +801,3 @@ def _add_proxy_methods():
             lambda self, result: [result[i] for i in self.indices], "edge_betweenness"
         ),
     )
-
