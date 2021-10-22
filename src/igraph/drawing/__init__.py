@@ -70,29 +70,29 @@ class DrawerDirectory:
 
     This directory is used by the __plot__ functions.
     """
-    valid_backends = ('cairo', 'matplotlib')
+
+    valid_backends = ("cairo", "matplotlib")
     valid_objects = (
-        'Graph',
-        'Matrix',
-        'Histogram',
-        'Palette',
+        "Graph",
+        "Matrix",
+        "Histogram",
+        "Palette",
     )
     known_drawers = {
-        'cairo': {
-            'Graph': CairoGraphDrawer,
-            'Matrix': CairoMatrixDrawer,
-            'Histogram': CairoHistogramDrawer,
-            'Palette': CairoPaletteDrawer,
-
+        "cairo": {
+            "Graph": CairoGraphDrawer,
+            "Matrix": CairoMatrixDrawer,
+            "Histogram": CairoHistogramDrawer,
+            "Palette": CairoPaletteDrawer,
         },
-        'matplotlib': {
-            'Graph': MatplotlibGraphDrawer,
-            'Matrix': MatplotlibMatrixDrawer,
-            'Histogram': MatplotlibHistogramDrawer,
-            'Palette': MatplotlibPaletteDrawer,
+        "matplotlib": {
+            "Graph": MatplotlibGraphDrawer,
+            "Matrix": MatplotlibMatrixDrawer,
+            "Histogram": MatplotlibHistogramDrawer,
+            "Palette": MatplotlibPaletteDrawer,
         },
-        'plotly': {
-            'Graph': PlotlyGraphDrawer,
+        "plotly": {
+            "Graph": PlotlyGraphDrawer,
         },
     }
 
@@ -106,14 +106,14 @@ class DrawerDirectory:
 
         @raise ValueError: if no drawer is available for this backend/object
         """
-        object_name = str(obj.__class__).split('.')[-1].strip("<'>")
+        object_name = str(obj.__class__).split(".")[-1].strip("<'>")
 
         try:
             return cls.known_drawers[backend][object_name]
         except KeyError:
             raise ValueError(
                 f"unknown drawer for {object_name} and backend {backend}",
-                )
+            )
 
 
 def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
@@ -196,7 +196,8 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
         backend = "matplotlib"
     elif hasattr(plotly, "graph_objects") and isinstance(
-            target, plotly.graph_objects.Figure):
+        target, plotly.graph_objects.Figure
+    ):
         backend = "plotly"
     elif hasattr(cairo, "Surface") and isinstance(target, cairo.Surface):
         backend = "cairo"

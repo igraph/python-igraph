@@ -140,7 +140,7 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                 hull = [group[i] for i in convex_hull([layout[idx] for idx in group])]
 
                 # Calculate the preferred rounding radius for the corners
-                #FIXME
+                # FIXME
                 corner_radius = 1.25 * max(vertex_builder[idx].size for idx in hull)
 
                 # Construct the polygon
@@ -177,7 +177,8 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                     fig.add_trace(
                         plotly.graph_objects.Bar(
                             name=str(color_id),
-                            x=[], y=[],
+                            x=[],
+                            y=[],
                             fillcolor=facecolor,
                             line_color=color,
                         )
@@ -246,10 +247,10 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                 (labels[i], edge_builder[i], graph.es[i]) for i in range(graph.ecount())
             )
             lab_args = {
-                'text': [],
-                'x': [],
-                'y': [],
-                'color': [],
+                "text": [],
+                "x": [],
+                "y": [],
+                "color": [],
                 # FIXME: horizontal/vertical alignment, offset, etc?
             }
             for label, visual_edge, edge in edge_label_iter:
@@ -264,18 +265,18 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                 if label is None:
                     continue
 
-                lab_args['text'].append(label)
-                lab_args['x'].append(x)
-                lab_args['y'].append(y)
-                lab_args['color'].append(visual_edge.label_color)
+                lab_args["text"].append(label)
+                lab_args["x"].append(x)
+                lab_args["y"].append(y)
+                lab_args["color"].append(visual_edge.label_color)
             stroke = plotly.graph_objects.Scatter(
-                mode='text',
+                mode="text",
                 **lab_args,
             )
             fig.add_trace(stroke)
 
         # Despine
         fig.update_layout(
-            yaxis={'visible': False, 'showticklabels': False},
-            xaxis={'visible': False, 'showticklabels': False},
+            yaxis={"visible": False, "showticklabels": False},
+            xaxis={"visible": False, "showticklabels": False},
         )

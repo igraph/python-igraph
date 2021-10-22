@@ -122,9 +122,9 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
                 DeprecationWarning,
             )
 
-        bbox = kwds.pop('bbox', None)
+        bbox = kwds.pop("bbox", None)
         if bbox is None:
-            raise ValueError('bbox is required for cairo plots')
+            raise ValueError("bbox is required for Cairo plots")
         # Validate it through set/get
         self.bbox = bbox
         bbox = self.bbox

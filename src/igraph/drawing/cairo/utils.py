@@ -1,7 +1,7 @@
 from igraph.drawing.utils import FakeModule
 from typing import Any
 
-__all__ = ("find_cairo", )
+__all__ = ("find_cairo",)
 
 
 def find_cairo() -> Any:

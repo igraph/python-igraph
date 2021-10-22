@@ -4,8 +4,17 @@ from math import atan2, cos, pi, sin
 
 from igraph.drawing.baseclasses import AbstractEdgeDrawer
 from igraph.drawing.metamagic import AttributeCollectorBase
-from igraph.drawing.plotly.utils import find_plotly, format_path_step, format_arc, format_rgba
-from igraph.drawing.utils import Point, euclidean_distance, intersect_bezier_curve_and_circle
+from igraph.drawing.plotly.utils import (
+    find_plotly,
+    format_path_step,
+    format_arc,
+    format_rgba,
+)
+from igraph.drawing.utils import (
+    Point,
+    euclidean_distance,
+    intersect_bezier_curve_and_circle,
+)
 
 __all__ = ("PlotlyEdgeDrawer",)
 
@@ -135,17 +144,15 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
 
             # Draw the curve from the first vertex to the midpoint of the base
             # of the arrow head
-            path.append(format_path_step(
-                "C", [aux1, aux2, [x_arrow_mid, y_arrow_mid]]
-            ))
+            path.append(format_path_step("C", [aux1, aux2, [x_arrow_mid, y_arrow_mid]]))
 
         else:
             # FIXME: this is tricky in plotly, let's skip for now
             ## Determine where the edge intersects the circumference of the
             ## vertex shape.
-            #x2, y2 = dest_vertex.shape.intersection_point(
+            # x2, y2 = dest_vertex.shape.intersection_point(
             #    x2, y2, x1, y1, dest_vertex.size
-            #)
+            # )
 
             # Draw the arrowhead
             angle = atan2(y_dest - y2, x_dest - x2)
@@ -167,15 +174,18 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
                 aux_points[0][1] + aux_points[1][1]
             ) / 2.0
             # Draw the line
-            path.append(format_path_step(
-                "L", Point(x_arrow_mid, y_arrow_mid),
-            ))
+            path.append(
+                format_path_step(
+                    "L",
+                    Point(x_arrow_mid, y_arrow_mid),
+                )
+            )
 
-        path = ' '.join(path)
+        path = " ".join(path)
 
         # Draw the edge
         stroke = dict(
-            type='path',
+            type="path",
             path=path,
             line_color=format_rgba(edge.color),
             line_width=edge.width,
@@ -206,7 +216,7 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
         center_x = vertex.position[0] + cos(pi / 4) * radius / 2.0
         center_y = vertex.position[1] - sin(pi / 4) * radius / 2.0
         stroke = dict(
-            type='path',
+            type="path",
             path=format_arc(
                 (center_x, center_y),
                 radius / 2.0,
@@ -237,9 +247,7 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
 
         fig = self.context
 
-        path = [
-            format_path_step("M", src_vertex.position)
-        ]
+        path = [format_path_step("M", src_vertex.position)]
 
         if edge.curved:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
@@ -250,19 +258,25 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
                 y1 + 2 * y2
             ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
 
-            path.append(format_path_step(
-                "C", [aux1, aux2, dest_vertex.position],
-            ))
+            path.append(
+                format_path_step(
+                    "C",
+                    [aux1, aux2, dest_vertex.position],
+                )
+            )
 
         else:
-            path.append(format_path_step(
-                "L", dest_vertex.position,
-            ))
+            path.append(
+                format_path_step(
+                    "L",
+                    dest_vertex.position,
+                )
+            )
 
-        path = ' '.join(path)
+        path = " ".join(path)
 
         stroke = dict(
-            type='path',
+            type="path",
             path=path,
             line_color=format_rgba(edge.color),
             line_width=edge.width,

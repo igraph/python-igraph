@@ -46,11 +46,11 @@ class PlotlyPolygonDrawer:
             # We need to repeat the initial point to get a closed shape
             x = [p[0] for p in points] + [points[0][0]]
             y = [p[1] for p in points] + [points[0][1]]
-            kwds['mode'] = kwds.get('mode', 'line')
+            kwds["mode"] = kwds.get("mode", "line")
             stroke = plotly.graph_objects.Scatter(
-                    x=x,
-                    y=y,
-                    **kwds,
+                x=x,
+                y=y,
+                **kwds,
             )
             fig.add_trace(stroke)
 
@@ -67,10 +67,12 @@ class PlotlyPolygonDrawer:
         # Okay, move to the last corner, adjusted by corner_radii[-1]
         # towards the first corner
         path = []
-        path.append(format_path_step(
-            "M",
-            [points[-1].towards(points[0], corner_radii[-1])],
-        ))
+        path.append(
+            format_path_step(
+                "M",
+                [points[-1].towards(points[0], corner_radii[-1])],
+            )
+        )
 
         # Now, for each point in points, draw a line towards the
         # corner, stopping before it in a distance of corner_radii[idx],
@@ -78,22 +80,26 @@ class PlotlyPolygonDrawer:
         u = points[-1]
         for idx, (v, w) in enumerate(consecutive_pairs(points, True)):
             radius = corner_radii[idx]
-            path.append(format_path_step(
-                "L",
-                [v.towards(u, radius)],
-            ))
+            path.append(
+                format_path_step(
+                    "L",
+                    [v.towards(u, radius)],
+                )
+            )
 
             aux1 = v.towards(u, radius / 2)
             aux2 = v.towards(w, radius / 2)
 
-            path.append(format_path_step(
-                "C",
-                [aux1, aux2, v.towards(w, corner_radii[idx])],
-            ))
+            path.append(
+                format_path_step(
+                    "C",
+                    [aux1, aux2, v.towards(w, corner_radii[idx])],
+                )
+            )
             u = v
 
         # Close path
-        path = "".join(path).strip(" ")+" Z"
+        path = "".join(path).strip(" ") + " Z"
         stroke = dict(
             type="path",
             path=path,

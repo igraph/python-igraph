@@ -6,7 +6,7 @@ from igraph.drawing.baseclasses import AbstractVertexDrawer
 from igraph.drawing.metamagic import AttributeCollectorBase
 from .utils import find_plotly, format_rgba
 
-__all__ = ('PlotlyVerticesDrawer',)
+__all__ = ("PlotlyVerticesDrawer",)
 
 plotly = find_plotly()
 
@@ -43,7 +43,6 @@ class PlotlyVerticesDrawer(AbstractVertexDrawer):
 
         return VisualVertexBuilder
 
-
     def draw(self, visual_vertex, vertex, point):
         if visual_vertex.size <= 0:
             return
@@ -51,23 +50,23 @@ class PlotlyVerticesDrawer(AbstractVertexDrawer):
         fig = self.fig
 
         marker_kwds = {}
-        marker_kwds['x'] = [point[0]]
-        marker_kwds['y'] = [point[1]]
-        marker_kwds['marker'] = {
-                'symbol': visual_vertex.shape,
-                'size': visual_vertex.size,
-                'color': format_rgba(visual_vertex.color),
-                'line_color': format_rgba(visual_vertex.frame_color),
+        marker_kwds["x"] = [point[0]]
+        marker_kwds["y"] = [point[1]]
+        marker_kwds["marker"] = {
+            "symbol": visual_vertex.shape,
+            "size": visual_vertex.size,
+            "color": format_rgba(visual_vertex.color),
+            "line_color": format_rgba(visual_vertex.frame_color),
         }
 
-        #if visual_vertex.label is not None:
+        # if visual_vertex.label is not None:
         #    text_kwds['x'].append(point[0])
         #    text_kwds['y'].append(point[1])
         #    text_kwds['text'].append(visual_vertex.label)
 
         # Draw dots
         stroke = plotly.graph_objects.Scatter(
-            mode='markers',
+            mode="markers",
             **marker_kwds,
         )
         fig.add_trace(stroke)
@@ -79,17 +78,15 @@ class PlotlyVerticesDrawer(AbstractVertexDrawer):
         fig = self.fig
 
         text_kwds = {}
-        text_kwds['x'] = [point[0]]
-        text_kwds['y'] = [point[1]]
-        text_kwds['text'].append(visual_vertex.label)
+        text_kwds["x"] = [point[0]]
+        text_kwds["y"] = [point[1]]
+        text_kwds["text"].append(visual_vertex.label)
 
         # TODO: add more options
 
         # Draw text labels
         stroke = plotly.graph_objects.Scatter(
-            mode='text',
+            mode="text",
             **text_kwds,
         )
         fig.add_trace(stroke)
-
-

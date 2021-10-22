@@ -22,9 +22,9 @@ class CairoHistogramDrawer(AbstractCairoDrawer):
 
         context = self.context
 
-        bbox = self.bbox = kwds.pop('bbox', None)
+        bbox = self.bbox = kwds.pop("bbox", None)
         if bbox is None:
-            raise ValueError('bbox is required for cairo plots')
+            raise ValueError("bbox is required for Cairo plots")
 
         xmin = kwds.get("min", self._min)
         ymin = 0
@@ -56,4 +56,3 @@ class CairoHistogramDrawer(AbstractCairoDrawer):
 
         # Draw the axes
         coord_system.draw()
-

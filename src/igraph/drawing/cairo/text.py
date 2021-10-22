@@ -7,7 +7,7 @@ from warnings import warn
 
 from igraph.drawing.cairo.base import AbstractCairoDrawer
 
-__all__ = ("CairoTextDrawer", )
+__all__ = ("CairoTextDrawer",)
 
 
 class CairoTextDrawer(AbstractCairoDrawer):

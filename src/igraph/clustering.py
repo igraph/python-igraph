@@ -748,9 +748,9 @@ class Dendrogram:
             bbox = kwds.pop("bbox", None)
             palette = kwds.pop("palette", None)
             if bbox is None:
-                raise ValueError("bbox is required for cairo plots")
+                raise ValueError("bbox is required for Cairo plots")
             if palette is None:
-                raise ValueError("palette is required for cairo plots")
+                raise ValueError("palette is required for Cairo plots")
             drawer = CairoDendrogramDrawer(context, bbox, palette)
 
         drawer.draw(self, **kwds)

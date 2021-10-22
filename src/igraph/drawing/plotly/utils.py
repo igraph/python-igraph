@@ -1,7 +1,7 @@
 from igraph.drawing.utils import FakeModule, Point
 from typing import Any
 
-__all__ = ("find_plotly", )
+__all__ = ("find_plotly",)
 
 
 def find_plotly() -> Any:
@@ -40,14 +40,14 @@ def format_arc(center, radius_x, radius_y, theta1, theta2, N=100, closed=False):
 
     xc, yc = center
     dt = 1.0 * (theta2 - theta1)
-    t = [theta1 + dt * i / (N-1) for i in range(N)]
+    t = [theta1 + dt * i / (N - 1) for i in range(N)]
     x = [xc + radius_x * math.cos(i) for i in t]
     y = [yc + radius_y * math.sin(i) for i in t]
-    path = f'M {x[0]}, {y[0]}'
+    path = f"M {x[0]}, {y[0]}"
     for k in range(1, len(t)):
-        path += f'L{x[k]}, {y[k]}'
+        path += f"L{x[k]}, {y[k]}"
     if closed:
-        path += ' Z'
+        path += " Z"
     return path
 
 
@@ -58,7 +58,7 @@ def format_rgba(color):
 
     if isinstance(color, float):
         if color > 1:
-            color /= 255.
+            color /= 255.0
         color = [color] * 3
 
     r = int(255 * color[0])
@@ -69,6 +69,5 @@ def format_rgba(color):
     else:
         a = 255
 
-    colstr = f'rgba({r},{g},{b},{a})'
+    colstr = f"rgba({r},{g},{b},{a})"
     return colstr
-

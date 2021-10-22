@@ -32,6 +32,6 @@ class MatplotlibHistogramDrawer(AbstractDrawer):
         x = [self._min + width * i for i, _ in enumerate(self._bins)]
         y = self._bins
         # Draw the boxes/bars
-        ax.bar(x, y, align='left')
+        ax.bar(x, y, align="left")
         ax.set_xlim(xmin, xmax)
         ax.set_ylim(ymin, ymax)

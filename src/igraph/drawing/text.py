@@ -4,7 +4,7 @@ Drawers for labels on plots.
 
 from enum import Enum
 
-__all__ = ("TextAlignment", )
+__all__ = ("TextAlignment",)
 
 #####################################################################
 

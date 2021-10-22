@@ -41,7 +41,7 @@ class CairoPaletteDrawer(AbstractCairoDrawer):
         grid_width = float(kwds.get("grid_width", 0.0))
 
         return matrix.__plot__(
-            'cairo',
+            "cairo",
             context,
             bbox=bbox,
             palette=self,
@@ -50,4 +50,3 @@ class CairoPaletteDrawer(AbstractCairoDrawer):
             grid_width=grid_width,
             border_width=border_width,
         )
-
