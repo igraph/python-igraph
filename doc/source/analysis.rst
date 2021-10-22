@@ -2,17 +2,18 @@
 
 Graph analysis
 ==============
+
 |igraph| enables analysis of graphs/networks from simple operations such as adding and removing nodes to complex theoretical constructs such as community detection. Read the `API documentation`_ for details on each function and class.
 
-The context for the following examples will be to import |igraph| (commonly as `ig`), have the :class:`Graph` class and to have one or more graphs available:
+The context for the following examples will be to import |igraph| (commonly as `ig`), have the :class:`Graph` class and to have one or more graphs available::
 
->>> import igraph as ig
->>> from igraph import Graph
->>> g = Graph(edges=[[0, 1], [2, 3]])
+    >>> import igraph as ig
+    >>> from igraph import Graph
+    >>> g = Graph(edges=[[0, 1], [2, 3]])
 
-To get a summary representation of the graph, use :meth:`Graph.summary`. For instance
+To get a summary representation of the graph, use :meth:`Graph.summary`. For instance::
 
->>> g.summary(verbosity=1)
+    >>> g.summary(verbosity=1)
 
 will provide a fairly detailed description.
 
@@ -20,31 +21,32 @@ To copy a graph, use :meth:`Graph.copy`. This is a "shallow" copy: any mutable o
 If you want to copy a graph including all its attributes, use Python's `deepcopy` module.
 
 Vertices and edges
-+++++++++++++++++++++++++++
+++++++++++++++++++
+
 Vertices are numbered 0 to `n-1`, where n is the number of vertices in the graph. These are called the "vertex ids".
-To count vertices, use :meth:`Graph.vcount`:
+To count vertices, use :meth:`Graph.vcount`::
 
->>> n = g.vcount()
+    >>> n = g.vcount()
 
-Edges also have ids from 0 to `m-1` and are counted by :meth:`Graph.ecount`:
+Edges also have ids from 0 to `m-1` and are counted by :meth:`Graph.ecount`::
 
->>> m = g.ecount()
+    >>> m = g.ecount()
 
-To get a sequence of vertices, use their ids and :attr:`Graph.vs`:
+To get a sequence of vertices, use their ids and :attr:`Graph.vs`::
 
->>> for v in g.vs:
->>>     print(v)
+    >>> for v in g.vs:
+    >>>     print(v)
 
-Similarly for edges, use :attr:`Graph.es`:
+Similarly for edges, use :attr:`Graph.es`::
 
->>> for e in g.es:
->>>     print(e)
+    >>> for e in g.es:
+    >>>     print(e)
 
-You can index and slice vertices and edges similar to a list:
+You can index and slice vertices and edges like indexing and slicing a list::
 
->>> g.vs[:4]
->>> g.vs[0, 2, 4]
->>> g.es[3]
+    >>> g.vs[:4]
+    >>> g.vs[0, 2, 4]
+    >>> g.es[3]
 
 .. note:: The `vs` and `es` attributes are special sequences with their own useful methods. See `API documentation`_ for a full list.
 
@@ -52,46 +54,47 @@ If you prefer a vanilla edge list, you can use :meth:`Graph.get_edge_list`.
 
 Incidence
 ++++++++++++++++++++++++++++++
-To get the vertices at the two ends of an edge, use :attr:`Edge.source` and :attr:`Edge.target`:
+To get the vertices at the two ends of an edge, use :attr:`Edge.source` and :attr:`Edge.target`::
 
->>> e = g.es[0]
->>> v1, v2 = e.source, e.target
+    >>> e = g.es[0]
+    >>> v1, v2 = e.source, e.target
 
 Vice versa, to get the edge if from the source and target vertices, you can use :meth:`Graph.get_eid` or, for multiple pairs of source/targets,
 :meth:`Graph.get_eids`. The boolean version, asking whether two vertices are directly connected, is :meth:`Graph.are_connected`.
 
 To get the edges incident on a vertex, you can use :meth:`Vertex.incident`, :meth:`Vertex.out_edges` and
-:meth:`Vertex.in_edges`. The three are equivalent on undirected graphs but not directed ones, of course:
+:meth:`Vertex.in_edges`. The three are equivalent on undirected graphs but not directed ones of course::
 
->>> v = g.vs[0]
->>> edges = v.incident()
+    >>> v = g.vs[0]
+    >>> edges = v.incident()
 
-The :meth:`Graph.incident` function fulfills the same purpose with a slightly different syntax based on vertex ids:
+The :meth:`Graph.incident` function fulfills the same purpose with a slightly different syntax based on vertex IDs::
 
->>> edges = g.incident(0)
+    >>> edges = g.incident(0)
 
 To get the full adjacency/incidence list representation of the graph, use :meth:`Graph.get_adjlist`, :meth:`Graph.g.get_inclist()` or, for a bipartite graph, :meth:`Graph.get_incidence`.
 
 Neighborhood
-+++++++++++++
+++++++++++++
+
 To compute the neighbors, successors, and predecessors, the methods :meth:`Graph.neighbors`, :meth:`Graph.successors` and
-:meth:`Graph.predecessors` are available. The three give the same answer in undirected graphs and have a similar dual syntax:
+:meth:`Graph.predecessors` are available. The three give the same answer in undirected graphs and have a similar dual syntax::
 
->>> neis = g.vs[0].neighbors()
->>> neis = g.neighbors(0)
+    >>> neis = g.vs[0].neighbors()
+    >>> neis = g.neighbors(0)
 
-To get the list of vertices within a certain distance from one or more initial vertices, you can use :meth:`Graph.neighborhood`:
+To get the list of vertices within a certain distance from one or more initial vertices, you can use :meth:`Graph.neighborhood`::
 
->>> g.neighborhood([0, 1], order=2)
+    >>> g.neighborhood([0, 1], order=2)
 
 and to find the neighborhood size, there is :meth:`Graph.neighborhood_size`.
 
 Degrees
 +++++++
-To compute the degree, in-degree, or out-degree of a node, use :meth:`Vertex.degree`, :meth:`Vertex.indegree`, and :meth:`Vertex.outdegree`:
+To compute the degree, in-degree, or out-degree of a node, use :meth:`Vertex.degree`, :meth:`Vertex.indegree`, and :meth:`Vertex.outdegree`::
 
->>> deg = g.vs[0].degree()
->>> deg = g.degree(0)
+    >>> deg = g.vs[0].degree()
+    >>> deg = g.degree(0)
 
 To compute the max degree in a list of vertices, use :meth:`Graph.maxdegree`.
 
@@ -100,81 +103,84 @@ To compute the max degree in a list of vertices, use :meth:`Graph.maxdegree`.
 Adding and removing vertices and edges
 ++++++++++++++++++++++++++++++++++++++
 
-To add nodes to a graph, use :meth:`Graph.add_vertex` and :meth:`Graph.add_vertices`:
+To add nodes to a graph, use :meth:`Graph.add_vertex` and :meth:`Graph.add_vertices`::
 
->>> g.add_vertex()
->>> g.add_vertices(5)
+    >>> g.add_vertex()
+    >>> g.add_vertices(5)
 
 This changes the graph `g` in place. You can specify the name of the vertices if you wish.
 
-To remove nodes, use :meth:`Graph.delete_vertices`:
+To remove nodes, use :meth:`Graph.delete_vertices`::
 
->>> g.delete_vertices([1, 2])
+    >>> g.delete_vertices([1, 2])
 
 Again, you can specify the names or the actual :class:`Vertex` objects instead.
 
-To add edges, use :meth:`Graph.add_edge` and :meth:`Graph.add_edges`:
+To add edges, use :meth:`Graph.add_edge` and :meth:`Graph.add_edges`::
 
->>> g.add_edge(0, 2)
->>> g.add_edges([(0, 2), (1, 3)])
+    >>> g.add_edge(0, 2)
+    >>> g.add_edges([(0, 2), (1, 3)])
 
-To remove edges, use :meth:`Graph.delete_edges`:
+To remove edges, use :meth:`Graph.delete_edges`::
 
->>> g.delete_edges([0, 5]) # remove by edge id
+    >>> g.delete_edges([0, 5]) # remove by edge id
 
 You can also remove edges between source and target nodes.
 
 To contract vertices, use :meth:`Graph.contract_vertices`. Edges between contracted vertices will become loops.
 
 Graph operators
-+++++++++++++++++
++++++++++++++++
+
 It is possible to compute the union, intersection, difference, and other set operations (operators) between graphs.
 
-To compute the union of the graphs (nodes/edges in either are kept):
+To compute the union of the graphs (nodes/edges in either are kept)::
 
->>> gu = ig.union([g, g2, g3])
+    >>> gu = ig.union([g, g2, g3])
 
-Similarly for the intersection (nodes/edges present in all are kept):
+Similarly for the intersection (nodes/edges present in all are kept)::
 
->>> gu = ig.intersection([g, g2, g3])
+    >>> gu = ig.intersection([g, g2, g3])
 
 These two operations preserve attributes and can be performed with a few variations. The most important one is that vertices can be matched across the graphs by id (number) or by name.
 
-These and other operations are also available as methods of the :class:`Graph` class:
+These and other operations are also available as methods of the :class:`Graph` class::
 
->>> g.union(g2)
->>> g.intersection(g2)
->>> g.disjoint_union(g2)
->>> g.difference(g2)
->>> g.complementer()  # complement graph, same nodes but missing edges
+    >>> g.union(g2)
+    >>> g.intersection(g2)
+    >>> g.disjoint_union(g2)
+    >>> g.difference(g2)
+    >>> g.complementer()  # complement graph, same nodes but missing edges
 
-and even as numerical operators:
+and even as numerical operators::
 
->>> g |= g2
->>> g_intersection = g and g2
+    >>> g |= g2
+    >>> g_intersection = g and g2
 
 Topological sorting
 +++++++++++++++++++
-To sort a graph topologically, use :meth:`Graph.topological_sorting`:
 
->>> g = ig.Graph.Tree(10, 2, mode=ig.TREE_OUT)
->>> g.topological_sorting()
+To sort a graph topologically, use :meth:`Graph.topological_sorting`::
+
+    >>> g = ig.Graph.Tree(10, 2, mode=ig.TREE_OUT)
+    >>> g.topological_sorting()
 
 Graph traversal
-+++++++++++++++++++++
-A common operation is traversing the graph. |igraph| currently exposes breadth-first search (BFS) via :meth:`Graph.bfs` and :meth:`Graph.bfsiter`:
++++++++++++++++
 
->>> [vertices, layers, parents] = g.bfs()
->>> it = g.bfsiter()  # Lazy version
+A common operation is traversing the graph. |igraph| currently exposes breadth-first search (BFS) via :meth:`Graph.bfs` and :meth:`Graph.bfsiter`::
 
-Depth-first search has a similar infrastructure via :meth:`Graph.dfs` and :meth:`Graph.dfsiter`:
+    >>> [vertices, layers, parents] = g.bfs()
+    >>> it = g.bfsiter()  # Lazy version
 
->>> [vertices, parents] = g.dfs()
->>> it = g.dfsiter()  # Lazy version
+Depth-first search has a similar infrastructure via :meth:`Graph.dfs` and :meth:`Graph.dfsiter`::
 
-To perform a random walk from a certain vertex, use :meth:`Graph.random_walk`:
+    >>> [vertices, parents] = g.dfs()
+    >>> it = g.dfsiter()  # Lazy version
 
->>> vids = g.random_walk(0, 3)
+To perform a random walk from a certain vertex, use :meth:`Graph.random_walk`::
+
+    >>> vids = g.random_walk(0, 3)
 
 Pathfinding and cuts
 ++++++++++++++++++++
@@ -198,7 +204,8 @@ As well as functions related to cuts and paths:
 See also the section on flow.
 
 Global properties
-+++++++++++++++++++++
++++++++++++++++++
+
 A number of global graph measures are available.
 
 Basic:
@@ -347,20 +354,20 @@ Clustering
 
 Simplification, permutations and rewiring
 +++++++++++++++++++++++++++++++++++++++++
-To check is a graph is simple, you can use :meth:`Graph.is_simple`.
+To check is a graph is simple, you can use :meth:`Graph.is_simple`::
 
->>> g.is_simple()
+    >>> g.is_simple()
 
-To simplify a graph (remove multiedges and loops), use :meth:`Graph.simplify`:
+To simplify a graph (remove multiedges and loops), use :meth:`Graph.simplify`::
 
->>> g_simple = g.simplify()
+    >>> g_simple = g.simplify()
 
 To return a directed/undirected copy of the graph, use :meth:`Graph.as_directed` and :meth:`Graph.as_undirected`, respectively.
 
-To permute the order of vertices, you can use :meth:`Graph.permute_vertices`:
+To permute the order of vertices, you can use :meth:`Graph.permute_vertices`::
 
->>> g = ig.Tree(6, 2)
->>> g_perm = g.permute_vertices([1, 0, 2, 3, 4, 5])
+    >>> g = ig.Tree(6, 2)
+    >>> g_perm = g.permute_vertices([1, 0, 2, 3, 4, 5])
 
 The canonical permutation can be obtained via :meth:`Graph.canonical_permutation`, which can then be directly passed to the function above.
 
@@ -371,22 +378,23 @@ To rewire the graph at random, there are:
 
 Line graph
 ++++++++++
-To compute the line graph of a graph `g`, which represents the connectedness of the *edges* of g, you can use :meth:`Graph.linegraph`:
 
->>> g = Graph(n=4, edges=[[0, 1], [0, 2]])
->>> gl = g.linegraph()
+To compute the line graph of a graph `g`, which represents the connectedness of the *edges* of g, you can use :meth:`Graph.linegraph`::
 
-In this case, the line graph has two vertices, representing the two edges of the original graph, and one edge, representing the point where
-those two original edges touch.
+    >>> g = Graph(n=4, edges=[[0, 1], [0, 2]])
+    >>> gl = g.linegraph()
+
+In this case, the line graph has two vertices, representing the two edges of the original graph, and one edge, representing the point where those two original edges touch.
 
 Composition and subgraphs
-++++++++++++++++++++++++++
++++++++++++++++++++++++++
+
 The function :meth:`Graph.decompose` decomposes the graph into subgraphs. Vice versa, the function :meth:`Graph.compose` returns the composition of two graphs.
 
-To compute the subgraph spannes by some vertices/edges, use :meth:`Graph.subgraph` (aka :meth:`Graph.induced_subgraph`) and :meth:`Graph.subgraph_edges`:
+To compute the subgraph spannes by some vertices/edges, use :meth:`Graph.subgraph` (aka :meth:`Graph.induced_subgraph`) and :meth:`Graph.subgraph_edges`::
 
->>> g_sub = g.subgraph([0, 1])
->>> g_sub = g.subgraph_edges([0])
+    >>> g_sub = g.subgraph([0, 1])
+    >>> g_sub = g.subgraph_edges([0])
 
 To compute the minimum spanning tree, use :meth:`Graph.spanning_tree`.
 
@@ -397,7 +405,8 @@ The dominator tree from a given node can be obtained with :meth:`Graph.dominator
 Bipartite graphs can be decomposed using :meth:`Graph.bipartite_projection`. The size of the projections can be computed using :meth:`Graph.bipartite_projection_size`.
 
 Morphisms
-++++++++++++++++++
++++++++++
+
 |igraph| enables comparisons between graphs:
 
 - :meth:`Graph.isomorphic`
@@ -414,6 +423,7 @@ Morphisms
 
 Flow
 ++++
+
 Flow is a characteristic of directed graphs. The following functions are available:
 
 - :meth:`Graph.maxflow` between two nodes
