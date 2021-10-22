@@ -138,9 +138,7 @@ def _community_leading_eigenvector(
     if arpack_options is not None:
         kwds["arpack_options"] = arpack_options
 
-    membership, _, q = GraphBase.community_leading_eigenvector(
-        graph, clusters, **kwds
-    )
+    membership, _, q = GraphBase.community_leading_eigenvector(graph, clusters, **kwds)
     return VertexClustering(graph, membership, modularity=q)
 
 

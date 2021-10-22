@@ -7,7 +7,7 @@ __all__ = (
     "union",
     "intersection",
     "operator_method_registry",
-    )
+)
 
 from igraph.operators.functions import (
     disjoint_union,
@@ -28,14 +28,14 @@ from igraph.operators.methods import (
 )
 
 operator_method_registry = {
-    '__iadd__': __iadd__,
-    '__add__': __add__,
-    '__and__': __and__,
-    '__isub__': __isub__,
-    '__sub__': __sub__,
-    '__mul__': __mul__,
-    '__or__': __or__,
-    'disjoint_union': _disjoint_union,
-    'union': _union,
-    'intersection': _intersection,
+    "__iadd__": __iadd__,
+    "__add__": __add__,
+    "__and__": __and__,
+    "__isub__": __isub__,
+    "__sub__": __sub__,
+    "__mul__": __mul__,
+    "__or__": __or__,
+    "disjoint_union": _disjoint_union,
+    "union": _union,
+    "intersection": _intersection,
 }

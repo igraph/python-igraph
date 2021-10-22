@@ -15,11 +15,11 @@ from igraph.datatypes import Matrix
 
 
 __all__ = (
-    '_get_adjacency',
-    '_get_adjacency_sparse',
-    '_get_adjlist',
-    '_get_incidence',
-    '_get_inclist',
+    "_get_adjacency",
+    "_get_adjacency_sparse",
+    "_get_adjlist",
+    "_get_incidence",
+    "_get_inclist",
 )
 
 

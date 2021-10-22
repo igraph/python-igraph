@@ -485,9 +485,9 @@ class VertexClustering(Clustering):
                 colors[is_crossing] for is_crossing in self.crossing()
             ]
 
-        palette = kwds.get('palette', None)
+        palette = kwds.get("palette", None)
         if palette is None:
-            kwds['palette'] = ClusterColoringPalette(len(self))
+            kwds["palette"] = ClusterColoringPalette(len(self))
 
         if "mark_groups" not in kwds:
             if Configuration.instance()["plotting.mark_groups"]:
@@ -745,12 +745,12 @@ class Dendrogram:
         if backend == "matplotlib":
             drawer = MatplotlibDendrogramDrawer(context)
         else:
-            bbox = kwds.pop('bbox', None)
-            palette = kwds.pop('palette', None)
+            bbox = kwds.pop("bbox", None)
+            palette = kwds.pop("palette", None)
             if bbox is None:
-                raise ValueError('bbox is required for cairo plots')
+                raise ValueError("bbox is required for cairo plots")
             if palette is None:
-                raise ValueError('palette is required for cairo plots')
+                raise ValueError("palette is required for cairo plots")
             drawer = CairoDendrogramDrawer(context, bbox, palette)
 
         drawer.draw(self, **kwds)
@@ -878,9 +878,7 @@ class VertexDendrogram(Dendrogram):
             name if name is not None else str(idx)
             for idx, name in enumerate(self._names)
         ]
-        result = Dendrogram.__plot__(
-            self, backend, context, *args, **kwds
-        )
+        result = Dendrogram.__plot__(self, backend, context, *args, **kwds)
         del self._names
 
         return result
@@ -1176,7 +1174,7 @@ class VertexCover(Cover):
         """
         if "edge_color" not in kwds and "color" not in self.graph.edge_attributes():
             # Set up a default edge coloring based on internal vs external edges
-            if backend == 'matplotlib':
+            if backend == "matplotlib":
                 colors = ["dimgrey", "silver"]
             else:
                 colors = ["grey20", "grey80"]
@@ -1330,9 +1328,7 @@ class CohesiveBlocks(VertexCover):
         if "vertex_color" not in kwds:
             kwds["vertex_color"] = self.max_cohesions()
 
-        return VertexCover.__plot__(
-            self, backend, context, *args, **kwds
-        )
+        return VertexCover.__plot__(self, backend, context, *args, **kwds)
 
 
 def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):
