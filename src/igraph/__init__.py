@@ -485,6 +485,8 @@ class Graph(GraphBase):
     Read_Adjacency = classmethod(_construct_graph_from_adjacency_file)
     write_adjacency = _write_graph_to_adjacency_file
 
+    write_svg = _write_graph_to_svg
+
     Read = classmethod(_construct_graph_from_file)
     Load = Read
     write = _write_graph_to_file
