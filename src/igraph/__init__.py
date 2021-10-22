@@ -270,10 +270,7 @@ from igraph.version import __version__, __version_info__
 
 import os
 import sys
-import operator
 
-from collections import defaultdict
-from shutil import copyfileobj
 from warnings import warn
 
 

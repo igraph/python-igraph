@@ -1,11 +1,4 @@
 from igraph._igraph import (
-    ADJ_DIRECTED,
-    ADJ_LOWER,
-    ADJ_MAX,
-    ADJ_MIN,
-    ADJ_PLUS,
-    ADJ_UNDIRECTED,
-    ADJ_UPPER,
     GET_ADJACENCY_BOTH,
     GET_ADJACENCY_LOWER,
     GET_ADJACENCY_UPPER,

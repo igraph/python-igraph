@@ -9,7 +9,6 @@ as well as saving them to and retrieving them from disk.
 """
 
 import os.path
-import platform
 
 from configparser import ConfigParser
 

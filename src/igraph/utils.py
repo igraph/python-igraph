@@ -5,7 +5,6 @@
 from contextlib import contextmanager
 
 from collections.abc import MutableMapping
-from ctypes import sizeof
 from itertools import chain
 
 import os
