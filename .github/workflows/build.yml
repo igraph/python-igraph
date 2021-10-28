@@ -206,8 +206,8 @@ jobs:
 
       - name: Test
         run: |
-          pip install numpy scipy pandas networkx
-          python -m unittest -vvv
+          pip install numpy scipy pandas networkx pytest
+          python -m pytest tests
 
       - uses: actions/upload-artifact@v2
         with:
