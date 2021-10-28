@@ -536,8 +536,7 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
 
     @deprecated: UbiGraph has not received updates since 2008 and is now not
         available for download (at least not from the official sources).
-        The UbiGraph graph drawer will be removed from python-igraph in
-        0.10.0.
+        The UbiGraph graph drawer will be removed from igraph in 0.10.0.
     """
 
     def __init__(self, url="http://localhost:20738/RPC2"):
@@ -548,7 +547,7 @@ class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         self.edge_defaults = dict(color="#ffffff", width=1.0)
 
         warn(
-            "UbiGraphDrawer is deprecated from python-igraph 0.9.4",
+            "UbiGraphDrawer is deprecated from igraph 0.9.4",
             DeprecationWarning
         )
 

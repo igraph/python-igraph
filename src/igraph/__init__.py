@@ -1960,9 +1960,8 @@ class Graph(GraphBase):
         Note: because of the restricted data types in graph-tool, vertex and
         edge attributes require to be type-consistent across all vertices or
         edges. If you set the property for only some vertices/edges, the other
-        will be tagged as None in python-igraph, so they can only be converted
-        to graph-tool with the type 'object' and any other conversion will
-        fail.
+        will be tagged as None in igraph, so they can only be converted to
+        graph-tool with the type 'object' and any other conversion will fail.
 
         @param graph_attributes: dictionary of graph attributes to transfer.
           Keys are attributes from the graph, values are data types (see
@@ -5243,21 +5242,21 @@ def get_include():
     import igraph
 
     paths = [
-        # The following path works if python-igraph is installed already
+        # The following path works if igraph is installed already
         os.path.join(
             sys.prefix,
             "include",
             "python{0}.{1}".format(*sys.version_info),
-            "python-igraph",
+            "igraph",
         ),
-        # Fallback for cases when python-igraph is not installed but
+        # Fallback for cases when igraph is not installed but
         # imported directly from the source tree
-        os.path.join(os.path.dirname(igraph.__file__), "..", "src"),
+        os.path.join(os.path.dirname(igraph.__file__), "..", "src", "_igraph"),
     ]
     for path in paths:
         if os.path.exists(os.path.join(path, "igraphmodule_api.h")):
             return os.path.abspath(path)
-    raise ValueError("cannot find the header files of python-igraph")
+    raise ValueError("cannot find the header files of the Python interface of igraph")
 
 
 def read(filename, *args, **kwds):

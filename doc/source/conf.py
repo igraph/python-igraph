@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# python-igraph documentation build configuration file, created by
+# igraph documentation build configuration file, created by
 # sphinx-quickstart on Thu Jun 17 11:36:14 2010.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -43,7 +43,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'python-igraph'
+project = u'igraph'
 copyright = u'2010-{0}, The igraph development team'.format(datetime.now().year)
 
 # The version info for the project you're documenting, acts as replacement for
@@ -170,7 +170,7 @@ html_show_sourcelink = False
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'python-igraphdoc'
+htmlhelp_basename = 'igraphdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -184,7 +184,7 @@ htmlhelp_basename = 'python-igraphdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'python-igraph.tex', u'python-igraph Documentation',
+  ('index', 'igraph.tex', u'igraph Documentation',
    u'The igraph development team', 'manual'),
 ]
 
@@ -217,7 +217,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'python-igraph', u'python-igraph Documentation',
+    ('index', 'igraph', u'igraph Documentation',
      [u'The igraph development team'], 1)
 ]
 
@@ -225,7 +225,7 @@ man_pages = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'python-igraph'
+epub_title = u'igraph'
 epub_author = u'The igraph development team'
 epub_publisher = u'The igraph development team'
 epub_copyright = u'2010, The igraph development team'

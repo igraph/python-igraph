@@ -312,13 +312,13 @@ class Plot:
     def show(self):
         """Saves the plot to a temporary file and shows it.
 
-        This method is deprecated from python-igraph 0.9.1 and will be removed in
+        This method is deprecated from igraph 0.9.1 and will be removed in
         version 0.10.0.
 
         @deprecated: Opening an image viewer with a temporary file never worked
             reliably across platforms.
         """
-        warn("Plot.show() is deprecated from python-igraph 0.9.1", DeprecationWarning)
+        warn("Plot.show() is deprecated from igraph 0.9.1", DeprecationWarning)
 
         if not isinstance(self._surface, cairo.ImageSurface):
             sur = cairo.ImageSurface(
@@ -426,8 +426,8 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
 
         - C{None} -- a temporary file will be created and the object will be
           plotted there. igraph will attempt to open an image viewer and show
-          the temporary file. This feature is deprecated from python-igraph
-          version 0.9.1 and will be removed in 0.10.0.
+          the temporary file. This feature is deprecated from igraph version
+          0.9.1 and will be removed in 0.10.0.
 
     @param bbox: the bounding box of the plot. It must be a tuple with either
       two or four integers, or a L{BoundingBox} object. If this is a tuple

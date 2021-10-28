@@ -29,19 +29,21 @@ PWD=`pwd`
 echo "Removing existing documentation..."
 rm -rf "${DOC_API_FOLDER}/html" "${DOC_API_FOLDER}/pdf"
 
-echo "Removing existing python-igraph eggs from virtualenv..."
+echo "Removing existing igraph and python-igraph eggs from virtualenv..."
 SITE_PACKAGES_DIR=`.venv/bin/python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`
+rm -rf "${SITE_PACKAGES_DIR}"/igraph*.egg
+rm -rf "${SITE_PACKAGES_DIR}"/igraph*.egg-link
 rm -rf "${SITE_PACKAGES_DIR}"/python_igraph*.egg
 rm -rf "${SITE_PACKAGES_DIR}"/python_igraph*.egg-link
 
-echo "Installing python-igraph in virtualenv..."
+echo "Installing igraph in virtualenv..."
 rm -f dist/*.whl && .venv/bin/python setup.py bdist_wheel && .venv/bin/pip install --force-reinstall dist/*.whl
 
 IGRAPHDIR=`.venv/bin/python3 -c 'import igraph, os; print(os.path.dirname(igraph.__file__))'`
 
 echo "Generating HTML documentation..."
 "$PYDOCTOR" \
-    --project-name "python-igraph" \
+    --project-name "igraph" \
     --project-url "https://igraph.org/python" \
     --introspect-c-modules \
     --make-html \
