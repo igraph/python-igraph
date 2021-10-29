@@ -26,6 +26,9 @@ fi
 
 PWD=`pwd`
 
+echo "Patch pydoctor until they fix it"
+$SCRIPTS_FOLDER/patch-pydoctor.sh ${ROOT_FOLDER} ${SCRIPTS_FOLDER}
+
 echo "Removing existing documentation..."
 rm -rf "${DOC_API_FOLDER}/html" "${DOC_API_FOLDER}/pdf"
 
@@ -39,9 +42,11 @@ rm -rf "${SITE_PACKAGES_DIR}"/python_igraph*.egg-link
 echo "Installing igraph in virtualenv..."
 rm -f dist/*.whl && .venv/bin/python setup.py bdist_wheel && .venv/bin/pip install --force-reinstall dist/*.whl
 
-IGRAPHDIR=`.venv/bin/python3 -c 'import igraph, os; print(os.path.dirname(igraph.__file__))'`
+echo "Patching modularized Graph methods"
+.venv/bin/python3 ${SCRIPTS_FOLDER}/patch_modularized_graph_methods.py
 
 echo "Generating HTML documentation..."
+IGRAPHDIR=`.venv/bin/python3 -c 'import igraph, os; print(os.path.dirname(igraph.__file__))'`
 "$PYDOCTOR" \
     --project-name "igraph" \
     --project-url "https://igraph.org/python" \
