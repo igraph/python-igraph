@@ -72,8 +72,8 @@ def _construct_graph_from_networkx(cls, g, vertex_attr_hashable="_nx_name"):
     """Converts the graph from networkx
 
     Vertex names will be stored as a vertex_attr_hashable attribute (usually
-    "_nx_name", but see below). Because python-igraph stored vertices in an
-    ordered manner, vertices will get new ids from 0 up. In case of
+    "_nx_name", but see below). Because igraph stored vertices in an
+    ordered manner, vertices will get new IDs from 0 up. In case of
     multigraphs, each edge will have an "_nx_multiedge_key" attribute, to
     distinguish edges that connect the same two vertices.
 
@@ -176,7 +176,7 @@ def _export_graph_to_graph_tool(
     Note: because of the restricted data types in graph-tool, vertex and
     edge attributes require to be type-consistent across all vertices or
     edges. If you set the property for only some vertices/edges, the other
-    will be tagged as None in python-igraph, so they can only be converted
+    will be tagged as None in igraph, so they can only be converted
     to graph-tool with the type 'object' and any other conversion will
     fail.
 

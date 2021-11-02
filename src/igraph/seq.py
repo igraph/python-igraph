@@ -246,7 +246,7 @@ class VertexSeq(_VertexSeq):
         }
         for keyword, value in kwds.items():
             if "_" not in keyword or keyword.rindex("_") == 0:
-                keyword = keyword + "_eq"
+                keyword += "_eq"
             attr, _, op = keyword.rpartition("_")
             try:
                 func = operators[op]
@@ -547,7 +547,7 @@ class EdgeSeq(_EdgeSeq):
 
         for keyword, value in kwds.items():
             if "_" not in keyword or keyword.rindex("_") == 0:
-                keyword = keyword + "_eq"
+                keyword += "_eq"
             pos = keyword.rindex("_")
             attr, op = keyword[0:pos], keyword[pos + 1 :]
             try:

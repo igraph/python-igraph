@@ -213,8 +213,8 @@ def _write_graph_to_svg(
         x2 = layout[vidxs[1]][0]
         y2 = layout[vidxs[1]][1]
         angle = math.atan2(y2 - y1, x2 - x1)
-        x2 = x2 - vertex_size * math.cos(angle)
-        y2 = y2 - vertex_size * math.sin(angle)
+        x2 -= vertex_size * math.cos(angle)
+        y2 -= vertex_size * math.sin(angle)
 
         print("<path", file=f)
         print(

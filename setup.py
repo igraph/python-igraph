@@ -19,7 +19,6 @@ import glob
 import shlex
 import shutil
 import subprocess
-import sys
 import sysconfig
 
 from contextlib import contextmanager
@@ -517,7 +516,7 @@ class BuildConfiguration:
                     version_header = igraph_build_dir / "include" / "igraph_version.h"
                     if not version_header.exists():
                         raise RuntimeError(
-                            "You need to build the C core of igraph first before generating a source tarball of python-igraph"
+                            "You need to build the C core of igraph first before generating a source tarball of the Python interface of igraph"
                         )
 
                     with version_header.open("r") as fp:
@@ -535,8 +534,8 @@ class BuildConfiguration:
                     )
 
                 if not is_git_repo(igraph_source_repo):
-                    # python-igraph was extracted from an official tarball so
-                    # there is no need to tweak anything
+                    # The Python interface was extracted from an official
+                    # tarball so there is no need to tweak anything
                     return sdist.run(self)
                 else:
                     # Clean up vendor/source/igraph with git
@@ -552,7 +551,7 @@ class BuildConfiguration:
                     else:
                         raise RuntimeError(
                             "You need to build the C core of igraph first before "
-                            "generating a source tarball of python-igraph"
+                            "generating a source tarball of the Python interface"
                         )
 
                     # Add a version file to the tarball
@@ -781,7 +780,7 @@ class BuildConfiguration:
 
 # Import version number from version.py so we only need to change it in
 # one place when a new release is created
-__version__ = None
+__version__: str = ""
 exec(open("src/igraph/version.py").read())
 
 # Process command line options
@@ -800,15 +799,15 @@ Graph plotting functionality is provided by the Cairo library, so make
 sure you install the Python bindings of Cairo if you want to generate
 publication-quality graph plots. You can try either `pycairo
 <http://cairographics.org/pycairo>`_ or `cairocffi <http://cairocffi.readthedocs.io>`_,
-``cairocffi`` is recommended, in particular if you are on Python 3.x because
-there were bug reports affecting igraph graph plots in Jupyter notebooks
-when using ``pycairo`` (but not with ``cairocffi``).
+``cairocffi`` is recommended because there were bug reports affecting igraph
+graph plots in Jupyter notebooks when using ``pycairo`` (but not with
+``cairocffi``).
 """
 
 headers = ["src/_igraph/igraphmodule_api.h"] if not SKIP_HEADER_INSTALL else []
 
 options = dict(
-    name="python-igraph",
+    name="igraph",
     version=__version__,
     url="https://igraph.org/python",
     description="High performance graph data structures and algorithms",

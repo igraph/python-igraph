@@ -201,7 +201,7 @@ class Layout:
             raise ValueError("scaling factor must be given")
         elif len(scaling) == 1:
             if type(scaling[0]) == int or type(scaling[0]) == float:
-                scaling = scaling * self._dim
+                scaling *= self._dim
             else:
                 scaling = scaling[0]
         if len(scaling) != self._dim:

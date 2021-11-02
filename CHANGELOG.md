@@ -27,6 +27,14 @@
 
 ## [Unreleased]
 
+### Changed
+
+- `python-igraph` is now simply `igraph` on PyPI. `python-igraph` will be
+  updated until Sep 1, 2022 but it will only be a stub package that pulls in
+  `igraph` as its only dependency, with a matching version number. Please
+  update your projects to depend on `igraph` instead of `python-igraph` to
+  keep on receiving updates after Sep 1, 2022.
+
 ### Fixed
 
 - `setup.py` no longer uses `distutils`, thanks to

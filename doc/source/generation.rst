@@ -137,13 +137,13 @@ The method :meth:`Graph.Star` creates a star graph, which is a subtype of a tree
 Lattice
 +++++++
 
-:meth:`Graph.Lattice` creates a regular lattice of the chosen size. For instance::
+:meth:`Graph.Lattice` creates a regular square lattice of the chosen size. For instance::
 
     >>> g = Graph.Lattice(dim=[3, 3], circular=False)
 
 creates a 3x3 grid in two dimensions (9 vertices total). `circular` is used to connect each edge of the lattice back onto the other side, a process also known as "periodic boundary condition" that is sometimes helpful to smoothen out edge effects.
 
-The one dimensional case (path graph or ring) is important enough to deserve its own constructor :meth:`Graph.Ring`, which can be circular or not::
+The one dimensional case (path graph or cycle graph) is important enough to deserve its own constructor :meth:`Graph.Ring`, which can be circular or not::
 
     >>> g = Graph.Ring(n=4, circular=False)
 
@@ -173,6 +173,7 @@ will teach you some about martial arts.
 
 Random graphs
 +++++++++++++
+
 Stochastic graphs can be created according to several different models or games:
 
  - Barabasi-Albert model: :meth:`Graph.Barabasi`
