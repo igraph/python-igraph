@@ -15282,7 +15282,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_read_graph_graphml */
   {"Read_GraphML", (PyCFunction) igraphmodule_Graph_Read_GraphML,
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
-   "Read_GraphML(f, directed=True, index=0)\n--\n\n"
+   "Read_GraphML(f, index=0)\n--\n\n"
    "Reads a GraphML format file and creates a graph based on it.\n\n"
    "@param f: the name of the file or a Python file handle\n"
    "@param index: if the GraphML file contains multiple graphs,\n"
