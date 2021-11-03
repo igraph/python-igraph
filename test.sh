@@ -17,11 +17,11 @@ while getopts ":ce:k:" OPTION; do
             CLEAN=1
             ;;
         e)
-			VENV_DIR=$OPTARG
+            VENV_DIR=$OPTARG
             ;;
-		k)
-			PYTEST_ARGS="${PYTEST_ARGS} -k $OPTARG"
-			;;
+        k)
+            PYTEST_ARGS="${PYTEST_ARGS} -k $OPTARG"
+            ;;
         \?)
             echo "Usage: $0 [-c]"
             ;;
