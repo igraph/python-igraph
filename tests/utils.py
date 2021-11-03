@@ -30,7 +30,13 @@ def temporary_file(content=None, mode=None, binary=False):
 
     tmpf.close()
     yield tmpfname
-    os.unlink(tmpfname)
+    try:
+        os.unlink(tmpfname)
+    except Exception:
+        # ignore exceptions; it happens sometimes on Windows in the CI environment
+        # that it cannot remove the temporary file because another process (?) is
+        # using it...
+        pass
 
 
 is_pypy = platform.python_implementation() == "PyPy"
