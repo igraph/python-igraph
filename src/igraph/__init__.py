@@ -2300,7 +2300,7 @@ class Graph(GraphBase):
         return graph
 
     @classmethod
-    def Read_GraphMLz(cls, f, directed=True, index=0):
+    def Read_GraphMLz(cls, f, index=0):
         """Reads a graph from a zipped GraphML file.
 
         @param f: the name of the file
@@ -2312,7 +2312,7 @@ class Graph(GraphBase):
         with named_temporary_file() as tmpfile:
             with open(tmpfile, "wb") as outf:
                 copyfileobj(gzip.GzipFile(f, "rb"), outf)
-            return cls.Read_GraphML(tmpfile, directed=directed, index=index)
+            return cls.Read_GraphML(tmpfile, index=index)
 
     def write_pickle(self, fname=None, version=-1):
         """Saves the graph in Python pickled format
