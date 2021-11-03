@@ -372,8 +372,6 @@ class ForeignTests(unittest.TestCase):
             self.assertFalse(g.is_directed())
             self.assertTrue("name" in g.vertex_attributes())
 
-            g.write_graphmlz(tmpfname)
-
     def testPickle(self):
         pickle = [
             128,
