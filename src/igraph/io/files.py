@@ -174,7 +174,7 @@ def _construct_graph_from_dimacs_file(cls, f, directed=False):
     return graph
 
 
-def _construct_graph_from_graphmlz_file(cls, f, directed=True, index=0):
+def _construct_graph_from_graphmlz_file(cls, f, index=0):
     """Reads a graph from a zipped GraphML file.
 
     @param f: the name of the file
@@ -186,7 +186,7 @@ def _construct_graph_from_graphmlz_file(cls, f, directed=True, index=0):
     with named_temporary_file() as tmpfile:
         with open(tmpfile, "wb") as outf:
             copyfileobj(gzip.GzipFile(f, "rb"), outf)
-        return cls.Read_GraphML(tmpfile, directed=directed, index=index)
+        return cls.Read_GraphML(tmpfile, index=index)
 
 
 def _construct_graph_from_pickle_file(cls, fname=None):
