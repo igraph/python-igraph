@@ -2511,7 +2511,7 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
     } else
       return 1;
   } else {
-    PyErr_SetString(PyExc_TypeError, "only numbers, strings or igraph.Vertex objects can be converted to vertex IDs");
+    PyErr_SetString(PyExc_TypeError, "only non-negative integers, strings or igraph.Vertex objects can be converted to vertex IDs");
     return 1;
   }
 
@@ -2756,7 +2756,7 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
     }
   } else {
     PyErr_SetString(PyExc_TypeError,
-        "only numbers, igraph.Edge objects or tuples of vertex IDs can be "
+        "only non-negative integers, igraph.Edge objects or tuples of vertex IDs can be "
         "converted to edge IDs");
     return 1;
   }
