@@ -26,6 +26,9 @@ fi
 
 PWD=`pwd`
 
+echo "Patching PyDoctor..."
+$SCRIPTS_FOLDER/patch-pydoctor.sh ${ROOT_FOLDER} ${SCRIPTS_FOLDER}
+
 echo "Removing existing documentation..."
 rm -rf "${DOC_API_FOLDER}/html" "${DOC_API_FOLDER}/pdf"
 
