@@ -158,11 +158,43 @@ class AbstractEdgeDrawer:
         else:
             angle = None
 
+
+        def bezier_cubic(x0, y0, x1, y1, x2, y2, x3, y3, t):
+            """Computes the Bezier curve from point (x0,y0) to (x3,y3)
+            via control points (x1,y1) and (x2,y2) with parameter t.
+            """
+            xt = (
+                (1.0 - t) ** 3 * x0
+                + 3.0 * t * (1.0 - t) ** 2 * x1
+                + 3.0 * t ** 2 * (1.0 - t) * x2
+                + t ** 3 * x3
+            )
+            yt = (
+                (1.0 - t) ** 3 * y0
+                + 3.0 * t * (1.0 - t) ** 2 * y1
+                + 3.0 * t ** 2 * (1.0 - t) * y2
+                + t ** 3 * y3
+            )
+            return xt, yt
+
         # Determine the midpoint
-        pos = (
-            (src_vertex.position[0] + dest_vertex.position[0]) / 2.0,
-            (src_vertex.position[1] + dest_vertex.position[1]) / 2,
-        )
+        if edge['curved']:
+            (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
+            aux1 = (2 * x1 + x2) / 3.0 - edge['curved'] * 0.5 * (y2 - y1), (
+                2 * y1 + y2
+            ) / 3.0 + edge['curved'] * 0.5 * (x2 - x1)
+            aux2 = (x1 + 2 * x2) / 3.0 - edge['curved'] * 0.5 * (y2 - y1), (
+                y1 + 2 * y2
+            ) / 3.0 + edge['curved'] * 0.5 * (x2 - x1)
+
+
+            pos = bezier_cubic(x1, y1, *aux1, *aux2, x2, y2, .5)
+
+        else:
+            pos = (
+                (src_vertex.position[0] + dest_vertex.position[0]) / 2.0,
+                (src_vertex.position[1] + dest_vertex.position[1]) / 2,
+            )
 
         # Determine the alignment based on the angle
         pi4 = pi / 4
