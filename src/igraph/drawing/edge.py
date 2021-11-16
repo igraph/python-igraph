@@ -19,6 +19,16 @@ from math import atan2, cos, pi, sin, sqrt
 
 cairo = find_cairo()
 
+def get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, curvature):
+   aux1 = (2 * x1 + x2) / 3.0 - curvature * 0.5 * (y2 - y1), (
+       2 * y1 + y2
+   ) / 3.0 + curvature * 0.5 * (x2 - x1)
+   
+   aux2 = (x1 + 2 * x2) / 3.0 - curvature * 0.5 * (y2 - y1), (
+       y1 + 2 * y2
+   ) / 3.0 + curvature * 0.5 * (x2 - x1)
+   
+   return aux1, aux2
 
 class AbstractEdgeDrawer:
     """Abstract edge drawer object from which all concrete edge drawer
@@ -120,12 +130,9 @@ class AbstractEdgeDrawer:
 
         if edge.curved:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
-            aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
-                2 * y1 + y2
-            ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
-            aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
-                y1 + 2 * y2
-            ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge['curved'])
+
             ctx.curve_to(aux1[0], aux1[1], aux2[0], aux2[1], *dest_vertex.position)
         else:
             ctx.line_to(*dest_vertex.position)
@@ -180,13 +187,8 @@ class AbstractEdgeDrawer:
         # Determine the midpoint
         if edge['curved']:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
-            aux1 = (2 * x1 + x2) / 3.0 - edge['curved'] * 0.5 * (y2 - y1), (
-                2 * y1 + y2
-            ) / 3.0 + edge['curved'] * 0.5 * (x2 - x1)
-            aux2 = (x1 + 2 * x2) / 3.0 - edge['curved'] * 0.5 * (y2 - y1), (
-                y1 + 2 * y2
-            ) / 3.0 + edge['curved'] * 0.5 * (x2 - x1)
 
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge['curved'])
 
             pos = bezier_cubic(x1, y1, *aux1, *aux2, x2, y2, .5)
 
@@ -305,12 +307,7 @@ class ArrowEdgeDrawer(AbstractEdgeDrawer):
 
         if edge.curved:
             # Calculate the curve
-            aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
-                2 * y1 + y2
-            ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
-            aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
-                y1 + 2 * y2
-            ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, x2, y1, y2, edge.curved)
 
             # Coordinates of the control points of the Bezier curve
             xc1, yc1 = aux1
