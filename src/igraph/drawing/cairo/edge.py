@@ -7,7 +7,11 @@ from math import atan2, cos, pi, sin
 from igraph.drawing.baseclasses import AbstractEdgeDrawer
 from igraph.drawing.colors import clamp
 from igraph.drawing.metamagic import AttributeCollectorBase
-from igraph.drawing.utils import euclidean_distance, intersect_bezier_curve_and_circle
+from igraph.drawing.utils import (
+    euclidean_distance,
+    get_bezier_control_points_for_curved_edge,
+    intersect_bezier_curve_and_circle,
+)
 
 from .utils import find_cairo
 
@@ -100,12 +104,7 @@ class AbstractCairoEdgeDrawer(AbstractEdgeDrawer):
 
         if edge.curved:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
-            aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
-                2 * y1 + y2
-            ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
-            aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
-                y1 + 2 * y2
-            ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge['curved'])
             ctx.curve_to(aux1[0], aux1[1], aux2[0], aux2[1], *dest_vertex.position)
         else:
             ctx.line_to(*dest_vertex.position)
@@ -133,12 +132,7 @@ class CairoArrowEdgeDrawer(AbstractCairoEdgeDrawer):
 
         if edge.curved:
             # Calculate the curve
-            aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
-                2 * y1 + y2
-            ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
-            aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
-                y1 + 2 * y2
-            ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, x2, y1, y2, edge.curved)
 
             # Coordinates of the control points of the Bezier curve
             xc1, yc1 = aux1

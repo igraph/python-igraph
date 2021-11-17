@@ -26,7 +26,7 @@ fi
 
 PWD=`pwd`
 
-echo "Patch pydoctor until they fix it"
+echo "Patching PyDoctor..."
 $SCRIPTS_FOLDER/patch-pydoctor.sh ${ROOT_FOLDER} ${SCRIPTS_FOLDER}
 
 echo "Removing existing documentation..."

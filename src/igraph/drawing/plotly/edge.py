@@ -13,6 +13,7 @@ from igraph.drawing.plotly.utils import (
 from igraph.drawing.utils import (
     Point,
     euclidean_distance,
+    get_bezier_control_points_for_curved_edge,
     intersect_bezier_curve_and_circle,
 )
 
@@ -72,12 +73,7 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
 
         if edge.curved:
             # Calculate the curve
-            aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
-                2 * y1 + y2
-            ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
-            aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
-                y1 + 2 * y2
-            ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge.curved)
 
             # Coordinates of the control points of the Bezier curve
             xc1, yc1 = aux1
@@ -115,16 +111,7 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
             ), (aux_points[0][1] - aux_points[1][1])
 
             # Recalculate the curve such that it lands on the base of the arrow triangle
-            aux1 = (2 * x_src + x_arrow_mid) / 3.0 - edge.curved * 0.5 * (
-                y_arrow_mid - y_src
-            ), (2 * y_src + y_arrow_mid) / 3.0 + edge.curved * 0.5 * (
-                x_arrow_mid - x_src
-            )
-            aux2 = (x_src + 2 * x_arrow_mid) / 3.0 - edge.curved * 0.5 * (
-                y_arrow_mid - y_src
-            ), (y_src + 2 * y_arrow_mid) / 3.0 + edge.curved * 0.5 * (
-                x_arrow_mid - x_src
-            )
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(x_src, y_src, x_arrow_mid, y_arrow_mid, edge.curved)
 
             # Offset the second control point (aux2) such that it falls precisely
             # on the normal to the arrow base vector. Strictly speaking,
@@ -251,12 +238,7 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
 
         if edge.curved:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
-            aux1 = (2 * x1 + x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
-                2 * y1 + y2
-            ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
-            aux2 = (x1 + 2 * x2) / 3.0 - edge.curved * 0.5 * (y2 - y1), (
-                y1 + 2 * y2
-            ) / 3.0 + edge.curved * 0.5 * (x2 - x1)
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge.curved)
 
             path.append(
                 format_path_step(

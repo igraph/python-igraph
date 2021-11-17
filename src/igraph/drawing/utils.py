@@ -15,6 +15,7 @@ __all__ = (
     "calculate_corner_radii",
     "euclidean_distance",
     "evaluate_cubic_bezier",
+    "get_bezier_control_points_for_curved_edge",
     "intersect_bezier_curve_and_circle",
     "str_to_orientation",
     "autocurve",
@@ -574,6 +575,21 @@ def evaluate_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3, t):
         + t ** 3 * y3
     )
     return xt, yt
+
+
+def get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, curvature):
+    """Helper function that calculates the Bezier control points for a
+    curved edge that goes from (x1, y1) to (x2, y2).
+    """
+    aux1 = (2 * x1 + x2) / 3.0 - curvature * 0.5 * (y2 - y1), (
+        2 * y1 + y2
+    ) / 3.0 + curvature * 0.5 * (x2 - x1)
+   
+    aux2 = (x1 + 2 * x2) / 3.0 - curvature * 0.5 * (y2 - y1), (
+        y1 + 2 * y2
+    ) / 3.0 + curvature * 0.5 * (x2 - x1)
+   
+    return aux1, aux2
 
 
 def intersect_bezier_curve_and_circle(
