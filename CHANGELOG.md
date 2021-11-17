@@ -1,5 +1,13 @@
 # igraph Python interface changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Edge labels now take the curvature of the edge into account, thanks to
+  [@Sriram-Pattabiraman](https://github.com/Sriram-Pattabiraman).
+  ([#457](https://github.com/igraph/python-igraph/pull/457))
+
 ## [0.9.8]
 
 ### Changed
