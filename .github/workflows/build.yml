@@ -5,12 +5,17 @@ env:
   CIBW_TEST_COMMAND: "cd {project} && python -m pytest tests"
   CIBW_TEST_EXTRAS: "test"
   CIBW_SKIP: "*musllinux*"
+  CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
+  CIBW_MANYLINUX_I686_IMAGE: "manylinux2014"
+  CIBW_MANYLINUX_PYPY_X86_64_IMAGE: "manylinux2014"
+  CIBW_MANYLINUX_PYPY_I686_IMAGE: "manylinux2014"
 
 jobs:
   build_wheel_linux:
     name: Build wheels on Linux (${{ matrix.wheel_arch }})
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false
       matrix:
         wheel_arch: [x86_64, i686]
 
