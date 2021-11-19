@@ -4,6 +4,7 @@ on: [push, pull_request]
 env:
   CIBW_TEST_COMMAND: "cd {project} && python -m pytest tests"
   CIBW_TEST_EXTRAS: "test"
+  CIBW_SKIP: "*musllinux*"
 
 jobs:
   build_wheel_linux:
@@ -25,7 +26,7 @@ jobs:
           python-version: '3.8'
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v2.1.1
+        uses: joerick/cibuildwheel@v2.2.2
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
