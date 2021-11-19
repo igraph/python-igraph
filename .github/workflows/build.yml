@@ -35,6 +35,9 @@ jobs:
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
+          # Skip tests for Python 3.10 because SciPy does not have a 32-bit
+          # wheel for Linux yet
+          CIBW_TEST_SKIP: "cp310-manylinux_i686"
 
       - uses: actions/upload-artifact@v2
         with:
@@ -60,9 +63,6 @@ jobs:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
-          # Skip tests for Python 3.10 because SciPy does not have a 32-bit
-          # wheel for Linux yet
-          CIBW_TEST_SKIP: "cp310-manylinux_i686"
 
       - uses: actions/upload-artifact@v2
         with:
