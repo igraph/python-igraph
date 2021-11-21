@@ -49,9 +49,7 @@ For finding the shortest path or distance between two nodes, we can use :meth:`g
 
    Graph ``g``, as seen in the examples.
 
-    NOTE: Currently, the develop branch is bugged so that I can't display edge weights on the sample figure. I'll find some time to generate a graph from Cairo instead.
-
-.. TODO Update this figure
+    TODO: Currently, the develop branch is bugged so that I can't display edge weights on the sample figure. I'll find some time to generate a graph from Cairo instead later.
 
 - If you're wondering why :meth:`get_shortest_paths` returns a list of lists, it's becuase the `to` argument can also accept a list of vertex IDs. In that case, the shortest path to all each vertex is found and stored in the results array.
 - If you're interested in finding *all* shortest paths, check out :meth:`get_all_shortest_paths`.
