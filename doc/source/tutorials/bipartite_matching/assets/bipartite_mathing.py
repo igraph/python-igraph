@@ -36,6 +36,7 @@ ig.plot(
 )
 plt.show()
 
+# Output:
 # Matching is:
 # 0 - 5
 # 1 - 7
