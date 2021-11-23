@@ -1,5 +1,5 @@
 ==========================
-Maximal Bipartite Matching
+Maximum Bipartite Matching
 ==========================
 
 This example demonstrates how to visualise bipartite matching using max flow.
@@ -24,7 +24,7 @@ This example demonstrates how to visualise bipartite matching using max flow.
     g.add_edges([(4, 10), (5, 10), (6, 10), (7, 10), (8, 10)]) # ... and sinks to the other
 
     flow = g.maxflow(9, 10) # not setting capacities means that all edges have capacity 1
-    print("Maximal Matching is:", flow.value)
+    print("Size of the Maximum Matching is:", flow.value)
 
 And to display the flow graph nicely, with the matchings added
 
