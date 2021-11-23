@@ -2,9 +2,14 @@
 Shortest Paths
 ==============
 
-For finding the shortest path or distance between two nodes, we can use :meth:`get_shortest_paths()`. If we're only interested in counting the unweighted distance, then we use:
+This example will demonstrate how to find the shortest distance between two vertices on a weighted and unweighted graph.
+
+To find the shortest path or distance between two nodes, we can use :meth:`get_shortest_paths()`. If we're only interested in counting the unweighted distance, then
 
 .. code-block:: python
+
+    import igraph as ig
+    import matplotlib.pyplot as plt
 
     # Find the shortest path on an unweighted graph
     g = ig.Graph(
@@ -12,47 +17,51 @@ For finding the shortest path or distance between two nodes, we can use :meth:`g
         [(0, 1), (0, 2), (1, 3), (2, 3), (2, 4), (3, 5), (4, 5)]
     )
 
-    # g.get_shortest_paths() returns a list of vertex ID paths.
-    # In this case, results = [[1, 0, 2, 4]], to indicate that the shortest
-    # path goes through nodes 1 -> 0 -> 2 -> 4.
-    results = g.get_shortest_paths(1, to=4, output="vpath")
+    # g.get_shortest_paths() returns a list of vertex ID paths
+    results = g.get_shortest_paths(1, to=4, output="vpath") # results = [[1, 0, 2, 4]]
 
     if len(results[0]) > 0:
-        # Number of edges is the number of nodes in the shortest path minus one.
+        # The distance is the number of vertices in the shortest path minus one.
         print("Shortest distance is: ", len(results[0])-1)
     else:
-        print("End node could not be reached")
+        print("End node could not be reached!")
 
-...and if the edges have distances or weights associated with them, we pass them in as an argument. Also note that we specify the output format as ``"epath"``, in order to receive the path as an edge list which we can use to calculate the distance.
+If the edges have associated distances or weights, we pass them in as an argument. Note that we specify the output format as ``"epath"``, in order to receive the path as an edge list. This is used to calculate the length of the path.
 
 .. code-block:: python
 
     # Find the shortest path on a weighted graph
     g.es["weight"] = [2, 1, 5, 4, 7, 3, 2]
 
-    # g.get_shortest_paths() returns a list of edge ID paths.
-    # In this case, results = [[1, 3, 5]].
-    results = g.get_shortest_paths(0, to=5, weights=g.es["weight"], output="epath")
+    # g.get_shortest_paths() returns a list of edge ID paths
+    results = g.get_shortest_paths(0, to=5, weights=g.es["weight"], output="epath") # results = [[1, 3, 5]]
 
     if len(results[0]) > 0:
-        # Add up the weights across all edges on the shortest path.
+        # Add up the weights across all edges on the shortest path
         distance = 0
         for e in results[0]:
             distance += g.es[e]["weight"]
-        print("Shortest distance is: ", distance)
+        print("Shortest weighted distance is: ", distance)
     else:
-        print("End node could not be reached")
+        print("End node could not be reached!")
+
+The output of these these two shortest paths are:
+
+.. code-block:: 
+
+    Shortest distance is:  3
+    Shortest weighted distance is:  8    
 
 .. figure:: ./figures/shortest_path.png
    :alt: The visual representation of a weighted network for finding shortest paths
    :align: center
 
-   Graph ``g``, as seen in the examples.
+   The graph `g`
 
-    TODO: Currently, the develop branch is bugged so that I can't display edge weights on the sample figure. I'll find some time to generate a graph from Cairo instead later.
+.. TODO: Add in edge weights when possible! Matplotlib does not support displaying edge weights (and the develop branch implementation is bugged). 
 
-- If you're wondering why :meth:`get_shortest_paths` returns a list of lists, it's becuase the `to` argument can also accept a list of vertex IDs. In that case, the shortest path to all each vertex is found and stored in the results array.
-- If you're interested in finding *all* shortest paths, check out :meth:`get_all_shortest_paths`.
+- Note that :meth:`get_shortest_paths` returns a list of lists becuase the `to` argument can also accept a list of vertex IDs. In that case, the shortest path to all each vertex is found and stored in the results array.
+- If you're interested in finding *all* shortest paths, take a look at :meth:`get_all_shortest_paths`.
 
 
 
