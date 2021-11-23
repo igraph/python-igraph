@@ -2,31 +2,41 @@
 Maximum Bipartite Matching
 ==========================
 
-This example demonstrates how to visualise bipartite matching using max flow.
+This example demonstrates how to find and visualise a maximum biparite matching. First construct a bipartite graph
 
 .. code-block:: python
 
-    # Generate the graph
+    import igraph as ig
+    import matplotlib.pyplot as plt
+
     g = ig.Graph(
         9,
-        [(0, 4), (0, 5), (1, 4), (1, 6), (1, 7), (2, 5), (2, 7), (2, 8), (3, 6), (3, 7)],
-        directed=True
+        [(0, 5), (1, 6), (1, 7), (2, 5), (2, 8), (3, 6), (4, 5), (4, 6)]
     )
 
-    # Assign nodes 0-3 to one side, and the nodes 4-8 to the other side
-    for i in range(4):
+    # Assign nodes 0-4 to one side, and the nodes 5-8 to the other side
+    for i in range(5):
         g.vs[i]["type"] = True
-    for i in range(4, 9):
+    for i in range(5, 9):
         g.vs[i]["type"] = False
 
-    g.add_vertices(2)
-    g.add_edges([(9, 0), (9, 1), (9, 2), (9, 3)]) # connect source to one side
-    g.add_edges([(4, 10), (5, 10), (6, 10), (7, 10), (8, 10)]) # ... and sinks to the other
+Then run the maximum matching,
 
-    flow = g.maxflow(9, 10) # not setting capacities means that all edges have capacity 1
-    print("Size of the Maximum Matching is:", flow.value)
+.. code-block:: python
 
-And to display the flow graph nicely, with the matchings added
+    matching = g.maximum_bipartite_matching()
+
+    # Print pairings for each node on one side
+    matching_size = 0
+    print("Matching is:")
+    for i in range(5):
+        print(f"{i} - {matching.match_of(i)}")
+        if matching.match_of(i):
+            matching_size += 1
+    print("Size of Maximum Matching is:", matching_size)
+
+
+And finally display the bipartite graph with matchings highlighted.
 
 .. code-block:: python
 
@@ -47,14 +57,20 @@ And to display the flow graph nicely, with the matchings added
     )
     plt.show()
 
-The received output is:
+The received output is
 
 .. code-block::
 
-    Maximal Matching is: 4.0
+    Matching is:
+    0 - 5
+    1 - 7
+    2 - 8
+    3 - None
+    4 - 6
+    Size of Maximum Matching is: 4
 
-.. figure:: ./figures/maxflow2.png
+.. figure:: ./figures/bipartite.png
    :alt: The visual representation of maximal bipartite matching
    :align: center
 
-   Maximal Bipartite Matching
+   Maximum Bipartite Matching

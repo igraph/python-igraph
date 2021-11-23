@@ -19,7 +19,7 @@ g.add_edges([(9, 0), (9, 1), (9, 2), (9, 3)]) # connect source to one side
 g.add_edges([(4, 10), (5, 10), (6, 10), (7, 10), (8, 10)]) # ... and sinks to the other
 
 flow = g.maxflow(9, 10)
-print("Maximal Matching is:", flow.value)
+print("Size of the Maximal Matching is:", flow.value)
 
 # Manually set the position of source and sink to display nicely
 layout = g.layout_bipartite()
