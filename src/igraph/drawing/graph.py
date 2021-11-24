@@ -993,7 +993,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
             """Shrink edge by vertex size"""
             aux_display, vcoord_display = ax.transData.transform([aux, vcoord])
             d = sqrt(((aux_display - vcoord_display) ** 2).sum())
-            fr = sqrt(vsize_squared) / d
+            fr = sqrt(vsize_squared) / d if d > 0 else 0
             end_display = vcoord_display + fr * (aux_display - vcoord_display)
             end = ax.transData.inverted().transform(end_display)
             return end
@@ -1178,10 +1178,19 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 xi, yi = x[i], y[i]
                 ax.text(xi, yi, lab, fontsize=label_size)
 
-        dx = max(x) - min(x)
-        dy = max(y) - min(y)
-        ax.set_xlim(min(x) - 0.05 * dx, max(x) + 0.05 * dx)
-        ax.set_ylim(min(y) - 0.05 * dy, max(y) + 0.05 * dy)
+        # Find the X and Y range of coordinates; use a minimum range even if there
+        # is only one vertex to avoid singularities and division by zero later
+        dx, dy = max(x) - min(x), max(y) - min(y)
+        if dx <= 0:
+            dx = 1
+            ax.set_xlim(min(x) - dx / 2, max(x) + dx / 2)
+        else:
+            ax.set_xlim(min(x) - 0.05 * dx, max(x) + 0.05 * dx)
+        if dy <= 0:
+            dy = 1
+            ax.set_ylim(min(y) - dy / 2, max(y) + dy / 2)
+        else:
+            ax.set_ylim(min(y) - 0.05 * dy, max(y) + 0.05 * dy)
 
         # Edge properties
         ne = graph.ecount()
