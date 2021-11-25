@@ -19,7 +19,18 @@ g.add_edges([(9, 0), (9, 1), (9, 2), (9, 3)]) # connect source to one side
 g.add_edges([(4, 10), (5, 10), (6, 10), (7, 10), (8, 10)]) # ... and sinks to the other
 
 flow = g.maxflow(9, 10)
-print("Size of the Maximal Matching is:", flow.value)
+print("Size of Maximum Matching (maxflow) is:", flow.value)
+
+# Compare this to the "maximum_bipartite_matching()" function
+g2 = g.copy()
+g2.delete_vertices([9, 10]) # delete the source and sink, which are unneeded for this function.
+matching = g2.maximum_bipartite_matching()
+
+matching_size = 0
+for i in range(4):
+    if matching.match_of(i):
+        matching_size += 1
+print("Size of Maximum Matching (maximum_bipartite_matching) is:", matching_size)
 
 # Manually set the position of source and sink to display nicely
 layout = g.layout_bipartite()

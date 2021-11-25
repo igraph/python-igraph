@@ -9,10 +9,6 @@ This example shows how to construct a max flow on a directed graph with edge cap
     import igraph as ig
     import matplotlib.pyplot as plt
 
-Max flow on a directed weighted flow graph
-
-.. code-block:: python
-
     # Generate the graph with its capacities
     g = ig.Graph(
         6,
