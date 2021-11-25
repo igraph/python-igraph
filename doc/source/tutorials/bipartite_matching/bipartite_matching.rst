@@ -2,23 +2,21 @@
 Maximum Bipartite Matching
 ==========================
 
-This example demonstrates how to find and visualise a maximum biparite matching. First construct a bipartite graph
+This example demonstrates an efficient way to find and visualise a maximum biparite matching. First construct a bipartite graph
 
 .. code-block:: python
 
     import igraph as ig
     import matplotlib.pyplot as plt
 
-    g = ig.Graph(
-        9,
+    # Assign nodes 0-4 to one side, and the nodes 5-8 to the other side
+    g = ig.Graph.Bipartite(
+        [0,0,0,0,0,1,1,1,1],
         [(0, 5), (1, 6), (1, 7), (2, 5), (2, 8), (3, 6), (4, 5), (4, 6)]
     )
+    assert(g.is_bipartite())
 
-    # Assign nodes 0-4 to one side, and the nodes 5-8 to the other side
-    for i in range(5):
-        g.vs[i]["type"] = True
-    for i in range(5, 9):
-        g.vs[i]["type"] = False
+    matching = g.maximum_bipartite_matching()
 
 Then run the maximum matching,
 
@@ -60,8 +58,8 @@ The received output is
     0 - 5
     1 - 7
     2 - 8
-    3 - None
-    4 - 6
+    3 - 6
+    4 - None
     Size of Maximum Matching is: 4
 
 .. figure:: ./figures/bipartite.png
