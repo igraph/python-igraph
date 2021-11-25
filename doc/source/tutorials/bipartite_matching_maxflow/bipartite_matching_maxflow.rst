@@ -4,7 +4,7 @@ Maximum Bipartite Matching by Maximum Flow
 
 This example presents how to visualise bipartite matching using maximum flow. Please note that the *igraph* already has :meth:`maximum_bipartite_matching` which is better suited for finding the maximum bipartite matching. For a demonstration on how to use that method instead, check out `Maximum Bipartite Matching<>`_. This particular example is purely for demonstrative purposes.
 
-.. TODO: add link to Maximum Bipartite Matching 
+.. TODO: add link to Maximum Bipartite Matching
 
 .. code-block:: python
 
@@ -47,7 +47,7 @@ Let's compare the output against :meth:`maximum_bipartite_matching`
             matching_size += 1
     print("Size of Maximum Matching (maximum_bipartite_matching) is:", matching_size)
 
-And finally, display the flow graph nicely with the matchings added
+And finally, display the original flow graph nicely with the matchings added
 
 .. code-block:: python
 
