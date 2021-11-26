@@ -67,6 +67,7 @@ def find_static_library(library_name: str, library_path: List[str]) -> Optional[
     variants = ["lib{0}.a", "{0}.a", "{0}.lib", "lib{0}.lib"]
     if is_unix_like():
         extra_libdirs = [
+            "/opt/homebrew/lib",  # for newer Homebrew installations on macOS
             "/usr/local/lib64",
             "/usr/local/lib",
             "/usr/lib/x86_64-linux-gnu",
