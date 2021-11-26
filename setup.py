@@ -823,7 +823,12 @@ options = dict(
         "Source Code": "https://github.com/igraph/python-igraph",
     },
     ext_modules=[igraph_extension],
-    package_dir={"igraph": "src/igraph"},
+    package_dir={
+        # make sure to use the next line and not the more logical and restrictive
+        # "igraph": "src/igraph" because that one breaks 'setup.py develop'.
+        # See: https://github.com/igraph/python-igraph/issues/464
+        "": "src"
+    },
     packages=["igraph", "igraph.app", "igraph.drawing", "igraph.remote"],
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
