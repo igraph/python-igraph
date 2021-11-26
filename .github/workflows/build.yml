@@ -4,14 +4,18 @@ on: [push, pull_request]
 env:
   CIBW_TEST_COMMAND: "cd {project} && python -m pytest tests"
   CIBW_TEST_EXTRAS: "test"
-  # skip testing on Python 3.10 until SciPy publishes wheels
-  CIBW_TEST_SKIP: "cp310-*"
+  CIBW_SKIP: "*musllinux*"
+  CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
+  CIBW_MANYLINUX_I686_IMAGE: "manylinux2014"
+  CIBW_MANYLINUX_PYPY_X86_64_IMAGE: "manylinux2014"
+  CIBW_MANYLINUX_PYPY_I686_IMAGE: "manylinux2014"
 
 jobs:
   build_wheel_linux:
     name: Build wheels on Linux (${{ matrix.wheel_arch }})
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false
       matrix:
         wheel_arch: [x86_64, i686]
 
@@ -27,10 +31,13 @@ jobs:
           python-version: '3.8'
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v2.1.1
+        uses: joerick/cibuildwheel@v2.2.2
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
+          # Skip tests for Python 3.10 because SciPy does not have a 32-bit
+          # wheel for Linux yet
+          CIBW_TEST_SKIP: "cp310-manylinux_i686"
 
       - uses: actions/upload-artifact@v2
         with:
@@ -159,6 +166,9 @@ jobs:
         env:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
+          # Skip tests for Python 3.10 because SciPy does not have a 32-bit
+          # wheel for Python 3.10 yet
+          CIBW_TEST_SKIP: "cp310-win32"
           CIBW_TEST_COMMAND: "cd /d {project} && python -m pytest tests"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
