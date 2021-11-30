@@ -1,3 +1,7 @@
+.. include:: include/global.rst
+
+.. tutorials-bipartite-matching-maxflow
+
 ==========================================
 Maximum Bipartite Matching by Maximum Flow
 ==========================================

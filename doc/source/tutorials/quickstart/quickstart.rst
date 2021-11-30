@@ -1,3 +1,7 @@
+.. include:: include/global.rst
+
+.. tutorials-quickstart
+
 ===========
 Quick Start
 ===========

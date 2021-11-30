@@ -15,6 +15,13 @@ Contents:
    intro
    install
    tutorial
+   gallery
+   tutorials/quickstart/quickstart
+   tutorials/bipartite_matching/bipartite_matching
+   tutorials/bipartite_matching_maxflow/bipartite_matching_maxflow
+   tutorials/erdos_renyi/erdos_renyi
+   tutorials/maxflow/maxflow
+   tutorials/shortest_paths/shortest_paths
    generation
    analysis
    visualisation
