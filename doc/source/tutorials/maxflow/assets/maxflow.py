@@ -22,6 +22,7 @@ ig.plot(
     vertex_label=range(g.vcount()),
     vertex_color="lightblue"
 )
+ax.set_aspect(1)
 plt.show()
 
 # Output:

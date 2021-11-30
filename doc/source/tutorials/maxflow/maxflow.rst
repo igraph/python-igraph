@@ -31,7 +31,7 @@ The received output is:
     Edge assignments [1.0, 5.0, 1.0, 2.0, 3.0, 3.0, 3.0]
 
 .. figure:: ./figures/maxflow.png
-   :alt: The visual representation of the flow graph
+   :alt: A visual representation of the flow graph
    :align: center
 
    The flow graph

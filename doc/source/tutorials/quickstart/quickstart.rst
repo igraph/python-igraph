@@ -48,6 +48,7 @@ This example is aimed at those with some familiarity with python and/or graphing
         edge_width=[2 if married else 1 for married in g.es["married"]],
         edge_color=["#F00" if married else "#000" for married in g.es["married"]],
     )
+    ax.set_aspect(1)
 
     plt.show()
 

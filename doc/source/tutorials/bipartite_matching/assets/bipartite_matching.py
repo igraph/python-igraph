@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 # Assign nodes 0-4 to one side, and the nodes 5-8 to the other side
 g = ig.Graph.Bipartite(
-    [0,0,0,0,0,1,1,1,1],
+    [0, 0, 0, 0, 0, 1, 1, 1, 1],
     [(0, 5), (1, 6), (1, 7), (2, 5), (2, 8), (3, 6), (4, 5), (4, 6)]
 )
 assert(g.is_bipartite())
@@ -29,6 +29,8 @@ ig.plot(
     vertex_color="lightblue",
     edge_width=[2.5 if e.target==matching.match_of(e.source) else 1.0 for e in g.es]
 )
+ax.set_aspect(1)
+
 plt.show()
 
 # Matching is:
