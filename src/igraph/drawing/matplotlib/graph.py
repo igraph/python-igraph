@@ -255,7 +255,9 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 *coords,
                 vertex.label,
                 fontsize=label_size,
-                # TODO: alignment, overlap, offset, etc.
+                ha='center',
+                va='center',
+                # TODO: overlap, offset, etc.
             )
 
         # Construct the iterator that we will use to draw the edges

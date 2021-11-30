@@ -67,6 +67,7 @@ def find_static_library(library_name: str, library_path: List[str]) -> Optional[
     variants = ["lib{0}.a", "{0}.a", "{0}.lib", "lib{0}.lib"]
     if is_unix_like():
         extra_libdirs = [
+            "/opt/homebrew/lib",  # for newer Homebrew installations on macOS
             "/usr/local/lib64",
             "/usr/local/lib",
             "/usr/lib/x86_64-linux-gnu",
@@ -823,7 +824,12 @@ options = dict(
         "Source Code": "https://github.com/igraph/python-igraph",
     },
     ext_modules=[igraph_extension],
-    package_dir={"igraph": "src/igraph"},
+    package_dir={
+        # make sure to use the next line and not the more logical and restrictive
+        # "igraph": "src/igraph" because that one breaks 'setup.py develop'.
+        # See: https://github.com/igraph/python-igraph/issues/464
+        "": "src"
+    },
     packages=find_packages(where="src"),
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
@@ -837,7 +843,7 @@ options = dict(
             "networkx>=2.5",
             "pytest>=6.2.5",
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
-            "pandas>=1.1.0,<1.3.1; platform_python_implementation != 'PyPy'",
+            "pandas>=1.1.0; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
             "matplotlib>=3.3.4; platform_python_implementation != 'PyPy'",
             "plotly>=5.3.0",
