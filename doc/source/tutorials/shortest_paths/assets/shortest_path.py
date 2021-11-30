@@ -24,9 +24,7 @@ results = g.get_shortest_paths(0, to=5, weights=g.es["weight"], output="epath") 
 
 if len(results[0]) > 0:
     # Add up the weights across all edges on the shortest path
-    distance = 0
-    for e in results[0]:
-        distance += g.es[e]["weight"]
+    distance = sum(g.es[e]["weight"] for e in results[0])
     print("Shortest weighted distance is: ", distance)
 else:
     print("End node could not be reached!")

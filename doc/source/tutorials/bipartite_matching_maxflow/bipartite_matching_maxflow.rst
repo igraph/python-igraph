@@ -6,7 +6,9 @@
 Maximum Bipartite Matching by Maximum Flow
 ==========================================
 
-This example presents how to visualise bipartite matching using maximum flow. Please note that the *igraph* already has :meth:`maximum_bipartite_matching` which is better suited for finding the maximum bipartite matching. For a demonstration on how to use that method instead, check out `Maximum Bipartite Matching<>`_. This particular example is purely for demonstrative purposes.
+This example presents how to visualise bipartite matching using maximum flow.
+
+.. note:: :meth:`maximum_bipartite_matching` is usually a better way to find the maximum bipartite matching. For a demonstration on how to use that method instead, check out `Maximum Bipartite Matching<>`_.
 
 .. TODO: add link to Maximum Bipartite Matching
 
@@ -23,17 +25,15 @@ This example presents how to visualise bipartite matching using maximum flow. Pl
     )
 
     # Assign nodes 0-3 to one side, and the nodes 4-8 to the other side
-    for i in range(4):
-        g.vs[i]["type"] = True
-    for i in range(4, 9):
-        g.vs[i]["type"] = False
+    g.vs[range(4)]["type"] = True
+    g.vs[range(4, 9)]["type"] = False
 
     g.add_vertices(2)
     g.add_edges([(9, 0), (9, 1), (9, 2), (9, 3)]) # connect source to one side
     g.add_edges([(4, 10), (5, 10), (6, 10), (7, 10), (8, 10)]) # ... and sinks to the other
 
     flow = g.maxflow(9, 10) # not setting capacities means that all edges have capacity 1.0
-    print("Size of Maximum Matching (maxflow) is:", flow.value)
+    print("Size of maximum matching (maxflow) is:", flow.value)
 
 Let's compare the output against :meth:`maximum_bipartite_matching`
 
@@ -45,11 +45,8 @@ Let's compare the output against :meth:`maximum_bipartite_matching`
 
     matching = g2.maximum_bipartite_matching()
 
-    matching_size = 0
-    for i in range(4):
-        if matching.match_of(i):
-            matching_size += 1
-    print("Size of Maximum Matching (maximum_bipartite_matching) is:", matching_size)
+    matching_size = sum(1 for i in range(4) if matching.is_matched(i))
+    print("Size of maximum matching (maximum_bipartite_matching) is:", matching_size)
 
 And finally, display the original flow graph nicely with the matchings added
 

@@ -5,16 +5,15 @@
 ===========
 Quick Start
 ===========
+For the eager folks out there, this intro will give you a quick overview of the following operations:
 
-This quick start will demonstrate the following:
-
-- Construct a *igraph* graph from scratch
-- Set the attributes of nodes and edges
-- Plot out a graph using matplotlib
-- Save a graph as an image
+- Construct a graph
+- Set attributes of nodes and edges
+- Plot a graph using matplotlib
+- Save the plot as an image
 - Export and import a graph as a ``.gml`` file
 
-This example is aimed at those with some familiarity with python and/or graphing packages, who would like to get some code up and running as fast as possible.
+Check out our in-depth tutorial TODO LINK and our gallery TODO LINK for more.
 
 .. code-block:: python
 
