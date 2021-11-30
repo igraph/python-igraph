@@ -46,6 +46,7 @@ This example is aimed at those with some familiarity with python and/or graphing
         vertex_label=g.vs["name"],
         vertex_label_size=7.0,
         edge_width=[2 if married else 1 for married in g.es["married"]],
+        edge_color=["#F00" if married else "#000" for married in g.es["married"]],
     )
 
     plt.show()
