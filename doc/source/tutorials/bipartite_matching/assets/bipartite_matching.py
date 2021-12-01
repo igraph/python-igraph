@@ -15,9 +15,9 @@ matching_size = 0
 print("Matching is:")
 for i in range(5):
     print(f"{i} - {matching.match_of(i)}")
-    if matching.match_of(i) is not None:
+    if matching.is_matched(i):
         matching_size += 1
-print("Size of Maximum Matching is:", matching_size)
+print("Size of maximum matching is:", matching_size)
 
 fig, ax = plt.subplots(figsize=(7, 3))
 ig.plot(
@@ -39,4 +39,4 @@ plt.show()
 # 2 - 8
 # 3 - 6
 # 4 - None
-# Size of Maximum Matching is: 4
+# Size of maximum matching is: 4

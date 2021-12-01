@@ -33,9 +33,9 @@ Then run the maximum matching,
     print("Matching is:")
     for i in range(5):
         print(f"{i} - {matching.match_of(i)}")
-        if matching.match_of(i) is not None:
+        if matching.is_matched(i):
             matching_size += 1
-    print("Size of Maximum Matching is:", matching_size)
+    print("Size of maximum matching is:", matching_size)
 
 
 And finally display the bipartite graph with matchings highlighted.
@@ -65,7 +65,7 @@ The received output is
     2 - 8
     3 - 6
     4 - None
-    Size of Maximum Matching is: 4
+    Size of maximum matching is: 4
 
 .. figure:: ./figures/bipartite.png
    :alt: The visual representation of maximal bipartite matching

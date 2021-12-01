@@ -74,8 +74,8 @@ The received output is:
 
 .. code-block::
 
-    Size of Maximum Matching (maxflow) is: 4.0
-    Size of Maximum Matching (maximum_bipartite_matching) is: 4
+    Size of maximum matching (maxflow) is: 4.0
+    Size of maximum matching (maximum_bipartite_matching) is: 4
 
 .. figure:: ./figures/bipartite_matching_maxflow.png
    :alt: The visual representation of maximal bipartite matching

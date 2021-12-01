@@ -8,7 +8,7 @@ g = ig.Graph(
 )
 
 # g.get_shortest_paths() returns a list of vertex ID paths
-results = g.get_shortest_paths(1, to=4, output="vpath") # results = [[1, 0, 2, 4]]
+results = g.get_shortest_paths(1, to=4, output="vpath")  # results = [[1, 0, 2, 4]]
 
 if len(results[0]) > 0:
     # The distance is the number of vertices in the shortest path minus one.
@@ -20,7 +20,7 @@ else:
 g.es["weight"] = [2, 1, 5, 4, 7, 3, 2]
 
 # g.get_shortest_paths() returns a list of edge ID paths
-results = g.get_shortest_paths(0, to=5, weights=g.es["weight"], output="epath") # results = [[1, 3, 5]]
+results = g.get_shortest_paths(0, to=5, weights=g.es["weight"], output="epath")  # results = [[1, 3, 5]]
 
 if len(results[0]) > 0:
     # Add up the weights across all edges on the shortest path
