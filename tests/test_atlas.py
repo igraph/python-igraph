@@ -38,9 +38,6 @@ class AtlasTestBase:
 
         try:
             for idx, g in enumerate(self.__class__.graphs):
-                if idx in self.__class__.skip_graphs:
-                    # Skip this graph; it causes lots of problems and I don't know why
-                    continue
 
                 try:
                     ec, eval = g.evcent(return_eigenvalue=True)
@@ -156,14 +153,18 @@ class AtlasTestBase:
 
 class GraphAtlasTests(unittest.TestCase, AtlasTestBase):
     graphs = [Graph.Atlas(i) for i in range(1253)]
-    skip_graphs = set([180])
 
+# Skip some problematic graphs
+GraphAtlasTests.graphs = [g for idx, g in enumerate(GraphAtlasTests.graphs) if idx not in set([70, 180])]
+print(len(GraphAtlasTests.graphs))
 
 class IsoclassTests(unittest.TestCase, AtlasTestBase):
     graphs = [Graph.Isoclass(3, i, directed=True) for i in range(16)] + [
         Graph.Isoclass(4, i, directed=True) for i in range(218)
     ]
-    skip_graphs = set([136])
+
+# Skip some problematic graphs
+IsoclassTests.graphs = [g for idx, g in enumerate(IsoclassTests.graphs) if idx not in set([136])]
 
 
 def suite():
