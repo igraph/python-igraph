@@ -6,7 +6,7 @@
 Topological Sort
 ================
 
-This example show how to sort topological order with directed acyclic graph (DAG).
+This example show how to sort by topological order with directed acyclic graph(DAG).
 
 To get topological sorted list, we can use :meth:`topological_sorting`. If given graph is not DAG, error will be returned.
 
@@ -26,7 +26,7 @@ To get topological sorted list, we can use :meth:`topological_sorting`. If given
     results = g.topological_sorting(mode='in')
     print('Topological sorting result (in):', *results)
 
-Default mode is 'out', start from the first node with in-degree as 0. And mode is 'in', start from the first node with in-degree as maximum of all degrees.
+There are two modes for :meth:`topological_sorting`. Default mode is 'out', which starts from the node with zero in-degree to sort nodes by topological order. The other mode, 'in', starts from the node with maximum in-degree.
 
 
 .. code-block:: python
