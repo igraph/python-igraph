@@ -26,7 +26,7 @@ To get topological sorted list, we can use :meth:`topological_sorting`. If given
     results = g.topological_sorting(mode='in')
     print('Topological sorting result (in):', *results)
 
-Default mode is `out`, start from the first node with in-degree as 0. And mode is `in`, start from the first node with in-degree as maximum of all degrees.
+Default mode is 'out', start from the first node with in-degree as 0. And mode is 'in', start from the first node with in-degree as maximum of all degrees.
 
 
 .. code-block:: python
