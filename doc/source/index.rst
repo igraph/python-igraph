@@ -21,6 +21,7 @@ Contents:
    tutorials/bipartite_matching_maxflow/bipartite_matching_maxflow
    tutorials/erdos_renyi/erdos_renyi
    tutorials/maxflow/maxflow
+   tutorials/ring_animation/ring_animation
    tutorials/shortest_paths/shortest_paths
    generation
    analysis

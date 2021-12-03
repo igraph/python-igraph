@@ -9,6 +9,7 @@ layout = g.layout_circle()
 
 # Create canvas
 fig, ax = plt.subplots()
+ax.set_aspect(1)
 
 # Prepare interactive backend for autoupdate
 plt.ion()
@@ -16,7 +17,7 @@ plt.show()
 
 # Animate, one vertex at a time
 for frame in range(11):
-    # Remove previous plot elements
+    # Remove plot elements from the previous frame
     ax.clear()
 
     # Fix limits (unless you want a zoom-out effect)
@@ -25,7 +26,7 @@ for frame in range(11):
 
     # Plot subgraph
     gd = g.subgraph(range(frame))
-    ig.plot(gd, target=ax, layout=layout[:frame])
+    ig.plot(gd, target=ax, layout=layout[:frame], vertex_color="yellow")
 
     # matplotlib animation infrastructure
     fig.canvas.draw_idle()
