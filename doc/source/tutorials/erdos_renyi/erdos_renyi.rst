@@ -95,4 +95,7 @@ The received output is:
 
    Erdos Renyi random graphs with ``m`` = 35 edges
 
-Note that even when using the same random seed, results can still differ depending on the machine the code is being run from.
+
+.. note::
+    
+    Even when using the same random seed, results can still differ depending on the machine the code is being run from.

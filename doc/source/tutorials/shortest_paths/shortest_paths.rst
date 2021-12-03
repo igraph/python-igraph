@@ -64,8 +64,11 @@ The output of these these two shortest paths are:
 
 .. TODO: Add in edge weights when possible! Matplotlib does not support displaying edge weights (and the develop branch implementation is bugged). 
 
-- Note that :meth:`get_shortest_paths` returns a list of lists becuase the `to` argument can also accept a list of vertex IDs. In that case, the shortest path to all each vertex is found and stored in the results array.
-- If you're interested in finding *all* shortest paths, take a look at :meth:`get_all_shortest_paths`.
+
+.. note::
+
+    - :meth:`get_shortest_paths` returns a list of lists becuase the `to` argument can also accept a list of vertex IDs. In that case, the shortest path to all each vertex is found and stored in the results array.
+    - If you're interested in finding *all* shortest paths, take a look at :meth:`get_all_shortest_paths`.
 
 
 

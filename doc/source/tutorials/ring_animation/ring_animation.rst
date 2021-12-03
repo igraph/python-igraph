@@ -52,4 +52,7 @@ The received output is:
    :align: center
    :caption: Sequentially animated ring graph.
 
-Note that we use *igraph*'s :meth:`Graph.subgraph()` (a.k.a `:meth:`Graph.induced_subgraph()`<https://igraph.org/python/api/0.9.8/igraph._igraph.GraphBase.html#induced_subgraph>`_) in order to obtain a section of the ring graph at a time for each frame.
+
+.. note::
+    
+    We use *igraph*'s :meth:`Graph.subgraph()` (a.k.a `Graph.induced_subgraph()`<https://igraph.org/python/api/0.9.8/igraph._igraph.GraphBase.html#induced_subgraph>`_) in order to obtain a section of the ring graph at a time for each frame.

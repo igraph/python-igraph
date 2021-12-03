@@ -83,4 +83,6 @@ The received output is:
 
    Maximal Bipartite Matching
 
-Note that maximum flow will represent the capacities as real values, which is why our result is ``4.0`` instead of ``4``.
+.. note::
+
+    Maximum flow will represent the capacities as real values, which is why our result is ``4.0`` instead of ``4``.
