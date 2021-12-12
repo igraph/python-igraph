@@ -42,5 +42,4 @@ ig.plot(
     vertex_color=["lightblue" if i < 9 else "orange" for i in range(11)],
     edge_width=[1.0 + flow.flow[i] for i in range(g.ecount())]
 )
-ax.set_aspect(1)
 plt.show()

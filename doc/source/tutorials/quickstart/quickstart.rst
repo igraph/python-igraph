@@ -43,15 +43,14 @@ Check out our in-depth tutorial TODO LINK and our gallery TODO LINK for more.
         target=ax,
         layout="circle", # print nodes in a circular layout
         vertex_size=0.1,
-        vertex_color=["lightblue" if gender == "M" else "pink" for gender in g.vs["gender"]],
-        vertex_frame_width=2.0,
+        vertex_color=["steelblue" if gender == "M" else "salmon" for gender in g.vs["gender"]],
+        vertex_frame_width=4.0,
         vertex_frame_color="white",
         vertex_label=g.vs["name"],
         vertex_label_size=7.0,
         edge_width=[2 if married else 1 for married in g.es["married"]],
-        edge_color=["#F00" if married else "#000" for married in g.es["married"]],
+        edge_color=["#7142cf" if married else "#AAA" for married in g.es["married"]]
     )
-    ax.set_aspect(1)
 
     plt.show()
 

@@ -9,7 +9,6 @@ layout = g.layout_circle()
 
 # Create canvas
 fig, ax = plt.subplots()
-ax.set_aspect(1)
 
 # Prepare interactive backend for autoupdate
 plt.ion()

@@ -26,14 +26,12 @@ ig.plot(
     layout="circle",
     vertex_color="lightblue"
 )
-axs[0].set_aspect(1)
 ig.plot(
     g2,
     target=axs[1],
     layout="circle",
     vertex_color="lightblue"
 )
-axs[1].set_aspect(1)
 plt.show()
 
 fig, axs = plt.subplots(1, 2, figsize=(10, 5))
@@ -44,7 +42,6 @@ ig.plot(
     vertex_color="lightblue",
     vertex_size=0.15
 )
-axs[0].set_aspect(1)
 ig.plot(
     g4,
     target=axs[1],
@@ -52,7 +49,6 @@ ig.plot(
     vertex_color="lightblue",
     vertex_size=0.15
 )
-axs[1].set_aspect(1)
 plt.show()
 
 # IGRAPH U--- 15 18 -- 

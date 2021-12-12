@@ -29,8 +29,6 @@ ig.plot(
     vertex_color="lightblue",
     edge_width=[2.5 if e.target == matching.match_of(e.source) else 1.0 for e in g.es]
 )
-ax.set_aspect(1)
-
 plt.show()
 
 # Matching is:

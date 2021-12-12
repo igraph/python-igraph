@@ -43,14 +43,12 @@ We generate two graphs of each, so we can confirm that our graph generator is tr
         layout="circle",
         vertex_color="lightblue"
     )
-    axs[0].set_aspect(1)
     ig.plot(
         g2,
         target=axs[1],
         layout="circle",
         vertex_color="lightblue"
     )
-    axs[1].set_aspect(1)
     plt.show()
 
     fig, axs = plt.subplots(1, 2, figsize=(10, 5))
@@ -61,7 +59,6 @@ We generate two graphs of each, so we can confirm that our graph generator is tr
         vertex_color="lightblue",
         vertex_size=0.15
     )
-    axs[0].set_aspect(1)
     ig.plot(
         g4,
         target=axs[1],
@@ -69,7 +66,6 @@ We generate two graphs of each, so we can confirm that our graph generator is tr
         vertex_color="lightblue",
         vertex_size=0.15
     )
-    axs[1].set_aspect(1)
     plt.show()
 
 The received output is:
