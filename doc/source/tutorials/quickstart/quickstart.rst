@@ -13,7 +13,7 @@ For the eager folks out there, this intro will give you a quick overview of the 
 - Save the plot as an image
 - Export and import a graph as a ``.gml`` file
 
-Check out our in-depth tutorial TODO LINK and our gallery TODO LINK for more.
+To find out more features that |igraph| has to offer, check out the :ref:`gallery`!
 
 .. code-block:: python
 

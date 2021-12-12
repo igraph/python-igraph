@@ -67,7 +67,7 @@ The output of these these two shortest paths are:
 
    The Graph `g` 
 
-.. TODO: Add in edge weights when possible! Matplotlib does not support displaying edge weights (and the develop branch implementation is bugged). 
+.. TODO: Add in edge weights as labels when possible! Matplotlib does not support displaying edge weights (and the develop branch implementation is bugged). 
 
 
 .. note::
