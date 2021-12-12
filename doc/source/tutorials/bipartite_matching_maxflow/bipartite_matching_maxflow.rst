@@ -8,7 +8,7 @@ Maximum Bipartite Matching by Maximum Flow
 
 This example presents how to visualise bipartite matching using maximum flow.
 
-.. note:: :meth:`maximum_bipartite_matching` is usually a better way to find the maximum bipartite matching. For a demonstration on how to use that method instead, check out `Maximum Bipartite Matching<>`_.
+.. note:: :meth:`maximum_bipartite_matching` is usually a better way to find the maximum bipartite matching. For a demonstration on how to use that method instead, check out `Maximum Bipartite Matching <>`_.
 
 .. TODO: add link to Maximum Bipartite Matching
 

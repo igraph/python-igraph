@@ -6,7 +6,7 @@
 Erdős-Rényi Graph
 =================
 
-This example demonstrates how to generate `Erdős-Rényi Graphs<https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model>`_. There are two variants of graphs:
+This example demonstrates how to generate `Erdős-Rényi Graphs <https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model>`_. There are two variants of graphs:
 
 - :meth:`Erdos_Renyi(n, m)` will pick a graph uniformly at random out of all graphs with ``n`` nodes and ``m`` edges.
 - :meth:`Erdos_Renyi(n, p)` will generate a graph where each edge between any two pair of nodes has an independent probability ``p`` of existing.
@@ -78,18 +78,16 @@ The received output is:
     IGRAPH U--- 20 35 --
 
 .. figure:: ./figures/erdos_renyi_p.png
+    :alt: The visual representation of a randomly generated Erdos Renyi graph
+    :align: center
 
-   :alt: The visual representation of a randomly generated Erdos Renyi graph
-   :align: center
-
-   Erdos Renyi random graphs with probability ``p`` = 0.2
+    Erdos Renyi random graphs with probability ``p`` = 0.2
 
 .. figure:: ./figures/erdos_renyi_m.png
+    :alt: The second visual representation of a randomly generated Erdos Renyi graph
+    :align: center
 
-   :alt: The second visual representation of a randomly generated Erdos Renyi graph
-   :align: center
-
-   Erdos Renyi random graphs with ``m`` = 35 edges
+    Erdos Renyi random graphs with ``m`` = 35 edges
 
 
 .. note::

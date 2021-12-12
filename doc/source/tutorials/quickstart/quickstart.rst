@@ -69,4 +69,5 @@ The output of the code is pictured below
 .. figure:: ./figures/social_network.png
    :alt: The visual representation of a small friendship group
    :align: center
+   
    The Output Graph
