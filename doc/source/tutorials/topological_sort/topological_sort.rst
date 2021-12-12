@@ -6,7 +6,10 @@
 Topological Sort
 ================
 
-To get a topological sort of directed acyclic graph(DAG), we can use :meth:`topological_sortng`.
+This example demonstrates how to get a topological sorting list on a directed acyclic graph (DAG).
+Topological sort of a directed graph is a linear ordering based on the precedence implied by the directed edges and it exists iff the graph doesn't have any directed cycle.
+
+We can use :meth:`topological_sortng` to get a topological ordering.
 
 .. code-block:: python
 
@@ -25,7 +28,7 @@ To get a topological sort of directed acyclic graph(DAG), we can use :meth:`topo
     results = g.topological_sorting(mode='in') # results = [5, 3, 1, 4, 2, 0]
     print('Topological sort of graph g on 'in' mode:', *results)
 
-There are two modes of :meth:`topological_sorting`. Default mode is 'out', it starts a topological sorting from the node with indegree 0. The other mode is 'in', it starts a topological sorting from the node that has maximum indegree.
+There are two modes of :meth:topological_sorting. 'out' is the default mode which start from a node with indegree equal to 0. The other mode is 'in', and it similarly starts from a node with outdegree equal to 0.
 
 The output of the code above is:
 
@@ -35,7 +38,7 @@ The output of the code above is:
     Topological sort of graph g on 'in' mode: 5 3 1 4 2 0
 
 
-For finding indegree of each node, we can use :meth:`indegree()`.
+We can use :meth:`indegree()` to find the indegree of the node.
 
 .. code-block:: python
 
@@ -64,4 +67,5 @@ For finding indegree of each node, we can use :meth:`indegree()`.
 
    The graph `g`
 
-- Note that :meth:`topological_sorting` returns a list of vertice ID paths and we can set two modes.
+- :meth:`topological_sorting` returns a list of node IDs.
+- We can set two modes as a parameter.
