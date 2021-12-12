@@ -974,8 +974,8 @@ Color specification in CSS syntax
     - ``rgb(R, G, B)``, components range from 0 to 255 or from 0% to
       100%. Example: ``"rgb(0, 127, 255)"`` or ``"rgb(0%, 50%, 100%)"``.
 
-List, tuple or whitespace-separated string of RGB values
-    Example: ``(255, 128, 0)``, ``[255, 128, 0]`` or ``"255, 128, 0"``.
+Lists or tuples of RGB values in the range 0-1
+    Example: ``(1.0, 0.5, 0)`` or ``[1.0, 0.5, 0]``.
 
 
 Saving plots
