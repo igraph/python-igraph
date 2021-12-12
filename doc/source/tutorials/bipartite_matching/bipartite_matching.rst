@@ -1,6 +1,6 @@
-.. include:: include/global.rst
+.. include:: ../../include/global.rst
 
-.. tutorials-bipartite-matching
+.. _tutorials-bipartite-matching:
 
 ==========================
 Maximum Bipartite Matching

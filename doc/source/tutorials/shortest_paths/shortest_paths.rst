@@ -1,6 +1,6 @@
-.. include:: include/global.rst
+.. include:: ../../include/global.rst
 
-.. tutorials-shortest-paths
+.. _tutorials-shortest-paths:
 
 ==============
 Shortest Paths

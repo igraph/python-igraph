@@ -1,6 +1,6 @@
-.. include:: include/global.rst
+.. include:: ../../include/global.rst
 
-.. tutorials-maxflow
+.. _tutorials-maxflow:
 
 ============
 Maximum Flow

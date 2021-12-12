@@ -1,6 +1,6 @@
 .. include:: include/global.rst
 
-.. gallery
+.. _gallery:
 
 ========
 Gallery

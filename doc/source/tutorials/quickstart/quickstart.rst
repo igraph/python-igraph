@@ -1,6 +1,6 @@
-.. include:: include/global.rst
+.. include:: ../../include/global.rst
 
-.. tutorials-quickstart
+.. _tutorials-quickstart:
 
 ===========
 Quick Start
@@ -69,5 +69,5 @@ The output of the code is pictured below
 .. figure:: ./figures/social_network.png
    :alt: The visual representation of a small friendship group
    :align: center
-   
+
    The Output Graph

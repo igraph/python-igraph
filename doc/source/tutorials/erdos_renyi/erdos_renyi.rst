@@ -1,6 +1,6 @@
-.. include:: include/global.rst
+.. include:: ../../include/global.rst
 
-.. tutorials-random
+.. _tutorials-random:
 
 =================
 Erdős-Rényi Graph
