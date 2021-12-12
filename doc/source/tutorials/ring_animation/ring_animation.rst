@@ -1,12 +1,12 @@
 .. include:: ../../include/global.rst
 
-.. tutorials-ring-animation
+.. _tutorials-ring-animation:
 
 ====================
 Ring Graph Animation
 ====================
 
-This example demonstrates how to use Matplotlib's `animation features <https://matplotlib.org/stable/api/animation_api.html>`_ in order to animate a ring graph sequentially being revealed.
+This example demonstrates how to use `Matplotlib's animation features <https://matplotlib.org/stable/api/animation_api.html>`_ in order to animate a ring graph sequentially being revealed.
 
 .. code-block:: python
 
@@ -53,6 +53,9 @@ The received output is:
    :caption: Sequentially animated ring graph.
 
 
+.. _induced_subgraph: https://igraph.org/python/api/latest/igraph._igraph.GraphBase.html#induced_subgraph
+.. |induced_subgraph| replace:: :meth:`induced_subgraph`
+
 .. note::
     
-    We use *igraph*'s :meth:`Graph.subgraph()` (a.k.a `Graph.induced_subgraph()`<https://igraph.org/python/api/0.9.8/igraph._igraph.GraphBase.html#induced_subgraph>`_) in order to obtain a section of the ring graph at a time for each frame.
+    We use *igraph*'s :meth:`Graph.subgraph()` (see |induced_subgraph|_) in order to obtain a section of the ring graph at a time for each frame.

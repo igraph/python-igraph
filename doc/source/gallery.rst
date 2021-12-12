@@ -12,5 +12,6 @@ This page contains short examples showcasing the functionality of |igraph|:
  - :ref:`tutorials-bipartite-matching`
  - :ref:`tutorials-bipartite-matching-maxflow`
  - :ref:`tutorials-random`
+ - :ref:`tutorials-ring-animation`
  - :ref:`tutorials-maxflow`
  - :ref:`tutorials-shortest-paths`

@@ -6,10 +6,14 @@
 Erdős-Rényi Graph
 =================
 
-This example demonstrates how to generate `Erdős-Rényi Graphs <https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model>`_. There are two variants of graphs:
+.. _Erdos_Renyi: https://igraph.org/python/doc/api/igraph.Graph.html#Erdos_Renyi
+.. |Erdos_Renyi| replace:: :meth:`Erdos_Renyi`
 
-- :meth:`Erdos_Renyi(n, m)` will pick a graph uniformly at random out of all graphs with ``n`` nodes and ``m`` edges.
-- :meth:`Erdos_Renyi(n, p)` will generate a graph where each edge between any two pair of nodes has an independent probability ``p`` of existing.
+
+This example demonstrates how to generate `Erdős-Rényi Graphs <https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model>`_ using |Erdos_Renyi|_. There are two variants of graphs:
+
+- ``Erdos_Renyi(n, m)`` will pick a graph uniformly at random out of all graphs with ``n`` nodes and ``m`` edges.
+- ``Erdos_Renyi(n, p)`` will generate a graph where each edge between any two pair of nodes has an independent probability ``p`` of existing.
 
 We generate two graphs of each, so we can confirm that our graph generator is truly random.
 

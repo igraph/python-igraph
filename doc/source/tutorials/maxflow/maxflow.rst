@@ -6,7 +6,10 @@
 Maximum Flow
 ============
 
-This example shows how to construct a max flow on a directed graph with edge capacities.
+.. _maxflow: https://igraph.org/python/doc/api/igraph.Graph.html#maxflow
+.. |maxflow| replace:: :meth:`maxflow`
+
+This example shows how to construct a max flow on a directed graph with edge capacities using |maxflow|_.
 
 .. code-block:: python
 
