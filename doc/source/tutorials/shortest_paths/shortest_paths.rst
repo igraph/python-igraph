@@ -65,7 +65,7 @@ The output of these these two shortest paths are:
    :alt: The visual representation of a weighted network for finding shortest paths
    :align: center
 
-   The graph `g`
+   The Graph `g` 
 
 .. TODO: Add in edge weights when possible! Matplotlib does not support displaying edge weights (and the develop branch implementation is bugged). 
 

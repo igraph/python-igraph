@@ -41,4 +41,4 @@ The received output is:
    :alt: A visual representation of the flow graph
    :align: center
 
-   The flow graph
+   The Flow Graph

@@ -85,13 +85,13 @@ The received output is:
     :alt: The visual representation of a randomly generated Erdos Renyi graph
     :align: center
 
-    Erdos Renyi random graphs with probability ``p`` = 0.2
+    Erdos Renyi Random Graphs With Probability ``p`` = 0.2
 
 .. figure:: ./figures/erdos_renyi_m.png
     :alt: The second visual representation of a randomly generated Erdos Renyi graph
     :align: center
 
-    Erdos Renyi random graphs with ``m`` = 35 edges
+    Erdos Renyi Random Graphs With Number of Edges ``m`` = 35 
 
 
 .. note::

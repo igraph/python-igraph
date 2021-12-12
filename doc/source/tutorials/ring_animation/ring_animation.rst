@@ -47,10 +47,10 @@ This example demonstrates how to use `Matplotlib's animation features <https://m
 The received output is:
 
 .. figure:: ./figures/ring_animation.gif
-
    :alt: The visualisation of a animated ring graph
    :align: center
-   :caption: Sequentially animated ring graph.
+
+   Sequentially Animated Ring Graph
 
 
 .. _induced_subgraph: https://igraph.org/python/api/latest/igraph._igraph.GraphBase.html#induced_subgraph
