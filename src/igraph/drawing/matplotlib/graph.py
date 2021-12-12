@@ -290,7 +290,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 src, dest = edge.tuple
                 src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
                 (x, y), (halign, valign) = edge_drawer.get_label_position(
-                    edge,
+                    visual_edge,
                     src_vertex,
                     dest_vertex,
                 )
@@ -301,8 +301,8 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                     label,
                     fontsize=visual_edge.label_size,
                     color=visual_edge.label_color,
-                    ha=halign,
-                    va=valign,
+                    ha=halign.value,
+                    va=valign.value,
                     # TODO: offset, etc.
                 )
 
