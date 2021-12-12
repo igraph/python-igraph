@@ -88,6 +88,14 @@ def get_platform_image_viewer():
 class Configuration:
     """Class representing igraph configuration details.
 
+    Note that there is one primary instance of this class, which is used by
+    igraph itself to retrieve configuration parameters when needed. You can
+    access this instance with the L{instance()} method. You I{may} construct
+    other instances by invoking the constructor directly, but these instances
+    will I{not} affect igraph's behaviour. If you are interested in configuring
+    igraph, use L{igraph.config} to get hold of the singleton instance and then
+    modify it.
+
     General ideas
     =============
 

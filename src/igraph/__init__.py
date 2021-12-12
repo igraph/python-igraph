@@ -5289,4 +5289,8 @@ save = write
 
 
 config = init_configuration()
+"""The main configuration object of igraph. Use this object to modify igraph's
+behaviour, typically when used in interactive mode.
+"""
+
 del construct_graph_from_formula
