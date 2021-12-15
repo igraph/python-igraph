@@ -15,6 +15,7 @@ This page contains short examples showcasing the functionality of |igraph|:
  - :ref:`tutorials-ring-animation`
  - :ref:`tutorials-maxflow`
  - :ref:`tutorials-shortest-paths`
+ - :ref:`tutorials-cliques`
 
 
 .. toctree::
@@ -28,3 +29,4 @@ This page contains short examples showcasing the functionality of |igraph|:
    tutorials/maxflow/maxflow
    tutorials/ring_animation/ring_animation
    tutorials/shortest_paths/shortest_paths
+   tutorials/visualize_cliques/visualize_cliques
