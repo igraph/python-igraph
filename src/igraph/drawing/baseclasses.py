@@ -6,6 +6,7 @@ from abc import ABCMeta, abstractmethod
 from math import atan2, pi
 
 from .text import TextAlignment
+from .utils import get_bezier_control_points_for_curved_edge, evaluate_cubic_bezier
 
 #####################################################################
 
@@ -150,10 +151,12 @@ class AbstractEdgeDrawer(metaclass=ABCMeta):
             angle = None
 
         # Determine the midpoint
-        if edge['curved']:
+        if edge.curved:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
-            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge['curved'])
-            pos = bezier_cubic(x1, y1, *aux1, *aux2, x2, y2, 0.5)
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(
+                    x1, y1, x2, y2, edge.curved,
+                )
+            pos = evaluate_cubic_bezier(x1, y1, *aux1, *aux2, x2, y2, 0.5)
         else:
             pos = (
                 (src_vertex.position[0] + dest_vertex.position[0]) / 2.0,

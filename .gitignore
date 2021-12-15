@@ -16,4 +16,5 @@ result_images/
 .vscode/
 vendor/build/
 vendor/install/
+.DS_Store
 
