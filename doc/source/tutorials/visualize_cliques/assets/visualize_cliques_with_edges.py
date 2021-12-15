@@ -12,10 +12,10 @@ for clique, ax in zip(cliques, axs):
     g.vs[clique]['color'] = 'red'
 
     # Color edges black/red based on whether they are in this clique
-    # also increase thickness of clique edges
     clique_edges = g.es.select(_within=clique)
     g.es['color'] = 'black'
     clique_edges['color'] = 'red'
+    # also increase thickness of clique edges
     g.es['width'] = 0.3
     clique_edges['width'] = 1
 
