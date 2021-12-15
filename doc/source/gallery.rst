@@ -15,3 +15,16 @@ This page contains short examples showcasing the functionality of |igraph|:
  - :ref:`tutorials-ring-animation`
  - :ref:`tutorials-maxflow`
  - :ref:`tutorials-shortest-paths`
+
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   tutorials/quickstart/quickstart
+   tutorials/bipartite_matching/bipartite_matching
+   tutorials/bipartite_matching_maxflow/bipartite_matching_maxflow
+   tutorials/erdos_renyi/erdos_renyi
+   tutorials/maxflow/maxflow
+   tutorials/ring_animation/ring_animation
+   tutorials/shortest_paths/shortest_paths
