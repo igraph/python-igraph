@@ -12,7 +12,7 @@ results = g.get_shortest_paths(1, to=4, output="vpath")  # results = [[1, 0, 2, 
 
 if len(results[0]) > 0:
     # The distance is the number of vertices in the shortest path minus one.
-    print("Shortest distance is: ", len(results[0])-1)
+    print("Shortest distance is: ", len(results[0]) - 1)
 else:
     print("End node could not be reached!")
 

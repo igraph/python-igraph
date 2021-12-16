@@ -82,16 +82,16 @@ The received output is:
     IGRAPH U--- 20 35 --
 
 .. figure:: ./figures/erdos_renyi_p.png
-    :alt: The visual representation of a randomly generated Erdos Renyi graph
+    :alt: The visual representation of a randomly generated Erdős-Rényi graph
     :align: center
 
-    Erdos Renyi Random Graphs With Probability ``p`` = 0.2
+    Erdős-Rényi Random Graphs With Probability ``p`` = 0.2
 
 .. figure:: ./figures/erdos_renyi_m.png
-    :alt: The second visual representation of a randomly generated Erdos Renyi graph
+    :alt: The second visual representation of a randomly generated Erdős-Rényi graph
     :align: center
 
-    Erdos Renyi Random Graphs With Number of Edges ``m`` = 35 
+    Erdős-Rényi Random Graphs With Number of Edges ``m`` = 35 
 
 
 .. note::

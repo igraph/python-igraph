@@ -65,9 +65,7 @@ The output of these these two shortest paths are:
    :alt: The visual representation of a weighted network for finding shortest paths
    :align: center
 
-   The Graph `g` 
-
-.. TODO: Add in edge weights as labels when possible! Matplotlib does not support displaying edge weights (and the develop branch implementation is bugged). 
+   The graph `g` with the shortest path from vertex 0 to vertex 5 highlighted.
 
 
 .. note::
@@ -76,4 +74,33 @@ The output of these these two shortest paths are:
     - If you're interested in finding *all* shortest paths, take a look at |get_all_shortest_paths|_.
 
 
+In case you are wondering how the visualization figure was done, here's the code:
 
+.. code-block:: python
+
+    import igraph as ig
+    import matplotlib.pyplot as plt
+    
+    # Find the shortest path on an unweighted graph
+    g = ig.Graph(
+        6,
+        [(0, 1), (0, 2), (1, 3), (2, 3), (2, 4), (3, 5), (4, 5)]
+    )
+    g.es["weight"] = [2, 1, 5, 4, 7, 3, 2]
+       
+    # g.get_shortest_paths() returns a list of edge ID paths
+    results = g.get_shortest_paths(0, to=5, weights=g.es["weight"], output="epath")  # results = [[1, 3, 5]] 
+
+    fig, ax = plt.subplots()
+    g.es['width'] = 1
+    for edge in g.es:
+        if set([edge.source, edge.target]) in [set([0, 1]), set([1, 3]), set([3, 5])]:
+            edge['width'] = 4
+    ig.plot(
+        g,
+        target=ax,
+        layout='circle',
+        vertex_color='steelblue',
+        vertex_label=['0', '1', '2', '3', '4', '5'],
+        edge_width=g.es['width'],
+    )
