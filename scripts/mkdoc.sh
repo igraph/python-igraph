@@ -2,22 +2,55 @@
 #
 # Creates the API documentation for igraph's Python interface using PyDoctor
 #
-# Usage: ./mkdoc.sh
+# Usage: ./mkdoc.sh (makes API docs)
+#        ./mkdoc.sh -t (makes tutorials)
+
+
+DOC_TYYPE=api
+
+while getopts ":t::" OPTION; do
+    case $OPTION in
+      t)
+         DOC_TYPE=tutorial
+	 ;;
+      \?)
+	 echo "Usage: $0 [-t]"
+	 ;;
+    esac
+done
+
 
 SCRIPTS_FOLDER=`dirname $0`
 
 cd ${SCRIPTS_FOLDER}/..
 ROOT_FOLDER=`pwd`
+DOC_SOURCE_FOLDER=${ROOT_FOLDER}/doc/source
 DOC_API_FOLDER=${ROOT_FOLDER}/doc/api
+DOC_TUTORIAL_FOLDER=${ROOT_FOLDER}/doc/tutorial
 
 cd ${ROOT_FOLDER}
 
+# Create a virtual environment
 if [ ! -d ".venv" ]; then
-    # Create a virtual environment for pydoctor
     python3 -m venv .venv
-    .venv/bin/pip install -U pydoctor wheel
 fi
 
+# Make tutorial only if requested
+if [ ${DOC_TYPE}=="tutorial" ]; then
+
+    # Install pydoctor into the venv
+    .venv/bin/pip install sphinx sphinxbootstrap4theme
+
+    # Make sphinx tutorials
+    .venv/bin/python -m sphinx.cmd.build ${DOC_SOURCE_FOLDER} ${DOC_TUTORIAL_FOLDER}
+    exit $?
+fi
+
+echo "shouldnt be here"
+exit 0
+
+# Install pydoctor into the venv
+.venv/bin/pip install -U pydoctor wheel
 PYDOCTOR=.venv/bin/pydoctor
 if [ ! -f ${PYDOCTOR} ]; then
   echo "PyDoctor not installed in the virtualenv of the project, exiting..."

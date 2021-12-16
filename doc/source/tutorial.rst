@@ -16,6 +16,8 @@ start out. If you already have a stable programming background in other language
 a quick overview of Python, `Learn Python in 10 minutes <https://www.stavros.io/tutorials/python/>`_
 is probably your best bet.
 
+.. note::
+   For the impatient reader, see the :ref:`gallery` page for short, self-contained examples.
 
 Starting |igraph|
 =================

@@ -15,6 +15,7 @@ Contents:
    intro
    install
    tutorial
+   gallery
    generation
    analysis
    visualisation
