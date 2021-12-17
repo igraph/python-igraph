@@ -2,9 +2,9 @@
 
 .. _gallery:
 
-========
+=======
 Gallery
-========
+=======
 
 This page contains short examples showcasing the functionality of |igraph|:
 
@@ -16,6 +16,8 @@ This page contains short examples showcasing the functionality of |igraph|:
  - :ref:`tutorials-maxflow`
  - :ref:`tutorials-shortest-paths`
  - :ref:`tutorials-cliques`
+ - :ref:`tutorials-configuration`
+ - :ref:`tutorials-visual-style`
  - :ref:`tutorials-online-user-actions`
  - :ref:`tutorials-visualize-communities`
 
@@ -32,5 +34,7 @@ This page contains short examples showcasing the functionality of |igraph|:
    tutorials/ring_animation/ring_animation
    tutorials/shortest_paths/shortest_paths
    tutorials/visualize_cliques/visualize_cliques
+   tutorials/configuration/configuration
+   tutorials/visual_style/visual_style
    tutorials/online_user_actions/online_user_actions
    tutorials/visualize_communities/visualize_communities
