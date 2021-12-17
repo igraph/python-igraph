@@ -80,27 +80,31 @@ In case you are wondering how the visualization figure was done, here's the code
 
     import igraph as ig
     import matplotlib.pyplot as plt
-    
-    # Find the shortest path on an unweighted graph
+
+    import igraph as ig
+    import matplotlib.pyplot as plt
+
+    # Construct the graph
     g = ig.Graph(
         6,
         [(0, 1), (0, 2), (1, 3), (2, 3), (2, 4), (3, 5), (4, 5)]
     )
     g.es["weight"] = [2, 1, 5, 4, 7, 3, 2]
-       
-    # g.get_shortest_paths() returns a list of edge ID paths
-    results = g.get_shortest_paths(0, to=5, weights=g.es["weight"], output="epath")  # results = [[1, 3, 5]] 
+
+    # Get the shortest paths along edges
+    results = g.get_shortest_paths(0, to=5, weights=g.es["weight"], output="epath")  # results = [[1, 3, 5]]
+
+    # Plot the graph
+    g.es['width'] = 0.5
+    g.es[results[0]]['width'] = 2
 
     fig, ax = plt.subplots()
-    g.es['width'] = 1
-    for edge in g.es:
-        if set([edge.source, edge.target]) in [set([0, 1]), set([1, 3]), set([3, 5])]:
-            edge['width'] = 4
     ig.plot(
         g,
         target=ax,
         layout='circle',
         vertex_color='steelblue',
-        vertex_label=['0', '1', '2', '3', '4', '5'],
+        vertex_label=range(g.vcount()),
         edge_width=g.es['width'],
+        edge_label=g.es["weight"]
     )
