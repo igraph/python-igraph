@@ -1,7 +1,6 @@
 import igraph as ig
 
 # Set configuration variables
-ig.config["general.verbose"] = True
 ig.config["plotting.backend"] = "matplotlib"
 ig.config["plotting.layout"] = "fruchterman_reingold"
 ig.config["plotting.palette"] = "rainbow"
