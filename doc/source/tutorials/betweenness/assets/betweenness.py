@@ -30,9 +30,13 @@ g1 = ig.Graph.Famous("Krackhardt_Kite")
 g2 = ig.Graph.Barabasi(n=200, m=2)
 
 # Plot the graph
-fig, axs = plt.subplots(2, 1)
+fig, axs = plt.subplots(1, 2, figsize=(6, 3))
 plot_betweenness(g1, axs[0])
 plot_betweenness(g2, axs[1])
+
+# Add "a" and "b" labels for panels
+fig.text(0.05, 0.9, 'a', va='top')
+fig.text(0.55, 0.9, 'b', va='top')
 
 plt.show()
 

@@ -47,9 +47,13 @@ This example will demonstrate how to visualize both vertex and edge betweenness 
     g2 = ig.Graph.Barabasi(n=200, m=2)
 
     # Plot the graph
-    fig, axs = plt.subplots(2, 1)
+    fig, axs = plt.subplots(1, 2, figsize=(6, 3))
     plot_betweenness(g1, axs[0])
     plot_betweenness(g2, axs[1])
+
+    # Add "a" and "b" labels for panels
+    fig.text(0.05, 0.9, 'a', va='top')
+    fig.text(0.55, 0.9, 'b', va='top')
 
     plt.show()
 
@@ -62,5 +66,5 @@ Here we use |rescale|_ as a great way to linearly scale all data into ranges we 
    :alt: A graph visualizing the betweenness of each vertex and edge.
    :align: center
 
-   A graph visualizing edge betweenness in a Krackhardt Kite graph (left) and a 200 node Barabási-Albert graph (right). White indicates a low betweenness centrality, whereas dark blue indicates a high betweenness centrality.
+   Graph visualizing edge betweenness (a) in a Krackhardt Kite graph and (b) in a 200 node Barabási-Albert graph. Color legend: white to dark blue means low to high betweenness centrality.
 
