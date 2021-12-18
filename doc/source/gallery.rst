@@ -9,6 +9,7 @@ Gallery
 This page contains short examples showcasing the functionality of |igraph|:
 
  - :ref:`tutorials-quickstart`
+ - :ref:`tutorials-betweenness`
  - :ref:`tutorials-bipartite-matching`
  - :ref:`tutorials-bipartite-matching-maxflow`
  - :ref:`tutorials-random`
@@ -25,6 +26,7 @@ This page contains short examples showcasing the functionality of |igraph|:
    :hidden:
 
    tutorials/quickstart/quickstart
+   tutorials/betweenness/betweenness
    tutorials/bipartite_matching/bipartite_matching
    tutorials/bipartite_matching_maxflow/bipartite_matching_maxflow
    tutorials/erdos_renyi/erdos_renyi
