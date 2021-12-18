@@ -81,9 +81,6 @@ In case you are wondering how the visualization figure was done, here's the code
     import igraph as ig
     import matplotlib.pyplot as plt
 
-    import igraph as ig
-    import matplotlib.pyplot as plt
-
     # Construct the graph
     g = ig.Graph(
         6,
@@ -91,12 +88,12 @@ In case you are wondering how the visualization figure was done, here's the code
     )
     g.es["weight"] = [2, 1, 5, 4, 7, 3, 2]
 
-    # Get the shortest paths along edges
+    # Get a shortest path along edges
     results = g.get_shortest_paths(0, to=5, weights=g.es["weight"], output="epath")  # results = [[1, 3, 5]]
 
-    # Plot the graph
+    # Plot graph
     g.es['width'] = 0.5
-    g.es[results[0]]['width'] = 2
+    g.es[results[0]]['width'] = 2.5
 
     fig, ax = plt.subplots()
     ig.plot(
@@ -106,5 +103,8 @@ In case you are wondering how the visualization figure was done, here's the code
         vertex_color='steelblue',
         vertex_label=range(g.vcount()),
         edge_width=g.es['width'],
-        edge_label=g.es["weight"]
+        edge_label=g.es["weight"],
+        edge_color='#666',
+        edge_align_label=True,
+        edge_background='white'
     )

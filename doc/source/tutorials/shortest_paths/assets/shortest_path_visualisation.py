@@ -16,7 +16,7 @@ results = g.get_shortest_paths(0, to=5, weights=g.es["weight"], output="epath") 
 
 # Plot graph
 g.es['width'] = 0.5
-g.es[results[0]]['width'] = 2
+g.es[results[0]]['width'] = 2.5
 
 fig, ax = plt.subplots()
 ig.plot(
@@ -26,6 +26,8 @@ ig.plot(
     vertex_color='steelblue',
     vertex_label=range(g.vcount()),
     edge_width=g.es['width'],
-    edge_label=g.es["weight"]
+    edge_label=g.es["weight"],
+    edge_color='#666',
+    edge_align_label=True,
+    edge_background='white'
 )
-fig.savefig('../figures/shortest_path.png', dpi=100)
