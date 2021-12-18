@@ -49,6 +49,8 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             label_size = 12.0
             font = "sans-serif"
             width = 2.0
+            background = None
+            align_label = False
 
         return VisualEdgeBuilder
 

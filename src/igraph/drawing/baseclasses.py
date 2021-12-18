@@ -121,21 +121,21 @@ class AbstractEdgeDrawer(metaclass=ABCMeta):
         raise NotImplementedError
 
     def get_label_position(self, edge, src_vertex, dest_vertex):
-        """Returns the position where the label of an edge should be drawn. The
+        """returns the position where the label of an edge should be drawn. the
         default implementation returns the midpoint of the edge and an alignment
         that tries to avoid overlapping the label with the edge.
 
-        @param edge: the edge to be drawn. Visual properties of the edge
+        @param edge: the edge to be drawn. visual properties of the edge
           are defined by the attributes of this object.
-        @param src_vertex: the source vertex. Visual properties are given
+        @param src_vertex: the source vertex. visual properties are given
           again as attributes.
-        @param dest_vertex: the target vertex. Visual properties are given
+        @param dest_vertex: the target vertex. visual properties are given
           again as attributes.
         @return: a tuple containing two more tuples: the desired position of the
           label and the desired alignment of the label, where the position is
-          given as C{(x, y)} and the alignment is given as C{(horizontal, vertical)}.
-          Members of the alignment tuple are taken from constants in the
-          L{TextAlignment} class.
+          given as c{(x, y)} and the alignment is given as c{(horizontal, vertical)}.
+          members of the alignment tuple are taken from constants in the
+          l{textalignment} class.
         """
         # TODO: curved edges don't play terribly well with this function,
         # we could try to get the mid point of the actual curved arrow
@@ -192,6 +192,23 @@ class AbstractEdgeDrawer(metaclass=ABCMeta):
 
         return pos, (halign, valign)
 
+    def get_label_rotation(self, edge, src_vertex, dest_vertex):
+        """Get the rotation angle of the label to align with the edge.
+
+        @param edge: the edge to be drawn. visual properties of the edge
+          are defined by the attributes of this object.
+        @param src_vertex: the source vertex. visual properties are given
+          again as attributes.
+        @param dest_vertex: the target vertex. visual properties are given
+          again as attributes.
+        @return: a float with the desired angle, in degrees (out of 360).
+        """
+        (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
+        rotation = (360 + 180. / pi * atan2(y2 - y1, x2 - x1)) % 360
+        # Try to keep text on its head
+        if 90 < rotation <= 270:
+            rotation = (180 + rotation) % 360
+        return rotation
 
 #####################################################################
 
