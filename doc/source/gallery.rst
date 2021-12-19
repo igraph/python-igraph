@@ -9,6 +9,7 @@ Gallery
 This page contains short examples showcasing the functionality of |igraph|:
 
  - :ref:`tutorials-quickstart`
+ - :ref:`tutorials-betweenness`
  - :ref:`tutorials-bipartite-matching`
  - :ref:`tutorials-bipartite-matching-maxflow`
  - :ref:`tutorials-random`
@@ -16,6 +17,8 @@ This page contains short examples showcasing the functionality of |igraph|:
  - :ref:`tutorials-maxflow`
  - :ref:`tutorials-shortest-paths`
  - :ref:`tutorials-cliques`
+ - :ref:`tutorials-online-user-actions`
+ - :ref:`tutorials-visualize-communities`
 
 
 .. toctree::
@@ -23,6 +26,7 @@ This page contains short examples showcasing the functionality of |igraph|:
    :hidden:
 
    tutorials/quickstart/quickstart
+   tutorials/betweenness/betweenness
    tutorials/bipartite_matching/bipartite_matching
    tutorials/bipartite_matching_maxflow/bipartite_matching_maxflow
    tutorials/erdos_renyi/erdos_renyi
@@ -30,3 +34,5 @@ This page contains short examples showcasing the functionality of |igraph|:
    tutorials/ring_animation/ring_animation
    tutorials/shortest_paths/shortest_paths
    tutorials/visualize_cliques/visualize_cliques
+   tutorials/online_user_actions/online_user_actions
+   tutorials/visualize_communities/visualize_communities

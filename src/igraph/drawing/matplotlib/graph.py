@@ -295,14 +295,32 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                     dest_vertex,
                 )
 
+                text_kwargs = {}
+                text_kwargs['ha'] = halign.value
+                text_kwargs['va'] = halign.value
+
+                if visual_edge.background is not None:
+                    text_kwargs['bbox'] = dict(
+                        facecolor=visual_edge.background,
+                        edgecolor='none',
+                    )
+                    text_kwargs['ha'] = 'center'
+                    text_kwargs['va'] = 'center'
+
+                if visual_edge.align_label:
+                    # Rotate the text to align with the edge
+                    rotation = edge_drawer.get_label_rotation(
+                        visual_edge, src_vertex, dest_vertex,
+                    )
+                    text_kwargs['rotation'] = rotation
+
                 ax.text(
                     x,
                     y,
                     label,
                     fontsize=visual_edge.label_size,
                     color=visual_edge.label_color,
-                    ha=halign.value,
-                    va=valign.value,
+                    **text_kwargs,
                     # TODO: offset, etc.
                 )
 
