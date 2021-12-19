@@ -12,12 +12,13 @@ This page contains short examples showcasing the functionality of |igraph|:
  - :ref:`tutorials-betweenness`
  - :ref:`tutorials-bipartite-matching`
  - :ref:`tutorials-bipartite-matching-maxflow`
+ - :ref:`tutorials-cliques`
+ - :ref:`tutorials-maxflow`
  - :ref:`tutorials-random`
  - :ref:`tutorials-ring-animation`
- - :ref:`tutorials-maxflow`
  - :ref:`tutorials-shortest-paths`
- - :ref:`tutorials-cliques`
  - :ref:`tutorials-online-user-actions`
+ - :ref:`tutorials-topological-sort`
  - :ref:`tutorials-visualize-communities`
 
 
@@ -33,6 +34,7 @@ This page contains short examples showcasing the functionality of |igraph|:
    tutorials/maxflow/maxflow
    tutorials/ring_animation/ring_animation
    tutorials/shortest_paths/shortest_paths
-   tutorials/visualize_cliques/visualize_cliques
+   tutorials/topological_sort/topological_sort
    tutorials/online_user_actions/online_user_actions
+   tutorials/visualize_cliques/visualize_cliques
    tutorials/visualize_communities/visualize_communities

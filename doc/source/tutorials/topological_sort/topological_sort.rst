@@ -1,41 +1,44 @@
 .. include:: include/global.rst
 
-.. tutorials-topological-sort
+.. _tutorials-topological-sort:
 
-================
-Topological Sort
-================
+===================
+Topological sorting
+===================
 
-This example demonstrates how to get a topological sorting on a directed acyclic graph (DAG).
-Topological sort of a directed graph is a linear ordering based on the precedence implied by the directed edges and it exists iff the graph doesn't have any directed cycle.
+.. _topological_sorting: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#topological_sorting
+.. |topological_sorting| replace:: :meth:`topological_sorting`
 
-We can use :meth:`topological_sortng` to get a topological ordering.
+
+This example demonstrates how to get a topological sorting on a directed acyclic graph (DAG). A topological sorting of a directed graph is a linear ordering based on the precedence implied by the directed edges. It exists iff the graph doesn't have any cycle. In ``igraph``, we can use |topological_sorting|_ to get a topological ordering of the vertices.
 
 .. code-block:: python
 
     import igraph as ig
     
     # generate a directed acyclic graph (DAG)
-    g = ig.Graph(edges=[(0, 1), (0, 2), (1, 3), (2, 4), (4, 3), (3, 5), (4, 5)], 
-                directed=True)
+    g = ig.Graph(
+        edges=[(0, 1), (0, 2), (1, 3), (2, 4), (4, 3), (3, 5), (4, 5)], 
+        directed=True,
+    )
     assert g.is_dag
 
     # g.topological_sorting() returns a list of node IDs
     # If the given graph is not DAG, the error will occur.
     results = g.topological_sorting(mode='out')
-    print('Topological sort of graph g (out):', *results)
+    print('Topological sort of g (out):', *results)
 
     results = g.topological_sorting(mode='in')
-    print('Topological sort of graph g (in):', *results)
+    print('Topological sort of g (in):', *results)
 
-There are two modes of :meth:topological_sorting. 'out' is the default mode which starts from a node with indegree equal to 0. The other mode is 'in', and it similarly starts from a node with outdegree equal to 0.
+There are two modes o |topological_sorting|_. ``'out'`` is the default mode which starts from a node with indegree equal to 0. Vice versa, the mode ``'in'`` starts from a node with outdegree equal to 0.
 
 The output of the code above is:
 
 .. code-block::
 
-    Topological sort of graph g (out): 0 1 2 4 3 5
-    Topological sort of graph g (in): 5 3 1 4 2 0
+    Topological sort of g (out): 0 1 2 4 3 5
+    Topological sort of g (in): 5 3 1 4 2 0
 
 
 We can use :meth:`indegree()` to find the indegree of the node.
@@ -62,15 +65,12 @@ We can use :meth:`indegree()` to find the indegree of the node.
     '''
 
 .. figure:: ./figures/topological_sort.png
-   :alt: The visual representation of a directed acyclic graph(DAG)
+   :alt: Topological sort of a directed acyclic graph (DAG)
    :align: center
 
-   The graph `g`
+   The graph `g` with topological sorting.
 
-- :meth:`topological_sorting` returns a list of node IDs.
-- We can set two modes as a parameter.
-
-For generating the visualization figure, here's the code:
+We can easily plot our topologically sorted graph as follows:
 
 .. code-block:: python
 
@@ -79,20 +79,20 @@ For generating the visualization figure, here's the code:
 
 
     # generate a directed acyclic graph (DAG)
-    g = ig.Graph(edges=[(0, 1), (0, 2), (1, 3), (2, 4), (4, 3), (3, 5), (4, 5)], 
-                directed=True)
+    g = ig.Graph(
+        edges=[(0, 1), (0, 2), (1, 3), (2, 4), (4, 3), (3, 5), (4, 5)], 
+        directed=True,
+    )
     
-    fig, ax = plt.subplots(figsize=(5, 5))
-    ig.plot(
-            g,
-            target=ax,
-            layout='kk',
-            vertex_size=0.2,
-            edge_width=1,
-            vertex_label=range(g.vcount()),
-            vertex_color="lightblue",
-        )
-    ax.set_aspect(1)
-
-    plt.axis('off')
-    plt.show()
+    # visualization (use xkcd style for a different flavor)
+    with plt.xkcd():
+        fig, ax = plt.subplots(figsize=(5, 5))
+        ig.plot(
+                g,
+                target=ax,
+                layout='kk',
+                vertex_size=0.3,
+                edge_width=4,
+                vertex_label=range(g.vcount()),
+                vertex_color="white",
+            )
