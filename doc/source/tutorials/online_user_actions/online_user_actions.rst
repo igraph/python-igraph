@@ -92,7 +92,7 @@ And finally, let's plot a layout of the graph, for instance a circle:
 
 We added a few fancy features to this plot to show off igraph's capabilities. The result is shown below.
 
-.. figure:: ./figures/online_users.png
+.. figure:: ./figures/online_user_actions.png
    :alt: A visual representation of the collaboratoin graph
    :align: center
 

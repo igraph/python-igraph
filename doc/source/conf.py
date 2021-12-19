@@ -13,7 +13,8 @@
 
 from datetime import datetime
 
-import sys, os
+import sys
+import os
 import sphinxbootstrap4theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -28,7 +29,13 @@ import sphinxbootstrap4theme
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.coverage']
+sys.path.insert(0, os.path.abspath('sphinxext'))
+extensions = [
+    'sphinx.ext.coverage',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.intersphinx',
+    'gallery_generator',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -257,3 +264,14 @@ epub_copyright = u'2010, The igraph development team'
 
 # The depth of the table of contents in toc.ncx.
 #epub_tocdepth = 3
+
+
+# -- Intersphinx ------------------------------------------------
+
+intersphinx_mapping = {
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+    'matplotlib': ('https://matplotlib.org/stable', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'statsmodels': ('https://www.statsmodels.org/stable/', None)
+}
