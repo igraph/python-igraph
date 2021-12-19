@@ -101,34 +101,46 @@ Tutorial gallery
 
 
 def create_thumbnail(infile, thumbfile,
-                     width=275, height=275,
-                     cx=0.5, cy=0.5, border=4):
+                     size=275,
+                     #width=275, height=275,
+                     #cx=0.5, cy=0.5, border=4,
+                     ):
     '''Store a thumbnail from a PNG figure'''
+    import numpy as np
+
     baseout, extout = op.splitext(thumbfile)
 
     im = matplotlib.image.imread(infile)
-    rows, cols = im.shape[:2]
-    x0 = int(cx * cols - .5 * width)
-    y0 = int(cy * rows - .5 * height)
-    xslice = slice(x0, x0 + width)
-    yslice = slice(y0, y0 + height)
-    thumb = im[yslice, xslice]
-    thumb[:border, :, :3] = thumb[-border:, :, :3] = 0
-    thumb[:, :border, :3] = thumb[:, -border:, :3] = 0
+    rows, cols, ncolors = im.shape
+
+    if rows > cols:
+        tmp = np.empty((rows, rows, ncolors), dtype=im.dtype)
+        tmp[:] = im[0, 0]
+        diff = (rows - cols) // 2
+        tmp[:, diff:diff + cols] = im
+        im = tmp
+    elif cols > rows:
+        tmp = np.empty((cols, cols, ncolors), dtype=im.dtype)
+        tmp[:] = im[0, 0]
+        diff = (cols - rows) // 2
+        tmp[diff:diff + rows] = im
+        im = tmp
+
+    #x0 = int(cx * cols - .5 * width)
+    #y0 = int(cy * rows - .5 * height)
+    #xslice = slice(x0, x0 + width)
+    #yslice = slice(y0, y0 + height)
+    #thumb = im[yslice, xslice]
+    #thumb[:border, :, :3] = thumb[-border:, :, :3] = 0
+    #thumb[:, :border, :3] = thumb[:, -border:, :3] = 0
 
     dpi = 100
-    fig = plt.figure(figsize=(width / dpi, height / dpi), dpi=dpi)
+    fig = plt.figure(figsize=(size / dpi, size / dpi), dpi=dpi)
 
     ax = fig.add_axes([0, 0, 1, 1], aspect='auto',
                       frameon=False, xticks=[], yticks=[])
-    if all(thumb.shape):
-        ax.imshow(thumb, aspect='auto', resample=True,
-                  interpolation='bilinear')
-    else:
-        warnings.warn(
-            f"Bad thumbnail crop. {thumbfile} will be empty."
-        )
-
+    ax.imshow(im, aspect='auto', resample=True,
+              interpolation='bilinear')
     fig.savefig(thumbfile, dpi=dpi)
     return fig
 
@@ -234,11 +246,10 @@ def main(app):
         # Make thumbnail
         imagefile = glob.glob(op.join(dirname, "figures", "*.png"))[0]
         thumbfile = op.join(thumbs_dir, ex.modulename + '_thumb.png')
-        thumbloc = .5, .5
-        #create_thumbnail(imagefile, thumbfile, cx=thumbloc[0], cy=thumbloc[1])
-        # FIXME
-        os.remove(thumbfile)
-        shutil.copy(imagefile, thumbfile)
+        create_thumbnail(imagefile, thumbfile)
+        ## FIXME
+        #os.remove(thumbfile)
+        #shutil.copy(imagefile, thumbfile)
 
         # Generate toctree and content raw html code
         toctree += ex.toctree_entry()
