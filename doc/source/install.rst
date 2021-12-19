@@ -73,6 +73,11 @@ Precompiled Windows wheels for |igraph|'s Python interface are available on the 
 <http://pypi.python.org/pypi/igraph>`_ (see `Installing igraph from the Python Package
 Index`_).
 
+.. TIP:: If you get DLL import errors while trying to import |igraph|, the most common reason
+   is that you do not have the Visual C++ Redistributable library installed on your machine.
+   Python's own installer is supposed to install it, but in case it was not installed on
+   your system, you can `download it from Microsoft<https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist>`_.
+
 Graph plotting in |igraph| is implemented using a third-party package called `Cairo
 <http://www.cairographics.org>`_. If you want to create publication-quality plots in |igraph|
 on Windows, you must also install Cairo and its Python bindings. The Cairo project does not
@@ -90,7 +95,7 @@ After running the installer, you can launch Python again and check if it worked:
   >>> ig.plot(g)
 
 If PyCairo was successfully installed, this will display a Petersen graph.
-
+   
 |igraph| on macOS
 -----------------
 

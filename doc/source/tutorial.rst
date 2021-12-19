@@ -16,6 +16,8 @@ start out. If you already have a stable programming background in other language
 a quick overview of Python, `Learn Python in 10 minutes <https://www.stavros.io/tutorials/python/>`_
 is probably your best bet.
 
+.. note::
+   For the impatient reader, see the :ref:`gallery` page for short, self-contained examples.
 
 Starting |igraph|
 =================
@@ -111,9 +113,13 @@ user-friendly output, we can try to print the graph using Python's
 This summary consists of `IGRAPH`, followed by a four-character long code, the number of vertices, the number of edges, two dashes (`--`) and the name of the graph (i.e. the contents of the `name` attribute, if any)
 
 This is not too exciting so far; a graph with no vertices and no edges is not really useful
-for us. Let's add some vertices first!
+for us. Of course, there are dozens of ways to create a graph with vertices and edges, depending on your exact situation. In general, if you know the number of vertices and already have a list of edges connecting them, you can just use::
 
-::
+  >>> g = ig.Graph(n=10, edges=[[0, 1], [0, 5]])
+
+This creates a graph with 10 vertices, numbered 0 to 9, and two edges connecting vertex 0 with vertex 1, and vertex 0 (again) with vertex 5. See :ref:`generation` for a detailed overview of all the possible ways to create graphs in |igraph|.
+
+A less common situation, which we'll follow here as an example, is to add vertices and edges to an existing graph, which in this case is the empty graph. First, to add vertices::
 
   >>> g.add_vertices(3)
 
@@ -916,6 +922,17 @@ Attribute name  Keyword argument       Purpose
                                        graph is directed, relative to 10 pixels.
 --------------- ---------------------- ------------------------------------------
 ``width``       ``edge_width``         Width of the edge in pixels
+--------------- ---------------------- ------------------------------------------
+``label``       ``edge_label``         If specified, it adds a label to the edge.
+--------------- ---------------------- ------------------------------------------
+``background``  ``edge_background``    If specified, it adds a rectangular box
+                                       around the edge label, of the specified
+                                       color (matplotlib only).
+--------------- ---------------------- ------------------------------------------
+``align_label`` ``edge_align_label``   If True, rotate the edge label such that
+                                       it aligns with the edge direction. Labels
+                                       that would be upside-down are flipped
+                                       (matplotlib only).
 =============== ====================== ==========================================
 
 
@@ -972,8 +989,8 @@ Color specification in CSS syntax
     - ``rgb(R, G, B)``, components range from 0 to 255 or from 0% to
       100%. Example: ``"rgb(0, 127, 255)"`` or ``"rgb(0%, 50%, 100%)"``.
 
-List, tuple or whitespace-separated string of RGB values
-    Example: ``(255, 128, 0)``, ``[255, 128, 0]`` or ``"255, 128, 0"``.
+Lists or tuples of RGB values in the range 0-1
+    Example: ``(1.0, 0.5, 0)`` or ``[1.0, 0.5, 0]``.
 
 
 Saving plots
