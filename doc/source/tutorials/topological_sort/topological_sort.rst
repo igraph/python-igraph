@@ -6,7 +6,7 @@
 Topological Sort
 ================
 
-This example demonstrates how to get a topological sorting list on a directed acyclic graph (DAG).
+This example demonstrates how to get a topological sorting on a directed acyclic graph (DAG).
 Topological sort of a directed graph is a linear ordering based on the precedence implied by the directed edges and it exists iff the graph doesn't have any directed cycle.
 
 We can use :meth:`topological_sortng` to get a topological ordering.
@@ -28,7 +28,7 @@ We can use :meth:`topological_sortng` to get a topological ordering.
     results = g.topological_sorting(mode='in')
     print('Topological sort of graph g (in):', *results)
 
-There are two modes of :meth:topological_sorting. 'out' is the default mode which start from a node with indegree equal to 0. The other mode is 'in', and it similarly starts from a node with outdegree equal to 0.
+There are two modes of :meth:topological_sorting. 'out' is the default mode which starts from a node with indegree equal to 0. The other mode is 'in', and it similarly starts from a node with outdegree equal to 0.
 
 The output of the code above is:
 
@@ -48,7 +48,7 @@ We can use :meth:`indegree()` to find the indegree of the node.
     g = ig.Graph(edges=[(0, 1), (0, 2), (1, 3), (2, 4), (4, 3), (3, 5), (4, 5)], 
                 directed=True)
 
-    # g.vs[i].indegree() returns the indegree of the node (which is g.vs[i]).
+    # g.vs[i].indegree() returns the indegree of the node.
     for i in range(g.vcount()):
         print('degree of {}: {}'.format(i, g.vs[i].indegree()))
 
@@ -62,10 +62,37 @@ We can use :meth:`indegree()` to find the indegree of the node.
     '''
 
 .. figure:: ./figures/topological_sort.png
-   :alt: The visual representation of a directed acyclic graph(DAG) for topological sorting
+   :alt: The visual representation of a directed acyclic graph(DAG)
    :align: center
 
    The graph `g`
 
 - :meth:`topological_sorting` returns a list of node IDs.
 - We can set two modes as a parameter.
+
+For generating the visualization figure, here's the code:
+
+.. code-block:: python
+
+    import igraph as ig
+    import matplotlib.pyplot as plt
+
+
+    # generate a directed acyclic graph (DAG)
+    g = ig.Graph(edges=[(0, 1), (0, 2), (1, 3), (2, 4), (4, 3), (3, 5), (4, 5)], 
+                directed=True)
+    
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ig.plot(
+            g,
+            target=ax,
+            layout='kk',
+            vertex_size=0.2,
+            edge_width=1,
+            vertex_label=range(g.vcount()),
+            vertex_color="lightblue",
+        )
+    ax.set_aspect(1)
+
+    plt.axis('off')
+    plt.show()
