@@ -19,6 +19,8 @@ This page contains short examples showcasing the functionality of |igraph|:
  - :ref:`tutorials-cliques`
  - :ref:`tutorials-online-user-actions`
  - :ref:`tutorials-visualize-communities`
+ - :ref:`tutorials-articulation-points`
+ - :ref:`tutorials-bridges`
 
 
 .. toctree::
@@ -36,3 +38,5 @@ This page contains short examples showcasing the functionality of |igraph|:
    tutorials/visualize_cliques/visualize_cliques
    tutorials/online_user_actions/online_user_actions
    tutorials/visualize_communities/visualize_communities
+   tutorials/articulation_points/articulation_points
+   tutorials/bridges/bridges
