@@ -27,7 +27,8 @@ ig.plot(
     vertex_size=0.4,
     vertex_label=range(g.vcount()),
     vertex_color="lightblue",
-    edge_width=[2.5 if e.target == matching.match_of(e.source) else 1.0 for e in g.es]
+    edge_width=[3 if e.target == matching.match_of(e.source) else 1.0 for e in g.es],
+    edge_color=["red" if e.target == matching.match_of(e.source) else "black" for e in g.es]
 )
 plt.show()
 
