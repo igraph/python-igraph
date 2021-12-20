@@ -11,7 +11,7 @@ Visualizing Betweenness
 .. _edge_betweenness: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#edge_betweenness
 .. |edge_betweenness| replace:: :meth:`edge_betweenness`
 
-This example will demonstrate how to visualize both vertex and edge betweenness with a custom defined color palette. We use the methods |betweenness|_ and |edge_betweenness|_ respectively, and demonstrate the effects on a standard `Krackhardt Kite <https://www.wikiwand.com/en/Krackhardt_kite_graph>`_ graph, as well as a `Barabási-Albert <https://en.wikipedia.org/wiki/Barab%C3%A1si%E2%80%93Albert_model>`_ random graph.
+This example demonstrates how to visualize both vertex and edge betweenness with a custom defined color palette. We use the methods |betweenness|_ and |edge_betweenness|_ respectively, and demonstrate the effects on a standard `Krackhardt Kite <https://www.wikiwand.com/en/Krackhardt_kite_graph>`_ graph, as well as a `Barabási-Albert <https://en.wikipedia.org/wiki/Barab%C3%A1si%E2%80%93Albert_model>`_ random graph.
 
 .. code-block:: python
 
