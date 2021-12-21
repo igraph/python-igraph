@@ -58,4 +58,5 @@ The full list of config settings can be found `here <https://igraph.org/python/d
 
 
 .. note::
+
     To use a consistent style between individual plots (e.g. vertex sizes, colors, layout etc.) check out :ref:`tutorials-visual-style`. 
