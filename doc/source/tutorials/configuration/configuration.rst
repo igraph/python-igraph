@@ -22,7 +22,7 @@ First we define the default plotting backend, layout, and color palette, and sav
     # Save configuration to ~/.igraphrc
     ig.config.save()
 
-This script only needs to be run once, and can then be deleted. Afterwards any time you use |igraph|, it will read the config from the saved file and use them as the defaults. For example:
+This script only needs to be run once (to store the new config options into the ``.igraphrc`` file). Whenever you use |igraph| and this file exists, |igraph| will read its content and use those options as defaults. For example:
 
 .. code-block:: python
 
@@ -54,5 +54,8 @@ The full list of config settings can be found `here <https://igraph.org/python/d
 
 .. note::
     
-    - Note that if you would like to save multiple different default configs for multiple projects, you can specify your own location by passing in a filepath to ``ig.config.save``, e.g. ``ig.config.save("./path/to/config/file")``. You can then load it later using ``ig.config.load("./path/to/config/file")``
-    - If you want an efficient way to set the visual style between individual graphs (such as vertex sizes, colors, layout etc.) check out :ref:`tutorials-visual-style`. 
+   You can have multiple config files: specify each location via ``ig.config.save("./path/to/config/file")``. To load a specific config, import igraph and then call ``ig.config.load("./path/to/config/file")``
+
+
+.. note::
+    To use a consistent style between individual plots (e.g. vertex sizes, colors, layout etc.) check out :ref:`tutorials-visual-style`. 
