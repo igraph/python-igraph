@@ -1,6 +1,6 @@
 .. include:: include/global.rst
 
-.. Tutorial
+.. _tutorial:
 
 ========
 Tutorial
@@ -31,37 +31,41 @@ ordinary Python module at the Python prompt::
   Type "help", "copyright", "credits" or "license" for more information.
   >>> import igraph
 
-This imports |igraph|'s objects and methods inside an own namespace called :mod:`igraph`. Whenever
-you would like to call any of |igraph|'s methods, you will have to provide the appropriate
-namespace-qualification. E.g., to check which |igraph| version you are using, you could do the
-following::
+It is customary among the userbase to use a named import for short::
 
-  >>> import igraph
-  >>> print(igraph.__version__)
+  >>> import igraph as ig
+
+This is the recommended way to import |igraph| whether it's in a python script, interactive shell
+(e.g. ipython), or a GUI (e.g. notebooks, Jupyterlab).
+
+This imports |igraph|'s objects and methods inside an own namespace called :mod:`igraph` or ``ig`` (if you used a named import). To call any of |igraph|'s methods, you must prepend the module name, e.g. to print the version of |igraph| installed on your system::
+
+  >>> import igraph as ig
+  >>> print(ig.__version__)
   0.9.6
 
-Another way to make use of |igraph| is to import all its objects and methods into the main
-Python namespace (so you do not have to type the namespace-qualification every time).
-This is fine as long as your own objects and methods do not conflict with the ones
-provided by |igraph|::
+An alternative way to make use of |igraph| which was popular a few years back is to import all its
+objects and methods into the main Python namespace::
 
   >>> from igraph import *
 
+This approach (star import) is now discouraged because |igraph| functions risk to conflict with and override other functions you have already imported or declared. Of course, if you know there's no conflict you can still use this method.
+  
 The third way to start |igraph| is to simply call the startup script that was supplied with
-the |igraph| package you installed. Not too surprisingly, the script is called :command:`igraph`,
-and provided that the script is on your path in the command line of your operating system
-(which is almost surely the case on Linux and OS X), you can simply type :command:`igraph` at the
-command line. Windows users will find the script inside the :file:`scripts` subdirectory of Python
-and you may have to add it manually to your path in order to be able to use the script from
-the command line without typing the whole path.
-
-When you start the script, you will see something like this::
+the |igraph| package you installed. Not too surprisingly, the script is called :command:`igraph`::
 
   $ igraph
   No configuration file, using defaults
   igraph 0.9.6 running inside Python 3.9.6 (default, Jun 29 2021, 05:25:02)
   Type "copyright", "credits" or "license" for more information.
   >>>
+
+.. note::
+  Provided that the script is on your path in the command line of your operating system
+  (which is almost surely the case on Linux and OS X), you can simply type :command:`igraph` at the
+  command line. Windows users will find the script inside the :file:`scripts` subdirectory of Python
+  and you may have to add it manually to your path in order to be able to use the script from
+  the command line without typing the whole path.
 
 The command-line startup script imports all of |igraph|'s methods and objects into the main
 namespace, so it is practically equivalent to ``from igraph import *``. The difference between
@@ -73,18 +77,13 @@ installed, the startup script launches the default Python shell. You can also mo
 order in which these shells are searched by tweaking |igraph|'s configuration file
 (see :ref:`configuring-igraph`).
 
-In general, it is advised to use the command line startup script when using |igraph|
-interactively (i.e., when you just want to quickly load or generate some graphs, calculate
-some basic properties and save the results somewhere). For non-disposable graph analysis
-routines that you intend to re-run from time to time, you should write a script separately
-in a ``.py`` source file and import |igraph| using one of the above methods at the start of
-the script, then launch the script using the Python interpreter.
+If you are using |igraph| interactively, we recommend you import it in a Jupyter notebook,
+a Jupyterlab or ipython session, or via the shell script provided (method #3). As for any
+other package, you might want to store more streamlined analyses in a Python script (``.py``
+extension).
 
-From now on, every example in the documentation will assume that |igraph|'s objects and
-methods are imported into the main namespace (i.e., we used ``from igraph import *``
-instead of ``import igraph``). If you let |igraph| take its own namespace, please adjust
-all the examples accordingly.
-
+For the sake of simplicity, this tutorial will assume you have imported igraph using the
+short name ``ig`` as recommended above.
 
 Creating a graph from scratch
 =============================
@@ -92,7 +91,7 @@ Creating a graph from scratch
 Assuming that you have started |igraph| successfully, it is time to create your first
 |igraph| graph. This is pretty simple::
 
-  >>> g = Graph()
+  >>> g = ig.Graph()
 
 The above statement created an undirected graph with no vertices or edges and assigned it
 to the variable `g`. To confirm that it's really an |igraph| graph, we can
@@ -210,7 +209,7 @@ Barabási-Albert networks, geometric random graphs and such. |igraph| has too ma
 generators to cover them all in this tutorial, so we will only try a
 deterministic and a stochastic generator instead::
 
-  >>> g = Graph.Tree(127, 2)
+  >>> g = ig.Graph.Tree(127, 2)
   >>> summary(g)
   IGRAPH U--- 127 126 --
 
@@ -219,7 +218,7 @@ vertices and each vertex (apart from the leaves) has two children (and of course
 parent). No matter how many times you call :meth:`Graph.Tree`, the generated graph will
 always be the same if you use the same parameters::
 
-  >>> g2 = Graph.Tree(127, 2)
+  >>> g2 = ig.Graph.Tree(127, 2)
   >>> g2.get_edgelist() == g.get_edgelist()
   True
 
@@ -238,7 +237,7 @@ Let's do the same with a stochastic generator!
 
 ::
 
-  >>> g = Graph.GRG(100, 0.2)
+  >>> g = ig.Graph.GRG(100, 0.2)
   >>> summary(g)
   IGRAPH U---- 100 516 --
   + attr: x (v), y (v)
@@ -254,7 +253,7 @@ summary will not match the ones you got. This is normal and expected. Even if yo
 two geometric random graphs on the same machine, they will be different for the same parameter
 set::
 
-  >>> g2 = Graph.GRG(100, 0.2)
+  >>> g2 = ig.Graph.GRG(100, 0.2)
   >>> g.get_edgelist() == g2.get_edgelist()
   False
   >>> g.isomorphic(g2)
@@ -296,7 +295,7 @@ Let us create a simple imaginary social network the usual way by hand.
 
 ::
 
-  >>> g = Graph([(0,1), (0,2), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)])
+  >>> g = ig.Graph([(0,1), (0,2), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)])
 
 Now, let us assume that we want to store the names, ages and genders of people in this network as
 vertex attributes, and for every connection, we want to store whether this is an informal
@@ -473,7 +472,7 @@ arguments. Positional arguments (the ones without an explicit name like
   every vertex that's currently in the sequence. If the function returns ``True``,
   the vertex will be included, otherwise it will be excluded::
 
-    >>> graph = Graph.Full(10)
+    >>> graph = ig.Graph.Full(10)
     >>> only_odd_vertices = graph.vs.select(lambda vertex: vertex.index % 2 == 1)
     >>> len(only_odd_vertices)
     5
@@ -639,7 +638,7 @@ of vertex IDs or :class:`VertexSeq` instances. E.g, you can simply look up the d
   >>> g.degree("Dennis")
   3
 
-or, alternatively:
+or, alternatively::
 
   >>> g.vs.find("Dennis").degree()
   3
@@ -765,7 +764,7 @@ For instance, we can plot our imaginary social network with the Kamada-Kawai
 layout algorithm as follows::
 
   >>> layout = g.layout("kk")
-  >>> plot(g, layout=layout)
+  >>> ig.plot(g, layout=layout)
 
 This should open an external image viewer showing a visual representation of the network,
 something like the one on the following figure (although the exact placement of
@@ -782,7 +781,7 @@ If you prefer to use `matplotlib`_ as a plotting engine, create an axes and use 
 
   >>> import matplotlib.pyplot as plt
   >>> fig, ax = plt.subplots()
-  >>> plot(g, layout=layout, target=ax)
+  >>> ig.plot(g, layout=layout, target=ax)
 
 .. figure:: figures/tutorial_social_network_1_mpl.png
    :alt: The visual representation of our social network (matplotlib backend)
@@ -796,8 +795,8 @@ from the ``label`` attribute by default and vertex colors are determined by the
   >>> g.vs["label"] = g.vs["name"]
   >>> color_dict = {"m": "blue", "f": "pink"}
   >>> g.vs["color"] = [color_dict[gender] for gender in g.vs["gender"]]
-  >>> plot(g, layout=layout, bbox=(300, 300), margin=20)  # Cairo backend
-  >>> plot(g, layout=layout, bbox=(300, 300), margin=20, target=ax)  # matplotlib backend
+  >>> ig.plot(g, layout=layout, bbox=(300, 300), margin=20)  # Cairo backend
+  >>> ig.plot(g, layout=layout, bbox=(300, 300), margin=20, target=ax)  # matplotlib backend
 
 Note that we are simply re-using the previous layout object here, but we also specified
 that we need a smaller plot (300 x 300 pixels) and a larger margin around the graph
@@ -821,7 +820,7 @@ Instead of specifying the visual properties as vertex and edge attributes, you c
 also give them as keyword arguments to :func:`plot`::
 
   >>> color_dict = {"m": "blue", "f": "pink"}
-  >>> plot(g, layout=layout, vertex_color=[color_dict[gender] for gender in g.vs["gender"]])
+  >>> ig.plot(g, layout=layout, vertex_color=[color_dict[gender] for gender in g.vs["gender"]])
 
 This latter approach is preferred if you want to keep the properties of the visual
 representation of your graph separate from the graph itself. You can simply set up
@@ -837,7 +836,7 @@ attributes to :func:`plot`::
   >>> visual_style["layout"] = layout
   >>> visual_style["bbox"] = (300, 300)
   >>> visual_style["margin"] = 20
-  >>> plot(g, **visual_style)
+  >>> ig.plot(g, **visual_style)
 
 The final plot shows the formal ties with thick lines while informal ones with thin lines:
 
@@ -1005,8 +1004,15 @@ SVG or PDF files can then later be converted to PostScript (``.ps``) or Encapsul
 PostScript (``.eps``) format if you prefer that, while PNG files can be converted to
 TIF (``.tif``)::
 
-  >>> plot(g, "social_network.pdf", **visual_style)
+  >>> ig.plot(g, "social_network.pdf", **visual_style)
 
+If you are using the matplotlib backend, you can save your plot as usual::
+
+  >>> fig, ax = plt.subplots()
+  >>> ig.plot(g, **visual_style)
+  >>> fig.savefig("social_network.pdf")
+
+Many file formats are supported by matplotlib.
 
 |igraph| and the outside world
 ==============================
@@ -1064,8 +1070,8 @@ from :download:`this file </assets/zachary.zip>`, unzip it and try to load it in
 |igraph|. Since it is a GraphML file, you must use the GraphML reader method from
 the table above (make sure you use the appropriate path to the downloaded file)::
 
-  >>> karate = Graph.Read_GraphML("zachary.graphml")
-  >>> summary(karate)
+  >>> karate = ig.Graph.Read_GraphML("zachary.graphml")
+  >>> ig.summary(karate)
   IGRAPH UNW- 34 78 -- Zachary's karate club network
 
 If you want to convert the very same graph into, say, Pajek's format, you can do it
@@ -1090,7 +1096,7 @@ the preferred format is again inferred from the extension. The format detection 
 :func:`load` and :meth:`Graph.save` can be overridden by the ``format`` keyword
 argument which accepts the short names of the formats from the above table::
 
-  >>> karate = load("zachary.graphml")
+  >>> karate = ig.load("zachary.graphml")
   >>> karate.save("zachary.net")
   >>> karate.save("zachary.my_extension", format="gml")
 

@@ -20,6 +20,7 @@ Contents:
    analysis
    visualisation
    misc
+   configuring-igraph
 
 
 Indices and tables
