@@ -3,7 +3,7 @@
 .. _tutorials-visualize-communities:
 
 =====================
-Visualize communities
+Visualize Communities
 =====================
 
 This example shows how to visualize communities or clusters of a graph. First, make the graph: we just use a famous graph here for simplicity.
@@ -21,7 +21,7 @@ Second, define the clusters.
 
     # Use edge betweenness to detect communities
     communities = g.community_edge_betweenness()
-    # ... and covert into a VertexClustering for plotting
+    # ... and convert into a VertexClustering for plotting
     communities = communities.as_clustering()
 
 Third, prepare colors for the various communities:
@@ -81,3 +81,5 @@ The resulting figure is shown below.
    :align: center
 
    The graph with its communities highlighted by color.
+
+For an example on how to generate the cluster graph from a vertex cluster, check out :ref:`tutorials-cluster-graph`.

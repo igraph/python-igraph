@@ -20,6 +20,7 @@ This page contains short examples showcasing the functionality of |igraph|:
  - :ref:`tutorials-online-user-actions`
  - :ref:`tutorials-visualize-communities`
  - :ref:`tutorials-connected-components`
+ - :ref:`tutorials-cluster-graph`
 
 
 .. toctree::
@@ -38,3 +39,4 @@ This page contains short examples showcasing the functionality of |igraph|:
    tutorials/online_user_actions/online_user_actions
    tutorials/visualize_communities/visualize_communities
    tutorials/connected_components/connected_components
+   tutorials/cluster_graph/cluster_graph
