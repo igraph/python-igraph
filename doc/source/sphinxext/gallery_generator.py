@@ -105,7 +105,11 @@ def create_thumbnail(infile, thumbfile,
                      #width=275, height=275,
                      #cx=0.5, cy=0.5, border=4,
                      ):
-    '''Store a thumbnail from a PNG figure'''
+    '''Store a thumbnail from a PNG figure.
+
+    For nonsquare images, pad them with the background color as estimated from
+    the top left corner of the image.
+    '''
     import numpy as np
 
     baseout, extout = op.splitext(thumbfile)
@@ -152,8 +156,9 @@ def indent(s, N=4):
 
 class TutorialGenerator(object):
     """Tools for generating an example page from a file"""
-    def __init__(self, dirname):
+    def __init__(self, dirname, thumbs_dir):
         self.dirname = dirname
+        self.thumbs_dir = thumbs_dir
 
     @property
     def modulename(self):
@@ -168,22 +173,29 @@ class TutorialGenerator(object):
         return 'tutorials/{0}/{0}.html'.format(self.modulename)
 
     @property
-    def pngfilename(self):
-        pngfile = self.modulename + '.png'
-        return op.join(self.dirname, '..', 'figures', pngfile)
-
-    @property
-    def thumbfilename(self):
-        pngfile = self.modulename + '_thumb.png'
-        return pngfile
-
-    @property
     def sphinxtag(self):
         return self.modulename
 
     @property
     def pagetitle(self):
         return self.docstring.strip().split('\n')[0].strip()
+
+    def create_thumbnail_if_needed(self):
+        '''Create a thumbnail except for animated GIFs'''
+
+        # Make thumbnail for PNG images, for GIFs just pass through
+        animated_giffiles = glob.glob(
+            op.join(self.dirname, "figures", "*.gif")
+        )
+        if len(animated_giffiles):
+            thumbfile = animated_giffiles[0]
+        else:
+            imagefile = glob.glob(op.join(self.dirname, "figures", "*.png"))[0]
+            thumbfile = op.join(self.thumbs_dir, self.modulename + '_thumb.png')
+            create_thumbnail(imagefile, thumbfile)
+
+        # Thumbnail/GIF file without path
+        self.thumbfilename = op.split(thumbfile)[1]
 
     def extract_title(self):
         '''Extract title from RST file'''
@@ -197,7 +209,7 @@ class TutorialGenerator(object):
         self.title = title
 
     def toctree_entry(self):
-        return "   ./%s\n\n" % op.splitext(self.htmlfilename)[0]
+        return "   ./{:}\n\n".format(op.splitext(self.htmlfilename)[0])
 
     def contents_entry(self):
         return (".. raw:: html\n\n"
@@ -217,7 +229,8 @@ class TutorialGenerator(object):
                 "\n\n"
                 "".format(self.thumbfilename,
                           self.modulename,
-                          self.title))
+                          self.title,
+                          ))
 
 
 def main(app):
@@ -240,16 +253,13 @@ def main(app):
         dirname = op.dirname(filename)
 
         # Extract title for thumbnail alt/subtitle
-        ex = TutorialGenerator(dirname)
+        ex = TutorialGenerator(dirname, thumbs_dir)
+
+        # Extract title
         ex.extract_title()
 
-        # Make thumbnail
-        imagefile = glob.glob(op.join(dirname, "figures", "*.png"))[0]
-        thumbfile = op.join(thumbs_dir, ex.modulename + '_thumb.png')
-        create_thumbnail(imagefile, thumbfile)
-        ## FIXME
-        #os.remove(thumbfile)
-        #shutil.copy(imagefile, thumbfile)
+        # Make thumbnail if needed
+        ex.create_thumbnail_if_needed()
 
         # Generate toctree and content raw html code
         toctree += ex.toctree_entry()
@@ -262,9 +272,9 @@ def main(app):
     contents = ''.join(content_list)
 
     # write index file
-    index_file = op.join(source_dir, '..', 'gallery_index.rst')
+    index_file = op.join(source_dir, '..', 'gallery.rst')
     with open(index_file, 'w') as index:
-        index.write(INDEX_TEMPLATE.format(sphinx_tag="gallery_index",
+        index.write(INDEX_TEMPLATE.format(sphinx_tag="gallery",
                                           toctree=toctree,
                                           contents=contents))
 
