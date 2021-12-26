@@ -249,8 +249,8 @@ def _construct_graph_from_list_dict(
     multiple values y: the edge (x,y) will be created in the graph. x and y
     must be either one of:
 
-    - two integers: the vertices with those ids will be connected
-    - two strings: the vertices with those names will be connected
+      - two integers: the vertices with those ids will be connected
+      - two strings: the vertices with those names will be connected
 
     If names are used, the order of vertices is not guaranteed, and each
     vertex will be given the vertex_name_attr attribute.
@@ -312,21 +312,21 @@ def _construct_graph_from_dict_dict(
     interpreted as vertex names, in which case vertices are given separate
     numeric ids. Each value is a dictionary of edge attributes for that edge.
 
+    Example:
+
+      >>> {'Alice': {'Bob': {'weight': 1.5}, 'David': {'weight': 2}}}
+
+    creates a graph with three vertices (Alice, Bob, and David) and two edges:
+
+      - Alice - Bob (with weight 1.5)
+      - Alice - David (with weight 2)
+
     @param edges: the dict of dict of dicts specifying the edges and their
       attributes
     @param directed (bool): whether to create a directed graph
     @vertex_name_attr (str): vertex attribute that will store the names
 
     @returns: a Graph object
-
-    Example:
-
-    {'Alice': {'Bob': {'weight': 1.5}, 'David': {'weight': 2}}}
-
-    creates a graph with three vertices (Alice, Bob, and David) and two edges:
-
-    - Alice - Bob (with weight 1.5)
-    - Alice - David (with weight 2)
     """
     first_item = next(iter(edges), 0)
 
@@ -379,8 +379,8 @@ def _construct_graph_from_dataframe(
     @param edges: pandas DataFrame containing edges and metadata. The first
       two columns of this DataFrame contain the source and target vertices
       for each edge. These indicate the vertex IDs as nonnegative integers
-          rather than vertex names unless `use_vids` is False. Further columns
-          may contain edge attributes.
+      rather than vertex names unless `use_vids` is False. Further columns
+      may contain edge attributes.
     @param directed: bool setting whether the graph is directed
     @param vertices: None (default) or pandas DataFrame containing vertex
       metadata. The DataFrame's index must contain the vertex IDs as a
@@ -508,6 +508,22 @@ def _export_graph_to_dict_list(
 
     This function is the reverse of Graph.DictList.
 
+    Example:
+
+      >>> g = Graph([(0, 1), (1, 2)])
+      >>> g.vs["name"] = ["apple", "pear", "peach"]
+      >>> g.es["name"] = ["first_edge", "second"]
+
+      >>> g.to_dict_list()
+      ([{"name": "apple"}, {"name": "pear"}, {"name": "peach"}],
+       [{"source": 0, "target": 1, "name": "first_edge"},
+        {"source" 0, "target": 2, name": "second"}])
+
+      >>> g.to_dict_list(use_vids=False)
+      ([{"name": "apple"}, {"name": "pear"}, {"name": "peach"}],
+       [{"source": "apple", "target": "pear", "name": "first_edge"},
+        {"source" "apple", "target": "peach", name": "second"}])
+
     @param use_vids (bool): whether to label vertices in the output data
       structure by their ids or their vertex_name_attr attribute. If
       use_vids=False but vertices lack a vertex_name_attr attribute, an
@@ -521,22 +537,6 @@ def _export_graph_to_dict_list(
 
     @return: a tuple with two lists of dictionaries, representing the vertices
       and the edges, respectively, with their attributes.
-
-    Example:
-
-    >>> g = Graph([(0, 1), (1, 2)])
-    >>> g.vs["name"] = ["apple", "pear", "peach"]
-    >>> g.es["name"] = ["first_edge", "second"]
-
-    >>> g.to_dict_list()
-    ([{"name": "apple"}, {"name": "pear"}, {"name": "peach"}],
-     [{"source": 0, "target": 1, "name": "first_edge"},
-      {"source" 0, "target": 2, name": "second"}])
-
-    >>> g.to_dict_list(use_vids=False)
-    ([{"name": "apple"}, {"name": "pear"}, {"name": "peach"}],
-     [{"source": "apple", "target": "pear", "name": "first_edge"},
-      {"source" "apple", "target": "peach", name": "second"}])
     """
     # Output data structures
     res_vs, res_es = [], []
@@ -577,6 +577,20 @@ def _export_graph_to_tuple_list(
 
     This function is the reverse of Graph.TupleList.
 
+    Example:
+
+      >>> g = Graph.Full(3)
+      >>> g.vs["name"] = ["apple", "pear", "peach"]
+      >>> g.es["name"] = ["first_edge", "second", "third"]
+
+      >>> # Get name of the edge
+      >>> g.to_tuple_list(edge_attrs=["name"])
+      [(0, 1, "first_edge"), (0, 2, "second"), (1, 2, "third")]
+
+      >>> # Use vertex names, no edge attributes
+      >>> g.to_tuple_list(use_vids=False)
+      [("apple", "pear"), ("apple", "peach"), ("pear", "peach")]
+
     @param use_vids (bool): whether to label vertices in the output data
       structure by their ids or their vertex_name_attr attribute. If
       use_vids=False but vertices lack a vertex_name_attr attribute, an
@@ -591,20 +605,6 @@ def _export_graph_to_tuple_list(
       structure.
 
     @return: a list of tuples, each representing an edge of the graph.
-
-    Example:
-
-    >>> g = Graph.Full(3)
-    >>> g.vs["name"] = ["apple", "pear", "peach"]
-    >>> g.es["name"] = ["first_edge", "second", "third"]
-
-    # Get name of the edge
-    >>> g.to_tuple_list(edge_attrs=["name"])
-    [(0, 1, "first_edge"), (0, 2, "second"), (1, 2, "third")]
-
-    # Use vertex names, no edge attributes
-    >>> g.to_tuple_list(use_vids=False)
-    [("apple", "pear"), ("apple", "peach"), ("pear", "peach")]
     """
     # Output data structure
     res = []
@@ -645,6 +645,15 @@ def _export_graph_to_list_dict(
 
     This function is the reverse of Graph.ListDict.
 
+    Example:
+
+      >>> g = Graph.Full(3)
+      >>> g.to_sequence_dict() -> {0: [1, 2], 1: [2]}
+      >>> g.to_sequence_dict(sequence_constructor=tuple) -> {0: (1, 2), 1: (2,)}
+      >>> g.vs['name'] = ['apple', 'pear', 'peach']
+      >>> g.to_sequence_dict(use_vids=False)
+      {'apple': ['pear', 'peach'], 'pear': ['peach']}
+
     @param use_vids (bool): whether to label vertices in the output data
       structure by their ids or their vertex_name_attr attribute. If
       use_vids=False but vertices lack a vertex_name_attr attribute, an
@@ -659,15 +668,6 @@ def _export_graph_to_list_dict(
 
     @return: dictionary of sequences, keyed by vertices, with each value
       containing the neighbors of that vertex.
-
-    Example:
-
-    >>> g = Graph.Full(3)
-    >>> g.to_sequence_dict() -> {0: [1, 2], 1: [2]}
-    >>> g.to_sequence_dict(sequence_constructor=tuple) -> {0: (1, 2), 1: (2,)}
-    >>> g.vs['name'] = ['apple', 'pear', 'peach']
-    >>> g.to_sequence_dict(use_vids=False)
-    {'apple': ['pear', 'peach'], 'pear': ['peach']}
     """
     if not use_vids:
         if vertex_name_attr not in graph.vertex_attributes():
@@ -697,6 +697,13 @@ def _export_graph_to_dict_dict(
 
     This function is the reverse of Graph.DictDict.
 
+    Example:
+
+      >>> g = Graph.Full(3)
+      >>> g.es['name'] = ['first_edge', 'second', 'third']
+      >>> g.to_dict_dict()
+      {0: {1: {'name': 'first_edge'}, 2: {'name': 'second'}}, 1: {2: {'name': 'third'}}}
+
     @param use_vids (bool): whether to label vertices in the output data
       structure by their ids or their vertex_name_attr attribute. If
       use_vids=False but vertices lack a vertex_name_attr attribute, an
@@ -715,13 +722,6 @@ def _export_graph_to_dict_dict(
     @return: dictionary of dictionaries of dictionaries, with the outer keys
       vertex ids/names, the middle keys ids/names of their neighbors, and the
       innermost dictionary representing attributes of that edge.
-
-    Example:
-    >>> g = Graph.Full(3)
-    >>> g.es['name'] = ['first_edge', 'second', 'third']
-    >>> g.to_dict_dict()
-    {0: {1: {'name': 'first_edge'}, 2: {'name': 'second'}},
-     1: {2: {'name': 'third'}}}
     """
     if edge_attrs is not None:
         if isinstance(edge_attrs, str):

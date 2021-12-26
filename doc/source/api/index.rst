@@ -1,4 +1,4 @@
-.. include:: include/global.rst
+.. include:: ../include/global.rst
 
 .. currentmodule:: igraph
 

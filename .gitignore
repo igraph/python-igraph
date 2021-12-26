@@ -4,8 +4,6 @@
 *.pyc
 build/
 dist/
-doc/api/
-doc/source/gallery.rst
 src/igraph/*.so
 result_images/
 *.egg-info/
@@ -19,3 +17,6 @@ vendor/build/
 vendor/install/
 .DS_Store
 
+doc/source/gallery.rst
+doc/api/
+doc/html/

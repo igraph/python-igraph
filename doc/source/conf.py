@@ -56,7 +56,7 @@ pydoctor_args = [
     #'--project-version=YOUR-PUBLIC-VERSION',
     '--project-url=https://igraph.org/python',
     '--introspect-c-modules',
-    #'--docformat=epytext',
+    '--docformat=epytext',
     #'--intersphinx='+get_root_dir()+'/doc/tutorial/objects.inv',
     '--html-output='+get_root_dir()+'/doc/html/api',
     #'--html-viewsource-base=https://github.com/igraph/python-igraph/tree/default',

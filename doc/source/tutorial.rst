@@ -2,6 +2,8 @@
 
 .. _tutorial:
 
+.. currentmodule:: igraph
+
 ========
 Tutorial
 ========
@@ -328,7 +330,7 @@ as dictionaries to alter the attributes of that single vertex or edge::
   >>> g.es[0]
   igraph.Edge(<igraph.Graph object at 0x4c87a0>,0,{'is_formal': True})
 
-The above snippet illustrates that indexing an :class:`EdgeSeq` object returns
+The above snippet illustrates that indexing an :class:`~seq.EdgeSeq` object returns
 :class:`Edge` objects; the representation above shows the graph the object belongs to,
 the edge ID (zero in our case) and the dictionary of attributes assigned to that edge.
 :class:`Edge` objects have some useful attributes, too: the :attr:`~Edge.source` property
@@ -343,9 +345,9 @@ Since :attr:`Graph.es` always represents all the edges in a graph, indexing it b
 to :attr:`Graph.vs`. However, keep in mind that an :class:`EdgeSeq` object *in general*
 does not necessarily represent the whole edge sequence of a graph;
 :ref:`later in this tutorial <querying_vertices_and_edges>`
-we will see methods that can filter :class:`EdgeSeq` objects and return other
-:class:`EdgeSeq` objects that are restricted to a subset of edges, and of course the same
-applies to :class:`VertexSeq` objects. But before we dive into that, let's see how we
+we will see methods that can filter :class:`~seq.EdgeSeq` objects and return other
+:class:`~seq.EdgeSeq` objects that are restricted to a subset of edges, and of course the same
+applies to :class:`~seq.VertexSeq` objects. But before we dive into that, let's see how we
 can assign attributes to the whole graph. Not too surprisingly, :class:`Graph` objects
 themselves can also behave as dictionaries::
 
@@ -750,12 +752,12 @@ completely equivalent::
   >>> layout = g.layout_reingold_tilford(root=[2])
   >>> layout = g.layout("rt", [2])
 
-Layout methods return a :class:`Layout` object which behaves mostly like a list of lists.
-Each list entry in a :class:`Layout` object corresponds to a vertex in the original graph
-and contains the vertex coordinates in the 2D or 3D space. :class:`Layout` objects also
+Layout methods return a :class:`~layout.Layout` object which behaves mostly like a list of lists.
+Each list entry in a :class:`~layout.Layout` object corresponds to a vertex in the original graph
+and contains the vertex coordinates in the 2D or 3D space. :class:`~layout.Layout` objects also
 contain some useful methods to translate, scale or rotate the coordinates in a batch.
-However, the primary utility of :class:`Layout` objects is that you can pass them to the
-:func:`plot` function along with the graph to obtain a 2D drawing.
+However, the primary utility of :class:`~layout.Layout` objects is that you can pass them to the
+:func:`~drawing.plot` function along with the graph to obtain a 2D drawing.
 
 Drawing a graph using a layout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -817,16 +819,16 @@ and for matplotlib:
    Our social network - with names as labels and genders as colors
 
 Instead of specifying the visual properties as vertex and edge attributes, you can
-also give them as keyword arguments to :func:`plot`::
+also give them as keyword arguments to :func:`~drawing.plot`::
 
   >>> color_dict = {"m": "blue", "f": "pink"}
   >>> ig.plot(g, layout=layout, vertex_color=[color_dict[gender] for gender in g.vs["gender"]])
 
 This latter approach is preferred if you want to keep the properties of the visual
 representation of your graph separate from the graph itself. You can simply set up
-a Python dictionary containing the keyword arguments you would pass to :func:`plot`
+a Python dictionary containing the keyword arguments you would pass to :func:`~drawing.plot`
 and then use the double asterisk (``**``) operator to pass your specific styling
-attributes to :func:`plot`::
+attributes to :func:`~drawing.plot`::
 
   >>> visual_style = {}
   >>> visual_style["vertex_size"] = 20
@@ -849,7 +851,7 @@ The final plot shows the formal ties with thick lines while informal ones with t
 To sum it all up: there are special vertex and edge properties that correspond to
 the visual representation of the graph. These attributes override the default settings
 of |igraph| (see :doc:`configuration` for overriding the system-wide defaults).
-Furthermore, appropriate keyword arguments supplied to :func:`plot` override the
+Furthermore, appropriate keyword arguments supplied to :func:`~drawing.plot` override the
 visual properties provided by the vertex and edge attributes. The following two
 tables summarise the most frequently used visual attributes for vertices and edges,
 respectively:
@@ -909,7 +911,7 @@ Attribute name  Keyword argument       Purpose
                                        interpreted as zero. This is useful to
                                        make multiple edges visible. See also the
                                        ``autocurve`` keyword argument to
-                                       :func:`plot`.
+                                       :func:`~drawing.plot`.
 --------------- ---------------------- ------------------------------------------
 ``font``        ``edge_font``          Font family of the edge
 --------------- ---------------------- ------------------------------------------
@@ -938,7 +940,7 @@ Attribute name  Keyword argument       Purpose
 Generic keyword arguments of ``plot()``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-These settings can be specified as keyword arguments to the ``plot()`` function
+These settings can be specified as keyword arguments to the :func:`~drawing.plot` function
 to control the overall appearance of the plot.
 
 ================ ================================================================
@@ -952,7 +954,8 @@ Keyword argument Purpose
                  the desired width and height of the plot. The default plot is
                  600 pixels wide and 600 pixels high.
 ---------------- ----------------------------------------------------------------
-``layout``       The layout to be used. It can be an instance of :class:`Layout`,
+``layout``       The layout to be used. It can be an instance of
+                 :class:`~layout.Layout`,
                  a list of tuples containing X-Y coordinates, or the name of a
                  layout algorithm. The default is ``auto``, which selects a
                  layout algorithm automatically based on the size and
@@ -995,7 +998,7 @@ Lists or tuples of RGB values in the range 0-1
 Saving plots
 ^^^^^^^^^^^^
 
-|igraph| can be used to create publication-quality plots by asking the :func:`plot`
+|igraph| can be used to create publication-quality plots by asking the :func:`~drawing.plot`
 function to save the plot into a file instead of showing it on a screen. This can
 be done simply by passing the target filename as an additional argument after the
 graph itself. The preferred format is inferred from the extension. |igraph| can
@@ -1089,16 +1092,16 @@ with the Pajek writer method from the table above::
    ensures that you get exactly the same graph back. The pickled graph format
    uses Python's ``pickle`` module to store and read graphs.
 
-There are two helper methods as well: :func:`load` is a generic entry point for
+There are two helper methods as well: :func:`read` is a generic entry point for
 reader methods which tries to infer the appropriate format from the file extension.
-:meth:`Graph.save` is the opposite of :func:`load`: it lets you save a graph where
+:meth:`Graph.write` is the opposite of :func:`read`: it lets you save a graph where
 the preferred format is again inferred from the extension. The format detection of
-:func:`load` and :meth:`Graph.save` can be overridden by the ``format`` keyword
+:func:`read` and :meth:`Graph.write` can be overridden by the ``format`` keyword
 argument which accepts the short names of the formats from the above table::
 
   >>> karate = ig.load("zachary.graphml")
-  >>> karate.save("zachary.net")
-  >>> karate.save("zachary.my_extension", format="gml")
+  >>> karate.write("zachary.net")
+  >>> karate.write("zachary.my_extension", format="gml")
 
 
 Where to go next
@@ -1107,13 +1110,11 @@ Where to go next
 This tutorial was only scratching the surface of what |igraph| can do.  My
 long-term plans are to extend this tutorial into a proper manual-style
 documentation to |igraph| in the next chapters. In the meanwhile, check out the
-full `API documentation`_ which should provide information about almost every
+:doc:`api/index` which should provide information about almost every
 |igraph| class, function or method. A good starting point is the documentation
-of the `Graph class`_. Should you get stuck, try asking in our
+of the :class:`Graph` class. Should you get stuck, try asking in our
 `Discourse group`_ first - maybe there is someone out there who can help you
 out immediately.
 
-.. _API documentation: https://igraph.org/python/doc/api/index.html
-.. _Graph class: https://igraph.org/python/doc/api/igraph.Graph.html
 .. _Discourse group: https://igraph.discourse.group
 .. _matplotlib: https://matplotlib.org/
