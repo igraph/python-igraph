@@ -4,10 +4,10 @@
 
 .. include:: include/global.rst
 
+.. currentmodule:: igraph
+
 Welcome to the documentation of the Python interface of igraph
 ==============================================================
-
-.. currentmodule:: igraph
 
 Contents:
 
@@ -22,7 +22,8 @@ Contents:
    analysis
    visualisation
    misc
-   configuring-igraph
+   configuration
+   api/index
 
 
 Indices and tables

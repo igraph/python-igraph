@@ -75,7 +75,7 @@ standard Python shell. Currently the module looks for `IPython <https://ipython.
 IDLE (the Tcl/Tk-based graphical shell supplied with Python). If neither IPython nor IDLE is
 installed, the startup script launches the default Python shell. You can also modify the
 order in which these shells are searched by tweaking |igraph|'s configuration file
-(see :ref:`configuring-igraph`).
+(see :doc:`configuration`).
 
 If you are using |igraph| interactively, we recommend you import it in a Jupyter notebook,
 a Jupyterlab or ipython session, or via the shell script provided (method #3). As for any
@@ -848,7 +848,7 @@ The final plot shows the formal ties with thick lines while informal ones with t
 
 To sum it all up: there are special vertex and edge properties that correspond to
 the visual representation of the graph. These attributes override the default settings
-of |igraph| (see :ref:`configuring-igraph` for overriding the system-wide defaults).
+of |igraph| (see :doc:`configuration` for overriding the system-wide defaults).
 Furthermore, appropriate keyword arguments supplied to :func:`plot` override the
 visual properties provided by the vertex and edge attributes. The following two
 tables summarise the most frequently used visual attributes for vertices and edges,

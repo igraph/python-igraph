@@ -9,8 +9,7 @@ SCRIPTS_FOLDER=`dirname $0`
 cd ${SCRIPTS_FOLDER}/..
 ROOT_FOLDER=`pwd`
 DOC_SOURCE_FOLDER=${ROOT_FOLDER}/doc/source
-DOC_API_FOLDER=${ROOT_FOLDER}/doc/api
-DOC_TUTORIAL_FOLDER=${ROOT_FOLDER}/doc/tutorial
+DOC_TUTORIAL_FOLDER=${ROOT_FOLDER}/doc/html
 
 cd ${ROOT_FOLDER}
 
@@ -42,7 +41,7 @@ echo "Patching modularized Graph methods"
 
 
 # Remove previous docs
-rm -rf "${DOC_API_FOLDER}/html" "${DOC_API_FOLDER}/pdf" "${DOC_TUTORIAL_FOLDER}"
+rm -rf "${DOC_TUTORIAL_FOLDER}"
 
 
 # Make sphinx
@@ -50,6 +49,7 @@ echo "Generating HTML documentation..."
 .venv/bin/python -m sphinx.cmd.build ${DOC_SOURCE_FOLDER} ${DOC_TUTORIAL_FOLDER}
 
 #PWD=`pwd`
+#DOC_API_FOLDER=${ROOT_FOLDER}/doc/api
 #DOC2DASH=`which doc2dash 2>/dev/null || true`
 #if [ "x$DOC2DASH" != x ]; then
 #    echo "Generating Dash docset..."

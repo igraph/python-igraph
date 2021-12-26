@@ -34,66 +34,11 @@ def main():
         if fname.startswith('_'):
             underscore_functions.add(fname)
 
-    # Make .new file with replacements
-    def write_import_lines(fout, curmodule):
-        if curmodule['name'] is None:
-            return
-        lines = curmodule['imports']
-        fnames_new = []
-        for line in lines:
-            fnames = line.lstrip().rstrip('\n').split(',')
-            for fname in fnames:
-                fname = fname.strip()
-                if fname in ('', '(', ')'):
-                    continue
-                if fname in underscore_functions:
-                    underscore_functions.remove(fname)
-                else:
-                    fnames_new.append(fname)
-
-        lines_out = []
-        if len(fnames_new):
-            lines_out.append('from '+curmodule['name']+' import (')
-            for fname in fnames_new:
-                lines_out.append('    '+fname+',')
-            lines_out.append(')')
-            lines_out.append('')
-        lines_out = '\n'.join(lines_out)
-        if lines_out:
-            fout.write(lines_out)
-
     newmodule = igraph.__file__ + '.new'
     with open(newmodule, 'wt') as fout:
         with open(igraph.__file__, 'rt') as f:
-            # Delete imported underscore functions
-            curmodule = {'name': None, 'imports': []}
-            for line in f:
-                if line.startswith('# END OF IMPORTS'):
-                    write_import_lines(fout, curmodule)
-                    break
-
-                # Vanilla imports
-                if line.startswith('import'):
-                    write_import_lines(fout, curmodule)
-                    curmodule = {'name': None, 'imports': []}
-                    fout.write(line)
-                    continue
-
-                if line.startswith('from'):
-                    write_import_lines(fout, curmodule)
-                    idx = line.find('import')
-                    modname = line[:idx].split()[1]
-                    line = line[idx + len('import') + 1:]
-                    curmodule = {'name': modname, 'imports': [line]}
-                    continue
-
-                curmodule['imports'].append(line)
-
             # Swap in the method sources
             for line in f:
-                if '# Remove modular methods from namespace' in line:
-                    break
-
                 mtype = None
                 for mname in methodsources:
                     # Class methods (constructors)

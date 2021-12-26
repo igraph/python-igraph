@@ -274,9 +274,6 @@ import sys
 from warnings import warn
 
 
-# END OF IMPORTS
-
-
 def deprecated(message):
     """Prints a warning message related to the deprecation of some igraph
     feature."""

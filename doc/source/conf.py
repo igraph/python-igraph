@@ -58,14 +58,14 @@ pydoctor_args = [
     '--introspect-c-modules',
     #'--docformat=epytext',
     #'--intersphinx='+get_root_dir()+'/doc/tutorial/objects.inv',
-    '--html-output='+get_root_dir()+'/doc/api',
+    '--html-output='+get_root_dir()+'/doc/html/api',
     #'--html-viewsource-base=https://github.com/igraph/python-igraph/tree/default',
     '--project-base-dir='+get_igraphdir(),
     get_igraphdir(),
     ]
 
 # Relative to the rest of the docs
-pydoctor_url_path = '../api/'
+pydoctor_url_path = 'api/'
 
 
 
