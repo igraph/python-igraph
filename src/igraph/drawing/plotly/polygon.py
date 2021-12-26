@@ -22,7 +22,6 @@ class PlotlyPolygonDrawer:
         Matplotlib axes.
 
         @param  fig: the plotly Figure to draw on
-        @param  points:  the list of corner points
         """
         self.context = fig
 

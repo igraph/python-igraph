@@ -471,7 +471,7 @@ def _layout(graph, layout=None, *args, **kwds):
 
       - C{grid}: regular grid layout in 2D (see L{GraphBase.layout_grid})
 
-      - C{grid_3d}: regular grid layout in 3D (see L{GraphBase.layout_grid_3d})
+      - C{grid_3d}: regular grid layout in 3D (see L{GraphBase.layout_grid})
 
       - C{graphopt}: the graphopt algorithm (see L{GraphBase.layout_graphopt})
 

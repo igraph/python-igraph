@@ -22,7 +22,6 @@ class MatplotlibPolygonDrawer:
         Matplotlib axes.
 
         @param  ax: the matplotlib Axes to draw on
-        @param  points:  the list of corner points
         """
         self.context = ax
 

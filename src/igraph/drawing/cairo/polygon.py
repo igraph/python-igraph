@@ -21,7 +21,6 @@ class CairoPolygonDrawer(AbstractCairoDrawer):
 
         @param  context: the Cairo context to draw on
         @param  bbox:    ignored, leave it at its default value
-        @param  points:  the list of corner points
         """
         super().__init__(context, bbox)
 

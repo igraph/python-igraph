@@ -104,7 +104,8 @@ class DrawerDirectory:
     def resolve(cls, obj, backend):
         """Given a shape name, returns the corresponding shape drawer class
 
-        @param: obj: an instance of the object to plot
+        @param cls: the class to resolve
+        @param obj: an instance of the object to plot
         @param backend: the name of the backend
         @return: the corresponding shape drawer class
 
