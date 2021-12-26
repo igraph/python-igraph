@@ -1,5 +1,8 @@
 .. include:: include/global.rst
 
+.. currentmodule:: igraph
+
+
 Graph analysis
 ==============
 

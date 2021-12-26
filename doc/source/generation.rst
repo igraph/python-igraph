@@ -2,6 +2,8 @@
 
 .. _generation:
 
+.. currentmodule:: igraph
+
 Graph generation
 ================
 

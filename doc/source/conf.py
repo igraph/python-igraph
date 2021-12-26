@@ -35,7 +35,37 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.intersphinx',
     'gallery_generator',
+    'pydoctor.sphinx_ext.build_apidocs',
 ]
+
+
+def get_root_dir():
+    import os.path as op
+    root_folder = op.abspath('../..')
+    return root_folder
+
+
+def get_igraphdir():
+    root_folder = get_root_dir()
+    return root_folder+'/.venv/lib/python3.10/site-packages/igraph'
+
+
+pydoctor_args = [
+    '--project-name="igraph"',
+    #'--project-version=YOUR-PUBLIC-VERSION',
+    '--project-url=https://igraph.org/python',
+    '--introspect-c-modules',
+    #'--docformat=epytext',
+    #'--intersphinx='+get_root_dir()+'/doc/tutorial/objects.inv',
+    '--html-output='+get_root_dir()+'/doc/api',
+    #'--html-viewsource-base=https://github.com/igraph/python-igraph/tree/default',
+    '--project-base-dir='+get_igraphdir(),
+    get_igraphdir(),
+    ]
+
+pydoctor_url_path = '../api/'
+
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -273,5 +303,6 @@ intersphinx_mapping = {
     'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
     'matplotlib': ('https://matplotlib.org/stable', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
-    'networkx': ('https://networkx.org/documentation/stable/', None)
+    'networkx': ('https://networkx.org/documentation/stable/', None),
+    #'igraph': ('https://igraph.org/python/doc/api/', None),
 }

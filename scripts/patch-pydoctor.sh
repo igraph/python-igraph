@@ -17,7 +17,11 @@ PYDOCTOR_DIR=`.venv/bin/python -c 'import os,pydoctor;print(os.path.dirname(pydo
 
 cd "${PYDOCTOR_DIR}"
 # patch is confirmed to work with pydoctor 21.2.2
+echo "First patch"
 patch -r deleteme.rej -N -p2 <${PATCH_FOLDER}/pydoctor-21.2.2.patch 2>/dev/null
 rm -f deleteme.rej
 
-
+# patch sphinx extension
+echo "Second patch"
+patch -r deleteme.rej -N -p2 <${PATCH_FOLDER}/pydoctor-21.2.2_sphinx_ext.patch 2>/dev/null
+rm -f deleteme.rej
