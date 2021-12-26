@@ -9,8 +9,6 @@ Welcome to the documentation of the Python interface of igraph
 
 .. currentmodule:: igraph
 
-Test link to api :class:`Graph`
-
 Contents:
 
 .. toctree::

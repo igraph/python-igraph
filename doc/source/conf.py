@@ -46,8 +46,9 @@ def get_root_dir():
 
 
 def get_igraphdir():
+    vmaj, vmin = sys.version_info[:2]
     root_folder = get_root_dir()
-    return root_folder+'/.venv/lib/python3.10/site-packages/igraph'
+    return root_folder+f'/.venv/lib/python{vmaj}.{vmin}/site-packages/igraph'
 
 
 pydoctor_args = [
@@ -63,6 +64,7 @@ pydoctor_args = [
     get_igraphdir(),
     ]
 
+# Relative to the rest of the docs
 pydoctor_url_path = '../api/'
 
 
@@ -265,7 +267,7 @@ man_pages = [
 epub_title = u'igraph'
 epub_author = u'The igraph development team'
 epub_publisher = u'The igraph development team'
-epub_copyright = u'2010, The igraph development team'
+epub_copyright = u'2010-2022, The igraph development team'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
@@ -304,5 +306,4 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org/stable', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'networkx': ('https://networkx.org/documentation/stable/', None),
-    #'igraph': ('https://igraph.org/python/doc/api/', None),
 }
