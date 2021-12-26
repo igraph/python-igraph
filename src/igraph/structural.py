@@ -9,7 +9,7 @@ from igraph.statistics import Histogram
 def _indegree(graph, *args, **kwds):
     """Returns the in-degrees in a list.
 
-    See L{degree} for possible arguments.
+    See L{GraphBase.degree} for possible arguments.
     """
     kwds["mode"] = IN
     return graph.degree(*args, **kwds)
@@ -18,7 +18,7 @@ def _indegree(graph, *args, **kwds):
 def _outdegree(graph, *args, **kwds):
     """Returns the out-degrees in a list.
 
-    See L{degree} for possible arguments.
+    See L{GraphBase.degree} for possible arguments.
     """
     kwds["mode"] = OUT
     return graph.degree(*args, **kwds)
@@ -27,7 +27,7 @@ def _outdegree(graph, *args, **kwds):
 def _degree_distribution(graph, bin_width=1, *args, **kwds):
     """Calculates the degree distribution of the graph.
 
-    Unknown keyword arguments are directly passed to L{degree()}.
+    Unknown keyword arguments are directly passed to L{GraphBase.degree}.
 
     @param bin_width: the bin width of the histogram
     @return: a histogram representing the degree distribution of the

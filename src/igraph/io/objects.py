@@ -256,8 +256,8 @@ def _construct_graph_from_list_dict(
     vertex will be given the vertex_name_attr attribute.
 
     @param edges: the dict of sequences describing the edges
-    @param directed (bool): whether to create a directed graph
-    @vertex_name_attr (str): vertex attribute that will store the names
+    @param directed: (bool) whether to create a directed graph
+    @vertex_name_attr: (str) vertex attribute that will store the names
 
     @returns: a Graph object
 
@@ -323,8 +323,8 @@ def _construct_graph_from_dict_dict(
 
     @param edges: the dict of dict of dicts specifying the edges and their
       attributes
-    @param directed (bool): whether to create a directed graph
-    @vertex_name_attr (str): vertex attribute that will store the names
+    @param directed: (bool) whether to create a directed graph
+    @vertex_name_attr: (str) vertex attribute that will store the names
 
     @returns: a Graph object
     """
@@ -524,14 +524,14 @@ def _export_graph_to_dict_list(
        [{"source": "apple", "target": "pear", "name": "first_edge"},
         {"source" "apple", "target": "peach", name": "second"}])
 
-    @param use_vids (bool): whether to label vertices in the output data
+    @param use_vids: (bool) whether to label vertices in the output data
       structure by their ids or their vertex_name_attr attribute. If
       use_vids=False but vertices lack a vertex_name_attr attribute, an
       AttributeError is raised.
-    @param skip_none (bool): whether to skip, for each edge, attributes that
+    @param skip_none: (bool) whether to skip, for each edge, attributes that
       have a value of None. This is useful if only some edges are expected to
       possess an attribute.
-    @vertex_name_attr (str): only used with use_vids=False to choose what
+    @vertex_name_attr: (str) only used with use_vids=False to choose what
       vertex attribute to use to name your vertices in the output data
       structure.
 
@@ -591,16 +591,16 @@ def _export_graph_to_tuple_list(
       >>> g.to_tuple_list(use_vids=False)
       [("apple", "pear"), ("apple", "peach"), ("pear", "peach")]
 
-    @param use_vids (bool): whether to label vertices in the output data
+    @param use_vids: (bool) whether to label vertices in the output data
       structure by their ids or their vertex_name_attr attribute. If
       use_vids=False but vertices lack a vertex_name_attr attribute, an
       AttributeError is raised.
-    @param edge_attrs (str or list of str): list of edge attributes to export
+    @param edge_attrs: (str or list of str) list of edge attributes to export
       in addition to source and target vertex, which are always the first two
       elements of each tuple. None (default) is equivalent to an empty list. A
       string is acceptable to signify a single attribute and will be wrapped in
       a list internally.
-    @vertex_name_attr (str): only used with use_vids=False to choose what
+    @vertex_name_attr: (str) only used with use_vids=False to choose what
       vertex attribute to use to name your vertices in the output data
       structure.
 
@@ -654,15 +654,15 @@ def _export_graph_to_list_dict(
       >>> g.to_sequence_dict(use_vids=False)
       {'apple': ['pear', 'peach'], 'pear': ['peach']}
 
-    @param use_vids (bool): whether to label vertices in the output data
+    @param use_vids: (bool) whether to label vertices in the output data
       structure by their ids or their vertex_name_attr attribute. If
       use_vids=False but vertices lack a vertex_name_attr attribute, an
       AttributeError is raised.
-    @param sequence_constructor (function): constructor for the data structure
+    @param sequence_constructor: (function) constructor for the data structure
       to be used as values of the dictionary. The default (list) makes a dict
       of lists, with each list representing the neighbors of the vertex
       specified in the respective dictionary key.
-    @vertex_name_attr (str): only used with use_vids=False to choose what
+    @vertex_name_attr: (str) only used with use_vids=False to choose what
       vertex attribute to use to name your vertices in the output data
       structure.
 
@@ -704,18 +704,18 @@ def _export_graph_to_dict_dict(
       >>> g.to_dict_dict()
       {0: {1: {'name': 'first_edge'}, 2: {'name': 'second'}}, 1: {2: {'name': 'third'}}}
 
-    @param use_vids (bool): whether to label vertices in the output data
+    @param use_vids: (bool) whether to label vertices in the output data
       structure by their ids or their vertex_name_attr attribute. If
       use_vids=False but vertices lack a vertex_name_attr attribute, an
       AttributeError is raised.
-    @param edge_attrs (str or list of str): list of edge attributes to export.
+    @param edge_attrs: (str or list of str) list of edge attributes to export.
       None (default) signified all attributes (unlike Graph.to_tuple_list). A
       string is acceptable to signify a single attribute and will be wrapped
       in a list internally.
-    @param skip_none (bool): whether to skip, for each edge, attributes that
+    @param skip_none: (bool) whether to skip, for each edge, attributes that
       have a value of None. This is useful if only some edges are expected to
       possess an attribute.
-    @vertex_name_attr (str): only used with use_vids=False to choose what
+    @vertex_name_attr: (str) only used with use_vids=False to choose what
       vertex attribute to use to name your vertices in the output data
       structure.
 

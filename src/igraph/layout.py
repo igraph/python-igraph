@@ -250,7 +250,7 @@ class Layout:
         top-down ones (that's why the Y coordinate belongs to the radius).
         It can also be used in conjunction with the Fruchterman-Reingold
         layout algorithm via its I{miny} and I{maxy} parameters (see
-        L{Graph.layout_fruchterman_reingold()<igraph._igraph.GraphBase.layout_fruchterman_reingold()>})
+        L{Graph.layout_fruchterman_reingold()<GraphBase.layout_fruchterman_reingold()>})
         to produce radial layouts where the radius belongs to some property of
         the vertices.
 
@@ -448,61 +448,61 @@ def _layout(graph, layout=None, *args, **kwds):
     Registered layout names understood by this method are:
 
       - C{auto}, C{automatic}: automatic layout
-        (see L{layout_auto})
+        (see L{Graph.layout_auto})
 
-      - C{bipartite}: bipartite layout (see L{layout_bipartite})
+      - C{bipartite}: bipartite layout (see L{GraphBase.layout_bipartite})
 
       - C{circle}, C{circular}: circular layout
-        (see L{layout_circle})
+        (see L{GraphBase.layout_circle})
 
       - C{dh}, C{davidson_harel}: Davidson-Harel layout (see
-        L{layout_davidson_harel})
+        L{GraphBase.layout_davidson_harel})
 
-      - C{drl}: DrL layout for large graphs (see L{layout_drl})
+      - C{drl}: DrL layout for large graphs (see L{GraphBase.layout_drl})
 
       - C{drl_3d}: 3D DrL layout for large graphs
-        (see L{layout_drl})
+        (see L{GraphBase.layout_drl})
 
       - C{fr}, C{fruchterman_reingold}: Fruchterman-Reingold layout
-        (see L{layout_fruchterman_reingold}).
+        (see L{GraphBase.layout_fruchterman_reingold}).
 
       - C{fr_3d}, C{fr3d}, C{fruchterman_reingold_3d}: 3D Fruchterman-
-        Reingold layout (see L{layout_fruchterman_reingold}).
+        Reingold layout (see L{GraphBase.layout_fruchterman_reingold}).
 
-      - C{grid}: regular grid layout in 2D (see L{layout_grid})
+      - C{grid}: regular grid layout in 2D (see L{GraphBase.layout_grid})
 
-      - C{grid_3d}: regular grid layout in 3D (see L{layout_grid_3d})
+      - C{grid_3d}: regular grid layout in 3D (see L{GraphBase.layout_grid_3d})
 
-      - C{graphopt}: the graphopt algorithm (see L{layout_graphopt})
+      - C{graphopt}: the graphopt algorithm (see L{GraphBase.layout_graphopt})
 
       - C{kk}, C{kamada_kawai}: Kamada-Kawai layout
-        (see L{layout_kamada_kawai})
+        (see L{GraphBase.layout_kamada_kawai})
 
       - C{kk_3d}, C{kk3d}, C{kamada_kawai_3d}: 3D Kamada-Kawai layout
-        (see L{layout_kamada_kawai})
+        (see L{GraphBase.layout_kamada_kawai})
 
       - C{lgl}, C{large}, C{large_graph}: Large Graph Layout
-        (see L{layout_lgl})
+        (see L{GraphBase.layout_lgl})
 
-      - C{mds}: multidimensional scaling layout (see L{layout_mds})
+      - C{mds}: multidimensional scaling layout (see L{GraphBase.layout_mds})
 
-      - C{random}: random layout (see L{layout_random})
+      - C{random}: random layout (see L{GraphBase.layout_random})
 
-      - C{random_3d}: random 3D layout (see L{layout_random})
+      - C{random_3d}: random 3D layout (see L{GraphBase.layout_random})
 
       - C{rt}, C{tree}, C{reingold_tilford}: Reingold-Tilford tree
-        layout (see L{layout_reingold_tilford})
+        layout (see L{GraphBase.layout_reingold_tilford})
 
       - C{rt_circular}, C{reingold_tilford_circular}: circular
         Reingold-Tilford tree layout
-        (see L{layout_reingold_tilford_circular})
+        (see L{GraphBase.layout_reingold_tilford_circular})
 
       - C{sphere}, C{spherical}, C{circle_3d}, C{circular_3d}: spherical
-        layout (see L{layout_circle})
+        layout (see L{GraphBase.layout_circle})
 
-      - C{star}: star layout (see L{layout_star})
+      - C{star}: star layout (see L{GraphBase.layout_star})
 
-      - C{sugiyama}: Sugiyama layout (see L{layout_sugiyama})
+      - C{sugiyama}: Sugiyama layout (see L{Graph.layout_sugiyama})
 
     @param layout: the layout to use. This can be one of the registered
       layout names or a callable which returns either a L{Layout} object or
@@ -554,14 +554,14 @@ def _layout_auto(graph, *args, **kwds):
 
       3. Otherwise, if the graph is connected and has at most 100
          vertices, the Kamada-Kawai layout will be used (see
-         L{layout_kamada_kawai()}).
+         L{GraphBase.layout_kamada_kawai()}).
 
       4. Otherwise, if the graph has at most 1000 vertices, the
          Fruchterman-Reingold layout will be used (see
-         L{layout_fruchterman_reingold()}).
+         L{GraphBase.layout_fruchterman_reingold()}).
 
       5. If everything else above failed, the DrL layout algorithm
-         will be used (see L{layout_drl()}).
+         will be used (see L{GraphBase.layout_drl()}).
 
     All the arguments of this function except C{dim} are passed on
     to the chosen layout function (in case we have to call some layout

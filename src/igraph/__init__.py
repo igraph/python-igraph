@@ -274,6 +274,25 @@ import sys
 from warnings import warn
 
 
+# Re-export from _igraph for API docs
+# Because _igraph starts with an underscore, pydoctor skips the whole docs
+# except for the objects mentioned down here.
+__all__ = [
+    'GraphBase',
+    'Edge',
+    'Vertex',
+    'InternalError',
+    'default_arpack_options',
+    'community_to_membership',
+    'convex_hull',
+    'is_degree_sequence',
+    'is_graphical_degree_sequence',
+    'set_progress_handler',
+    'set_random_number_generator',
+    'set_status_handler',
+]
+
+
 def deprecated(message):
     """Prints a warning message related to the deprecation of some igraph
     feature."""

@@ -11,7 +11,7 @@ def _export_graph_to_networkx(
         constructing the graph. C{None} means to let igraph infer the most
         appropriate class based on whether the graph is directed and whether
         it has multi-edges.
-    @param vertex_attr_hashable (str): vertex attribute used to name vertices
+    @param vertex_attr_hashable: (str) vertex attribute used to name vertices
         in the exported network. The default "_nx_name" ensures round trip
         conversions to/from networkx are lossless.
     """
@@ -78,7 +78,7 @@ def _construct_graph_from_networkx(cls, g, vertex_attr_hashable="_nx_name"):
     distinguish edges that connect the same two vertices.
 
     @param g: networkx Graph or DiGraph
-    @param vertex_attr_hashable (str): attribute used to store the Python
+    @param vertex_attr_hashable: (str) attribute used to store the Python
         hashable used by networkx to identify each vertex. The default value
         '_nx_name' ensures lossless round trip conversions to/from networkx. An
         alternative choice is 'name': in that case, using strings for vertex

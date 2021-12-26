@@ -28,8 +28,8 @@ class MatplotlibDendrogramDrawer(AbstractDrawer):
     def _plot_item(self, dendro, ax, orientation, idx, x, y):
         """Plots a dendrogram item to the given Cairo context
 
-        @param context: the Cairo context we are plotting on
-        @param horiz: whether the dendrogram is horizontally oriented
+        @param dendro: the dendrogram object
+        @param orientation: whether the dendrogram is horizontally oriented
         @param idx: the index of the item
         @param x: the X position of the item
         @param y: the Y position of the item
@@ -66,7 +66,7 @@ class MatplotlibDendrogramDrawer(AbstractDrawer):
         @orientation: the direction of the plot. Accepted values are "lr" (root
           on the right), "rl" (root on the left), "tb" (root at the bottom),
           and "bt" (root at the top). A few aliases are available (see
-          L{igraph.utils.str_to_orientation}).
+          L{utils.str_to_orientation}).
         """
         from igraph.layout import Layout
 

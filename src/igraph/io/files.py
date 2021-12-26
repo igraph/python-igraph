@@ -103,7 +103,7 @@ def _construct_graph_from_adjacency_file(
     """Constructs a graph based on an adjacency matrix from the given file.
 
     Additional positional and keyword arguments not mentioned here are
-    passed intact to L{Adjacency}.
+    passed intact to L{Graph.Adjacency}.
 
     @param f: the name of the file to be read or a file object
     @param sep: the string that separates the matrix elements in a row.
