@@ -67,7 +67,7 @@ The output of these these two shortest paths are:
     Shortest distance is:  3
     Shortest weighted distance is:  8    
 
-.. figure:: ./figures/shortest_path.png
+.. figure:: ./figures/shortest_paths.png
    :alt: The visual representation of a weighted network for finding shortest paths
    :align: center
 

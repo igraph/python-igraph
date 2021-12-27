@@ -3,7 +3,7 @@
 .. _tutorials-betweenness:
 
 =======================
-Visualizing Betweenness
+Betweenness
 =======================
 
 .. _betweenness: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#betweenness

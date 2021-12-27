@@ -30,7 +30,6 @@ ig.plot(
     edge_width=[3 if e.target == matching.match_of(e.source) else 1.0 for e in g.es],
     edge_color=["red" if e.target == matching.match_of(e.source) else "black" for e in g.es]
 )
-plt.show()
 
 # Matching is:
 # 0 - 5

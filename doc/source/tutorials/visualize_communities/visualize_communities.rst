@@ -3,7 +3,7 @@
 .. _tutorials-visualize-communities:
 
 =====================
-Visualize communities
+Communities
 =====================
 
 This example shows how to visualize communities or clusters of a graph. First, make the graph: we just use a famous graph here for simplicity.

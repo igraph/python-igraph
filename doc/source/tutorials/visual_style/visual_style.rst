@@ -2,9 +2,9 @@
 
 .. _tutorials-visual-style:
 
-=================================================
-Making Multiple Graphs with the Same Visual Style
-=================================================
+=======================================
+Plotting graphs with a consistent style
+=======================================
 
 This example shows how to use dictionary unpacking in order to easily use the same visual style across multiple graphs. This is a quick and easy way to quickly share a single visual style across multiple graphs, without having to copy and paste each of the individual attributes over and over again for each graph you plot.
 
