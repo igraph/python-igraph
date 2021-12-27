@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Creates the API documentation for igraph's Python interface using PyDoctor
 #
@@ -9,7 +9,7 @@ SCRIPTS_FOLDER=`dirname $0`
 cd ${SCRIPTS_FOLDER}/..
 ROOT_FOLDER=`pwd`
 DOC_SOURCE_FOLDER=${ROOT_FOLDER}/doc/source
-DOC_TUTORIAL_FOLDER=${ROOT_FOLDER}/doc/html
+DOC_HTML_FOLDER=${ROOT_FOLDER}/doc/html
 
 cd ${ROOT_FOLDER}
 
@@ -41,12 +41,12 @@ echo "Patching modularized Graph methods"
 
 
 # Remove previous docs
-rm -rf "${DOC_TUTORIAL_FOLDER}"
+rm -rf "${DOC_HTML_FOLDER}"
 
 
 # Make sphinx
 echo "Generating HTML documentation..."
-.venv/bin/python -m sphinx.cmd.build ${DOC_SOURCE_FOLDER} ${DOC_TUTORIAL_FOLDER}
+.venv/bin/python -m sphinx.cmd.build ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
 
 #PWD=`pwd`
 #DOC_API_FOLDER=${ROOT_FOLDER}/doc/api
@@ -66,7 +66,7 @@ echo "Generating HTML documentation..."
 #fi
 #
 #echo ""
-#echo "HTML documentation generated in ${DOC_TUTORIAL_FOLDER}/html"
+#echo "HTML documentation generated in ${DOC_HTML_FOLDER}/html"
 #if [ "x${DASH_READY}" = x1 ]; then
 #    echo "Dash docset generated in ${DOC_API_FOLDER}/python-igraph.docset"
 #fi
