@@ -6,6 +6,7 @@ build/
 dist/
 doc/api/
 doc/source/gallery.rst
+doc/tutorial/
 src/igraph/*.so
 result_images/
 *.egg-info/
