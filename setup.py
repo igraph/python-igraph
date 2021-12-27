@@ -237,6 +237,9 @@ class IgraphCCoreCMakeBuilder:
         # Python shared library
         args.append("-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
 
+        # No need to build tests
+        args.append("-DBUILD_TESTING=OFF")
+
         # Add any extra CMake args from environment variables
         if "IGRAPH_CMAKE_EXTRA_ARGS" in os.environ:
             args.extend(shlex.split(os.environ["IGRAPH_CMAKE_EXTRA_ARGS"]))
