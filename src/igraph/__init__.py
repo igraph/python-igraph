@@ -1120,7 +1120,7 @@ del (
 # Re-export from _igraph for API docs
 # Because _igraph starts with an underscore, pydoctor skips the whole docs
 # except for the objects mentioned down here.
-__all__ = [
+__all__ = (
     'config',
     'Cut',
     'Graph',
@@ -1191,4 +1191,4 @@ __all__ = [
     'TREE_UNDIRECTED',
     'WEAK',
 
-]
+)
