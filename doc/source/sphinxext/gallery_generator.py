@@ -38,8 +38,6 @@ INDEX_TEMPLATE = """
         left: 0;
         width: 170px;
         height: 170px;
-        opacity:1.0;
-        filter:alpha(opacity=100); /* For IE8 and earlier */
     }}
 
     .figure:hover img {{
@@ -48,8 +46,6 @@ INDEX_TEMPLATE = """
         -o-filter: blur(3px);
         -ms-filter: blur(3px);
         filter: blur(3px);
-        opacity:1.0;
-        filter:alpha(opacity=100); /* For IE8 and earlier */
     }}
 
     .figure span {{
@@ -58,23 +54,24 @@ INDEX_TEMPLATE = """
         left: 0;
         width: 170px;
         height: 170px;
-        background: #000;
-        color: #fff;
-        visibility: hidden;
+        background: rgba(255, 255, 255, 0);
+        color: black;
         opacity: 0;
         z-index: 100;
+        transition: opacity 0.25s ease-in-out;
     }}
 
     .figure p {{
         position: absolute;
-        top: 35%;
-        width: 170px;
-        font-size: 110%;
+        top: 50%;
+        width: 100%;
+        transform: translateY(-50%);
+        margin: 0;
     }}
 
     .figure:hover span {{
-        visibility: visible;
-        opacity: .8;
+        background: rgba(255, 255, 255, 0.75);
+        opacity: 1;
     }}
 
     .caption {{
