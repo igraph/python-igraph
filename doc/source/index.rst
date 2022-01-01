@@ -37,26 +37,31 @@ Further details are available in the :doc:`Installation Guide <install>`.
 Documentation
 =============
 
-.. panels::
+.. container:: twocol
 
-   Gallery
-   ^^^^^^^
-   links here
+    .. container::
 
-   ---
 
-   Tutorial
-   ^^^^^^^^
-   links here
+       **Tutorials**
 
-   ---
+       - :doc:`tutorials/quickstart/quickstart`
+       - :doc:`Gallery <gallery>`
+       - :doc:`tutorial`
 
-   API reference
-   ^^^^^^^^^^^^^
-   links here
+
+    .. container::
+
+       **Reference**
+
+       - :doc:`generation`
+       - :doc:`analysis`
+       - :doc:`visualisation`
+       - :doc:`configuration`
+       - :doc:`api/index`
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
    install
    gallery
