@@ -36,6 +36,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'gallery_generator',
     'pydoctor.sphinx_ext.build_apidocs',
+    'sphinx_panels',
 ]
 
 
