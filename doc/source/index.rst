@@ -6,8 +6,8 @@
 
 .. currentmodule:: igraph
 
-python-igraph: the Python interface to igraph
-=============================================
+python-igraph |release|
+=======================
 |igraph| is a fast open source tool to manipulate, analyze, and plot graphs or networks written in C, and `python-igraph` is |igraph|'s interface for the Python programming language.
 
 
@@ -48,16 +48,31 @@ Documentation
        - :doc:`Gallery <gallery>`
        - :doc:`tutorial`
 
+    .. container::
+
+       **Detailed docs**
+
+       - :doc:`Generation <generation>`
+       - :doc:`Analysis <analysis>`
+       - :doc:`Visualization <visualisation>`
+       - :doc:`configuration`
+
+.. container:: twocol
 
     .. container::
 
-       **Reference**
-
-       - :doc:`generation`
-       - :doc:`analysis`
-       - :doc:`visualisation`
-       - :doc:`configuration`
+       **Function reference**
+ 
        - :doc:`api/index`
+
+    .. container::
+
+       **Support**
+
+       - :doc:`FAQs <faq>`
+       - `Forum <https://igraph.discourse.group/>`_
+       - `Source code <https://github.com/igraph/python-igraph>`_
+
 
 .. toctree::
    :maxdepth: 1
