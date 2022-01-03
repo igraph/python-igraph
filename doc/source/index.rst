@@ -6,6 +6,24 @@
 
 .. currentmodule:: igraph
 
+.. raw:: html
+
+    <style type="text/css">
+    div.twocol {
+        padding-left: 0;
+        padding-right: 0;
+        display: flex;
+        gap: 20px;
+    }
+    
+    div.twocol > div {
+        flex-grow: 1;
+        padding: 0;
+        margin: 0;
+    }
+    </style>
+
+
 python-igraph |release|
 =======================
 |igraph| is a fast open source tool to manipulate, analyze, and plot graphs or networks written in C, and `python-igraph` is |igraph|'s interface for the Python programming language.
@@ -85,8 +103,8 @@ Documentation
    generation
    analysis
    visualisation
-   misc
    configuration
+   faq
 
 
 Indices and tables

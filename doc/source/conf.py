@@ -175,7 +175,7 @@ templates_path = [
 # documentation.
 html_theme_options = {
         "navbar_style": "full",
-        "navbar_color_class": "dark"
+        "navbar_color_class": "dark",
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

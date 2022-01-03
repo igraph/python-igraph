@@ -3,6 +3,21 @@
 # Creates the API documentation for igraph's Python interface using PyDoctor
 #
 # Usage: ./mkdoc.sh (makes API and tutorial docs)
+#        ./mkdoc.sh -s (makes standalone docs that require no further processing)
+
+STANDALONE=0
+
+while getopts ":s" OPTION; do
+    case $OPTION in
+        s)
+	    STANDALONE=1
+	    ;;
+        \?)
+            echo "Usage: $0 [-s]"
+            ;;
+    esac
+done
+shift $((OPTIND -1))
 
 SCRIPTS_FOLDER=`dirname $0`
 
@@ -46,7 +61,14 @@ rm -rf "${DOC_HTML_FOLDER}"
 
 # Make sphinx
 echo "Generating HTML documentation..."
-.venv/bin/python -m sphinx.cmd.build ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
+if [ "x$STANDALONE" = "x1" ]; then
+  .venv/bin/sphinx-build \
+   -Dtemplates_path='' \
+   -Dhtml_theme='alabaster' \
+   ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
+else
+  .venv/bin/sphinx-build ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
+fi
 
 #PWD=`pwd`
 #DOC_API_FOLDER=${ROOT_FOLDER}/doc/api
