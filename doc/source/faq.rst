@@ -22,7 +22,7 @@ more examples in our :doc:`gallery <gallery>`, read detailed instructions on gra
 
 I thought |igraph| was an R package, is this the same package?
 --------------------------------------------------------------
-|igraph| is a software library written in C with extensions in R, Python, and
+|igraph| is a software library written in C with interfaces in R, Python, and
 Mathematica. Many functions will have similar names and functionality across
 languages, but the matching is not perfect, so you will occasionally find
 functions that are supported in one language but not another. See the above FAQ

@@ -8,53 +8,36 @@
 Tutorial
 ========
 
-This chapter contains a short overview of |igraph|'s capabilities. It is highly recommended to read
-it at least once if you are new to |igraph|. I assume that you have already installed |igraph|; if
-you did not, see :ref:`installing-igraph` first. Familiarity with the Python language is also
-assumed; if this is the first time you are trying to use Python, there are many good Python
-tutorials on the Internet to get you started. If this is the first time you ever try to use a
-programming language, `A Byte of Python <https://python.swaroopch.com/>`_ is a good place to
-start out. If you already have a stable programming background in other languages and you just want
-a quick overview of Python, `Learn Python in 10 minutes <https://www.stavros.io/tutorials/python/>`_
-is probably your best bet.
+This page is a detailed tutorial of |igraph|'s Python capabilities. To get an quick impression of what |igraph| can do, check out the :doc:`tutorials/quickstart/quickstart`. If you have not installed |igraph| yet, follow the :doc:`install`.
 
 .. note::
-   For the impatient reader, see the :ref:`gallery` page for short, self-contained examples.
+   For the impatient reader, see the :doc:`gallery` page for short, self-contained examples.
 
 Starting |igraph|
 =================
 
-|igraph| is a Python module, hence it can be imported exactly the same way as any other
-ordinary Python module at the Python prompt::
+The most common way to use |igraph| is as a named import within a Python environment (e.g. a bare Python shell, a `IPython`_ shell, a `Jupyter`_ notebook or JupyterLab instance, `Google Colab <https://colab.research.google.com/>`_, and an `IDE <https://www.spyder-ide.org/>`_)::
 
   $ python
   Python 3.9.6 (default, Jun 29 2021, 05:25:02)
   [Clang 12.0.5 (clang-1205.0.22.9)] on darwin
   Type "help", "copyright", "credits" or "license" for more information.
-  >>> import igraph
-
-It is customary among the userbase to use a named import for short::
-
   >>> import igraph as ig
 
-This is the recommended way to import |igraph| whether it's in a python script, interactive shell
-(e.g. ipython), or a GUI (e.g. notebooks, Jupyterlab).
-
-This imports |igraph|'s objects and methods inside an own namespace called :mod:`igraph` or ``ig`` (if you used a named import). To call any of |igraph|'s methods, you must prepend the module name, e.g. to print the version of |igraph| installed on your system::
+To call functions, you need to prefix them with ``ig`` (or whatever name you chose)::
 
   >>> import igraph as ig
   >>> print(ig.__version__)
-  0.9.6
+  0.9.8
 
-An alternative way to make use of |igraph| which was popular a few years back is to import all its
-objects and methods into the main Python namespace::
+.. note::
+   It is possible to use start imports for igraph::
 
-  >>> from igraph import *
+    >>> from igraph import *
 
-This approach (star import) is now discouraged because |igraph| functions risk to conflict with and override other functions you have already imported or declared. Of course, if you know there's no conflict you can still use this method.
-  
-The third way to start |igraph| is to simply call the startup script that was supplied with
-the |igraph| package you installed. Not too surprisingly, the script is called :command:`igraph`::
+   but it is `generally discouraged <https://stackoverflow.com/questions/2386714/why-is-import-bad>`_.
+
+There is a second way to start |igraph|, which is to call the script :command:`igraph` from your terminal::
 
   $ igraph
   No configuration file, using defaults
@@ -63,99 +46,79 @@ the |igraph| package you installed. Not too surprisingly, the script is called :
   >>>
 
 .. note::
-  Provided that the script is on your path in the command line of your operating system
-  (which is almost surely the case on Linux and OS X), you can simply type :command:`igraph` at the
-  command line. Windows users will find the script inside the :file:`scripts` subdirectory of Python
-  and you may have to add it manually to your path in order to be able to use the script from
-  the command line without typing the whole path.
+  Windows users will find the script inside the :file:`scripts` subdirectory of Python
+  and might have to add it manually to their path.
 
-The command-line startup script imports all of |igraph|'s methods and objects into the main
-namespace, so it is practically equivalent to ``from igraph import *``. The difference between
-the two approaches (apart from saving some typing) is that the command-line script checks
-whether you have any of Python's more advanced shells installed and uses that instead of the
-standard Python shell. Currently the module looks for `IPython <https://ipython.org/>`_ and
-IDLE (the Tcl/Tk-based graphical shell supplied with Python). If neither IPython nor IDLE is
-installed, the startup script launches the default Python shell. You can also modify the
-order in which these shells are searched by tweaking |igraph|'s configuration file
-(see :doc:`configuration`).
+This script starts an appropriate shell (`IPython`_ or `IDLE <https://docs.python.org/3/library/idle.html>`_ if found, otherwise a pure Python shell) and runs the start import ``from igraph import *``. This is sometimes convenient to play with |igraph|'s functions.
 
-If you are using |igraph| interactively, we recommend you import it in a Jupyter notebook,
-a Jupyterlab or ipython session, or via the shell script provided (method #3). As for any
-other package, you might want to store more streamlined analyses in a Python script (``.py``
-extension).
+.. note::
+   You can specify which shell should be used by this script via |igraph|'s
+   :doc:`configuration` file.
 
-For the sake of simplicity, this tutorial will assume you have imported igraph using the
-short name ``ig`` as recommended above.
+This tutorial will assume you have imported igraph using the namespace ``ig`` as above.
 
-Creating a graph from scratch
-=============================
+Creating a graph
+================
 
-Assuming that you have started |igraph| successfully, it is time to create your first
-|igraph| graph. This is pretty simple::
+The simplest way to create a graph is the :class:`Graph` constructor. To make an empty graph::
 
   >>> g = ig.Graph()
 
-The above statement created an undirected graph with no vertices or edges and assigned it
-to the variable `g`. To confirm that it's really an |igraph| graph, we can
-print it::
-
-  >>> g
-  <igraph.Graph object at 0x4c87a0>
-
-This tells us that `g` is an instance of |igraph|'s :class:`Graph` class and
-that it is currently living at the memory address ``0x4c87a0`` (the exact
-output will almost surely be different for your platform). To obtain a more
-user-friendly output, we can try to print the graph using Python's
-``print`` statement::
-
-  >>> print(g)
-  IGRAPH U--- 0 0 --
-
-This summary consists of `IGRAPH`, followed by a four-character long code, the number of vertices, the number of edges, two dashes (`--`) and the name of the graph (i.e. the contents of the `name` attribute, if any)
-
-This is not too exciting so far; a graph with no vertices and no edges is not really useful
-for us. Of course, there are dozens of ways to create a graph with vertices and edges, depending on your exact situation. In general, if you know the number of vertices and already have a list of edges connecting them, you can just use::
+To make a graph with 10 nodes (numbered ``0`` to ``9``) and two edges connecting nodes ``0-1`` and ``0-5``::
 
   >>> g = ig.Graph(n=10, edges=[[0, 1], [0, 5]])
 
-This creates a graph with 10 vertices, numbered 0 to 9, and two edges connecting vertex 0 with vertex 1, and vertex 0 (again) with vertex 5. See :ref:`generation` for a detailed overview of all the possible ways to create graphs in |igraph|.
+We can print the graph to get a summary of its nodes and edges::
 
-A less common situation, which we'll follow here as an example, is to add vertices and edges to an existing graph, which in this case is the empty graph. First, to add vertices::
+  >>> print(g)
+  IGRAPH U--- 10 2 --
+  + edges:
+  0--1 0--5
+
+This means: **U**ndirected graph with **10** vertices and **2** edges, with the exact edges listed out. If the graph has a `name` attribute, it is printed as well.
+
+.. note::
+
+   :meth:`Graph.summary` is similar to ``print`` but does not list the edges, which is
+   convenient for large graphs with millions of edges::
+
+     >>> summary(g)
+     IGRAPH U--- 10 2 --
+
+
+Adding/deleting vertices and edges
+==================================
+Let's start from the empty graph agai. To add vertices to an existing graph, use :meth:`Graph.add_vertices`::
 
   >>> g.add_vertices(3)
 
-:meth:`Graph.add_vertices` (i.e., the :meth:`~Graph.add_vertices` method of the :class:`Graph`
-class) adds the given number of vertices to the graph.
+In |igraph|, vertices are always numbered up from zero. The number of a vertex is called the *vertex ID*. A vertex might or might not have a name.
 
-Now our graph has three vertices but no edges, so let's add some edges as well! You can
-add edges by calling :meth:`Graph.add_edges` - but in order to add edges, you have to refer to
-existing vertices somehow. |igraph| uses integer vertex IDs starting from zero, thus the
-first vertex of your graph has index zero, the second vertex has index 1 and so on.
-Edges are specified by pairs of integers, so ``[(0,1), (1,2)]`` denotes a list of two
-edges: one between the first and the second, and the other one between the second and the
-third vertices of the graph. Passing this list to :meth:`Graph.add_edges` adds these two edges
-to your graph::
+Similarly, to add edges use :meth:`Graph.add_edges`::
 
-  >>> g.add_edges([(0,1), (1,2)])
+  >>> g.add_edges([(0, 1), (1, 2)])
 
-:meth:`~Graph.add_edges` is clever enough to figure out what you want to do in most of the
-cases: if you supply a single pair of integers, it will automatically assume that you want
-to add a single edge. However, if you try to add edges to vertices with invalid IDs (i.e.,
-you try to add an edge to vertex 5 when you only have three vertices), you will get an
-exception::
+Edges are added by specifying the source and target vertex for each edge. This call added two edges, one connecting vertices ``0`` and ``1``, and one connecting vertices ``1`` and ``2``. Edges are also numbered up from zero (the *edge ID*) and have an optional name.
 
-  >>> g.add_edges((5, 0))
+If you try to add edges to vertices with invalid IDs (i.e., you try to add an edge to vertex ``5`` when the graph has only three vertices), you get an :exc:`igraph.InternalError` exception::
+
+  >>> g.add_edges([(5, 4)])
   Traceback (most recent call last):
-    File "<stdin>", line 6, in <module>
-  TypeError: iterable must return pairs of integers or strings
+    File "<stdin>", line 1, in <module>
+    File "/usr/lib/python3.10/site-packages/igraph/__init__.py", line 376, in add_edges
+      res = GraphBase.add_edges(self, es)
+  igraph._igraph.InternalError: Error at src/graph/type_indexededgelist.c:270: cannot add edges. -- Invalid vertex id
+ 
+The message tries to explain what went wrong (``cannot add edges. -- Invalid
+vertex id``) along with the corresponding line in the source code where the error
+occurred.
 
-Most |igraph| functions will raise an :exc:`igraph.InternalError` if
-something goes wrong. The message corresponding to the exception gives you a
-short textual explanation of what went wrong (``cannot add edges, invalid
-vertex id``) along with the corresponding line in the C source where the error
-occurred. The exact filename and line number may not be too informative to you,
-but it is invaluable for |igraph| developers if you think you found an error in
-|igraph| and you want to report it.
+.. note::
+   The whole traceback, including info on the source code, is useful when
+   reporting bugs on our
+   `GitHub issue page <https://github.com/igraph/python-igraph/issues>`_. Please include it
+   when you open the issue!
+
 
 Let us go on with our graph ``g`` and add some more vertices and edges to it::
 
@@ -167,103 +130,69 @@ Let us go on with our graph ``g`` and add some more vertices and edges to it::
   + edges:
   0--1 1--2 0--2 2--3 3--4 4--5 3--5
 
-Now, this is better. We have an undirected graph with six vertices and seven
-edges, and you can also see the list of edges in |igraph|'s output.  Edges also
-have IDs, similarly to vertices; they also start from zero and edges that were
-added later have higher IDs than edges that were added earlier. Vertex and edge
-IDs are always *continuous*, and a direct consequence of this fact is that if
-you happen to delete an edge, chances are that some (or all) of the edges will
-be renumbered. Moreover, if you delete a vertex, even the vertex IDs will
-change.  Edges can be deleted by :meth:`~Graph.delete_edges` and it requires a
-list of edge IDs to be deleted (or a single edge ID). Vertices can be deleted
-by :meth:`~Graph.delete_vertices` and you may have already guessed that it
-requires a list of vertex IDs to be deleted (or a single vertex ID). If you do
-not know the ID of an edge you wish to delete, but you know the IDs of the
-vertices at its two endpoints, you can use :meth:`~Graph.get_eid` to get the
-edge ID. Remember, all these are *methods* of the :class:`Graph` class and you
-must call them on the appropriate :class:`Graph` instance!
-
-::
+We now have an undirected graph with 6 vertices and 7 edges. Vertex and edge IDs are
+always *continuous*, so if you delete a vertex all subsequent vertices will be renumbered.
+When a vertex is renumbered, edges are **not** renumbered, but their source and target
+vertices will. Use :meth:`Graph.delete_vertices` and :meth:`Graph.delete_edges` to perform
+these operations. For instance, to delete the edge connecting vertices ``2-3``, get its
+ID and then delete it::
 
   >>> g.get_eid(2, 3)
   3
   >>> g.delete_edges(3)
-  >>> summary(g)
-  IGRAPH U--- 6 6 --
-
-:meth:`summary` is a new command that you haven't seen before; it is a member of |igraph|'s
-own namespace and it can be used to get an overview of a given graph object. Its output
-is similar to the output of ``print`` but it does not print the edge list to avoid
-cluttering up the display for large graphs. In general, you should use :meth:`summary`
-instead of ``print`` when working interactively with large graphs because printing the
-edge list of a graph with millions of vertices and edges could take quite a lot of time.
 
 Generating graphs
 =================
 
-|igraph| includes a large set of graph generators which can be divided into two groups:
-deterministic and stochastic graph generators. Deterministic generators produce the same
-graph if you call them with exactly the same parameters, while stochastic generators
-produce a different graph every time. Deterministic generators include methods for
-creating trees, regular lattices, rings, extended chordal rings, several famous graphs
-and so on, while stochastic generators are used to create Erdős-Rényi random networks,
-Barabási-Albert networks, geometric random graphs and such. |igraph| has too many
-generators to cover them all in this tutorial, so we will only try a
-deterministic and a stochastic generator instead::
+|igraph| includes both deterministic and stochastic graph generators (see :doc:`generation`).
+*Deterministic* generators produce the same graph every time you call the fuction, e.g.::
 
   >>> g = ig.Graph.Tree(127, 2)
   >>> summary(g)
   IGRAPH U--- 127 126 --
 
-:meth:`Graph.Tree` generates a regular tree graph. The one that we generated has 127
-vertices and each vertex (apart from the leaves) has two children (and of course one
-parent). No matter how many times you call :meth:`Graph.Tree`, the generated graph will
-always be the same if you use the same parameters::
+uses :meth:`Graph.Tree` to generate a regular tree graph with 127 vertices, each vertex
+having two children (and one parent, of course). No matter how many times you call
+:meth:`Graph.Tree`, the generated graph will always be the same if you use the same
+parameters::
 
   >>> g2 = ig.Graph.Tree(127, 2)
   >>> g2.get_edgelist() == g.get_edgelist()
   True
 
-The above code snippet also shows you that the :meth:`~Graph.get_edgelist()` method
-of :class:`Graph` graph objects return a list that contains pairs of integers, one for
-each edge. The first member of the pair is the source vertex ID and the second member
-is the target vertex ID of the corresponding edge. This list is too long, so let's
-just print the first 10 elements!
+The above code snippet also shows you that the :meth:`~Graph.get_edgelist()` method,
+which returns a list of source and target vertices for all edges, sorted by edge ID.
+If you print the first 10 elements, you get::
 
-::
-
-  >>> g2.get_edgelist()[0:10]
+  >>> g2.get_edgelist()[:10]
   [(0, 1), (0, 2), (1, 3), (1, 4), (2, 5), (2, 6), (3, 7), (3, 8), (4, 9), (4, 10)]
 
-Let's do the same with a stochastic generator!
-
-::
+*Stochastic* generators produce a different graph each time, e.g. :meth:`Graph.GRG`::
 
   >>> g = ig.Graph.GRG(100, 0.2)
   >>> summary(g)
   IGRAPH U---- 100 516 --
   + attr: x (v), y (v)
 
-where ``+ attr`` shows names of the attributes for vertices (v) and edges (e).
+.. note:: ``+ attr`` shows attributes for vertices (v) and edges (e), in this case two
+   vertex attributes and no edge attributes.
 
-:meth:`Graph.GRG` generates a geometric random graph: *n* points are chosen randomly and
+This generates a geometric random graph: *n* points are chosen randomly and
 uniformly inside the unit square and pairs of points closer to each other than a predefined
-distance *d* are connected by an edge. In our case, *n* is 100 and *d* is 0.2. Due to
-the random nature of the algorithm, chances are that the exact graph you got is different
-from the one that was generated when I wrote this tutorial, hence the values above in the
-summary will not match the ones you got. This is normal and expected. Even if you generate
-two geometric random graphs on the same machine, they will be different for the same parameter
-set::
+distance *d* are connected by an edge. If you generate GRGs with the same parameters, they
+will be different::
 
   >>> g2 = ig.Graph.GRG(100, 0.2)
   >>> g.get_edgelist() == g2.get_edgelist()
   False
+
+A slightly looser way to check if the graphs are equivalent is via :meth:`~Graph.isomorphic()`::
+
   >>> g.isomorphic(g2)
   False
 
-:meth:`~Graph.isomorphic()` tells you whether two graphs are isomorphic or not. In general,
-it might take quite a lot of time, especially for large graphs, but in our case, the
-answer can quickly be given by checking the degree distributions of the two graphs.
+Checking for isomorphism might take a while for large graphs (in this case, the
+answer can quickly be given by checking the degree distributions of the two graphs).
 
 
 Setting and retrieving attributes
@@ -1118,3 +1047,5 @@ out immediately.
 
 .. _Discourse group: https://igraph.discourse.group
 .. _matplotlib: https://matplotlib.org/
+.. _IPython: https://ipython.readthedocs.io/en/stable/
+.. _Jupyter: https://jupyter.org/
