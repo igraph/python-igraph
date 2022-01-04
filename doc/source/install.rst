@@ -94,7 +94,7 @@ First, obtain the bleeding-edge source code from Github::
 
   $ git clone https://github.com/igraph/python-igraph.git
 
-or download a recent release from `PyPI <https://pypi.org/project/python-igraph/#files>`_ or from the
+or download a recent `release from PyPI <https://pypi.org/project/python-igraph/#files>`_ or from the
 `Github releases page <https://github.com/igraph/python-igraph/releases/>`_. Decompress the archive if
 needed.
 
