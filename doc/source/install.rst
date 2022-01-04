@@ -198,7 +198,7 @@ To use matplotlib for a whole session/notebook::
   >>> import igraph as ig
   >>> ig.config["plotting.backend"] = "matplotlib"
   >>> g = ig.Graph.Famous("petersen")
-  >>> ig.plot(g, target=ax)
+  >>> ig.plot(g)
   >>> plt.show()
 
 To preserve this preference across sessions/notebooks, you can store it in the default
