@@ -6,8 +6,6 @@
 Graph analysis
 ==============
 
-:doc:`api/index`
-
 |igraph| enables analysis of graphs/networks from simple operations such as adding and removing nodes to complex theoretical constructs such as community detection. Read the `API documentation`_ for details on each function and class.
 
 The context for the following examples will be to import |igraph| (commonly as `ig`), have the :class:`Graph` class and to have one or more graphs available::
