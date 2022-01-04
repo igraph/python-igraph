@@ -16,7 +16,7 @@ This page is a detailed tutorial of |igraph|'s Python capabilities. To get an qu
 Starting |igraph|
 =================
 
-The most common way to use |igraph| is as a named import within a Python environment (e.g. a bare Python shell, a `IPython`_ shell, a `Jupyter`_ notebook or JupyterLab instance, `Google Colab <https://colab.research.google.com/>`_, and an `IDE <https://www.spyder-ide.org/>`_)::
+The most common way to use |igraph| is as a named import within a Python environment (e.g. a bare Python shell, a `IPython`_ shell, a `Jupyter`_ notebook or JupyterLab instance, `Google Colab <https://colab.research.google.com/>`_, or an `IDE <https://www.spyder-ide.org/>`_)::
 
   $ python
   Python 3.9.6 (default, Jun 29 2021, 05:25:02)
@@ -31,7 +31,7 @@ To call functions, you need to prefix them with ``ig`` (or whatever name you cho
   0.9.8
 
 .. note::
-   It is possible to use start imports for igraph::
+   It is possible to use *star imports* for |igraph|::
 
     >>> from igraph import *
 
@@ -49,13 +49,13 @@ There is a second way to start |igraph|, which is to call the script :command:`i
   Windows users will find the script inside the :file:`scripts` subdirectory of Python
   and might have to add it manually to their path.
 
-This script starts an appropriate shell (`IPython`_ or `IDLE <https://docs.python.org/3/library/idle.html>`_ if found, otherwise a pure Python shell) and runs the start import ``from igraph import *``. This is sometimes convenient to play with |igraph|'s functions.
+This script starts an appropriate shell (`IPython`_ or `IDLE <https://docs.python.org/3/library/idle.html>`_ if found, otherwise a pure Python shell) and uses star imports (see above). This is sometimes convenient to play with |igraph|'s functions.
 
 .. note::
    You can specify which shell should be used by this script via |igraph|'s
    :doc:`configuration` file.
 
-This tutorial will assume you have imported igraph using the namespace ``ig`` as above.
+This tutorial will assume you have imported igraph using the namespace ``ig``.
 
 Creating a graph
 ================
@@ -75,7 +75,7 @@ We can print the graph to get a summary of its nodes and edges::
   + edges:
   0--1 0--5
 
-This means: **U**ndirected graph with **10** vertices and **2** edges, with the exact edges listed out. If the graph has a `name` attribute, it is printed as well.
+This means: **U** ndirected graph with **10** vertices and **2** edges, with the exact edges listed out. If the graph has a `name` attribute, it is printed as well.
 
 .. note::
 
@@ -88,8 +88,9 @@ This means: **U**ndirected graph with **10** vertices and **2** edges, with the 
 
 Adding/deleting vertices and edges
 ==================================
-Let's start from the empty graph agai. To add vertices to an existing graph, use :meth:`Graph.add_vertices`::
+Let's start from the empty graph again. To add vertices to an existing graph, use :meth:`Graph.add_vertices`::
 
+  >>> g = ig.Graph()
   >>> g.add_vertices(3)
 
 In |igraph|, vertices are always numbered up from zero. The number of a vertex is called the *vertex ID*. A vertex might or might not have a name.
@@ -99,6 +100,14 @@ Similarly, to add edges use :meth:`Graph.add_edges`::
   >>> g.add_edges([(0, 1), (1, 2)])
 
 Edges are added by specifying the source and target vertex for each edge. This call added two edges, one connecting vertices ``0`` and ``1``, and one connecting vertices ``1`` and ``2``. Edges are also numbered up from zero (the *edge ID*) and have an optional name.
+
+.. warning::
+
+   Creating an empty graph and adding vertices and edges as shown here can be much slower
+   than creating a graph with its vertices and edges as demonstrated earlier. If speed is
+   of concern, you should especially avoid adding vertices and edges *one at a time*. If you
+   need to do it anyway, you can use :meth:`Graph.add_vertex` and :meth:`Graph.add_edge`.
+
 
 If you try to add edges to vertices with invalid IDs (i.e., you try to add an edge to vertex ``5`` when the graph has only three vertices), you get an :exc:`igraph.InternalError` exception::
 
@@ -117,10 +126,10 @@ occurred.
    The whole traceback, including info on the source code, is useful when
    reporting bugs on our
    `GitHub issue page <https://github.com/igraph/python-igraph/issues>`_. Please include it
-   when you open the issue!
+   if you create a new issue!
 
 
-Let us go on with our graph ``g`` and add some more vertices and edges to it::
+Let us add some more vertices and edges to our graph::
 
   >>> g.add_edges([(2, 0)])
   >>> g.add_vertices(3)
@@ -191,27 +200,61 @@ A slightly looser way to check if the graphs are equivalent is via :meth:`~Graph
   >>> g.isomorphic(g2)
   False
 
-Checking for isomorphism might take a while for large graphs (in this case, the
+Checking for isomorphism can take a while for large graphs (in this case, the
 answer can quickly be given by checking the degree distributions of the two graphs).
 
 
 Setting and retrieving attributes
 =================================
+As mentioned above, in |igraph| each vertex and each edge have a numeric id from ``0`` upwards. Deleting vertices or edges can therefore cause reassignments of vertex and/or edge IDs. In addition to IDs, vertex and edges can have *attributes* such as a name, coordinates for plotting, metadata, and weights. The graph itself can have such attributes too (e.g. a name, which will show in ``print`` or :meth:`Graph.summary`). In a sense, every :class:`Graph`, vertex and edge can be used as a Python dictionary to store and retrieve these attributes.
 
-|igraph| uses vertex and edge IDs in its core. These IDs are integers, starting from zero,
-and they are always continuous at any given time instance during the lifetime of the graph.
-This means that whenever vertices and edges are deleted, a large set of edge and possibly
-vertex IDs will be renumbered to ensure the continuity. Now, let us assume that our graph
-is a social network where vertices represent people and edges represent social connections
-between them. One way to maintain the association between vertex IDs and say, the corresponding
-names is to have an additional Python list that maps from vertex IDs to names. The drawback
-of this approach is that this additional list must be maintained in parallel to the
-modifications of the original graph. Luckily, |igraph| knows the concept of *attributes*,
-i.e., auxiliary objects associated to a given vertex or edge of a graph, or even to the
-graph as a whole. Every |igraph| :class:`Graph`, vertex and edge behaves as a standard
-Python dictionary in some sense: you can add key-value pairs to any of them, with the key
-representing the name of your attribute (the only restriction is that it must be a string)
-and the value representing the attribute itself.
+To demonstrate the use of attributes, let us create a simple social network::
+
+  >>> g = ig.Graph([(0,1), (0,2), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)])
+
+Each vertex represents a person, so we want to store names, ages and genders::
+
+  >>> g.vs["name"] = ["Alice", "Bob", "Claire", "Dennis", "Esther", "Frank", "George"]
+  >>> g.vs["age"] = [25, 31, 18, 47, 22, 23, 50]
+  >>> g.vs["gender"] = ["f", "m", "f", "m", "f", "m", "m"]
+  >>> g.es["is_formal"] = [False, False, True, True, True, False, True, False, False]
+
+:attr:`Graph.vs` and :attr:`Graph.es` are the standard way to obtain a sequence of all
+vertices and edges, respectively. Just like a Python dictionary, we can set each property
+using square brackets. The value must be a list with the same length as the vertices (for
+:attr:`Graph.vs`) or edges (for :attr:`Graph.es`). This assigns an attribute to *all* vertices/edges at once.
+
+To assign or modify an attribute for a single vertex/edge, you can use indexing::
+
+  >>> g.es[0]["is_formal"] = True
+
+In fact, a single vertex is represented via the class :class:`Vertex`, and a single edge via :class:`Edge`. Both of them plus :class:`Graph` can all be keyed like a dictionary to set attributes, e.g. to add a date to the graph::
+
+  >>> g["date"] = "2009-01-10"
+  >>> print(g["date"])
+  2009-01-10
+
+To retrieve a dictionary of attributes, you can use :meth:`Graph.attributes`, :meth:`Vertex.attributes`, and :meth:`Edge.attributes`.
+
+Furthermore, each :class:`Vertex` has a special property, :attr:`Vertex.index`, that is used to find out the ID of a vertex. Each :class:`Edge` has :attr:`Edge.index` plus two additional properties, :attr:`Edge.source` and :attr:`Edge.target`, that are used to find the IDs of the vertices connected by this edge. To get both at once as a tuple, you can use :attr:`Edge.tuple`.
+
+To assign attributes to a subset of vertices or edges, you can use slicing::
+
+  >>> g.es[:1]["is_formal"] = True
+
+The output of ``g.es[:1]`` is an instance of :class:`~seq.EdgeSeq`, whereas :class:`~seq.VertexSeq` is the equivalent class representing subsets of vertices.
+
+To delete attributes, use the Python keyword ``del``, e.g.::
+
+  >>> g.vs[3]["foo"] = "bar"
+  >>> g.vs["foo"]
+  [None, None, None, 'bar', None, None, None]
+  >>> del g.vs["foo"]
+  >>> g.vs["foo"]
+  Traceback (most recent call last):
+    File "<stdin>", line 25, in <module>
+  KeyError: 'Attribute does not exist'
+
 
 .. warning::
    Attributes can be arbitrary Python objects, but if you are saving graphs to a
@@ -222,79 +265,6 @@ and the value representing the attribute itself.
    back into Python only.
 
 
-Let us create a simple imaginary social network the usual way by hand.
-
-::
-
-  >>> g = ig.Graph([(0,1), (0,2), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)])
-
-Now, let us assume that we want to store the names, ages and genders of people in this network as
-vertex attributes, and for every connection, we want to store whether this is an informal
-friendship tie or a formal tie. Every :class:`Graph` object contains two special members
-called :attr:`~Graph.vs` and :attr:`~Graph.es`, standing for the sequence of all vertices
-and all edges, respectively. If you try to use :attr:`~Graph.vs` or :attr:`~Graph.es` as
-a Python dictionary, you will manipulate the attribute storage area of the graph::
-
-  >>> g.vs
-  <igraph.VertexSeq object at 0x1b23b90>
-  >>> g.vs["name"] = ["Alice", "Bob", "Claire", "Dennis", "Esther", "Frank", "George"]
-  >>> g.vs["age"] = [25, 31, 18, 47, 22, 23, 50]
-  >>> g.vs["gender"] = ["f", "m", "f", "m", "f", "m", "m"]
-  >>> g.es["is_formal"] = [False, False, True, True, True, False, True, False, False]
-
-Whenever you use :attr:`~Graph.vs` or :attr:`~Graph.es` as a dictionary, you are assigning
-attributes to *all* vertices/edges of the graph. However, you can simply alter the attributes
-of vertices and edges individually by *indexing* :attr:`~Graph.vs` or :attr:`~Graph.es`
-with integers as if they were lists (remember, they are sequences, they contain all the
-vertices or all the edges). When you index them, you obtain a :class:`Vertex` or
-:class:`Edge` object, which refers to (I am sure you already guessed that) a single vertex
-or a single edge of the graph. :class:`Vertex` and :class:`Edge` objects can also be used
-as dictionaries to alter the attributes of that single vertex or edge::
-
-  >>> g.es[0]
-  igraph.Edge(<igraph.Graph object at 0x4c87a0>,0,{'is_formal': False})
-  >>> g.es[0].attributes()
-  {'is_formal': False}
-  >>> g.es[0]["is_formal"] = True
-  >>> g.es[0]
-  igraph.Edge(<igraph.Graph object at 0x4c87a0>,0,{'is_formal': True})
-
-The above snippet illustrates that indexing an :class:`~seq.EdgeSeq` object returns
-:class:`Edge` objects; the representation above shows the graph the object belongs to,
-the edge ID (zero in our case) and the dictionary of attributes assigned to that edge.
-:class:`Edge` objects have some useful attributes, too: the :attr:`~Edge.source` property
-gives you the source vertex of that edge, :attr:`~Edge.target` gives you the target vertex,
-:attr:`~Edge.index` gives you the corresponding edge ID, :attr:`~Edge.tuple` gives you a
-tuple containing the source and target vertices and :meth:`~Edge.attributes` gives you
-a dictionary containing the attributes of this edge. :class:`Vertex` instances only have
-:attr:`~Vertex.index` and :meth:`~Vertex.attributes`.
-
-Since :attr:`Graph.es` always represents all the edges in a graph, indexing it by
-*i* will always return the edge with ID *i*, and of course the same applies
-to :attr:`Graph.vs`. However, keep in mind that an :class:`EdgeSeq` object *in general*
-does not necessarily represent the whole edge sequence of a graph;
-:ref:`later in this tutorial <querying_vertices_and_edges>`
-we will see methods that can filter :class:`~seq.EdgeSeq` objects and return other
-:class:`~seq.EdgeSeq` objects that are restricted to a subset of edges, and of course the same
-applies to :class:`~seq.VertexSeq` objects. But before we dive into that, let's see how we
-can assign attributes to the whole graph. Not too surprisingly, :class:`Graph` objects
-themselves can also behave as dictionaries::
-
-  >>> g["date"] = "2009-01-10"
-  >>> print(g["date"])
-  2009-01-10
-
-Finally, it should be mentioned that attributes can be deleted by the Python keyword
-``del`` just as you would do with any member of an ordinary dictionary::
-
-  >>> g.vs[3]["foo"] = "bar"
-  >>> g.vs["foo"]
-  [None, None, None, 'bar', None, None, None]
-  >>> del g.vs["foo"]
-  >>> g.vs["foo"]
-  Traceback (most recent call last):
-    File "<stdin>", line 25, in <module>
-  KeyError: 'Attribute does not exist'
 
 Structural properties of graphs
 ===============================
@@ -341,9 +311,10 @@ restrict them to exactly the vertices or edges you want.
   example is eigenvector centrality (:meth:`Graph.evcent()`).
 
 Besides degree, |igraph| includes built-in routines to calculate many other centrality
-properties, including vertex and edge betweenness (:meth:`Graph.betweenness`,
-:meth:`Graph.edge_betweenness`) or Google's PageRank (:meth:`Graph.pagerank`)
-just to name a few. Here we just illustrate edge betweenness::
+properties, including vertex and edge betweenness
+(:meth:`Graph.betweenness <GraphBase.betweenness>`,
+:meth:`Graph.edge_betweenness <GraphBase.edge_betweenness>`) or Google's PageRank
+(:meth:`Graph.pagerank`) just to name a few. Here we just illustrate edge betweenness::
 
   >>> g.edge_betweenness()
   [6.0, 6.0, 4.0, 2.0, 4.0, 3.0, 4.0, 3.0. 4.0]

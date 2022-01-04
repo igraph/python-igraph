@@ -79,9 +79,10 @@ Documentation
 
     .. container::
 
-       **Function reference**
+       **Reference**
  
        - :doc:`api/index`
+       - `Source code <https://github.com/igraph/python-igraph>`_
 
     .. container::
 
@@ -89,7 +90,6 @@ Documentation
 
        - :doc:`FAQs <faq>`
        - `Forum <https://igraph.discourse.group/>`_
-       - `Source code <https://github.com/igraph/python-igraph>`_
 
 
 .. toctree::
