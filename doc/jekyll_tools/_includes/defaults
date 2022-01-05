@@ -1,0 +1,16 @@
+{% assign lang = "python" %}
+{%- assign bodyclass = lang %}
+{% assign title = page.title %}
+{% assign mainheader = page.mainheader %}
+{% assign lead = page.lead %}
+
+{% assign langname = 'python-igraph' %}
+{% assign langversions = version | split: ", " %}
+{% if title == nil %}{% assign title = 'python-igraph' %}{% endif %}
+{% assign extramenu = '<li><a href="/python"><i class="icon-python"></i> Get started</a></li>' %}
+{% if mainheader == nil %}
+  {% assign mainheader = 'Get started with python-igraph' %}
+{% endif %}
+{% if lead == nil %}
+  {% assign lead = 'Install and start using igraph from Python' %}
+{% endif %}

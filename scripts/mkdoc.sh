@@ -6,15 +6,19 @@
 #        ./mkdoc.sh -s (makes standalone docs that require no further processing)
 
 STANDALONE=0
+SERVE=0
 
-while getopts ":s" OPTION; do
-    case $OPTION in
-        s)
-	    STANDALONE=1
-	    ;;
-        \?)
-            echo "Usage: $0 [-s]"
-            ;;
+while getopts ":s:j" OPTION; do
+  case $OPTION in
+    s)
+      STANDALONE=1
+      ;;
+    j)
+      SERVE=1
+      ;;      
+    \?)
+      echo "Usage: $0 [-sj]"
+      ;;
     esac
 done
 shift $((OPTIND -1))
@@ -68,7 +72,26 @@ if [ "x$STANDALONE" = "x1" ]; then
    ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
 else
   .venv/bin/sphinx-build ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
+
+  if [ "x$SERVE" = "x1" ]; then
+    cd doc/html
+
+    # Copy jekyll build environment
+    cp -r ../jekyll_tools/* ./
+
+    # Install jekyll infra
+    bundle config set --local path 'vendor/bundle'
+    bundle install
+
+    # TODO: copy back?
+
+    # Build website via templates
+    bundle exec jekyll serve
+  
+  fi
 fi
+
+  
 
 #PWD=`pwd`
 #DOC_API_FOLDER=${ROOT_FOLDER}/doc/api

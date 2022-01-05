@@ -1,0 +1,154 @@
+{% include defaults %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+	<!-- Favicon and theming -->
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+
+    <title>{{ title }}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom styles for this template -->
+    <link href="//fonts.googleapis.com/css?family=Lato:300,400,700"
+          rel="stylesheet" type="text/css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/fonts/font-mfizz/font-mfizz.css">
+    <link href="/css/affix.css" rel="stylesheet">
+    <link href="/css/syntax.css" rel="stylesheet">
+    <link href="/css/other.css" rel="stylesheet">
+    <link href="/fonts/fonts.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements 
+         and media queries -->
+    <!--[if lt IE 9]>
+      <script src="/js/html5shiv.js"></script>
+      <script src="/js/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-1392972-5"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-1392972-5');
+    </script>
+
+    {{ page.extrahead | default: layout.extrahead }}
+  </head>
+
+  <body class="{{ bodyclass | default: layout.bodyclass }}">
+  <div id="wrap">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <a class="navbar-brand" href="/">
+        <img src="/img/igraph_logo_white.svg" width="35"> igraph
+      </a>
+
+      {% if langname != null and langname != 'igraph' %}
+      <ul class="navbar-nav mr-auto">
+        {% if layout.vmenu != null  or page.vmenu != null %}
+        <li class="nav-item"><a class="nav-link" href="/">{{ langname }}</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
+            {{ page.langversion }}
+          </a>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="/{{ lang }}/latest/">latest</a>
+            {% for langversioni in langversions reversed %}
+            <a class="dropdown-item" href="/{{ lang }}/{{ langversioni }}/">{{ langversioni }}</a>
+            {% endfor %}
+          </div>
+        </li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="/">{{ langname }} {{ page.langversion }}</a></li>
+        {% endif %}
+      </ul>
+      {% endif %}
+
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item dropdown">
+            <a href="#" class="nav-link dropdown-toggle" id="productsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Products</a>
+            <div class="dropdown-menu" aria-labelledby="productsDropdown">
+              <a class="dropdown-item" href="/r">igraph R package</a>
+              <a class="dropdown-item" href="/python">python-igraph</a>
+              <a class="dropdown-item" href="http://szhorvat.net/mathematica/IGraphM">IGraph/M</a>
+              <a class="dropdown-item" href="/c">igraph C library</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="https://github.com/igraph/igraphdata">igraphdata R package <i class="fa fa-github"></i></a>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/news.html"><i class="fa fa-rss"></i> News</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="https://igraph.discourse.group"><i class="fa fa-comments"></i> Forum</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/code-of-conduct.html"><i class="fa fa-gavel"></i> Code of Conduct</a>
+          </li>          
+          <li class="nav-item">
+            <a class="nav-link" href="https://github.com/igraph"><i class="fa fa-github"></i> On GitHub</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    
+    {% if page.layout != "main" %}
+
+    <div class="jumbotron">
+      <div class="container">
+        <h1 class="display-4">{{ page.mainheader | default: layout.mainheader }}</h1>
+        <p class="lead">{{ page.lead | default: layout.lead }}</p>
+      </div>
+      <canvas id="jumbotron-anim"></canvas>
+    </div>
+
+    {% endif %}
+
+    {{content}}
+
+    </div>
+
+    <div id="footer"><div class="container-fluid">
+      <p class="text-muted credit">
+      &copy; 2003 &ndash; 2020 The igraph core team.
+            &bull; Code licensed under 
+            <a href="http://www.gnu.org/licenses/gpl-2.0.html">
+            GNU GPL 2</a> or later, documentation under 
+            <a href="http://www.gnu.org/copyleft/fdl.html">
+              GNU FDL.</a>
+      </p>
+    </div></div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <script src="/js/affix.js"></script>
+    <script src="/js/jumbotron.js"></script>
+    <script src="/js/toggle.js"></script>
+{% if page.animated_header or layout.animated_header %}
+      <script>
+        startAnimation();
+      </script>
+{% endif %}
+    {{ page.extrafoot }}
+  </body>
+</html>

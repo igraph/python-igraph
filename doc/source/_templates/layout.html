@@ -3,6 +3,8 @@ layout: default
 title: {{ title|striptags|e }}{{ titlesuffix }}
 mainheader: python-igraph Manual
 lead: For using igraph from Python
+vmenu: true
+langversion: {{ version }}
 extrahead: {%- block linktags %}
     {%- if hasdoc('about') %}
     <link rel="author" title="{{ _('About these documents') }}" href="{{ pathto('about') }}" />
@@ -87,7 +89,7 @@ extrahead: {%- block linktags %}
           {{ title }}
           <a class="headerlink" href="#top-of-docs" title="Permalink to this headline">¶</a>
         </h1>
-        {{ toc }}
+        <!-- {{ toc }} -->
         {% block body %} {% endblock %}
       </div>
       {%- endblock %}
