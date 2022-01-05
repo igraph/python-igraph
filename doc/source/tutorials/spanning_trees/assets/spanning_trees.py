@@ -1,15 +1,16 @@
 import igraph as ig
 import matplotlib.pyplot as plt
-import numpy as np
+import random
 
 g = ig.Graph.Lattice([6, 6], circular=False)
 
 # Optional: Rearrange the vertex ids to get a more interesting spanning tree
 layout = g.layout("grid")
 
-np.random.seed(0)
-permutation = np.random.permutation(36)
-g = g.permute_vertices(permutation.tolist())
+random.seed(0)
+permutation = list(range(g.vcount()))
+random.shuffle(permutation)
+g = g.permute_vertices(permutation)
 
 new_layout = g.layout("grid")
 for i in range(36):
@@ -34,5 +35,3 @@ ig.plot(
     edge_width=g.es["width"]
 )
 plt.show()
-
-

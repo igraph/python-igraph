@@ -17,13 +17,13 @@ We start by generating a grid graph with random weights
     
     import igraph as ig
     import matplotlib.pyplot as plt
-    import numpy as np
+    import random
 
     # Generate grid graph with random weights
-    np.random.seed(0)
+    random.seed(0)
 
     g = ig.Graph.Lattice([5, 5], circular=False)
-    g.es["weight"] = np.random.randint(1, 20, g.ecount()).tolist()
+    g.es["weight"] = [random.randint(1, 20) for _ in g.es]
 
 We then call |spanning_tree|_, making sure to pass in the randomly generated weights.
 
