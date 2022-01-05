@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Vendored igraph was updated to version 0.9.6.
+
 ### Fixed
+
+- Fixed a performance bottleneck in `VertexSeq.select()` and `EdgeSeq.select()`
+  for the case when the `VertexSeq` or the `EdgeSeq` represents the whole
+  graph. See [#494](https://github.com/igraph/python-igraph/issues/494) for
+  more details.
 
 - Edge labels now take the curvature of the edge into account, thanks to
   [@Sriram-Pattabiraman](https://github.com/Sriram-Pattabiraman).
