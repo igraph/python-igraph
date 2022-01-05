@@ -324,7 +324,7 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values_mapping(igraphmodule_Verte
   /* Handle iterables and slices by calling the select() method */
   if (PySlice_Check(o) || PyObject_HasAttrString(o, "__iter__")) {
     PyObject *result, *args;
-    args = Py_BuildValue("(O)", o);
+    args = PyTuple_Pack(1, o);
 
     if (!args) {
       return NULL;

@@ -385,9 +385,7 @@ PyObject *igraphmodule_Graph_copy(igraphmodule_GraphObject * self)
  */
 PyObject *igraphmodule_Graph_vcount(igraphmodule_GraphObject * self)
 {
-  PyObject *result;
-  result = Py_BuildValue("l", (long)igraph_vcount(&self->g));
-  return result;
+  return PyLong_FromLong(igraph_vcount(&self->g));
 }
 
 /** \ingroup python_interface_graph
@@ -397,9 +395,7 @@ PyObject *igraphmodule_Graph_vcount(igraphmodule_GraphObject * self)
  */
 PyObject *igraphmodule_Graph_ecount(igraphmodule_GraphObject * self)
 {
-  PyObject *result;
-  result = Py_BuildValue("l", (long)igraph_ecount(&self->g));
-  return result;
+  return PyLong_FromLong(igraph_ecount(&self->g));
 }
 
 /** \ingroup python_interface_graph
@@ -938,7 +934,7 @@ PyObject *igraphmodule_Graph_density(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  return Py_BuildValue("d", (double)result);
+  return PyFloat_FromDouble(result);
 }
 
 /** \ingroup python_interface_graph
@@ -1319,7 +1315,7 @@ PyObject *igraphmodule_Graph_reciprocity(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  return Py_BuildValue("d", (double)result);
+  return PyFloat_FromDouble(result);
 }
 
 /** \ingroup python_interface_graph
@@ -1483,7 +1479,7 @@ PyObject *igraphmodule_Graph_get_eid(igraphmodule_GraphObject * self,
         PyObject_IsTrue(directed), PyObject_IsTrue(error)))
     return igraphmodule_handle_igraph_error();
 
-  return Py_BuildValue("l", (long)result);
+  return PyLong_FromLong(result);
 }
 
 /** \ingroup python_interface_graph
@@ -3700,7 +3696,7 @@ PyObject *igraphmodule_Graph_assortativity_nominal(igraphmodule_GraphObject *sel
     return NULL;
   }
 
-  return Py_BuildValue("d", (double)(res));
+  return PyFloat_FromDouble(res);
 }
 
 /** \ingroup python_interface_graph
@@ -3735,7 +3731,7 @@ PyObject *igraphmodule_Graph_assortativity(igraphmodule_GraphObject *self, PyObj
     return NULL;
   }
 
-  return Py_BuildValue("d", (double)(res));
+  return PyFloat_FromDouble(res);
 }
 
 /** \ingroup python_interface_graph
@@ -3756,7 +3752,7 @@ PyObject *igraphmodule_Graph_assortativity_degree(igraphmodule_GraphObject *self
     return NULL;
   }
 
-  return Py_BuildValue("d", (double)(res));
+  return PyFloat_FromDouble(res);
 }
 
 /** \ingroup python_interface_graph
@@ -4820,7 +4816,7 @@ PyObject *igraphmodule_Graph_edge_connectivity(igraphmodule_GraphObject *self,
         PyObject *args, PyObject *kwds) {
   static char *kwlist[] = { "source", "target", "checks", NULL };
   PyObject *checks = Py_True;
-  long int source = -1, target = -1, result;
+  long int source = -1, target = -1;
   igraph_integer_t res;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|llO", kwlist,
@@ -4840,12 +4836,10 @@ PyObject *igraphmodule_Graph_edge_connectivity(igraphmodule_GraphObject *self,
     }
   } else {
   PyErr_SetString(PyExc_ValueError, "if source or target is given, the other one must also be specified");
-  return NULL;
+    return NULL;
   }
 
-  result = res;
-
-  return Py_BuildValue("l", result);
+  return PyLong_FromLong(res);
 }
 
 /** \ingroup python_interface_graph
@@ -6235,7 +6229,7 @@ PyObject *igraphmodule_Graph_transitivity_undirected(igraphmodule_GraphObject
 {
   static char *kwlist[] = { "mode", NULL };
   igraph_real_t res;
-  PyObject *r, *mode_o = Py_None;
+  PyObject *mode_o = Py_None;
   igraph_transitivity_mode_t mode = IGRAPH_TRANSITIVITY_NAN;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &mode_o))
@@ -6250,8 +6244,7 @@ PyObject *igraphmodule_Graph_transitivity_undirected(igraphmodule_GraphObject
     return NULL;
   }
 
-  r = Py_BuildValue("d", (double)(res));
-  return r;
+  return PyFloat_FromDouble(res);
 }
 
 /** \ingroup python_interface_graph
@@ -6264,7 +6257,7 @@ PyObject *igraphmodule_Graph_transitivity_avglocal_undirected(igraphmodule_Graph
 {
   static char *kwlist[] = { "mode", NULL };
   igraph_real_t res;
-  PyObject *r, *mode_o = Py_None;
+  PyObject *mode_o = Py_None;
   igraph_transitivity_mode_t mode = IGRAPH_TRANSITIVITY_NAN;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &mode_o))
@@ -6278,8 +6271,7 @@ PyObject *igraphmodule_Graph_transitivity_avglocal_undirected(igraphmodule_Graph
     return NULL;
   }
 
-  r = Py_BuildValue("d", (double)(res));
-  return r;
+  return PyFloat_FromDouble(res);
 }
 
 /** \ingroup python_interface_graph
@@ -6409,7 +6401,7 @@ PyObject *igraphmodule_Graph_vertex_connectivity(igraphmodule_GraphObject *self,
         PyObject *args, PyObject *kwds) {
   static char *kwlist[] = { "source", "target", "checks", "neighbors", NULL };
   PyObject *checks = Py_True, *neis = Py_None;
-  long int source = -1, target = -1, result;
+  long int source = -1, target = -1;
   igraph_integer_t res;
   igraph_vconn_nei_t neighbors = IGRAPH_VCONN_NEI_ERROR;
 
@@ -6435,10 +6427,11 @@ PyObject *igraphmodule_Graph_vertex_connectivity(igraphmodule_GraphObject *self,
     return NULL;
   }
 
-  if (!IGRAPH_FINITE(res)) return Py_BuildValue("d", (double)res);
+  if (!IGRAPH_FINITE(res)) {
+    return PyFloat_FromDouble(res);
+  }
 
-  result = (long)res;
-  return Py_BuildValue("l", result);
+  return PyLong_FromLong(res);
 }
 
 /**********************************************************************
@@ -9303,7 +9296,7 @@ PyObject *igraphmodule_Graph_count_isomorphisms_vf2(igraphmodule_GraphObject *se
   if (edge_color1) { igraph_vector_int_destroy(edge_color1); free(edge_color1); }
   if (edge_color2) { igraph_vector_int_destroy(edge_color2); free(edge_color2); }
 
-  return Py_BuildValue("l", (long)result);
+  return PyLong_FromLong(result);
 }
 
 /** \ingroup python_interface_graph
@@ -9640,7 +9633,7 @@ PyObject *igraphmodule_Graph_count_subisomorphisms_vf2(igraphmodule_GraphObject 
   if (edge_color1) { igraph_vector_int_destroy(edge_color1); free(edge_color1); }
   if (edge_color2) { igraph_vector_int_destroy(edge_color2); free(edge_color2); }
 
-  return Py_BuildValue("l", (long)result);
+  return PyLong_FromLong(result);
 }
 
 /** \ingroup python_interface_graph
@@ -10334,7 +10327,8 @@ PyObject *igraphmodule_Graph_maxflow_value(igraphmodule_GraphObject * self,
   }
 
   igraph_vector_destroy(&capacity_vector);
-  return Py_BuildValue("d", (double)result);
+
+  return PyFloat_FromDouble(result);
 }
 
 /** \ingroup python_interface_graph
@@ -10614,7 +10608,8 @@ PyObject *igraphmodule_Graph_mincut_value(igraphmodule_GraphObject * self,
   }
 
   igraph_vector_destroy(&capacity_vector);
-  return Py_BuildValue("d", (double)result);
+
+  return PyFloat_FromDouble(result);
 }
 
 /** \ingroup python_interface_graph
@@ -11515,7 +11510,7 @@ PyObject *igraphmodule_Graph_modularity(igraphmodule_GraphObject *self,
     igraph_vector_destroy(weights); free(weights);
   }
 
-  return Py_BuildValue("d", (double)modularity);
+  return PyFloat_FromDouble(modularity);
 }
 
 /**
