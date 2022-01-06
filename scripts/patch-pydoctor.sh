@@ -28,5 +28,5 @@ cd "${PYDOCTOR_DIR}"
 #rm -f deleteme.rej
 
 echo "New patch against 21.12.0"
-patch -r deleteme.rej -N -p2 <${PATCH_FOLDER}/0001-Old-patch-renewed.patch 2>/dev/null
+patch -r deleteme.rej -N -p2 <${PATCH_FOLDER}/pydoctor-21.12.0.patch 2>/dev/null
 rm -f deleteme.rej
