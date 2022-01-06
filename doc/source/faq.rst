@@ -22,19 +22,20 @@ more examples in our :doc:`gallery <gallery>`, read detailed instructions on gra
 
 I thought |igraph| was an R package, is this the same package?
 --------------------------------------------------------------
-|igraph| is a software library written in C with interfaces in R, Python, and
-Mathematica. Many functions will have similar names and functionality across
-languages, but the matching is not perfect, so you will occasionally find
-functions that are supported in one language but not another. See the FAQ below
-for instructions about how to request a feature.
+|igraph| is a software library written in C with interfaces in various programming
+languages such as R, Python, and Mathematica. Many functions will have similar names
+and functionality across languages, but the matching is not perfect, so you will
+occasionally find functions that are supported in one language but not another.
+See the FAQ below for instructions about how to request a feature.
 
 
 I would like to use |igraph| but don't know Python, what to do?
 ---------------------------------------------------------------
-|igraph| can be used via four programming languages: C, R, Python, and Mathematica.
-While the exact function names differ a bit, most functionality is shared, so if
-you can code any of them you can use |igraph|: just refer to the installation
-instructions for the appropriate language on our `homepage <https://igraph.org>`_.
+|igraph| can be used from multiple programming languages such as C, R, Python,
+and Mathematica. While the exact function names differ a bit, most functionality
+is shared, so if you can code any of them you can use |igraph|: just refer to
+the installation instructions for the appropriate language on our
+`homepage <https://igraph.org>`_.
 
 If you are not familiar with programming at all, or if you don't know any Python
 but would still like to use the Python interface for |igraph|, you should start by
@@ -58,6 +59,30 @@ or specific piece of code, you can directly open a
 instead.)
 
 
+What's the difference between |igraph| and similar packages (networkx, graph-tool)?
+-----------------------------------------------------------------------------------
+All those packages focus on graph/network analysis.
+
+**Differences:**
+
+ - |igraph| supports **multiple programming languages** (e.g. C, Python, R, Mathematica). `networkx`_ and `graph-tool`_ are Python only.
+ - |igraph|'s core library is written in C, which makes it often faster than `networkx`_. `graph-tool`_ is written in heavily templated C++, so it can be as fast as |igraph| but supports fewer architectures. Compiling `graph-tool` can take much longer than |igraph| (hours versus around a minute).
+ - |igraph| vertices are *ordered with contiguous numerical IDs, from 0 upwards*, and an *optional* "vertex name". `networkx`_ nodes are *defined* by their name and not ordered.
+ - Same holds for edges, ordered with integer IDs in |igraph|, not so in `networkx`_.
+ - |igraph| can plot graphs using :mod:`matplotlib` and has experimental support for `plotly`_, so it can produce animations, notebook widgets, and interactive plots (e.g. zoom, panning). `networkx`_ has excellent :mod:`matplotlib` support but no `plotly`_ support. `graph-tool`_ only supports static images via Cairo and GTK+.
+ - |igraph| and `networkx`_ are maintained by teams of developers. `graph-tool`_ is developed by a single (very active) person.
+ - In terms of design, |igraph| really shines when you have a relatively static network that you want to analyse, while it can struggle with very dynamic networks that gain and lose vertices and edges all the time. This might change in the near future as we improve |igraph|'s core C library. At the moment, `networkx`_ is probably better suited for simulating such highly dynamic graphs.
+
+**Similarities:**
+
+ - Many tasks can be achieved equally well with |igraph|, `graph-tool`_, and `networkx`_.
+ - All can read and write a number of graph file formats.
+ - All can visualize graphs, with different strengths and weaknesses.
+
+.. note::
+  |igraph| includes conversion functions from/to `networkx`_, so you can crate and manipulate a network with |igraph| and later on convert it to `networkx`_ or `graph-tool`_ if you need. Vice versa, you can load a graph in `networkx`_ or `graph-tool`_ and convert the graph into an |igraph| object if you need more speed, a specific algorithm, matplotlib animations, etc. You can even use |igraph| to convert graphs from `networkx`_ to `graph-tool`_ and vice versa!
+
+
 
 I would like to contribute to |igraph|, where do I start?
 ---------------------------------------------------------
@@ -72,9 +97,15 @@ you find one that sounds easy enough and sparks your interest, and write a
 message saying you're interested in taking it on. We'll reply ASAP and guide
 you as of your next steps.
 
+The C core library also has various `"theory issues" <https://github.com/igraph/igraph/labels/theory>`_ which require knowledge of graphs but not programming, take a
+look if you are interested.
+
 If none of those look feasible, or if you have a specific idea, or still if
 you would like to contribute in other ways than pure programming, reach out
 on our `forum <https://igraph.discourse.group/>`_ and we'll come up with
 some ideas!
 
 
+.. _networkx: https://networkx.org/documentation/stable/
+.. _graph-tool: https://graph-tool.skewed.de/
+.. _plotly: https://plotly.com/python/
