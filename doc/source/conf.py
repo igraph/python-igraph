@@ -79,19 +79,20 @@ extensions = [
     'sphinx.ext.intersphinx',
     'gallery_generator',
     'pydoctor.sphinx_ext.build_apidocs',
+    'postprocess_api',
     #'sphinx_panels',
 ]
 
 pydoctor_args = [
     '--project-name="igraph"',
-    #'--project-version=YOUR-PUBLIC-VERSION',
+    '--project-version=' + get_igraph_version(),
     '--project-url=https://igraph.org/python',
     '--introspect-c-modules',
     '--docformat=epytext',
     #'--intersphinx='+get_root_dir()+'/doc/tutorial/objects.inv',
-    '--html-output='+get_root_dir()+'/doc/html/api',
+    '--html-output=' + op.join(get_root_dir(), 'doc', 'html', 'api'),
     #'--html-viewsource-base=https://github.com/igraph/python-igraph/tree/default',
-    '--project-base-dir='+get_igraphdir(),
+    '--project-base-dir=' + get_igraphdir(),
     get_igraphdir(),
     ]
 

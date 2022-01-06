@@ -8,7 +8,7 @@
 STANDALONE=0
 SERVE=0
 
-while getopts ":s:j" OPTION; do
+while getopts ":sj" OPTION; do
   case $OPTION in
     s)
       STANDALONE=1
@@ -37,13 +37,16 @@ if [ ! -d ".venv" ]; then
   python3 -m venv .venv
 
   # Install sphinx, matplotlib, wheel, and pydoctor into the venv
-  .venv/bin/pip install sphinx sphinxbootstrap4theme matplotlib
-  .venv/bin/pip install -U pydoctor wheel 
+  .venv/bin/pip install -U sphinx sphinxbootstrap4theme matplotlib wheel
   
   echo "Patching PyDoctor..."
+  .venv/bin/pip install -U pydoctor
   $SCRIPTS_FOLDER/patch-pydoctor.sh ${ROOT_FOLDER} ${SCRIPTS_FOLDER}
 
 fi
+
+#echo "Set PyDoctor theme"
+#$SCRIPTS_FOLDER/set-pydoctor-theme.sh ${ROOT_FOLDER} ${STANDALONE}
 
 echo "Removing existing igraph and python-igraph eggs from virtualenv..."
 SITE_PACKAGES_DIR=`.venv/bin/python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`
@@ -66,11 +69,13 @@ rm -rf "${DOC_HTML_FOLDER}"
 # Make sphinx
 echo "Generating HTML documentation..."
 if [ "x$STANDALONE" = "x1" ]; then
+  echo "Build standalone docs"
   .venv/bin/sphinx-build \
    -Dtemplates_path='' \
    -Dhtml_theme='alabaster' \
    ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
 else
+  echo "Build Jekyll-style docs"
   .venv/bin/sphinx-build ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
 
   if [ "x$SERVE" = "x1" ]; then
