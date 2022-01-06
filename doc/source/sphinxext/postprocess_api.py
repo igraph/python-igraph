@@ -6,16 +6,17 @@ Originally, lightly modified from the mpld3 project.
 
 """
 import os.path as op
+from pathlib import Path
 import glob
 from sphinx.application import Sphinx
 
 
 def on_build_finished(app: Sphinx, exception: Exception) -> None:
-    html_dir = op.abspath(app.builder.outdir)
-    api_dir = op.join(html_dir, 'api')
+    html_dir = Path(app.builder.outdir)
+    api_dir = html_dir / 'api'
 
     # Check if the index has Jekyll template marks
-    index_html = op.join(html_dir, 'index.html')
+    index_html = html_dir / 'index.html'
     with open(index_html, 'rt') as f:
         lines = f.readlines()
         # The Jekyll template starts with a --- line
