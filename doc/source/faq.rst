@@ -97,13 +97,15 @@ you find one that sounds easy enough and sparks your interest, and write a
 message saying you're interested in taking it on. We'll reply ASAP and guide
 you as of your next steps.
 
-The C core library also has various `"theory issues" <https://github.com/igraph/igraph/labels/theory>`_ which require knowledge of graphs but not programming, take a
-look if you are interested.
+The C core library also has various `"theory issues" <https://github.com/igraph/igraph/labels/theory>`_. You can contribute to these issues without any programming
+knowledge by researching graph literature or finding the solution to a graph
+problem. Once the theory obstacle has been overcome, others can move on to the
+coding part: a real team effort!
 
 If none of those look feasible, or if you have a specific idea, or still if
 you would like to contribute in other ways than pure programming, reach out
 on our `forum <https://igraph.discourse.group/>`_ and we'll come up with
-some ideas!
+some ideas.
 
 
 .. _networkx: https://networkx.org/documentation/stable/
