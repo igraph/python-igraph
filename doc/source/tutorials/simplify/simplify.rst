@@ -1,0 +1,62 @@
+.. include:: ../../include/global.rst
+
+.. _tutorials-simplify:
+
+========
+Simplify
+========
+
+.. _simplify: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#simplify
+.. |simplify| replace:: :meth:`simplify`
+
+This example shows how to remove self loops and multiple edges using |simplify|_. First we plot the graph
+
+.. code-block:: python
+
+    import igraph as ig
+    import matplotlib.pyplot as plt
+
+    # Generate graph with multiple edges and loops
+    g1 = ig.Graph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 0), (0, 0), 
+        (1, 4), (1, 4), (0, 2), (2, 4), (2, 4), (2, 4), (3, 3)])
+
+Then we make a copy of the original graph and simplify it in place:
+
+.. code-block:: python
+
+    # Generate simplified version of graph
+    g2 = g1.copy()
+    g2.simplify()
+
+Finally, we plot the graph:
+
+.. code-block::python
+
+    # Plot graphs
+    visual_style = {
+        "vertex_color": "lightblue",
+        "vertex_size": 0.4,
+        "vertex_label": [0, 1, 2, 3, 4],
+    }
+
+    fig, axs = plt.subplots(1, 2)
+    ig.plot(
+        g1,
+        layout="circle",
+        target=axs[0],
+        **visual_style,
+    )
+    ig.plot(
+        g2,
+        layout="circle",
+        target=axs[1],
+        **visual_style,
+    )
+    plt.show()
+
+
+.. figure:: ./figures/simplify.png
+   :alt: Two graphs before and after removing self loops and edges
+   :align: center
+
+   The original graph (left) versus the simplified graph (right).

@@ -1,0 +1,32 @@
+import igraph as ig
+import matplotlib.pyplot as plt
+
+# Generate graph with multiple edges and loops
+g1 = ig.Graph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 0), (0, 0), 
+    (1, 4), (1, 4), (0, 2), (2, 4), (2, 4), (2, 4), (3, 3)])
+
+# Generate simplified version of graph
+g2 = g1.copy()
+g2.simplify()
+
+# Plot graphs
+visual_style = {
+    "vertex_color": "lightblue",
+    "vertex_size": 0.4,
+    "vertex_label": [0, 1, 2, 3, 4],
+}
+
+fig, axs = plt.subplots(1, 2)
+ig.plot(
+    g1,
+    layout="circle",
+    target=axs[0],
+    **visual_style,
+)
+ig.plot(
+    g2,
+    layout="circle",
+    target=axs[1],
+    **visual_style,
+)
+plt.show()
