@@ -76,7 +76,7 @@ Index`_).
 .. TIP:: If you get DLL import errors while trying to import |igraph|, the most common reason
    is that you do not have the Visual C++ Redistributable library installed on your machine.
    Python's own installer is supposed to install it, but in case it was not installed on
-   your system, you can `download it from Microsoft<https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist>`_.
+   your system, you can `download it from Microsoft <https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist>`_.
 
 Graph plotting in |igraph| is implemented using a third-party package called `Cairo
 <http://www.cairographics.org>`_. If you want to create publication-quality plots in |igraph|

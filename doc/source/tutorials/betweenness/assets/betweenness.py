@@ -37,6 +37,3 @@ plot_betweenness(g2, axs[1])
 # Add "a" and "b" labels for panels
 fig.text(0.05, 0.9, 'a', va='top')
 fig.text(0.55, 0.9, 'b', va='top')
-
-plt.show()
-

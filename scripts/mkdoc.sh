@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Creates the API documentation for igraph's Python interface using PyDoctor
 #
@@ -6,17 +6,17 @@
 #        ./mkdoc.sh -t (makes tutorials)
 
 
-DOC_TYYPE=api
+DOC_TYPE=api
 
 while getopts ":t::" OPTION; do
-    case $OPTION in
-      t)
-         DOC_TYPE=tutorial
-	 ;;
-      \?)
-	 echo "Usage: $0 [-t]"
-	 ;;
-    esac
+  case $OPTION in
+    t)
+      DOC_TYPE=tutorial
+    ;;
+    \?)
+      echo "Usage: $0 [-t]"
+	;;
+  esac
 done
 
 
@@ -36,8 +36,7 @@ if [ ! -d ".venv" ]; then
 fi
 
 # Make tutorial only if requested
-if [ ${DOC_TYPE}=="tutorial" ]; then
-
+if [ ${DOC_TYPE} == "tutorial" ]; then
     # Install pydoctor into the venv
     .venv/bin/pip install sphinx sphinxbootstrap4theme
 
@@ -45,9 +44,6 @@ if [ ${DOC_TYPE}=="tutorial" ]; then
     .venv/bin/python -m sphinx.cmd.build ${DOC_SOURCE_FOLDER} ${DOC_TUTORIAL_FOLDER}
     exit $?
 fi
-
-echo "shouldnt be here"
-exit 0
 
 # Install pydoctor into the venv
 .venv/bin/pip install -U pydoctor wheel

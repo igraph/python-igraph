@@ -11,7 +11,7 @@ Shortest Paths
 .. _get_all_shortest_paths: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#get_all_shortest_paths
 .. |get_all_shortest_paths| replace:: :meth:`get_all_shortest_paths`
 
-This example will demonstrate how to find the shortest distance between two vertices on a weighted and unweighted graph.
+This example demonstrates how to find the shortest distance between two vertices on a weighted and unweighted graph.
 
 To find the shortest path or distance between two nodes, we can use |get_shortest_paths|_. If we're only interested in counting the unweighted distance, then we can do the following:
 
@@ -35,7 +35,7 @@ To find the shortest path or distance between two nodes, we can use |get_shortes
     else:
         print("End node could not be reached!")
 
-If the edges have associated distances or weights, we pass them in as an argument. Note that we specify the output format as ``"epath"``, in order to receive the path as an edge list. This is used to calculate the length of the path.
+If the edges have weights, we pass them in as an argument. Note that we specify the output format as ``"epath"``, in order to receive the path as an edge list. This is used to calculate the length of the path.
 
 .. code-block:: python
 
@@ -43,7 +43,13 @@ If the edges have associated distances or weights, we pass them in as an argumen
     g.es["weight"] = [2, 1, 5, 4, 7, 3, 2]
 
     # g.get_shortest_paths() returns a list of edge ID paths
-    results = g.get_shortest_paths(0, to=5, weights=g.es["weight"], output="epath")  # results = [[1, 3, 5]]
+    results = g.get_shortest_paths(
+        0,
+        to=5,
+        weights=g.es["weight"],
+        output="epath",
+    )
+    # results = [[1, 3, 5]]
 
     if len(results[0]) > 0:
         # Add up the weights across all edges on the shortest path
@@ -61,7 +67,7 @@ The output of these these two shortest paths are:
     Shortest distance is:  3
     Shortest weighted distance is:  8    
 
-.. figure:: ./figures/shortest_path.png
+.. figure:: ./figures/shortest_paths.png
    :alt: The visual representation of a weighted network for finding shortest paths
    :align: center
 
@@ -80,27 +86,37 @@ In case you are wondering how the visualization figure was done, here's the code
 
     import igraph as ig
     import matplotlib.pyplot as plt
-    
-    # Find the shortest path on an unweighted graph
+
+    # Construct the graph
     g = ig.Graph(
         6,
         [(0, 1), (0, 2), (1, 3), (2, 3), (2, 4), (3, 5), (4, 5)]
     )
     g.es["weight"] = [2, 1, 5, 4, 7, 3, 2]
-       
-    # g.get_shortest_paths() returns a list of edge ID paths
-    results = g.get_shortest_paths(0, to=5, weights=g.es["weight"], output="epath")  # results = [[1, 3, 5]] 
+
+    # Get a shortest path along edges
+    results = g.get_shortest_paths(
+        0,
+        to=5,
+        weights=g.es["weight"],
+        output="epath",
+    )
+    # results = [[1, 3, 5]]
+
+    # Plot graph
+    g.es['width'] = 0.5
+    g.es[results[0]]['width'] = 2.5
 
     fig, ax = plt.subplots()
-    g.es['width'] = 1
-    for edge in g.es:
-        if set([edge.source, edge.target]) in [set([0, 1]), set([1, 3]), set([3, 5])]:
-            edge['width'] = 4
     ig.plot(
         g,
         target=ax,
         layout='circle',
         vertex_color='steelblue',
-        vertex_label=['0', '1', '2', '3', '4', '5'],
+        vertex_label=range(g.vcount()),
         edge_width=g.es['width'],
+        edge_label=g.es["weight"],
+        edge_color='#666',
+        edge_align_label=True,
+        edge_background='white'
     )

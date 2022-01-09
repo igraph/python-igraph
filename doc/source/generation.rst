@@ -1,5 +1,7 @@
 .. include:: include/global.rst
 
+.. _generation:
+
 Graph generation
 ================
 
