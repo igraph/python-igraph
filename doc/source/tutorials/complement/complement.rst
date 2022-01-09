@@ -36,12 +36,14 @@ We can then generate the complement, and plot out the graph.
         layout="circle",
         vertex_color="lightblue",
     )
+    axs[0].set_title('Original graph')
     ig.plot(
         g2,
         target=axs[1],
         layout="circle",
         vertex_color="lightblue",
     )
+    axs[1].set_title('Complement graph')
     plt.show()
 
 The two graphs compared side by side look like this:

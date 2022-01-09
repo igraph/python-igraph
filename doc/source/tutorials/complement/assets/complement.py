@@ -15,13 +15,14 @@ ig.plot(
     g1,
     target=axs[0],
     layout="circle",
-    vertex_color="lightblue",
+    vertex_color="black",
 )
+axs[0].set_title('Original graph')
 ig.plot(
     g2,
     target=axs[1],
     layout="circle",
-    vertex_color="lightblue",
+    vertex_color="black",
 )
+axs[1].set_title('Complement graph')
 plt.show()
-
