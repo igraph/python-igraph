@@ -2,14 +2,16 @@
 
 .. _tutorials-isomorphism:
 
-====================
-Checking Isomorphism
-====================
+===========
+Isomorphism
+===========
 
 .. _isomorphic: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#isomorphic
 .. |isomorphic| replace:: :meth:`isomorphic`
 
-This example shows how to check `isomorphism <https://en.wikipedia.org/wiki/Graph_isomorphism>`_ for small graphs using |isomorphic|_. First we generate three different graphs to compare between and plot them.
+This example shows how to check for `isomorphism <https://en.wikipedia.org/wiki/Graph_isomorphism>`_ between small graphs using |isomorphic|_.
+
+First we generate three different graphs to compare between and plot them.
 
 .. code-block:: python
 
@@ -49,15 +51,13 @@ This example shows how to check `isomorphism <https://en.wikipedia.org/wiki/Grap
     )
     plt.show()
 
-The three graphs should now look like this:
-
 .. figure:: ./figures/isomorphism.png
    :alt: A visual representation of three different graphs
    :align: center
 
    Three graphs to be compared for isomorphism
 
-We then have some code to compare the isomoprhism between all three graphs.
+To compare the isomoprhism between all three graphs, we run:
 
 .. code-block:: python
 
@@ -80,4 +80,7 @@ The final output is:
     Are the graphs g2 and g3 isomorphic?
     False
 
-
+.. note::
+   `Graph isomorphism <https://en.wikipedia.org/wiki/Graph_isomorphism>`_ is an equivalence
+   relationship, i.e. if `g1 ~ g2` and `g2 ~ g3`, then automatically `g1 ~ g3`. Therefore,
+   we could have skipped the last check in our example.
