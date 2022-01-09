@@ -2,7 +2,7 @@ import igraph as ig
 import matplotlib.pyplot as plt
 import random
 
-# Configure visual style for use in both graphs
+# Configure visual style
 visual_style = {
     "edge_width": 0.3,
     "vertex_size": 1.5,
