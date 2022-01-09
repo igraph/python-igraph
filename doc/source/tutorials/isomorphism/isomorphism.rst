@@ -57,7 +57,7 @@ First we generate three different graphs to compare between and plot them.
 
    Three graphs to be compared for isomorphism
 
-To compare the isomoprhism between all three graphs, we run:
+To compare the isomorphism between all three graphs, we run:
 
 .. code-block:: python
 
