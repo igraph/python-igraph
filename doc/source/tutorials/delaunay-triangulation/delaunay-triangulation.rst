@@ -6,10 +6,7 @@
 Delaunay Triangulation
 ======================
 
-.. _GRG: https://igraph.org/python/doc/api/igraph.Graph.html#GRG
-.. |GRG| replace:: :meth:`GRG`
-
-This example demonstrates how to calculate the `Delaunay triangulation <https://en.wikipedia.org/wiki/Delaunay_triangulation>`_ of an input graph. We start by generating a set of points on a 2D grid using |GRG|_ with radius zero, so that there are initially no edges in the graph.
+This example demonstrates how to calculate the `Delaunay triangulation <https://en.wikipedia.org/wiki/Delaunay_triangulation>`_ of an input graph. We start by generating a set of points on a 2D grid using random ``numpy`` arrays and a graph with those vertex coordinates and no edges.
 
 .. code-block:: python
 
