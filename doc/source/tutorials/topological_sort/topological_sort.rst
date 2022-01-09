@@ -31,7 +31,7 @@ This example demonstrates how to get a topological sorting on a directed acyclic
     results = g.topological_sorting(mode='in')
     print('Topological sort of g (in):', *results)
 
-There are two modes o |topological_sorting|_. ``'out'`` is the default mode which starts from a node with indegree equal to 0. Vice versa, the mode ``'in'`` starts from a node with outdegree equal to 0.
+There are two modes of |topological_sorting|_. ``'out'`` is the default mode which starts from a node with indegree equal to 0. Vice versa, the mode ``'in'`` starts from a node with outdegree equal to 0.
 
 The output of the code above is:
 
