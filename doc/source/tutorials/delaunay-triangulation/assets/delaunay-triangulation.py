@@ -1,19 +1,23 @@
+import numpy as np
+from scipy.spatial import Delaunay
 import igraph as ig
 import matplotlib.pyplot as plt
-import random
-from scipy.spatial import Delaunay
 
-# Generate a random geometric graph
-random.seed(0)
-g = ig.Graph.GRG(30, 0)
+
+# Generate a random graph in the 2D unit cube
+np.random.seed(0) # To ensure reproducibility
+x, y = np.random.rand(2, 30)
+g = ig.Graph(30)
+g.vs['x'] = x
+g.vs['y'] = y
 
 # Calculate the delaunay triangulation, and add the edges into the original graph
 coords = g.layout_auto().coords
 delaunay = Delaunay(coords)
 for tri in delaunay.simplices:
     g.add_edges([
-        (tri[0], tri[1]), 
-        (tri[1], tri[2]), 
+        (tri[0], tri[1]),
+        (tri[1], tri[2]),
         (tri[0], tri[2]),
     ])
 g.simplify()

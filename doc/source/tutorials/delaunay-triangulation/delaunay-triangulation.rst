@@ -13,14 +13,17 @@ This example demonstrates how to calculate the `Delaunay triangulation <https://
 
 .. code-block:: python
 
+    import numpy as np
+    from scipy.spatial import Delaunay
     import igraph as ig
     import matplotlib.pyplot as plt
-    import random
-    from scipy.spatial import Delaunay
 
-    # Generate a random geometric graph
-    random.seed(0)
-    g = ig.Graph.GRG(30, 0)
+    # Generate a random graph in the 2D unit cube
+    np.random.seed(0)  # To ensure reproducibility
+    x, y = np.random.rand(2, 30)
+    g = ig.Graph(30)
+    g.vs['x'] = x
+    g.vs['y'] = y
 
 We then use `SciPy's Delaunay function <https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.Delaunay.html>`_ to generate the triangles, and then loop through them to add them back into our original graph. We make sure to simplify the graph afterwards to remove multiple edges caused by triangles sharing a side.
 
