@@ -1,30 +1,26 @@
 import igraph as ig
 import matplotlib.pyplot as plt
-import math
 import random
 
-# Configure visual style
+# Configure visual style for use in both graphs
 visual_style = {
     "edge_width": 0.3,
-    "vertex_size": 1,
+    "vertex_size": 1.5,
     "palette": "heat",
     "layout": "fruchterman_reingold"
 }
 
-# Generate graphs
+# Generate four random graphs
 random.seed(1)
-g1 = ig.Graph.Barabasi(n=100, m=1)
-g2 = ig.Graph.Barabasi(n=100, m=1)
+gs = [ig.Graph.Barabasi(n=30, m=1) for i in range(4)]
 
 # Calculate colors between 0-255 for all nodes
-betweenness1 = g1.betweenness()
-betweenness2 = g2.betweenness()
-colors1 = [int(i * 255 / max(betweenness1)) for i in betweenness1]
-colors2 = [int(i * 255 / max(betweenness2)) for i in betweenness2]
+betweenness = [g.betweenness() for g in gs]
+colors = [[int(i * 255 / max(btw)) for i in btw] for btw in betweenness]
 
-# Plot the graphs
-fig, axs = plt.subplots(1, 2)
-ig.plot(g1, target=axs[0], vertex_color=colors1, **visual_style)
-ig.plot(g2, target=axs[1], vertex_color=colors2, **visual_style)
+# Plot the graphs, using the same predefined visual style for both
+fig, axs = plt.subplots(2, 2)
+axs = axs.ravel()
+for g, color, ax in zip(gs, colors, axs):
+    ig.plot(g, target=ax, vertex_color=color, **visual_style)
 plt.show()
-
