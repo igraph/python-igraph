@@ -28,7 +28,7 @@ Then we make a copy of the original graph and simplify it in place:
     g2 = g1.copy()
     g2.simplify()
 
-Finally, we plot the graph:
+Finally, we plot the graphs:
 
 .. code-block::python
 
@@ -39,7 +39,9 @@ Finally, we plot the graph:
         "vertex_label": [0, 1, 2, 3, 4],
     }
 
-    fig, axs = plt.subplots(1, 2)
+    # Make twin axes
+    fig, axs = plt.subplots(1, 2, sharex=True, sharey=True)
+    # Plot graphs
     ig.plot(
         g1,
         layout="circle",
@@ -52,6 +54,16 @@ Finally, we plot the graph:
         target=axs[1],
         **visual_style,
     )
+    # Draw rectangles around axes
+    axs[0].add_patch(plt.Rectangle(
+        (0, 0), 1, 1, fc='none', ec='k', lw=4, transform=axs[0].transAxes,
+        ))
+    axs[1].add_patch(plt.Rectangle(
+        (0, 0), 1, 1, fc='none', ec='k', lw=4, transform=axs[1].transAxes,
+        ))
+    # Set titles
+    axs[0].set_title('Multigraph...')
+    axs[1].set_title('...simplified')
     plt.show()
 
 
