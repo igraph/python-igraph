@@ -30,7 +30,7 @@ Then we make a copy of the original graph and simplify it in place:
 
 Finally, we plot the graphs:
 
-.. code-block::python
+.. code-block:: python
 
     # Plot graphs
     visual_style = {
