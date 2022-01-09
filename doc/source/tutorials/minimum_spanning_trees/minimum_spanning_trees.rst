@@ -11,13 +11,13 @@ Minimum Spanning Trees
 
 This example shows how to generate a `minimum spanning tree <https://en.wikipedia.org/wiki/Minimum_spanning_tree>`_ from an input graph using |spanning_tree|_. If you only need a regular spanning tree, check out :ref:`tutorials-spanning-trees`.
 
-We start by generating a grid graph with random weights
+We start by generating a grid graph with random integer weights between 1 and 20:
 
 .. code-block:: python
     
+    import random
     import igraph as ig
     import matplotlib.pyplot as plt
-    import random
 
     # Generate grid graph with random weights
     random.seed(0)

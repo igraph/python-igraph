@@ -1,12 +1,11 @@
+import random
 import igraph as ig
 import matplotlib.pyplot as plt
-import numpy as np
 
 # Generate grid graph with random weights
-np.random.seed(0)
-
+random.seed(0)
 g = ig.Graph.Lattice([5, 5], circular=False)
-g.es["weight"] = np.random.randint(1, 20, g.ecount()).tolist()
+g.es["weight"] = [random.randint(1, 20) for _ in g.es]
 
 # Generate minimum spanning tree
 mst_edges = g.spanning_tree(weights=g.es["weight"], return_tree=False)
