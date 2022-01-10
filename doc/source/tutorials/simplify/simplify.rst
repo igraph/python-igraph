@@ -9,7 +9,9 @@ Simplify
 .. _simplify: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#simplify
 .. |simplify| replace:: :meth:`simplify`
 
-This example shows how to remove self loops and multiple edges using |simplify|_. First we plot the graph
+This example shows how to remove self loops and multiple edges using |simplify|_.
+
+We start with a graph that includes loops and multiedges:
 
 .. code-block:: python
 
@@ -17,10 +19,23 @@ This example shows how to remove self loops and multiple edges using |simplify|_
     import matplotlib.pyplot as plt
 
     # Generate graph with multiple edges and loops
-    g1 = ig.Graph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 0), (0, 0), 
-        (1, 4), (1, 4), (0, 2), (2, 4), (2, 4), (2, 4), (3, 3)])
+    g1 = ig.Graph([
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 4),
+        (4, 0),
+        (0, 0), 
+        (1, 4),
+        (1, 4),
+        (0, 2),
+        (2, 4),
+        (2, 4),
+        (2, 4),
+        (3, 3)],
+    )
 
-Then we make a copy of the original graph and simplify it in place:
+To get rid of both loops and multiedges, we make a copy of the graph and simplify it in place:
 
 .. code-block:: python
 
@@ -28,7 +43,7 @@ Then we make a copy of the original graph and simplify it in place:
     g2 = g1.copy()
     g2.simplify()
 
-Finally, we plot the graphs:
+Finally, we check what happened by plotting both graphs:
 
 .. code-block:: python
 
