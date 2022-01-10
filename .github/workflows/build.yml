@@ -45,11 +45,8 @@ jobs:
 
   build_wheel_linux_aarch64:
     name: Build wheels on Linux (aarch64)
-    on:
-      push:
-        tags:
-          - '*'
     runs-on: ubuntu-20.04
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v2
         with:
