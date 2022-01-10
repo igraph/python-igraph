@@ -1,6 +1,6 @@
 # igraph Python interface changelog
 
-## [Unreleased]
+## [0.9.9]
 
 ### Changed
 
@@ -234,7 +234,9 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[unreleased]: https://github.com/igraph/python-igraph/compare/0.9.7..master
+[Unreleased]: https://github.com/igraph/python-igraph/compare/0.9.9..master
+[0.9.9]: https://github.com/igraph/python-igraph/compare/0.9.8...0.9.9
+[0.9.8]: https://github.com/igraph/python-igraph/compare/0.9.7...0.9.8
 [0.9.7]: https://github.com/igraph/python-igraph/compare/0.9.6...0.9.7
 [0.9.6]: https://github.com/igraph/python-igraph/compare/0.9.5...0.9.6
 [0.9.5]: https://github.com/igraph/python-igraph/compare/0.9.4...0.9.5
