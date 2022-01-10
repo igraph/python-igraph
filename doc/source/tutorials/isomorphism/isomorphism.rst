@@ -11,7 +11,7 @@ Isomorphism
 
 This example shows how to check for `isomorphism <https://en.wikipedia.org/wiki/Graph_isomorphism>`_ between small graphs using |isomorphic|_.
 
-First we generate three different graphs to compare between:
+First we generate three different graphs:
 
 .. code-block:: python
 
@@ -23,7 +23,7 @@ First we generate three different graphs to compare between:
     g2 = ig.Graph([(4, 2), (4, 3), (4, 0), (2, 3), (2, 1), (3, 1), (3, 0), (1, 0)])
     g3 = ig.Graph([(4, 1), (4, 3), (4, 0), (2, 3), (2, 1), (3, 1), (3, 0), (1, 0)])
 
-To compare the isomorphism between all three graphs, we run:
+To check if they are isomorphic, we run:
 
 .. code-block:: python
 
