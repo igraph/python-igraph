@@ -297,7 +297,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
                 text_kwargs = {}
                 text_kwargs['ha'] = halign.value
-                text_kwargs['va'] = halign.value
+                text_kwargs['va'] = valign.value
 
                 if visual_edge.background is not None:
                     text_kwargs['bbox'] = dict(
