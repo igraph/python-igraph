@@ -26,6 +26,15 @@ def on_build_finished(app: Sphinx, exception: Exception) -> None:
         mark_end = lines.index('---\n', 1) + 1
         lines_mark = lines[: mark_end]
 
+    # Relative links to stylesheets break, repair them
+    for i, line in enumerate(lines_mark):
+        pattern = 'href="_static/'
+        j = line.find(pattern)
+        if j == -1:
+            continue
+        line = line[:j] + 'href="../_static/' + line[j + len(pattern):]
+        lines_mark[i] = line
+
     # Write individual example files
     for filename in sorted(glob.glob(op.join(api_dir, "*.html"))):
         # Open file
@@ -44,7 +53,23 @@ def on_build_finished(app: Sphinx, exception: Exception) -> None:
         end = head.find('</title>') + len('</title>')
         head = head[:start] + head[end:]
 
-        # FIXME: fix CSS includes to match navbar appearance
+        # Bootstrap from Jekyll and pydoctor conflict, remove the pydoctor one
+        headlines = head.split('\n')
+        for i, line in enumerate(headlines):
+
+            if 'bootstrap.min.css' in line:
+                break
+        head = '\n'.join(headlines[:i] + headlines[i+1:])
+
+        # Repair footer that conflicts with igraph footer
+        # NOTE: this is not the prettiest thing, but it works okay
+        bodylines = body.split('\n')
+        for i, line in enumerate(bodylines):
+            if '<footer' in line:
+                break
+        # Close wrap div and start footer
+        bodylines[i] = '<footer class="footer">'
+        body = '\n'.join(bodylines)
 
         # Patch-up conent for Jekyll
         content = ''.join(lines_mark[:-1]) + head + lines_mark[-1] + body

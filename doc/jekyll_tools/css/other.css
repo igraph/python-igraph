@@ -31,10 +31,8 @@ span.type {
   padding: 57px 0 0 0;
 }
 
-#footer {
+.footer {
   padding-top: 5px;
-}
-#footer p.credit {
   text-align: center;
 }
 

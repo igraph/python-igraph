@@ -20,3 +20,5 @@ vendor/install/
 doc/source/gallery.rst
 doc/api/
 doc/html/
+doc/jekyll_tools/Gemfile.lock
+doc/jekyll_tools/vendor
