@@ -4,7 +4,7 @@ from matplotlib.cm import ScalarMappable
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 import random
 
-def plot_betweenness(g, ax):
+def plot_betweenness(g, fig, ax):
     
     # Calculate vertex betweenness and scale it to be between 0.0 and 1.0
     vertex_betweenness = g.betweenness()
@@ -18,13 +18,23 @@ def plot_betweenness(g, ax):
     cmap1 = LinearSegmentedColormap.from_list("vertex_cmap", ["pink", "indigo"])
     cmap2 = LinearSegmentedColormap.from_list("edge_cmap", ["lightblue", "midnightblue"])
 
+    # Create normalising objects to scale the color bars correctly
     norm1 = Normalize()
     norm1.autoscale(vertex_betweenness)
     norm2 = Normalize()
     norm2.autoscale(edge_betweenness)
 
-    plt.colorbar(ScalarMappable(norm=norm1, cmap=cmap1), ax=ax)
-    plt.colorbar(ScalarMappable(norm=norm2, cmap=cmap2), ax=ax)
+    # Create new axes for color bars
+    cax1 = fig.add_axes([ax.get_position().x0, ax.get_position().y0-0.05, ax.get_position().width, 0.03], in_layout=True)
+    cax2 = fig.add_axes([ax.get_position().x0, ax.get_position().y0-0.20, ax.get_position().width, 0.03], in_layout=True)
+
+    plt.colorbar(ScalarMappable(norm=norm1, cmap=cmap1), cax=cax1, orientation="horizontal")
+    plt.colorbar(ScalarMappable(norm=norm2, cmap=cmap2), cax=cax2, orientation="horizontal")
+
+    # Add labels for color bars
+    mid = (ax.get_position().x0 + ax.get_position().x1) / 2
+    fig.text(mid, 0.3, 'Vertex Betweenness', ha='center')
+    fig.text(mid, 0.15, 'Edge Betweenness', ha='center')
 
     # Plot graph
     g.vs["color"] = [cmap1(betweenness) for betweenness in scaled_vertex_betweenness]
@@ -45,9 +55,10 @@ g1 = ig.Graph.Famous("Krackhardt_Kite")
 g2 = ig.Graph.Watts_Strogatz(dim=1, size=150, nei=2, p=0.1)
 
 # Plot the graph
-fig, axs = plt.subplots(1, 2, figsize=(10, 5))
-plot_betweenness(g1, axs[0])
-plot_betweenness(g2, axs[1])
+fig, axs = plt.subplots(1, 2, figsize=(10, 8))
+plt.subplots_adjust(bottom=0.3)
+plot_betweenness(g1, fig, axs[0])
+plot_betweenness(g2, fig, axs[1])
 
 # Add "a" and "b" labels for panels
 fig.text(0.05, 0.9, 'a', va='top')
