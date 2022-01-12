@@ -35,7 +35,7 @@ def on_build_finished(app: Sphinx, exception: Exception) -> None:
         line = line[:j] + 'href="../_static/' + line[j + len(pattern):]
         lines_mark[i] = line
 
-    # Write individual example files
+    # Write individual example files, fixing footers
     for filename in sorted(glob.glob(op.join(api_dir, "*.html"))):
         # Open file
         with open(filename, 'rt') as f:
@@ -56,23 +56,28 @@ def on_build_finished(app: Sphinx, exception: Exception) -> None:
         # Bootstrap from Jekyll and pydoctor conflict, remove the pydoctor one
         headlines = head.split('\n')
         for i, line in enumerate(headlines):
-
             if 'bootstrap.min.css' in line:
                 break
         head = '\n'.join(headlines[:i] + headlines[i+1:])
 
         # Repair footer that conflicts with igraph footer
-        # NOTE: this is not the prettiest thing, but it works okay
-        bodylines = body.split('\n')
-        for i, line in enumerate(bodylines):
-            if '<footer' in line:
-                break
-        # Close wrap div and start footer
-        bodylines[i] = '<footer class="footer">'
-        body = '\n'.join(bodylines)
+        start_pre = body.find('<footer')
+        start = body.find('>', start_pre) + 1
+        end = body.find('</footer>', start)
+        body, footer = body[:start_pre], body[start: end]
+        footer = footer.strip('\n')
 
-        # Patch-up conent for Jekyll
-        content = ''.join(lines_mark[:-1]) + head + lines_mark[-1] + body
+        # Patch style of footer
+        footer = footer.replace('"container"', '"container-fluid text-muted credit"')
+
+        # Patch-up content for Jekyll
+        content = (''.join(lines_mark[:-1]) + 
+                   head +
+                   'extrafoot:\n' +
+                   footer +
+                   '\n' +
+                   lines_mark[-1] +
+                   body)
         with open(filename, 'wt') as f:
             f.write(content)
 

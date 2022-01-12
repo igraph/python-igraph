@@ -120,7 +120,9 @@
 
     {{content}}
 
-    <footer class="footer"><div class="container-fluid">
+    <div id="footer">
+      {{ page.extrafoot }}
+      <div class="container-fluid">
       <p class="text-muted credit">
       &copy; 2003 &ndash; 2020 The igraph core team.
             &bull; Code licensed under 
@@ -129,8 +131,10 @@
             <a href="http://www.gnu.org/copyleft/fdl.html">
               GNU FDL.</a>
       </p>
-    </div></footer>
+      </div>
+    </div>
 
+    <!-- wrap -->
     </div>
 
     <!-- Bootstrap core JavaScript
@@ -148,6 +152,5 @@
         startAnimation();
       </script>
 {% endif %}
-    {{ page.extrafoot }}
   </body>
 </html>

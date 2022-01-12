@@ -26,13 +26,16 @@ span.type {
 
 #wrap {
   min-height: 100%;
-  height: auto;
-  /* Pad top by header height */
+  position: relative;
+  /* Pad top by header height, bottom by footer */
   padding: 57px 0 0 0;
 }
 
-.footer {
-  padding-top: 5px;
+#footer {
+  width: 100%;
+}
+
+#footer .credit {
   text-align: center;
 }
 
