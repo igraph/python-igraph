@@ -96,30 +96,32 @@ else
   fi
 fi
 
-  
+echo "HTML documentation generated in ${DOC_HTML_FOLDER}"
 
-#PWD=`pwd`
-#DOC_API_FOLDER=${ROOT_FOLDER}/doc/api
-#DOC2DASH=`which doc2dash 2>/dev/null || true`
-#if [ "x$DOC2DASH" != x ]; then
-#    echo "Generating Dash docset..."
-#    "$DOC2DASH" \
-#        --online-redirect-url "https://igraph.org/python/doc/api" \
-#        --name "python-igraph" \
-#        -d "${DOC_API_FOLDER}" \
-#	    -f \
-#        "${DOC_API_FOLDER}/html"
-#    DASH_READY=1
-#else 
-#    echo "WARNING: doc2dash not installed, skipping Dash docset generation."
-#    DASH_READY=0
-#fi
-#
-#echo ""
-#echo "HTML documentation generated in ${DOC_HTML_FOLDER}/html"
-#if [ "x${DASH_READY}" = x1 ]; then
-#    echo "Dash docset generated in ${DOC_API_FOLDER}/python-igraph.docset"
-#fi
-#
-#cd "$PWD"
+
+# doc2dash (tamas please check this)
+PWD=`pwd`
+# Output folder of sphinx (before Jekyll if requested)
+DOC_API_FOLDER=${ROOT_FOLDER}/doc/html/api
+DOC2DASH=`which doc2dash 2>/dev/null || true`
+if [ "x$DOC2DASH" != x ]; then
+    echo "Generating Dash docset..."
+    "$DOC2DASH" \
+        --online-redirect-url "https://igraph.org/python/api" \
+        --name "python-igraph" \
+        -d "${DOC_API_FOLDER}" \
+	    -f \
+        "${DOC_API_FOLDER}/doc2dash"
+    DASH_READY=1
+else 
+    echo "WARNING: doc2dash not installed, skipping Dash docset generation."
+    DASH_READY=0
+fi
+
+echo ""
+if [ "x${DASH_READY}" = x1 ]; then
+    echo "Dash docset generated in ${DOC_API_FOLDER}/python-igraph.docset"
+fi
+
+cd "$PWD"
 
