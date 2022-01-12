@@ -1,7 +1,8 @@
 """
 Drawing and plotting routines for IGraph.
 
-IGraph has two plotting backends at the moment: Cairo and Matplotlib.
+IGraph has two stable plotting backends at the moment: Cairo and Matplotlib.
+It also has experimental support for plotly.
 
 The Cairo backend is dependent on the C{pycairo} or C{cairocffi} libraries that
 provide Python bindings to the popular U{Cairo library<http://www.cairographics.org>}.
@@ -13,7 +14,10 @@ API-compatible.
 
 The Matplotlib backend uses the U{Matplotlib library<https://matplotlib.org>}.
 You will need to install it from PyPI if you want to use the Matplotlib
-plotting backend.
+plotting backend. Many of our gallery examples use the matplotlib backend.
+
+The plotly backend uses the U{plotly library <https://plotly.com/python/>} and,
+like matplotlib, requires installation from PyPI.
 
 If you do not want to (or cannot) install any of the dependencies outlined
 above, you can still save the graph to an SVG file and view it from
@@ -100,7 +104,8 @@ class DrawerDirectory:
     def resolve(cls, obj, backend):
         """Given a shape name, returns the corresponding shape drawer class
 
-        @param: obj: an instance of the object to plot
+        @param cls: the class to resolve
+        @param obj: an instance of the object to plot
         @param backend: the name of the backend
         @return: the corresponding shape drawer class
 

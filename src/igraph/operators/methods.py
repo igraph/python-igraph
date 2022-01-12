@@ -41,7 +41,7 @@ def _union(graph, other, byname="auto"):
 
     @param other: graph or list of graphs to be united with the current one.
     @param byname: whether to use vertex names instead of ids. See
-      L{igraph.union} for details.
+      L{igraph.operators.union} for details.
     @return: the union graph
     """
     if isinstance(other, GraphBase):
@@ -55,7 +55,7 @@ def _intersection(graph, other, byname="auto"):
     @param other: graph or list of graphs to be intersected with
       the current one.
     @param byname: whether to use vertex names instead of ids. See
-      L{igraph.intersection} for details.
+      L{igraph.operators.intersection} for details.
     @return: the intersection graph
     """
     if isinstance(other, GraphBase):

@@ -1,0 +1,75 @@
+---
+layout: default
+bodyclass: start-page
+animated_header: true
+---
+
+<div class="jumbotron">
+  <div class="container">
+    <h1 class="display-4"><img src="/img/igraph_logo_black.svg" width="125"> igraph &ndash;
+      <small>The network analysis package</small>
+    </h1>
+    <p class="lead">
+    igraph is a collection of network analysis tools with the
+    emphasis on <strong>efficiency</strong>,
+    <strong>portability</strong> and ease of use. igraph is
+    <strong>open source</strong> and free. igraph can be
+    programmed in <strong>R</strong>, <strong>Python</strong>,
+    <strong>Mathematica</strong> and&nbsp;<strong>C/C++</strong>.
+    </p>
+    <hr class="my-4">
+    <a href="/r" class="btn btn-lg btn-dark">igraph R package</a>
+    <a href="/python" class="btn btn-lg btn-dark">python-igraph</a>
+    <a href="http://szhorvat.net/mathematica/IGraphM" class="btn btn-lg btn-dark">IGraph/M</a>
+    <a href="/c" class="btn btn-lg btn-dark">igraph C library</a>
+  </div>
+  <canvas id="jumbotron-anim"></canvas>
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <nav class="bs-sidebar affix hidden-print" role="complementary">
+        <ul class="nav bs-sidenav">
+          {% for post in site.posts limit:10 %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ post.url }}">{{ post.title }}</a>
+            </li>
+          {% endfor %}
+          <li class="nav-item">
+            <a class="nav-link" href="news.html">All news &#8594;</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="col-md-8">
+      <div class="bs-docs-section">
+
+  <div class="page-header">
+    <h1>Recent news</h1>
+  </div>
+
+  {% for post in site.posts limit:10 %}
+
+  <div class="post-header">
+    <h2>
+      <span id="{{ post.id }}" class="anchor">&nbsp;</span>
+      <a href="{{ post.url }}">{{ post.title }}</a>
+    </h2>
+	<div class="post-time"><time class="text-muted">{{ post.date | date_to_string: "ordinal", "US" }}</time></div>
+  </div>
+
+  {{ post.content | extract_excerpt: post.url | redir_docs | smallheaders }}
+
+  <hr class="news-separator">
+
+  {% endfor %}
+
+  <h2><a href="news.html">All news &#8594;</a></h2>
+
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -105,7 +105,8 @@ class Configuration:
     embedded (e.g., IPython and its Qt console). These settings are stored in
     section C{shell}.
 
-        - B{ipython.inlining.Plot}: whether to show instances of the L{Plot} class
+        - B{ipython.inlining.Plot}: whether to show instances of the
+          L{Plot<drawing.Plot>} class
           inline in IPython's console if the console supports it. Default: C{True}
     """
 

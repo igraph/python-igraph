@@ -1,11 +1,11 @@
 .. include:: include/global.rst
 
-.. _configuring-igraph:
+.. currentmodule:: igraph
 
-==================
-Configuring igraph
-==================
-|igraph| includes customization options that can be preserved via a configuration file. This file is stored at ``~/.igraphrc`` by default on Linux and Mac OS X systems, and at ``C:\Documents and Settings\username\.igraphrc`` on Windows systems.
+=============
+Configuration
+=============
+|igraph| includes customization options that can be set via the :class:`configuration.Configuration` object and can be preserved via a configuration file. This file is stored at ``~/.igraphrc`` by default on Linux and Mac OS X systems, and at ``C:\Documents and Settings\username\.igraphrc`` on Windows systems.
 
 To modify config options and store the result to file for future reuse:
 

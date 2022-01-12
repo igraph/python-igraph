@@ -2,64 +2,55 @@
 #
 # Creates the API documentation for igraph's Python interface using PyDoctor
 #
-# Usage: ./mkdoc.sh (makes API docs)
-#        ./mkdoc.sh -t (makes tutorials)
+# Usage: ./mkdoc.sh (makes API and tutorial docs)
+#        ./mkdoc.sh -s (makes standalone docs that require no further processing)
 
+STANDALONE=0
+SERVE=0
+DOC2DASH=0
 
-DOC_TYPE=api
-
-while getopts ":t::" OPTION; do
+while getopts ":sjd" OPTION; do
   case $OPTION in
-    t)
-      DOC_TYPE=tutorial
-    ;;
+    s)
+      STANDALONE=1
+      ;;
+    j)
+      SERVE=1
+      ;;      
+    d)
+      DOC2DASH=1
+      ;;      
     \?)
-      echo "Usage: $0 [-t]"
-	;;
-  esac
+      echo "Usage: $0 [-sj]"
+      ;;
+    esac
 done
-
+shift $((OPTIND -1))
 
 SCRIPTS_FOLDER=`dirname $0`
 
 cd ${SCRIPTS_FOLDER}/..
 ROOT_FOLDER=`pwd`
 DOC_SOURCE_FOLDER=${ROOT_FOLDER}/doc/source
-DOC_API_FOLDER=${ROOT_FOLDER}/doc/api
-DOC_TUTORIAL_FOLDER=${ROOT_FOLDER}/doc/tutorial
+DOC_HTML_FOLDER=${ROOT_FOLDER}/doc/html
 
 cd ${ROOT_FOLDER}
 
 # Create a virtual environment
 if [ ! -d ".venv" ]; then
-    python3 -m venv .venv
+  python3 -m venv .venv
+
+  # Install sphinx, matplotlib, wheel, and pydoctor into the venv
+  .venv/bin/pip install -U sphinx sphinxbootstrap4theme matplotlib wheel
+  
+  echo "Patching PyDoctor..."
+  .venv/bin/pip install -U pydoctor
+  $SCRIPTS_FOLDER/patch-pydoctor.sh ${ROOT_FOLDER} ${SCRIPTS_FOLDER}
+
 fi
 
-# Make tutorial only if requested
-if [ ${DOC_TYPE} == "tutorial" ]; then
-    # Install pydoctor into the venv
-    .venv/bin/pip install sphinx sphinxbootstrap4theme
-
-    # Make sphinx tutorials
-    .venv/bin/python -m sphinx.cmd.build ${DOC_SOURCE_FOLDER} ${DOC_TUTORIAL_FOLDER}
-    exit $?
-fi
-
-# Install pydoctor into the venv
-.venv/bin/pip install -U pydoctor wheel
-PYDOCTOR=.venv/bin/pydoctor
-if [ ! -f ${PYDOCTOR} ]; then
-  echo "PyDoctor not installed in the virtualenv of the project, exiting..."
-  exit 1
-fi
-
-PWD=`pwd`
-
-echo "Patching PyDoctor..."
-$SCRIPTS_FOLDER/patch-pydoctor.sh ${ROOT_FOLDER} ${SCRIPTS_FOLDER}
-
-echo "Removing existing documentation..."
-rm -rf "${DOC_API_FOLDER}/html" "${DOC_API_FOLDER}/pdf"
+#echo "Set PyDoctor theme"
+#$SCRIPTS_FOLDER/set-pydoctor-theme.sh ${ROOT_FOLDER} ${STANDALONE}
 
 echo "Removing existing igraph and python-igraph eggs from virtualenv..."
 SITE_PACKAGES_DIR=`.venv/bin/python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`
@@ -74,38 +65,69 @@ rm -f dist/*.whl && .venv/bin/python setup.py bdist_wheel && .venv/bin/pip insta
 echo "Patching modularized Graph methods"
 .venv/bin/python3 ${SCRIPTS_FOLDER}/patch_modularized_graph_methods.py
 
+
+# Remove previous docs
+rm -rf "${DOC_HTML_FOLDER}"
+
+
+# Make sphinx
 echo "Generating HTML documentation..."
-IGRAPHDIR=`.venv/bin/python3 -c 'import igraph, os; print(os.path.dirname(igraph.__file__))'`
-"$PYDOCTOR" \
-    --project-name "igraph" \
-    --project-url "https://igraph.org/python" \
-    --introspect-c-modules \
-    --make-html \
-    --html-output "${DOC_API_FOLDER}/html" \
-	${IGRAPHDIR}
+if [ "x$STANDALONE" = "x1" ]; then
+  echo "Build standalone docs"
+  .venv/bin/sphinx-build \
+   -Dtemplates_path='' \
+   -Dhtml_theme='alabaster' \
+   ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
+else
+  echo "Build Jekyll-style docs"
+  .venv/bin/sphinx-build ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
 
-# PDF not supported by PyDoctor
+  if [ "x$SERVE" = "x1" ]; then
+    cd doc/html
 
-DOC2DASH=`which doc2dash 2>/dev/null || true`
-if [ "x$DOC2DASH" != x ]; then
-    echo "Generating Dash docset..."
-    "$DOC2DASH" \
-        --online-redirect-url "https://igraph.org/python/doc/api" \
-        --name "python-igraph" \
-        -d "${DOC_API_FOLDER}" \
-	    -f \
-        "${DOC_API_FOLDER}/html"
-    DASH_READY=1
-else 
-    echo "WARNING: doc2dash not installed, skipping Dash docset generation."
-    DASH_READY=0
+    # Copy jekyll build environment
+    cp -r ../jekyll_tools/* ./
+
+    # Install jekyll infra
+    bundle config set --local path 'vendor/bundle'
+    bundle install
+
+    # TODO: copy back?
+
+    # Build website via templates
+    bundle exec jekyll serve
+  
+  fi
 fi
 
-echo ""
-echo "HTML API documentation generated in ${DOC_API_FOLDER}/html"
-if [ "x${DASH_READY}" = x1 ]; then
-    echo "Dash docset generated in ${DOC_API_FOLDER}/python-igraph.docset"
+echo "HTML documentation generated in ${DOC_HTML_FOLDER}"
+
+
+# doc2dash
+if [ "x$DOC2DASH" = "x1" ]; then
+  PWD=`pwd`
+  # Output folder of sphinx (before Jekyll if requested)
+  DOC_API_FOLDER=${ROOT_FOLDER}/doc/html/api
+  DOC2DASH=`which doc2dash 2>/dev/null || true`
+  DASH_FOLDER=${ROOT_FOLDER}/doc/dash
+  if [ "x$DOC2DASH" != x ]; then
+      echo "Generating Dash docset..."
+      "$DOC2DASH" \
+          --online-redirect-url "https://igraph.org/python/api" \
+          --name "python-igraph" \
+          -d "${DASH_FOLDER}" \
+  	  -f \
+          "${DOC_API_FOLDER}"
+      DASH_READY=1
+  else 
+      echo "WARNING: doc2dash not installed, skipping Dash docset generation."
+      DASH_READY=0
+  fi
+  
+  echo ""
+  if [ "x${DASH_READY}" = x1 ]; then
+      echo "Dash docset generated in ${DOC_API_FOLDER}/python-igraph.docset"
+  fi
+  
+  cd "$PWD"
 fi
-
-cd "$PWD"
-

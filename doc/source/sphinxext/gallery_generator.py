@@ -84,8 +84,8 @@ INDEX_TEMPLATE = """
 
 .. _{sphinx_tag}:
 
-Tutorial gallery
-================
+Gallery
+=======
 
 {toctree}
 

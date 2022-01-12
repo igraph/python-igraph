@@ -92,7 +92,7 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
                         four parameters: the Cairo context, the bounding
                         box of the drawing area, the palette to be
                         used for drawing colored vertices, and the graph layout.
-                        The default vertex drawer is L{DefaultVertexDrawer}.
+                        The default vertex drawer is L{CairoVertexDrawer}.
         @param edge_drawer_factory: a factory method that returns an
                         L{AbstractCairoEdgeDrawer} instance bound to a
                         given Cairo context. The factory method must take

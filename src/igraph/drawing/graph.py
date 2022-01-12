@@ -410,7 +410,7 @@ def __plot__(self, backend, context, *args, **kwds):
         L{Layout}, it will be passed to L{layout} to calculate
         the layout. Note that if you want a deterministic layout that
         does not change with every plot, you must either use a
-        deterministic layout function (like L{layout_circle}) or
+        deterministic layout function (like L{GraphBase.layout_circle}) or
         calculate the layout in advance and pass a L{Layout} object here.
 
       - C{margin}: the top, right, bottom, left margins as a 4-tuple.
