@@ -63,6 +63,9 @@ What's the difference between |igraph| and similar packages (networkx, graph-too
 -----------------------------------------------------------------------------------
 All those packages focus on graph/network analysis.
 
+.. warning::
+   The following differences and similarities are considered correct as of the time of writing (Jan 2022). If you identify incorrect or outdated information, please open a `Github issue <https://github.com/igraph/python-igraph/issues>`_ and we'll update it.
+
 **Differences:**
 
  - |igraph| supports **multiple programming languages** (e.g. C, Python, R, Mathematica). `networkx`_ and `graph-tool`_ are Python only.
@@ -70,7 +73,6 @@ All those packages focus on graph/network analysis.
  - |igraph| vertices are *ordered with contiguous numerical IDs, from 0 upwards*, and an *optional* "vertex name". `networkx`_ nodes are *defined* by their name and not ordered.
  - Same holds for edges, ordered with integer IDs in |igraph|, not so in `networkx`_.
  - |igraph| can plot graphs using :mod:`matplotlib` and has experimental support for `plotly`_, so it can produce animations, notebook widgets, and interactive plots (e.g. zoom, panning). `networkx`_ has excellent :mod:`matplotlib` support but no `plotly`_ support. `graph-tool`_ only supports static images via Cairo and GTK+.
- - |igraph| and `networkx`_ are maintained by teams of developers. `graph-tool`_ is developed by a single (very active) person.
  - In terms of design, |igraph| really shines when you have a relatively static network that you want to analyse, while it can struggle with very dynamic networks that gain and lose vertices and edges all the time. This might change in the near future as we improve |igraph|'s core C library. At the moment, `networkx`_ is probably better suited for simulating such highly dynamic graphs.
 
 **Similarities:**
@@ -80,7 +82,7 @@ All those packages focus on graph/network analysis.
  - All can visualize graphs, with different strengths and weaknesses.
 
 .. note::
-  |igraph| includes conversion functions from/to `networkx`_, so you can crate and manipulate a network with |igraph| and later on convert it to `networkx`_ or `graph-tool`_ if you need. Vice versa, you can load a graph in `networkx`_ or `graph-tool`_ and convert the graph into an |igraph| object if you need more speed, a specific algorithm, matplotlib animations, etc. You can even use |igraph| to convert graphs from `networkx`_ to `graph-tool`_ and vice versa!
+  |igraph| includes conversion functions from/to `networkx`_, so you can create and manipulate a network with |igraph| and later on convert it to `networkx`_ or `graph-tool`_ if you need. Vice versa, you can load a graph in `networkx`_ or `graph-tool`_ and convert the graph into an |igraph| object if you need more speed, a specific algorithm, matplotlib animations, etc. You can even use |igraph| to convert graphs from `networkx`_ to `graph-tool`_ and vice versa!
 
 
 
