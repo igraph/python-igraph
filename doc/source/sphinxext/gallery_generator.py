@@ -143,7 +143,7 @@ def create_thumbnail(infile, thumbfile,
     ax.imshow(im, aspect='auto', resample=True,
               interpolation='bilinear')
     fig.savefig(thumbfile, dpi=dpi)
-    return fig
+    plt.close(fig)
 
 
 def indent(s, N=4):
