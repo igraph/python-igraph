@@ -5,6 +5,9 @@
 # Usage: ./mkdoc.sh (makes API and tutorial docs)
 #        ./mkdoc.sh -s (makes standalone docs that require no further processing)
 
+# Make sure we bail out on build errors
+set -e
+
 STANDALONE=0
 SERVE=0
 DOC2DASH=0
