@@ -63,7 +63,7 @@ rm -rf "${SITE_PACKAGES_DIR}"/python_igraph*.egg
 rm -rf "${SITE_PACKAGES_DIR}"/python_igraph*.egg-link
 
 echo "Installing igraph in virtualenv..."
-rm -f dist/*.whl && .venv/bin/python setup.py bdist_wheel && .venv/bin/pip install --force-reinstall dist/*.whl
+rm -f dist/*.whl && .venv/bin/pip wheel -q -w dist . && .venv/bin/pip install -q --force-reinstall dist/*.whl
 
 echo "Patching modularized Graph methods"
 .venv/bin/python3 ${SCRIPTS_FOLDER}/patch_modularized_graph_methods.py
