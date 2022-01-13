@@ -39,7 +39,6 @@ if [ x$CLEAN = x1 ]; then
     rm -rf vendor/build vendor/install
 fi
 
-$VENV_DIR/bin/python setup.py build
-$VENV_DIR/bin/pip install --use-feature=in-tree-build .[plotting,test]
+$VENV_DIR/bin/pip install .[plotting,test]
 $VENV_DIR/bin/pytest tests ${PYTEST_ARGS}
 
