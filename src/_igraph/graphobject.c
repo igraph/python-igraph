@@ -1434,49 +1434,29 @@ PyObject *igraphmodule_Graph_get_eid(igraphmodule_GraphObject * self,
 PyObject *igraphmodule_Graph_get_eids(igraphmodule_GraphObject * self,
                                       PyObject * args, PyObject * kwds)
 {
-  static char *kwlist[] = { "pairs", "path", "directed", "error", NULL };
-  PyObject *pairs_o = Py_None, *path_o = Py_None;
+  static char *kwlist[] = { "pairs", "directed", "error", NULL };
+  PyObject *pairs_o = Py_None;
   PyObject *directed = Py_True;
   PyObject *error = Py_True;
   PyObject *result = NULL;
-  igraph_vector_int_t pairs, path, res;
+  igraph_vector_int_t pairs, res;
   igraph_bool_t pairs_owned = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
-                                   &pairs_o, &path_o, &directed,
-                                   &error))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist,
+                                   &pairs_o, &directed, &error))
     return NULL;
 
   if (igraph_vector_int_init(&res, 0))
     return igraphmodule_handle_igraph_error();
 
-  if (pairs_o != Py_None) {
-    if (igraphmodule_PyObject_to_edgelist(pairs_o, &pairs, &self->g, &pairs_owned)) {
-      igraph_vector_int_destroy(&res);
-      return NULL;
-    }
+  if (igraphmodule_PyObject_to_edgelist(pairs_o, &pairs, &self->g, &pairs_owned)) {
+    igraph_vector_int_destroy(&res);
+    return NULL;
   }
 
-  if (path_o != Py_None) {
-    if (igraphmodule_PyObject_to_vector_int_t(path_o, &path)) {
-      igraph_vector_int_destroy(&res);
-      if (pairs_owned) {
-        igraph_vector_int_destroy(&pairs);
-      }
-      return NULL;
-    }
-  }
-
-  if (igraph_get_eids(&self->g, &res,
-        pairs_o == Py_None ? 0 : &pairs,
-        path_o  == Py_None ? 0 : &path,
-        PyObject_IsTrue(directed),
-        PyObject_IsTrue(error))) {
+  if (igraph_get_eids(&self->g, &res, &pairs, PyObject_IsTrue(directed), PyObject_IsTrue(error))) {
     if (pairs_owned) {
       igraph_vector_int_destroy(&pairs);
-    }
-    if (path_o != Py_None) {
-      igraph_vector_int_destroy(&path);
     }
     igraph_vector_int_destroy(&res);
     return igraphmodule_handle_igraph_error();
@@ -1484,9 +1464,6 @@ PyObject *igraphmodule_Graph_get_eids(igraphmodule_GraphObject * self,
 
   if (pairs_owned) {
     igraph_vector_int_destroy(&pairs);
-  }
-  if (path_o != Py_None) {
-    igraph_vector_int_destroy(&path);
   }
 
   result = igraphmodule_vector_int_t_to_PyList(&res);
@@ -6500,7 +6477,7 @@ typedef struct {
 } igraphmodule_i_Graph_motifs_randesu_callback_data_t;
 
 igraph_error_t igraphmodule_i_Graph_motifs_randesu_callback(const igraph_t *graph,
-    igraph_vector_int_t *vids, int isoclass, void* extra) {
+    igraph_vector_int_t *vids, igraph_integer_t isoclass, void* extra) {
   igraphmodule_i_Graph_motifs_randesu_callback_data_t* data =
     (igraphmodule_i_Graph_motifs_randesu_callback_data_t*)extra;
   PyObject* vector;
@@ -6513,7 +6490,7 @@ igraph_error_t igraphmodule_i_Graph_motifs_randesu_callback(const igraph_t *grap
     return IGRAPH_FAILURE;
   }
 
-  result = PyObject_CallFunction(data->func, "OOi", data->graph, vector, isoclass);
+  result = PyObject_CallFunction(data->func, "OOn", data->graph, vector, (Py_ssize_t) isoclass);
   Py_DECREF(vector);
 
   if (result == NULL) {
@@ -7175,10 +7152,9 @@ PyObject* igraphmodule_Graph_layout_drl(igraphmodule_GraphObject *self,
   igraph_matrix_t m;
   igraph_bool_t use_seed=0;
   igraph_vector_t *weights=0;
-  igraph_vector_bool_t *fixed=0;
   igraph_layout_drl_options_t options;
   PyObject *result;
-  PyObject *wobj=Py_None, *fixed_o=Py_None, *seed_o=Py_None, *options_o=Py_None;
+  PyObject *wobj=Py_None, *fixed_o = 0, *seed_o=Py_None, *options_o=Py_None;
   Py_ssize_t dim = 2;
   igraph_error_t retval;
 
@@ -7195,7 +7171,7 @@ PyObject* igraphmodule_Graph_layout_drl(igraphmodule_GraphObject *self,
   if (igraphmodule_PyObject_to_drl_options_t(options_o, &options))
     return NULL;
 
-  if (fixed_o != 0 && fixed_o != Py_None) {
+  if (fixed_o != 0) {
     /* Apparently the "fixed" argument does not do anything in the DrL
      * implementation so we throw a warning if the user tries to use it */
     PY_IGRAPH_DEPRECATED(
@@ -7203,26 +7179,15 @@ PyObject* igraphmodule_Graph_layout_drl(igraphmodule_GraphObject *self,
       "for sake of backwards compatibility. The DrL layout algorithm does not "
       "support permanently fixed nodes."
     );
-    fixed = (igraph_vector_bool_t*)malloc(sizeof(igraph_vector_bool_t));
-    if (!fixed) {
-      PyErr_NoMemory();
-      return NULL;
-    }
-    if (igraphmodule_PyObject_to_vector_bool_t(fixed_o, fixed)) {
-      free(fixed);
-      return NULL;
-    }
   }
 
   if (seed_o == 0 || seed_o == Py_None) {
     if (igraph_matrix_init(&m, 1, 1)) {
       igraphmodule_handle_igraph_error();
-      if (fixed) { igraph_vector_bool_destroy(fixed); free(fixed); }
       return NULL;
     }
   } else {
     if (igraphmodule_PyList_to_matrix_t(seed_o, &m)) {
-      if (fixed) { igraph_vector_bool_destroy(fixed); free(fixed); }
       return NULL;
     }
     use_seed=1;
@@ -7231,27 +7196,24 @@ PyObject* igraphmodule_Graph_layout_drl(igraphmodule_GraphObject *self,
   /* Convert the weight parameter to a vector */
   if (igraphmodule_attrib_to_vector_t(wobj, self, &weights, ATTRIBUTE_TYPE_EDGE)) {
     igraph_matrix_destroy(&m);
-    if (fixed) { igraph_vector_bool_destroy(fixed); free(fixed); }
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
   if (dim == 2) {
-    retval = igraph_layout_drl(&self->g, &m, use_seed, &options, weights, fixed);
+    retval = igraph_layout_drl(&self->g, &m, use_seed, &options, weights);
   } else {
-    retval = igraph_layout_drl_3d(&self->g, &m, use_seed, &options, weights, fixed);
+    retval = igraph_layout_drl_3d(&self->g, &m, use_seed, &options, weights);
   }
 
   if (retval) {
     igraph_matrix_destroy(&m);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
-    if (fixed) { igraph_vector_bool_destroy(fixed); free(fixed); }
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
   if (weights) { igraph_vector_destroy(weights); free(weights); }
-  if (fixed) { igraph_vector_bool_destroy(fixed); free(fixed); }
   result = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
   igraph_matrix_destroy(&m);
   return (PyObject *) result;
@@ -11918,7 +11880,7 @@ PyObject *igraphmodule_Graph_community_label_propagation(
 
   igraph_vector_int_init(&membership, igraph_vcount(&self->g));
   if (igraph_community_label_propagation(&self->g, &membership,
-        ws, initial, (fixed_o != Py_None ? &fixed : 0), 0)) {
+        IGRAPH_OUT, ws, initial, (fixed_o != Py_None ? &fixed : 0), 0)) {
     if (fixed_o != Py_None) igraph_vector_bool_destroy(&fixed);
     if (ws) { igraph_vector_destroy(ws); free(ws); }
     if (initial) { igraph_vector_int_destroy(initial); free(initial); }

@@ -826,7 +826,7 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
       }
 
       if (!working_on_whole_graph) {
-        igraph_vector_destroy(&v2);
+        igraph_vector_int_destroy(&v2);
       }
 
       igraph_vs_destroy(&result->vs);

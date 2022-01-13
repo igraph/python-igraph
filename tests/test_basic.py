@@ -333,11 +333,10 @@ class BasicTests(unittest.TestCase):
         g = Graph.Famous("petersen")
         eids = g.get_eids(pairs=[(0, 1), (0, 5), (1, 6), (4, 9), (8, 6)])
         self.assertTrue(eids == [0, 2, 4, 9, 12])
-        eids = g.get_eids(path=[0, 1, 2, 3, 4])
-        self.assertTrue(eids == [0, 3, 5, 7])
-        eids = g.get_eids(pairs=[(7, 9), (9, 6)], path=[7, 9, 6])
-        self.assertTrue(eids == [14, 13, 14, 13])
+        eids = g.get_eids(pairs=[(7, 9), (9, 6)])
+        self.assertTrue(eids == [14, 13])
         self.assertRaises(InternalError, g.get_eids, pairs=[(0, 1), (0, 2)])
+        self.assertRaises(TypeError, g.get_eids, pairs=None)
 
     def testAdjacency(self):
         g = Graph(4, [(0, 1), (1, 2), (2, 0), (2, 3)], directed=True)
