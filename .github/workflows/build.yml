@@ -45,8 +45,8 @@ jobs:
 
   build_wheel_linux_aarch64:
     name: Build wheels on Linux (aarch64)
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     runs-on: ubuntu-20.04
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v2
         with:

@@ -4,5 +4,4 @@ include scripts/mkdoc.sh
 include tests/*.py
 
 graft vendor/source/igraph
-prune vendor/source/igraph/interfaces
 

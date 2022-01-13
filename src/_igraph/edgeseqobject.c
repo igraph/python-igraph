@@ -683,6 +683,8 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
   igraphmodule_EdgeSeqObject *result;
   igraphmodule_GraphObject *gr;
   igraph_integer_t igraph_idx;
+  igraph_bool_t working_on_whole_graph = igraph_es_is_all(&self->es);
+  igraph_vector_int_t v, v2;
   Py_ssize_t i, j, n, m;
 
   gr = self->gref;
@@ -703,7 +705,7 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
       igraph_es_destroy(&result->es);
       igraph_es_none(&result->es);
       /* We can simply bail out here */
-      return (PyObject*)result;
+      return (PyObject*) result;
     } else if (PyCallable_Check(item)) {
       /* Call the callable for every edge in the current sequence to
        * determine what's up */
@@ -730,10 +732,12 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
           igraph_vector_int_destroy(&v);
           return NULL;
         }
-        if (PyObject_IsTrue(call_result))
+        if (PyObject_IsTrue(call_result)) {
           igraph_vector_int_push_back(&v,
             igraphmodule_Edge_get_index_as_igraph_integer((igraphmodule_EdgeObject*)edge));
-        else was_excluded=1;
+        } else {
+          was_excluded = 1;
+        }
         Py_DECREF(call_result);
         Py_DECREF(edge);
       }
@@ -755,92 +759,122 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
        * to restrict the edge set. Integers are interpreted as indices on the
        * edge set and NOT on the original, untouched edge sequence of the
        * graph */
-      igraph_vector_int_t v, v2;
       if (igraph_vector_int_init(&v, 0)) {
         igraphmodule_handle_igraph_error();
         return 0;
       }
-      if (igraph_vector_int_init(&v2, 0)) {
-        igraph_vector_int_destroy(&v);
-        igraphmodule_handle_igraph_error();
-        return 0;
+
+      if (!working_on_whole_graph) {
+        /* Extract the current vertex sequence into a vector */
+        if (igraph_vector_int_init(&v2, 0)) {
+          igraph_vector_int_destroy(&v);
+          igraphmodule_handle_igraph_error();
+          return 0;
+        }
+        if (igraph_es_as_vector(&gr->g, self->es, &v2)) {
+          igraph_vector_int_destroy(&v);
+          igraph_vector_int_destroy(&v2);
+          igraphmodule_handle_igraph_error();
+          return 0;
+        }
+        m = igraph_vector_int_size(&v2);
+      } else {
+        /* v2 left uninitialized, we are not going to use it as it would
+         * simply contain integers from 0 to ecount(g)-1 */
+        m = igraph_ecount(&gr->g);
       }
-      if (igraph_es_as_vector(&gr->g, self->es, &v2)) {
-        igraph_vector_int_destroy(&v);
-        igraph_vector_int_destroy(&v2);
-        igraphmodule_handle_igraph_error();
-        return 0;
-      }
-      m = igraph_vector_int_size(&v2);
-      for (; i<n; i++) {
+
+      for (; i < n; i++) {
         PyObject *item2 = PyTuple_GetItem(args, i);
         igraph_integer_t idx;
 
         if (item2 == 0) {
           Py_DECREF(result);
           igraph_vector_int_destroy(&v);
-          igraph_vector_int_destroy(&v2);
+          if (!working_on_whole_graph) {
+            igraph_vector_int_destroy(&v2);
+          }
           return NULL;
         }
         if (!PyLong_Check(item2)) {
           Py_DECREF(result);
           PyErr_SetString(PyExc_TypeError, "edge indices expected");
           igraph_vector_int_destroy(&v);
-          igraph_vector_int_destroy(&v2);
+          if (!working_on_whole_graph) {
+            igraph_vector_int_destroy(&v2);
+          }
           return NULL;
         }
         if (igraphmodule_PyObject_to_integer_t(item2, &idx)) {
           Py_DECREF(result);
           igraph_vector_int_destroy(&v);
-          igraph_vector_int_destroy(&v2);
+          if (!working_on_whole_graph) {
+            igraph_vector_int_destroy(&v2);
+          }
           return NULL;
         }
         if (idx >= m || idx < 0) {
           Py_DECREF(result);
           PyErr_SetString(PyExc_ValueError, "edge index out of range");
           igraph_vector_int_destroy(&v);
-          igraph_vector_int_destroy(&v2);
+          if (!working_on_whole_graph) {
+            igraph_vector_int_destroy(&v2);
+          }
           return NULL;
         }
-        if (igraph_vector_int_push_back(&v, VECTOR(v2)[idx])) {
+        if (igraph_vector_int_push_back(&v, working_on_whole_graph ? idx : VECTOR(v2)[idx])) {
           Py_DECREF(result);
           igraphmodule_handle_igraph_error();
           igraph_vector_int_destroy(&v);
-          igraph_vector_int_destroy(&v2);
+          if (!working_on_whole_graph) {
+            igraph_vector_int_destroy(&v2);
+          }
           return NULL;
         }
       }
-      igraph_vector_int_destroy(&v2);
+
+      if (!working_on_whole_graph) {
+        igraph_vector_int_destroy(&v2);
+      }
+
       igraph_es_destroy(&result->es);
+
       if (igraph_es_vector_copy(&result->es, &v)) {
         Py_DECREF(result);
         igraphmodule_handle_igraph_error();
         igraph_vector_int_destroy(&v);
         return NULL;
       }
+
       igraph_vector_int_destroy(&v);
     } else {
       /* Iterators and everything that was not handled directly */
       PyObject *iter, *item2;
-      igraph_vector_int_t v, v2;
 
       /* Allocate stuff */
       if (igraph_vector_int_init(&v, 0)) {
         igraphmodule_handle_igraph_error();
         return 0;
       }
-      if (igraph_vector_int_init(&v2, 0)) {
-        igraph_vector_int_destroy(&v);
-        igraphmodule_handle_igraph_error();
-        return 0;
+      if (!working_on_whole_graph) {
+        /* Extract the current vertex sequence into a vector */
+        if (igraph_vector_int_init(&v2, 0)) {
+          igraph_vector_int_destroy(&v);
+          igraphmodule_handle_igraph_error();
+          return 0;
+        }
+        if (igraph_es_as_vector(&gr->g, self->es, &v2)) {
+          igraph_vector_int_destroy(&v);
+          igraph_vector_int_destroy(&v2);
+          igraphmodule_handle_igraph_error();
+          return 0;
+        }
+        m = igraph_vector_int_size(&v2);
+      } else {
+        /* v2 left uninitialized, we are not going to use it as it would
+         * simply contain integers from 0 to ecount(g)-1 */
+        m = igraph_ecount(&gr->g);
       }
-      if (igraph_es_as_vector(&gr->g, self->es, &v2)) {
-        igraph_vector_int_destroy(&v);
-        igraph_vector_int_destroy(&v2);
-        igraphmodule_handle_igraph_error();
-        return 0;
-      }
-      m = igraph_vector_int_size(&v2);
 
       /* Create an appropriate iterator */
       if (PySlice_Check(item)) {
@@ -849,8 +883,7 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
         PyObject* range;
         igraph_bool_t ok;
 
-        ok = (PySlice_GetIndicesEx(item, igraph_vector_int_size(&v2),
-              &start, &stop, &step, &sl) == 0);
+        ok = (PySlice_GetIndicesEx(item, m, &start, &stop, &step, &sl) == 0);
         if (ok) {
           range = igraphmodule_PyRange_create(start, stop, step);
           ok = (range != 0);
@@ -862,7 +895,9 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
         }
         if (!ok) {
           igraph_vector_int_destroy(&v);
-          igraph_vector_int_destroy(&v2);
+          if (!working_on_whole_graph) {
+            igraph_vector_int_destroy(&v2);
+          }
           PyErr_SetString(PyExc_TypeError, "error while converting slice to iterator");
           Py_DECREF(result);
           return 0;
@@ -875,7 +910,9 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
       /* Did we manage to get an iterator? */
       if (iter == 0) {
         igraph_vector_int_destroy(&v);
-        igraph_vector_int_destroy(&v2);
+        if (!working_on_whole_graph) {
+          igraph_vector_int_destroy(&v2);
+        }
         PyErr_SetString(PyExc_TypeError, "invalid edge filter among positional arguments");
         Py_DECREF(result);
         return 0;
@@ -892,28 +929,38 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
             Py_DECREF(result);
             Py_DECREF(iter);
             igraph_vector_int_destroy(&v);
-            igraph_vector_int_destroy(&v2);
+            if (!working_on_whole_graph) {
+              igraph_vector_int_destroy(&v2);
+            }
             return NULL;
           }
-          if (igraph_vector_int_push_back(&v, VECTOR(v2)[igraph_idx])) {
+          if (igraph_vector_int_push_back(&v, working_on_whole_graph ? igraph_idx : VECTOR(v2)[igraph_idx])) {
             Py_DECREF(result);
             Py_DECREF(iter);
             igraphmodule_handle_igraph_error();
             igraph_vector_int_destroy(&v);
-            igraph_vector_int_destroy(&v2);
+            if (!working_on_whole_graph) {
+              igraph_vector_int_destroy(&v2);
+            }
             return NULL;
           }
         }
       }
+
       /* Deallocate stuff */
-      igraph_vector_int_destroy(&v2);
+      if (!working_on_whole_graph) {
+        igraph_vector_int_destroy(&v2);
+      }
+
       Py_DECREF(iter);
       if (PyErr_Occurred()) {
         igraph_vector_int_destroy(&v);
         Py_DECREF(result);
         return 0;
       }
+
       igraph_es_destroy(&result->es);
+
       if (igraph_es_vector_copy(&result->es, &v)) {
         Py_DECREF(result);
         igraphmodule_handle_igraph_error();

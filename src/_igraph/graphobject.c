@@ -2614,12 +2614,6 @@ PyObject *igraphmodule_Graph_Isoclass(PyTypeObject * type,
                                    &n, &isoclass, &directed))
     return NULL;
 
-  if (n < 3 || n > 4) {
-    PyErr_SetString(PyExc_ValueError,
-                    "Only graphs with 3 or 4 vertices are supported");
-    return NULL;
-  }
-
   if (igraph_isoclass_create(&g, n, isoclass, PyObject_IsTrue(directed))) {
     igraphmodule_handle_igraph_error();
     return NULL;
@@ -8850,11 +8844,6 @@ PyObject *igraphmodule_Graph_isoclass(igraphmodule_GraphObject * self,
     return NULL;
 
   n = vids ? PyList_Size(vids) : igraph_vcount(&self->g);
-  if (n < 3 || n > 4) {
-    PyErr_SetString(PyExc_ValueError,
-                    "Graph or subgraph must have 3 or 4 vertices.");
-    return NULL;
-  }
 
   if (vids) {
     igraph_vector_int_t vidsvec;
@@ -13233,7 +13222,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Isoclass(n, cls, directed=False)\n--\n\n"
    "Generates a graph with a given isomorphism class.\n\n"
-   "@param n: the number of vertices in the graph (3 or 4)\n"
+   "Currently we support directed graphs of size 3 and 4, and undirected graphs\n"
+   "of size 3, 4, 5 or 6. Use the L{isoclass()} instance method to find the\n"
+   "isomorphism class of a given graph.\n\n"
+   "@param n: the number of vertices in the graph\n"
    "@param cls: the isomorphism class\n"
    "@param directed: whether the graph should be directed.\n"},
 
@@ -14641,9 +14633,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "argued that the motif profile (ie. the number of different motifs in\n"
    "the graph) is characteristic for different types of networks and\n"
    "network function is related to the motifs in the graph.\n\n"
-   "This function is able to find the different motifs of size three\n"
-   "and four (ie. the number of different subgraphs with three and four\n"
-   "vertices) in the network.\n\n"
+   "Currently we support motifs of size 3 and 4 for directed graphs, and\n"
+   "motifs of size 3, 4, 5 or 6 for undirected graphs.\n\n"
    "In a big network the total number of motifs can be very large, so\n"
    "it takes a lot of time to find all of them. In such cases, a sampling\n"
    "method can be used. This function is capable of doing sampling via\n"
@@ -14652,7 +14643,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@newfield ref: Reference\n"
    "@ref: S. Wernicke and F. Rasche: FANMOD: a tool for fast network\n"
    "  motif detection, Bioinformatics 22(9), 1152--1153, 2006.\n\n"
-   "@param size: the size of the motifs (3 or 4).\n"
+   "@param size: the size of the motifs\n"
    "@param cut_prob: the cut probabilities for different levels of the search\n"
    "  tree. This must be a list of length I{size} or C{None} to find all\n"
    "  motifs.\n"
@@ -14671,10 +14662,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Motifs are small subgraphs of a given structure in a graph.\n"
    "This function counts the total number of motifs in a graph without\n"
    "assigning isomorphism classes to them.\n\n"
+   "Currently we support motifs of size 3 and 4 for directed graphs, and\n"
+   "motifs of size 3, 4, 5 or 6 for undirected graphs.\n\n"
    "@newfield ref: Reference\n"
    "@ref: S. Wernicke and F. Rasche: FANMOD: a tool for fast network\n"
    "  motif detection, Bioinformatics 22(9), 1152--1153, 2006.\n\n"
-   "@param size: the size of the motifs (3 or 4).\n"
+   "@param size: the size of the motifs\n"
    "@param cut_prob: the cut probabilities for different levels of the search\n"
    "  tree. This must be a list of length I{size} or C{None} to find all\n"
    "  motifs.\n"
@@ -14689,10 +14682,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "This function estimates the total number of motifs in a graph without\n"
    "assigning isomorphism classes to them by extrapolating from a random\n"
    "sample of vertices.\n\n"
+   "Currently we support motifs of size 3 and 4 for directed graphs, and\n"
+   "motifs of size 3, 4, 5 or 6 for undirected graphs.\n\n"
    "@newfield ref: Reference\n"
    "@ref: S. Wernicke and F. Rasche: FANMOD: a tool for fast network\n"
    "  motif detection, Bioinformatics 22(9), 1152--1153, 2006.\n\n"
-   "@param size: the size of the motifs (3 or 4).\n"
+   "@param size: the size of the motifs\n"
    "@param cut_prob: the cut probabilities for different levels of the search\n"
    "  tree. This must be a list of length I{size} or C{None} to find all\n"
    "  motifs.\n"
@@ -15496,8 +15491,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "isoclass(vertices)\n--\n\n"
    "Returns the isomorphism class of the graph or its subgraph.\n\n"
-   "Isomorphy class calculations are implemented only for graphs with\n"
-   "3 or 4 vertices.\n\n"
+   "Isomorphism class calculations are implemented only for directed graphs\n"
+   "with 3 or 4 vertices, or undirected graphs with 3, 4, 5 or 6 vertices..\n\n"
    "@param vertices: a list of vertices if we want to calculate the\n"
    "  isomorphism class for only a subset of vertices. C{None} means to\n"
    "  use the full graph.\n"

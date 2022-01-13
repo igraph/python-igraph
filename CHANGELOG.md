@@ -27,7 +27,18 @@
 
 ## [Unreleased]
 
+## [0.9.9]
+
+### Changed
+
+- Vendored igraph was updated to version 0.9.6.
+
 ### Fixed
+
+- Fixed a performance bottleneck in `VertexSeq.select()` and `EdgeSeq.select()`
+  for the case when the `VertexSeq` or the `EdgeSeq` represents the whole
+  graph. See [#494](https://github.com/igraph/python-igraph/issues/494) for
+  more details.
 
 - Edge labels now take the curvature of the edge into account, thanks to
   [@Sriram-Pattabiraman](https://github.com/Sriram-Pattabiraman).
@@ -248,8 +259,10 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[development branch]: https://github.com/igraph/python-igraph/compare/0.9.7..develop
-[unreleased]: https://github.com/igraph/python-igraph/compare/0.9.7..master
+[Development branch]: https://github.com/igraph/python-igraph/compare/0.9.9..develop
+[Unreleased]: https://github.com/igraph/python-igraph/compare/0.9.9..master
+[0.9.9]: https://github.com/igraph/python-igraph/compare/0.9.8...0.9.9
+[0.9.8]: https://github.com/igraph/python-igraph/compare/0.9.7...0.9.8
 [0.9.7]: https://github.com/igraph/python-igraph/compare/0.9.6...0.9.7
 [0.9.6]: https://github.com/igraph/python-igraph/compare/0.9.5...0.9.6
 [0.9.5]: https://github.com/igraph/python-igraph/compare/0.9.4...0.9.5
