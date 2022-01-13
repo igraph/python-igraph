@@ -767,6 +767,12 @@ GRAPH_PROXY_METHOD_PP(successors, "successors", _convert_to_vertex_list);
     "This method calls the C{" METHODNAME_IN_GRAPH "} method of the L{Graph} class " \
     "with this vertex as the first argument, and returns the result.\n\n"\
     "@see: L{Graph." METHODNAME_IN_GRAPH "()<igraph._igraph.GraphBase." METHODNAME_IN_GRAPH ">} for details."}
+#define GRAPH_PROXY_METHOD_SPEC_3(FUNC, METHODNAME) \
+  {METHODNAME, (PyCFunction)igraphmodule_Vertex_##FUNC, METH_VARARGS | METH_KEYWORDS, \
+    "Proxy method to L{Graph." METHODNAME "()}\n\n"              \
+    "This method calls the C{" METHODNAME "()} method of the L{Graph} class " \
+    "with this vertex as the first argument, and returns the result.\n\n"\
+    "@see: L{Graph." METHODNAME "()} for details."}
 
 /**
  * \ingroup python_interface_vertex
@@ -820,12 +826,12 @@ PyMethodDef igraphmodule_Vertex_methods[] = {
   GRAPH_PROXY_METHOD_SPEC(eccentricity, "eccentricity"),
   GRAPH_PROXY_METHOD_SPEC(get_shortest_paths, "get_shortest_paths"),
   GRAPH_PROXY_METHOD_SPEC(incident, "incident"),
-  GRAPH_PROXY_METHOD_SPEC(indegree, "indegree"),
+  GRAPH_PROXY_METHOD_SPEC_3(indegree, "indegree"),
   GRAPH_PROXY_METHOD_SPEC(is_minimal_separator, "is_minimal_separator"),
   GRAPH_PROXY_METHOD_SPEC(is_separator, "is_separator"),
   GRAPH_PROXY_METHOD_SPEC(neighbors, "neighbors"),
-  GRAPH_PROXY_METHOD_SPEC(outdegree, "outdegree"),
-  GRAPH_PROXY_METHOD_SPEC(pagerank, "pagerank"),
+  GRAPH_PROXY_METHOD_SPEC_3(outdegree, "outdegree"),
+  GRAPH_PROXY_METHOD_SPEC_3(pagerank, "pagerank"),
   GRAPH_PROXY_METHOD_SPEC(predecessors, "predecessors"),
   GRAPH_PROXY_METHOD_SPEC(personalized_pagerank, "personalized_pagerank"),
   GRAPH_PROXY_METHOD_SPEC(shortest_paths, "shortest_paths"),

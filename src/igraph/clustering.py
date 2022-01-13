@@ -1212,9 +1212,10 @@ class VertexCover(Cover):
 class CohesiveBlocks(VertexCover):
     """The cohesive block structure of a graph.
 
-    Instances of this type are created by L{Graph.cohesive_blocks()}. See
-    the documentation of L{Graph.cohesive_blocks()} for an explanation of
-    what cohesive blocks are.
+    Instances of this type are created by
+    L{Graph.cohesive_blocks()<GraphBase.cohesive_blocks()>}. See the
+    documentation of L{Graph.cohesive_blocks()<GraphBase.cohesive_blocks()>}
+    for an explanation of what cohesive blocks are.
 
     This class provides a few more methods that make handling of cohesive
     block structures easier.
@@ -1224,11 +1225,13 @@ class CohesiveBlocks(VertexCover):
         """Constructs a new cohesive block structure for the given graph.
 
         If any of I{blocks}, I{cohesion} or I{parent} is C{None}, all the
-        arguments will be ignored and L{Graph.cohesive_blocks()} will be
-        called to calculate the cohesive blocks. Otherwise, these three
-        variables should describe the *result* of a cohesive block structure
-        calculation. Chances are that you never have to construct L{CohesiveBlocks}
-        instances directly, just use L{Graph.cohesive_blocks()}.
+        arguments will be ignored and
+        L{Graph.cohesive_blocks()<GraphBase.cohesive_blocks()>} will be called
+        to calculate the cohesive blocks. Otherwise, these three variables
+        should describe the *result* of a cohesive block structure calculation.
+        Chances are that you never have to construct L{CohesiveBlocks}
+        instances directly, just use
+        L{Graph.cohesive_blocks()<GraphBase.cohesive_blocks()>}.
 
         @param graph: the graph itself
         @param blocks: a list containing the blocks; each block is described

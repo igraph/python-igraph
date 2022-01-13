@@ -76,28 +76,38 @@ def numpy_to_contiguous_memoryview(obj):
 def rescale(values, out_range=(0.0, 1.0), in_range=None, clamp=False, scale=None):
     """Rescales a list of numbers into a given range.
 
-    `out_range` gives the range of the output values; by default, the minimum
+    ``out_range`` gives the range of the output values; by default, the minimum
     of the original numbers in the list will be mapped to the first element
     in the output range and the maximum will be mapped to the second element.
     Elements between the minimum and maximum values in the input list will be
     interpolated linearly between the first and second values of the output
     range.
 
-    `in_range` may be used to override which numbers are mapped to the first
+    ``in_range`` may be used to override which numbers are mapped to the first
     and second values of the output range. This must also be a tuple, where
     the first element will be mapped to the first element of the output range
     and the second element to the second.
 
-    If `clamp` is ``True``, elements which are outside the given `out_range`
+    If ``clamp`` is ``True``, elements which are outside the given ``out_range``
     after rescaling are clamped to the output range to ensure that no number
-    will be outside `out_range` in the result.
+    will be outside ``out_range`` in the result.
 
-    If `scale` is not ``None``, it will be called for every element of `values`
+    If ``scale`` is not ``None``, it will be called for every element of ``values``
     and the rescaling will take place on the results instead. This can be used,
     for instance, to transform the logarithm of the original values instead of
     the actual values. A typical use-case is to map a range of values to color
-    identifiers on a logarithmic scale. Scaling also applies to the `in_range`
+    identifiers on a logarithmic scale. Scaling also applies to the ``in_range``
     parameter if present.
+
+    :param out_range: the range of output values
+    :param in_range: the range of the input values; this is the range that is mapped
+        to ``out_range``. ``None`` means to use the minimum and maximum of
+        the input, respectively.
+    :param clamp: specifies what to do when an input value falls outside ``in_range``.
+        ``True`` means to clamp the value to the bounds of ``in_range``,
+        ``False`` means not to clamp.
+    :param scale: an optional transformation to perform on the input values before
+        mapping them to the output range.
 
     Examples:
 
@@ -144,7 +154,7 @@ def rescale(values, out_range=(0.0, 1.0), in_range=None, clamp=False, scale=None
 def consecutive_pairs(iterable, circular=False):
     """Returns consecutive pairs of items from the given iterable.
 
-    When `circular` is ``True``, the pair consisting of the last
+    When ``circular`` is ``True``, the pair consisting of the last
     and first elements is also returned.
 
     Example:
@@ -186,7 +196,7 @@ class multidict(MutableMapping):
     values for the same key.
 
     Each value in this dictionary will be a list. Methods which emulate
-    the methods of a standard Python `dict` object will return or manipulate
+    the methods of a standard Python ``dict`` object will return or manipulate
     the first items of the lists only. Special methods are provided to
     deal with keys having multiple values.
     """
@@ -205,14 +215,14 @@ class multidict(MutableMapping):
 
     def __contains__(self, key):
         """Returns whether there are any items associated to the given
-        `key`."""
+        ``key``."""
         try:
             return len(self._dict[key]) > 0
         except KeyError:
             return False
 
     def __delitem__(self, key):
-        """Removes all the items associated to the given `key`."""
+        """Removes all the items associated to the given ``key``."""
         del self._dict[key]
 
     def __getitem__(self, key):
@@ -239,8 +249,8 @@ class multidict(MutableMapping):
         return len(self._dict)
 
     def __setitem__(self, key, value):
-        """Sets the item associated to the given `key`. Any values associated to the
-        key will be erased and replaced by `value`.
+        """Sets the item associated to the given ``key``. Any values associated to the
+        key will be erased and replaced by ``value``.
 
         Example:
 
@@ -252,7 +262,7 @@ class multidict(MutableMapping):
         self._dict[key] = [value]
 
     def add(self, key, value):
-        """Adds `value` to the list of items associated to `key`.
+        """Adds `value` to the list of items associated to ``key``.
 
         Example:
 
@@ -274,8 +284,8 @@ class multidict(MutableMapping):
         self._dict.clear()
 
     def get(self, key, default=None):
-        """Returns an arbitrary item associated to the given `key`. If `key`
-        does not exist or has zero associated items, `default` will be
+        """Returns an arbitrary item associated to the given ``key``. If ``key``
+        does not exist or has zero associated items, ``default`` will be
         returned."""
         try:
             items = self._dict[key]
@@ -284,7 +294,7 @@ class multidict(MutableMapping):
             return default
 
     def getlist(self, key):
-        """Returns the list of values for the given `key`. An empty list will
+        """Returns the list of values for the given ``key``. An empty list will
         be returned if there is no such key."""
         try:
             return self._dict[key]

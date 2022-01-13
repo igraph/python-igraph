@@ -23,8 +23,8 @@ def disjoint_union(graphs):
     An error is generated if some input graphs are directed and others are
     undirected.
 
-    @param graphs: list of graphs. A lazy sequence is not acceptable.
-    @return: the disjoint union graph
+    :param graphs: list of graphs. A lazy sequence is not acceptable.
+    :returns: the disjoint union graph
     """
     if any(not isinstance(g, GraphBase) for g in graphs):
         raise TypeError("Not all elements are graphs")
@@ -94,20 +94,20 @@ def union(graphs, byname="auto"):
     multiple graphs and would result a name clash, then this attribute is
     renamed by adding suffixes: _1, _2, etc.
 
-    The 'name' vertex attribute is treated specially if the operation is
-    performed based on symbolic vertex names. In this case 'name' must be
+    The ``name`` vertex attribute is treated specially if the operation is
+    performed based on symbolic vertex names. In this case ``name`` must be
     present in all graphs, and it is not renamed in the result graph.
 
     An error is generated if some input graphs are directed and others are
     undirected.
 
-    @param graphs: list of graphs. A lazy sequence is not acceptable.
-    @param byname: bool or 'auto' specifying the function behaviour with
-      respect to names vertices (i.e. vertices with the 'name' attribute). If
-      False, ignore vertex names. If True, merge vertices based on names. If
-      'auto', use True if all graphs have named vertices and False otherwise
-      (in the latter case, a warning is generated too).
-    @return: the union graph
+    :param graphs: list of graphs. A lazy sequence is not acceptable.
+    :param byname: bool or 'auto' specifying the function behaviour with
+        respect to names vertices (i.e. vertices with the ``name`` attribute). If
+        False, ignore vertex names. If True, merge vertices based on names. If
+        'auto', use True if all graphs have named vertices and False otherwise
+        (in the latter case, a warning is generated too).
+    :returns: the union graph
     """
 
     if any(not isinstance(g, GraphBase) for g in graphs):
@@ -274,22 +274,22 @@ def intersection(graphs, byname="auto", keep_all_vertices=True):
     multiple graphs and would result a name clash, then this attribute is
     renamed by adding suffixes: _1, _2, etc.
 
-    The 'name' vertex attribute is treated specially if the operation is
-    performed based on symbolic vertex names. In this case 'name' must be
+    The ``name`` vertex attribute is treated specially if the operation is
+    performed based on symbolic vertex names. In this case ``name`` must be
     present in all graphs, and it is not renamed in the result graph.
 
     An error is generated if some input graphs are directed and others are
     undirected.
 
-    @param graphs: list of graphs. A lazy sequence is not acceptable.
-    @param byname: bool or 'auto' specifying the function behaviour with
-      respect to names vertices (i.e. vertices with the 'name' attribute). If
-      False, ignore vertex names. If True, merge vertices based on names. If
-      'auto', use True if all graphs have named vertices and False otherwise
-      (in the latter case, a warning is generated too).
-    @param keep_all_vertices: bool specifying if vertices that are not present
-      in all graphs should be kept in the intersection.
-    @return: the intersection graph
+    :param graphs: list of graphs. A lazy sequence is not acceptable.
+    :param byname: bool or ``auto`` specifying the function behaviour with
+        respect to names vertices (i.e. vertices with the ``name`` attribute). If
+        False, ignore vertex names. If True, merge vertices based on names. If
+        'auto', use True if all graphs have named vertices and False otherwise
+        (in the latter case, a warning is generated too).
+    :param keep_all_vertices: bool specifying if vertices that are not present
+        in all graphs should be kept in the intersection.
+    :returns: the intersection graph
     """
 
     if any(not isinstance(g, GraphBase) for g in graphs):

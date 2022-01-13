@@ -882,7 +882,8 @@ int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_integer_t *v) {
  *
  * Raises suitable Python exceptions when needed.
  *
- * \param object the Python object to be converted
+ * \param object the Python object to be converted; \c NULL is accepted but
+ *        will keep the input value of v
  * \param v the result is returned here
  * \return 0 if everything was OK, 1 otherwise
  */
@@ -890,6 +891,7 @@ int igraphmodule_PyObject_to_real_t(PyObject *object, igraph_real_t *v) {
   igraph_real_t value;
 
   if (object == NULL) {
+    return 0;
   } else if (PyLong_Check(object)) {
     value = PyLong_AsDouble(object);
   } else if (PyFloat_Check(object)) {

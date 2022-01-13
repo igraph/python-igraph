@@ -93,10 +93,6 @@ class TerminalController:
     HIDE_CURSOR = ""  #: Make the cursor invisible
     SHOW_CURSOR = ""  #: Make the cursor visible
 
-    # Terminal size:
-    COLS = None  #: Width of the terminal (None for unknown)
-    LINES = None  #: Height of the terminal (None for unknown)
-
     # Foreground colors:
     BLACK = BLUE = GREEN = CYAN = RED = MAGENTA = YELLOW = WHITE = ""
 

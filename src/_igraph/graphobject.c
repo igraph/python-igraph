@@ -13046,9 +13046,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
     "multiple or loop edges are allowed) are specified in the C{allowed_edge_types}\n"
     "parameter.\n"
     "\n"
-    "@param outdeg: the degree sequence of an undirected graph (if indeg=None),\n"
+    "@param out: the degree sequence of an undirected graph (if in_=None),\n"
     "  or the out-degree sequence of a directed graph.\n"
-    "@param indeg: None to generate an undirected graph, the in-degree sequence\n"
+    "@param in_: None to generate an undirected graph, the in-degree sequence\n"
     "  to generate a directed graph.\n"
     "@param allowed_edge_types: controls whether loops or multi-edges are allowed\n"
     "  during the generation process. Note that not all combinations are supported\n"
@@ -13428,7 +13428,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_chordal with alternative arguments */
   {"chordal_completion", (PyCFunction)igraphmodule_Graph_chordal_completion,
    METH_VARARGS | METH_KEYWORDS,
-   "chordal_complation(alpha=None, alpham1=None)\n--\n\n"
+   "chordal_completion(alpha=None, alpham1=None)\n--\n\n"
    "Returns the list of edges needed to be added to the graph to make it chordal.\n\n"
    "A graph is chordal if each of its cycles of four or more nodes\n"
    "has a chord, i.e. an edge joining two nodes that are not\n"
