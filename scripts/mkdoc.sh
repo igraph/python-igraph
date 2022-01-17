@@ -122,6 +122,7 @@ if [ "x$DOC2DASH" = "x1" ]; then
           -d "${DASH_FOLDER}" \
           -f \
           -j \
+          -I "index.html" \
           "${DOC_API_FOLDER}"
       DASH_READY=1
   else
