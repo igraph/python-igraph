@@ -49,8 +49,7 @@ if [ ! -d ".venv" ]; then
   
   echo "Patching PyDoctor..."
   .venv/bin/pip install -U pydoctor
-  $SCRIPTS_FOLDER/patch-pydoctor.sh ${ROOT_FOLDER} ${SCRIPTS_FOLDER}
-
+  $SCRIPTS_FOLDER/patch-pydoctor.sh
 fi
 
 #echo "Set PyDoctor theme"
