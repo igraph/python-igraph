@@ -4,6 +4,7 @@
 #
 # Usage: ./mkdoc.sh (makes API and tutorial docs)
 #        ./mkdoc.sh -s (makes standalone docs that require no further processing)
+#        ./mkdoc.sh -sd (makes a Dash docset based on standalone docs, requires doc2dash)
 
 # Make sure we bail out on build errors
 set -e
@@ -19,12 +20,12 @@ while getopts ":sjd" OPTION; do
       ;;
     j)
       SERVE=1
-      ;;      
+      ;;
     d)
       DOC2DASH=1
-      ;;      
+      ;;
     \?)
-      echo "Usage: $0 [-sj]"
+      echo "Usage: $0 [-sjd]"
       ;;
     esac
 done
@@ -46,7 +47,7 @@ if [ ! -d ".venv" ]; then
 
   # Install sphinx, matplotlib, wheel, and pydoctor into the venv
   .venv/bin/pip install -U sphinx sphinxbootstrap4theme matplotlib wheel
-  
+
   echo "Patching PyDoctor..."
   .venv/bin/pip install -U pydoctor
   $SCRIPTS_FOLDER/patch-pydoctor.sh
@@ -99,7 +100,7 @@ else
 
     # Build website via templates
     bundle exec jekyll serve
-  
+
   fi
 fi
 
@@ -119,18 +120,19 @@ if [ "x$DOC2DASH" = "x1" ]; then
           --online-redirect-url "https://igraph.org/python/api" \
           --name "python-igraph" \
           -d "${DASH_FOLDER}" \
-  	  -f \
+          -f \
+          -j \
           "${DOC_API_FOLDER}"
       DASH_READY=1
-  else 
+  else
       echo "WARNING: doc2dash not installed, skipping Dash docset generation."
       DASH_READY=0
   fi
-  
+
   echo ""
   if [ "x${DASH_READY}" = x1 ]; then
-      echo "Dash docset generated in ${DOC_API_FOLDER}/python-igraph.docset"
+      echo "Dash docset generated in ${DASH_FOLDER}/python-igraph.docset"
   fi
-  
+
   cd "$PWD"
 fi
