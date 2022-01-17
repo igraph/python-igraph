@@ -196,7 +196,7 @@ jobs:
           path: |
             vendor/build
             vendor/install
-          key: C-core-v1-${{ runner.os }}-${{ hashFiles('.gitmodules') }}-4
+          key: C-core-build-sdist-v1-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
