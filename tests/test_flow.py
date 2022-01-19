@@ -1,6 +1,6 @@
 import unittest
 
-from igraph import *
+from igraph import Cut, Graph, EdgeSeq, InternalError
 from itertools import combinations
 from random import randint
 
@@ -19,7 +19,7 @@ class MaxFlowTests(unittest.TestCase):
         self.assertTrue(Graph.Barabasi(50).edge_connectivity() == 1)
         self.assertTrue(self.g.adhesion() == 2)
         self.assertTrue(Graph.Tree(10, 3).adhesion() == 1)
-        self.assertTrue(Graph.Tree(10, 3, TREE_OUT).adhesion() == 0)
+        self.assertTrue(Graph.Tree(10, 3, "out").adhesion() == 0)
         self.assertRaises(ValueError, self.g.edge_connectivity, 0)
 
     def testVertexConnectivity(self):
@@ -27,7 +27,7 @@ class MaxFlowTests(unittest.TestCase):
         self.assertTrue(Graph.Barabasi(50).vertex_connectivity() == 1)
         self.assertTrue(self.g.cohesion() == 2)
         self.assertTrue(Graph.Tree(10, 3).cohesion() == 1)
-        self.assertTrue(Graph.Tree(10, 3, TREE_OUT).cohesion() == 0)
+        self.assertTrue(Graph.Tree(10, 3, "out").cohesion() == 0)
         self.assertRaises(ValueError, self.g.vertex_connectivity, 0)
         self.assertRaises(InternalError, self.g.vertex_connectivity, 0, 1)
         self.assertTrue(self.g.vertex_connectivity(0, 1, neighbors="nodes") == 4)

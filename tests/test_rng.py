@@ -1,6 +1,7 @@
 import random
 import unittest
-from igraph import *
+
+from igraph import Graph, set_random_number_generator
 
 
 class FakeRNG:

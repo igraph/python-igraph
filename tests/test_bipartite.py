@@ -1,5 +1,5 @@
 import unittest
-from igraph import *
+from igraph import Graph
 
 
 class BipartiteTests(unittest.TestCase):
@@ -20,14 +20,14 @@ class BipartiteTests(unittest.TestCase):
         self.assertTrue(sorted(g.get_edgelist()) == expected)
         self.assertTrue(g.vs["type"] == [False] * 10 + [True] * 5)
 
-        g = Graph.Full_Bipartite(10, 5, directed=True, mode=OUT)
+        g = Graph.Full_Bipartite(10, 5, directed=True, mode="out")
         self.assertTrue(
             g.vcount() == 15 and g.ecount() == 50 and g.is_directed() is True
         )
         self.assertTrue(sorted(g.get_edgelist()) == expected)
         self.assertTrue(g.vs["type"] == [False] * 10 + [True] * 5)
 
-        g = Graph.Full_Bipartite(10, 5, directed=True, mode=IN)
+        g = Graph.Full_Bipartite(10, 5, directed=True, mode="in")
         self.assertTrue(
             g.vcount() == 15 and g.ecount() == 50 and g.is_directed() is True
         )

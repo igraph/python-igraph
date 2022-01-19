@@ -1,6 +1,6 @@
 import unittest
 
-from igraph import *
+from igraph import Graph, disjoint_union, intersection, union
 
 try:
     import numpy as np
@@ -65,25 +65,6 @@ class OperatorTests(unittest.TestCase):
             == [(0, 0), (0, 9), (4, 5), (5, 6), (6, 7), (7, 8), (8, 9)]
         )
 
-    def testIntersection(self):
-        g = Graph.Tree(7, 2) & Graph.Lattice([7])
-        self.assertTrue(g.get_edgelist() == [(0, 1)])
-
-    def testIntersectionMethod(self):
-        g = Graph.Tree(7, 2).intersection(Graph.Lattice([7]))
-        self.assertTrue(g.get_edgelist() == [(0, 1)])
-
-    def testIntersectionNoGraphs(self):
-        self.assertRaises(ValueError, intersection, [])
-
-    def testIntersectionSingle(self):
-        g1 = Graph.Tree(7, 2)
-        g = intersection([g1])
-        self.assertTrue(g != g1)
-        self.assertTrue(g.vcount() == g1.vcount() and g.ecount() == g1.ecount())
-        self.assertTrue(g.is_directed() == g1.is_directed())
-        self.assertTrue(g.get_edgelist() == g1.get_edgelist())
-
     def testDisjointUnion(self):
         g1 = Graph.Tree(7, 2)
         g2 = Graph.Lattice([7])
@@ -133,7 +114,7 @@ class OperatorTests(unittest.TestCase):
         g1['name'] = 'Tree'
         g2 = Graph.Lattice([7])
         g2['name'] = 'Lattice'
-        g = union([g1, g2]) # Issue 422
+        g = union([g1, g2])  # Issue 422
         self.assertTrue(
             sorted(g.get_edgelist())
             == [
@@ -210,6 +191,14 @@ class OperatorTests(unittest.TestCase):
                 self.assertTrue(e["attr"] == "set")
             else:
                 self.assertTrue(e["attr"] == "set_too")
+
+    def testIntersection(self):
+        g = Graph.Tree(7, 2) & Graph.Lattice([7])
+        self.assertTrue(g.get_edgelist() == [(0, 1)])
+
+    def testIntersectionMethod(self):
+        g = Graph.Tree(7, 2).intersection(Graph.Lattice([7]))
+        self.assertTrue(g.get_edgelist() == [(0, 1)])
 
     def testIntersectionNoGraphs(self):
         self.assertRaises(ValueError, intersection, [])

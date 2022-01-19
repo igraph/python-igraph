@@ -1,6 +1,17 @@
 import unittest
 
-from igraph import *
+from igraph import (
+    hsv_to_rgb,
+    hsva_to_rgba,
+    hsl_to_rgb,
+    hsla_to_rgba,
+    rgb_to_hsl,
+    rgba_to_hsla,
+    rgba_to_hsva,
+    rgb_to_hsv,
+    GradientPalette,
+    AdvancedGradientPalette,
+)
 
 
 class ColorTests(unittest.TestCase):

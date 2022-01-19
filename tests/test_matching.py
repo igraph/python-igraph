@@ -1,6 +1,6 @@
 import unittest
 
-from igraph import *
+from igraph import Graph, InternalError, Matching
 
 
 def powerset(iterable):

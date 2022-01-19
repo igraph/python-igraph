@@ -1,6 +1,6 @@
 import unittest
 
-from igraph import *
+from igraph import Graph, TREE_UNDIRECTED
 
 from .utils import temporary_file
 

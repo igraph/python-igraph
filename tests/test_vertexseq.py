@@ -2,7 +2,7 @@
 
 import unittest
 
-from igraph import *
+from igraph import Graph, Vertex, VertexSeq
 
 from .utils import is_pypy
 
@@ -309,11 +309,11 @@ class VertexSeqTests(unittest.TestCase):
         g = Graph.Barabasi(10000)
         g.vs["degree"] = g.degree()
         g.vs["parity"] = [i % 2 for i in range(g.vcount())]
-        l = len(g.vs(degree_gt=30))
-        self.assertTrue(l < 1000)
+        length = len(g.vs(degree_gt=30))
+        self.assertTrue(length < 1000)
         self.assertTrue(len(g.vs(degree_gt=30, parity=0)) <= 500)
         del g.vs["degree"]
-        self.assertTrue(len(g.vs(_degree_gt=30)) == l)
+        self.assertTrue(len(g.vs(_degree_gt=30)) == length)
 
     def testIndexAndKeywordFilteringFind(self):
         self.assertRaises(ValueError, self.g.vs.find, 2, name="G")
