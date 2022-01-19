@@ -1,5 +1,6 @@
 import unittest
-from igraph import *
+
+from igraph import Graph
 
 
 class IteratorTests(unittest.TestCase):

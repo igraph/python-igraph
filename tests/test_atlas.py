@@ -1,6 +1,7 @@
 import warnings
 import unittest
-from igraph import *
+
+from igraph import Graph
 
 
 class AtlasTestBase:
@@ -154,14 +155,18 @@ class AtlasTestBase:
 class GraphAtlasTests(unittest.TestCase, AtlasTestBase):
     graphs = [Graph.Atlas(i) for i in range(1253)]
 
+
 # Skip some problematic graphs
 GraphAtlasTests.graphs = [g for idx, g in enumerate(GraphAtlasTests.graphs) if idx not in set([70, 180])]
-print(len(GraphAtlasTests.graphs))
+
 
 class IsoclassTests(unittest.TestCase, AtlasTestBase):
-    graphs = [Graph.Isoclass(3, i, directed=True) for i in range(16)] + [
+    graphs = [
+        Graph.Isoclass(3, i, directed=True) for i in range(16)
+    ] + [
         Graph.Isoclass(4, i, directed=True) for i in range(218)
     ]
+
 
 # Skip some problematic graphs
 IsoclassTests.graphs = [g for idx, g in enumerate(IsoclassTests.graphs) if idx not in set([136])]

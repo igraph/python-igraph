@@ -1,7 +1,7 @@
 import unittest
-from igraph import *
-from itertools import permutations
 from random import shuffle
+
+from igraph import Graph
 
 
 def node_compat(g1, g2, v1, v2):
@@ -254,7 +254,6 @@ class SubisomorphismTests(unittest.TestCase):
         induced_subiso = sorted(
             [int(x) for x in item] for item in induced_subiso.split()
         )
-        all_subiso_extra = sorted(all_subiso + induced_subiso)
         self.assertEqual(
             induced_subiso, sorted(g3.get_subisomorphisms_lad(g2, induced=True))
         )

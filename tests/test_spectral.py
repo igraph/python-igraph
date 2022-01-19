@@ -1,6 +1,7 @@
 # vim:set ts=4 sw=4 sts=4 et:
 import unittest
-from igraph import *
+
+from igraph import Graph
 
 
 class SpectralTests(unittest.TestCase):

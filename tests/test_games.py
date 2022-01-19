@@ -1,5 +1,6 @@
 import unittest
-from igraph import *
+
+from igraph import Graph, InternalError, Layout
 
 
 class GameTests(unittest.TestCase):
@@ -28,8 +29,8 @@ class GameTests(unittest.TestCase):
         self.assertEqual(len(g.connected_components()), 2)
 
         g = Graph.Preference(100, [1, 1], [[1, 0], [0, 1]], attribute="type")
-        l = g.vs.get_attribute_values("type")
-        self.assertTrue(min(l) == 0 and max(l) == 1)
+        types = g.vs.get_attribute_values("type")
+        self.assertTrue(min(types) == 0 and max(types) == 1)
 
     def testAsymmetricPreference(self):
         g = Graph.Asymmetric_Preference(100, [[0, 1], [1, 0]], [[0, 1], [1, 0]])
@@ -39,10 +40,10 @@ class GameTests(unittest.TestCase):
         g = Graph.Asymmetric_Preference(
             100, [[0, 1], [1, 0]], [[1, 0], [0, 1]], attribute="type"
         )
-        l = g.vs.get_attribute_values("type")
-        l1 = [i[0] for i in l]
-        l2 = [i[1] for i in l]
-        self.assertTrue(min(l1) == 0 and max(l1) == 1 and min(l2) == 0 and max(l2) == 1)
+        types = g.vs.get_attribute_values("type")
+        types1 = [i[0] for i in types]
+        types2 = [i[1] for i in types]
+        self.assertTrue(min(types1) == 0 and max(types1) == 1 and min(types2) == 0 and max(types2) == 1)
 
         g = Graph.Asymmetric_Preference(100, [[0, 1], [1, 0]], [[1, 0], [0, 1]])
         self.assertTrue(isinstance(g, Graph))

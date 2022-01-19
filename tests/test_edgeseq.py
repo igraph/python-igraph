@@ -2,7 +2,7 @@
 
 import unittest
 
-from igraph import *
+from igraph import Graph, Edge, EdgeSeq, VertexSeq
 
 from .utils import is_pypy
 

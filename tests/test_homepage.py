@@ -1,6 +1,6 @@
 import unittest
 
-from igraph import *
+from igraph import Graph, Layout
 
 
 class HomepageExampleTests(unittest.TestCase):
