@@ -823,6 +823,26 @@ class InheritedGraph(Graph):
         return result
 
 
+class InheritedGraphWithEarlyMethodCallInInit(Graph):
+    def __init__(self, *args, **kwds):
+        self.call_result = self.degree()
+        super().__init__(*args, **kwds)
+        self.init_called = True
+
+
+class InheritedGraphWithEarlyMethodCallInNew(Graph):
+    def __new__(cls, *args, **kwds):
+        instance = super().__new__(cls, *args, **kwds)
+        instance.call_result = instance.degree()
+        return instance
+
+
+class InheritedGraphThatReturnsNonGraphFromNew(Graph):
+    def __new__(cls, *args, **kwds):
+        super().__new__(cls, *args, **kwds)
+        return 42
+
+
 class InheritanceTests(unittest.TestCase):
     def testInitCalledProperly(self):
         g = InheritedGraph()
@@ -848,6 +868,25 @@ class InheritanceTests(unittest.TestCase):
         g = InheritedGraph.Adjacency([[0, 1, 1], [1, 0, 0], [1, 0, 0]])
         self.assertTrue(isinstance(g, InheritedGraph))
         self.assertTrue(getattr(g, "adjacency_called", True))
+
+    def testCallingInstanceMethodTooEarly(self):
+        # Creating an InheritedGraphWithEarlyMethodCallInInit instance should
+        # not crash the runtime
+        g = InheritedGraphWithEarlyMethodCallInInit([(0, 1), (1, 2), (2, 3)])
+        self.assertEqual(4, g.vcount())
+        self.assertEqual([1, 2, 2, 1], g.degree())
+        self.assertEqual([], g.call_result)
+
+        # Creating an InheritedGraphWithEarlyMethodCallInNew instance should
+        # not crash the runtime either
+        g = InheritedGraphWithEarlyMethodCallInNew([(0, 1), (1, 2), (2, 3)])
+        self.assertEqual(4, g.vcount())
+        self.assertEqual([1, 2, 2, 1], g.degree())
+        self.assertEqual([], g.call_result)
+
+    def testInheritedGraphThatReturnsSomethingElseFromNew(self):
+        g = InheritedGraphThatReturnsNonGraphFromNew([(0, 1)], directed=True)
+        self.assertEqual(42, g)
 
 
 @contextmanager
