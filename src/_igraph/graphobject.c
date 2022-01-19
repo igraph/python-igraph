@@ -87,7 +87,10 @@ void igraphmodule_Graph_init_internal(igraphmodule_GraphObject * self)
 g = igraph.Graph(5);
 \endverbatim
  *
- * In fact, the parameters are processed by \c igraphmodule_Graph_init
+ * Most of the parameters are processed by \c igraphmodule_Graph_init ; the
+ * responsibility of \c igraphmodule_Graph_new is only to ensure that the
+ * \c igraph_t structure is initialized so the user has no chance for messing
+ * around with an uninitialized structure.
  *
  * \return the new \c igraph.Graph object or NULL if an error occurred.
  *
@@ -103,6 +106,16 @@ PyObject *igraphmodule_Graph_new(PyTypeObject * type, PyObject * args,
   RC_ALLOC("Graph", self);
 
   igraphmodule_Graph_init_internal(self);
+
+  /* We need to ensure that self->g is a valid igraph_t pointer in case the
+   * user somehow manages to sneak in a call to a method of the Graph instance
+   * between __new__() and __init__() (e.g,. by overriding __init__()). We
+   * will replace it later with the "proper" graph instance in __init__() if
+   * needed. */
+  if (igraph_empty(&self->g, 0, IGRAPH_UNDIRECTED)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
 
   return (PyObject *) self;
 }
@@ -204,8 +217,10 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
   long int n = 0;
   PyObject *edges = NULL, *dir = Py_False, *ptr_o = 0;
   void* ptr = 0;
+  igraph_integer_t vcount;
   igraph_vector_t edges_vector;
   igraph_bool_t edges_vector_owned = 0;
+  int retval = 0;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|lOOO!", kwlist,
                                    &n, &edges, &dir,
@@ -223,43 +238,65 @@ int igraphmodule_Graph_init(igraphmodule_GraphObject * self,
   }
 
   if (ptr_o) {
-    /* We must take ownership of an igraph graph */
+    /* We must take ownership of an igraph graph. Since we already created
+     * one in igraphmodule_Graph_new(), we need to destroy that first */
     ptr = PyCapsule_GetPointer(ptr_o, "__igraph_t");
     if (ptr == 0) {
       PyErr_SetString(PyExc_ValueError, "pointer should not be null");
     } else {
+      igraph_destroy(&self->g);
       self->g = *(igraph_t*)ptr;
     }
-  } else if (edges) {
-    /* Caller specified an edge list, so we use igraph_create */
-    /* We have to convert the Python list to a igraph_vector_t */
-    if (igraphmodule_PyObject_to_edgelist(edges, &edges_vector, 0, &edges_vector_owned)) {
-      igraphmodule_handle_igraph_error();
-      return -1;
-    }
-
-    if (igraph_create
-        (&self->g, &edges_vector, (igraph_integer_t) n, PyObject_IsTrue(dir))) {
-      igraphmodule_handle_igraph_error();
-      if (edges_vector_owned) {
-        igraph_vector_destroy(&edges_vector);
-      }
-      return -1;
-    }
-
-    if (edges_vector_owned) {
-      igraph_vector_destroy(&edges_vector);
-    }
   } else {
-    /* No edge list was specified, and no previously initialized graph object
-     * was fed into our object, so let's use igraph_empty */
-    if (igraph_empty(&self->g, (igraph_integer_t) n, PyObject_IsTrue(dir))) {
+    vcount = 0;
+
+    if (edges) {
+      /* Caller specified an edge list, so we use igraph_add_vertices() and
+      * igraph_add_edges() as needed. But first, we have to convert the Python
+      * list to a igraph_vector_t */
+      if (igraphmodule_PyObject_to_edgelist(edges, &edges_vector, 0, &edges_vector_owned)) {
+        igraphmodule_handle_igraph_error();
+        return -1;
+      }
+
+      if (igraph_vector_size(&edges_vector) > 0) {
+        vcount = igraph_vector_max(&edges_vector) + 1;
+      }
+    }
+
+    if (vcount < n) {
+      vcount = n;
+    }
+
+    /* We already have an undirected graph in &self->g. Make it directed first
+     * if needed */
+    if (PyObject_IsTrue(dir) && igraph_to_directed(&self->g, IGRAPH_TO_DIRECTED_ARBITRARY) != IGRAPH_SUCCESS) {
       igraphmodule_handle_igraph_error();
-      return -1;
+      retval = -1;
+      goto cleanup;
+    }
+
+    /* Add the vertices first */
+    if (vcount > 0 && igraph_add_vertices(&self->g, vcount, 0) != IGRAPH_SUCCESS) {
+      igraphmodule_handle_igraph_error();
+      retval = -1;
+      goto cleanup;
+    }
+
+    /* Then the edges */
+    if (edges && igraph_add_edges(&self->g, &edges_vector, 0) != IGRAPH_SUCCESS) {
+      igraphmodule_handle_igraph_error();
+      retval = -1;
+      goto cleanup;
     }
   }
 
-  return 0;
+cleanup:
+  if (edges_vector_owned) {
+    igraph_vector_destroy(&edges_vector);
+  }
+
+  return retval;
 }
 
 /** \ingroup python_interface_graph
