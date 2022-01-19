@@ -6,10 +6,10 @@
 Connected Components
 =====================
 
-.. _clusters: https://igraph.org/python/doc/api/igraph.Graph.html#clusters
-.. |clusters| replace:: :meth:`clusters`
+.. _connected_components: https://igraph.org/python/doc/api/igraph.Graph.html#connected_components
+.. |connected_components| replace:: :meth:`connected_components`
 
-This example demonstrates how to visualise the connected components in a graph using |clusters|_.
+This example demonstrates how to visualise the connected components in a graph using |connected_components|_.
 
 .. code-block:: python
 
@@ -22,17 +22,16 @@ This example demonstrates how to visualise the connected components in a graph u
     g = ig.Graph.GRG(50, 0.15)
 
     # Cluster graph into weakly connected components
-    clusters = g.clusters(mode='weak')
-    nclusters = len(clusters)
+    components = g.connected_components(mode='weak')
 
     # Visualise different components
     fig, ax = plt.subplots()
     ig.plot(
-        clusters,
+        components,
         target=ax,
         palette=ig.RainbowPalette(),
         vertex_size=0.05,
-        vertex_color=list(map(int, ig.rescale(clusters.membership, (0, 200), clamp=True))),
+        vertex_color=list(map(int, ig.rescale(components.membership, (0, 200), clamp=True))),
         edge_width=0.7
     )
 

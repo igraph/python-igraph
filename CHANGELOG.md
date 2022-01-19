@@ -25,6 +25,11 @@
 - Removed deprecated `show()` method of `Plot` instances as well as the feature
   that automatically shows the plot when `plot()` is called with no target.
 
+### Deprecated
+
+- `Graph.clusters()` is now deprecated; use `Graph.connected_components()` or
+  its already existing shorter alias, `Graph.components()`.
+
 ## [Unreleased]
 
 ## [0.9.9]

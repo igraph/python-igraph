@@ -4417,12 +4417,12 @@ PyObject *igraphmodule_Graph_harmonic_centrality(igraphmodule_GraphObject * self
 
 /** \ingroup python_interface_graph
  * \brief Calculates the (weakly or strongly) connected components in a graph.
- * \return a list containing the cluster ID for every vertex in the graph
- * \sa igraph_clusters
+ * \return a list containing the component ID for every vertex in the graph
+ * \sa igraph_connected_components
  */
-PyObject *igraphmodule_Graph_clusters(igraphmodule_GraphObject * self,
-                                      PyObject * args, PyObject * kwds)
-{
+PyObject *igraphmodule_Graph_connected_components(
+  igraphmodule_GraphObject * self, PyObject * args, PyObject * kwds
+) {
   static char *kwlist[] = { "mode", NULL };
   igraph_connectedness_t mode = IGRAPH_STRONG;
   igraph_vector_int_t res1, res2;
@@ -4435,10 +4435,18 @@ PyObject *igraphmodule_Graph_clusters(igraphmodule_GraphObject * self,
   if (igraphmodule_PyObject_to_connectedness_t(mode_o, &mode))
     return NULL;
 
-  igraph_vector_int_init(&res1, igraph_vcount(&self->g));
-  igraph_vector_int_init(&res2, 10);
+  if (igraph_vector_int_init(&res1, igraph_vcount(&self->g))) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+  
+  if (igraph_vector_int_init(&res2, 10)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_int_destroy(&res1);
+    return NULL;
+  }
 
-  if (igraph_clusters(&self->g, &res1, &res2, &no, mode)) {
+  if (igraph_connected_components(&self->g, &res1, &res2, &no, mode)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_int_destroy(&res1);
     igraph_vector_int_destroy(&res2);
@@ -4448,6 +4456,7 @@ PyObject *igraphmodule_Graph_clusters(igraphmodule_GraphObject * self,
   list = igraphmodule_vector_int_t_to_PyList(&res1);
   igraph_vector_int_destroy(&res1);
   igraph_vector_int_destroy(&res2);
+
   return list;
 }
 
@@ -13583,11 +13592,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  result is the sum of inverse path lengths to other vertices.\n"
    "@return: the calculated harmonic centralities in a list\n"},
 
-  /* interface to igraph_clusters */
-  {"clusters", (PyCFunction) igraphmodule_Graph_clusters,
+  /* interface to igraph_connected_components */
+  {"connected_components", (PyCFunction) igraphmodule_Graph_connected_components,
    METH_VARARGS | METH_KEYWORDS,
-   "clusters(mode=\"strong\")\n--\n\n"
-   "Calculates the (strong or weak) clusters for a given graph.\n\n"
+   "connected_components(mode=\"strong\")\n--\n\n"
+   "Calculates the (strong or weak) connected components for a given graph.\n\n"
    "@attention: this function has a more convenient interface in class\n"
    "  L{Graph} which wraps the result in a L{VertexClustering} object.\n"
    "  It is advised to use that.\n"

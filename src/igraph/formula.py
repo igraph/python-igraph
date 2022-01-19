@@ -159,7 +159,7 @@ def construct_graph_from_formula(cls, formula=None, attr="name", simplify=True):
       >>> g = Graph.Formula("A--B, C--D, E--F, G--H, I, J, K")
       >>> print(", ".join(g.vs["name"]))
       A, B, C, D, E, F, G, H, I, J, K
-      >>> g.clusters().membership
+      >>> g.connected_components().membership
       [0, 0, 1, 1, 2, 2, 3, 3, 4, 5, 6]
 
     The colon (C{:}) operator can be used to specify vertex sets.

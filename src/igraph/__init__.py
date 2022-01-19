@@ -128,7 +128,7 @@ from igraph.clustering import (
     split_join_distance,
     _biconnected_components,
     _cohesive_blocks,
-    _clusters,
+    _connected_components,
 )
 from igraph.cut import (
     Cut,
@@ -651,9 +651,9 @@ class Graph(GraphBase):
     # Connected components
     biconnected_components = _biconnected_components
     cohesive_blocks = _cohesive_blocks
-    clusters = _clusters
+    connected_components = _connected_components
     blocks = biconnected_components
-    components = clusters
+    components = connected_components
 
     #############################################
     # Community detection/clustering
@@ -1113,7 +1113,7 @@ del (
     _bipartite_projection_size,
     _biconnected_components,
     _cohesive_blocks,
-    _clusters,
+    _connected_components,
     _add_proxy_methods,
 )
 

@@ -1582,11 +1582,19 @@ def _cohesive_blocks(graph):
     return CohesiveBlocks(graph, *GraphBase.cohesive_blocks(graph))
 
 
-def _clusters(graph, mode="strong"):
-    """Calculates the (strong or weak) clusters (connected components) for
+def _connected_components(graph, mode="strong"):
+    """Calculates the (strong or weak) connected components for
     a given graph.
 
     @param mode: must be either C{"strong"} or C{"weak"}, depending on the
-      clusters being sought. Optional, defaults to C{"strong"}.
+      connected components being sought. Optional, defaults to C{"strong"}.
     @return: a L{VertexClustering} object"""
-    return VertexClustering(graph, GraphBase.clusters(graph, mode))
+    return VertexClustering(graph, GraphBase.connected_components(graph, mode))
+
+
+def _clusters(graph, mode="strong"):
+    """Deprecated alias to L{Graph.connected_components()}."""
+    from igraph import deprecated
+
+    deprecated("Graph.clusters() is deprecated; use Graph.connected_components() instead")
+    return graph.connected_components(mode=mode)
