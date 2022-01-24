@@ -2620,13 +2620,13 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
     PyErr_Clear();
 
     iterator = PyObject_GetIter(o);
-
     if (iterator == NULL) {
       PyErr_SetString(PyExc_TypeError, "conversion to vertex sequence failed");
       return 1;
     }
 
     if (igraph_vector_init(&vector, 0)) {
+      Py_DECREF(iterator);
       igraphmodule_handle_igraph_error();
       return 1;
     }
@@ -2634,8 +2634,10 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
     while ((item = PyIter_Next(iterator))) {
       vid = -1;
 
-      if (igraphmodule_PyObject_to_vid(item, &vid, graph))
+      if (igraphmodule_PyObject_to_vid(item, &vid, graph)) {
+        Py_DECREF(item);
         break;
+      }
 
       Py_DECREF(item);
 
@@ -2659,6 +2661,8 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
       igraph_vector_destroy(&vector);
       return 1;
     }
+
+    igraph_vector_destroy(&vector);
 
     if (return_single) {
       *return_single = 0;
