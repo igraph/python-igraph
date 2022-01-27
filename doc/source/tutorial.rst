@@ -353,7 +353,7 @@ some basic Python knowledge, but since it is a common task to select vertices an
 based on attributes or structural properties, |igraph| gives you an easier way to do that::
 
   >>> g.vs.select(_degree=g.maxdegree())["name"]
-  ["Alice", "Bob"]
+  ['Claire']
 
 The syntax may seem a little bit awkward for the first sight, so let's try to interpret
 it step by step. :meth:`~VertexSeq.select` is a method of :class:`VertexSeq` and its
