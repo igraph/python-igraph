@@ -5419,7 +5419,7 @@ PyObject *igraphmodule_Graph_maximum_cardinality_search(igraphmodule_GraphObject
     return NULL;
   }
 
-  return PyTuple_Pack(2, alpha_o, alpham1_o);
+  return Py_BuildValue("(NN)", alpha_o, alpham1_o);
 }
 
 /**
