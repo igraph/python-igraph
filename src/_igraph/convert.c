@@ -2327,6 +2327,73 @@ PyObject* igraphmodule_vector_int_ptr_t_to_PyList(const igraph_vector_ptr_t *v) 
   return list;
 }
 
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts an igraph \c igraph_vector_list_t to a Python list of lists
+ *
+ * \param v the \c igraph_vector_list_t containing the vector to be converted
+ * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
+ */
+PyObject* igraphmodule_vector_list_t_to_PyList(const igraph_vector_list_t *v) {
+  PyObject *list, *item;
+  Py_ssize_t n, i;
+
+  n = igraph_vector_list_size(v);
+  if (n < 0) {
+    return igraphmodule_handle_igraph_error();
+  }
+
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
+
+  for (i = 0; i < n; i++) {
+    item = igraphmodule_vector_t_to_PyList(igraph_vector_list_get_ptr(v, i),
+        IGRAPHMODULE_TYPE_FLOAT);
+    if (item == NULL) {
+      Py_DECREF(list);
+      return NULL;
+    }
+    PyList_SetItem(list, i, item);  /* will not fail */
+  }
+
+  return list;
+}
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts an igraph \c igraph_vector_int_list_t to a Python list of lists
+ *
+ * \param v the \c igraph_vector_int_list_t containing the vector to be converted
+ * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
+ */
+PyObject* igraphmodule_vector_int_list_t_to_PyList(const igraph_vector_int_list_t *v) {
+  PyObject *list, *item;
+  Py_ssize_t n, i;
+
+  n = igraph_vector_int_list_size(v);
+  if (n < 0) {
+    return igraphmodule_handle_igraph_error();
+  }
+
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
+
+  for (i = 0; i < n; i++) {
+    item = igraphmodule_vector_int_t_to_PyList(igraph_vector_int_list_get_ptr(v, i));
+    if (item == NULL) {
+      Py_DECREF(list);
+      return NULL;
+    }
+    PyList_SetItem(list, i, item);  /* will not fail */
+  }
+
+  return list;
+}
+
 
 /**
  * \ingroup python_interface_conversion
@@ -2607,6 +2674,71 @@ int igraphmodule_PyObject_to_vector_int_ptr_t(PyObject* list, igraph_vector_ptr_
       Py_DECREF(it);
       igraph_vector_int_destroy(subvec);
       igraph_vector_ptr_destroy_all(vec);
+      return 1;
+    }
+
+    /* ownership of 'subvec' taken by 'vec' here */
+  }
+
+  Py_DECREF(it);
+  return 0;
+}
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts a Python list of lists to an \c igraph_vector_int_list_t
+ *        (containing \c igraph_vector_int_t items).
+ *
+ * \param o the Python object representing the list of lists
+ * \param m the address of an uninitialized \c igraph_vector_int_list_t
+ * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
+ */
+int igraphmodule_PyObject_to_vector_int_list_t(PyObject* list, igraph_vector_int_list_t* vec) {
+  PyObject *it, *item;
+  igraph_vector_int_t *subvec;
+
+  if (PyUnicode_Check(list)) {
+    PyErr_SetString(PyExc_TypeError, "expected iterable (but not string)");
+    return 1;
+  }
+
+  it = PyObject_GetIter(list);
+  if (!it) {
+    return 1;
+  }
+
+  if (igraph_vector_int_list_init(vec, 0)) {
+    igraphmodule_handle_igraph_error();
+    Py_DECREF(it);
+    return 1;
+  }
+
+  /* TODO: what about this? is memory managed already? */
+  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(vec, igraph_vector_int_destroy);
+  while ((item = PyIter_Next(it)) != 0) {
+    /* FIXME: is this even the right way to do this? */
+    subvec = igraph_Calloc(1, igraph_vector_int_t);
+    if (subvec == 0) {
+      Py_DECREF(item);
+      Py_DECREF(it);
+      PyErr_NoMemory();
+      return 1;
+    }
+
+    if (igraphmodule_PyObject_to_vector_int_t(item, subvec)) {
+      Py_DECREF(item);
+      Py_DECREF(it);
+      igraph_vector_int_destroy(subvec);
+      igraph_vector_int_list_destroy(vec);
+      return 1;
+    }
+
+    Py_DECREF(item);
+
+    if (igraph_vector_int_list_push_back(vec, subvec)) {
+      Py_DECREF(it);
+      igraph_vector_int_destroy(subvec);
+      igraph_vector_int_list_destroy(vec);
       return 1;
     }
 
