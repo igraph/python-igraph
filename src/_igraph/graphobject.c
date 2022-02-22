@@ -2168,7 +2168,7 @@ PyObject *igraphmodule_Graph_Degree_Sequence(PyTypeObject * type,
   igraphmodule_GraphObject *self;
   igraph_t g;
   igraph_vector_int_t outseq, inseq;
-  igraph_degseq_t meth = IGRAPH_DEGSEQ_SIMPLE;
+  igraph_degseq_t meth = IGRAPH_DEGSEQ_CONFIGURATION;
   igraph_bool_t has_inseq = 0;
   PyObject *outdeg = NULL, *indeg = NULL, *method = NULL;
 
@@ -3470,7 +3470,7 @@ PyObject *igraphmodule_Graph_Tree(PyTypeObject * type,
     return NULL;
   }
 
-  if (igraph_tree(&g, n, children, mode)) {
+  if (igraph_kary_tree(&g, n, children, mode)) {
       igraphmodule_handle_igraph_error();
       return NULL;
   }
@@ -8862,7 +8862,6 @@ PyObject *igraphmodule_Graph_canonical_permutation(
 PyObject *igraphmodule_Graph_isoclass(igraphmodule_GraphObject * self,
                                       PyObject * args, PyObject * kwds)
 {
-  Py_ssize_t n;
   igraph_integer_t isoclass = 0;
   PyObject *vids = 0;
   char *kwlist[] = { "vertices", NULL };
@@ -8870,8 +8869,6 @@ PyObject *igraphmodule_Graph_isoclass(igraphmodule_GraphObject * self,
   if (!PyArg_ParseTupleAndKeywords
       (args, kwds, "|O!", kwlist, &PyList_Type, &vids))
     return NULL;
-
-  n = vids ? PyList_Size(vids) : igraph_vcount(&self->g);
 
   if (vids) {
     igraph_vector_int_t vidsvec;

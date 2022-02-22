@@ -44,37 +44,37 @@ typedef struct {
 #define ATTR_STRUCT_DICT(graph) ((igraphmodule_i_attribute_struct*)((graph)->attr))->attrs
 #define ATTR_NAME_INDEX(graph) ((igraphmodule_i_attribute_struct*)((graph)->attr))->vertex_name_index
 
-int igraphmodule_i_attribute_get_type(const igraph_t *graph,
+igraph_error_t igraphmodule_i_attribute_get_type(const igraph_t *graph,
 				      igraph_attribute_type_t *type,
 				      igraph_attribute_elemtype_t elemtype,
 				      const char *name);
-int igraphmodule_i_get_numeric_graph_attr(const igraph_t *graph,
+igraph_error_t igraphmodule_i_get_numeric_graph_attr(const igraph_t *graph,
 					  const char *name, igraph_vector_t *value);
-int igraphmodule_i_get_numeric_vertex_attr(const igraph_t *graph,
+igraph_error_t igraphmodule_i_get_numeric_vertex_attr(const igraph_t *graph,
 					   const char *name,
 					   igraph_vs_t vs,
 					   igraph_vector_t *value);
-int igraphmodule_i_get_numeric_edge_attr(const igraph_t *graph,
+igraph_error_t igraphmodule_i_get_numeric_edge_attr(const igraph_t *graph,
 					 const char *name,
 					 igraph_es_t es,
 					 igraph_vector_t *value);
-int igraphmodule_i_get_string_graph_attr(const igraph_t *graph,
+igraph_error_t igraphmodule_i_get_string_graph_attr(const igraph_t *graph,
 					 const char *name, igraph_strvector_t *value);
-int igraphmodule_i_get_string_vertex_attr(const igraph_t *graph,
+igraph_error_t igraphmodule_i_get_string_vertex_attr(const igraph_t *graph,
 					  const char *name,
 					  igraph_vs_t vs,
 					  igraph_strvector_t *value);
-int igraphmodule_i_get_string_edge_attr(const igraph_t *graph,
+igraph_error_t igraphmodule_i_get_string_edge_attr(const igraph_t *graph,
 					const char *name,
 					igraph_es_t es,
 					igraph_strvector_t *value);
-int igraphmodule_i_get_boolean_graph_attr(const igraph_t *graph,
+igraph_error_t igraphmodule_i_get_boolean_graph_attr(const igraph_t *graph,
 					  const char *name, igraph_vector_bool_t *value);
-int igraphmodule_i_get_boolean_vertex_attr(const igraph_t *graph,
+igraph_error_t igraphmodule_i_get_boolean_vertex_attr(const igraph_t *graph,
 					   const char *name,
 					   igraph_vs_t vs,
 					   igraph_vector_bool_t *value);
-int igraphmodule_i_get_boolean_edge_attr(const igraph_t *graph,
+igraph_error_t igraphmodule_i_get_boolean_edge_attr(const igraph_t *graph,
 					 const char *name,
 					 igraph_es_t es,
 					 igraph_vector_bool_t *value);
