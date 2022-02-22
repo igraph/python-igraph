@@ -4644,7 +4644,8 @@ PyObject *igraphmodule_Graph_decompose(igraphmodule_GraphObject * self,
   n = igraph_graph_list_size(&components);
   list = PyList_New(n);
   for (i = 0; i < n; i++) {
-    CREATE_GRAPH(o, *igraph_graph_list_get_ptr(&components, i));
+    g = igraph_graph_list_get_ptr(&components, i);
+    CREATE_GRAPH(o, *g);
 
     if (PyList_SetItem(list, i, (PyObject *) o)) {
       Py_DECREF(o);
@@ -9014,7 +9015,7 @@ typedef struct {
   PyObject* graph2;
 } igraphmodule_i_Graph_isomorphic_vf2_callback_data_t;
 
-igraph_bool_t igraphmodule_i_Graph_isomorphic_vf2_callback_fn(
+igraph_error_t igraphmodule_i_Graph_isomorphic_vf2_callback_fn(
     const igraph_vector_int_t *map12, const igraph_vector_int_t *map21,
     void* extra) {
   igraphmodule_i_Graph_isomorphic_vf2_callback_data_t* data =
@@ -9203,7 +9204,7 @@ PyObject *igraphmodule_Graph_isomorphic_vf2(igraphmodule_GraphObject * self,
         edge_compat_fn == Py_None ? 0 : igraphmodule_i_Graph_isomorphic_vf2_edge_compat_fn,
         &callback_data);
   } else {
-    retval = igraph_isomorphic_function_vf2(&self->g, &other->g,
+    retval = igraph_get_isomorphisms_vf2_callback(&self->g, &other->g,
         color1, color2, edge_color1, edge_color2, map12, map21,
         igraphmodule_i_Graph_isomorphic_vf2_callback_fn,
         node_compat_fn == Py_None ? 0 : igraphmodule_i_Graph_isomorphic_vf2_node_compat_fn,
@@ -9537,7 +9538,7 @@ PyObject *igraphmodule_Graph_subisomorphic_vf2(igraphmodule_GraphObject * self,
         edge_compat_fn == Py_None ? 0 : igraphmodule_i_Graph_isomorphic_vf2_edge_compat_fn,
         &callback_data);
   } else {
-    retval = igraph_subisomorphic_function_vf2(&self->g, &other->g,
+    retval = igraph_get_subisomorphisms_vf2_callback(&self->g, &other->g,
         color1, color2, edge_color1, edge_color2, map12, map21,
         igraphmodule_i_Graph_isomorphic_vf2_callback_fn,
         node_compat_fn == Py_None ? 0 : igraphmodule_i_Graph_isomorphic_vf2_node_compat_fn,
