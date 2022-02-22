@@ -2584,7 +2584,7 @@ int igraphmodule_PyObject_to_vector_ptr_t(PyObject* list, igraph_vector_ptr_t* v
 
   IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(vec, igraph_vector_destroy);
   while ((item = PyIter_Next(it)) != 0) {
-    subvec = igraph_Calloc(1, igraph_vector_t);
+    subvec = IGRAPH_CALLOC(1, igraph_vector_t);
     if (subvec == 0) {
       Py_DECREF(item);
       Py_DECREF(it);
@@ -2652,7 +2652,7 @@ int igraphmodule_PyObject_to_vector_int_ptr_t(PyObject* list, igraph_vector_ptr_
 
   IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(vec, igraph_vector_int_destroy);
   while ((item = PyIter_Next(it)) != 0) {
-    subvec = igraph_Calloc(1, igraph_vector_int_t);
+    subvec = IGRAPH_CALLOC(1, igraph_vector_int_t);
     if (subvec == 0) {
       Py_DECREF(item);
       Py_DECREF(it);
@@ -2713,11 +2713,8 @@ int igraphmodule_PyObject_to_vector_list_t(PyObject* list, igraph_vector_list_t*
     return 1;
   }
 
-  /* TODO: what about this? is memory managed already? */
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(vec, igraph_vector_int_destroy);
   while ((item = PyIter_Next(it)) != 0) {
-    /* FIXME: is this even the right way to do this? */
-    subvec = igraph_Calloc(1, igraph_vector_t);
+    subvec = IGRAPH_CALLOC(1, igraph_vector_t);
     if (subvec == 0) {
       Py_DECREF(item);
       Py_DECREF(it);
@@ -2737,7 +2734,7 @@ int igraphmodule_PyObject_to_vector_list_t(PyObject* list, igraph_vector_list_t*
 
     /* The C core manages the subvec memory from now on,
      * so no need to use push_back_copy */
-    if (igraph_vector_list_push_back_new(vec, &subvec)) {
+    if (igraph_vector_list_push_back(vec, subvec)) {
       Py_DECREF(it);
       igraph_vector_destroy(subvec);
       igraph_vector_list_destroy(vec);
@@ -2780,11 +2777,8 @@ int igraphmodule_PyObject_to_vector_int_list_t(PyObject* list, igraph_vector_int
     return 1;
   }
 
-  /* TODO: what about this? is memory managed already? */
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(vec, igraph_vector_int_destroy);
   while ((item = PyIter_Next(it)) != 0) {
-    /* FIXME: is this even the right way to do this? */
-    subvec = igraph_Calloc(1, igraph_vector_int_t);
+    subvec = IGRAPH_CALLOC(1, igraph_vector_int_t);
     if (subvec == 0) {
       Py_DECREF(item);
       Py_DECREF(it);
@@ -2804,7 +2798,7 @@ int igraphmodule_PyObject_to_vector_int_list_t(PyObject* list, igraph_vector_int
 
     /* The C core manages the subvec memory from now on,
      * so no need to use push_back_copy */
-    if (igraph_vector_int_list_push_back_new(vec, &subvec)) {
+    if (igraph_vector_int_list_push_back(vec, subvec)) {
       Py_DECREF(it);
       igraph_vector_int_destroy(subvec);
       igraph_vector_int_list_destroy(vec);

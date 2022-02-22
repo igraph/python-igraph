@@ -3986,8 +3986,6 @@ PyObject *igraphmodule_Graph_biconnected_components(igraphmodule_GraphObject *se
   }
 
   result = igraphmodule_vector_int_list_t_to_PyList(&components);
-  /* FIXME: this should be not needed anymore? */
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(&components, igraph_vector_int_destroy);
   igraph_vector_int_list_destroy(&components);
 
   if (return_articulation_points) {
@@ -4987,7 +4985,7 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
   igraph_vs_t to;
   PyObject *list, *item, *mode_o=Py_None, *weights_o=Py_None,
            *output_o=Py_None, *from_o = Py_None, *to_o=Py_None;
-  igraph_vector_int_list_t *ptrvec=0;
+  igraph_vector_int_list_t *veclist=0;
   igraph_bool_t use_edges = 0;
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOOO!", kwlist, &from_o,
         &to_o, &weights_o, &mode_o, &PyUnicode_Type, &output_o))
@@ -5027,8 +5025,8 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
   }
 
   /* Memory for the pointer */
-  ptrvec = (igraph_vector_int_list_t *) calloc(1, sizeof(igraph_vector_int_list_t));
-  if (!ptrvec) {
+  veclist = (igraph_vector_int_list_t *) calloc(1, sizeof(igraph_vector_int_list_t));
+  if (!veclist) {
     PyErr_SetString(PyExc_MemoryError, "");
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraph_vs_destroy(&to);
@@ -5037,25 +5035,25 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
 
   /* Initialize the vector_int_list itself, size is managed internally
    * by the C core function */
-  if (igraph_vector_int_list_init(ptrvec, 0)) {
+  if (igraph_vector_int_list_init(veclist, 0)) {
     PyErr_SetString(PyExc_MemoryError, "");
-    free(ptrvec);
+    free(veclist);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraph_vs_destroy(&to);
     return NULL;
   }
 
   /* Call the C function */
-  if (igraph_get_shortest_paths_dijkstra(&self->g, use_edges ? 0 : ptrvec,
-        use_edges ? ptrvec : 0, from, to, weights, mode, 0, 0)) {
+  if (igraph_get_shortest_paths_dijkstra(&self->g, use_edges ? 0 : veclist,
+        use_edges ? veclist : 0, from, to, weights, mode, 0, 0)) {
     igraphmodule_handle_igraph_error();
-    igraph_vector_int_list_destroy(ptrvec); free(ptrvec);
+    igraph_vector_int_list_destroy(veclist); free(veclist);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraph_vs_destroy(&to);
     return NULL;
   }
 
-  /* We don't need this anymore, the result is in ptrvec */
+  /* We don't need this anymore, the result is in veclist */
   igraph_vs_destroy(&to);
 
   /* Make empty Python list of paths */
@@ -5066,9 +5064,9 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
 
   /* Fill list of paths */
   for (i = 0; i < no_of_target_nodes; i++) {
-    item = igraphmodule_vector_int_t_to_PyList(igraph_vector_int_list_get_ptr(ptrvec, i));
+    item = igraphmodule_vector_int_t_to_PyList(igraph_vector_int_list_get_ptr(veclist, i));
     if (!item || PyList_SetItem(list, i, item)) {
-      igraph_vector_int_list_destroy(ptrvec); free(ptrvec);
+      igraph_vector_int_list_destroy(veclist); free(veclist);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
       Py_XDECREF(item);
       Py_DECREF(list);
@@ -5135,9 +5133,6 @@ PyObject *igraphmodule_Graph_get_all_shortest_paths(igraphmodule_GraphObject *
 
   igraph_vs_destroy(&to);
   if (weights) { igraph_vector_destroy(weights); free(weights); }
-
-  /* FIXME: Not needed anymore? */
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(&res, igraph_vector_int_destroy);
 
   j = igraph_vector_int_list_size(&res);
   list = PyList_New(j);
@@ -5453,8 +5448,6 @@ PyObject *igraphmodule_Graph_neighborhood(igraphmodule_GraphObject *self,
     result = igraphmodule_vector_int_t_to_PyList(igraph_vector_int_list_get_ptr(&res, 0));
   }
 
-  /* FIXME: not needed I guess? */
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(&res, igraph_vector_int_destroy);
   igraph_vector_int_list_destroy(&res);
 
   return result;
@@ -9446,8 +9439,6 @@ PyObject *igraphmodule_Graph_get_isomorphisms_vf2(igraphmodule_GraphObject *self
 
   res = igraphmodule_vector_int_list_t_to_PyList(&result);
 
-  /* FIXME: this is probably not needed? */
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(&result, igraph_vector_int_destroy);
   igraph_vector_int_list_destroy(&result);
 
   return res;
@@ -9777,8 +9768,6 @@ PyObject *igraphmodule_Graph_get_subisomorphisms_vf2(igraphmodule_GraphObject *s
 
   res = igraphmodule_vector_int_list_t_to_PyList(&result);
 
-  /* FIXME: probably not needed? */
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(&result, igraph_vector_destroy);
   igraph_vector_int_list_destroy(&result);
 
   return res;
@@ -10542,10 +10531,6 @@ PyObject *igraphmodule_Graph_all_st_cuts(igraphmodule_GraphObject * self,
     return igraphmodule_handle_igraph_error();
   }
 
-  /* FIXME: probably not needed? */
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(&cuts, igraph_vector_int_destroy);
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(&partition1s, igraph_vector_int_destroy);
-
   cuts_o = igraphmodule_vector_int_list_t_to_PyList(&cuts);
   igraph_vector_int_list_destroy(&cuts);
   if (cuts_o == NULL) {
@@ -10609,10 +10594,6 @@ PyObject *igraphmodule_Graph_all_st_mincuts(igraphmodule_GraphObject * self,
   }
 
   igraph_vector_destroy(&capacity_vector);
-
-  /* FIXME: probably not needed? */
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(&cuts, igraph_vector_int_destroy);
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(&partition1s, igraph_vector_int_destroy);
 
   cuts_o = igraphmodule_vector_int_list_t_to_PyList(&cuts);
   igraph_vector_int_list_destroy(&cuts);
@@ -10962,8 +10943,6 @@ PyObject *igraphmodule_Graph_all_minimal_st_separators(
   }
 
   result_o = igraphmodule_vector_int_list_t_to_PyList(&result);
-  /* FIXME: probably not needed? */
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(&result, igraph_vector_destroy);
   igraph_vector_int_list_destroy(&result);
 
   return result_o;
@@ -11055,8 +11034,6 @@ PyObject *igraphmodule_Graph_minimum_size_separators(
   }
 
   result_o = igraphmodule_vector_int_list_t_to_PyList(&result);
-  /* FIXME: Probably not needed? */
-  //IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(&result, igraph_vector_destroy);
   igraph_vector_int_list_destroy(&result);
 
   return result_o;
@@ -11102,8 +11079,6 @@ PyObject *igraphmodule_Graph_cohesive_blocks(igraphmodule_GraphObject *self,
   }
 
   blocks_o = igraphmodule_vector_int_list_t_to_PyList(&blocks);
-  /* FIXME: probably not needed? */
-  //IGRAPH_VECTOR_INT_LIST_SET_ITEM_DESTRUCTOR(&blocks, igraph_vector_int_destroy);
   igraph_vector_int_list_destroy(&blocks);
   if (blocks_o == NULL) {
     igraph_vector_int_destroy(&parents);
