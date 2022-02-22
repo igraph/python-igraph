@@ -32,9 +32,9 @@
 
 PyObject* igraphmodule_handle_igraph_error(void);
 void igraphmodule_igraph_warning_hook(const char *reason, const char *file,
-				    int line, int igraph_errno);
+				    int line);
 void igraphmodule_igraph_error_hook(const char *reason, const char *file,
-				    int line, int igraph_errno);
+				    int line, igraph_error_t igraph_errno);
 
 extern PyObject* igraphmodule_InternalError;
 

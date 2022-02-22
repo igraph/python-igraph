@@ -59,7 +59,7 @@ PyObject* igraphmodule_handle_igraph_error() {
  * \brief Warning hook for \c igraph
  */
 void igraphmodule_igraph_warning_hook(const char *reason, const char *file,
-                                      int line, int igraph_errno) {
+                                      int line) {
   char buf[4096];
   snprintf(buf, sizeof(buf), "%s at %s:%i", reason, file, line);
   PY_IGRAPH_WARN(buf);
@@ -70,7 +70,7 @@ void igraphmodule_igraph_warning_hook(const char *reason, const char *file,
  * \brief Error hook for \c igraph
  */
 void igraphmodule_igraph_error_hook(const char *reason, const char *file,
-                                    int line, int igraph_errno) {
+                                    int line, igraph_error_t igraph_errno) {
   char buf[4096];
   char* punctuation = "";
   PyObject *exc = igraphmodule_InternalError;

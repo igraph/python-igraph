@@ -142,7 +142,7 @@ static int igraphmodule_clear(PyObject *m) {
   return 0;
 }
 
-static int igraphmodule_igraph_interrupt_hook(void* data) {
+static igraph_error_t igraphmodule_igraph_interrupt_hook(void* data) {
   if (PyErr_CheckSignals()) {
     IGRAPH_FINALLY_FREE();
     return IGRAPH_INTERRUPTED;
@@ -150,7 +150,7 @@ static int igraphmodule_igraph_interrupt_hook(void* data) {
   return IGRAPH_SUCCESS;
 }
 
-int igraphmodule_igraph_progress_hook(const char* message, igraph_real_t percent,
+igraph_error_t igraphmodule_igraph_progress_hook(const char* message, igraph_real_t percent,
 				       void* data) {
   PyObject* progress_handler = GETSTATE(0)->progress_handler;
   PyObject *result;
@@ -169,7 +169,7 @@ int igraphmodule_igraph_progress_hook(const char* message, igraph_real_t percent
   return IGRAPH_SUCCESS;
 }
 
-int igraphmodule_igraph_status_hook(const char* message, void*data) {
+igraph_error_t igraphmodule_igraph_status_hook(const char* message, void*data) {
   PyObject* status_handler = GETSTATE(0)->status_handler;
 
   if (status_handler) {
