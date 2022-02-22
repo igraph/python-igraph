@@ -757,18 +757,21 @@ GRAPH_PROXY_METHOD_PP(successors, "successors", _convert_to_vertex_list);
 
 #define GRAPH_PROXY_METHOD_SPEC(FUNC, METHODNAME) \
   {METHODNAME, (PyCFunction)igraphmodule_Vertex_##FUNC, METH_VARARGS | METH_KEYWORDS, \
+    METHODNAME "(*args, **kwds)\n--\n\n" \
     "Proxy method to L{Graph." METHODNAME "()<igraph._igraph.GraphBase." METHODNAME ">}\n\n"              \
     "This method calls the C{" METHODNAME "()} method of the L{Graph} class " \
     "with this vertex as the first argument, and returns the result.\n\n"\
     "@see: L{Graph." METHODNAME "()<igraph._igraph.GraphBase." METHODNAME ">} for details."}
 #define GRAPH_PROXY_METHOD_SPEC_2(FUNC, METHODNAME, METHODNAME_IN_GRAPH) \
   {METHODNAME, (PyCFunction)igraphmodule_Vertex_##FUNC, METH_VARARGS | METH_KEYWORDS, \
+    METHODNAME "(*args, **kwds)\n--\n\n" \
     "Proxy method to L{Graph." METHODNAME_IN_GRAPH "()<igraph._igraph.GraphBase." METHODNAME_IN_GRAPH ">}\n\n"              \
     "This method calls the C{" METHODNAME_IN_GRAPH "} method of the L{Graph} class " \
     "with this vertex as the first argument, and returns the result.\n\n"\
     "@see: L{Graph." METHODNAME_IN_GRAPH "()<igraph._igraph.GraphBase." METHODNAME_IN_GRAPH ">} for details."}
 #define GRAPH_PROXY_METHOD_SPEC_3(FUNC, METHODNAME) \
   {METHODNAME, (PyCFunction)igraphmodule_Vertex_##FUNC, METH_VARARGS | METH_KEYWORDS, \
+    METHODNAME "(*args, **kwds)\n--\n\n" \
     "Proxy method to L{Graph." METHODNAME "()}\n\n"              \
     "This method calls the C{" METHODNAME "()} method of the L{Graph} class " \
     "with this vertex as the first argument, and returns the result.\n\n"\
@@ -800,18 +803,21 @@ PyMethodDef igraphmodule_Vertex_methods[] = {
     "dictionaries."
   },
   {"all_edges", (PyCFunction)igraphmodule_Vertex_all_edges, METH_NOARGS,
+    "all_edges()\n--\n\n"
     "Proxy method to L{Graph.incident(..., mode=\"all\")<igraph._igraph.GraphBase.incident()>}\n\n" \
     "This method calls the incident() method of the L{Graph} class " \
     "with this vertex as the first argument and \"all\" as the mode " \
     "argument, and returns the result.\n\n"\
     "@see: L{Graph.incident()<igraph._igraph.GraphBase.incident()>} for details."},
   {"in_edges", (PyCFunction)igraphmodule_Vertex_in_edges, METH_NOARGS,
+    "in_edges()\n--\n\n"
     "Proxy method to L{Graph.incident(..., mode=\"in\")<igraph._igraph.GraphBase.incident()>}\n\n" \
     "This method calls the incident() method of the L{Graph} class " \
     "with this vertex as the first argument and \"in\" as the mode " \
     "argument, and returns the result.\n\n"\
     "@see: L{Graph.incident()<igraph._igraph.GraphBase.incident()>} for details."},
   {"out_edges", (PyCFunction)igraphmodule_Vertex_out_edges, METH_NOARGS,
+    "out_edges()\n--\n\n"
     "Proxy method to L{Graph.incident(..., mode=\"out\")<igraph._igraph.GraphBase.incident()>}\n\n" \
     "This method calls the incident() method of the L{Graph} class " \
     "with this vertex as the first argument and \"out\" as the mode " \

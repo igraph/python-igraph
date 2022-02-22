@@ -13781,9 +13781,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: a list with the (exact or estimated) edge betweennesses of all\n"
    "  edges.\n"},
 
-    {"eigen_adjacency", (PyCFunction) igraphmodule_Graph_eigen_adjacency,
-     METH_VARARGS | METH_KEYWORDS,
-     "" },
+  {"eigen_adjacency", (PyCFunction) igraphmodule_Graph_eigen_adjacency,
+   METH_VARARGS | METH_KEYWORDS,
+   "" },
 
   /* interface to igraph_[st_]edge_connectivity */
   {"edge_connectivity", (PyCFunction) igraphmodule_Graph_edge_connectivity,
@@ -16595,7 +16595,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"__graph_as_capsule",
    (PyCFunction) igraphmodule_Graph___graph_as_capsule__,
    METH_VARARGS | METH_KEYWORDS,
-   "__graph_as_capsule()\n\n"
+   "__graph_as_capsule()\n--\n\n"
    "Returns the igraph graph encapsulated by the Python object as\n"
    "a PyCapsule\n\n."
    "A PyCapsule is practically a regular C pointer, wrapped in a\n"
