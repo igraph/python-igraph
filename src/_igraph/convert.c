@@ -2612,7 +2612,6 @@ int igraphmodule_PyObject_to_vector_ptr_t(PyObject* list, igraph_vector_ptr_t* v
     }
 
     /* ownership of 'subvec' taken by 'vec' here, we should still free the pointer */
-    free(subvec);
   }
 
   Py_DECREF(it);
@@ -2683,7 +2682,6 @@ int igraphmodule_PyObject_to_vector_int_ptr_t(PyObject* list, igraph_vector_ptr_
     }
 
     /* ownership of 'subvec' taken by 'vec' here, we should still free the pointer */
-    free(subvec);
   }
 
   Py_DECREF(it);
