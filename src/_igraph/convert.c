@@ -2596,6 +2596,7 @@ int igraphmodule_PyObject_to_vector_ptr_t(PyObject* list, igraph_vector_ptr_t* v
       Py_DECREF(item);
       Py_DECREF(it);
       igraph_vector_destroy(subvec);
+      free(subvec);
       igraph_vector_ptr_destroy_all(vec);
       return 1;
     }
@@ -2605,11 +2606,13 @@ int igraphmodule_PyObject_to_vector_ptr_t(PyObject* list, igraph_vector_ptr_t* v
     if (igraph_vector_ptr_push_back(vec, subvec)) {
       Py_DECREF(it);
       igraph_vector_destroy(subvec);
+      free(subvec);
       igraph_vector_ptr_destroy_all(vec);
       return 1;
     }
 
-    /* ownership of 'subvec' taken by 'vec' here */
+    /* ownership of 'subvec' taken by 'vec' here, we should still free the pointer */
+    free(subvec);
   }
 
   Py_DECREF(it);
@@ -2664,6 +2667,7 @@ int igraphmodule_PyObject_to_vector_int_ptr_t(PyObject* list, igraph_vector_ptr_
       Py_DECREF(item);
       Py_DECREF(it);
       igraph_vector_int_destroy(subvec);
+      free(subvec);
       igraph_vector_ptr_destroy_all(vec);
       return 1;
     }
@@ -2673,11 +2677,13 @@ int igraphmodule_PyObject_to_vector_int_ptr_t(PyObject* list, igraph_vector_ptr_
     if (igraph_vector_ptr_push_back(vec, subvec)) {
       Py_DECREF(it);
       igraph_vector_int_destroy(subvec);
+      free(subvec);
       igraph_vector_ptr_destroy_all(vec);
       return 1;
     }
 
-    /* ownership of 'subvec' taken by 'vec' here */
+    /* ownership of 'subvec' taken by 'vec' here, we should still free the pointer */
+    free(subvec);
   }
 
   Py_DECREF(it);
@@ -2695,7 +2701,7 @@ int igraphmodule_PyObject_to_vector_int_ptr_t(PyObject* list, igraph_vector_ptr_
  */
 int igraphmodule_PyObject_to_vector_list_t(PyObject* list, igraph_vector_list_t* veclist) {
   PyObject *it, *item;
-  igraph_vector_t *vec;
+  igraph_vector_t vec;
 
   if (PyUnicode_Check(list)) {
     PyErr_SetString(PyExc_TypeError, "expected iterable (but not string)");
@@ -2714,34 +2720,24 @@ int igraphmodule_PyObject_to_vector_list_t(PyObject* list, igraph_vector_list_t*
   }
 
   while ((item = PyIter_Next(it)) != 0) {
-    vec = IGRAPH_CALLOC(1, igraph_vector_t);
-    if (vec == 0) {
+    if (igraphmodule_PyObject_to_vector_t(item, &vec, 0)) {
       Py_DECREF(item);
       Py_DECREF(it);
-      PyErr_NoMemory();
-      return 1;
-    }
-
-    if (igraphmodule_PyObject_to_vector_t(item, vec, 0)) {
-      Py_DECREF(item);
-      Py_DECREF(it);
-      igraph_vector_destroy(vec);
+      igraph_vector_destroy(&vec);
       igraph_vector_list_destroy(veclist);
       return 1;
     }
 
     Py_DECREF(item);
 
-    /* The C core manages the subvec memory from now on,
-     * so no need to use push_back_copy */
-    if (igraph_vector_list_push_back(veclist, vec)) {
+    if (igraph_vector_list_push_back(veclist, &vec)) {
       Py_DECREF(it);
-      igraph_vector_destroy(vec);
+      igraph_vector_destroy(&vec);
       igraph_vector_list_destroy(veclist);
       return 1;
     }
 
-    /* ownership of 'subvec' taken by 'vec' here */
+    /* ownership of 'vec' taken by 'veclist' here */
   }
 
   Py_DECREF(it);
@@ -2757,9 +2753,9 @@ int igraphmodule_PyObject_to_vector_list_t(PyObject* list, igraph_vector_list_t*
  * \param m the address of an uninitialized \c igraph_vector_int_list_t
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyObject_to_vector_int_list_t(PyObject* list, igraph_vector_int_list_t* vec) {
+int igraphmodule_PyObject_to_vector_int_list_t(PyObject* list, igraph_vector_int_list_t* veclist) {
   PyObject *it, *item;
-  igraph_vector_int_t *subvec;
+  igraph_vector_int_t vec;
 
   if (PyUnicode_Check(list)) {
     PyErr_SetString(PyExc_TypeError, "expected iterable (but not string)");
@@ -2771,41 +2767,31 @@ int igraphmodule_PyObject_to_vector_int_list_t(PyObject* list, igraph_vector_int
     return 1;
   }
 
-  if (igraph_vector_int_list_init(vec, 0)) {
+  if (igraph_vector_int_list_init(veclist, 0)) {
     igraphmodule_handle_igraph_error();
     Py_DECREF(it);
     return 1;
   }
 
   while ((item = PyIter_Next(it)) != 0) {
-    subvec = IGRAPH_CALLOC(1, igraph_vector_int_t);
-    if (subvec == 0) {
+    if (igraphmodule_PyObject_to_vector_int_t(item, &vec)) {
       Py_DECREF(item);
       Py_DECREF(it);
-      PyErr_NoMemory();
-      return 1;
-    }
-
-    if (igraphmodule_PyObject_to_vector_int_t(item, subvec)) {
-      Py_DECREF(item);
-      Py_DECREF(it);
-      igraph_vector_int_destroy(subvec);
-      igraph_vector_int_list_destroy(vec);
+      igraph_vector_int_destroy(&vec);
+      igraph_vector_int_list_destroy(veclist);
       return 1;
     }
 
     Py_DECREF(item);
 
-    /* The C core manages the subvec memory from now on,
-     * so no need to use push_back_copy */
-    if (igraph_vector_int_list_push_back(vec, subvec)) {
+    if (igraph_vector_int_list_push_back(veclist, &vec)) {
       Py_DECREF(it);
-      igraph_vector_int_destroy(subvec);
-      igraph_vector_int_list_destroy(vec);
+      igraph_vector_int_destroy(&vec);
+      igraph_vector_int_list_destroy(veclist);
       return 1;
     }
 
-    /* ownership of 'subvec' taken by 'vec' here */
+    /* ownership of 'vec' taken by 'veclist' here */
   }
 
   Py_DECREF(it);
