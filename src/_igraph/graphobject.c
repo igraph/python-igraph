@@ -5826,7 +5826,7 @@ PyObject *igraphmodule_Graph_shortest_paths(igraphmodule_GraphObject * self,
       }
     }
   } else {
-    /* No weights, use a simple BFS */
+    /* No weights or empty weight vector, use a simple BFS */
     e = igraph_shortest_paths(&self->g, &res, from_vs, to_vs, mode);
   }
 
