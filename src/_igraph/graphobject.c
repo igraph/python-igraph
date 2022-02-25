@@ -5019,7 +5019,6 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
   /* Initialize the vector_int_list itself, size is managed internally
    * by the C core function */
   if (igraph_vector_int_list_init(&veclist, 0)) {
-    PyErr_SetString(PyExc_MemoryError, "");
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraph_vs_destroy(&to);
     return NULL;
@@ -5041,13 +5040,8 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
 
   /* Convert to Python list of paths */
   list = igraphmodule_vector_int_list_t_to_PyList(&veclist);
-  if (!list) {
-    igraph_vector_int_list_destroy(&veclist);
-    return NULL;
-  }
-
-  /* Free list memory */
   igraph_vector_int_list_destroy(&veclist);
+  return list ? list : NULL;
 
   return list;
 }
@@ -5110,13 +5104,8 @@ PyObject *igraphmodule_Graph_get_all_shortest_paths(igraphmodule_GraphObject *
   if (weights) { igraph_vector_destroy(weights); free(weights); }
 
   list = igraphmodule_vector_int_list_t_to_PyList(&res);
-  if (!list) {
-    igraph_vector_int_list_destroy(&res);
-    return NULL;
-  }
-
   igraph_vector_int_list_destroy(&res);
-  return list;
+  return list ? list : NULL;
 }
 
 /** \ingroup python_interface_graph
@@ -9395,7 +9384,6 @@ PyObject *igraphmodule_Graph_get_isomorphisms_vf2(igraphmodule_GraphObject *self
   if (edge_color2) { igraph_vector_int_destroy(edge_color2); free(edge_color2); }
 
   result_o = igraphmodule_vector_int_list_t_to_PyList(&res);
-
   igraph_vector_int_list_destroy(&res);
 
   return result_o;
@@ -9724,7 +9712,6 @@ PyObject *igraphmodule_Graph_get_subisomorphisms_vf2(igraphmodule_GraphObject *s
   if (edge_color2) { igraph_vector_int_destroy(edge_color2); free(edge_color2); }
 
   result_o = igraphmodule_vector_int_list_t_to_PyList(&res);
-
   igraph_vector_int_list_destroy(&res);
 
   return result_o;
@@ -11102,6 +11089,7 @@ PyObject *igraphmodule_Graph_cliques(igraphmodule_GraphObject * self,
   }
 
   if (igraph_vector_int_list_init(&res, 0)) {
+    /* FIXME: when is this line needed? */
     PyErr_SetString(PyExc_MemoryError, "");
     return NULL;
   }
