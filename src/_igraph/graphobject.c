@@ -5021,16 +5021,17 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
   if (igraph_vector_int_list_init(&veclist, 0)) {
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraph_vs_destroy(&to);
+    igraphmodule_handle_igraph_error();
     return NULL;
   }
 
   /* Call the C function */
   if (igraph_get_shortest_paths_dijkstra(&self->g, use_edges ? 0 : &veclist,
         use_edges ? &veclist : 0, from, to, weights, mode, 0, 0)) {
-    igraphmodule_handle_igraph_error();
     igraph_vector_int_list_destroy(&veclist);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraph_vs_destroy(&to);
+    igraphmodule_handle_igraph_error();
     return NULL;
   }
 
@@ -11089,8 +11090,7 @@ PyObject *igraphmodule_Graph_cliques(igraphmodule_GraphObject * self,
   }
 
   if (igraph_vector_int_list_init(&res, 0)) {
-    /* FIXME: when is this line needed? */
-    PyErr_SetString(PyExc_MemoryError, "");
+    igraphmodule_handle_igraph_error();
     return NULL;
   }
 
