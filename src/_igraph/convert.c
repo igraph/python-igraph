@@ -2441,6 +2441,8 @@ PyObject* igraphmodule_vector_int_list_t_to_PyList_of_tuples(const igraph_vector
  * data structures that are now supposedly managed by Python.
  *
  * \param v the \c igraph_graph_list_t containing the list to be converted
+ * \param type the GraphBase subclass you want your graphs to use. When called from
+ *   a GraphBase method, this is typically Py_TYPE(self)
  * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_graph_list_t_to_PyList(const igraph_graph_list_t *v, PyTypeObject* type) {
