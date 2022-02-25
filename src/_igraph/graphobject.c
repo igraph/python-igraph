@@ -11081,9 +11081,8 @@ PyObject *igraphmodule_Graph_cliques(igraphmodule_GraphObject * self,
                                      PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] = { "min", "max", NULL };
-  PyObject *list, *item;
+  PyObject *list;
   Py_ssize_t min_size = 0, max_size = 0;
-  igraph_integer_t i, n;
   igraph_vector_int_list_t res;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nn", kwlist,
@@ -11112,26 +11111,10 @@ PyObject *igraphmodule_Graph_cliques(igraphmodule_GraphObject * self,
     return igraphmodule_handle_igraph_error();
   }
 
-  n = igraph_vector_int_list_size(&res);
-  list = PyList_New(n);
-  if (!list) {
-    return NULL;
-  }
 
-  for (i = 0; i < n; i++) {
-    igraph_vector_int_t *vec = igraph_vector_int_list_get_ptr(&res, i);
-    item = igraphmodule_vector_int_t_to_PyTuple(vec);
-    if (!item || PyList_SetItem(list, i, item)) {
-      igraph_vector_int_list_destroy(&res);
-      Py_XDECREF(item);
-      Py_DECREF(list);
-      return NULL;
-    }
-    igraph_vector_int_destroy(vec);
-  }
+  list = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&res);
   igraph_vector_int_list_destroy(&res);
-
-  return list;
+  return list ? list : NULL;
 }
 
 /** \ingroup python_interface_graph
@@ -11153,14 +11136,8 @@ PyObject *igraphmodule_Graph_largest_cliques(igraphmodule_GraphObject * self)
   }
 
   list = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&res);
-  if (!list) {
-    igraph_vector_int_list_destroy(&res);
-    return NULL;
-  }
-
   igraph_vector_int_list_destroy(&res);
-
-  return list;
+  return list ? list : NULL;
 }
 
 /** \ingroup python_interface_graph
@@ -11220,8 +11197,8 @@ PyObject *igraphmodule_Graph_maximum_bipartite_matching(igraphmodule_GraphObject
 PyObject *igraphmodule_Graph_maximal_cliques(igraphmodule_GraphObject * self,
     PyObject* args, PyObject* kwds) {
   static char* kwlist[] = { "min", "max", "file", NULL };
-  PyObject *list, *item, *file = Py_None;
-  Py_ssize_t min = 0, max = 0, i, n;
+  PyObject *list, *file = Py_None;
+  Py_ssize_t min = 0, max = 0;
   igraph_vector_int_list_t res;
   igraphmodule_filehandle_t filehandle;
 
@@ -11242,26 +11219,10 @@ PyObject *igraphmodule_Graph_maximal_cliques(igraphmodule_GraphObject * self,
       return igraphmodule_handle_igraph_error();
     }
 
-    n = igraph_vector_int_list_size(&res);
-    list = PyList_New(n);
-    if (!list) {
-      return NULL;
-    }
-
-    for (i = 0; i < n; i++) {
-      igraph_vector_int_t *vec = igraph_vector_int_list_get_ptr(&res, i);
-      item = igraphmodule_vector_int_t_to_PyTuple(vec);
-      if (!item || PyList_SetItem(list, i, item)) {
-        igraph_vector_int_list_destroy(&res);
-        Py_XDECREF(item);
-        Py_DECREF(list);
-        return NULL;
-      }
-      igraph_vector_int_destroy(vec);
-    }
+    list = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&res);
     igraph_vector_int_list_destroy(&res);
+    return list ? list : NULL;
 
-    return list;
   } else {
     if (igraphmodule_filehandle_init(&filehandle, file, "w")) {
       return igraphmodule_handle_igraph_error();
@@ -11298,9 +11259,8 @@ PyObject *igraphmodule_Graph_independent_vertex_sets(igraphmodule_GraphObject
                                                      PyObject * kwds)
 {
   static char *kwlist[] = { "min", "max", NULL };
-  PyObject *list, *item;
+  PyObject *list;
   Py_ssize_t min_size = 0, max_size = 0;
-  igraph_integer_t i, n;
   igraph_vector_int_list_t res;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nn", kwlist,
@@ -11329,26 +11289,9 @@ PyObject *igraphmodule_Graph_independent_vertex_sets(igraphmodule_GraphObject
     return igraphmodule_handle_igraph_error();
   }
 
-  n = igraph_vector_int_list_size(&res);
-  list = PyList_New(n);
-  if (!list) {
-    return NULL;
-  }
-
-  for (i = 0; i < n; i++) {
-    igraph_vector_int_t *vec = igraph_vector_int_list_get_ptr(&res, i);
-    item = igraphmodule_vector_int_t_to_PyTuple(vec);
-    if (!item || PyList_SetItem(list, i, item)) {
-      igraph_vector_int_list_destroy(&res);
-      Py_XDECREF(item);
-      Py_DECREF(list);
-      return NULL;
-    }
-    igraph_vector_int_destroy(vec);
-  }
+  list = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&res);
   igraph_vector_int_list_destroy(&res);
-
-  return list;
+  return list ? list : NULL;
 }
 
 /** \ingroup python_interface_graph
@@ -11358,8 +11301,7 @@ PyObject
   *igraphmodule_Graph_largest_independent_vertex_sets(igraphmodule_GraphObject
                                                       * self)
 {
-  PyObject *list, *item;
-  igraph_integer_t i, n;
+  PyObject *list;
   igraph_vector_int_list_t res;
 
   if (igraph_vector_int_list_init(&res, 0)) {
@@ -11372,25 +11314,9 @@ PyObject
     return igraphmodule_handle_igraph_error();
   }
 
-  n = igraph_vector_int_list_size(&res);
-  list = PyList_New(n);
-  if (!list)
-    return NULL;
-
-  for (i = 0; i < n; i++) {
-    igraph_vector_int_t *vec = igraph_vector_int_list_get_ptr(&res, i);
-    item = igraphmodule_vector_int_t_to_PyTuple(vec);
-    if (!item || PyList_SetItem(list, i, item)) {
-      igraph_vector_int_list_destroy(&res);
-      Py_XDECREF(item);
-      Py_DECREF(list);
-      return NULL;
-    }
-    igraph_vector_int_destroy(vec);
-  }
+  list = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&res);
   igraph_vector_int_list_destroy(&res);
-
-  return list;
+  return list ? list : NULL;
 }
 
 /** \ingroup python_interface_graph
@@ -11400,8 +11326,7 @@ PyObject
   *igraphmodule_Graph_maximal_independent_vertex_sets(igraphmodule_GraphObject
                                                       * self)
 {
-  PyObject *list, *item;
-  igraph_integer_t i, n;
+  PyObject *list;
   igraph_vector_int_list_t res;
 
   if (igraph_vector_int_list_init(&res, 0)) {
@@ -11414,26 +11339,9 @@ PyObject
     return igraphmodule_handle_igraph_error();
   }
 
-  n = igraph_vector_int_list_size(&res);
-  list = PyList_New(n);
-  if (!list) {
-    return NULL;
-  }
-
-  for (i = 0; i < n; i++) {
-    igraph_vector_int_t *vec = igraph_vector_int_list_get_ptr(&res, i);
-    item = igraphmodule_vector_int_t_to_PyTuple(vec);
-    if (!item || PyList_SetItem(list, i, item)) {
-      igraph_vector_int_list_destroy(&res);
-      Py_XDECREF(item);
-      Py_DECREF(list);
-      return NULL;
-    }
-    igraph_vector_int_destroy(vec);
-  }
+  list = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&res);
   igraph_vector_int_list_destroy(&res);
-
-  return list;
+  return list ? list : NULL;
 }
 
 /** \ingroup python_interface_graph
