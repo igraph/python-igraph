@@ -2264,7 +2264,7 @@ PyObject* igraphmodule_matrix_int_t_to_PyList(const igraph_matrix_int_t *m) {
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_ptr_t to a Python list of lists
  *
- * \param v the \c igraph_vector_ptr_t containing the vector to be converted
+ * \param v the \c igraph_vector_ptr_t containing the vector pointer to be converted
  * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
@@ -2298,7 +2298,7 @@ PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_ptr_t to a Python list of lists
  *
- * \param v the \c igraph_vector_ptr_t containing the vector to be converted
+ * \param v the \c igraph_vector_ptr_t containing the vector pointer to be converted
  * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_vector_int_ptr_t_to_PyList(const igraph_vector_ptr_t *v) {
@@ -2331,7 +2331,7 @@ PyObject* igraphmodule_vector_int_ptr_t_to_PyList(const igraph_vector_ptr_t *v) 
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_list_t to a Python list of lists
  *
- * \param v the \c igraph_vector_list_t containing the vector to be converted
+ * \param v the \c igraph_vector_list_t containing the vector list to be converted
  * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_vector_list_t_to_PyList(const igraph_vector_list_t *v) {
@@ -2365,7 +2365,7 @@ PyObject* igraphmodule_vector_list_t_to_PyList(const igraph_vector_list_t *v) {
  * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_int_list_t to a Python list of lists
  *
- * \param v the \c igraph_vector_int_list_t containing the vector to be converted
+ * \param v the \c igraph_vector_int_list_t containing the vector list to be converted
  * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
  */
 PyObject* igraphmodule_vector_int_list_t_to_PyList(const igraph_vector_int_list_t *v) {
@@ -2389,6 +2389,90 @@ PyObject* igraphmodule_vector_int_list_t_to_PyList(const igraph_vector_int_list_
       return NULL;
     }
     PyList_SetItem(list, i, item);  /* will not fail */
+  }
+
+  return list;
+}
+
+
+/**
+ * \ingrup python_interface_conversion
+ * \brief Converts an igraph \c igraph_vector_int_list_t to a Python list of tuples
+ *
+ * \param v the \c igraph_vector_int_list_t containing the vector list to be converted
+ * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
+ */
+PyObject* igraphmodule_vector_int_list_t_to_PyList_of_tuples(const igraph_vector_int_list_t *v) {
+  PyObject *list, *item;
+  Py_ssize_t n, i;
+
+  n = igraph_vector_int_list_size(v);
+  if (n < 0) {
+    return igraphmodule_handle_igraph_error();
+  }
+
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
+
+  for (i = 0; i < n; i++) {
+    item = igraphmodule_vector_int_t_to_PyTuple(igraph_vector_int_list_get_ptr(v, i));
+    if (item == NULL) {
+      Py_DECREF(list);
+      return NULL;
+    }
+    PyList_SetItem(list, i, item);  /* will not fail */
+  }
+
+  return list;
+
+}
+
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts an \c igraph_graph_list_t into a Python list of graphs
+ *
+ * This function transfers ownership of the graphs to Python and frees the pointers
+ * to them. If it fails, you can call \c igraph_graph_list_destroy if you have to.
+ * If successful, do nothing and especially do *not* destroy the list, because that
+ * will destroy each graph inside, which in turns destroys the vertices and edges
+ * data structures that are now supposedly managed by Python.
+ *
+ * \param v the \c igraph_graph_list_t containing the list to be converted
+ * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
+ */
+PyObject* igraphmodule_graph_list_t_to_PyList(const igraph_graph_list_t *v, PyTypeObject* type) {
+  PyObject *list;
+  Py_ssize_t n, i;
+  igraph_t *g;
+  igraphmodule_GraphObject *o;
+
+  /* We have to create a Python igraph object for every graph returned */
+  n = igraph_graph_list_size(v);
+  list = PyList_New(n);
+  for (i = 0; i < n; i++) {
+    /* Python takes ownership of vertices and nodes here */
+    g = igraph_graph_list_get_ptr(v, i);
+    o = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t(type, g);
+
+    if (PyList_SetItem(list, i, (PyObject *) o)) {
+      Py_DECREF(o);
+      Py_DECREF(list);
+      return 0;
+    }
+  }
+
+  /* Now we know the function went fine, so we can free pointers without worrying
+   * that we won't be able to find them again */
+
+  /* reference has been transferred by PyList_SetItem, no need to DECREF.
+   *
+   * we mustn't call igraph_destroy here, because it would free the vertices
+   * and the edges as well, but we need them in o->g. So just call free */
+  for (i = 0; i < n; i++) {
+    free(igraph_graph_list_get_ptr(v, i));
   }
 
   return list;
@@ -2611,7 +2695,7 @@ int igraphmodule_PyObject_to_vector_ptr_t(PyObject* list, igraph_vector_ptr_t* v
       return 1;
     }
 
-    /* ownership of 'subvec' taken by 'vec' here, we should still free the pointer */
+    /* ownership of 'subvec' taken by 'vec' here */
   }
 
   Py_DECREF(it);
@@ -2681,7 +2765,7 @@ int igraphmodule_PyObject_to_vector_int_ptr_t(PyObject* list, igraph_vector_ptr_
       return 1;
     }
 
-    /* ownership of 'subvec' taken by 'vec' here, we should still free the pointer */
+    /* ownership of 'subvec' taken by 'vec' here */
   }
 
   Py_DECREF(it);
@@ -2691,7 +2775,7 @@ int igraphmodule_PyObject_to_vector_int_ptr_t(PyObject* list, igraph_vector_ptr_
 /**
  * \ingroup python_interface_conversion
  * \brief Converts a Python list of lists to an \c igraph_vector_list_t
- *        (containing \c igraph_vector_int_t items).
+ *        (containing \c igraph_vector_t items).
  *
  * \param o the Python object representing the list of lists
  * \param m the address of an uninitialized \c igraph_vector_list_t
