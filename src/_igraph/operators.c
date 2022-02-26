@@ -135,15 +135,15 @@ PyObject *igraphmodule__union(PyObject *self,
 
   if (with_edgemaps) {
     /* prepare edgemaps */
-    igraph_vector_ptr_t edgemaps;
-    if (igraph_vector_ptr_init(&edgemaps, 0)) {
+    igraph_vector_int_list_t edgemaps;
+    if (igraph_vector_int_list_init(&edgemaps, 0)) {
       return igraphmodule_handle_igraph_error();
     }
 
     /* Create union */
     if (igraph_union_many(&g, &gs, &edgemaps)) {
       igraph_vector_ptr_destroy(&gs);
-      igraph_vector_ptr_destroy(&edgemaps);
+      igraph_vector_int_list_destroy(&edgemaps);
       igraphmodule_handle_igraph_error();
       return NULL;
     }
@@ -152,14 +152,14 @@ PyObject *igraphmodule__union(PyObject *self,
     em_list = PyList_New(no_of_graphs);
     for (i = 0; i < no_of_graphs; i++) {
       Py_ssize_t no_of_edges = igraph_ecount(VECTOR(gs)[i]);
-      igraph_vector_int_t *map = VECTOR(edgemaps)[i];
+      igraph_vector_int_t *map = igraph_vector_int_list_get_ptr(&edgemaps, i);
       PyObject *emi = PyList_New(no_of_edges);
       if (emi) {
         for (j = 0; j < no_of_edges; j++) {
           PyObject *dest = igraphmodule_integer_t_to_PyObject(VECTOR(*map)[j]);
           if (!dest || PyList_SetItem(emi, j, dest)) {
             igraph_vector_ptr_destroy(&gs);
-            igraph_vector_ptr_destroy(&edgemaps);
+            igraph_vector_int_list_destroy(&edgemaps);
             Py_XDECREF(dest);
             Py_DECREF(emi);
             Py_DECREF(em_list);
@@ -169,13 +169,13 @@ PyObject *igraphmodule__union(PyObject *self,
       }
       if (!emi || PyList_SetItem(em_list, i, emi)) {
         igraph_vector_ptr_destroy(&gs);
-        igraph_vector_ptr_destroy(&edgemaps);
+        igraph_vector_int_list_destroy(&edgemaps);
         Py_XDECREF(emi);
         Py_DECREF(em_list);
         return NULL;
       }
     }
-    igraph_vector_ptr_destroy(&edgemaps);
+    igraph_vector_int_list_destroy(&edgemaps);
   } else {
     /* Create union */
     if (igraph_union_many(&g, &gs, /* edgemaps */ 0)) {
@@ -258,15 +258,15 @@ PyObject *igraphmodule__intersection(PyObject *self,
 
   if (with_edgemaps) {
     /* prepare edgemaps */
-    igraph_vector_ptr_t edgemaps;
-    if (igraph_vector_ptr_init(&edgemaps, 0)) {
+    igraph_vector_int_list_t edgemaps;
+    if (igraph_vector_int_list_init(&edgemaps, 0)) {
       return igraphmodule_handle_igraph_error();
     }
 
     /* Create intersection */
     if (igraph_intersection_many(&g, &gs, &edgemaps)) {
       igraph_vector_ptr_destroy(&gs);
-      igraph_vector_ptr_destroy(&edgemaps);
+      igraph_vector_int_list_destroy(&edgemaps);
       igraphmodule_handle_igraph_error();
       return NULL;
     }
@@ -274,14 +274,14 @@ PyObject *igraphmodule__intersection(PyObject *self,
     em_list = PyList_New((Py_ssize_t) no_of_graphs);
     for (i = 0; i < no_of_graphs; i++) {
       Py_ssize_t no_of_edges = igraph_ecount(VECTOR(gs)[i]);
-      igraph_vector_int_t *map = VECTOR(edgemaps)[i];
+      igraph_vector_int_t *map = igraph_vector_int_list_get_ptr(&edgemaps, i);
       PyObject *emi = PyList_New(no_of_edges);
       if (emi) {
         for (j = 0; j < no_of_edges; j++) {
           PyObject *dest = igraphmodule_integer_t_to_PyObject(VECTOR(*map)[j]);
           if (!dest || PyList_SetItem(emi, j, dest)) {
             igraph_vector_ptr_destroy(&gs);
-            igraph_vector_ptr_destroy(&edgemaps);
+            igraph_vector_int_list_destroy(&edgemaps);
             Py_XDECREF(dest);
             Py_DECREF(emi);
             Py_DECREF(em_list);
@@ -291,13 +291,13 @@ PyObject *igraphmodule__intersection(PyObject *self,
       }
       if (!emi || PyList_SetItem(em_list, i, emi)) {
         igraph_vector_ptr_destroy(&gs);
-        igraph_vector_ptr_destroy(&edgemaps);
+        igraph_vector_int_list_destroy(&edgemaps);
         Py_XDECREF(emi);
         Py_DECREF(em_list);
         return NULL;
       }
     }
-    igraph_vector_ptr_destroy(&edgemaps);
+    igraph_vector_int_list_destroy(&edgemaps);
 
   } 
   else {

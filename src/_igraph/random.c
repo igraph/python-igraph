@@ -55,10 +55,10 @@ static igraph_i_rng_Python_state_t igraph_rng_Python_state = {0, 0, 0};
 static igraph_rng_t igraph_rng_Python = {0, 0, 0};
 static igraph_rng_t igraph_rng_default_saved = {0, 0, 0};
 
-int igraph_rng_Python_init(void **state) {
+igraph_error_t igraph_rng_Python_init(void **state) {
   IGRAPH_ERROR("Python RNG error, unsupported function called",
       IGRAPH_EINTERNAL);
-  return 0;
+  return IGRAPH_SUCCESS;
 }
 
 void igraph_rng_Python_destroy(void *state) {
@@ -152,10 +152,10 @@ PyObject* igraph_rng_Python_set_generator(PyObject* self, PyObject* object) {
  * \ingroup python_interface_rng
  * \brief Sets the seed of the random generator.
  */
-int igraph_rng_Python_seed(void *state, unsigned long int seed) {
+igraph_error_t igraph_rng_Python_seed(void *state, unsigned long int seed) {
   IGRAPH_ERROR("Python RNG error, unsupported function called",
       IGRAPH_EINTERNAL);
-  return 0;
+  return IGRAPH_SUCCESS;
 }
 
 /**
