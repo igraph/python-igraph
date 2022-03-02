@@ -127,7 +127,7 @@ Alternatively, if you have already downloaded and extracted the source code
 of igraph, you can run `setup.py` directly:
 
 ```bash
-python setup.py build --use-pkg-config
+python setup.py install --use-pkg-config
 ```
 
 This option is primarily intended for package maintainers in Linux
@@ -142,10 +142,33 @@ possible to build against an external library on Windows.
 
 ## Compiling the development version
 
-If you have downloaded the source code from Github and not PyPI, chances are
-that you have the latest development version, which contains a matching version
-of the C core of igraph as a git submodule. Therefore, to install the bleeding
-edge version, you need to instruct git to check out the submodules first:
+If you want to install the development version, the easiest way to do so is to
+install it using
+
+```bash
+pip install git+https://github.com/igraph/python-igraph
+```
+
+This automatically fetches the development version from the repository, builds
+the package and installs it. By default, this will install the Python interface
+from the `master` branch, which is used as the basis for the development of the
+current release series. Unstable and breaking changes are being made in the `develop` branch. You can install this similarly by doing
+
+```bash
+pip install git+https://github.com/igraph/python-igraph@develop
+```
+
+In addition to `git`, the installation of the development version requires some
+additional dependencies, read further below for details.
+
+For more information about installing directly from `git` using `pip` see 
+https://pip.pypa.io/en/stable/topics/vcs-support/#git.
+
+
+Alternatively, you can clone this repository locally. This repository contains a
+matching version of the C core of `igraph` as a git submodule. In order to
+install the development version from source, you need to instruct git to check
+out the submodules first:
 
 ```bash
 git submodule update --init
@@ -162,16 +185,22 @@ On macOS you can install these from Homebrew or MacPorts. On Windows you can
 install `winflexbison3` from Chocolatey.
 
 Then, running the setup script should work if you have a C compiler and the
-necessary build dependencies (see the previous section):
+necessary build dependencies (see also the previous section):
 
 ```bash
 python setup.py build
 ```
 
-## Running unit tests
+You can install it using
 
-Unit tests can be executed from the project directory with `tox` or with the
-built-in unittest module:
+```bash
+python setup.py install
+```
+
+### Running unit tests
+
+Unit tests can be executed from within the repository directory with `tox` or
+with the built-in `unittest` module:
 
 ```bash
 python -m unittest
@@ -185,34 +214,18 @@ If you want to add a feature, fix a bug, or suggest an improvement, open an
 issue on this repository and we'll try to answer. If you have a piece of code
 that you would like to see included in the main tree, open a PR on this repo.
 
-To start developing `igraph`, follow the steps below (these are
-for Linux, Windows users should change the system commands a little).
+To start developing `igraph`, follow the steps above about installing the development version. Make sure that you do so by cloning the repository locally so that you are able to make changes.
 
-First, clone this repo (e.g. via https) and enter the folder:
-
-```bash
-git clone https://github.com/igraph/python-igraph.git
-cd python-igraph
-```
-
-Second, check out the necessary git submodules:
-
-```bash
-git submodule update --init
-```
-
-and install igraph in development mode so your changes in the Python source
+For easier development, you can install `igraph` in development mode so your changes in the Python source
 code are picked up automatically by Python:
 
 ```bash
 python setup.py develop
 ```
 
-**NOTE**: Building requires `CMake`, a C compiler, and a few more dependencies.
-
 Changes that you make to the Python code do not need any extra action. However,
 if you adjust the source code of the C extension, you need to rebuild it by running
-`python setup.py develop` again. However, compilation of igraph's C core is
+`python setup.py develop` again. Compilation of the C core of `igraph` is
 cached in ``vendor/build`` and ``vendor/install`` so subsequent builds are much
 faster than the first one as the C core does not need to be recompiled.
 
