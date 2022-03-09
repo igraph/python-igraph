@@ -272,13 +272,8 @@ class IgraphCCoreCMakeBuilder:
         if retcode:
             return False
 
-        pkgconfig_candidates = [
-            install_folder / "lib" / "pkgconfig" / "igraph.pc",
-            install_folder / "lib64" / "pkgconfig" / "igraph.pc",
-        ]
-        for candidate in pkgconfig_candidates:
-            if candidate.exists():
-                return self._parse_pkgconfig_file(candidate)
+        for candidate in install_folder.rglob("igraph.pc"):
+            return self._parse_pkgconfig_file(candidate)
 
         raise RuntimeError(
             "no igraph.pc was found in the installation folder of igraph"
