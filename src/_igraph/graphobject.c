@@ -8838,7 +8838,6 @@ PyObject *igraphmodule_Graph_canonical_permutation(
 PyObject *igraphmodule_Graph_isoclass(igraphmodule_GraphObject * self,
                                       PyObject * args, PyObject * kwds)
 {
-  Py_ssize_t n;
   igraph_integer_t isoclass = 0;
   PyObject *vids = 0;
   char *kwlist[] = { "vertices", NULL };
@@ -8846,8 +8845,6 @@ PyObject *igraphmodule_Graph_isoclass(igraphmodule_GraphObject * self,
   if (!PyArg_ParseTupleAndKeywords
       (args, kwds, "|O!", kwlist, &PyList_Type, &vids))
     return NULL;
-
-  n = vids ? PyList_Size(vids) : igraph_vcount(&self->g);
 
   if (vids) {
     igraph_vector_t vidsvec;
