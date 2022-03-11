@@ -239,6 +239,10 @@ class IgraphCCoreCMakeBuilder:
 
         # No need to build tests
         args.append("-DBUILD_TESTING=OFF")
+        
+        # Set install directory during config step instead of install step in order
+        # to avoid having the architecture name in the LIBPATH (e.g. lib/x86_64-linux-gnu)
+        args.append("-DCMAKE_INSTALL_PREFIX=" + str(install_folder))
 
         # Add any extra CMake args from environment variables
         if "IGRAPH_CMAKE_EXTRA_ARGS" in os.environ:
@@ -263,8 +267,6 @@ class IgraphCCoreCMakeBuilder:
                 cmake,
                 "--install",
                 ".",
-                "--prefix",
-                str(install_folder),
                 "--config",
                 "Release",
             ]
