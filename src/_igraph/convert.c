@@ -2908,7 +2908,7 @@ PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v) {
 
   /* populate the list with data */
   for (i = 0; i < n; i++) {
-    igraph_strvector_get(v, i, &ptr);
+    ptr = igraph_strvector_get(v, i);
 
     item = PyUnicode_FromString(ptr);
     if (!item) {

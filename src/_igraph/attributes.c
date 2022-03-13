@@ -334,7 +334,7 @@ static igraph_error_t igraphmodule_i_attribute_init(igraph_t *graph, igraph_vect
         value = PyFloat_FromDouble((double)VECTOR(*(igraph_vector_t*)attr_rec->value)[0]);
         break;
       case IGRAPH_ATTRIBUTE_STRING:
-        igraph_strvector_get((igraph_strvector_t*)attr_rec->value, 0, &s);
+        s = igraph_strvector_get((igraph_strvector_t*)attr_rec->value, 0);
         value = PyUnicode_FromString(s ? s : "");
         break;
       case IGRAPH_ATTRIBUTE_BOOLEAN:
@@ -490,7 +490,7 @@ static igraph_error_t igraphmodule_i_attribute_add_vertices(igraph_t *graph, igr
           o = PyFloat_FromDouble((double)VECTOR(*(igraph_vector_t*)attr_rec->value)[i]);
           break;
         case IGRAPH_ATTRIBUTE_STRING:
-          igraph_strvector_get((igraph_strvector_t*)attr_rec->value, i, &s);
+          s = igraph_strvector_get((igraph_strvector_t*)attr_rec->value, i);
           o = PyUnicode_FromString(s);
           break;
         case IGRAPH_ATTRIBUTE_BOOLEAN:
@@ -554,7 +554,7 @@ static igraph_error_t igraphmodule_i_attribute_add_vertices(igraph_t *graph, igr
           o = PyFloat_FromDouble((double)VECTOR(*(igraph_vector_t*)attr_rec->value)[i]);
           break;
         case IGRAPH_ATTRIBUTE_STRING:
-          igraph_strvector_get((igraph_strvector_t*)attr_rec->value, i, &s);
+          s = igraph_strvector_get((igraph_strvector_t*)attr_rec->value, i);
           o = PyUnicode_FromString(s);
           break;
         case IGRAPH_ATTRIBUTE_BOOLEAN:
@@ -700,7 +700,7 @@ static igraph_error_t igraphmodule_i_attribute_add_edges(igraph_t *graph, const 
           o = PyFloat_FromDouble((double)VECTOR(*(igraph_vector_t*)attr_rec->value)[i]);
           break;
         case IGRAPH_ATTRIBUTE_STRING:
-          igraph_strvector_get((igraph_strvector_t*)attr_rec->value, i, &s);
+          s = igraph_strvector_get((igraph_strvector_t*)attr_rec->value, i);
           o = PyUnicode_FromString(s);
           break;
         case IGRAPH_ATTRIBUTE_BOOLEAN:
@@ -765,7 +765,7 @@ static igraph_error_t igraphmodule_i_attribute_add_edges(igraph_t *graph, const 
           o = PyFloat_FromDouble((double)VECTOR(*(igraph_vector_t*)attr_rec->value)[i]);
           break;
         case IGRAPH_ATTRIBUTE_STRING:
-          igraph_strvector_get((igraph_strvector_t*)attr_rec->value, i, &s);
+          s = igraph_strvector_get((igraph_strvector_t*)attr_rec->value, i);
           o = PyUnicode_FromString(s);
           break;
         case IGRAPH_ATTRIBUTE_BOOLEAN:
