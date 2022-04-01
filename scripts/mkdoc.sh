@@ -14,9 +14,10 @@ DOC_API_FOLDER=${ROOT_FOLDER}/doc/api
 cd ${ROOT_FOLDER}
 
 if [ ! -d ".venv" ]; then
-    # Create a virtual environment for pydoctor
-    python3 -m venv .venv
-    .venv/bin/pip install -U pydoctor wheel
+  python3 -m venv .venv
+
+  # Install sphinx, matplotlib, wheel, and pydoctor into the venv
+  .venv/bin/pip install -U pip sphinx sphinxbootstrap4theme matplotlib wheel pydoctor
 fi
 
 PYDOCTOR=.venv/bin/pydoctor
@@ -26,9 +27,6 @@ if [ ! -f ${PYDOCTOR} ]; then
 fi
 
 PWD=`pwd`
-
-echo "Patching PyDoctor..."
-$SCRIPTS_FOLDER/patch-pydoctor.sh
 
 echo "Removing existing documentation..."
 rm -rf "${DOC_API_FOLDER}/html" "${DOC_API_FOLDER}/pdf"
@@ -41,7 +39,7 @@ rm -rf "${SITE_PACKAGES_DIR}"/python_igraph*.egg
 rm -rf "${SITE_PACKAGES_DIR}"/python_igraph*.egg-link
 
 echo "Installing igraph in virtualenv..."
-rm -f dist/*.whl && .venv/bin/python setup.py bdist_wheel && .venv/bin/pip install --force-reinstall dist/*.whl
+rm -f dist/*.whl && .venv/bin/pip install .
 
 IGRAPHDIR=`.venv/bin/python3 -c 'import igraph, os; print(os.path.dirname(igraph.__file__))'`
 
