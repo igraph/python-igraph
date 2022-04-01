@@ -30,10 +30,15 @@ def on_build_finished(app: Sphinx, exception: Exception) -> None:
     # We will insert the same YAML frontmatter into the generated API docs.
     # Relative links to stylesheets in the frontmatter will break so repair
     # them
-    lines_mark = [line.replace('href="_static/', 'href="../_static/"') for line in lines_mark]
+    lines_mark = [line.replace('href="_static/', 'href="../_static/') for line in lines_mark]
 
     # Write individual example files, fixing footers
     for path in sorted(api_dir.glob("*.html")):
+        # Skip symbolic links, otherwise we could potentially process the same
+        # file twice
+        if path.is_symlink():
+            continue
+
         # Read contents of file
         content = path.read_text()
 
