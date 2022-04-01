@@ -26,6 +26,7 @@ while getopts ":sjd" OPTION; do
       ;;
     \?)
       echo "Usage: $0 [-sjd]"
+      exit 1
       ;;
     esac
 done
