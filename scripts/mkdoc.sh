@@ -49,6 +49,9 @@ if [ ! -d ".venv" ]; then
   .venv/bin/pip install -U sphinx sphinxbootstrap4theme matplotlib wheel pydoctor
 fi
 
+# Make sure that Sphinx and PyDoctor are up-to-date in the virtualenv
+.venv/bin/pip install -U sphinx pydoctor
+
 #echo "Set PyDoctor theme"
 #$SCRIPTS_FOLDER/set-pydoctor-theme.sh ${ROOT_FOLDER} ${STANDALONE}
 
