@@ -46,11 +46,7 @@ if [ ! -d ".venv" ]; then
   python3 -m venv .venv
 
   # Install sphinx, matplotlib, wheel, and pydoctor into the venv
-  .venv/bin/pip install -U sphinx sphinxbootstrap4theme matplotlib wheel
-
-  echo "Patching PyDoctor..."
-  .venv/bin/pip install -U pydoctor
-  $SCRIPTS_FOLDER/patch-pydoctor.sh
+  .venv/bin/pip install -U sphinx sphinxbootstrap4theme matplotlib wheel pydoctor
 fi
 
 #echo "Set PyDoctor theme"
