@@ -1,11 +1,11 @@
 # vim:ts=4:sw=4:sts=4:et
 # -*- coding: utf-8 -*-
 """
-Implementation of `igraph.Graph.Formula()`
+Implementation of L{igraph.Graph.Formula()}.
 
 You should use this module directly only if you have a very strong reason
 to do so. In almost all cases, you are better off with calling
-`igraph.Graph.Formula()`.
+L{igraph.Graph.Formula()}.
 """
 
 from io import StringIO

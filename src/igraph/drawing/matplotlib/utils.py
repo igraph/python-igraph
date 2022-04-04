@@ -2,6 +2,7 @@ from igraph.drawing.utils import FakeModule
 from typing import Any
 
 __all__ = ("find_matplotlib",)
+__docformat__ = "restructuredtext en"
 
 
 def find_matplotlib() -> Any:

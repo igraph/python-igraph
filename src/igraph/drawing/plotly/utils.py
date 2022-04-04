@@ -2,6 +2,7 @@ from igraph.drawing.utils import FakeModule, Point
 from typing import Any
 
 __all__ = ("find_plotly",)
+__docformat__ = "restructuredtext en"
 
 
 def find_plotly() -> Any:

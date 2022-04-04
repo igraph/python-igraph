@@ -206,7 +206,7 @@ class Rectangle:
         return self.contract([-float(margin) for margin in margins])
 
     def isdisjoint(self, other):
-        """Returns ``True`` if the two rectangles have no intersection.
+        """Returns C{True} if the two rectangles have no intersection.
 
         Example::
 
@@ -230,7 +230,7 @@ class Rectangle:
         )
 
     def isempty(self):
-        """Returns ``True`` if the rectangle is empty (i.e. it has zero
+        """Returns C{True} if the rectangle is empty (i.e. it has zero
         width and height).
 
         Example::
@@ -528,7 +528,7 @@ class Point(NamedTuple("_Point", [("x", float), ("y", float)])):
     def FromPolar(cls, radius, angle):
         """Constructs a point from polar coordinates.
 
-        `radius` is the distance of the point from the origin; `angle` is the
+        C{radius} is the distance of the point from the origin; C{angle} is the
         angle between the X axis and the vector pointing to the point from
         the origin.
         """

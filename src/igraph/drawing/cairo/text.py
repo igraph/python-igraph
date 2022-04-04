@@ -20,8 +20,9 @@ class CairoTextDrawer(AbstractCairoDrawer):
     TOP, BOTTOM = "top", "bottom"
 
     def __init__(self, context, text="", halign="center", valign="center"):
-        """Constructs a new instance that will draw the given `text` on
-        the given Cairo `context`."""
+        """Constructs a new instance that will draw the given C{text} on
+        the given Cairo C{context}.
+        """
         super().__init__(context, (0, 0))
         self.text = text
         self.halign = halign
@@ -30,9 +31,8 @@ class CairoTextDrawer(AbstractCairoDrawer):
     def draw(self, wrap=False):
         """Draws the text in the current bounding box of the drawer.
 
-        Since the class itself is an instance of `AbstractCairoDrawer`, it
-        has an attribute named ``bbox`` which will be used as a bounding
-        box.
+        Since the class itself is an instance of L{AbstractCairoDrawer}, it
+        has an attribute named C{bbox} which will be used as a bounding box.
 
         @param wrap: whether to allow re-wrapping of the text if it does not
             fit within the bounding box horizontally.
@@ -64,8 +64,8 @@ class CairoTextDrawer(AbstractCairoDrawer):
         ctx.new_path()
 
     def get_text_layout(self, x=None, y=None, width=None, wrap=False):
-        """Calculates the layout of the current text. `x` and `y` denote the
-        coordinates where the drawing should start. If they are both ``None``,
+        """Calculates the layout of the current text. C{x} and C{y} denote the
+        coordinates where the drawing should start. If they are both C{None},
         the current position of the context will be used.
 
         Vertical alignment settings are not taken into account in this method
@@ -78,12 +78,12 @@ class CairoTextDrawer(AbstractCairoDrawer):
         @param width: The width of the box in which the text will be fitted. It
             matters only when the text is right-aligned or centered. The text
             will overflow the box if any of the lines is longer than the box
-            width and `wrap` is ``False``.
+            width and C{wrap} is C{False}.
         @param wrap: whether to allow re-wrapping of the text if it does not
             fit within the given width.
 
-        @return: a list consisting of ``(x, y, line)`` tuples where ``x`` and
-            ``y`` refer to reference points on the Cairo canvas and ``line``
+        @return: a list consisting of C{(x, y, line)} tuples where C{x} and
+            C{y} refer to reference points on the Cairo canvas and C{line}
             refers to the corresponding text that should be plotted there.
         """
         ctx = self.context
@@ -130,8 +130,8 @@ class CairoTextDrawer(AbstractCairoDrawer):
 
     def draw_at(self, x=None, y=None, width=None, wrap=False):
         """Draws the text by setting up an appropriate path on the Cairo
-        context and filling it. `x` and `y` denote the coordinates where the
-        drawing should start. If they are both ``None``, the current position
+        context and filling it. C{x} and C{y} denote the coordinates where the
+        drawing should start. If they are both C{None}, the current position
         of the context will be used.
 
         Vertical alignment settings are not taken into account in this method
@@ -144,7 +144,7 @@ class CairoTextDrawer(AbstractCairoDrawer):
         @param width: The width of the box in which the text will be fitted. It
             matters only when the text is right-aligned or centered. The text
             will overflow the box if any of the lines is longer than the box
-            width and `wrap` is ``False``.
+            width and C{wrap} is C{False}.
         @param wrap: whether to allow re-wrapping of the text if it does not
             fit within the given width.
         """
@@ -168,7 +168,7 @@ class CairoTextDrawer(AbstractCairoDrawer):
         the folloing for each line: the line itself, the width of the line and
         the X-bearing of the line.
 
-        The difference between this method and `_iterlines()` is that this
+        The difference between this method and L{_iterlines()} is that this
         method is allowed to re-wrap the line if necessary.
 
         @param width: The width of the box in which the text will be fitted.
@@ -215,7 +215,7 @@ class CairoTextDrawer(AbstractCairoDrawer):
     def text(self, text):
         """Sets the text that will be drawn.
 
-        If `text` is ``None``, it will be mapped to an empty string; otherwise,
+        If C{text} is C{None}, it will be mapped to an empty string; otherwise,
         it will be converted to a string."""
         if text is None:
             self._text = ""

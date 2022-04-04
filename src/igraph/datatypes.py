@@ -532,11 +532,11 @@ class UniqueIdGenerator:
     """
 
     def __init__(self, id_generator=None, initial=None):
-        """Creates a new unique ID generator. `id_generator` specifies how do we
-        assign new IDs to elements that do not have an ID yet. If it is `None`,
+        """Creates a new unique ID generator. C{id_generator} specifies how do we
+        assign new IDs to elements that do not have an ID yet. If it is C{None},
         elements will be assigned integer identifiers starting from 0. If it is
         an integer, elements will be assigned identifiers starting from the given
-        integer. If it is an iterator or generator, its `next` method will be
+        integer. If it is an iterator or generator, its C{next()} method will be
         called every time a new ID is needed."""
         if id_generator is None:
             id_generator = 0
@@ -552,12 +552,12 @@ class UniqueIdGenerator:
                 self.add(value)
 
     def __contains__(self, item):
-        """Checks whether `item` already has an ID or not."""
+        """Checks whether C{item} already has an ID or not."""
         return item in self._ids
 
     def __getitem__(self, item):
-        """Retrieves the ID corresponding to `item`. Generates a new ID for
-        `item` if it is the first time we request an ID for it."""
+        """Retrieves the ID corresponding to C{item}. Generates a new ID for
+        C{item} if it is the first time we request an ID for it."""
         try:
             return self._ids[item]
         except KeyError:
@@ -565,11 +565,11 @@ class UniqueIdGenerator:
             return self._ids[item]
 
     def __setitem__(self, item, value):
-        """Overrides the ID for `item`."""
+        """Overrides the ID for C{item}."""
         self._ids[item] = value
 
     def __len__(self):
-        """ "Returns the number of items"""
+        """Returns the number of items."""
         return len(self._ids)
 
     def reverse_dict(self):

@@ -262,7 +262,7 @@ class GraphSummary:
 
     def _edge_attribute_iterator(self, attribute_order):
         """Returns an iterator that yields the rows of the edge attribute table
-        in the summary. `attribute_order` must be a list containing the names of
+        in the summary. C{attribute_order} must be a list containing the names of
         the attributes to be presented in this table."""
         arrow = self._arrow_format
 
@@ -317,7 +317,7 @@ class GraphSummary:
 
     def _vertex_attribute_iterator(self, attribute_order):
         """Returns an iterator that yields the rows of the vertex attribute table
-        in the summary. `attribute_order` must be a list containing the names of
+        in the summary. C{attribute_order} must be a list containing the names of
         the attributes to be presented in this table."""
         for vertex in self._graph.vs:
             yield ["[%d]" % vertex.index] + [vertex[attr] for attr in attribute_order]

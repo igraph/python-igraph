@@ -380,24 +380,24 @@ def _construct_graph_from_dataframe(
     @param edges: pandas DataFrame containing edges and metadata. The first
       two columns of this DataFrame contain the source and target vertices
       for each edge. These indicate the vertex IDs as nonnegative integers
-      rather than vertex names unless `use_vids` is False. Further columns
+      rather than vertex names unless C{use_vids} is False. Further columns
       may contain edge attributes.
     @param directed: whether the graph is directed
     @param vertices: None (default) or pandas DataFrame containing vertex
       metadata. The DataFrame's index must contain the vertex IDs as a
-      sequence of intergers from `0` to `len(vertices) - 1`. If `use_vids`
-      is False, the first column must contain the unique vertex *names*.
+      sequence of intergers from 0 to C{len(vertices) - 1}. If C{use_vids}
+      is C{False}, the first column must contain the unique vertex names.
       Vertex names should be strings for full compatibility, but many functions
       will work if you set the name with any hashable object. All other columns
       will be added as vertex attributes by column name.
-    @param use_vids: whether to interpret the first two columns of the `edges`
+    @param use_vids: whether to interpret the first two columns of the C{edges}
       argument as vertex ids (0-based integers) instead of vertex names.
-      If this argument is set to True and the first two columns of `edges`
+      If this argument is set to True and the first two columns of C{edges}
       are not integers, an error is thrown.
 
     @return: the graph
 
-    Vertex names in either the `edges` or `vertices` arguments that are set
+    Vertex names in either the C{edges} or C{vertices} arguments that are set
     to NaN (not a number) will be set to the string "NA". That might lead
     to unexpected behaviour: fill your NaNs with values before calling this
     function to mitigate.
@@ -808,8 +808,8 @@ def _export_edge_dataframe(graph):
     >>> df = graph.get_edge_dataframe()
     >>> df.set_index(['source', 'target'], inplace=True)
 
-    The index will be a pandas.MultiIndex. You can use the `drop=False`
-    option to keep the `source` and `target` columns.
+    The index will be a pandas.MultiIndex. You can use the C{drop=False}
+    option to keep the C{source} and C{target} columns.
 
     If you want to use vertex names in the source and target columns:
 
