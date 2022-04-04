@@ -1,5 +1,30 @@
 # igraph Python interface changelog
 
+## [0.9.10]
+
+### Fixed
+
+- Fixed plotting of curved edges in the Cairo plotting backend.
+
+- `setup.py` now looks for `igraph.pc` recursively in `vendor/install`; this
+  fixes building igraph from source in certain Linux distributions
+
+- `Graph.shortest_paths()` does not crash with zero-length weight vectors any
+  more
+
+- Fix a memory leak in `Graph.delete_vertices()` and other functions that
+  convert a list of vertex IDs internally to an `igraph_vs_t` object, see
+  [#503](https://github.com/igraph/python-igraph/issues/503) for details.
+
+- Fix a memory leak in `Graph.maximum_cardinality_search()`.
+
+- Fix a crash that happened when subclassing `Graph` and overriding `__new__()`
+  in the subclass; see [#496](https://github.com/igraph/python-igraph/issues/496)
+  for more details.
+
+- Documentation now mentions that we now support graphs of size 5 or 6 for
+  isomorphism / motif calculations if the graph is undirected
+
 ## [0.9.9]
 
 ### Changed
