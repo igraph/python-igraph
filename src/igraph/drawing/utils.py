@@ -193,7 +193,7 @@ class Rectangle:
         return self.contract([-float(margin) for margin in margins])
 
     def isdisjoint(self, other):
-        """Returns ``True`` if the two rectangles have no intersection.
+        """Returns C{True} if the two rectangles have no intersection.
 
         Example::
 
@@ -217,7 +217,7 @@ class Rectangle:
         )
 
     def isempty(self):
-        """Returns ``True`` if the rectangle is empty (i.e. it has zero
+        """Returns C{True} if the rectangle is empty (i.e. it has zero
         width and height).
 
         Example::
@@ -427,8 +427,8 @@ class FakeModule:
 
 
 def find_cairo():
-    """Tries to import the ``cairo`` Python module if it is installed,
-    also trying ``cairocffi`` (a drop-in replacement of ``cairo``).
+    """Tries to import the C{cairo} Python module if it is installed,
+    also trying C{cairocffi} (a drop-in replacement of C{cairo}).
     Returns a fake module if everything fails.
     """
     module_names = ["cairo", "cairocffi"]
@@ -446,7 +446,7 @@ def find_cairo():
 
 
 def find_matplotlib():
-    """Tries to import the ``matplotlib`` Python module if it is installed.
+    """Tries to import the C{matplotlib} Python module if it is installed.
     Returns a fake module if everything fails.
     """
     try:
@@ -594,7 +594,7 @@ class Point(tuple):
     def FromPolar(cls, radius, angle):
         """Constructs a point from polar coordinates.
 
-        `radius` is the distance of the point from the origin; `angle` is the
+        C{radius} is the distance of the point from the origin; C{angle} is the
         angle between the X axis and the vector pointing to the point from
         the origin.
         """

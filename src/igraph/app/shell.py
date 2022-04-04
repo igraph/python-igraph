@@ -33,7 +33,7 @@ class TerminalController:
     A class that can be used to portably generate formatted output to
     a terminal.
 
-    `TerminalController` defines a set of instance variables whose
+    C{TerminalController} defines a set of instance variables whose
     values are initialized to the control sequence necessary to
     perform a given action.  These can be simply included in normal
     output to the terminal:
@@ -42,8 +42,8 @@ class TerminalController:
         >>> print('This is '+term.GREEN+'green'+term.NORMAL)
         This is green
 
-    Alternatively, the `render()` method can used, which replaces
-    '${action}' with the string required to perform 'action':
+    Alternatively, the L{render()} method can used, which replaces
+    C{${action}} with the string required to perform C{action}:
 
         >>> term = TerminalController()
         >>> print(term.render('This is ${GREEN}green${NORMAL}'))
@@ -63,7 +63,7 @@ class TerminalController:
         ...
 
     Finally, if the width and height of the terminal are known, then
-    they will be stored in the `COLS` and `LINES` attributes.
+    they will be stored in the C{COLS} and C{LINES} attributes.
 
     @author: Edward Loper
     """
@@ -113,9 +113,9 @@ class TerminalController:
 
     def __init__(self, term_stream=sys.stdout):
         """
-        Create a `TerminalController` and initialize its attributes
+        Create a C{TerminalController} and initialize its attributes
         with appropriate values for the current terminal.
-        `term_stream` is the stream that will be used for terminal
+        C{term_stream} is the stream that will be used for terminal
         output; if this stream is not a tty, then the terminal is
         assumed to be a dumb terminal (i.e., have no capabilities).
         """

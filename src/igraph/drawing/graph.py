@@ -874,12 +874,12 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
     @staticmethod
     def infer_cytoscape_type(values):
         """Returns a Cytoscape type that can be used to represent all the
-        values in `values` and an appropriately converted copy of `values` that
+        values in C{values} and an appropriately converted copy of C{values} that
         is suitable for an XML-RPC call.  Note that the string type in
         Cytoscape is used as a catch-all type; if no other type fits, attribute
         values will be converted to string and then posted to Cytoscape.
 
-        ``None`` entries are allowed in `values`, they will be ignored on the
+        C{None} entries are allowed in C{values}, they will be ignored on the
         Cytoscape side.
         """
         types = [type(value) for value in values if value is not None]
@@ -952,7 +952,7 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
 
         The following keyword arguments are allowed:
 
-            - ``encoder`` lets one specify an instance of ``json.JSONEncoder`` that
+            - C{encoder} lets one specify an instance of C{json.JSONEncoder} that
               will be used to encode the JSON objects.
         """
         self.streamer.post(graph, self.connection, encoder=kwds.get("encoder"))
