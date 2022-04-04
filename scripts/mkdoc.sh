@@ -47,7 +47,7 @@ if [ ! -d ".venv" ]; then
   python3 -m venv .venv
 
   # Install sphinx, matplotlib, wheel, and pydoctor into the venv
-  .venv/bin/pip install -U sphinx sphinxbootstrap4theme matplotlib wheel pydoctor
+  .venv/bin/pip install -U pip sphinx sphinxbootstrap4theme matplotlib wheel pydoctor
 fi
 
 # Make sure that Sphinx and PyDoctor are up-to-date in the virtualenv
