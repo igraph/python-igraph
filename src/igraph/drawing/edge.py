@@ -120,7 +120,7 @@ class AbstractEdgeDrawer:
         if edge.curved:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
 
-            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge['curved'])
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge.curved)
 
             ctx.curve_to(aux1[0], aux1[1], aux2[0], aux2[1], *dest_vertex.position)
         else:
@@ -156,9 +156,9 @@ class AbstractEdgeDrawer:
 
 
         # Determine the midpoint
-        if edge['curved']:
+        if edge.curved:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
-            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge['curved'])
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge.curved)
             pos = evaluate_cubic_bezier_curve(x1, y1, *aux1, *aux2, x2, y2, .5)
         else:
             pos = (
