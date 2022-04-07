@@ -324,7 +324,7 @@ static igraph_error_t igraphmodule_i_attribute_init(igraph_t *graph, igraph_vect
   /* See if we have graph attributes */
   if (attr) {
     PyObject *dict = attrs->attrs[0], *value;
-    char *s;
+    const char *s;
     n = igraph_vector_ptr_size(attr);
     for (i = 0; i < n; i++) {
       igraph_attribute_record_t *attr_rec;
@@ -483,7 +483,7 @@ static igraph_error_t igraphmodule_i_attribute_add_vertices(igraph_t *graph, igr
      * the appropriate vector. If not, it is null. */
     if (attr_rec) {
       for (i = 0; i < nv; i++) {
-        char *s;
+        const char *s;
         PyObject *o;
         switch (attr_rec->type) {
         case IGRAPH_ATTRIBUTE_NUMERIC:
@@ -547,7 +547,7 @@ static igraph_error_t igraphmodule_i_attribute_add_vertices(igraph_t *graph, igr
       }
 
       for (i = 0; i < nv; i++) {
-        char *s;
+        const char *s;
         PyObject *o;
         switch (attr_rec->type) {
         case IGRAPH_ATTRIBUTE_NUMERIC:
@@ -693,7 +693,7 @@ static igraph_error_t igraphmodule_i_attribute_add_edges(igraph_t *graph, const 
      * the appropriate vector. If not, it is null. */
     if (attr_rec) {
       for (i = 0; i < ne; i++) {
-        char *s;
+        const char *s;
         PyObject *o;
         switch (attr_rec->type) {
         case IGRAPH_ATTRIBUTE_NUMERIC:
@@ -758,7 +758,7 @@ static igraph_error_t igraphmodule_i_attribute_add_edges(igraph_t *graph, const 
       }
 
       for (i = 0; i < ne; i++) {
-        char *s;
+        const char *s;
         PyObject *o;
         switch (attr_rec->type) {
         case IGRAPH_ATTRIBUTE_NUMERIC:
@@ -1540,7 +1540,7 @@ static igraph_error_t igraphmodule_i_attribute_get_info(const igraph_t *graph,
         } else if (is_string) {
           VECTOR(*t)[j] = IGRAPH_ATTRIBUTE_STRING;
         } else {
-          VECTOR(*t)[j] = IGRAPH_ATTRIBUTE_PY_OBJECT;
+          VECTOR(*t)[j] = IGRAPH_ATTRIBUTE_OBJECT;
         }
       }
     }
@@ -1644,7 +1644,7 @@ igraph_error_t igraphmodule_i_attribute_get_type(const igraph_t *graph,
   } else if (is_string) {
     *type = IGRAPH_ATTRIBUTE_STRING;
   } else {
-    *type = IGRAPH_ATTRIBUTE_PY_OBJECT;
+    *type = IGRAPH_ATTRIBUTE_OBJECT;
   }
   return IGRAPH_SUCCESS;
 }
