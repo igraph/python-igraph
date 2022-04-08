@@ -11612,6 +11612,7 @@ PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject
 
   ms=igraphmodule_matrix_t_to_PyList(&merges, IGRAPHMODULE_TYPE_INT);
   igraph_matrix_destroy(&merges);
+  igraph_vector_destroy(&q);
 
   if (ms == NULL) {
     Py_DECREF(qs);
