@@ -66,9 +66,12 @@ def on_build_finished(app: Sphinx, exception: Exception) -> None:
         if start_pre >= 0:
             start = body.find('>', start_pre) + 1
             end = body.find('</footer>', start)
-            body, footer = body[:start_pre], body[start: end]
+            body, footer, rest = body[:start_pre], body[start: end], body[end + len('</footer>'):]
+
+            body_end = rest.rfind('</body>')
+            rest = rest[:body_end]
         else:
-            footer = ""
+            footer, rest = "", ""
         footer = footer.strip('\n')
 
         # Patch style of footer
@@ -79,6 +82,7 @@ def on_build_finished(app: Sphinx, exception: Exception) -> None:
                    indent(head, "    ") + "\n" +
                    'extrafoot: |\n' +
                    indent(footer, "    ") +
+                   indent(rest, "    ") +
                    '\n' +
                    lines_mark[-1] +
                    body)
