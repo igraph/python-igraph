@@ -9881,6 +9881,7 @@ PyObject *igraphmodule_Graph_get_subisomorphisms_lad(
     igraph_vector_ptr_destroy_all(p_domains);
 
   result = igraphmodule_vector_ptr_t_to_PyList(&mappings, IGRAPHMODULE_TYPE_INT);
+  IGRAPH_VECTOR_PTR_SET_ITEM_DESTRUCTOR(&mappings, igraph_vector_destroy);
   igraph_vector_ptr_destroy_all(&mappings);
 
   return result;
