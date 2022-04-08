@@ -135,6 +135,7 @@ PyObject *igraphmodule__union(PyObject *self,
   if (with_edgemaps) {
     /* prepare edgemaps */
     igraph_vector_ptr_t edgemaps;
+
     if (igraph_vector_ptr_init(&edgemaps, 0)) {
       return igraphmodule_handle_igraph_error();
     }
@@ -160,8 +161,9 @@ PyObject *igraphmodule__union(PyObject *self,
         PyList_SET_ITEM(emi, (Py_ssize_t) j, dest);
       }
       PyList_SET_ITEM(em_list, (Py_ssize_t) i, emi);
+      igraph_vector_destroy(map);
     }
-    igraph_vector_ptr_destroy(&edgemaps);
+    igraph_vector_ptr_destroy_all(&edgemaps);
   }
   else {
     /* Create union */
@@ -270,8 +272,9 @@ PyObject *igraphmodule__intersection(PyObject *self,
         PyList_SET_ITEM(emi, (Py_ssize_t) j, dest);
       }
       PyList_SET_ITEM(em_list, (Py_ssize_t) i, emi);
+      igraph_vector_destroy(map);
     }
-    igraph_vector_ptr_destroy(&edgemaps);
+    igraph_vector_ptr_destroy_all(&edgemaps);
 
   } 
   else {
