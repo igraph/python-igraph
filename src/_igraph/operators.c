@@ -80,8 +80,7 @@ PyObject *igraphmodule__disjoint_union(PyObject *self,
     result = igraphmodule_Graph_subclass_from_igraph_t(
         result_type,
         &g);
-  }
-  else {
+  } else {
     result = igraphmodule_Graph_from_igraph_t(&g);
   }
 
@@ -194,8 +193,7 @@ PyObject *igraphmodule__union(PyObject *self,
     o = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t(
         result_type,
         &g);
-  }
-  else {
+  } else {
     o = (igraphmodule_GraphObject*) igraphmodule_Graph_from_igraph_t(&g);
   }
 
@@ -205,8 +203,7 @@ PyObject *igraphmodule__union(PyObject *self,
     PyDict_SetItemString(result, "graph", (PyObject *) o);
     Py_DECREF(o);
     PyDict_SetItemString(result, "edgemaps", em_list);
-  }
-  else {
+  } else {
     result = (PyObject *) o;
   }
 
@@ -298,9 +295,7 @@ PyObject *igraphmodule__intersection(PyObject *self,
       }
     }
     igraph_vector_int_list_destroy(&edgemaps);
-
-  } 
-  else {
+  } else {
     /* Create intersection */
     if (igraph_intersection_many(&g, &gs, /* edgemaps */ 0)) {
       igraph_vector_ptr_destroy(&gs);
@@ -318,8 +313,7 @@ PyObject *igraphmodule__intersection(PyObject *self,
     o = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t(
         result_type,
         &g);
-  }
-  else {
+  } else {
     o = (igraphmodule_GraphObject*) igraphmodule_Graph_from_igraph_t(&g);
   }
 
@@ -330,8 +324,7 @@ PyObject *igraphmodule__intersection(PyObject *self,
     Py_DECREF(o);
     PyDict_SetItemString(result, "edgemaps", em_list);
     Py_DECREF(em_list);
-  }
-  else {
+  } else {
     result = (PyObject *) o;
   }
 

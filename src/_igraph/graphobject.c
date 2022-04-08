@@ -5161,6 +5161,9 @@ PyObject *igraphmodule_Graph_get_all_simple_paths(igraphmodule_GraphObject *
   igraph_vs_destroy(&to);
 
   list = igraphmodule_vector_int_t_to_PyList(&res);
+
+  igraph_vector_int_destroy(&res);
+
   return list;
 }
 
@@ -11493,6 +11496,7 @@ PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject
   } else {
     qs = Py_None;
     Py_INCREF(qs);
+    igraph_vector_destroy(&q);
   }
 
   ms=igraphmodule_matrix_int_t_to_PyList(&merges);
