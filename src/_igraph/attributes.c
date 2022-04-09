@@ -1477,10 +1477,12 @@ static int igraphmodule_i_attribute_get_info(const igraph_t *graph,
     if (!keys) IGRAPH_ERROR("Internal error in PyDict_Keys", IGRAPH_FAILURE);
  
     if (n) {
-      retval = igraphmodule_PyList_to_strvector_t(keys, n);
-      if (retval)
+      retval = igraphmodule_PyList_to_existing_strvector_t(keys, n);
+      if (retval) {
         return retval;
+      }
     }
+
     if (t) {
       k=PyList_Size(keys);
       igraph_vector_resize(t, k);
