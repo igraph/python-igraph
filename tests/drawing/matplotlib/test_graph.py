@@ -15,12 +15,17 @@ try:
     import matplotlib as mpl
     import matplotlib.pyplot as plt
 except ImportError:
-    raise unittest.SkipTest("matplotlib/pyplot not found, skipping tests")
+    mpl = None
+    plt = None
 
 image_comparison = find_image_comparison()
 
 
 class GraphTestRunner(unittest.TestCase):
+    def setUp(self):
+        if mpl is None or plt is None:
+            raise unittest.SkipTest("matplotlib not found, skipping tests")
+
     @property
     def layout_small_ring(self):
         coords = [
@@ -76,6 +81,10 @@ class GraphTestRunner(unittest.TestCase):
 
 
 class ClusteringTestRunner(unittest.TestCase):
+    def setUp(self):
+        if mpl is None or plt is None:
+            raise unittest.SkipTest("matplotlib not found, skipping tests")
+
     @property
     def layout_small_ring(self):
         coords = [

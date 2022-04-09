@@ -15,8 +15,7 @@ except ImportError:
 
 
 cairo = find_cairo()
-if not hasattr(cairo, 'version'):
-    raise unittest.SkipTest("cairo not found, skipping tests")
+has_cairo = hasattr(cairo, 'version')
 
 image_comparison = find_image_comparison()
 
@@ -24,6 +23,8 @@ image_comparison = find_image_comparison()
 class GraphTestRunner(unittest.TestCase):
     @classmethod
     def setUpClass(self):
+        if not has_cairo:
+            raise unittest.SkipTest("cairo not found, skipping tests")
         result_image_folder.mkdir(parents=True, exist_ok=True)
 
     @image_comparison(baseline_images=["graph_basic"])
@@ -58,6 +59,12 @@ class GraphTestRunner(unittest.TestCase):
 
 
 class ClusteringTestRunner(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        if not has_cairo:
+            raise unittest.SkipTest("cairo not found, skipping tests")
+        result_image_folder.mkdir(parents=True, exist_ok=True)
+
     @image_comparison(baseline_images=["clustering_directed"])
     def test_clustering_directed_small(self):
         g = Graph.Ring(5, directed=True)

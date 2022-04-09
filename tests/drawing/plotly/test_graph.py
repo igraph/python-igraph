@@ -14,18 +14,23 @@ except ImportError:
 try:
     import plotly
 except ImportError:
-    raise unittest.SkipTest("plotly not found, skipping tests")
+    plotly = None
 
-# FIXME: trying to debug this specific import on CI
-try:
-    from plotly import graph_objects as go
-except ImportError:
-    raise ImportError('Cannot import graph_objects, dir(plotly): '+str(dir(plotly)))
+if plotly is not None:
+    # FIXME: trying to debug this specific import on CI
+    try:
+        from plotly import graph_objects as go
+    except ImportError:
+        raise ImportError('Cannot import graph_objects, dir(plotly): '+str(dir(plotly)))
 
 image_comparison = find_image_comparison()
 
 
 class GraphTestRunner(unittest.TestCase):
+    def setUp(self):
+        if plotly is None:
+            raise unittest.SkipTest("plotly not found, skipping tests")
+
     @property
     def layout_small_ring(self):
         coords = [
@@ -83,6 +88,10 @@ class GraphTestRunner(unittest.TestCase):
 
 
 class ClusteringTestRunner(unittest.TestCase):
+    def setUp(self):
+        if plotly is None:
+            raise unittest.SkipTest("plotly not found, skipping tests")
+
     @property
     def layout_small_ring(self):
         coords = [
