@@ -1491,7 +1491,7 @@ static igraph_error_t igraphmodule_i_attribute_get_info(const igraph_t *graph,
     }
 
     if (n) {
-      retval = igraphmodule_PyList_to_strvector_t(keys, n);
+      retval = igraphmodule_PyList_to_existing_strvector_t(keys, n);
       if (retval) {
         return retval ? IGRAPH_FAILURE : IGRAPH_SUCCESS;
       }

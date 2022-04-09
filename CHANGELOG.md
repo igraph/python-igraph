@@ -48,7 +48,10 @@
   convert a list of vertex IDs internally to an `igraph_vs_t` object, see
   [#503](https://github.com/igraph/python-igraph/issues/503) for details.
 
-- Fix a memory leak in `Graph.maximum_cardinality_search()`.
+- Fixed potential memory leaks in `Graph.maximum_cardinality_search()`,
+  `Graph.get_all_simple_paths()`, `Graph.get_subisomorphisms_lad()`, 
+  `Graph.community_edge_betweenness()`, as well as the `union` and `intersection`
+  operators.
 
 - Fix a crash that happened when subclassing `Graph` and overriding `__new__()`
   in the subclass; see [#496](https://github.com/igraph/python-igraph/issues/496)

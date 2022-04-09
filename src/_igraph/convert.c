@@ -2942,13 +2942,33 @@ int igraphmodule_PyList_to_strvector_t(PyObject* v, igraph_strvector_t *result) 
     return 1;
   }
 
-  n=PyList_Size(v);
+  n = PyList_Size(v);
 
   /* initialize the string vector */
-  if (igraph_strvector_init(result, n)) return 1;
+  if (igraph_strvector_init(result, n)) {
+    return 1;
+  }
+
+  return igraphmodule_PyList_to_existing_strvector_t(v, result);
+}
+
+int igraphmodule_PyList_to_existing_strvector_t(PyObject* v, igraph_strvector_t *result) {
+  Py_ssize_t n, i;
+  PyObject *o;
+
+  if (!PyList_Check(v)) {
+    PyErr_SetString(PyExc_TypeError, "expected list");
+    return 1;
+  }
+
+  n = PyList_Size(v);
+
+  if (igraph_strvector_resize(result, n)) {
+    return 1;
+  }
 
   /* populate the vector with data */
-  for (i=0; i<n; i++) {
+  for (i = 0; i < n; i++) {
     PyObject *item = PyList_GetItem(v, i);
     char* ptr;
     igraph_bool_t will_free = 0;
@@ -2976,13 +2996,16 @@ int igraphmodule_PyList_to_strvector_t(PyObject* v, igraph_strvector_t *result) 
     }
 
     if (igraph_strvector_set(result, i, ptr)) {
-      if (will_free)
+      if (will_free) {
         free(ptr);
+      }
       igraph_strvector_destroy(result);
       return 1;
     }
-    if (will_free)
+
+    if (will_free) {
       free(ptr);
+    }
   }
 
   return 0;
