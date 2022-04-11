@@ -2,6 +2,10 @@
 
 ## [0.9.10]
 
+### Changed
+
+- Vendored igraph was updated to version 0.9.8.
+
 ### Fixed
 
 - Fixed plotting of curved edges in the Cairo plotting backend.
