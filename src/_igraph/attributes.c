@@ -20,8 +20,6 @@
 
 */
 
-#define Py_LIMITED_API 0x03060000
-
 #include "attributes.h"
 #include "common.h"
 #include "convert.h"
