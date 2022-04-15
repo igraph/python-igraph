@@ -301,7 +301,7 @@ class LayoutAlgorithmTests(unittest.TestCase):
             0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.08, 0.05, 0.1, 0.08, 0.12, 0.09, 0.11
             ]
         g = Graph(edges)
-        lo = g.layout_umap(dist=dist)
+        lo = g.layout_umap(dist=dist, epochs=500, sampling_prob=0.3)
         self.assertTrue(isinstance(lo, Layout))
 
         # One should get two clusters in this case
