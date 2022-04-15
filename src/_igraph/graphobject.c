@@ -7740,7 +7740,7 @@ PyObject *igraphmodule_Graph_layout_sugiyama(
 
   igraph_vector_int_destroy(&extd_to_orig_eids);
   return (PyObject *) result_o;
-
+}
 
   /** \ingroup python_interface_graph
  * \brief Places the vertices of a graph using Uniform Manifold Approximation and Projection (UMAP)
@@ -7753,10 +7753,10 @@ PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
   static char *kwlist[] =
     { "dist", "dim", "min_dist", "epochs", "sampling_prob", NULL };
   igraph_matrix_t m;
-  igraph_matrix_t *dist = 0;
+  igraph_vector_t *dist = 0;
   /* FIXME: use reasonable defaults */
   double min_dist = 0.01, sampling_prob = 0.5;
-  Py_ssize_t dim = 2, Py_ssize_t epochs = 50;
+  Py_ssize_t dim = 2, epochs = 50;
   PyObject *dist_o = Py_None;
   PyObject *result_o;
 
@@ -7768,12 +7768,12 @@ PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
   CHECK_SSIZE_T_RANGE_POSITIVE(epochs, "number of epochs");
 
   if (dist_o != Py_None) {
-    dist = (igraph_matrix_t*)malloc(sizeof(igraph_matrix_t));
+    dist = (igraph_vector_t*)malloc(sizeof(igraph_vector_t));
     if (!dist) {
       PyErr_NoMemory();
       return NULL;
     }
-    if (igraphmodule_PyList_to_matrix_t(dist_o, dist)) {
+    if (igraphmodule_PyObject_to_vector_t(dist_o, dist, 0)) {
       free(dist);
       return NULL;
     }
@@ -7781,7 +7781,7 @@ PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
 
   if (igraph_matrix_init(&m, 1, 1)) {
     if (dist) {
-      igraph_matrix_destroy(dist); free(dist);
+      igraph_vector_destroy(dist); free(dist);
     }
     igraphmodule_handle_igraph_error();
     return NULL;
@@ -7789,36 +7789,39 @@ PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
 
   if (dim == 2) {
     if (igraph_layout_umap(&self->g, dist, &m,
+          (igraph_real_t)min_dist,
           (igraph_integer_t)epochs,
           (igraph_real_t)sampling_prob)) {
+      if (dist) {
+        igraph_vector_destroy(dist); free(dist);
+      }
+      igraph_matrix_destroy(&m);
+      igraphmodule_handle_igraph_error();
+      return NULL;
     }
-    if (dist) {
-      igraph_matrix_destroy(dist); free(dist);
-    }
-    igraph_matrix_destroy(&m);
-    igraphmodule_handle_igraph_error();
-    return NULL;
   } else if (dim == 3) {
     if (igraph_layout_umap_3d(&self->g, dist, &m,
+          (igraph_real_t)min_dist,
           (igraph_integer_t)epochs,
           (igraph_real_t)sampling_prob)) {
+      if (dist) {
+        igraph_vector_destroy(dist); free(dist);
+      }
+      igraph_matrix_destroy(&m);
+      igraphmodule_handle_igraph_error();
+      return NULL;
     }
-    if (dist) {
-      igraph_matrix_destroy(dist); free(dist);
-    }
-    igraph_matrix_destroy(&m);
-    igraphmodule_handle_igraph_error();
-    return NULL;
   } else {
+    /* FIXME: complain about the dimension */
     if (dist) {
-      igraph_matrix_destroy(dist); free(dist);
+      igraph_vector_destroy(dist); free(dist);
     }
     igraph_matrix_destroy(&m);
     igraphmodule_handle_igraph_error();
   }
 
   if (dist) {
-    igraph_matrix_destroy(dist); free(dist);
+    igraph_vector_destroy(dist); free(dist);
   }
 
   result_o = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
@@ -15037,7 +15040,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@see: Graph.layout_sugiyama()\n\n"},
 
   /* interface to igraph_layout_umap */
-  {"_layout_umap",
+  {"layout_umap",
    (PyCFunction) igraphmodule_Graph_layout_umap,
    METH_VARARGS | METH_KEYWORDS,
    "layout_umap(dist=None, dim=2, min_dist=0.01, epochs=50, sampling_prob=0.5)\n--\n\n"
@@ -15056,10 +15059,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@sampling_prob: the probability of sampling each vertex for repulsion at each\n"
    "  epoch or iteration. A higher probability will give better results but also\n"
    "  require more computations.\n"
-   "@return: the calculated layout.\n\n",
+   "@return: the calculated layout.\n\n"
    "@newfield ref: Reference\n"
-   "@ref: L McInnes, J Healy, J Melville: I{UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.}\n"
-   "arXiv:1802.03426."},
+   "@ref: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation \n"
+   "  and Projection for Dimension Reduction. arXiv:1802.03426."},
 
   ////////////////////////////
   // VISITOR-LIKE FUNCTIONS //
