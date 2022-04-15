@@ -7760,12 +7760,12 @@ PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
   PyObject *dist_o = Py_None;
   PyObject *result_o;
 
-  /* arpack_options_o is now unused but we kept here for sake of backwards
-   * compatibility */
-
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Ondnd", kwlist, &dist_o,
                                    &dim, &min_dist, &epochs, &sampling_prob))
     return NULL;
+
+  CHECK_SSIZE_T_RANGE_POSITIVE(dim, "number of dimensions");
+  CHECK_SSIZE_T_RANGE_POSITIVE(epochs, "number of epochs");
 
   if (dist_o != Py_None) {
     dist = (igraph_matrix_t*)malloc(sizeof(igraph_matrix_t));
