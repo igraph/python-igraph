@@ -7754,9 +7754,11 @@ PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
     { "dist", "dim", "min_dist", "epochs", "sampling_prob", NULL };
   igraph_matrix_t m;
   igraph_vector_t *dist = 0;
-  /* FIXME: use reasonable defaults */
-  double min_dist = 0.01, sampling_prob = 0.5;
-  Py_ssize_t dim = 2, epochs = 50;
+  /* FIXME: use more flexible defaults */
+  double min_dist = 0.01;
+  double sampling_prob = 0.5;
+  Py_ssize_t dim = 2;
+  Py_ssize_t epochs = 500;
   PyObject *dist_o = Py_None;
   PyObject *result_o;
 
@@ -15043,7 +15045,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_umap",
    (PyCFunction) igraphmodule_Graph_layout_umap,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_umap(dist=None, dim=2, min_dist=0.01, epochs=50, sampling_prob=0.5)\n--\n\n"
+   "layout_umap(dist=None, dim=2, min_dist=0.01, epochs=500, sampling_prob=0.5)\n--\n\n"
    "Uniform Manifold Approximation and Projection (UMAP).\n\n"
    "This layout is a probabilistic algorithm that places vertices that are connected\n"
    "and have a short distance close by in the embedded space.\n\n"

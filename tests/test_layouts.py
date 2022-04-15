@@ -270,12 +270,10 @@ class LayoutAlgorithmTests(unittest.TestCase):
                 sampling_prob=-0.01,
             )
 
-        # TODO: this is currently accepted by the C core function...
-        # document at the Python level or fix at the C level?
-        #self.assertRaises(
-        #        InternalError, g.layout_umap,
-        #        sampling_prob=1.01,
-        #    )
+        self.assertRaises(
+                InternalError, g.layout_umap,
+                sampling_prob=1.01,
+            )
 
         # Empty graph
         lo = g.layout_umap()
