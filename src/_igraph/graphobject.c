@@ -7740,6 +7740,104 @@ PyObject *igraphmodule_Graph_layout_sugiyama(
 
   igraph_vector_int_destroy(&extd_to_orig_eids);
   return (PyObject *) result_o;
+
+
+  /** \ingroup python_interface_graph
+ * \brief Places the vertices of a graph using Uniform Manifold Approximation and Projection (UMAP)
+ * \return the calculated coordinates as a Python list of lists
+ * \sa igraph_layout_umap
+ */
+PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
+                                        PyObject * args, PyObject * kwds)
+{
+  static char *kwlist[] =
+    { "dist", "dim", "min_dist", "epochs", "sampling_prob", NULL };
+  igraph_matrix_t m;
+  igraph_matrix_t *dist = 0;
+  /* FIXME: use reasonable defaults */
+  double min_dist = 0.01, sampling_prob = 0.5;
+  Py_ssize_t dim = 2, Py_ssize_t epochs = 50;
+  PyObject *dist_o = Py_None;
+  PyObject *result_o;
+
+  /* arpack_options_o is now unused but we kept here for sake of backwards
+   * compatibility */
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Ondnd", kwlist, &dist_o,
+                                   &dim, &min_dist, &epochs, &sampling_prob))
+    return NULL;
+
+  CHECK_SSIZE_T_RANGE_POSITIVE(dim, "number of dimensions");
+  CHECK_SSIZE_T_RANGE_POSITIVE(epochs, "number of epochs");
+
+  if (min_dist < 0) {
+    /* FIXME: How to actually tell the user? */
+    igraphmodule_handle_igraph_error();
+  }
+
+  if (sampling_prob <= 0) {
+    /* FIXME: How to actually tell the user? */
+    igraphmodule_handle_igraph_error();
+  }
+
+  if (sampling_prob > 1) {
+    /* FIXME: How to actually tell the user? */
+    igraphmodule_handle_igraph_error();
+  }
+
+  if (dist_o != Py_None) {
+    dist = (igraph_matrix_t*)malloc(sizeof(igraph_matrix_t));
+    if (!dist) {
+      PyErr_NoMemory();
+      return NULL;
+    }
+    if (igraphmodule_PyList_to_matrix_t(dist_o, dist)) {
+      free(dist);
+      return NULL;
+    }
+  }
+
+  if (igraph_matrix_init(&m, 1, 1)) {
+    if (dist) {
+      igraph_matrix_destroy(dist); free(dist);
+    }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (dim == 2) {
+    if (igraph_layout_umap(&self->g, dist, &m,
+          (igraph_integer_t)epochs,
+          (igraph_real_t)sampling_prob)) {
+    }
+    if (dist) {
+      igraph_matrix_destroy(dist); free(dist);
+    }
+    igraph_matrix_destroy(&m);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  } else if (dim == 3) {
+    if (igraph_layout_umap_3d(&self->g, dist, &m,
+          (igraph_integer_t)epochs,
+          (igraph_real_t)sampling_prob)) {
+    }
+    if (dist) {
+      igraph_matrix_destroy(dist); free(dist);
+    }
+    igraph_matrix_destroy(&m);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  } else {
+    /* TODO: Raise error*/
+  }
+
+  if (dist) {
+    igraph_matrix_destroy(dist); free(dist);
+  }
+
+  result_o = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
+  igraph_matrix_destroy(&m);
+  return (PyObject *) result_o;
 }
 
 /** \ingroup python_interface_graph
@@ -14951,6 +15049,31 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "Internal function, undocumented.\n\n"
    "@see: Graph.layout_sugiyama()\n\n"},
+
+  /* interface to igraph_layout_umap */
+  {"_layout_umap",
+   (PyCFunction) igraphmodule_Graph_layout_umap,
+   METH_VARARGS | METH_KEYWORDS,
+   "layout_umap(dist=None, dim=2, min_dist=0.01, epochs=50, sampling_prob=0.5)\n--\n\n"
+   "Uniform Manifold Approximation and Projection (UMAP).\n\n"
+   "This layout is a probabilistic algorithm that places vertices that are connected\n"
+   "and have a short distance close by in the embedded space.\n\n"
+   "@param dist: distances associated with the graph edges. If None, all edges will\n"
+   "  be assumed to convey the same distance between the vertices.\n"
+   "@param dim: the desired number of dimensions for the layout. dim=2\n"
+   "  means a 2D layout, dim=3 means a 3D layout.\n"
+   "@param min_dist: the minimal distance in the embedded space beyond which the\n"
+   "  probability of being located closeby decreases.\n"
+   "@param epochs: the number of epochs (iterations) the algorithm will iterate over.\n"
+   "  Notice that UMAP does not technically converge for symmetry reasons, but a \n"
+   "  larger number of epochs should generally give an equivalent or better layout.\n"
+   "@sampling_prob: the probability of sampling each vertex for repulsion at each\n"
+   "  epoch or iteration. A higher probability will give better results but also\n"
+   "  require more computations.\n"
+   "@return: the calculated layout.\n\n",
+   "@newfield ref: Reference\n"
+   "@ref: L McInnes, J Healy, J Melville: I{UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.}\n"
+   "arXiv:1802.03426."},
 
   ////////////////////////////
   // VISITOR-LIKE FUNCTIONS //
