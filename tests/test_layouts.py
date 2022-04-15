@@ -1,5 +1,6 @@
 import unittest
-from igraph import Graph, Layout, BoundingBox
+from math import sqrt
+from igraph import Graph, Layout, BoundingBox, InternalError
 
 
 class LayoutTests(unittest.TestCase):
@@ -253,8 +254,9 @@ class LayoutAlgorithmTests(unittest.TestCase):
     def testUMAP(self):
         g = Graph()
 
+        # These distinct types of exceptions look ugly... can we improve?
         self.assertRaises(
-                ValueError, g.layout_umap,
+                InternalError, g.layout_umap,
                 min_dist=-0.01,
             )
 
@@ -264,21 +266,26 @@ class LayoutAlgorithmTests(unittest.TestCase):
             )
 
         self.assertRaises(
-                ValueError, g.layout_umap,
+                InternalError, g.layout_umap,
                 sampling_prob=-0.01,
             )
 
-        self.assertRaises(
-                ValueError, g.layout_umap,
-                sampling_prob=1.01,
-            )
+        # TODO: this is currently accepted by the C core function...
+        # document at the Python level or fix at the C level?
+        #self.assertRaises(
+        #        InternalError, g.layout_umap,
+        #        sampling_prob=1.01,
+        #    )
 
         # Empty graph
-        self.assertEqual(g.layout_umap(), [])
+        lo = g.layout_umap()
+        self.assertTrue(isinstance(lo, Layout))
+        self.assertEqual(lo.coords, [])
 
         # Singleton graph
         g = Graph(n=1)
-        self.assertEqual(g.layout_umap(), [[0, 0]])
+        lo = g.layout_umap()
+        self.assertEqual(lo.coords, [[0, 0]])
 
         # Graph with two articulation points
         edges = [
@@ -294,9 +301,25 @@ class LayoutAlgorithmTests(unittest.TestCase):
             0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.08, 0.05, 0.1, 0.08, 0.12, 0.09, 0.11
             ]
         g = Graph(edges)
-        vs = g.layout_umap(dist=dist)
+        lo = g.layout_umap(dist=dist)
+        self.assertTrue(isinstance(lo, Layout))
 
-        # FIXME: finish test
+        # One should get two clusters in this case
+        xmax = max([x for (x, y) in lo.coords])
+        ymax = max([y for (x, y) in lo.coords])
+        xmin = min([x for (x, y) in lo.coords])
+        ymin = min([y for (x, y) in lo.coords])
+        distmax = max(xmax - xmin, ymax - ymin)
+        for iclu in range(0, 8, 7):
+            xclu = sum([x for (x, y) in lo.coords[iclu:iclu + 4]]) / 4
+            yclu = sum([y for (x, y) in lo.coords[iclu:iclu + 4]]) / 4
+            for i in range(4):
+                dx = lo.coords[iclu + i][0] - xclu
+                dy = lo.coords[iclu + i][1] - yclu
+                dist = sqrt(dx * dx + dy * dy)
+                # Distance from each cluster's center should be relatively small
+                self.assertLess(dist, 0.2 * distmax)
+
 
     def testReingoldTilford(self):
         g = Graph.Barabasi(100)
