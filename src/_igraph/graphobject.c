@@ -7767,24 +7767,6 @@ PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
                                    &dim, &min_dist, &epochs, &sampling_prob))
     return NULL;
 
-  CHECK_SSIZE_T_RANGE_POSITIVE(dim, "number of dimensions");
-  CHECK_SSIZE_T_RANGE_POSITIVE(epochs, "number of epochs");
-
-  if (min_dist < 0) {
-    /* FIXME: How to actually tell the user? */
-    igraphmodule_handle_igraph_error();
-  }
-
-  if (sampling_prob <= 0) {
-    /* FIXME: How to actually tell the user? */
-    igraphmodule_handle_igraph_error();
-  }
-
-  if (sampling_prob > 1) {
-    /* FIXME: How to actually tell the user? */
-    igraphmodule_handle_igraph_error();
-  }
-
   if (dist_o != Py_None) {
     dist = (igraph_matrix_t*)malloc(sizeof(igraph_matrix_t));
     if (!dist) {
@@ -7828,7 +7810,11 @@ PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
     igraphmodule_handle_igraph_error();
     return NULL;
   } else {
-    /* TODO: Raise error*/
+    if (dist) {
+      igraph_matrix_destroy(dist); free(dist);
+    }
+    igraph_matrix_destroy(&m);
+    igraphmodule_handle_igraph_error();
   }
 
   if (dist) {
