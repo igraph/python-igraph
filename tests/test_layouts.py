@@ -250,6 +250,54 @@ class LayoutAlgorithmTests(unittest.TestCase):
         lo = g.layout("mds")
         self.assertTrue(isinstance(lo, Layout))
 
+    def testUMAP(self):
+        g = Graph()
+
+        self.assertRaises(
+                ValueError, g.layout_umap,
+                min_dist=-0.01,
+            )
+
+        self.assertRaises(
+                ValueError, g.layout_umap,
+                epochs=-1,
+            )
+
+        self.assertRaises(
+                ValueError, g.layout_umap,
+                sampling_prob=-0.01,
+            )
+
+        self.assertRaises(
+                ValueError, g.layout_umap,
+                sampling_prob=1.01,
+            )
+
+        # Empty graph
+        self.assertEqual(g.layout_umap(), [])
+
+        # Singleton graph
+        g = Graph(n=1)
+        self.assertEqual(g.layout_umap(), [[0, 0]])
+
+        # Graph with two articulation points
+        edges = [
+            0, 1, 0, 2, 0, 3, 1, 2, 1, 3, 2, 3,
+            3, 4, 4, 5, 5, 6,
+            6, 7, 7, 8, 6, 8, 7, 9, 6, 9, 8, 9, 7, 10, 8, 10, 9, 10,
+            10, 11, 9, 11, 8, 11, 7, 11,
+            ]
+        edges = list(zip(edges[::2], edges[1::2]))
+        dist = [
+            0.1, 0.09, 0.12, 0.09, 0.1, 0.1,
+            0.9, 0.9, 0.9,
+            0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.08, 0.05, 0.1, 0.08, 0.12, 0.09, 0.11
+            ]
+        g = Graph(edges)
+        vs = g.layout_umap(dist=dist)
+
+        # FIXME: finish test
+
     def testReingoldTilford(self):
         g = Graph.Barabasi(100)
         lo = g.layout("rt")
