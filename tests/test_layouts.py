@@ -1,5 +1,5 @@
 import unittest
-from math import sqrt
+from math import hypot
 from igraph import Graph, Layout, BoundingBox, InternalError
 
 
@@ -254,7 +254,6 @@ class LayoutAlgorithmTests(unittest.TestCase):
     def testUMAP(self):
         g = Graph()
 
-        # These distinct types of exceptions look ugly... can we improve?
         self.assertRaises(
                 InternalError, g.layout_umap,
                 min_dist=-0.01,
@@ -273,6 +272,11 @@ class LayoutAlgorithmTests(unittest.TestCase):
         self.assertRaises(
                 InternalError, g.layout_umap,
                 sampling_prob=1.01,
+            )
+
+        self.assertRaises(
+                ValueError, g.layout_umap,
+                dim=1,
             )
 
         # Empty graph
@@ -303,18 +307,16 @@ class LayoutAlgorithmTests(unittest.TestCase):
         self.assertTrue(isinstance(lo, Layout))
 
         # One should get two clusters in this case
-        xmax = max([x for (x, y) in lo.coords])
-        ymax = max([y for (x, y) in lo.coords])
-        xmin = min([x for (x, y) in lo.coords])
-        ymin = min([y for (x, y) in lo.coords])
+        x, y = list(zip(*lo.coords))
+        xmax, ymax, xmin, ymin = max(x), max(y), min(x), min(y)
         distmax = max(xmax - xmin, ymax - ymin)
         for iclu in range(0, 8, 7):
-            xclu = sum([x for (x, y) in lo.coords[iclu:iclu + 4]]) / 4
-            yclu = sum([y for (x, y) in lo.coords[iclu:iclu + 4]]) / 4
+            xclu = sum(x[iclu:iclu + 4]) / 4
+            yclu = sum(y[iclu:iclu + 4]) / 4
             for i in range(4):
-                dx = lo.coords[iclu + i][0] - xclu
-                dy = lo.coords[iclu + i][1] - yclu
-                dist = sqrt(dx * dx + dy * dy)
+                dx = x[iclu + i] - xclu
+                dy = y[iclu + i] - yclu
+                dist = hypot(dx, dy)
                 # Distance from each cluster's center should be relatively small
                 self.assertLess(dist, 0.2 * distmax)
 

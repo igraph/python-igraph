@@ -7814,12 +7814,13 @@ PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
       return NULL;
     }
   } else {
-    /* FIXME: complain about the dimension */
     if (dist) {
       igraph_vector_destroy(dist); free(dist);
     }
     igraph_matrix_destroy(&m);
+    PyErr_SetString(PyExc_ValueError, "dim must be 2 or 3");
     igraphmodule_handle_igraph_error();
+    return NULL;
   }
 
   if (dist) {
@@ -15058,9 +15059,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param epochs: the number of epochs (iterations) the algorithm will iterate over.\n"
    "  Notice that UMAP does not technically converge for symmetry reasons, but a \n"
    "  larger number of epochs should generally give an equivalent or better layout.\n"
-   "@sampling_prob: the probability of sampling each vertex for repulsion at each\n"
-   "  epoch or iteration. A higher probability will give better results but also\n"
-   "  require more computations.\n"
+   "@param sampling_prob: the probability of sampling each vertex for repulsion at\n"
+   "  each epoch or iteration. A higher probability will give better results but\n"
+   "  also require more computations. Values between 50 and 1000 are typical.\n"
    "@return: the calculated layout.\n\n"
    "@newfield ref: Reference\n"
    "@ref: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation \n"
