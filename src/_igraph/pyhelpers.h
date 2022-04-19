@@ -26,6 +26,8 @@
 
 #include "preamble.h"
 
+int igraphmodule_helpers_init();
+
 int igraphmodule_PyFile_Close(PyObject* fileObj);
 PyObject* igraphmodule_PyFile_FromObject(PyObject* filename, const char* mode);
 PyObject* igraphmodule_PyList_NewFill(Py_ssize_t len, PyObject* item);
@@ -86,5 +88,17 @@ char* PyUnicode_CopyAsString(PyObject* string);
     return NULL;                                 \
   } \
 }
+
+#ifndef Py_None
+/* This happens on PyPy where Py_None, Py_True and Py_False are not part of the
+ * public API. Let's provide replacements ourselves. */
+#define PY_IGRAPH_PROVIDES_BOOL_CONSTANTS_AND_NONE
+#endif
+
+#ifdef PY_IGRAPH_PROVIDES_BOOL_CONSTANTS_AND_NONE
+extern PyObject* Py_None;
+extern PyObject* Py_True;
+extern PyObject* Py_False;
+#endif
 
 #endif

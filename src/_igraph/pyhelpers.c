@@ -23,6 +23,12 @@
 
 #include "pyhelpers.h"
 
+#ifdef PY_IGRAPH_PROVIDES_BOOL_CONSTANTS_AND_NONE
+PyObject* Py_None;
+PyObject* Py_True;
+PyObject* Py_False;
+#endif
+
 /**
  * Closes a Python file-like object by calling its close() method.
  */
@@ -220,4 +226,44 @@ long igraphmodule_Py_HashPointer(void *p) {
   if (x == -1)
     x = -2;
   return x;
+}
+
+/**
+ * @brief Initializer function that must be called from igraphmodule_init()
+ * 
+ * Initializes borrowed references to \c None, \c True and \c False to cope
+ * with the fact that \c Py_None, \c Py_False and \c Py_True are not exposed
+ * in PyPy as part of the limited API.
+ */
+int igraphmodule_helpers_init() {
+  static int called = 0;
+
+  if (called) {
+    PyErr_SetString(PyExc_RuntimeError, "igraphmodule_helpers_init() called twice");
+    return 1;
+  }
+
+#ifdef PY_IGRAPH_PROVIDES_BOOL_CONSTANTS_AND_NONE
+  Py_None = Py_BuildValue("");
+  if (Py_None == NULL) {
+    return 1;
+  }
+
+  Py_True = PyBool_FromLong(1);
+  if (Py_True == NULL) {
+    Py_DECREF(Py_None);
+    return 1;
+  }
+
+  Py_False = PyBool_FromLong(0);
+  if (Py_False == NULL) {
+    Py_DECREF(Py_None);
+    Py_DECREF(Py_True);
+    return 1;
+  }
+#endif
+  
+  called = 1;
+
+  return 0;
 }
