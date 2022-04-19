@@ -21,6 +21,7 @@
 */
 
 #include "common.h"
+#include "pyhelpers.h"
 #include "structmember.h"
 
 /**
