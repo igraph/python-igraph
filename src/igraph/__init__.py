@@ -1,5 +1,5 @@
 """
-IGraph library.
+igraph library.
 """
 
 

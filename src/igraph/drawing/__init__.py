@@ -1,5 +1,5 @@
 """
-Drawing and plotting routines for IGraph.
+Drawing and plotting routines for igraph.
 
 Plotting is dependent on the C{pycairo} or C{cairocffi} libraries that provide
 Python bindings to the popular U{Cairo library<http://www.cairographics.org>}.
