@@ -277,7 +277,7 @@ jobs:
       # Leak detection is disabled because of many false (?) positives in Python itself.
       - name: Test
         env:
-          LD_PRELOAD: "/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.5"
+          LD_PRELOAD: "/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.1"
           ASAN_OPTIONS: "detect_leaks=0"
         run: |
           python -m pytest tests
