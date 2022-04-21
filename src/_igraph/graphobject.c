@@ -7751,7 +7751,7 @@ PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
                                         PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] =
-    { "dist", "dim", "min_dist", "epochs", "sampling_prob", NULL };
+    { "dist", "dim", "seed", "min_dist", "epochs", "sampling_prob", NULL };
   igraph_matrix_t m;
   igraph_vector_t *dist = 0;
   Py_ssize_t dim = 2;
@@ -7759,49 +7759,52 @@ PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
   double sampling_prob = 0.3;
   Py_ssize_t epochs = 500;
   PyObject *dist_o = Py_None;
+  PyObject *seed_o = Py_None;
   PyObject *result_o;
+  igraph_bool_t use_seed = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Ondnd", kwlist, &dist_o,
-                                   &dim, &min_dist, &epochs, &sampling_prob))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OnOdnd", kwlist, &dist_o,
+                                   &dim, &seed_o, &min_dist, &epochs, &sampling_prob))
     return NULL;
 
   CHECK_SSIZE_T_RANGE_POSITIVE(dim, "number of dimensions");
+  if (dim != 2 && dim != 3) {
+    PyErr_SetString(PyExc_ValueError, "number of dimensions must be either 2 or 3");
+    return NULL;
+  }
+
   CHECK_SSIZE_T_RANGE_POSITIVE(epochs, "number of epochs");
 
+  /* Precomputed starting layout */
+  if (seed_o == 0 || seed_o == Py_None) {
+    if (igraph_matrix_init(&m, 1, 1)) {
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
+  } else {
+    use_seed = 1;
+    if (igraphmodule_PyList_to_matrix_t(seed_o, &m)) return NULL;
+  }
+
+  /* Initialize distances */
   if (dist_o != Py_None) {
     dist = (igraph_vector_t*)malloc(sizeof(igraph_vector_t));
     if (!dist) {
+      igraph_matrix_destroy(&m);
       PyErr_NoMemory();
       return NULL;
     }
     if (igraphmodule_PyObject_to_vector_t(dist_o, dist, 0)) {
+      igraph_matrix_destroy(&m);
       free(dist);
       return NULL;
     }
   }
 
-  if (igraph_matrix_init(&m, 1, 1)) {
-    if (dist) {
-      igraph_vector_destroy(dist); free(dist);
-    }
-    igraphmodule_handle_igraph_error();
-    return NULL;
-  }
-
   if (dim == 2) {
-    if (igraph_layout_umap(&self->g, dist, &m,
-          (igraph_real_t)min_dist,
-          (igraph_integer_t)epochs,
-          (igraph_real_t)sampling_prob)) {
-      if (dist) {
-        igraph_vector_destroy(dist); free(dist);
-      }
-      igraph_matrix_destroy(&m);
-      igraphmodule_handle_igraph_error();
-      return NULL;
-    }
-  } else if (dim == 3) {
-    if (igraph_layout_umap_3d(&self->g, dist, &m,
+    if (igraph_layout_umap(&self->g, &m,
+          use_seed,
+          dist,
           (igraph_real_t)min_dist,
           (igraph_integer_t)epochs,
           (igraph_real_t)sampling_prob)) {
@@ -7813,13 +7816,19 @@ PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
       return NULL;
     }
   } else {
-    if (dist) {
-      igraph_vector_destroy(dist); free(dist);
+    if (igraph_layout_umap_3d(&self->g, &m,
+          use_seed,
+          dist,
+          (igraph_real_t)min_dist,
+          (igraph_integer_t)epochs,
+          (igraph_real_t)sampling_prob)) {
+      if (dist) {
+        igraph_vector_destroy(dist); free(dist);
+      }
+      igraph_matrix_destroy(&m);
+      igraphmodule_handle_igraph_error();
+      return NULL;
     }
-    igraph_matrix_destroy(&m);
-    PyErr_SetString(PyExc_ValueError, "dim must be 2 or 3");
-    igraphmodule_handle_igraph_error();
-    return NULL;
   }
 
   if (dist) {
@@ -15045,7 +15054,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_umap",
    (PyCFunction) igraphmodule_Graph_layout_umap,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_umap(dist=None, dim=2, min_dist=0.01, epochs=500, sampling_prob=0.3)\n--\n\n"
+   "layout_umap(dist=None, dim=2, seed=None, min_dist=0.01, epochs=500, sampling_prob=0.3)\n--\n\n"
    "Uniform Manifold Approximation and Projection (UMAP).\n\n"
    "This layout is a probabilistic algorithm that places vertices that are connected\n"
    "and have a short distance close by in the embedded space.\n\n"
@@ -15053,6 +15062,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  be assumed to convey the same distance between the vertices.\n"
    "@param dim: the desired number of dimensions for the layout. dim=2\n"
    "  means a 2D layout, dim=3 means a 3D layout.\n"
+   "@param seed: if C{None}, uses a random starting layout for the\n"
+   "  algorithm. If a matrix (list of lists), uses the given matrix\n"
+   "  as the starting position.\n"
    "@param min_dist: the minimal distance in the embedded space beyond which the\n"
    "  probability of being located closeby decreases.\n"
    "@param epochs: the number of epochs (iterations) the algorithm will iterate\n"
