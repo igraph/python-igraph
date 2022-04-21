@@ -226,6 +226,8 @@ jobs:
   build_sanitized:
     name: Build with sanitizers for debugging purposes
     runs-on: ubuntu-latest
+    env:
+      IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address;Undefined" -DCMAKE_BUILD_TYPE=Debug
     steps:
       - uses: actions/checkout@v2
         with:
@@ -236,9 +238,13 @@ jobs:
         run:
           sudo apt install ninja-build cmake flex bison
 
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.10'
+
       - name: Build C core
         run: |
-          export IGRAPH_CMAKE_EXTRA_ARGS='-DUSE_SANITIZER=Address;Undefined -DCMAKE_BUILD_TYPE=Debug'
           python setup.py build_c_core
 
       - name: Build and install Python extension
