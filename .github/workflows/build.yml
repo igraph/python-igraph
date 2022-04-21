@@ -227,11 +227,11 @@ jobs:
     name: Build with sanitizers for debugging purposes
     runs-on: ubuntu-latest
     env:
-      CC: "gcc -fsanitize=address -fsanitize=undefined"
-      CXX: "g++ -fsanitize=address -fsanitize=undefined"
+      CC: "gcc -fsanitize=address"
+      CXX: "g++ -fsanitize=address"
       CFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
       CXXFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
-      IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address;Undefined" -DCMAKE_BUILD_TYPE=Debug -DFLEX_KEEP_LINE_NUMBERS=ON -DFORCE_COLORED_OUTPUT=ON -DCMAKE_C_FLAGS="-DNDEBUG"
+      IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address" -DCMAKE_BUILD_TYPE=Debug -DFLEX_KEEP_LINE_NUMBERS=ON -DFORCE_COLORED_OUTPUT=ON -DCMAKE_C_FLAGS="-DNDEBUG"
     steps:
       - uses: actions/checkout@v2
         with:
@@ -269,6 +269,5 @@ jobs:
       - name: Test
         run: |
           # NOTE: Leak detection is disabled because of may false positives in Python itself
-          pip install numpy scipy pandas networkx
-          pip install pytest
+          pip install pytest numpy scipy pandas networkx
           LD_PRELOAD="/lib/x86_64-linux-gnu/libasan.so.5" ASAN_OPTIONS="detect_leaks=0" python -m pytest tests
