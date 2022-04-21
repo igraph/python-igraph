@@ -266,8 +266,16 @@ jobs:
           # NOTE: install calls "build" first
           python setup.py install
 
+      - name: Install test dependencies
+        run: |
+          pip install pytest numpy scipy pandas networkx
+
+      # Only pytest, and nothing else should be run in this section due to
+      # the presence of LD_PRELOAD
       - name: Test
+        env:
+          LD_PRELOAD: /lib/x86_64-linux-gnu/libasan.so.5
+          ASAN_OPTIONS: "detect_leaks=0"
         run: |
           # NOTE: Leak detection is disabled because of may false positives in Python itself
-          pip install pytest numpy scipy pandas networkx
-          LD_PRELOAD="/lib/x86_64-linux-gnu/libasan.so.5" ASAN_OPTIONS="detect_leaks=0" python -m pytest tests
+          python -m pytest tests
