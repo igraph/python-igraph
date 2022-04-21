@@ -255,7 +255,8 @@ jobs:
       - name: Test
         run: |
           # NOTE: skipping all of these
-          #pip install numpy scipy pandas networkx
+          # pip install numpy scipy pandas networkx
           pip install pytest
+          python -c 'import igraph; igraph.Graph()'
           python -m pytest tests
 
