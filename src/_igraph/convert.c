@@ -2893,7 +2893,7 @@ int igraphmodule_PyObject_to_vector_int_list_t(PyObject* list, igraph_vector_int
 PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v) {
   PyObject *list, *item;
   Py_ssize_t n, i;
-  char* ptr;
+  const char* ptr;
 
   n = igraph_strvector_size(v);
   if (n < 0) {

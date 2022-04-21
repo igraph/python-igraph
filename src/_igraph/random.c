@@ -22,6 +22,7 @@
 */
 
 #include "random.h"
+#include "pyhelpers.h"
 #include <limits.h>
 #include <igraph_random.h>
 

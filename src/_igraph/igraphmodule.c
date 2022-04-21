@@ -836,6 +836,11 @@ PyObject* PyInit__igraph(void)
     INITERROR;
   }
 
+  /* Run basic initialization of the pyhelpers.c module */
+  if (igraphmodule_helpers_init()) {
+    INITERROR;
+  }
+
   /* Initialize types */
   if (
     igraphmodule_ARPACKOptions_register_type() ||
