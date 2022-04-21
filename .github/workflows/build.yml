@@ -223,15 +223,18 @@ jobs:
         with:
           path: dist/*.tar.gz
 
+  # The C core is temporarily with -DCMAKE_C_FLAGS="-DNDEBUG" because the Python test suite
+  # triggers a bug/assertion in RNG_INTEGER(). When that bug is fixed, remove it and increment
+  # the cache version to v1.
   build_with_sanitizer:
     name: Build with sanitizers for debugging purposes
     runs-on: ubuntu-latest
     env:
-      CC: "gcc -fsanitize=address"
-      CXX: "g++ -fsanitize=address"
+      CC: "gcc -fsanitize=address -fsanitize=undefined"
+      CXX: "g++ -fsanitize=address -fsanitize=undefined"
       CFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
       CXXFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
-      IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address" -DCMAKE_BUILD_TYPE=Debug -DFLEX_KEEP_LINE_NUMBERS=ON -DFORCE_COLORED_OUTPUT=ON -DCMAKE_C_FLAGS="-DNDEBUG"
+      IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address;Undefined" -DCMAKE_BUILD_TYPE=Debug -DFLEX_KEEP_LINE_NUMBERS=ON -DFORCE_COLORED_OUTPUT=ON -DCMAKE_C_FLAGS="-DNDEBUG"
     steps:
       - uses: actions/checkout@v2
         with:
@@ -245,7 +248,7 @@ jobs:
           path: |
             vendor/build
             vendor/install
-          key: C-core-build-sanitizer-v1-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}-x2
+          key: C-core-build-sanitizer-v0-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
@@ -270,12 +273,11 @@ jobs:
         run: |
           pip install pytest numpy scipy pandas networkx
 
-      # Only pytest, and nothing else should be run in this section due to
-      # the presence of LD_PRELOAD
+      # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
+      # Leak detection is disabled because of many false (?) positives in Python itself.
       - name: Test
         env:
-          LD_PRELOAD: /lib/x86_64-linux-gnu/libasan.so.5
+          LD_PRELOAD: "/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.5"
           ASAN_OPTIONS: "detect_leaks=0"
         run: |
-          # NOTE: Leak detection is disabled because of may false positives in Python itself
           python -m pytest tests
