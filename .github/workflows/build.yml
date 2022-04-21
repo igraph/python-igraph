@@ -257,6 +257,6 @@ jobs:
           # NOTE: skipping all of these
           # pip install numpy scipy pandas networkx
           pip install pytest
-          python -c 'import igraph; igraph.Graph()'
-          python -m pytest tests
+          LD_PRELOAD="/lib/x86_64-linux-gnu/libasan.so.5" python -c 'import igraph; igraph.Graph()'
+          LD_PRELOAD="/lib/x86_64-linux-gnu/libasan.so.5" python -m pytest tests
 
