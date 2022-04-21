@@ -223,9 +223,9 @@ jobs:
         with:
           path: dist/*.tar.gz
 
-  # The C core is temporarily with -DCMAKE_C_FLAGS="-DNDEBUG" because the Python test suite
-  # triggers a bug/assertion in RNG_INTEGER(). When that bug is fixed, remove it and increment
-  # the cache version to v1.
+  # The C core is temporarily compiled with -DCMAKE_C_FLAGS="-DNDEBUG" because the Python test suite
+  # triggers a bug/assertion in RNG_INTEGER(): https://github.com/igraph/igraph/issues/2031
+  # When this bug is fixed, remove NDEBUG and increment the cache version to v1.
   build_with_sanitizer:
     name: Build with sanitizers for debugging purposes
     runs-on: ubuntu-latest
