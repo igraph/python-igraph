@@ -227,9 +227,10 @@ jobs:
     name: Build with sanitizers for debugging purposes
     runs-on: ubuntu-latest
     env:
-      CC: "clang -fsanitize=address -fsanitize=undefined"
-      CXX: "clang++ -fsanitize=address -fsanitize=undefined"
+      CC: "gcc -fsanitize=address -fsanitize=undefined"
+      CXX: "g++ -fsanitize=address -fsanitize=undefined"
       CFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
+      CXXFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
       IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address;Undefined" -DCMAKE_BUILD_TYPE=Debug -DFLEX_KEEP_LINE_NUMBERS=ON -DFORCE_COLORED_OUTPUT=ON -DCMAKE_C_FLAGS="-DNDEBUG"
     steps:
       - uses: actions/checkout@v2
@@ -249,7 +250,7 @@ jobs:
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
         run:
-          sudo apt install clang ninja-build cmake flex bison
+          sudo apt install ninja-build cmake flex bison
 
       - uses: actions/setup-python@v2
         name: Install Python
@@ -267,10 +268,7 @@ jobs:
 
       - name: Test
         run: |
-          # NOTE: skipping all of these
-          # pip install numpy scipy pandas networkx
-          #pip install pytest
-          #LD_PRELOAD="/lib/x86_64-linux-gnu/libasan.so.5" python -m pytest tests
-          python -c 'import igraph; igraph.Graph()'
-          python -m unittest
-
+          # NOTE: Leak detection is disabled because of may false positives in Python itself
+          pip install numpy scipy pandas networkx
+          pip install pytest
+          LD_PRELOAD="/lib/x86_64-linux-gnu/libasan.so.5" ASAN_OPTIONS="detect_leaks=0" python -m pytest tests
