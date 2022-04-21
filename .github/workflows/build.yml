@@ -227,6 +227,9 @@ jobs:
     name: Build with sanitizers for debugging purposes
     runs-on: ubuntu-latest
     env:
+      CC: "clang -fsanitize=address -fsanitize=undefined"
+      CXX: "clang++ -fsanitize=address -fsanitize=undefined"
+      CFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
       IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address;Undefined" -DCMAKE_BUILD_TYPE=Debug -DFLEX_KEEP_LINE_NUMBERS=ON -DFORCE_COLORED_OUTPUT=ON -DCMAKE_C_FLAGS="-DNDEBUG"
     steps:
       - uses: actions/checkout@v2
@@ -241,12 +244,12 @@ jobs:
           path: |
             vendor/build
             vendor/install
-          key: C-core-build-sanitizer-v1-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}-x
+          key: C-core-build-sanitizer-v1-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}-x2
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
         run:
-          sudo apt install ninja-build cmake flex bison
+          sudo apt install clang ninja-build cmake flex bison
 
       - uses: actions/setup-python@v2
         name: Install Python
@@ -258,9 +261,6 @@ jobs:
           python setup.py build_c_core
 
       - name: Build and install Python extension
-        env:
-          CC: "gcc -fsanitize=address -fsanitize=undefined"
-          CFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color=always"
         run: |
           # NOTE: install calls "build" first
           python setup.py install
