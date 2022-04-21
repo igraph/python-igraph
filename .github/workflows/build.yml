@@ -244,7 +244,7 @@ jobs:
       - name: Build and install Python extension
         run: |
           # NOTE: install calls "build" first
-          CC='gcc -fsanitize=address -fsanitize=undefined' CXX='g++ -fsanitize=address -fsanitize=undefined' python setup.py install
+          CC='gcc -fsanitize=address -fsanitize=undefined' CFLAGS='-g -Og -fno-omit-frame-pointer' python setup.py install
 
       - name: Test
         run: |
