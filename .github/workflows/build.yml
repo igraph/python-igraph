@@ -223,12 +223,15 @@ jobs:
         with:
           path: dist/*.tar.gz
 
+  # When updating 'runs-on', the ASan/UBSan library paths/versions must also be updated for LD_PRELOAD
+  # for the "Test" step below.
+  #
   # The C core is temporarily compiled with -DCMAKE_C_FLAGS="-DNDEBUG" because the Python test suite
   # triggers a bug/assertion in RNG_INTEGER(): https://github.com/igraph/igraph/issues/2031
   # When this bug is fixed, remove NDEBUG and increment the cache version to v1.
   build_with_sanitizer:
     name: Build with sanitizers for debugging purposes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       CC: "gcc -fsanitize=address -fsanitize=undefined"
       CXX: "g++ -fsanitize=address -fsanitize=undefined"
@@ -274,6 +277,7 @@ jobs:
           pip install pytest numpy scipy pandas networkx
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
+      # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.
       # Leak detection is disabled because of many false (?) positives in Python itself.
       - name: Test
         env:
