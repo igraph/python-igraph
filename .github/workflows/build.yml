@@ -223,18 +223,28 @@ jobs:
         with:
           path: dist/*.tar.gz
 
-  build_sanitized:
+  build_with_sanitizer:
     name: Build with sanitizers for debugging purposes
     runs-on: ubuntu-latest
     env:
-      IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address;Undefined" -DCMAKE_BUILD_TYPE=Debug
+      IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address;Undefined" -DCMAKE_BUILD_TYPE=Debug -DFLEX_KEEP_LINE_NUMBERS=ON -DFORCE_COLORED_OUTPUT=ON
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: true
           fetch-depth: 0
+          
+      - name: Cache installed C core
+        id: cache-c-core
+        uses: actions/cache@v2
+        with:
+          path: |
+            vendor/build
+            vendor/install
+          key: C-core-build-sanitizer-v1-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}-xx
 
       - name: Install OS dependencies
+        if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
         run:
           sudo apt install ninja-build cmake flex bison
 
@@ -248,15 +258,18 @@ jobs:
           python setup.py build_c_core
 
       - name: Build and install Python extension
+        env:
+          CC: "gcc -fsanitize=address -fsanitize=undefined"
+          CFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color=always"
         run: |
           # NOTE: install calls "build" first
-          CC='gcc -fsanitize=address -fsanitize=undefined' CFLAGS='-g -Og -fno-omit-frame-pointer' python setup.py install
+          python setup.py install
 
       - name: Test
         run: |
           # NOTE: skipping all of these
           # pip install numpy scipy pandas networkx
-          pip install pytest
-          LD_PRELOAD="/lib/x86_64-linux-gnu/libasan.so.5" python -c 'import igraph; igraph.Graph()'
-          LD_PRELOAD="/lib/x86_64-linux-gnu/libasan.so.5" python -m pytest tests
+          #pip install pytest
+          #LD_PRELOAD="/lib/x86_64-linux-gnu/libasan.so.5" python -m pytest tests
+          LD_PRELOAD="/lib/x86_64-linux-gnu/libasan.so.5" python -m unittest
 
