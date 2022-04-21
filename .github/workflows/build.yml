@@ -222,3 +222,34 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: dist/*.tar.gz
+
+  build_sanitized:
+    name: Build with sanitizers for debugging purposes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install OS dependencies
+        run:
+          sudo apt install ninja-build cmake flex bison
+
+      - name: Build C core
+        run: |
+          export IGRAPH_CMAKE_EXTRA_ARGS='-DUSE_SANITIZER=Address;Undefined -DCMAKE_BUILD_TYPE=Debug'
+          python setup.py build_c_core
+
+      - name: Build and install Python extension
+        run: |
+          # NOTE: install calls "build" first
+          CC='gcc -fsanitize=address -fsanitize=undefined' CXX='g++ -fsanitize=address -fsanitize=undefined' python setup.py install
+
+      - name: Test
+        run: |
+          # NOTE: skipping all of these
+          #pip install numpy scipy pandas networkx
+          pip install pytest
+          python -m pytest tests
+
