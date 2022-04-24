@@ -12155,23 +12155,23 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
  */
 PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
   PyObject * args, PyObject * kwds) {
+
   static char *kwlist[] = { "start", "steps", "mode", "stuck", "weights", "return_type", NULL };
-  PyObject *start_o, *mode_o = Py_None, *stuck_o = Py_None, *resv, *rese, *res;
+  PyObject *start_o, *mode_o = Py_None, *stuck_o = Py_None, *weights_o = Py_None, *return_type_o = Py_None;
   igraph_integer_t start;
   Py_ssize_t steps = 10;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_random_walk_stuck_t stuck = IGRAPH_RANDOM_WALK_STUCK_RETURN;
-  igraph_vector_t *ws=0;
-  PyObject *weights_o = Py_None;
+  igraph_vector_t *weights=0;
+  int return_type=1;
   igraph_vector_int_t vertices, edges;
+  PyObject *resv, *rese, *res;
   static igraphmodule_enum_translation_table_entry_t return_type_tt[] = {
         {"vertices", 1},
         {"edges", 2},
         {"both", 3},
         {0,0}
     };
-  int return_type=1;
-  PyObject *return_type_o = Py_None;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OnOOOO", kwlist, &start_o,
         &steps, &mode_o, &stuck_o, &weights_o, &return_type_o))
@@ -12202,45 +12202,46 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
   }
 
   if (weights_o != Py_None) {
-    if (igraphmodule_attrib_to_vector_t(weights_o, self, &ws, ATTRIBUTE_TYPE_EDGE)) {
+    if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights, ATTRIBUTE_TYPE_EDGE)) {
       return NULL;
     }
   }
 
   if (return_type == 1) {
       if (igraph_vector_int_init(&vertices, 0)) {
-        if (ws) { igraph_vector_destroy(ws); free(ws); }
+        if (weights) { igraph_vector_destroy(weights); free(wwights); }
         return igraphmodule_handle_igraph_error();
       }
   } else if (return_type == 2) {
       if (igraph_vector_int_init(&edges, 0)) {
-        if (ws) { igraph_vector_destroy(ws); free(ws); }
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
         return igraphmodule_handle_igraph_error();
       }
   } else {
       if (igraph_vector_int_init(&vertices, 0)) {
-        if (ws) { igraph_vector_destroy(ws); free(ws); }
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
         return igraphmodule_handle_igraph_error();
       }
       if (igraph_vector_int_init(&edges, 0)) {
         igraph_vector_int_destroy(&vertices);
-        if (ws) { igraph_vector_destroy(ws); free(ws); }
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
         return igraphmodule_handle_igraph_error();
       }
   }
 
   if (igraph_random_walk(&self->g,
-        ws,
+        weights,
         &vertices, &edges,
         start, mode, steps, stuck)) {
-    if (ws) { igraph_vector_destroy(ws); free(ws); }
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
     if (return_type != 2) igraph_vector_int_destroy(&vertices);
     if (return_type != 1) igraph_vector_int_destroy(&edges);
     return igraphmodule_handle_igraph_error();
   }
 
-  if (ws) { igraph_vector_destroy(ws); free(ws); }
+  if (weights) { igraph_vector_destroy(weights); free(weights); }
 
+  /* Manage the output */
   if (return_type == 1) {
       res = igraphmodule_vector_int_t_to_PyList(&vertices);
       igraph_vector_int_destroy(&vertices);
@@ -12251,8 +12252,11 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
       return res;
   } else {
       resv = igraphmodule_vector_int_t_to_PyList(&vertices);
+      igraph_vector_int_destroy(&vertices);
       rese = igraphmodule_vector_int_t_to_PyList(&edges);
-      res = Py_BuildValue("{s:O,s:O}", "vertices", resv, "edges", rese);
+      igraph_vector_int_destroy(&edges);
+      res = Py_BuildValue("{s:O,s:O}",
+          "vertices", resv, "edges", rese); /* steals references */
       return res;
   }
 }
