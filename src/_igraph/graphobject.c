@@ -12209,7 +12209,7 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
 
   if (return_type == 1) {
       if (igraph_vector_int_init(&vertices, 0)) {
-        if (weights) { igraph_vector_destroy(weights); free(wwights); }
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
         return igraphmodule_handle_igraph_error();
       }
   } else if (return_type == 2) {
