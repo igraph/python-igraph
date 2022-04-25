@@ -12253,16 +12253,26 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
  */
 PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
   PyObject * args, PyObject * kwds) {
-  static char *kwlist[] = { "start", "steps", "mode", "stuck", NULL };
-  PyObject *start_o, *mode_o = Py_None, *stuck_o = Py_None, *res;
+
+  static char *kwlist[] = { "start", "steps", "mode", "stuck", "weights", "return_type", NULL };
+  PyObject *start_o, *mode_o = Py_None, *stuck_o = Py_None, *weights_o = Py_None, *return_type_o = Py_None;
   igraph_integer_t start;
   Py_ssize_t steps = 10;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_random_walk_stuck_t stuck = IGRAPH_RANDOM_WALK_STUCK_RETURN;
-  igraph_vector_int_t walk;
+  igraph_vector_t *weights=0;
+  int return_type = 1; /* the default is "vertices" */
+  igraph_vector_int_t vertices, edges;
+  PyObject *resv, *rese, *res;
+  static igraphmodule_enum_translation_table_entry_t return_type_tt[] = {
+        {"vertices", 1},
+        {"edges", 2},
+        {"both", 3},
+        {0,0}
+    };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OnOO", kwlist, &start_o,
-        &steps, &mode_o, &stuck_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OnOOOO", kwlist, &start_o,
+        &steps, &mode_o, &stuck_o, &weights_o, &return_type_o))
     return NULL;
 
   CHECK_SSIZE_T_RANGE(steps, "number of steps");
@@ -12279,19 +12289,106 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  if (igraph_vector_int_init(&walk, steps)) {
-    return igraphmodule_handle_igraph_error();
+  /* Figure out return type */
+  if (return_type_o != Py_None) {
+    if (igraphmodule_PyObject_to_enum_strict(return_type_o, return_type_tt, &return_type)) {
+      return NULL;
+    }
+    if (return_type == 0){
+      PyErr_SetString(PyExc_ValueError,
+          "return_type must be \"vertices\", \"edges\", or \"both\".");
+      return NULL;
+    }
   }
 
-  if (igraph_random_walk(&self->g, &walk, start, mode, steps, stuck)) {
-    igraph_vector_int_destroy(&walk);
-    return igraphmodule_handle_igraph_error();
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
+        ATTRIBUTE_TYPE_EDGE)) {
+      return NULL;
   }
 
-  res = igraphmodule_vector_int_t_to_PyList(&walk);
-  igraph_vector_int_destroy(&walk);
+  /* Only return vertices */
+  if (return_type == 1) {
+      if (igraph_vector_int_init(&vertices, 0)) {
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
+        return igraphmodule_handle_igraph_error();
+      }
 
-  return res;
+      if (igraph_random_walk(&self->g,
+            weights,
+            &vertices, NULL,
+            start, mode, steps, stuck)) {
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
+        igraph_vector_int_destroy(&vertices);
+        return igraphmodule_handle_igraph_error();
+      }
+
+      if (weights) { igraph_vector_destroy(weights); free(weights); }
+      resv = igraphmodule_vector_int_t_to_PyList(&vertices);
+      igraph_vector_int_destroy(&vertices);
+      return resv;
+
+  /* only return edges */
+  } else if (return_type == 2) {
+      if (igraph_vector_int_init(&edges, 0)) {
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
+        return igraphmodule_handle_igraph_error();
+      }
+
+      if (igraph_random_walk(&self->g,
+            weights,
+            NULL, &edges,
+            start, mode, steps, stuck)) {
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
+        igraph_vector_int_destroy(&edges);
+        return igraphmodule_handle_igraph_error();
+      }
+
+      if (weights) { igraph_vector_destroy(weights); free(weights); }
+      rese = igraphmodule_vector_int_t_to_PyList(&edges);
+      igraph_vector_int_destroy(&edges);
+      return rese;
+
+  /* return both vertices and edges, as a dict */
+  } else {
+      if (igraph_vector_int_init(&vertices, 0)) {
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
+        return igraphmodule_handle_igraph_error();
+      }
+      if (igraph_vector_int_init(&edges, 0)) {
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
+        igraph_vector_int_destroy(&vertices);
+        return igraphmodule_handle_igraph_error();
+      }
+
+      if (igraph_random_walk(&self->g,
+            weights,
+            &vertices, &edges,
+            start, mode, steps, stuck)) {
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
+        igraph_vector_int_destroy(&vertices);
+        igraph_vector_int_destroy(&edges);
+        return igraphmodule_handle_igraph_error();
+      }
+
+      if (weights) { igraph_vector_destroy(weights); free(weights); }
+
+      resv = igraphmodule_vector_int_t_to_PyList(&vertices);
+      igraph_vector_int_destroy(&vertices);
+      if (resv == NULL) {
+        igraph_vector_int_destroy(&edges);
+        return resv;
+      }
+
+      rese = igraphmodule_vector_int_t_to_PyList(&edges);
+      igraph_vector_int_destroy(&edges);
+      if (rese == NULL) {
+        return rese;
+      }
+
+      return Py_BuildValue("{s:O,s:O}",
+          "vertices", resv,
+          "edges", rese); /* steals references */
+  }
 }
 
 /**********************************************************************
@@ -16503,7 +16600,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /****************/
   {"random_walk", (PyCFunction)igraphmodule_Graph_random_walk,
    METH_VARARGS | METH_KEYWORDS,
-   "random_walk(start, steps, mode=\"out\", stuck=\"return\")\n--\n\n"
+   "random_walk(start, steps, mode=\"out\", stuck=\"return\", weights=None, return_type=\"vertices\")\n--\n\n"
    "Performs a random walk of a given length from a given node.\n\n"
    "@param start: the starting vertex of the walk\n"
    "@param steps: the number of steps that the random walk should take\n"
@@ -16512,8 +16609,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  graphs."
    "@param stuck: what to do when the random walk gets stuck. C{\"return\"}\n"
    "  returns a partial random walk; C{\"error\"} throws an exception.\n"
+   "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
+   "  even an edge attribute name.\n"
+   "@param return_type: what to return. It can be C{\"vertices\"} (default),\n"
+   "  then the function returns a list of the vertex ids visited; C{\"edges\"},\n"
+   "  then the function returns a list of edge ids visited; or C{\"both\"},\n"
+   "  then the function return a dictionary with keys C{\"vertices\"} and\n"
+   "  C{\"edges\"}.\n"
    "@return: a random walk that starts from the given vertex and has at most\n"
-   "  the given length (shorter if the random walk got stuck)\n"
+   "  the given length (shorter if the random walk got stuck).\n"
   },
 
   /**********************/
