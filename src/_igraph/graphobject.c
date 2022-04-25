@@ -12191,7 +12191,7 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  /* Figure out return type*/
+  /* Figure out return type */
   if (return_type_o != Py_None) {
     igraphmodule_PyObject_to_enum_strict(return_type_o, return_type_tt, &return_type);
     if (return_type == 0){
@@ -12201,64 +12201,87 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
     }
   }
 
-  if (weights_o != Py_None) {
-    if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights, ATTRIBUTE_TYPE_EDGE)) {
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
+        ATTRIBUTE_TYPE_EDGE)) {
       return NULL;
-    }
   }
 
+  /* Only return vertices */
   if (return_type == 1) {
       if (igraph_vector_int_init(&vertices, 0)) {
         if (weights) { igraph_vector_destroy(weights); free(weights); }
         return igraphmodule_handle_igraph_error();
       }
-  } else if (return_type == 2) {
-      if (igraph_vector_int_init(&edges, 0)) {
+
+      if (igraph_random_walk(&self->g,
+            weights,
+            &vertices, NULL,
+            start, mode, steps, stuck)) {
         if (weights) { igraph_vector_destroy(weights); free(weights); }
-        return igraphmodule_handle_igraph_error();
-      }
-  } else {
-      if (igraph_vector_int_init(&vertices, 0)) {
-        if (weights) { igraph_vector_destroy(weights); free(weights); }
-        return igraphmodule_handle_igraph_error();
-      }
-      if (igraph_vector_int_init(&edges, 0)) {
         igraph_vector_int_destroy(&vertices);
+        return igraphmodule_handle_igraph_error();
+      }
+
+      if (weights) { igraph_vector_destroy(weights); free(weights); }
+      resv = igraphmodule_vector_int_t_to_PyList(&vertices);
+      igraph_vector_int_destroy(&vertices);
+      return resv;
+
+  /* only return edges */
+  } else if (return_type == 2) {
+      if (igraph_vector_int_init(&edges, 0)) {
         if (weights) { igraph_vector_destroy(weights); free(weights); }
         return igraphmodule_handle_igraph_error();
       }
-  }
 
-  if (igraph_random_walk(&self->g,
-        weights,
-        &vertices, &edges,
-        start, mode, steps, stuck)) {
-    if (weights) { igraph_vector_destroy(weights); free(weights); }
-    if (return_type != 2) igraph_vector_int_destroy(&vertices);
-    if (return_type != 1) igraph_vector_int_destroy(&edges);
-    return igraphmodule_handle_igraph_error();
-  }
+      if (igraph_random_walk(&self->g,
+            weights,
+            NULL, &edges,
+            start, mode, steps, stuck)) {
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
+        igraph_vector_int_destroy(&edges);
+        return igraphmodule_handle_igraph_error();
+      }
 
-  if (weights) { igraph_vector_destroy(weights); free(weights); }
-
-  /* Manage the output */
-  if (return_type == 1) {
-      res = igraphmodule_vector_int_t_to_PyList(&vertices);
-      igraph_vector_int_destroy(&vertices);
-      return res;
-  } else if (return_type == 2) {
-      res = igraphmodule_vector_int_t_to_PyList(&edges);
+      if (weights) { igraph_vector_destroy(weights); free(weights); }
+      rese = igraphmodule_vector_int_t_to_PyList(&edges);
       igraph_vector_int_destroy(&edges);
-      return res;
+      return rese;
+
+  /* return both vertices and edges, as a dict */
   } else {
+      if (igraph_vector_int_init(&vertices, 0)) {
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
+        return igraphmodule_handle_igraph_error();
+      }
+      if (igraph_vector_int_init(&edges, 0)) {
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
+        igraph_vector_int_destroy(&vertices);
+        return igraphmodule_handle_igraph_error();
+      }
+
+      if (igraph_random_walk(&self->g,
+            weights,
+            &vertices, &edges,
+            start, mode, steps, stuck)) {
+        if (weights) { igraph_vector_destroy(weights); free(weights); }
+        igraph_vector_int_destroy(&vertices);
+        igraph_vector_int_destroy(&edges);
+        return igraphmodule_handle_igraph_error();
+      }
+
+      if (weights) { igraph_vector_destroy(weights); free(weights); }
+
       resv = igraphmodule_vector_int_t_to_PyList(&vertices);
       igraph_vector_int_destroy(&vertices);
       rese = igraphmodule_vector_int_t_to_PyList(&edges);
       igraph_vector_int_destroy(&edges);
       res = Py_BuildValue("{s:O,s:O}",
-          "vertices", resv, "edges", rese); /* steals references */
+          "vertices", resv,
+          "edges", rese); /* steals references */
       return res;
   }
+
 }
 
 /**********************************************************************
