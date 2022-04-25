@@ -1,10 +1,16 @@
 import random
 import unittest
+
 from igraph import Graph, InternalError
 
 
 class RandomWalkTests(unittest.TestCase):
+    def setUp(self):
+        random.seed(42)
+
     def validate_walk(self, g, walk, start, length, mode="out"):
+        self.assertEqual(len(walk), length + 1)
+
         prev = None
         for vertex in walk:
             if prev is not None:
@@ -14,6 +20,8 @@ class RandomWalkTests(unittest.TestCase):
             prev = vertex
 
     def validate_edge_walk(self, g, walk, start, length, mode="out"):
+        self.assertEqual(len(walk), length)
+
         prev_vertices = None
         for edgeid in walk:
             vertices = g.es[edgeid].tuple
