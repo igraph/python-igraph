@@ -3825,4 +3825,3 @@ int igraphmodule_PyObject_to_random_tree_t(PyObject *o, igraph_random_tree_t *re
 
   return igraphmodule_PyObject_to_enum_strict(o, random_tree_tt, (int*)result);
 }
-
