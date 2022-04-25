@@ -316,9 +316,17 @@ class LayoutAlgorithmTests(unittest.TestCase):
             for i in range(4):
                 dx = x[iclu + i] - xclu
                 dy = y[iclu + i] - yclu
-                dist = hypot(dx, dy)
+                dxy = hypot(dx, dy)
                 # Distance from each cluster's center should be relatively small
-                self.assertLess(dist, 0.2 * distmax)
+                self.assertLess(dxy, 0.2 * distmax)
+
+        # Test single epoch with seed
+        lo_adj = g.layout_umap(dist=dist, epochs=1, sampling_prob=1, seed=lo)
+        self.assertTrue(isinstance(lo_adj, Layout))
+
+        # Same but inputting the coordinates
+        lo_adj = g.layout_umap(dist=dist, epochs=1, sampling_prob=1, seed=lo.coords)
+        self.assertTrue(isinstance(lo_adj, Layout))
 
 
     def testReingoldTilford(self):
