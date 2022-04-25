@@ -12163,7 +12163,7 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_random_walk_stuck_t stuck = IGRAPH_RANDOM_WALK_STUCK_RETURN;
   igraph_vector_t *weights=0;
-  int return_type=1;
+  int return_type = 1; /* the default is "vertices" */
   igraph_vector_int_t vertices, edges;
   PyObject *resv, *rese, *res;
   static igraphmodule_enum_translation_table_entry_t return_type_tt[] = {
@@ -12193,7 +12193,9 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
 
   /* Figure out return type */
   if (return_type_o != Py_None) {
-    igraphmodule_PyObject_to_enum_strict(return_type_o, return_type_tt, &return_type);
+    if (igraphmodule_PyObject_to_enum_strict(return_type_o, return_type_tt, &return_type)) {
+      return NULL;
+    }
     if (return_type == 0){
       PyErr_SetString(PyExc_ValueError,
           "return_type must be \"vertices\", \"edges\", or \"both\".");
@@ -12274,14 +12276,21 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
 
       resv = igraphmodule_vector_int_t_to_PyList(&vertices);
       igraph_vector_int_destroy(&vertices);
+      if (resv == NULL) {
+        igraph_vector_int_destroy(&edges);
+        return resv;
+      }
+
       rese = igraphmodule_vector_int_t_to_PyList(&edges);
       igraph_vector_int_destroy(&edges);
-      res = Py_BuildValue("{s:O,s:O}",
+      if (rese == NULL) {
+        return rese;
+      }
+
+      return Py_BuildValue("{s:O,s:O}",
           "vertices", resv,
           "edges", rese); /* steals references */
-      return res;
   }
-
 }
 
 /**********************************************************************
