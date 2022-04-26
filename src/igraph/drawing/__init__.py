@@ -1,5 +1,5 @@
 """
-Drawing and plotting routines for IGraph.
+Drawing and plotting routines for igraph.
 
 IGraph has two stable plotting backends at the moment: Cairo and Matplotlib.
 It also has experimental support for plotly.

@@ -1,7 +1,7 @@
 # vim:ts=4:sw=4:sts=4:et
 # -*- coding: utf-8 -*-
 """
-Layout-related code in the IGraph library.
+Layout-related code in the igraph library.
 
 This package contains the implementation of the L{Layout} object.
 """
