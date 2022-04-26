@@ -137,6 +137,7 @@ PyObject *igraphmodule__union(PyObject *self,
     igraph_vector_ptr_t edgemaps;
 
     if (igraph_vector_ptr_init(&edgemaps, 0)) {
+      igraph_vector_ptr_destroy(&gs);
       return igraphmodule_handle_igraph_error();
     }
 
@@ -144,8 +145,7 @@ PyObject *igraphmodule__union(PyObject *self,
     if (igraph_union_many(&g, &gs, &edgemaps)) {
       igraph_vector_ptr_destroy(&gs);
       igraph_vector_ptr_destroy(&edgemaps);
-      igraphmodule_handle_igraph_error();
-      return NULL;
+      return igraphmodule_handle_igraph_error();
     }
 
     /* extract edgemaps */
@@ -159,8 +159,10 @@ PyObject *igraphmodule__union(PyObject *self,
       for (j = 0; j < no_of_edges; j++) {
         PyObject *dest = PyLong_FromLong(VECTOR(*map)[j]);
         PyList_SET_ITEM(emi, (Py_ssize_t) j, dest);
+        /* reference to 'dest' stolen by PyList_SET_ITEM */
       }
       PyList_SET_ITEM(em_list, (Py_ssize_t) i, emi);
+      /* reference to 'emi' stolen by PyList_SET_ITEM */
       igraph_vector_destroy(map);
     }
     igraph_vector_ptr_destroy_all(&edgemaps);
@@ -169,8 +171,7 @@ PyObject *igraphmodule__union(PyObject *self,
     /* Create union */
     if (igraph_union_many(&g, &gs, /* edgemaps */ 0)) {
       igraph_vector_ptr_destroy(&gs);
-      igraphmodule_handle_igraph_error();
-      return NULL;
+      return igraphmodule_handle_igraph_error();
     }
   }
 
@@ -194,6 +195,7 @@ PyObject *igraphmodule__union(PyObject *self,
     PyDict_SetItemString(result, "graph", (PyObject *) o);
     Py_DECREF(o);
     PyDict_SetItemString(result, "edgemaps", em_list);
+    Py_DECREF(em_list);
   }
   else {
     result = (PyObject *) o;
@@ -249,6 +251,7 @@ PyObject *igraphmodule__intersection(PyObject *self,
     /* prepare edgemaps */
     igraph_vector_ptr_t edgemaps;
     if (igraph_vector_ptr_init(&edgemaps, 0)) {
+      igraph_vector_ptr_destroy(&gs);
       return igraphmodule_handle_igraph_error();
     }
 
@@ -256,8 +259,7 @@ PyObject *igraphmodule__intersection(PyObject *self,
     if (igraph_intersection_many(&g, &gs, &edgemaps)) {
       igraph_vector_ptr_destroy(&gs);
       igraph_vector_ptr_destroy(&edgemaps);
-      igraphmodule_handle_igraph_error();
-      return NULL;
+      return igraphmodule_handle_igraph_error();
     }
 
     long int i;
@@ -270,8 +272,10 @@ PyObject *igraphmodule__intersection(PyObject *self,
       for (j = 0; j < no_of_edges; j++) {
         PyObject *dest = PyLong_FromLong(VECTOR(*map)[j]);
         PyList_SET_ITEM(emi, (Py_ssize_t) j, dest);
+        /* reference to 'dest' stolen by PyList_SET_ITEM */
       }
       PyList_SET_ITEM(em_list, (Py_ssize_t) i, emi);
+      /* reference to 'emi' stolen by PyList_SET_ITEM */
       igraph_vector_destroy(map);
     }
     igraph_vector_ptr_destroy_all(&edgemaps);

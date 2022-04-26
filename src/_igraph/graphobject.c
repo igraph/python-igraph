@@ -302,7 +302,7 @@ cleanup:
 /** \ingroup python_interface_graph
  * \brief Creates an \c igraph.Graph subtype from an existing \c igraph_t
  *
- * The newly created instance (which will be a subtype of )\c igraph.Graph)
+ * The newly created instance (which will be a subtype of \c igraph.Graph)
  * will take ownership of the given \c igraph_t. This function is not
  * accessible from Python, however it is in the header file for other C API
  * functions to use.
@@ -10018,7 +10018,7 @@ PyObject *igraphmodule_Graph_edge_attributes(igraphmodule_GraphObject * self)
 }
 
 /**********************************************************************
- * Graph operations                             *
+ * Graph operations                                                   *
  * Disjoint union, union and intersection are in operators.c          *
  **********************************************************************/
 
