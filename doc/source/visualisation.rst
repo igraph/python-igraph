@@ -74,6 +74,8 @@ The following algorithms produce nice layouts for general graphs:
 - `Graph.layout_kamada_kawai`: Kamada-Kawai layout (2D and 3D), a "spring" layout based on classical physics
 - `Graph.layout_lgl`: Large Graph Layout
 - `Graph.layout_mds`: multidimensional scaling layout
+- `Graph.layout_umap`: Uniform Manifold Approximation and Projection (2D and 3D). UMAP works especially well when the graph is composed
+  by "clusters" that are loosely connected to each other.
 
 The following algorithms are useful for *trees* (and for Sugiyama *directed acyclic graphs* or *DAGs*):
 
