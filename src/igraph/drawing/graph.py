@@ -487,7 +487,7 @@ class DefaultGraphDrawer(AbstractCairoGraphDrawer):
             src, dest = edge.tuple
             src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
             (x, y), (halign, valign) = edge_drawer.get_label_position(
-                edge, src_vertex, dest_vertex
+                visual_edge, src_vertex, dest_vertex
             )
 
             # Measure the text
