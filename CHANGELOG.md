@@ -32,6 +32,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed a bug in the Cairo and Matplotlib backends that prevented edges with
+  labels from being drawn properly; see
+  [#535](https://github.com/igraph/python-igraph/issues/535) for details.
+
 ## [0.9.10]
 
 ### Changed
