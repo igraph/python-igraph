@@ -15414,7 +15414,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"Read_Pajek", (PyCFunction) igraphmodule_Graph_Read_Pajek,
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
    "Read_Pajek(f)\n--\n\n"
-   "Reads a Pajek format file and creates a graph based on it.\n\n"
+   "Reads a file in the Pajek format and creates a graph based on it.\n"
+   "Only Pajek network file (.net extension) are supported, not project file (.paj).\n\n"
    "@param f: the name of the file or a Python file handle\n"},
   /* interface to igraph_write_graph_dimacs */
   {"write_dimacs", (PyCFunction) igraphmodule_Graph_write_dimacs,
