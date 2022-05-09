@@ -584,8 +584,8 @@ PyObject* igraphmodule_power_law_fit(PyObject *self, PyObject *args, PyObject *k
 
   igraph_vector_destroy(&data);
 
-  return Py_BuildValue("Oddddd", result.continuous ? Py_True : Py_False,
-      result.alpha, result.xmin, result.L, result.D, result.p);
+  return Py_BuildValue("Odddd", result.continuous ? Py_True : Py_False,
+      result.alpha, result.xmin, result.L, result.D);
 }
 
 PyObject* igraphmodule_split_join_distance(PyObject *self,

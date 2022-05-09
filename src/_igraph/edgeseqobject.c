@@ -65,7 +65,7 @@ igraphmodule_EdgeSeq_copy(igraphmodule_EdgeSeqObject* o) {
 
   if (igraph_es_type(&o->es) == IGRAPH_ES_VECTOR) {
     igraph_vector_int_t v;
-    if (igraph_vector_int_copy(&v, o->es.data.vecptr)) {
+    if (igraph_vector_int_init_copy(&v, o->es.data.vecptr)) {
       igraphmodule_handle_igraph_error();
       return 0;
     }

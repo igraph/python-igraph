@@ -2934,8 +2934,7 @@ PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v) {
  * \return 0 if everything was OK, 1 otherwise
  */
 int igraphmodule_PyList_to_strvector_t(PyObject* v, igraph_strvector_t *result) {
-  Py_ssize_t n, i;
-  PyObject *o;
+  Py_ssize_t n;
 
   if (!PyList_Check(v)) {
     PyErr_SetString(PyExc_TypeError, "expected list");

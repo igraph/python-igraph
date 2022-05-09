@@ -12263,7 +12263,7 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
   igraph_vector_t *weights=0;
   int return_type = 1; /* the default is "vertices" */
   igraph_vector_int_t vertices, edges;
-  PyObject *resv, *rese, *res;
+  PyObject *resv, *rese;
   static igraphmodule_enum_translation_table_entry_t return_type_tt[] = {
         {"vertices", 1},
         {"edges", 2},
