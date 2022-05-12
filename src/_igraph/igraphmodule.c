@@ -623,6 +623,54 @@ PyObject* igraphmodule_split_join_distance(PyObject *self,
   return Py_BuildValue("nn", (Py_ssize_t)distance12, (Py_ssize_t)distance21);
 }
 
+#define LOCALE_CAPSULE_TYPE "igraph._igraph.locale_capsule"
+
+void igraphmodule__destroy_locale_capsule(PyObject *capsule) {
+  igraph_safelocale_t* loc = (igraph_safelocale_t*) PyCapsule_GetPointer(capsule, LOCALE_CAPSULE_TYPE);
+  if (loc) {
+    PyMem_Free(loc);
+  }
+}
+
+PyObject* igraphmodule__enter_safelocale(PyObject* self) {
+  igraph_safelocale_t* loc;
+  PyObject* capsule;
+
+  loc = PyMem_Malloc(sizeof(loc));
+  if (loc == NULL) {
+    PyErr_NoMemory();
+    return NULL;
+  }
+
+  capsule = PyCapsule_New(loc, LOCALE_CAPSULE_TYPE, igraphmodule__destroy_locale_capsule);
+  if (capsule == NULL) {
+    return NULL;
+  }
+
+  if (igraph_enter_safelocale(loc)) {
+    Py_DECREF(capsule);
+    igraphmodule_handle_igraph_error();
+  }
+
+  return capsule;
+}
+
+PyObject* igraphmodule__exit_safelocale(PyObject *self, PyObject *capsule) {
+  igraph_safelocale_t* loc;
+
+  if (!PyCapsule_IsValid(capsule, LOCALE_CAPSULE_TYPE)) {
+    PyErr_SetString(PyExc_TypeError, "expected locale capsule");
+    return NULL;
+  }
+
+  loc = (igraph_safelocale_t*) PyCapsule_GetPointer(capsule, LOCALE_CAPSULE_TYPE);
+  if (loc != NULL) {
+    igraph_exit_safelocale(loc);
+  }
+
+  Py_RETURN_NONE;
+}
+
 /** \ingroup python_interface
  * \brief Method table for the igraph Python module
  */
@@ -750,6 +798,18 @@ static PyMethodDef igraphmodule_methods[] =
   {"_intersection", (PyCFunction)igraphmodule__intersection,
     METH_VARARGS | METH_KEYWORDS,
     "_intersection(graphs, edgemaps)\n--\n\n"
+  },
+  {"_enter_safelocale", (PyCFunction)igraphmodule__enter_safelocale,
+    METH_NOARGS,
+    "_enter_safelocale() -> object\n--\n\n"
+    "Helper function for the L{safe_locale()} context manager. Do not use\n"
+    "directly in your own code."
+  },
+  {"_exit_safelocale", (PyCFunction)igraphmodule__exit_safelocale,
+    METH_O,
+    "_exit_safelocale(locale: object) -> None\n--\n\n"
+    "Helper function for the L{safe_locale()} context manager. Do not use\n"
+    "directly in your own code."
   },
   {NULL, NULL, 0, NULL}
 };
