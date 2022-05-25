@@ -1292,10 +1292,21 @@ class Graph(GraphBase):
         iteration. Ties are broken randomly and the order in which the
         vertices are updated is randomized before every iteration. The
         algorithm ends when vertices reach a consensus.
+
         Note that since ties are broken randomly, there is no guarantee that
         the algorithm returns the same community structure after each run.
         In fact, they frequently differ. See the paper of Raghavan et al
         on how to come up with an aggregated community structure.
+
+        Also note that the community _labels_ (numbers) have no semantic meaning
+        and igraph is free to re-number communities. If you use fixed labels,
+        igraph may still re-number the communities, but co-community membership
+        constraints will be respected: if you had two vertices with fixed labels
+        that belonged to the same community, they will still be in the same
+        community at the end. Similarly, if you had two vertices with fixed
+        labels that belonged to different communities, they will still be in
+        different communities at the end.
+
         @param weights: name of an edge attribute or a list containing
           edge weights
         @param initial: name of a vertex attribute or a list containing
