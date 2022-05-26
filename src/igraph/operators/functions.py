@@ -9,6 +9,13 @@ from igraph._igraph import GraphBase, _union, _intersection, _disjoint_union
 
 from warnings import warn
 
+def name_set(names):
+    """Convert a list of names to a set of name while checking for duplicates."""
+    nameset = set(names)
+    if (len(nameset) != len(names)):
+        raise AttributeError("Graph contains duplicate vertex names")
+    return nameset
+
 
 def disjoint_union(graphs):
     """Graph disjoint union.
@@ -135,7 +142,7 @@ def union(graphs, byname="auto"):
 
     if byname:
         allnames = [g.vs["name"] for g in graphs]
-        uninames = list(set.union(*(set(vns) for vns in allnames)))
+        uninames = list(set.union(*(name_set(vns) for vns in allnames)))
         permutation_map = {x: i for i, x in enumerate(uninames)}
         nve = len(uninames)
         newgraphs = []
@@ -319,9 +326,9 @@ def intersection(graphs, byname="auto", keep_all_vertices=True):
         allnames = [g.vs["name"] for g in graphs]
 
         if keep_all_vertices:
-            uninames = list(set.union(*(set(vns) for vns in allnames)))
+            uninames = list(set.union(*(name_set(vns) for vns in allnames)))
         else:
-            uninames = list(set.intersection(*(set(vns) for vns in allnames)))
+            uninames = list(set.intersection(*(name_set(vns) for vns in allnames)))
         permutation_map = {x: i for i, x in enumerate(uninames)}
 
         nv = len(uninames)
