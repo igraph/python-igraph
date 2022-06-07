@@ -834,14 +834,27 @@ options = dict(
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
     extras_require={
+        # Dependencies needed for plotting with Cairo
         "plotting": ["cairocffi>=1.2.0"],
+
+        # Dependencies needed for testing only
         "test": [
             "networkx>=2.5",
-            "pytest>=6.2.5",
+            "pytest>=7.1.2",
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
         ],
+
+        # Dependencies needed for testing on musllinux; only those that are either
+        # pure Python or have musllinux wheels as we don't want to compile wheels
+        # in CI
+        "test-musl": [
+            "networkx>=2.5",
+            "pytest>=7.1.2",
+        ],
+
+        # Dependencies needed for building the documentation
         "doc": [
             "Sphinx>=4.2.0",
             "sphinxbootstrap4theme>=0.6.0"
