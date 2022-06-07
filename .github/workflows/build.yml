@@ -41,7 +41,7 @@ jobs:
       - name: Build wheels (musllinux)
         uses: joerick/cibuildwheel@v2.6.1
         env:
-          CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev* && pip install cmake && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install cmake && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
           CIBW_TEST_EXTRAS: "test-musl"
 
