@@ -233,7 +233,7 @@ class multidict(MutableMapping):
     values for the same key.
 
     Each value in this dictionary will be a list. Methods which emulate
-    the methods of a standard Python `dict` object will return or manipulate
+    the methods of a standard Python ``dict`` object will return or manipulate
     the first items of the lists only. Special methods are provided to
     deal with keys having multiple values.
     """
