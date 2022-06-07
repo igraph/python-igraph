@@ -840,7 +840,7 @@ options = dict(
         # Dependencies needed for testing only
         "test": [
             "networkx>=2.5",
-            "pytest>=7.1.2",
+            "pytest>=7.0.1",
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
@@ -851,7 +851,7 @@ options = dict(
         # in CI
         "test-musl": [
             "networkx>=2.5",
-            "pytest>=7.1.2",
+            "pytest>=7.0.1",
         ],
 
         # Dependencies needed for building the documentation
