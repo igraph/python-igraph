@@ -447,7 +447,7 @@ class Graph(GraphBase):
 
     def as_directed(self, *args, **kwds):
         """Returns a directed copy of this graph. Arguments are passed on
-        to L{to_directed()} that is invoked on the copy.
+        to L{GraphBase.to_directed()} that is invoked on the copy.
         """
         copy = self.copy()
         copy.to_directed(*args, **kwds)
@@ -455,7 +455,7 @@ class Graph(GraphBase):
 
     def as_undirected(self, *args, **kwds):
         """Returns an undirected copy of this graph. Arguments are passed on
-        to L{to_undirected()} that is invoked on the copy.
+        to L{GraphBase.to_undirected()} that is invoked on the copy.
         """
         copy = self.copy()
         copy.to_undirected(*args, **kwds)
@@ -494,7 +494,7 @@ class Graph(GraphBase):
     def indegree(self, *args, **kwds):
         """Returns the in-degrees in a list.
 
-        See L{degree} for possible arguments.
+        See L{GraphBase.degree()} for possible arguments.
         """
         kwds["mode"] = IN
         return self.degree(*args, **kwds)
@@ -502,7 +502,7 @@ class Graph(GraphBase):
     def outdegree(self, *args, **kwds):
         """Returns the out-degrees in a list.
 
-        See L{degree} for possible arguments.
+        See L{GraphBase.degree()} for possible arguments.
         """
         kwds["mode"] = OUT
         return self.degree(*args, **kwds)
@@ -586,7 +586,7 @@ class Graph(GraphBase):
     def clear(self):
         """Clears the graph, deleting all vertices, edges, and attributes.
 
-        @see: L{delete_vertices} and L{delete_edges}.
+        @see: L{GraphBase.delete_vertices} and L{delete_edges}.
         """
         self.delete_vertices()
         for attr in self.attributes():
@@ -1065,8 +1065,8 @@ class Graph(GraphBase):
         to the formula of Barrat et al (see the references).
 
         Note that this measure is different from the global transitivity
-        measure (see L{transitivity_undirected()}) as it simply takes the
-        average local transitivity across the whole network.
+        measure (see L{GraphBase.transitivity_undirected()}) as it simply takes
+        the average local transitivity across the whole network.
 
         @param mode: defines how to treat vertices with degree less than two.
           If C{TRANSITIVITY_ZERO} or C{"zero"}, these vertices will have zero
@@ -1075,7 +1075,8 @@ class Graph(GraphBase):
         @param weights: edge weights to be used. Can be a sequence or iterable
           or even an edge attribute name.
 
-        @see: L{transitivity_undirected()}, L{transitivity_local_undirected()}
+        @see: L{GraphBase.transitivity_undirected()},
+          L{GraphBase.transitivity_local_undirected()}
         @newfield ref: Reference
         @ref: Watts DJ and Strogatz S: I{Collective dynamics of small-world
           networks}. Nature 393(6884):440-442, 1998.
@@ -1630,57 +1631,57 @@ class Graph(GraphBase):
           - C{auto}, C{automatic}: automatic layout
             (see L{layout_auto})
 
-          - C{bipartite}: bipartite layout (see L{layout_bipartite})
+          - C{bipartite}: bipartite layout (see L{GraphBase.layout_bipartite})
 
           - C{circle}, C{circular}: circular layout
-            (see L{layout_circle})
+            (see L{GraphBase.layout_circle})
 
           - C{dh}, C{davidson_harel}: Davidson-Harel layout (see
-            L{layout_davidson_harel})
+            L{GraphBase.layout_davidson_harel})
 
-          - C{drl}: DrL layout for large graphs (see L{layout_drl})
+          - C{drl}: DrL layout for large graphs (see L{GraphBase.layout_drl})
 
           - C{drl_3d}: 3D DrL layout for large graphs
-            (see L{layout_drl})
+            (see L{GraphBase.layout_drl})
 
           - C{fr}, C{fruchterman_reingold}: Fruchterman-Reingold layout
-            (see L{layout_fruchterman_reingold}).
+            (see L{GraphBase.layout_fruchterman_reingold}).
 
           - C{fr_3d}, C{fr3d}, C{fruchterman_reingold_3d}: 3D Fruchterman-
-            Reingold layout (see L{layout_fruchterman_reingold}).
+            Reingold layout (see L{GraphBase.layout_fruchterman_reingold}).
 
-          - C{grid}: regular grid layout in 2D (see L{layout_grid})
+          - C{grid}: regular grid layout in 2D (see L{GraphBase.layout_grid})
 
-          - C{grid_3d}: regular grid layout in 3D (see L{layout_grid_3d})
+          - C{grid_3d}: regular grid layout in 3D (see L{GraphBase.layout_grid_3d})
 
-          - C{graphopt}: the graphopt algorithm (see L{layout_graphopt})
+          - C{graphopt}: the graphopt algorithm (see L{GraphBase.layout_graphopt})
 
           - C{kk}, C{kamada_kawai}: Kamada-Kawai layout
-            (see L{layout_kamada_kawai})
+            (see L{GraphBase.layout_kamada_kawai})
 
           - C{kk_3d}, C{kk3d}, C{kamada_kawai_3d}: 3D Kamada-Kawai layout
-            (see L{layout_kamada_kawai})
+            (see L{GraphBase.layout_kamada_kawai})
 
           - C{lgl}, C{large}, C{large_graph}: Large Graph Layout
-            (see L{layout_lgl})
+            (see L{GraphBase.layout_lgl})
 
-          - C{mds}: multidimensional scaling layout (see L{layout_mds})
+          - C{mds}: multidimensional scaling layout (see L{GraphBase.layout_mds})
 
-          - C{random}: random layout (see L{layout_random})
+          - C{random}: random layout (see L{GraphBase.layout_random})
 
-          - C{random_3d}: random 3D layout (see L{layout_random})
+          - C{random_3d}: random 3D layout (see L{GraphBase.layout_random})
 
           - C{rt}, C{tree}, C{reingold_tilford}: Reingold-Tilford tree
-            layout (see L{layout_reingold_tilford})
+            layout (see L{GraphBase.layout_reingold_tilford})
 
           - C{rt_circular}, C{reingold_tilford_circular}: circular
             Reingold-Tilford tree layout
-            (see L{layout_reingold_tilford_circular})
+            (see L{GraphBase.layout_reingold_tilford_circular})
 
           - C{sphere}, C{spherical}, C{circle_3d}, C{circular_3d}: spherical
-            layout (see L{layout_circle})
+            layout (see L{GraphBase.layout_circle})
 
-          - C{star}: star layout (see L{layout_star})
+          - C{star}: star layout (see L{GraphBase.layout_star})
 
           - C{sugiyama}: Sugiyama layout (see L{layout_sugiyama})
 
@@ -1730,14 +1731,14 @@ class Graph(GraphBase):
 
           3. Otherwise, if the graph is connected and has at most 100
              vertices, the Kamada-Kawai layout will be used (see
-             L{layout_kamada_kawai()}).
+             L{GraphBase.layout_kamada_kawai()}).
 
           4. Otherwise, if the graph has at most 1000 vertices, the
              Fruchterman-Reingold layout will be used (see
-             L{layout_fruchterman_reingold()}).
+             L{GraphBase.layout_fruchterman_reingold()}).
 
           5. If everything else above failed, the DrL layout algorithm
-             will be used (see L{layout_drl()}).
+             will be used (see L{GraphBase.layout_drl()}).
 
         All the arguments of this function except C{dim} are passed on
         to the chosen layout function (in case we have to call some layout
@@ -3431,7 +3432,7 @@ class Graph(GraphBase):
           contain the vertex IDs as a sequence of intergers from 0 to
           C{len(vertices) - 1}. All other columns will be added as vertex
           attributes by column name.
-        @use_vids: whether to interpret the first two columns of the C{edges}
+        @param use_vids: whether to interpret the first two columns of the C{edges}
           argument as vertex ids (0-based integers) instead of vertex names.
           If this argument is set to True and the first two columns of C{edges}
           are not integers, an error is thrown.
@@ -4031,7 +4032,7 @@ class Graph(GraphBase):
             L{Layout}, it will be passed to L{layout} to calculate
             the layout. Note that if you want a deterministic layout that
             does not change with every plot, you must either use a
-            deterministic layout function (like L{layout_circle}) or
+            deterministic layout function (like L{GraphBase.layout_circle}) or
             calculate the layout in advance and pass a L{Layout} object here.
 
           - C{margin}: the top, right, bottom, left margins as a 4-tuple.

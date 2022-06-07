@@ -18,11 +18,11 @@ class GephiConnection:
         """Constructs a connection to a Gephi master server.
 
         The connection object can be constructed either by specifying the `url`
-        directly, or by specifying the `host`, `port` and `workspace` arguments.
-        The latter three are evaluated only if `url` is None; otherwise the
-        `url` will take precedence.
+        directly, or by specifying the ``host``, ``port`` and ``workspace``
+        arguments.  The latter three are evaluated only if `url` is None;
+        otherwise the ``url`` will take precedence.
 
-        The `url` argument does not have to include the operation (e.g.,
+        The ``url`` argument does not have to include the operation (e.g.,
         ``?operation=updateGraph``); the connection will take care of it.
         E.g., if you wish to connect to workspace 2 in a local Gephi instance on
         port 7341, the correct form to use for the `url` is as follows::
@@ -233,10 +233,11 @@ class GephiGraphStreamer:
 
     def post(self, graph, destination, encoder=None):
         """Posts the given graph to the destination of the streamer using the
-        given JSON encoder. When `encoder` is ``None``, it falls back to the default
-        JSON encoder of the streamer in the `encoder` property.
+        given JSON encoder. When ``encoder`` is ``None``, it falls back to the
+        default JSON encoder of the streamer in the `encoder` property.
 
-        `destination` must be a file-like object or an instance of `GephiConnection`.
+        ``destination`` must be a file-like object or an instance of
+        `GephiConnection`.
         """
         encoder = encoder or self.encoder
         for jsonobj in self.iterjsonobj(graph):
@@ -245,14 +246,15 @@ class GephiGraphStreamer:
 
     def send_event(self, event, destination, encoder=None, flush=True):
         """Sends a single JSON event to the given destination using the given
-        JSON encoder.  When `encoder` is ``None``, it falls back to the default
-        JSON encoder of the streamer in the `encoder` property.
+        JSON encoder.  When ``encoder`` is ``None``, it falls back to the
+        default JSON encoder of the streamer in the `encoder` property.
 
-        `destination` must be a file-like object or an instance of `GephiConnection`.
+        ``destination`` must be a file-like object or an instance of
+        `GephiConnection`.
 
-        The method flushes the destination after sending the event. If you want to
-        avoid this (e.g., because you are sending many events), set `flush` to
-        ``False``.
+        The method flushes the destination after sending the event. If you want
+        to avoid this (e.g., because you are sending many events), set `flush`
+        to ``False``.
         """
         encoder = encoder or self.encoder
         destination.write(encoder.encode(event).encode("utf-8"))
