@@ -1,8 +1,18 @@
 # igraph Python interface changelog
 
-## [Unreleased]
+## [0.9.11]
+
+### Changed
+
+- Vendored igraph was updated to version 0.9.9.
 
 ### Fixed
+
+- Graph union and intersection (by name) operators now verify that there are no
+  duplicate names within the individual graphs.
+
+- Fixed a memory leak in `Graph.union()` when edge maps were used; see
+  [#534](https://github.com/igraph/python-igraph/issues/534) for details.
 
 - Fixed a bug in the Cairo and Matplotlib backends that prevented edges with
   labels from being drawn properly; see
@@ -274,7 +284,9 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[Unreleased]: https://github.com/igraph/python-igraph/compare/0.9.9..master
+[Unreleased]: https://github.com/igraph/python-igraph/compare/0.9.11..master
+[0.9.11]: https://github.com/igraph/python-igraph/compare/0.9.10...0.9.11
+[0.9.10]: https://github.com/igraph/python-igraph/compare/0.9.9...0.9.10
 [0.9.9]: https://github.com/igraph/python-igraph/compare/0.9.8...0.9.9
 [0.9.8]: https://github.com/igraph/python-igraph/compare/0.9.7...0.9.8
 [0.9.7]: https://github.com/igraph/python-igraph/compare/0.9.6...0.9.7
