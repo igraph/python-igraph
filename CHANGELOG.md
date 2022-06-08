@@ -2,6 +2,10 @@
 
 ## [0.9.11]
 
+### Added
+
+- We now publish `musllinux` wheels on PyPI.
+
 ### Changed
 
 - Vendored igraph was updated to version 0.9.9.
