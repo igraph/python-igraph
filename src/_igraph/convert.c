@@ -571,6 +571,31 @@ int igraphmodule_PyObject_to_get_adjacency_t(PyObject *o,
 }
 
 /**
+ * \brief Converts a Python object to an igraph \c igraph_laplacian_normalization_t
+ */
+int igraphmodule_PyObject_to_laplacian_normalization_t(
+  PyObject *o, igraph_laplacian_normalization_t *result
+) {
+  static igraphmodule_enum_translation_table_entry_t laplacian_normalization_tt[] = {
+        {"unnormalized", IGRAPH_LAPLACIAN_UNNORMALIZED},
+        {"symmetric", IGRAPH_LAPLACIAN_SYMMETRIC},
+        {"left", IGRAPH_LAPLACIAN_LEFT},
+        {"right", IGRAPH_LAPLACIAN_RIGHT},
+        {0,0}
+    };
+
+  if (o == Py_True) {
+    *result = IGRAPH_LAPLACIAN_SYMMETRIC;
+    return 0;
+  } else if (o == Py_False) {
+    *result = IGRAPH_LAPLACIAN_UNNORMALIZED;
+    return 0;
+  } else {
+    return igraphmodule_PyObject_to_enum(o, laplacian_normalization_tt, (int*)result);
+  }
+}
+
+/**
  * \brief Converts a Python object to an igraph \c igraph_layout_grid_t
  */
 int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *result) {
@@ -589,6 +614,28 @@ int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *re
     return 0;
   } else {
     return igraphmodule_PyObject_to_enum(o, layout_grid_tt, (int*)result);
+  }
+}
+
+/**
+ * \brief Converts a Python object to an igraph \c igraph_loops_t
+ */
+int igraphmodule_PyObject_to_loops_t(PyObject *o, igraph_loops_t *result) {
+  static igraphmodule_enum_translation_table_entry_t loops_tt[] = {
+    {"ignore", IGRAPH_NO_LOOPS},
+    {"once",   IGRAPH_LOOPS_ONCE},
+    {"twice",  IGRAPH_LOOPS_TWICE},
+    {0,0}
+  };
+
+  if (o == Py_True) {
+    *result = IGRAPH_LOOPS_TWICE;
+    return 0;
+  } else if (o == Py_False) {
+    *result = IGRAPH_NO_LOOPS;
+    return 0;
+  } else {
+    return igraphmodule_PyObject_to_enum(o, loops_tt, (int*)result);
   }
 }
 

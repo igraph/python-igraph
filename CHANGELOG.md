@@ -13,6 +13,11 @@
   data structures. See PR [#434](https://github.com/igraph/python-igraph/pull/434)
   for more details.
 
+- `Graph.get_adjacency()` now allows the user to specify whether loop edges
+  should be counted once or twice, or not at all.
+
+- `Graph.get_laplacian()` now supports left-, right- and symmetric normalization.
+
 ### Changed
 
 - Changed default value of the `use_vids=...` argument of `Graph.DataFrame()`
@@ -25,10 +30,14 @@
 - Removed deprecated `show()` method of `Plot` instances as well as the feature
   that automatically shows the plot when `plot()` is called with no target.
 
+- Removed the `eids` keyword argument of `get_adjacency()`.
+
 ### Deprecated
 
 - `Graph.clusters()` is now deprecated; use `Graph.connected_components()` or
   its already existing shorter alias, `Graph.components()`.
+
+- `Graph.shortest_paths()` is now deprecated; use `Graph.distances()` instead.
 
 ## [Unreleased]
 

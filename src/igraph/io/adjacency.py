@@ -132,12 +132,12 @@ def _construct_graph_from_weighted_adjacency(
     if (np is not None) and isinstance(matrix, np.ndarray):
         matrix = matrix.tolist()
 
-    graph = super(Graph, cls).Weighted_Adjacency(
+    graph, weights = super(Graph, cls)._Weighted_Adjacency(
         matrix,
         mode=mode,
-        attr=attr,
         loops=loops,
     )
+    graph.es[attr] = weights
 
     # Add vertex names if present
     if vertex_names is not None:

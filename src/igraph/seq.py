@@ -759,6 +759,7 @@ def _add_proxy_methods():
         "closeness",
         "cocitation",
         "constraint",
+        "distances",
         "diversity",
         "eccentricity",
         "get_shortest_paths",

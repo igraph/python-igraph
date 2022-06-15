@@ -129,6 +129,7 @@ from igraph.clustering import (
     _biconnected_components,
     _cohesive_blocks,
     _connected_components,
+    _clusters,
 )
 from igraph.cut import (
     Cut,
@@ -255,6 +256,7 @@ from igraph.structural import (
     _outdegree,
     _degree_distribution,
     _pagerank,
+    _shortest_paths
 )
 from igraph.summary import GraphSummary, summary
 from igraph.utils import (
@@ -353,7 +355,8 @@ class Graph(GraphBase):
     adhesion = GraphBase.edge_connectivity
 
     # Compatibility aliases
-    shortest_paths_dijkstra = GraphBase.shortest_paths
+    shortest_paths = _shortest_paths
+    shortest_paths_dijkstra = shortest_paths
     subgraph = GraphBase.induced_subgraph
 
     def __init__(self, *args, **kwds):
@@ -650,6 +653,7 @@ class Graph(GraphBase):
     #############################################
     # Connected components
     biconnected_components = _biconnected_components
+    clusters = _clusters
     cohesive_blocks = _cohesive_blocks
     connected_components = _connected_components
     blocks = biconnected_components

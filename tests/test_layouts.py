@@ -243,7 +243,7 @@ class LayoutAlgorithmTests(unittest.TestCase):
         lo = g.layout("mds")
         self.assertTrue(isinstance(lo, Layout))
 
-        dists = g.shortest_paths()
+        dists = g.distances()
         lo = g.layout("mds", dists)
         self.assertTrue(isinstance(lo, Layout))
 
@@ -334,7 +334,7 @@ class LayoutAlgorithmTests(unittest.TestCase):
         lo = g.layout("rt")
         ys = [coord[1] for coord in lo]
         root = ys.index(0.0)
-        self.assertEqual(ys, g.shortest_paths(root)[0])
+        self.assertEqual(ys, g.distances(root)[0])
         g = Graph.Barabasi(100) + Graph.Barabasi(50)
         lo = g.layout("rt", root=[0, 100])
         self.assertEqual(lo[100][1] - lo[0][1], 0)

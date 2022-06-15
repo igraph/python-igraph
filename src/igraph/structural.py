@@ -93,3 +93,11 @@ def _pagerank(
         niter,
         eps,
     )
+
+
+def _shortest_paths(graph, *args, **kwds):
+    """Deprecated alias to L{Graph.distances()}."""
+    from igraph import deprecated
+
+    deprecated("Graph.shortest_paths() is deprecated; use Graph.distances() instead")
+    return graph.distances(*args, **kwds)

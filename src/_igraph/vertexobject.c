@@ -738,6 +738,7 @@ GRAPH_PROXY_METHOD(constraint, "constraint");
 GRAPH_PROXY_METHOD(degree, "degree");
 GRAPH_PROXY_METHOD(delete, "delete_vertices");
 GRAPH_PROXY_METHOD(diversity, "diversity");
+GRAPH_PROXY_METHOD(distances, "distances");
 GRAPH_PROXY_METHOD(eccentricity, "eccentricity");
 GRAPH_PROXY_METHOD(get_shortest_paths, "get_shortest_paths");
 GRAPH_PROXY_METHOD_PP(incident, "incident", _convert_to_edge_list);

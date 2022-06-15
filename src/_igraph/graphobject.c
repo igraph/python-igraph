@@ -1944,15 +1944,21 @@ PyObject *igraphmodule_Graph_Adjacency(PyTypeObject * type,
   igraphmodule_GraphObject *self;
   igraph_t g;
   igraph_matrix_t m;
-  PyObject *matrix, *mode_o = Py_None;
+  PyObject *matrix, *mode_o = Py_None, *loops_o = Py_None;
   igraph_adjacency_t mode = IGRAPH_ADJ_DIRECTED;
+  igraph_loops_t loops = IGRAPH_LOOPS_ONCE;
 
-  static char *kwlist[] = { "matrix", "mode", NULL };
+  static char *kwlist[] = { "matrix", "mode", "loops", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O", kwlist,
-                                   &PyList_Type, &matrix, &mode_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OO", kwlist,
+                                   &PyList_Type, &matrix, &mode_o, &loops_o))
     return NULL;
-  if (igraphmodule_PyObject_to_adjacency_t(mode_o, &mode)) return NULL;
+
+  if (igraphmodule_PyObject_to_adjacency_t(mode_o, &mode))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_loops_t(loops_o, &loops))
+    return NULL;
 
   if (igraphmodule_PyList_to_matrix_t(matrix, &m)) {
     PyErr_SetString(PyExc_TypeError,
@@ -1960,7 +1966,7 @@ PyObject *igraphmodule_Graph_Adjacency(PyTypeObject * type,
     return NULL;
   }
 
-  if (igraph_adjacency(&g, &m, mode)) {
+  if (igraph_adjacency(&g, &m, mode, loops)) {
     igraphmodule_handle_igraph_error();
     igraph_matrix_destroy(&m);
     return NULL;
@@ -3571,54 +3577,60 @@ PyObject *igraphmodule_Graph_Weighted_Adjacency(PyTypeObject * type,
   igraphmodule_GraphObject *self;
   igraph_t g;
   igraph_matrix_t m;
-  PyObject *matrix, *mode_o = Py_None, *attr_o = Py_None, *s = 0;
-  PyObject *loops = Py_True;
-  char* attr = 0;
+  PyObject *matrix, *mode_o = Py_None;
+  PyObject *loops_o = Py_None, *weights_o;
   igraph_adjacency_t mode = IGRAPH_ADJ_DIRECTED;
+  igraph_loops_t loops = IGRAPH_LOOPS_ONCE;
+  igraph_vector_t weights;
 
-  static char *kwlist[] = { "matrix", "mode", "attr", "loops", NULL };
+  static char *kwlist[] = { "matrix", "mode", "loops", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OOO", kwlist,
-                                   &PyList_Type, &matrix, &mode_o, &attr_o,
-                                   &loops))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OO", kwlist,
+                                   &PyList_Type, &matrix, &mode_o, &loops_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_adjacency_t(mode_o, &mode))
     return NULL;
 
-  if (attr_o != Py_None) {
-    s = PyObject_Str(attr_o);
-    if (s) {
-      attr = PyUnicode_CopyAsString(s);
-      if (attr == 0)
-        return NULL;
-    } else return NULL;
-  }
+  /* mapping of Py_True is different from what igraphmodule_PyObject_to_loops_t
+   * assumes so we handle it separately */
+  if (loops_o == Py_True) {
+    loops = IGRAPH_LOOPS_ONCE;
+  } else if (igraphmodule_PyObject_to_loops_t(loops_o, &loops))
+    return NULL;
 
   if (igraphmodule_PyList_to_matrix_t(matrix, &m)) {
-    if (attr != 0)
-      free(attr);
     PyErr_SetString(PyExc_TypeError,
                     "Error while converting adjacency matrix");
     return NULL;
   }
 
-  if (igraph_weighted_adjacency(&g, &m, mode, attr ? attr : "weight",
-        PyObject_IsTrue(loops))) {
+  if (igraph_vector_init(&weights, 0)) {
     igraphmodule_handle_igraph_error();
-    if (attr != 0)
-      free(attr);
     igraph_matrix_destroy(&m);
     return NULL;
   }
 
-  if (attr != 0)
-    free(attr);
+  if (igraph_weighted_adjacency(&g, &m, mode, &weights, loops)) {
+    igraphmodule_handle_igraph_error();
+    igraph_matrix_destroy(&m);
+    igraph_vector_destroy(&weights);
+    return NULL;
+  }
+
   igraph_matrix_destroy(&m);
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
+  weights_o = igraphmodule_vector_t_to_PyList(&weights, IGRAPHMODULE_TYPE_FLOAT);
+  if (!weights_o) {
+    Py_DECREF(self);
+    igraph_vector_destroy(&weights);
+    return NULL;
+  }
 
-  return (PyObject *) self;
+  igraph_vector_destroy(&weights);
+
+  return Py_BuildValue("NN", (PyObject *) self, weights_o);
 }
 
 /**********************************************************************
@@ -5696,14 +5708,15 @@ PyObject *igraphmodule_Graph_rewire_edges(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
- * \brief Calculates shortest paths in a graph.
+ * \brief Calculates shortest path lengths in a graph.
  * \return the shortest path lengths for the given vertices
  * \sa igraph_shortest_paths, igraph_shortest_paths_dijkstra,
  *     igraph_shortest_paths_bellman_ford, igraph_shortest_paths_johnson
  */
-PyObject *igraphmodule_Graph_shortest_paths(igraphmodule_GraphObject * self,
-                                            PyObject * args, PyObject * kwds)
-{
+PyObject *igraphmodule_Graph_distances(
+  igraphmodule_GraphObject * self,
+  PyObject * args, PyObject * kwds
+) {
   static char *kwlist[] = { "source", "target", "weights", "mode", NULL };
   PyObject *from_o = NULL, *to_o = NULL, *mode_o = NULL, *weights_o = Py_None;
   PyObject *list = NULL;
@@ -5745,7 +5758,7 @@ PyObject *igraphmodule_Graph_shortest_paths(igraphmodule_GraphObject * self,
   if (weights && igraph_vector_size(weights) > 0) {
     if (igraph_vector_min(weights) > 0) {
       /* Only positive weights, use Dijkstra's algorithm */
-      e = igraph_shortest_paths_dijkstra(&self->g, &res, from_vs, to_vs, weights, mode);
+      e = igraph_distances_dijkstra(&self->g, &res, from_vs, to_vs, weights, mode);
     } else {
       /* There are negative weights. For a small number of sources, use Bellman-Ford.
        * Otherwise, use Johnson's algorithm */
@@ -5753,15 +5766,15 @@ PyObject *igraphmodule_Graph_shortest_paths(igraphmodule_GraphObject * self,
       e = igraph_vs_size(&self->g, &from_vs, &vs_size);
       if (!e) {
         if (vs_size <= 100 || mode != IGRAPH_OUT) {
-          e = igraph_shortest_paths_bellman_ford(&self->g, &res, from_vs, to_vs, weights, mode);
+          e = igraph_distances_bellman_ford(&self->g, &res, from_vs, to_vs, weights, mode);
         } else {
-          e = igraph_shortest_paths_johnson(&self->g, &res, from_vs, to_vs, weights);
+          e = igraph_distances_johnson(&self->g, &res, from_vs, to_vs, weights);
         }
       }
     }
   } else {
     /* No weights or empty weight vector, use a simple BFS */
-    e = igraph_shortest_paths(&self->g, &res, from_vs, to_vs, mode);
+    e = igraph_distances(&self->g, &res, from_vs, to_vs, mode);
   }
 
   if (e) {
@@ -7908,15 +7921,18 @@ PyObject *igraphmodule_Graph_layout_bipartite(
 PyObject *igraphmodule_Graph_get_adjacency(igraphmodule_GraphObject * self,
                                            PyObject * args, PyObject * kwds)
 {
-  static char *kwlist[] = { "type", NULL };
+  static char *kwlist[] = { "type", "loops", NULL };
   igraph_get_adjacency_t mode = IGRAPH_GET_ADJACENCY_BOTH;
   igraph_matrix_t m;
-  PyObject *result_o, *mode_o = Py_None;
+  igraph_loops_t loops = IGRAPH_LOOPS_TWICE;
+  PyObject *result_o, *mode_o = Py_None, *loops_o = Py_None;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &mode_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &mode_o, &loops_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_get_adjacency_t(mode_o, &mode)) return NULL;
+
+  if (igraphmodule_PyObject_to_loops_t(loops_o, &loops)) return NULL;
 
   if (igraph_matrix_init
       (&m, igraph_vcount(&self->g), igraph_vcount(&self->g))) {
@@ -7924,7 +7940,7 @@ PyObject *igraphmodule_Graph_get_adjacency(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  if (igraph_get_adjacency(&self->g, &m, mode)) {
+  if (igraph_get_adjacency(&self->g, &m, mode, /* weights = */ 0, loops)) {
     igraphmodule_handle_igraph_error();
     igraph_matrix_destroy(&m);
     return NULL;
@@ -8004,19 +8020,28 @@ PyObject *igraphmodule_Graph_get_incidence(igraphmodule_GraphObject * self,
 PyObject *igraphmodule_Graph_laplacian(igraphmodule_GraphObject * self,
                                        PyObject * args, PyObject * kwds)
 {
-  static char *kwlist[] = { "weights", "normalized", NULL };
+  static char *kwlist[] = { "weights", "normalized", "mode", NULL };
   igraph_matrix_t m;
   PyObject *result_o;
   PyObject *weights_o = Py_None;
-  PyObject *normalized = Py_False;
+  PyObject *normalized_o = Py_False;
+  PyObject *mode_o = Py_None;
+  igraph_laplacian_normalization_t normalize = IGRAPH_LAPLACIAN_UNNORMALIZED;
+  igraph_neimode_t mode = IGRAPH_OUT;
   igraph_vector_t *weights = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist,
-        &weights_o, &normalized))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist,
+        &weights_o, &normalized_o, &mode_o))
     return NULL;
 
   if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
       ATTRIBUTE_TYPE_EDGE)) return NULL;
+
+  if (igraphmodule_PyObject_to_laplacian_normalization_t(normalized_o, &normalize))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+    return NULL;
 
   if (igraph_matrix_init
       (&m, igraph_vcount(&self->g), igraph_vcount(&self->g))) {
@@ -8025,20 +8050,14 @@ PyObject *igraphmodule_Graph_laplacian(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  if (igraph_laplacian(&self->g, &m, /*sparseres=*/ 0,
-               PyObject_IsTrue(normalized), weights)) {
+  if (igraph_get_laplacian(&self->g, &m, mode, normalize, weights)) {
     igraphmodule_handle_igraph_error();
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraph_matrix_destroy(&m);
     return NULL;
   }
 
-  if (PyObject_IsTrue(normalized) || weights) {
-    result_o = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
-  }
-  else {
-    result_o = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_INT);
-  }
+  result_o = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
 
   if (weights) { igraph_vector_destroy(weights); free(weights); }
   igraph_matrix_destroy(&m);
@@ -8156,7 +8175,7 @@ PyObject *igraphmodule_Graph_to_directed(igraphmodule_GraphObject * self,
 /** \ingroup python_interface_graph
  * \brief Reads a DIMACS file and creates a graph from it.
  * \return the graph
- * \sa igraph_read_graph_dimacs
+ * \sa igraph_read_graph_dimacs_flow
  */
 PyObject *igraphmodule_Graph_Read_DIMACS(PyTypeObject * type,
                                          PyObject * args, PyObject * kwds)
@@ -8183,9 +8202,10 @@ PyObject *igraphmodule_Graph_Read_DIMACS(PyTypeObject * type,
     return NULL;
   }
 
-  if (igraph_read_graph_dimacs(&g, igraphmodule_filehandle_get(&fobj),
-                               0, 0, &source, &target,
-                               &capacity, PyObject_IsTrue(directed))) {
+  if (igraph_read_graph_dimacs_flow(
+    &g, igraphmodule_filehandle_get(&fobj), 0, 0, &source, &target,
+    &capacity, PyObject_IsTrue(directed)
+  )) {
     igraphmodule_handle_igraph_error();
     igraph_vector_destroy(&capacity);
     igraphmodule_filehandle_destroy(&fobj);
@@ -8503,7 +8523,7 @@ PyObject *igraphmodule_Graph_Read_GraphML(PyTypeObject * type,
 /** \ingroup python_interface_graph
  * \brief Writes the graph as a DIMACS file
  * \return none
- * \sa igraph_write_graph_dimacs
+ * \sa igraph_write_graph_dimacs_flow
  */
 PyObject *igraphmodule_Graph_write_dimacs(igraphmodule_GraphObject * self,
                                           PyObject * args, PyObject * kwds)
@@ -8547,7 +8567,7 @@ PyObject *igraphmodule_Graph_write_dimacs(igraphmodule_GraphObject * self,
 
   Py_DECREF(capacity_obj);
 
-  if (igraph_write_graph_dimacs(&self->g, igraphmodule_filehandle_get(&fobj),
+  if (igraph_write_graph_dimacs_flow(&self->g, igraphmodule_filehandle_get(&fobj),
         source, target, capacity)) {
     igraphmodule_handle_igraph_error();
     if (capacity) {
@@ -8673,7 +8693,7 @@ PyObject *igraphmodule_Graph_write_gml(igraphmodule_GraphObject * self,
   }
 
   if (igraph_write_graph_gml(&self->g, igraphmodule_filehandle_get(&fobj),
-        idvecptr, creator_str)) {
+        IGRAPH_WRITE_GML_DEFAULT_SW, idvecptr, creator_str)) {
     if (idvecptr) { igraph_vector_destroy(idvecptr); }
     if (creator_str)
       free(creator_str);
@@ -12729,7 +12749,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_adjacency */
   {"Adjacency", (PyCFunction) igraphmodule_Graph_Adjacency,
    METH_CLASS | METH_VARARGS | METH_KEYWORDS,
-   "Adjacency(matrix, mode=\"directed\")\n--\n\n"
+   "Adjacency(matrix, mode=\"directed\", loops=\"once\")\n--\n\n"
    "Generates a graph from its adjacency matrix.\n\n"
    "@param matrix: the adjacency matrix\n"
    "@param mode: the mode to be used. Possible values are:\n"
@@ -12745,6 +12765,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "    the matrix (including the diagonal)\n"
    "  - C{\"lower\"} - undirected graph with the lower left triangle of\n"
    "    the matrix (including the diagonal)\n"
+   "\n"
+   "@param loops: specifies how the diagonal of the matrix should be handled:\n"
+   "\n"
+   "  - C{\"ignore\"} - ignore loop edges in the diagonal\n"
+   "  - C{\"once\"} - treat the diagonal entries as loop edge counts\n"
+   "  - C{\"twice\"} - treat the diagonal entries as I{twice} the number\n"
+   "    of loop edges\n"
    },
 
   /* interface to igraph_asymmetric_preference_game */
@@ -13294,9 +13321,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  small world networks}, Nature 393, 440-442, 1998\n"},
 
   /* interface to igraph_weighted_adjacency */
-  {"Weighted_Adjacency", (PyCFunction) igraphmodule_Graph_Weighted_Adjacency,
+  {"_Weighted_Adjacency", (PyCFunction) igraphmodule_Graph_Weighted_Adjacency,
    METH_CLASS | METH_VARARGS | METH_KEYWORDS,
-   "Weighted_Adjacency(matrix, mode=\"directed\", attr=\"weight\", loops=True)\n--\n\n"
+   "_Weighted_Adjacency(matrix, mode=\"directed\", loops=\"once\")\n--\n\n"
    "Generates a graph from its adjacency matrix.\n\n"
    "@param matrix: the adjacency matrix\n"
    "@param mode: the mode to be used. Possible values are:\n"
@@ -13312,10 +13339,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "    the matrix (including the diagonal)\n"
    "  - C{\"lower\"} - undirected graph with the lower left triangle of\n"
    "    the matrix (including the diagonal)\n"
-   "@param attr: the name of the edge attribute that stores the edge\n"
-   "  weights.\n"
-   "@param loops: whether to include loop edges. When C{False}, the diagonal\n"
-   "  of the adjacency matrix will be ignored.\n"
+   "@param loops: specifies how to handle loop edges. When C{False} or C{\"ignore\"},\n"
+   "    the diagonal of the adjacency matrix will be ignored. When C{True} or\n"
+   "    C{\"once\"}, the diagonal is assumed to contain the weight of the\n"
+   "    corresponding loop edge. When C{\"twice\"}, the diagonal is assumed to\n"
+   "    contain I{twice} the weight of the corresponding loop edge.\n"
+   "@return: a pair consisting of the graph itself and its edge weight vector\n"
   },
 
   /////////////////////////////////////
@@ -14305,10 +14334,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param multiple: whether the algorithm is allowed to create multiple\n"
    "  edges.\n"},
 
-  /* interface to igraph_shortest_paths */
-  {"shortest_paths", (PyCFunction) igraphmodule_Graph_shortest_paths,
+  /* interface to igraph_distances */
+  {"distances", (PyCFunction) igraphmodule_Graph_distances,
    METH_VARARGS | METH_KEYWORDS,
-   "shortest_paths(source=None, target=None, weights=None, mode=\"out\")\n--\n\n"
+   "distances(source=None, target=None, weights=None, mode=\"out\")\n--\n\n"
    "Calculates shortest path lengths for given vertices in a graph.\n\n"
    "The algorithm used for the calculations is selected automatically:\n"
    "a simple BFS is used for unweighted graphs, Dijkstra's algorithm is\n"
@@ -15221,16 +15250,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_get_adjacency
   {"get_adjacency", (PyCFunction) igraphmodule_Graph_get_adjacency,
    METH_VARARGS | METH_KEYWORDS,
-   "get_adjacency(type=\"both\", eids=False)\n--\n\n"
+   "get_adjacency(type=\"both\", loops=\"twice\")\n--\n\n"
    "Returns the adjacency matrix of a graph.\n\n"
    "@param type: one of C{\"lower\"} (uses the lower triangle of the matrix),\n"
    "  C{\"upper\"} (uses the upper triangle) or C{\"both\"} (uses both parts).\n"
    "  Ignored for directed graphs.\n"
-   "@param eids: if C{True}, the result matrix will contain\n"
-   "  zeros for non-edges and the ID of the edge plus one\n"
-   "  for edges in the appropriate cell. If C{False}, the\n"
-   "  result matrix will contain the number of edges for\n"
-   "  each vertex pair.\n"
+   "@param loops: specifies how loop edges should be handled. C{False} or\n"
+   "  C{\"ignore\"} ignores loop edges. C{\"once\"} counts each loop edge once\n"
+   "  in the diagonal. C{\"twice\"} counts each loop edge twice (i.e. it counts\n"
+   "  the I{endpoints} of the loop edges, not the edges themselves).\n"
    "@return: the adjacency matrix.\n"},
 
   // interface to igraph_get_edgelist
@@ -15278,27 +15306,36 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_laplacian */
   {"laplacian", (PyCFunction) igraphmodule_Graph_laplacian,
    METH_VARARGS | METH_KEYWORDS,
-   "laplacian(weights=None, normalized=False)\n--\n\n"
+   "laplacian(weights=None, normalized=\"unnormalized\", mode=\"out\")\n--\n\n"
    "Returns the Laplacian matrix of a graph.\n\n"
    "The Laplacian matrix is similar to the adjacency matrix, but the edges\n"
    "are denoted with -1 and the diagonal contains the node degrees.\n\n"
-   "Normalized Laplacian matrices have 1 or 0 in their diagonals (0 for vertices\n"
-   "with no edges), edges are denoted by 1 / sqrt(d_i * d_j) where d_i is the\n"
-   "degree of node i.\n\n"
-   "Multiple edges and self-loops are silently ignored. Although it is\n"
-   "possible to calculate the Laplacian matrix of a directed graph, it does\n"
-   "not make much sense.\n\n"
+   "Symmetric normalized Laplacian matrices have 1 or 0 in their diagonals\n"
+   "(0 for vertices with no edges), edges are denoted by 1 / sqrt(d_i * d_j)\n"
+   "where d_i is the degree of node i.\n\n"
+   "Left-normalized and right-normalized Laplacian matrices are derived from\n"
+   "the unnormalized Laplacian by scaling the row or the column sums to be\n"
+   "equal to 1.\n\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name. When edge weights are used, the degree\n"
-   "  of a node is considered to be the weight of its incident edges.\n"
+   "  of a node is considered to be the sum of the weights of its incident\n"
+   "  edges.\n"
    "@param normalized: whether to return the normalized Laplacian matrix.\n"
+   "  C{False} or C{\"unnormalized\"} returns the unnormalized Laplacian matrix.\n"
+   "  C{True} or C{\"symmetric\"} returns the symmetric normalization of the\n"
+   "  Laplacian matrix. C{\"left\"} returns the left-, C{\"right\"} returns the\n"
+   "  right-normalized Laplacian matrix.\n"
+   "@param mode: for directed graphs, specifies whether to use out- or in-degrees\n"
+   "  in the Laplacian matrix. C{\"all\"} means that the edge directions must be\n"
+   "  ignored, C{\"out\"} means that the out-degrees should be used, C{\"in\"}\n"
+   "  means that the in-degrees should be used. Ignored for undirected graphs.\n"
    "@return: the Laplacian matrix.\n"},
 
   ///////////////////////////////
   // LOADING AND SAVING GRAPHS //
   ///////////////////////////////
 
-  // interface to igraph_read_graph_dimacs
+  // interface to igraph_read_graph_dimacs_flow
   {"Read_DIMACS", (PyCFunction) igraphmodule_Graph_Read_DIMACS,
    METH_VARARGS | METH_KEYWORDS | METH_CLASS,
    "Read_DIMACS(f, directed=False)\n--\n\n"
@@ -15417,7 +15454,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Reads a file in the Pajek format and creates a graph based on it.\n"
    "Only Pajek network files (.net extension) are supported, not project files (.paj).\n\n"
    "@param f: the name of the file or a Python file handle\n"},
-  /* interface to igraph_write_graph_dimacs */
+  /* interface to igraph_write_graph_dimacs_flow */
   {"write_dimacs", (PyCFunction) igraphmodule_Graph_write_dimacs,
    METH_VARARGS | METH_KEYWORDS,
    "write_dimacs(f, source, target, capacity=None)\n--\n\n"

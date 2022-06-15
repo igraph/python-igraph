@@ -65,7 +65,7 @@ igraphmodule_VertexSeq_copy(igraphmodule_VertexSeqObject* o) {
 
   if (igraph_vs_type(&o->vs) == IGRAPH_VS_VECTOR) {
     igraph_vector_int_t v;
-    if (igraph_vector_int_copy(&v, o->vs.data.vecptr)) {
+    if (igraph_vector_int_init_copy(&v, o->vs.data.vecptr)) {
       igraphmodule_handle_igraph_error();
       return 0;
     }

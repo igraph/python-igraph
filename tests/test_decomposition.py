@@ -294,8 +294,8 @@ class CommunityTests(unittest.TestCase):
         # igraph is free to reorder the clusters so only co-membership will be
         # preserved, hence the next assertion
         self.assertTrue(
-            cl.membership[0] != cl.membership[49] and
-            cl.membership[49] != cl.membership[99]
+            cl.membership[0] != cl.membership[49]
+            and cl.membership[49] != cl.membership[99]
         )
         self.assertTrue(x >= 0 and x <= 5 for x in cl.membership)
 
@@ -473,7 +473,7 @@ class CommunityTests(unittest.TestCase):
 
         import random
 
-        random.seed(0)
+        random.seed(42)
         set_random_number_generator(random)
         # We don't find the optimal partition if we are greedy
         cl = G.community_leiden(
@@ -481,7 +481,7 @@ class CommunityTests(unittest.TestCase):
         )
         self.assertMembershipsEqual(cl, [0, 0, 1, 1, 1, 2, 2, 2])
 
-        random.seed(0)
+        random.seed(42)
         set_random_number_generator(random)
         # We can find the optimal partition if we allow for non-decreasing moves
         # (The randomness is only present in the refinement, which is why we

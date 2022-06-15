@@ -134,8 +134,8 @@ def _construct_graph_from_adjacency_file(
     if attribute is None:
         graph = cls.Adjacency(matrix, *args, **kwds)
     else:
-        kwds["attr"] = attribute
-        graph = cls.Weighted_Adjacency(matrix, *args, **kwds)
+        graph, weights = cls._Weighted_Adjacency(matrix, *args, **kwds)
+        graph.es[attribute] = weights
 
     return graph
 

@@ -734,7 +734,7 @@ class MiscTests(unittest.TestCase):
 
 
 class PathTests(unittest.TestCase):
-    def testShortestPaths(self):
+    def testDistances(self):
         g = Graph(
             10,
             [
@@ -775,10 +775,10 @@ class PathTests(unittest.TestCase):
             [inf, inf, inf, inf, inf, inf, inf, inf, 0, 4],
             [inf, inf, inf, inf, inf, inf, inf, inf, inf, 0],
         ]
-        self.assertTrue(g.shortest_paths(weights=ws) == expected)
-        self.assertTrue(g.shortest_paths(weights="weight") == expected)
+        self.assertTrue(g.distances(weights=ws) == expected)
+        self.assertTrue(g.distances(weights="weight") == expected)
         self.assertTrue(
-            g.shortest_paths(weights="weight", target=[2, 3])
+            g.distances(weights="weight", target=[2, 3])
             == [row[2:4] for row in expected]
         )
 

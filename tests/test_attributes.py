@@ -274,7 +274,7 @@ def suite():
         attribute_suite,
         attribute_combination_suite,
         unicode_attributes_suite,
-        ])
+    ])
 
 
 def test():

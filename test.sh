@@ -7,7 +7,6 @@ PYTHON=python3
 set -e
 
 CLEAN=0
-PYTEST_ARGS=
 VENV_DIR=.venv
 
 while getopts ":ce:k:" OPTION; do
@@ -39,6 +38,7 @@ if [ x$CLEAN = x1 ]; then
     rm -rf vendor/build vendor/install
 fi
 
-$VENV_DIR/bin/pip install .[plotting,test]
+# pip install is called in verbose mode so we can see the compiler warnings
+$VENV_DIR/bin/pip install -v .[plotting,test]
 $VENV_DIR/bin/pytest tests ${PYTEST_ARGS}
 
