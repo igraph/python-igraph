@@ -8,6 +8,7 @@ env:
   CIBW_MANYLINUX_I686_IMAGE: "manylinux2014"
   CIBW_MANYLINUX_PYPY_X86_64_IMAGE: "manylinux2014"
   CIBW_MANYLINUX_PYPY_I686_IMAGE: "manylinux2014"
+  MACOSX_DEPLOYMENT_TARGET: "10.9"
 
 jobs:
   build_wheel_linux:
