@@ -77,7 +77,7 @@ jobs:
           - cmake_arch: x86_64
             wheel_arch: x86_64
           - cmake_arch: arm64
-            cmake_extra_args: -DF2C_EXTERNAL_ARITH_HEADER=../../../etc/arith_apple_m1.h
+            cmake_extra_args: -DF2C_EXTERNAL_ARITH_HEADER=../../../etc/arith_apple_m1.h -DIEEE754_DOUBLE_ENDIANNESS_MATCHES=ON
             wheel_arch: arm64
 
     steps:
