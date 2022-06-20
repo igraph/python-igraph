@@ -8,6 +8,7 @@ env:
   CIBW_MANYLINUX_I686_IMAGE: "manylinux2014"
   CIBW_MANYLINUX_PYPY_X86_64_IMAGE: "manylinux2014"
   CIBW_MANYLINUX_PYPY_I686_IMAGE: "manylinux2014"
+  CIBW_BUILD_VERBOSITY: "3"
   MACOSX_DEPLOYMENT_TARGET: "10.9"
 
 jobs:
@@ -86,6 +87,8 @@ jobs:
   build_wheel_macos:
     name: Build wheels on macOS (${{ matrix.wheel_arch }})
     runs-on: macos-10.15
+    env:
+      LLVM_VERSION: "14.0.5"
     strategy:
       matrix:
         include:
@@ -106,7 +109,14 @@ jobs:
         uses: actions/cache@v2
         with:
           path: vendor/install
-          key: C-core-cache-v2-${{ runner.os }}-${{ matrix.cmake_arch }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
+          key: C-core-cache-v2-${{ runner.os }}-${{ matrix.cmake_arch }}-llvm${{ env.LLVM_VERSION }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
+
+      - name: Cache C core dependencies
+        id: cache-openmp-lib
+        uses: actions/cache@v2
+        with:
+          path: ~/local
+          key: deps-cache-v2-${{ runner.os }}-${{ matrix.cmake_arch }}-llvm${{ env.LLVM_VERSION }}
 
       - uses: actions/setup-python@v2
         name: Install Python
@@ -114,16 +124,28 @@ jobs:
           python-version: '3.8'
 
       - name: Install OS dependencies
-        if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
+        if: steps.cache-c-core.outputs.cache-hit != 'true' || steps.cache-openmp-lib.outputs.cache-hit != 'true' # Only needed when building the C core or libomp
         run:
           brew install ninja autoconf automake libtool cmake
+
+      - name: Install OpenMP library
+        if: steps.cache-openmp-lib.outputs.cache-hit != 'true'
+        run: |
+          wget https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VERSION/openmp-$LLVM_VERSION.src.tar.xz
+          tar xf openmp-$LLVM_VERSION.src.tar.xz
+          cd openmp-$LLVM_VERSION.src
+          mkdir build && cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/local -DLIBOMP_ENABLE_SHARED=OFF -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }}
+          cmake --build .
+          cmake --install .
 
       - name: Build wheels
         uses: joerick/cibuildwheel@v2.6.1
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
-          IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }}
+          CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
+          IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
 
       - uses: actions/upload-artifact@v2
         with:
