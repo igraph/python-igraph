@@ -8,7 +8,6 @@ env:
   CIBW_MANYLINUX_I686_IMAGE: "manylinux2014"
   CIBW_MANYLINUX_PYPY_X86_64_IMAGE: "manylinux2014"
   CIBW_MANYLINUX_PYPY_I686_IMAGE: "manylinux2014"
-  CIBW_BUILD_VERBOSITY: "3"
   MACOSX_DEPLOYMENT_TARGET: "10.9"
 
 jobs:
@@ -112,7 +111,7 @@ jobs:
           key: C-core-cache-v2-${{ runner.os }}-${{ matrix.cmake_arch }}-llvm${{ env.LLVM_VERSION }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
 
       - name: Cache C core dependencies
-        id: cache-openmp-lib
+        id: cache-c-deps
         uses: actions/cache@v2
         with:
           path: ~/local
@@ -124,12 +123,12 @@ jobs:
           python-version: '3.8'
 
       - name: Install OS dependencies
-        if: steps.cache-c-core.outputs.cache-hit != 'true' || steps.cache-openmp-lib.outputs.cache-hit != 'true' # Only needed when building the C core or libomp
+        if: steps.cache-c-core.outputs.cache-hit != 'true' || steps.cache-c-deps.outputs.cache-hit != 'true' # Only needed when building the C core or libomp
         run:
           brew install ninja autoconf automake libtool cmake
 
       - name: Install OpenMP library
-        if: steps.cache-openmp-lib.outputs.cache-hit != 'true'
+        if: steps.cache-c-deps.outputs.cache-hit != 'true'
         run: |
           wget https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VERSION/openmp-$LLVM_VERSION.src.tar.xz
           tar xf openmp-$LLVM_VERSION.src.tar.xz
