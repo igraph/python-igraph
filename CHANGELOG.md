@@ -1,5 +1,12 @@
 # igraph Python interface changelog
 
+## [Unreleased]
+
+### Fixed
+
+- The Matplotlib backend now allows `edge_color` and `edge_width` to be set
+  on an edge-by-edge basis.
+
 ## [0.9.11]
 
 ### Added

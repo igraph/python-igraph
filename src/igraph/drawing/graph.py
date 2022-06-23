@@ -1194,17 +1194,25 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
         # Edge properties
         ne = graph.ecount()
-        ec = kwds.get("edge_color", "black")
+        edge_color = kwds.get("edge_color", "black")
         edge_width = kwds.get("edge_width", 1)
         arrow_width = kwds.get("edge_arrow_width", 2)
         arrow_length = kwds.get("edge_arrow_size", 4)
-        ealpha = kwds.get("edge_alpha", 1.0)
+        edge_alpha = kwds.get("edge_alpha", 1.0)
         ezorder = kwds.get("edge_order", 1.0)
         try:
             ezorder = float(ezorder)
             ezorder = [ezorder] * ne
         except TypeError:
             pass
+
+        # Expand edge_width and edge_color to a list if needed
+        if isinstance(edge_width, (int, float)):
+            edge_width = [edge_width] * ne
+        if isinstance(edge_color, (str, int, float)):
+            edge_color = [edge_color] * ne
+        if isinstance(edge_alpha, (int, float)):
+            edge_alpha = [edge_alpha] * ne
 
         # Decide whether we need to calculate the curvature of edges
         # automatically -- and calculate them if needed.
@@ -1345,9 +1353,9 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
             arrow = FancyArrowPatch(
                 path=path,
                 arrowstyle=arrowstyle,
-                lw=edge_width,
-                color=ec,
-                alpha=ealpha,
+                lw=edge_width[ie],
+                color=edge_color[ie],
+                alpha=edge_alpha[ie],
                 zorder=ezorder[ie],
             )
             ax.add_artist(arrow)
