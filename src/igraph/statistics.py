@@ -529,7 +529,7 @@ def percentile(xs, p=(25, 50, 75), sort=True):
     return quantile(xs, p / 100.0, sort)
 
 
-def power_law_fit(data, xmin=None, method="auto", return_alpha_only=False):
+def power_law_fit(data, xmin=None, method="auto"):
     """Fitting a power-law distribution to empirical data
 
     @param data: the data to fit, a list containing integer values
@@ -566,7 +566,8 @@ def power_law_fit(data, xmin=None, method="auto", return_alpha_only=False):
     @ref: MEJ Newman: Power laws, Pareto distributions and Zipf's law.
       Contemporary Physics 46, 323-351 (2005)
     @ref: A Clauset, CR Shalizi, MEJ Newman: Power-law distributions
-      in empirical data. E-print (2007). arXiv:0706.1062"""
+      in empirical data. E-print (2007). arXiv:0706.1062
+    """
     from igraph._igraph import _power_law_fit
 
     if xmin is None or xmin < 0:
@@ -577,17 +578,7 @@ def power_law_fit(data, xmin=None, method="auto", return_alpha_only=False):
         raise ValueError("unknown method: %s" % method)
 
     force_continuous = method in ("continuous", "hill")
-    fit = FittedPowerLaw(*_power_law_fit(data, xmin, force_continuous))
-    if return_alpha_only:
-        from igraph import deprecated
-
-        deprecated(
-            "The return_alpha_only keyword argument of power_law_fit is "
-            "deprecated from igraph 0.7 and will be removed in igraph 0.8"
-        )
-        return fit.alpha
-    else:
-        return fit
+    return FittedPowerLaw(*_power_law_fit(data, xmin, force_continuous))
 
 
 def quantile(xs, q=(0.25, 0.5, 0.75), sort=True):
