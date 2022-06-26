@@ -7,6 +7,10 @@
 - The Matplotlib backend now allows `edge_color` and `edge_width` to be set
   on an edge-by-edge basis.
 
+### Deprecated
+
+- `Graph.clusters()` is now deprecated, use `Graph.components()` instead.
+
 ## [0.9.11]
 
 ### Added

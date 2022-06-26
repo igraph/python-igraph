@@ -552,8 +552,9 @@ class Graph(GraphBase):
         ]
 
     def biconnected_components(self, return_articulation_points=False):
-        """\
-        Calculates the biconnected components of the graph.
+        """Calculates the biconnected components of the graph.
+
+        This function is also aliased to ``blocks()``.
 
         @param return_articulation_points: whether to return the articulation
           points as well
@@ -611,15 +612,34 @@ class Graph(GraphBase):
         return CohesiveBlocks(self, *GraphBase.cohesive_blocks(self))
 
     def clusters(self, mode="strong"):
-        """Calculates the (strong or weak) clusters (connected components) for
-        a given graph.
+        """Calculates the strongly or weakly connected components for a given
+        graph (deprecated name).
+
+        This function is deprecated; use `components()` instead as the original
+        name was misleading.
 
         @param mode: must be either C{"strong"} or C{"weak"}, depending on the
           clusters being sought. Optional, defaults to C{"strong"}.
-        @return: a L{VertexClustering} object"""
-        return VertexClustering(self, GraphBase.clusters(self, mode))
+        @return: a L{VertexClustering} object
+        """
+        deprecated(
+            "Graph.clusters() is deprecated since igraph 0.9.12, use "
+            "Graph.components() instead"
+        )
+        return self.components(mode=mode)
 
-    components = clusters
+    def components(self, mode="strong"):
+        """Calculates the strongly or weakly connected components for a given
+        graph.
+
+        This function is also aliased to ``clusters()`` for backwards
+        compatibility.
+
+        @param mode: must be either C{"strong"} or C{"weak"}, depending on the
+          clusters being sought. Optional, defaults to C{"strong"}.
+        @return: a L{VertexClustering} object
+        """
+        return VertexClustering(self, GraphBase._clusters(self, mode))
 
     def degree_distribution(self, bin_width=1, *args, **kwds):
         """Calculates the degree distribution of the graph.

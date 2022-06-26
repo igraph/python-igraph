@@ -213,7 +213,7 @@ class GeneratorTests(unittest.TestCase):
         # Simple smoke tests for the expected structure of the graph
         self.assertTrue(g.is_simple())
         self.assertFalse(g.is_directed())
-        self.assertEqual([0] * 20 + [1] * 40, g.clusters().membership)
+        self.assertEqual([0] * 20 + [1] * 40, g.components().membership)
         g2 = g.subgraph(list(range(20, 60)))
         self.assertTrue(not any(e.source // 20 == e.target // 20 for e in g2.es))
 

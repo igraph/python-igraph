@@ -13477,9 +13477,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the calculated harmonic centralities in a list\n"},
 
   /* interface to igraph_clusters */
-  {"clusters", (PyCFunction) igraphmodule_Graph_clusters,
+  {"_clusters", (PyCFunction) igraphmodule_Graph_clusters,
    METH_VARARGS | METH_KEYWORDS,
-   "clusters(mode=\"strong\")\n--\n\n"
+   "_clusters(mode=\"strong\")\n--\n\n"
    "Calculates the (strong or weak) clusters for a given graph.\n\n"
    "@attention: this function has a more convenient interface in class\n"
    "  L{Graph} which wraps the result in a L{VertexClustering} object.\n"

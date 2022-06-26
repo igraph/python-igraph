@@ -25,7 +25,7 @@ class GameTests(unittest.TestCase):
 
     def testPreference(self):
         g = Graph.Preference(100, [1, 1], [[1, 0], [0, 1]])
-        self.assertTrue(isinstance(g, Graph) and len(g.clusters()) == 2)
+        self.assertTrue(isinstance(g, Graph) and len(g.components()) == 2)
 
         g = Graph.Preference(100, [1, 1], [[1, 0], [0, 1]], attribute="type")
         types = g.vs.get_attribute_values("type")
@@ -33,7 +33,7 @@ class GameTests(unittest.TestCase):
 
     def testAsymmetricPreference(self):
         g = Graph.Asymmetric_Preference(100, [[0, 1], [1, 0]], [[0, 1], [1, 0]])
-        self.assertTrue(isinstance(g, Graph) and len(g.clusters()) == 2)
+        self.assertTrue(isinstance(g, Graph) and len(g.components()) == 2)
 
         g = Graph.Asymmetric_Preference(
             100, [[0, 1], [1, 0]], [[1, 0], [0, 1]], attribute="type"
@@ -44,7 +44,7 @@ class GameTests(unittest.TestCase):
         self.assertTrue(min(types1) == 0 and max(types1) == 1 and min(types2) == 0 and max(types2) == 1)
 
         g = Graph.Asymmetric_Preference(100, [[0, 1], [1, 0]], [[1, 0], [0, 1]])
-        self.assertTrue(isinstance(g, Graph) and len(g.clusters()) == 1)
+        self.assertTrue(isinstance(g, Graph) and len(g.components()) == 1)
 
     def testTreeGame(self):
         # Prufer algorithm
