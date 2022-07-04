@@ -2205,10 +2205,8 @@ PyObject *igraphmodule_Graph_Degree_Sequence(PyTypeObject * type,
 
   static char *kwlist[] = { "out", "in_", "method", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O!O", kwlist,
-                                   &PyList_Type, &outdeg,
-                                   &PyList_Type, &indeg,
-                                   &method))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist,
+                                   &outdeg, &indeg, &method))
     return NULL;
 
   if (igraphmodule_PyObject_to_degseq_t(method, &meth)) return NULL;
@@ -13135,6 +13133,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "      eventually if the input degree sequence is graphical and throw an\n"
    "      exception if the input degree sequence is not graphical.\n"
    "      This method does not sample simple graphs uniformly.\n"
+   "    - C{\"no_multiple_uniform\"} -- similar to C{\"simple\"} but rejects\n"
+   "      generated graphs if they are not simple. This method samples simple\n"
+   "      graphs uniformly.\n"
    "    - C{\"vl\"} -- a more sophisticated generator that can sample\n"
    "      undirected, connected simple graphs approximately uniformly. It uses\n"
    "      edge-switching Monte-Carlo methods to randomize the graphs.\n"

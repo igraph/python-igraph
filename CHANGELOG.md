@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Added
+
+- `Graph.Degree_Sequence()` now supports the `"no_multiple_uniform"` generation
+  method, which generates simple graphs, sampled uniformly, using rejection
+  sampling.
+
+### Changed
+
+- `Graph.Degree_Sequence()` now accepts all sorts of sequences as inputs, not
+  only lists.
+
 ### Fixed
 
 - The Matplotlib backend now allows `edge_color` and `edge_width` to be set

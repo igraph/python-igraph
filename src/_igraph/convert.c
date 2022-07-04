@@ -514,6 +514,7 @@ int igraphmodule_PyObject_to_degseq_t(PyObject *o,
         {"no_multiple", IGRAPH_DEGSEQ_SIMPLE_NO_MULTIPLE},
         {"vl", IGRAPH_DEGSEQ_VL},
         {"viger-latapy", IGRAPH_DEGSEQ_VL},
+        {"no_multiple_uniform", IGRAPH_DEGSEQ_SIMPLE_NO_MULTIPLE_UNIFORM},
         {0,0}
     };
 
