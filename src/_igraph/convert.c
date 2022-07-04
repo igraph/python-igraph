@@ -526,10 +526,17 @@ int igraphmodule_PyObject_to_community_comparison_t(PyObject *o,
 int igraphmodule_PyObject_to_degseq_t(PyObject *o,
   igraph_degseq_t *result) {
   static igraphmodule_enum_translation_table_entry_t degseq_tt[] = {
+        /* legacy names before 0.10 */
         {"simple", IGRAPH_DEGSEQ_CONFIGURATION},
         {"no_multiple", IGRAPH_DEGSEQ_FAST_HEUR_SIMPLE},
-        {"vl", IGRAPH_DEGSEQ_VL},
         {"viger-latapy", IGRAPH_DEGSEQ_VL},
+        /* up-to-date names as of igraph 0.10 */
+        {"configuration", IGRAPH_DEGSEQ_CONFIGURATION},
+        {"vl", IGRAPH_DEGSEQ_VL},
+        {"viger_latapy", IGRAPH_DEGSEQ_VL},
+        {"fast_heur_simple", IGRAPH_DEGSEQ_FAST_HEUR_SIMPLE},
+        {"configuration_simple", IGRAPH_DEGSEQ_CONFIGURATION_SIMPLE},
+        {"edge_switching_simple", IGRAPH_DEGSEQ_EDGE_SWITCHING_SIMPLE},
         {0,0}
     };
 
