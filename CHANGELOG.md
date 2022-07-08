@@ -8,6 +8,8 @@
   method, which generates simple graphs, sampled uniformly, using rejection
   sampling.
 
+- `Graph.reverse_edges()` reverses some or all edges of a graph.
+
 ### Changed
 
 - `Graph.Degree_Sequence()` now accepts all sorts of sequences as inputs, not
