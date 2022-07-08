@@ -41,6 +41,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `Graph.reverse_edges()` reverses some or all edges of a graph.
+
 ### Fixed
 
 - Fixed a bug in the Cairo and Matplotlib backends that prevented edges with

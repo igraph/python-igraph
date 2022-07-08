@@ -518,6 +518,28 @@ class OperatorTests(unittest.TestCase):
             ],
         )
 
+    def testReverseEdges(self):
+        g = Graph.Tree(10, 3, mode="out")
+        g.reverse_edges([0, 1, 2])
+        self.assertEqual(
+            g.get_edgelist(),
+            [
+                (1, 0),
+                (2, 0),
+                (3, 0),
+                (1, 4),
+                (1, 5),
+                (1, 6),
+                (2, 7),
+                (2, 8),
+                (2, 9)
+            ]
+        )
+
+        g = Graph.Tree(13, 3, mode="in")
+        g.reverse_edges()
+        self.assertTrue(g.isomorphic(Graph.Tree(13, 3, mode="out")))
+
 
 def suite():
     operator_suite = unittest.makeSuite(OperatorTests)

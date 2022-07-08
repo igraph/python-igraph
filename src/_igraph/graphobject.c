@@ -719,7 +719,7 @@ PyObject *igraphmodule_Graph_delete_edges(igraphmodule_GraphObject * self,
     Py_RETURN_NONE;
   }
 
-  /* this already converts no arguments and Py_None to all vertices */
+  /* this already converts no arguments and Py_None to all edges */
   if (igraphmodule_PyObject_to_es_t(list, &es, &self->g, 0)) {
     /* something bad happened during conversion, return immediately */
     return NULL;
@@ -10215,6 +10215,43 @@ PyObject *igraphmodule_Graph_compose(igraphmodule_GraphObject * self,
   return (PyObject *) result_o;
 }
 
+
+/** \ingroup python_interface_graph
+ * \brief Reverses some edges in an \c igraph.Graph
+ * \return the modified \c igraph.Graph object
+ * \sa igraph_reverse_edges
+ */
+PyObject *igraphmodule_Graph_reverse_edges(igraphmodule_GraphObject * self,
+                                           PyObject * args, PyObject * kwds)
+{
+  PyObject *list = 0;
+  igraph_es_t es;
+  static char *kwlist[] = { "edges", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &list))
+    return NULL;
+
+  /* no arguments means reverse all; Py_None means reverse _nothing_ */
+  if (list == Py_None) {
+    Py_RETURN_NONE;
+  }
+
+  /* this one converts no arguments to all edges */
+  if (igraphmodule_PyObject_to_es_t(list, &es, &self->g, 0)) {
+    /* something bad happened during conversion, return immediately */
+    return NULL;
+  }
+
+  if (igraph_reverse_edges(&self->g, es)) {
+    igraphmodule_handle_igraph_error();
+    igraph_es_destroy(&es);
+    return NULL;
+  }
+
+  igraph_es_destroy(&es);
+  Py_RETURN_NONE;
+}
+
 /**********************************************************************
  * Graph traversal algorithms                                         *
  **********************************************************************/
@@ -15990,21 +16027,35 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   ///////////////
   // OPERATORS //
   ///////////////
+
   {"complementer", (PyCFunction) igraphmodule_Graph_complementer,
    METH_VARARGS | METH_KEYWORDS,
    "complementer(loops=False)\n--\n\n"
    "Returns the complementer of the graph\n\n"
    "@param loops: whether to include loop edges in the complementer.\n"
    "@return: the complementer of the graph\n"},
+
   {"compose", (PyCFunction) igraphmodule_Graph_compose,
    METH_O, "compose(other)\n--\n\nReturns the composition of two graphs."},
+
   {"difference", (PyCFunction) igraphmodule_Graph_difference,
    METH_O,
    "difference(other)\n--\n\nSubtracts the given graph from the original"},
 
+  /* interface to igraph_delete_edges */
+  {"reverse_edges", (PyCFunction) igraphmodule_Graph_reverse_edges,
+   METH_VARARGS | METH_KEYWORDS,
+   "reverse_edges(es)\n--\n\n"
+   "Reverses the direction of some edges in the graph.\n\n"
+   "This function is a no-op for undirected graphs.\n\n"
+   "@param es: the list of edges to be reversed. Edges are identifed by\n"
+   "  edge IDs. L{EdgeSeq} objects are also accepted here. When omitted,\n"
+   "  all edges will be reversed.\n"},
+
   /**********************/
   /* DOMINATORS         */
   /**********************/
+
   {"dominator", (PyCFunction) igraphmodule_Graph_dominator,
    METH_VARARGS | METH_KEYWORDS,
    "dominator(vid, mode=\"out\")\n--\n\n"
