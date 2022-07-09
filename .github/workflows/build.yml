@@ -108,7 +108,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: vendor/install
-          key: C-core-cache-v2-${{ runner.os }}-${{ matrix.cmake_arch }}-llvm${{ env.LLVM_VERSION }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
+          key: C-core-cache-${{ runner.os }}-${{ matrix.cmake_arch }}-llvm${{ env.LLVM_VERSION }}-${{ hashFiles('.git/modules/**/HEAD') }}
 
       - name: Cache C core dependencies
         id: cache-c-deps
@@ -179,7 +179,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: vendor/install
-          key: C-core-build-${{ runner.os }}-${{ matrix.cmake_arch }}-${{ hashFiles('.gitmodules') }}-
+          key: C-core-cache-${{ runner.os }}-${{ matrix.cmake_arch }}-${{ hashFiles('.git/modules/**/HEAD') }}
 
       - name: Cache VCPKG
         uses: actions/cache@v2
@@ -230,9 +230,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            vendor/build
             vendor/install
-          key: C-core-${{ runner.os }}-${{ hashFiles('.gitmodules') }}-4
+          key: C-core-cache-${{ runner.os }}-${{ hashFiles('.git/modules/**/HEAD') }}
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
