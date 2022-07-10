@@ -772,7 +772,7 @@ class Graph(GraphBase):
         # ok start from vid
         stack.append((vid, self.neighbors(vid, mode=mode)))
         vids.append(vid)
-        parents.append(vid)
+        parents.append(-1)
         added[vid] = True
 
         # go down the rabbit hole
