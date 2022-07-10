@@ -10213,44 +10213,6 @@ PyObject *igraphmodule_Graph_compose(igraphmodule_GraphObject * self,
   return (PyObject *) result_o;
 }
 
-
-/** \ingroup python_interface_graph
- * \brief Reverses some edges in an \c igraph.Graph
- * \return the modified \c igraph.Graph object
- * \sa igraph_reverse_edges
- */
-PyObject *igraphmodule_Graph_reverse_edges(igraphmodule_GraphObject * self,
-                                           PyObject * args, PyObject * kwds)
-{
-  PyObject *list = 0;
-  igraph_es_t es;
-  static char *kwlist[] = { "edges", NULL };
-
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &list))
-    return NULL;
-
-  /* no arguments means reverse all; Py_None means reverse _nothing_ */
-  if (list == Py_None) {
-    Py_RETURN_NONE;
-  }
-
-  /* this one converts no arguments to all edges */
-  if (igraphmodule_PyObject_to_es_t(list, &es, &self->g, 0)) {
-    /* something bad happened during conversion, return immediately */
-    return NULL;
-  }
-
-  if (igraph_reverse_edges(&self->g, es)) {
-    igraphmodule_handle_igraph_error();
-    igraph_es_destroy(&es);
-    return NULL;
-  }
-
-  igraph_es_destroy(&es);
-  Py_RETURN_NONE;
-}
-
-
 /** \ingroup python_interface_graph
  * \brief Reverses some edges in an \c igraph.Graph
  * \return the modified \c igraph.Graph object
