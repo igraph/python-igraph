@@ -338,7 +338,8 @@ class OperatorTests(unittest.TestCase):
         # Adding two edges
         g = g0 + [(3, 4), (2, 4), (4, 5)]
         self.assertTrue(
-            g.vcount() == 6 and g.ecount() == 7 and g.connected_components().membership == [0] * 6
+            g.vcount() == 6 and g.ecount() == 7 and
+            g.connected_components().membership == [0] * 6
         )
         g0 = g
 

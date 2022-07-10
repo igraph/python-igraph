@@ -45,7 +45,43 @@
 
 - `Graph.reverse_edges()` reverses some or all edges of a graph.
 
+- `Graph.Degree_Sequence()` now supports the `"no_multiple_uniform"` generation
+  method, which generates simple graphs, sampled uniformly, using rejection
+  sampling.
+
+- `Graph.reverse_edges()` reverses some or all edges of a graph.
+
+### Changed
+
+- `Graph.Degree_Sequence()` now accepts all sorts of sequences as inputs, not
+  only lists.
+
 ### Fixed
+
+- The Matplotlib backend now allows `edge_color` and `edge_width` to be set
+  on an edge-by-edge basis.
+
+### Deprecated
+
+- `Graph.clusters()` is now deprecated, use `Graph.components()` instead.
+
+## [0.9.11]
+
+### Added
+
+- We now publish `musllinux` wheels on PyPI.
+
+### Changed
+
+- Vendored igraph was updated to version 0.9.9.
+
+### Fixed
+
+- Graph union and intersection (by name) operators now verify that there are no
+  duplicate names within the individual graphs.
+
+- Fixed a memory leak in `Graph.union()` when edge maps were used; see
+  [#534](https://github.com/igraph/python-igraph/issues/534) for details.
 
 - Fixed a bug in the Cairo and Matplotlib backends that prevented edges with
   labels from being drawn properly; see
@@ -315,8 +351,9 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[Development branch]: https://github.com/igraph/python-igraph/compare/0.9.10..develop
-[Unreleased]: https://github.com/igraph/python-igraph/compare/0.9.10..master
+[Development branch]: https://github.com/igraph/python-igraph/compare/0.9.11..develop
+[Unreleased]: https://github.com/igraph/python-igraph/compare/0.9.11..master
+[0.9.11]: https://github.com/igraph/python-igraph/compare/0.9.10...0.9.11
 [0.9.10]: https://github.com/igraph/python-igraph/compare/0.9.9...0.9.10
 [0.9.9]: https://github.com/igraph/python-igraph/compare/0.9.8...0.9.9
 [0.9.8]: https://github.com/igraph/python-igraph/compare/0.9.7...0.9.8

@@ -199,7 +199,9 @@ class TerminalController:
 
 class ProgressBar:
     """
-    A 2-line progress bar, which looks like::
+    A 2-line progress bar.
+
+    The progress bar looks roughly like this in the console::
 
                                 Header
         20% [===========----------------------------------]
@@ -323,9 +325,10 @@ class IDLEShell(Shell):
     """IDLE embedded shell interface.
 
     This class allows igraph to be embedded in IDLE (the Tk Python IDE).
+    """
 
-    @todo: no progress bar support yet. Shell/Restart Shell command should
-      re-import igraph again."""
+    # TODO: no progress bar support yet. Shell/Restart Shell command should
+    # re-import igraph again.
 
     def __init__(self):
         """Constructor.

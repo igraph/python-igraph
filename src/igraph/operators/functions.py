@@ -3,14 +3,24 @@
 """Implementation of union, disjoint union and intersection operators."""
 
 __all__ = ("disjoint_union", "union", "intersection")
-__docformat__ = "restructuredtext en"
+__docformat__ = "google en"
 
 from igraph._igraph import GraphBase, _union, _intersection, _disjoint_union
 
 from warnings import warn
 
 def name_set(names):
-    """Convert a list of names to a set of name while checking for duplicates."""
+    """Converts a list of names to a set of names while checking for duplicates.
+
+    Parameters:
+        names: the list of names to convert
+
+    Returns:
+        the set of unique names appearing in the list
+
+    Raises:
+        RuntimeError: if the input name list has duplicates
+    """
     nameset = set(names)
     if (len(nameset) != len(names)):
         raise AttributeError("Graph contains duplicate vertex names")
@@ -30,8 +40,11 @@ def disjoint_union(graphs):
     An error is generated if some input graphs are directed and others are
     undirected.
 
-    :param graphs: list of graphs. A lazy sequence is not acceptable.
-    :returns: the disjoint union graph
+    Parameters:
+        graphs: list of graphs. A lazy sequence is not acceptable.
+
+    Returns:
+        the disjoint union graph
     """
     if any(not isinstance(g, GraphBase) for g in graphs):
         raise TypeError("Not all elements are graphs")
@@ -108,13 +121,20 @@ def union(graphs, byname="auto"):
     An error is generated if some input graphs are directed and others are
     undirected.
 
-    :param graphs: list of graphs. A lazy sequence is not acceptable.
-    :param byname: bool or 'auto' specifying the function behaviour with
-        respect to names vertices (i.e. vertices with the ``name`` attribute). If
-        False, ignore vertex names. If True, merge vertices based on names. If
-        'auto', use True if all graphs have named vertices and False otherwise
-        (in the latter case, a warning is generated too).
-    :returns: the union graph
+    Parameters:
+        graphs: list of graphs. A lazy sequence is not acceptable.
+        byname: bool or 'auto' specifying the function behaviour with
+            respect to names vertices (i.e. vertices with the 'name' attribute). If
+            False, ignore vertex names. If True, merge vertices based on names. If
+            'auto', use True if all graphs have named vertices and False otherwise
+            (in the latter case, a warning is generated too).
+    
+    Returns:
+        the union graph
+
+    Raises:
+        RuntimeError: if 'byname' is set to True and some graphs are not named or
+            the set of names is not unique in one of the graphs
     """
 
     if any(not isinstance(g, GraphBase) for g in graphs):
@@ -130,7 +150,7 @@ def union(graphs, byname="auto"):
         if n_named not in (0, ngr):
             warn("Some, but not all graphs are named, not using vertex names")
     elif byname and (n_named != ngr):
-        raise AttributeError("Some graphs are not named")
+        raise RuntimeError("Some graphs are not named")
     # Now we know that byname is only used is all graphs are named
 
     # Trivial cases
@@ -288,15 +308,22 @@ def intersection(graphs, byname="auto", keep_all_vertices=True):
     An error is generated if some input graphs are directed and others are
     undirected.
 
-    :param graphs: list of graphs. A lazy sequence is not acceptable.
-    :param byname: bool or ``auto`` specifying the function behaviour with
-        respect to names vertices (i.e. vertices with the ``name`` attribute). If
-        False, ignore vertex names. If True, merge vertices based on names. If
-        'auto', use True if all graphs have named vertices and False otherwise
-        (in the latter case, a warning is generated too).
-    :param keep_all_vertices: bool specifying if vertices that are not present
-        in all graphs should be kept in the intersection.
-    :returns: the intersection graph
+    Parameters:
+        graphs: list of graphs. A lazy sequence is not acceptable.
+        byname: bool or 'auto' specifying the function behaviour with
+            respect to names vertices (i.e. vertices with the 'name' attribute). If
+            False, ignore vertex names. If True, merge vertices based on names. If
+            'auto', use True if all graphs have named vertices and False otherwise
+            (in the latter case, a warning is generated too).
+        keep_all_vertices: bool specifying if vertices that are not present
+            in all graphs should be kept in the intersection.
+
+    Returns:
+        the intersection graph
+
+    Raises:
+        RuntimeError: if 'byname' is set to True and some graphs are not named or
+            the set of names is not unique in one of the graphs
     """
 
     if any(not isinstance(g, GraphBase) for g in graphs):
