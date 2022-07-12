@@ -44,11 +44,16 @@ rm -f dist/*.whl && .venv/bin/pip install .
 IGRAPHDIR=`.venv/bin/python3 -c 'import igraph, os; print(os.path.dirname(igraph.__file__))'`
 
 echo "Generating HTML documentation..."
+
+# Using --no-sidebar option to skip the sidebar whole together not to generate noise in the HTML.
+# Because the pydoctor output is integrated in a smaller div with a custom CSS it's not optimal to include the sidebar.
+
 "$PYDOCTOR" \
     --project-name "igraph" \
     --project-url "https://igraph.org/python" \
     --introspect-c-modules \
     --make-html \
+    --no-sidebar \
     --html-output "${DOC_API_FOLDER}/html" \
 	${IGRAPHDIR}
 
