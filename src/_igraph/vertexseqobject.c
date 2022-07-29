@@ -223,12 +223,12 @@ PyObject* igraphmodule_VertexSeq_sq_item(igraphmodule_VertexSeqObject* self,
       break;
     case IGRAPH_VS_NONE:
       break;
-    case IGRAPH_VS_SEQ:
+    case IGRAPH_VS_RANGE:
       if (i < 0) {
-        i = self->vs.data.seq.to - self->vs.data.seq.from + i;
+        i = self->vs.data.range.end - self->vs.data.range.start + i;
       }
-      if (i >= 0 && i < self->vs.data.seq.to - self->vs.data.seq.from) {
-        idx = self->vs.data.seq.from + i;
+      if (i >= 0 && i < self->vs.data.range.end - self->vs.data.range.start) {
+        idx = self->vs.data.range.start + i;
       }
       break;
     /* TODO: IGRAPH_VS_ADJ, IGRAPH_VS_NONADJ - someday :) They are unused
@@ -328,13 +328,13 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values(igraphmodule_VertexSeqObje
 
       break;
 
-    case IGRAPH_VS_SEQ:
-      n = self->vs.data.seq.to - self->vs.data.seq.from;
+    case IGRAPH_VS_RANGE:
+      n = self->vs.data.range.end - self->vs.data.range.start;
       result = PyList_New(n);
       if (!result) return 0;
 
       for (i = 0; i < n; i++) {
-        item = PyList_GetItem(values, self->vs.data.seq.from + i);
+        item = PyList_GetItem(values, self->vs.data.range.start + i);
         if (!item) {
           Py_DECREF(result);
           return 0;

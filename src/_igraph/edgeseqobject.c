@@ -226,12 +226,12 @@ PyObject* igraphmodule_EdgeSeq_sq_item(igraphmodule_EdgeSeqObject* self,
       }
       break;
 
-    case IGRAPH_ES_SEQ:
+    case IGRAPH_ES_RANGE:
       if (i < 0) {
-        i = self->es.data.seq.to - self->es.data.seq.from + i;
+        i = self->es.data.range.end - self->es.data.range.start + i;
       }
-      if (i >= 0 && i < self->es.data.seq.to - self->es.data.seq.from) {
-        idx = self->es.data.seq.from + i;
+      if (i >= 0 && i < self->es.data.range.end - self->es.data.range.start) {
+        idx = self->es.data.range.start + i;
       }
       break;
 
@@ -342,15 +342,15 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
       }
       break;
 
-    case IGRAPH_ES_SEQ:
-      n = self->es.data.seq.to - self->es.data.seq.from;
+    case IGRAPH_ES_RANGE:
+      n = self->es.data.range.end - self->es.data.range.start;
       result = PyList_New(n);
       if (!result) {
         return 0;
       }
 
       for (i = 0; i < n; i++) {
-        item = PyList_GetItem(values, self->es.data.seq.from + i);
+        item = PyList_GetItem(values, self->es.data.range.start + i);
         if (!item) {
           Py_DECREF(result);
           return 0;

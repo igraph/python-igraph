@@ -401,12 +401,15 @@ class EdgeSeqTests(unittest.TestCase):
         self.assertEqual([ebs[i] for i in idxs], es.edge_betweenness())
 
         idxs = [1, 3]
-        g = Graph([(0, 1), (1, 2), (2, 0), (1, 0)], directed=True)
+        g = Graph([(0, 1), (1, 2), (2, 0), (1, 0), (2, 2)], directed=True)
         es = g.es(*idxs)
         mutual = g.is_mutual(es)
         self.assertEqual(mutual, es.is_mutual())
         for e, m in zip(es, mutual):
             self.assertEqual(e.is_mutual(), m)
+
+        self.assertTrue(g.es[4].is_mutual())
+        self.assertFalse(g.es[4].is_mutual(loops=False))
 
     def testIsAll(self):
         g = Graph.Full(5)

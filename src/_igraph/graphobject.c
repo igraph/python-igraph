@@ -1107,10 +1107,11 @@ PyObject *igraphmodule_Graph_is_mutual(igraphmodule_GraphObject *self,
   igraph_vector_bool_t res;
   igraph_es_t es;
   igraph_bool_t return_single = 0;
+  PyObject* loops_o = Py_True;
 
-  static char *kwlist[] = { "edges", NULL };
+  static char *kwlist[] = { "edges", "loops", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &list))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &list, &loops_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_es_t(list, &es, &self->g, &return_single)) {
@@ -1124,7 +1125,7 @@ PyObject *igraphmodule_Graph_is_mutual(igraphmodule_GraphObject *self,
     return NULL;
   }
 
-  if (igraph_is_mutual(&self->g, &res, es)) {
+  if (igraph_is_mutual(&self->g, &res, es, PyObject_IsTrue(loops_o))) {
     igraphmodule_handle_igraph_error();
     igraph_es_destroy(&es);
     igraph_vector_bool_destroy(&res);
@@ -12676,7 +12677,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_is_mutual */
   {"is_mutual", (PyCFunction) igraphmodule_Graph_is_mutual,
    METH_VARARGS | METH_KEYWORDS,
-   "is_mutual(edges=None)\n--\n\n"
+   "is_mutual(edges=None, loops=True)\n--\n\n"
    "Checks whether an edge has an opposite pair.\n\n"
    "Also works for a set of edges -- in this case, every edge is checked\n"
    "one by one. The result will be a list of booleans (or a single boolean\n"
@@ -12690,6 +12691,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "of edges do not matter.\n\n"
    "@param edges: edge indices which we want to check. If C{None}, all\n"
    "  edges are checked.\n"
+   "@param loops: specifies whether loop edges should be treated as mutual\n"
+   "  in a directed graph.\n"
    "@return: a list of booleans, one for every edge given\n"},
 
   /* interface to igraph_count_multiple */
