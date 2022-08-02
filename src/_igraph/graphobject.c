@@ -4280,7 +4280,7 @@ PyObject *igraphmodule_Graph_closeness(igraphmodule_GraphObject * self,
            *mode_o = Py_None, *weights_o = Py_None, *normalized_o = Py_True;
   igraph_vector_t res, *weights = 0;
   igraph_neimode_t mode = IGRAPH_ALL;
-  int return_single = 0;
+  igraph_bool_t return_single = 0;
   igraph_vs_t vs;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOOO", kwlist, &vobj,
@@ -4360,7 +4360,7 @@ PyObject *igraphmodule_Graph_harmonic_centrality(igraphmodule_GraphObject * self
            *mode_o = Py_None, *weights_o = Py_None, *normalized_o = Py_True;
   igraph_vector_t res, *weights = 0;
   igraph_neimode_t mode = IGRAPH_ALL;
-  int return_single = 0;
+  igraph_bool_t return_single = 0;
   igraph_vs_t vs;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOOO", kwlist, &vobj,
@@ -4539,7 +4539,7 @@ PyObject *igraphmodule_Graph_cocitation(igraphmodule_GraphObject * self,
   char *kwlist[] = { "vertices", NULL };
   PyObject *vobj = NULL, *list = NULL;
   igraph_matrix_t res;
-  int return_single = 0;
+  igraph_bool_t return_single = 0;
   igraph_vs_t vs;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &vobj))
@@ -4678,7 +4678,7 @@ PyObject *igraphmodule_Graph_eccentricity(igraphmodule_GraphObject* self,
   PyObject *vobj = Py_None, *list = NULL, *mode_o = Py_None;
   igraph_vector_t res;
   igraph_neimode_t mode = IGRAPH_OUT;
-  int return_single = 0;
+  igraph_bool_t return_single = 0;
   igraph_vs_t vs;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &vobj, &mode_o))
@@ -5722,7 +5722,8 @@ PyObject *igraphmodule_Graph_distances(
   igraph_matrix_t res;
   igraph_vector_t *weights=0;
   igraph_neimode_t mode = IGRAPH_OUT;
-  int return_single_from = 0, return_single_to = 0, e = 0;
+  igraph_bool_t return_single_from = 0, return_single_to = 0;
+  igraph_error_t e = 0;
   igraph_vs_t from_vs, to_vs;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
@@ -5830,7 +5831,7 @@ PyObject *igraphmodule_Graph_similarity_jaccard(igraphmodule_GraphObject * self,
     /* Case #1: vertices, returning matrix */
     igraph_matrix_t res;
     igraph_vs_t vs;
-    int return_single = 0;
+    igraph_bool_t return_single = 0;
 
     if (igraphmodule_PyObject_to_vs_t(vertices_o, &vs, &self->g, &return_single, 0))
       return NULL;
@@ -5916,7 +5917,7 @@ PyObject *igraphmodule_Graph_similarity_dice(igraphmodule_GraphObject * self,
     /* Case #1: vertices, returning matrix */
     igraph_matrix_t res;
     igraph_vs_t vs;
-    int return_single = 0;
+    igraph_bool_t return_single = 0;
 
     if (igraphmodule_PyObject_to_vs_t(vertices_o, &vs, &self->g, &return_single, 0))
       return NULL;
@@ -5987,7 +5988,7 @@ PyObject *igraphmodule_Graph_similarity_inverse_log_weighted(
   PyObject *vobj = NULL, *list = NULL, *mode_o = Py_None;
   igraph_matrix_t res;
   igraph_neimode_t mode = IGRAPH_ALL;
-  int return_single = 0;
+  igraph_bool_t return_single = 0;
   igraph_vs_t vs;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &vobj, &mode_o))
