@@ -1023,16 +1023,12 @@ class Graph(GraphBase):
               implementation in igraph 0.7
             - C{"arpack"}: use the ARPACK library. This implementation
               was used from version 0.5, until version 0.7.
-            - C{"power"}: use a simple power method. This is the
-              implementation that was used before igraph version 0.5.
-        @param niter: The number of iterations to use in the power method
-          implementation. It is ignored in the other implementations
-        @param eps: The power method implementation will consider the
-          calculation as complete if the difference of PageRank values between
-          iterations change less than this value for every node. It is
-          ignored by the other implementations.
-        @return: a list with the Google PageRank values of the specified
-          vertices."""
+        @param niter: unused, kept for sake of backwards compatibility. It will
+          be removed in igraph 0.10.
+        @param eps: unused, kept for sake of backwards compatibility. It will
+          be removed in igraph 0.10.
+        @return: a list with the PageRank values of the specified vertices.
+        """
         if arpack_options is None:
             arpack_options = default_arpack_options
         return self.personalized_pagerank(
