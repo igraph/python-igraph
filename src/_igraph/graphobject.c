@@ -14284,14 +14284,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "      implementation in igraph 0.7\n\n"
    "    - C{\"arpack\"}: use the ARPACK library. This implementation\n"
    "      was used from version 0.5, until version 0.7.\n\n"
-   "    - C{\"power\"}: use a simple power method. This is the\n"
-   "      implementation that was used before igraph version 0.5.\n\n"
-   "@param niter: The number of iterations to use in the power method\n"
-   "  implementation. It is ignored in the other implementations.\n"
-   "@param eps: The power method implementation will consider the\n"
-   "  calculation as complete if the difference of PageRank values between\n"
-   "  iterations change less than this value for every node. It is \n"
-   "  ignored by the other implementations.\n"
+   "@param niter: unused, kept for sake of backwards compatibility. It will\n"
+   "  be removed in igraph 0.10.\n"
+   "@param eps: unused, kept for sake of backwards compatibility. It will\n"
+   "  be removed in igraph 0.10.\n"
    "@return: a list with the personalized PageRank values of the specified\n"
    "  vertices.\n"},
 
