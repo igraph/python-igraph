@@ -80,8 +80,6 @@ def _pagerank(
         weights,
         arpack_options,
         implementation,
-        niter,
-        eps,
     )
 
 
