@@ -5480,7 +5480,7 @@ PyObject *igraphmodule_Graph_personalized_pagerank(igraphmodule_GraphObject *sel
 {
   static char *kwlist[] =
     { "vertices", "directed", "damping", "reset", "reset_vertices", "weights",
-      "arpack_options", "implementation", "niter", "eps", NULL };
+      "arpack_options", "implementation", NULL };
   PyObject *directed = Py_True;
   PyObject *vobj = Py_None, *wobj = Py_None, *robj = Py_None, *rvsobj = Py_None;
   PyObject *list;
@@ -5494,21 +5494,17 @@ PyObject *igraphmodule_Graph_personalized_pagerank(igraphmodule_GraphObject *sel
   igraph_vs_t vs, reset_vs;
   igraph_pagerank_algo_t algo=IGRAPH_PAGERANK_ALGO_PRPACK;
   PyObject *algo_o = Py_None;
-  Py_ssize_t niter = 1000;
-  float eps=0.001f;
   void *opts;
   igraph_error_t retval;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOdOOOO!Onf", kwlist, &vobj,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOdOOOO!O", kwlist, &vobj,
                                    &directed, &damping, &robj,
                                    &rvsobj, &wobj,
                                    igraphmodule_ARPACKOptionsType,
-                                   &arpack_options_o, &algo_o, &niter, &eps))
+                                   &arpack_options_o, &algo_o))
 
 
     return NULL;
-
-  CHECK_SSIZE_T_RANGE_POSITIVE(niter, "number of iterations");
 
   if (robj != Py_None && rvsobj != Py_None) {
     PyErr_SetString(PyExc_ValueError, "only reset or reset_vs can be defined, not both");
