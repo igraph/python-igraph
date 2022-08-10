@@ -83,18 +83,21 @@ extensions = [
     #'sphinx_panels',
 ]
 
+# Using --no-sidebar option to skip the sidebar whole together not to generate noise in the HTML.
+# Because the pydoctor output is integrated in a smaller div with a custom CSS it's not optimal to include the sidebar.
 pydoctor_args = [
     '--project-name="igraph"',
     '--project-version=' + get_igraph_version(),
     '--project-url=https://igraph.org/python',
     '--introspect-c-modules',
+    '--no-sidebar',
     '--docformat=epytext',
     #'--intersphinx='+get_root_dir()+'/doc/tutorial/objects.inv',
     '--html-output=' + op.join(get_root_dir(), 'doc', 'html', 'api'),
     #'--html-viewsource-base=https://github.com/igraph/python-igraph/tree/default',
     '--project-base-dir=' + get_igraphdir(),
     get_igraphdir(),
-    ]
+]
 
 # API docs relative to the rest of the docs
 # NOTE: there is a bug in pydoctor that requires this to be a subfolder

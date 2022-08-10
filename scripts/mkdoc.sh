@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Creates the API documentation for igraph's Python interface using PyDoctor
+# Creates the API documentation for igraph's Python interface
 #
 # Usage: ./mkdoc.sh (makes API and tutorial docs)
 #        ./mkdoc.sh -s (makes standalone docs that require no further processing)
