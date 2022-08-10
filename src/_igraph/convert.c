@@ -1382,7 +1382,7 @@ PyObject* igraphmodule_real_t_to_PyObject(igraph_real_t value, igraphmodule_conv
   } else if (type == IGRAPHMODULE_TYPE_FLOAT) {
     return PyFloat_FromDouble(value);
   } else if (type == IGRAPHMODULE_TYPE_FLOAT_IF_FRACTIONAL_ELSE_INT) {
-    if (ceil(value) != value) {
+    if (!isfinite(value) || isnan(value) || ceil(value) != value) {
       return PyFloat_FromDouble(value);
     } else {
       return igraphmodule_integer_t_to_PyObject((igraph_integer_t)value);

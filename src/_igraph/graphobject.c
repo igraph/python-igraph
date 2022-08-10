@@ -1724,7 +1724,7 @@ PyObject *igraphmodule_Graph_girth(igraphmodule_GraphObject *self,
 {
   PyObject *sc = Py_False;
   static char *kwlist[] = { "return_shortest_circle", NULL };
-  igraph_integer_t girth;
+  igraph_real_t girth;
   igraph_vector_int_t vids;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &sc)) {
@@ -1749,7 +1749,7 @@ PyObject *igraphmodule_Graph_girth(igraphmodule_GraphObject *self,
     return o;
   }
 
-  return igraphmodule_integer_t_to_PyObject(girth);
+  return igraphmodule_real_t_to_PyObject(girth, IGRAPHMODULE_TYPE_FLOAT_IF_FRACTIONAL_ELSE_INT);
 }
 
 /**
