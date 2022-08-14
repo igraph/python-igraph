@@ -1373,19 +1373,19 @@ PyObject* igraphmodule_integer_t_to_PyObject(igraph_integer_t value) {
  * error occurred
  */
 PyObject* igraphmodule_real_t_to_PyObject(igraph_real_t value, igraphmodule_conv_t type) {
-  if (!igraph_finite(value)) {
+  if (!igraph_finite(value) || igraph_is_nan(value)) {
     return PyFloat_FromDouble(value);
   }
 
   if (type == IGRAPHMODULE_TYPE_INT) {
-    return igraphmodule_integer_t_to_PyObject((igraph_integer_t)value);
+    return PyLong_FromDouble(value);
   } else if (type == IGRAPHMODULE_TYPE_FLOAT) {
     return PyFloat_FromDouble(value);
   } else if (type == IGRAPHMODULE_TYPE_FLOAT_IF_FRACTIONAL_ELSE_INT) {
-    if (!isfinite(value) || isnan(value) || ceil(value) != value) {
+    if (ceil(value) != value) {
       return PyFloat_FromDouble(value);
     } else {
-      return igraphmodule_integer_t_to_PyObject((igraph_integer_t)value);
+      return PyLong_FromDouble(value);
     }
   } else {
     Py_RETURN_NONE;
