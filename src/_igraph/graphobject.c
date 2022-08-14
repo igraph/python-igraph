@@ -6480,13 +6480,32 @@ PyObject *igraphmodule_Graph_is_bipartite(igraphmodule_GraphObject *self,
  * \sa igraph_dyad_census
  */
 PyObject *igraphmodule_Graph_dyad_census(igraphmodule_GraphObject *self) {
-  igraph_integer_t mut, asym, nul;
+  igraph_real_t mut, asym, nul;
+  PyObject *mut_o, *asym_o, *nul_o;
 
   if (igraph_dyad_census(&self->g, &mut, &asym, &nul)) {
     return igraphmodule_handle_igraph_error();
   }
 
-  return Py_BuildValue("nnn", (Py_ssize_t)mut, (Py_ssize_t)asym, (Py_ssize_t)nul);
+  mut_o = igraphmodule_real_t_to_PyObject(mut, IGRAPHMODULE_TYPE_INT);
+  if (!mut_o) {
+    return NULL;
+  }
+
+  asym_o = igraphmodule_real_t_to_PyObject(asym, IGRAPHMODULE_TYPE_INT);
+  if (!asym_o) {
+    Py_DECREF(mut_o);
+    return NULL;
+  }
+
+  nul_o = igraphmodule_real_t_to_PyObject(nul, IGRAPHMODULE_TYPE_INT);
+  if (!nul_o) {
+    Py_DECREF(mut_o);
+    Py_DECREF(asym_o);
+    return NULL;
+  }
+
+  return Py_BuildValue("NNN", mut_o, asym_o, nul_o);
 }
 
 typedef struct {
