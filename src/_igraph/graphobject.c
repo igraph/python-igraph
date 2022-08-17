@@ -4260,7 +4260,7 @@ PyObject *igraphmodule_Graph_chordal_completion(
     igraph_vector_int_destroy(alpham1_ptr);
   }
 
-  res_o = igraphmodule_vector_int_t_to_PyList_pairs(&edges);
+  res_o = igraphmodule_vector_int_t_to_PyList_of_fixed_length_tuples(&edges, 2);
   igraph_vector_int_destroy(&edges);
 
   return res_o;
@@ -6471,7 +6471,7 @@ PyObject *igraphmodule_Graph_is_bipartite(igraphmodule_GraphObject *self,
 }
 
 /**********************************************************************
- * Motifs, dyad and triad census                                      *
+ * Motifs, triangles, dyad and triad census                           *
  **********************************************************************/
 
 /** \ingroup python_interface_graph
@@ -6506,6 +6506,26 @@ PyObject *igraphmodule_Graph_dyad_census(igraphmodule_GraphObject *self) {
   }
 
   return Py_BuildValue("NNN", mut_o, asym_o, nul_o);
+}
+
+/** \ingroup python_interface_graph
+ * \brief Lists the triangles of the graph
+ * \return the triangles of the graph as a list of triplets with vertex IDs
+ * \sa igraph_list_triangles
+ */
+PyObject *igraphmodule_Graph_list_triangles(igraphmodule_GraphObject *self) {
+  igraph_vector_int_t res;
+
+  if (igraph_vector_int_init(&res, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_list_triangles(&self->g, &res)) {
+    return igraphmodule_handle_igraph_error();
+  }
+
+  return igraphmodule_vector_int_t_to_PyList_of_fixed_length_tuples(&res, 3);
 }
 
 typedef struct {
@@ -8098,7 +8118,7 @@ PyObject *igraphmodule_Graph_get_edgelist(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  result_o = igraphmodule_vector_int_t_to_PyList_pairs(&edgelist);
+  result_o = igraphmodule_vector_int_t_to_PyList_of_fixed_length_tuples(&edgelist, 2);
   igraph_vector_int_destroy(&edgelist);
 
   return (PyObject *) result_o;
@@ -14752,9 +14772,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  if C{pairs} is not C{None}.\n"
   },
 
-  /******************/
-  /* MOTIF COUNTING */
-  /******************/
+  /*****************************/
+  /* MOTIF COUNTING, TRIANGLES */
+  /*****************************/
   {"motifs_randesu", (PyCFunction) igraphmodule_Graph_motifs_randesu,
    METH_VARARGS | METH_KEYWORDS,
    "motifs_randesu(size=3, cut_prob=None, callback=None)\n--\n\n"
@@ -14852,6 +14872,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  L{Graph} which wraps the result in a L{TriadCensus} object.\n"
    "  It is advised to use that. The name of the triplet classes are\n"
    "  also documented there.\n\n"
+  },
+  {"list_triangles", (PyCFunction) igraphmodule_Graph_list_triangles,
+   METH_NOARGS,
+   "list_triangles()\n--\n\n"
+   "Lists the triangles of the graph\n\n"
+   "@return: the list of triangles in the graph; each triangle is represented\n"
+   "  by a tuple of length 3, containing the corresponding vertex IDs."
   },
 
   /********************/

@@ -1602,55 +1602,56 @@ PyObject* igraphmodule_vector_int_t_to_PyTuple(const igraph_vector_int_t *v) {
 
 /**
  * \ingroup python_interface_conversion
- * \brief Converts an igraph \c igraph_vector_int_t to a Python list of integer pairs
+ * \brief Converts an igraph \c igraph_vector_int_t to a Python list of fixed-length tuples
  *
  * \param v the \c igraph_vector_t containing the vector to be converted
  * \return the Python integer pair list as a \c PyObject*, or \c NULL if an error occurred
  */
-PyObject* igraphmodule_vector_int_t_to_PyList_pairs(const igraph_vector_int_t *v) {
-   PyObject *list, *pair, *first, *second;
-  Py_ssize_t n, i, j;
+PyObject* igraphmodule_vector_int_t_to_PyList_of_fixed_length_tuples(
+  const igraph_vector_int_t *v, Py_ssize_t tuple_len
+) {
+  PyObject *list, *tuple, *item;
+  Py_ssize_t n, i, j, k;
+
+  if (tuple_len < 1) {
+    PyErr_SetString(PyExc_SystemError,
+      "invalid invocation of igraphmodule_vector_int_t_to_PyList_of_fixed_length_tuples(), "
+      "tuple length must be positive"
+    );
+  }
 
   n = igraph_vector_int_size(v);
-  if (n < 0 || n % 2 != 0) {
-    return igraphmodule_handle_igraph_error();
+  if (n < 0) {
+    PyErr_SetString(PyExc_ValueError, "igraph vector has negative length");
+    return NULL;
+  }
+  if (n % tuple_len != 0) {
+    PyErr_Format(PyExc_ValueError, "igraph vector length must be divisible by %zd", tuple_len);
+    return NULL;
   }
 
   /* create a new Python list */
-  n >>= 1;
+  n /= tuple_len;
   list = PyList_New(n);
   if (!list) {
     return NULL;
   }
 
   /* populate the list with data */
-  for (i = 0, j = 0; i < n; i++, j += 2) {
-    first = igraphmodule_integer_t_to_PyObject(VECTOR(*v)[j]);
-    if (!first) {
-      Py_DECREF(list);
-      return NULL;
+  for (i = 0, k = 0; i < n; i++) {
+    tuple = PyTuple_New(tuple_len);
+    for (j = 0; j < tuple_len; k++, j++) {
+      item = igraphmodule_integer_t_to_PyObject(VECTOR(*v)[k]);
+      if (!item) {
+        Py_DECREF(tuple);
+        Py_DECREF(list);
+        return NULL;
+      }
+      PyTuple_SetItem(tuple, j, item); /* will not fail */
+      /* reference to 'item' is now owned by 'tuple' */
     }
-
-    second = igraphmodule_integer_t_to_PyObject(VECTOR(*v)[j + 1]);
-    if (!second) {
-      Py_DECREF(first);
-      Py_DECREF(list);
-      return NULL;
-    }
-
-    pair = PyTuple_Pack(2, first, second);
-    if (pair == NULL) {
-      Py_DECREF(second);
-      Py_DECREF(first);
-      Py_DECREF(list);
-      return NULL;
-    }
-
-    Py_DECREF(first);
-    Py_DECREF(second);
-    first = second = 0;
-
-    PyList_SetItem(list, i, pair);  /* will not fail */
+    PyList_SetItem(list, i, tuple);   /* will not fail */
+    /* reference to 'tuple' is now owned by 'list' */
   }
 
   return list;

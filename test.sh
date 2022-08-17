@@ -10,7 +10,6 @@ CLEAN=0
 VENV_DIR=.venv
 
 while getopts ":ce:k:" OPTION; do
-    echo "$OPTION"
     case $OPTION in
         c)
             CLEAN=1
@@ -22,7 +21,8 @@ while getopts ":ce:k:" OPTION; do
             PYTEST_ARGS="${PYTEST_ARGS} -k $OPTARG"
             ;;
         \?)
-            echo "Usage: $0 [-c]"
+            echo "Usage: $0 [-c] [-e VIRTUALENV]"
+			exit 1
             ;;
     esac
 done
