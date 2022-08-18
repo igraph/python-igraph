@@ -94,7 +94,7 @@ class RectangleDrawer(ShapeDrawer):
         or filling it.
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        if isinstance(ctx, plt.Axes):
+        if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             return mpl.patches.Rectangle(
                 (center_x - width / 2, center_y - height / 2), width, height, **kwargs
             )
@@ -162,7 +162,7 @@ class CircleDrawer(ShapeDrawer):
         Height is ignored, it is the width that determines the diameter of the circle.
 
         @see: ShapeDrawer.draw_path"""
-        if isinstance(ctx, plt.Axes):
+        if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             return mpl.patches.Circle((center_x, center_y), width / 2, **kwargs)
         else:
             ctx.arc(center_x, center_y, width / 2, 0, 2 * pi)
@@ -191,7 +191,7 @@ class UpTriangleDrawer(ShapeDrawer):
 
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        if isinstance(ctx, plt.Axes):
+        if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             vertices = [
                 [center_x - 0.5 * width, center_y - 0.333 * height],
                 [center_x + 0.5 * width, center_y - 0.333 * height],
@@ -228,7 +228,7 @@ class DownTriangleDrawer(ShapeDrawer):
 
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        if isinstance(ctx, plt.Axes):
+        if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             vertices = [
                 [center_x - 0.5 * width, center_y + 0.333 * height],
                 [center_x + 0.5 * width, center_y + 0.333 * height],
@@ -266,7 +266,7 @@ class DiamondDrawer(ShapeDrawer):
 
         @see: ShapeDrawer.draw_path"""
         height = height or width
-        if isinstance(ctx, plt.Axes):
+        if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             vertices = [
                 [center_x - 0.5 * width, center_y],
                 [center_x, center_y - 0.5 * height],
