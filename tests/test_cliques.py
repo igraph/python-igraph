@@ -158,37 +158,6 @@ class IndependentVertexSetTests(unittest.TestCase):
         self.assertEqual(self.g2.alpha(), 6)
 
 
-class MotifTests(unittest.TestCase):
-    def setUp(self):
-        self.g = Graph.Erdos_Renyi(100, 0.2, directed=True)
-
-    def testDyads(self):
-        # @note: this test is not exhaustive, it only checks whether the
-        # L{DyadCensus} objects "understand" attribute and item accessors
-        dc = self.g.dyad_census()
-        accessors = ["mut", "mutual", "asym", "asymm", "asymmetric", "null"]
-        for a in accessors:
-            self.assertTrue(isinstance(getattr(dc, a), int))
-            self.assertTrue(isinstance(dc[a], int))
-        self.assertTrue(isinstance(list(dc), list))
-        self.assertTrue(isinstance(tuple(dc), tuple))
-        self.assertTrue(len(list(dc)) == 3)
-        self.assertTrue(len(tuple(dc)) == 3)
-
-    def testTriads(self):
-        # @note: this test is not exhaustive, it only checks whether the
-        # L{TriadCensus} objects "understand" attribute and item accessors
-        tc = self.g.triad_census()
-        accessors = ["003", "012", "021d", "030C"]
-        for a in accessors:
-            self.assertTrue(isinstance(getattr(tc, "t" + a), int))
-            self.assertTrue(isinstance(tc[a], int))
-        self.assertTrue(isinstance(list(tc), list))
-        self.assertTrue(isinstance(tuple(tc), tuple))
-        self.assertTrue(len(list(tc)) == 16)
-        self.assertTrue(len(tuple(tc)) == 16)
-
-
 class CliqueBenchmark:
     """This is a benchmark, not a real test case. You can run it
     using:
@@ -219,7 +188,7 @@ class CliqueBenchmark:
 
     def timeit(self, g):
         start = self.time()
-        omega = g.clique_number()
+        g.clique_number()
         mid = self.time()
         cl = g.maximal_cliques()
         end = self.time()
@@ -252,7 +221,7 @@ class CliqueBenchmark:
         print("Moon-Moser graphs")
         print("       n exp_clqs #cliques        t1        t2")
         for n in ns:
-            n3 = n / 3
+            n3 = n // 3
             types = list(range(n3)) * 3
             el = [
                 (i, j)
@@ -282,8 +251,7 @@ class CliqueBenchmark:
 def suite():
     clique_suite = unittest.makeSuite(CliqueTests)
     indvset_suite = unittest.makeSuite(IndependentVertexSetTests)
-    motif_suite = unittest.makeSuite(MotifTests)
-    return unittest.TestSuite([clique_suite, indvset_suite, motif_suite])
+    return unittest.TestSuite([clique_suite, indvset_suite])
 
 
 def test():

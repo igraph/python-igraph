@@ -159,7 +159,8 @@ PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v,  igraphmodu
 PyObject* igraphmodule_vector_int_t_to_PyTuple(const igraph_vector_int_t *v);
 PyObject* igraphmodule_vector_int_t_pair_to_PyList(const igraph_vector_int_t *v1,
         const igraph_vector_int_t *v2);
-PyObject* igraphmodule_vector_int_t_to_PyList_pairs(const igraph_vector_int_t *v);
+PyObject* igraphmodule_vector_int_t_to_PyList_of_fixed_length_tuples(
+        const igraph_vector_int_t *v, Py_ssize_t tuple_len);
 PyObject* igraphmodule_vector_int_t_to_PyList_with_nan(const igraph_vector_int_t *v, const igraph_integer_t nanvalue);
 PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
         igraphmodule_conv_t type);

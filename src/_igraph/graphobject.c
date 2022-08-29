@@ -2745,10 +2745,10 @@ PyObject *igraphmodule_Graph_Lattice(PyTypeObject * type,
                                      PyObject * args, PyObject * kwds)
 {
   igraph_vector_int_t dimvector;
+  igraph_vector_bool_t circular;
   Py_ssize_t nei = 1;
   igraph_bool_t directed;
   igraph_bool_t mutual;
-  igraph_bool_t circular;
   PyObject *o_directed = Py_False, *o_mutual = Py_True, *o_circular = Py_True;
   PyObject *o_dimvector = Py_None;
   igraphmodule_GraphObject *self;
@@ -2763,19 +2763,35 @@ PyObject *igraphmodule_Graph_Lattice(PyTypeObject * type,
 
   directed = PyObject_IsTrue(o_directed);
   mutual = PyObject_IsTrue(o_mutual);
-  circular = PyObject_IsTrue(o_circular);
 
   if (igraphmodule_PyObject_to_vector_int_t(o_dimvector, &dimvector))
     return NULL;
 
+  if (PyBool_Check(o_circular) || PyNumber_Check(o_circular) || PyBaseString_Check(o_circular)) {
+    if (igraph_vector_bool_init(&circular, igraph_vector_int_size(&dimvector))) {
+      igraph_vector_int_destroy(&dimvector);
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
+
+    igraph_vector_bool_fill(&circular, PyObject_IsTrue(o_circular));
+  } else {
+    if (igraphmodule_PyObject_to_vector_bool_t(o_circular, &circular)) {
+      igraph_vector_int_destroy(&dimvector);
+      return NULL;
+    }
+  }
+
   CHECK_SSIZE_T_RANGE_POSITIVE(nei, "number of neighbors");
 
-  if (igraph_lattice(&g, &dimvector, nei, directed, mutual, circular)) {
+  if (igraph_square_lattice(&g, &dimvector, nei, directed, mutual, &circular)) {
     igraphmodule_handle_igraph_error();
+    igraph_vector_bool_destroy(&circular);
     igraph_vector_int_destroy(&dimvector);
     return NULL;
   }
 
+  igraph_vector_bool_destroy(&circular);
   igraph_vector_int_destroy(&dimvector);
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
@@ -4260,7 +4276,7 @@ PyObject *igraphmodule_Graph_chordal_completion(
     igraph_vector_int_destroy(alpham1_ptr);
   }
 
-  res_o = igraphmodule_vector_int_t_to_PyList_pairs(&edges);
+  res_o = igraphmodule_vector_int_t_to_PyList_of_fixed_length_tuples(&edges, 2);
   igraph_vector_int_destroy(&edges);
 
   return res_o;
@@ -6471,7 +6487,7 @@ PyObject *igraphmodule_Graph_is_bipartite(igraphmodule_GraphObject *self,
 }
 
 /**********************************************************************
- * Motifs, dyad and triad census                                      *
+ * Motifs, triangles, dyad and triad census                           *
  **********************************************************************/
 
 /** \ingroup python_interface_graph
@@ -6506,6 +6522,31 @@ PyObject *igraphmodule_Graph_dyad_census(igraphmodule_GraphObject *self) {
   }
 
   return Py_BuildValue("NNN", mut_o, asym_o, nul_o);
+}
+
+/** \ingroup python_interface_graph
+ * \brief Lists the triangles of the graph
+ * \return the triangles of the graph as a list of triplets with vertex IDs
+ * \sa igraph_list_triangles
+ */
+PyObject *igraphmodule_Graph_list_triangles(igraphmodule_GraphObject *self) {
+  igraph_vector_int_t res;
+  PyObject *res_o;
+
+  if (igraph_vector_int_init(&res, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_list_triangles(&self->g, &res)) {
+    return igraphmodule_handle_igraph_error();
+  }
+
+  res_o = igraphmodule_vector_int_t_to_PyList_of_fixed_length_tuples(&res, 3);
+
+  igraph_vector_int_destroy(&res);
+
+  return res_o;
 }
 
 typedef struct {
@@ -8098,7 +8139,7 @@ PyObject *igraphmodule_Graph_get_edgelist(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  result_o = igraphmodule_vector_int_t_to_PyList_pairs(&edgelist);
+  result_o = igraphmodule_vector_int_t_to_PyList_of_fixed_length_tuples(&edgelist, 2);
   igraph_vector_int_destroy(&edgelist);
 
   return (PyObject *) result_o;
@@ -13163,7 +13204,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param directed: whether to create a directed graph.\n"
    "@param mutual: whether to create all connections as mutual\n"
    "    in case of a directed graph.\n"
-   "@param circular: whether the generated lattice is periodic.\n"},
+   "@param circular: whether the generated lattice is periodic. May also be an\n"
+   "    iterable; in this case, the iterator is assumed to yield booleans that\n"
+   "    specify whether the lattice is periodic along each dimension.\n"},
 
   /* interface to igraph_lcf */
   {"LCF", (PyCFunction) igraphmodule_Graph_LCF,
@@ -14752,9 +14795,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  if C{pairs} is not C{None}.\n"
   },
 
-  /******************/
-  /* MOTIF COUNTING */
-  /******************/
+  /*****************************/
+  /* MOTIF COUNTING, TRIANGLES */
+  /*****************************/
   {"motifs_randesu", (PyCFunction) igraphmodule_Graph_motifs_randesu,
    METH_VARARGS | METH_KEYWORDS,
    "motifs_randesu(size=3, cut_prob=None, callback=None)\n--\n\n"
@@ -14852,6 +14895,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  L{Graph} which wraps the result in a L{TriadCensus} object.\n"
    "  It is advised to use that. The name of the triplet classes are\n"
    "  also documented there.\n\n"
+  },
+  {"list_triangles", (PyCFunction) igraphmodule_Graph_list_triangles,
+   METH_NOARGS,
+   "list_triangles()\n--\n\n"
+   "Lists the triangles of the graph\n\n"
+   "@return: the list of triangles in the graph; each triangle is represented\n"
+   "  by a tuple of length 3, containing the corresponding vertex IDs."
   },
 
   /********************/
