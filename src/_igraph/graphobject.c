@@ -16718,7 +16718,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  will try to improve this provided membership. If no argument is\n"
    "  provided, the aglorithm simply starts from the singleton partition.\n"
    "@param n_iterations: the number of iterations to iterate the Leiden\n"
-   "  algorithm. Each iteration may improve the partition further.\n"
+   "  algorithm. Each iteration may improve the partition further. You can\n"
+   "  also set this parameter to a negative number, which means that the\n"
+   "  algorithm will be iterated until an iteration does not change the\n"
+   "  current membership vector any more.\n"
    "@return: the community membership vector.\n"
   },
   {"community_walktrap",
