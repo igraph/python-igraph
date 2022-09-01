@@ -301,6 +301,7 @@ class CommunityTests(unittest.TestCase):
 
     def testMultilevel(self):
         # Example graph from the paper
+        random.seed(42)
         g = Graph(16)
         g += [
             (0, 2),

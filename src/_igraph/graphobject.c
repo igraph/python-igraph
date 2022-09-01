@@ -12313,26 +12313,11 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
 
   /* Run actual Leiden algorithm for several iterations. */
   if (!error) {
-    if (n_iterations >= 0) {
-      for (i = 0; !error && i < n_iterations; i++) {
-        error = igraph_community_leiden(&self->g,
-                                        edge_weights, node_weights,
-                                        resolution_parameter, beta,
-                                        start, membership,
-                                        &nb_clusters, &quality);
-        start = 1;
-      }
-    } else {
-      while (!error && prev_quality < quality) {
-        prev_quality = quality;
-        error = igraph_community_leiden(&self->g,
-                                        edge_weights, node_weights,
-                                        resolution_parameter, beta,
-                                        start, membership,
-                                        &nb_clusters, &quality);
-        start = 1;
-      }
-    }
+    error = igraph_community_leiden(&self->g,
+                                    edge_weights, node_weights,
+                                    resolution_parameter, beta,
+                                    start, n_iterations, membership,
+                                    &nb_clusters, &quality);
   }
 
   if (edge_weights != 0) {
