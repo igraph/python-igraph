@@ -32,9 +32,12 @@
 
 - The C core of igraph was updated to version 0.10.0.
 
-- We now publish `abi3` wheels on PyPI, making it possible to use an
-  already-built Python wheel with newer minor Python releases (and also
-  reducing the number of wheels we actually need to publish).
+- We now publish `abi3` wheels on PyPI from CPython 3.9 onwards, making it
+  possible to use an already-built Python wheel with newer minor Python
+  releases (and also reducing the number of wheels we actually need to
+  publish). Releases for CPython 3.7 and 3.8 still use version-specific wheels
+  because the code of the C part of the extension contains conditional macros
+  for CPython 3.7 and 3.8.
 
 - Changed default value of the `use_vids=...` argument of `Graph.DataFrame()`
   to `True`, thanks to [@fwitter](https://github.com/user/fwitter).

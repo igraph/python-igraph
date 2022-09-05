@@ -796,6 +796,15 @@ if bdist_wheel is not None:
 else:
     bdist_wheel_abi3 = None
 
+# We are going to build an abi3 wheel if we are at least on CPython 3.9.
+# This is because the C code contains conditionals for CPython 3.7 and
+# 3.8 so we cannot use an abi3 wheel built with CPython 3.7 or 3.8 on
+# CPython 3.9
+should_build_abi3_wheel = (
+    bdist_wheel_abi3 and
+    platform.python_implementation() == "CPython" and
+    sys.version_info >= (3, 9)
+)
 
 ###########################################################################
 
@@ -811,7 +820,15 @@ buildcfg.process_args_from_command_line()
 # Define the extension
 sources = glob.glob(os.path.join("src", "_igraph", "*.c"))
 sources.append(os.path.join("src", "_igraph", "force_cpp_linker.cpp"))
-igraph_extension = Extension("igraph._igraph", sources, py_limited_api=True)
+macros = []
+if should_build_abi3_wheel:
+    macros.append(("Py_LIMITED_API", "0x03090000"))
+igraph_extension = Extension(
+    "igraph._igraph",
+    sources=sources,
+    py_limited_api=should_build_abi3_wheel,
+    define_macros=macros,
+)
 
 description = """Python interface to the igraph high performance graph
 library, primarily aimed at complex network research and analysis.
@@ -833,7 +850,7 @@ cmdclass = {
     "sdist": buildcfg.sdist,
 }
 
-if bdist_wheel_abi3 is not None:
+if should_build_abi3_wheel:
     cmdclass["bdist_wheel"] = bdist_wheel_abi3
 
 options = dict(

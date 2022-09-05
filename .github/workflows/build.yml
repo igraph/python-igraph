@@ -8,9 +8,7 @@ env:
   CIBW_MANYLINUX_I686_IMAGE: "manylinux2014"
   CIBW_MANYLINUX_PYPY_X86_64_IMAGE: "manylinux2014"
   CIBW_MANYLINUX_PYPY_I686_IMAGE: "manylinux2014"
-  # Build wheels on Python 3.8 because apparently abi3 wheels built on Python
-  # 3.7 have a strange memory leak problem when loaded in 3.8 or later
-  CIBW_SKIP: "cp36-* cp37-*"
+  CIBW_SKIP: "cp36-*"
   MACOSX_DEPLOYMENT_TARGET: "10.9"
 
 jobs:
