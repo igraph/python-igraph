@@ -1,6 +1,6 @@
 
 [![Build and test with tox](https://github.com/igraph/python-igraph/actions/workflows/build.yml/badge.svg)](https://github.com/igraph/python-igraph/actions/workflows/build.yml)
-[![PyPI pyversions](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)](https://pypi.python.org/pypi/igraph)
+[![PyPI pyversions](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)](https://pypi.python.org/pypi/igraph)
 [![PyPI wheels](https://img.shields.io/pypi/wheel/igraph.svg)](https://pypi.python.org/pypi/igraph)
 
 Python interface for the igraph library
@@ -49,8 +49,8 @@ automatically.
 ### Installation from source on Windows
 
 It is now also possible to compile `igraph` from source under Windows for
-Python 3.6 and later. Make sure that you have Microsoft Visual Studio 2015 or
-later installed, and of course Python 3.6 or later. First extract the source to
+Python 3.7 and later. Make sure that you have Microsoft Visual Studio 2015 or
+later installed, and of course Python 3.7 or later. First extract the source to
 a suitable directory. If you launch the Developer command prompt and navigate to
 the directory where you extracted the source code, you should be able to build
 and install igraph using `python setup.py install`
@@ -235,7 +235,7 @@ faster than the first one as the C core does not need to be recompiled.
 
 We aim to keep up with the development cycle of Python and support all official
 Python versions that have not reached their end of life yet. Currently this
-means that we support Python 3.6 to 3.9, inclusive. Please refer to [this
+means that we support Python 3.7 to 3.10, inclusive. Please refer to [this
 page](https://devguide.python.org/#branchstatus) for the status of Python
 branches and let us know if you encounter problems with `igraph` on any
 of the non-EOL Python versions.

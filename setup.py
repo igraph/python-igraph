@@ -7,13 +7,14 @@ import sys
 ###########################################################################
 
 # Check Python's version info and exit early if it is too old
-if sys.version_info < (3, 6):
-    print("This module requires Python >= 3.6")
+if sys.version_info < (3, 7):
+    print("This module requires Python >= 3.7")
     sys.exit(0)
 
 ###########################################################################
 
 from setuptools import find_packages, setup, Command, Extension
+from wheel.bdist_wheel import bdist_wheel
 
 import glob
 import shlex
@@ -779,6 +780,18 @@ class BuildConfiguration:
 
 ###########################################################################
 
+class bdist_wheel_abi3(bdist_wheel):
+    def get_tag(self):
+        python, abi, plat = super().get_tag()
+        if python.startswith("cp"):
+            # on CPython, our wheels are abi3 and compatible back to 3.7
+            return "cp37", "abi3", plat
+
+        return python, abi, plat
+
+
+###########################################################################
+
 # Import version number from version.py so we only need to change it in
 # one place when a new release is created
 __version__: str = ""
@@ -876,7 +889,7 @@ options = dict(
             "sphinxbootstrap4theme>=0.6.0"
         ]
     },
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     headers=headers,
     platforms="ALL",
     keywords=[
@@ -894,7 +907,6 @@ options = dict(
         "Operating System :: OS Independent",
         "Programming Language :: C",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
@@ -911,6 +923,7 @@ options = dict(
         "build_c_core": buildcfg.build_c_core,  # used by CI
         "build_ext": buildcfg.build_ext,
         "sdist": buildcfg.sdist,
+        "bdist_wheel": bdist_wheel_abi3,
     },
 )
 

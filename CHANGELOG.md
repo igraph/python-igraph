@@ -1,6 +1,6 @@
 # igraph Python interface changelog
 
-## [Unreleased]
+## [0.10.0] - 2022-09-05
 
 ### Added
 
@@ -32,6 +32,10 @@
 
 - The C core of igraph was updated to version 0.10.0.
 
+- We now publish `abi3` wheels on PyPI, making it possible to use an
+  already-built Python wheel with newer minor Python releases (and also
+  reducing the number of wheels we actually need to publish).
+
 - Changed default value of the `use_vids=...` argument of `Graph.DataFrame()`
   to `True`, thanks to [@fwitter](https://github.com/user/fwitter).
 
@@ -44,6 +48,8 @@
   on an edge-by-edge basis.
 
 ### Removed
+
+- Dropped support for Python 3.6.
 
 - Removed deprecated `UbiGraphDrawer`.
 
@@ -345,7 +351,8 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[Unreleased]: https://github.com/igraph/python-igraph/compare/0.9.11..master
+[Unreleased]: https://github.com/igraph/python-igraph/compare/0.10.0...master
+[0.10.0]: https://github.com/igraph/python-igraph/compare/0.9.11...0.10.0
 [0.9.11]: https://github.com/igraph/python-igraph/compare/0.9.10...0.9.11
 [0.9.10]: https://github.com/igraph/python-igraph/compare/0.9.9...0.9.10
 [0.9.9]: https://github.com/igraph/python-igraph/compare/0.9.8...0.9.9

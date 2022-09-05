@@ -8,6 +8,7 @@ env:
   CIBW_MANYLINUX_I686_IMAGE: "manylinux2014"
   CIBW_MANYLINUX_PYPY_X86_64_IMAGE: "manylinux2014"
   CIBW_MANYLINUX_PYPY_I686_IMAGE: "manylinux2014"
+  CIBW_SKIP: "cp36-*"
   MACOSX_DEPLOYMENT_TARGET: "10.9"
 
 jobs:
@@ -85,7 +86,7 @@ jobs:
 
   build_wheel_macos:
     name: Build wheels on macOS (${{ matrix.wheel_arch }})
-    runs-on: macos-10.15
+    runs-on: macos-latest
     env:
       LLVM_VERSION: "14.0.5"
     strategy:
