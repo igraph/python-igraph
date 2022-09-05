@@ -271,7 +271,9 @@ int igraphmodule_helpers_init() {
   called = 1;
   success = 1;
 
+#if defined(PY_IGRAPH_PROVIDES_PY_NONE) || defined(PY_IGRAPH_PROVIDES_BOOL_CONSTANTS)
 cleanup:
+#endif
   if (!success) {
 #ifdef PY_IGRAPH_PROVIDES_PY_NONE
     Py_XDECREF(Py_None);

@@ -12238,7 +12238,7 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
   PyObject *normalize_resolution = Py_False;
   PyObject *res = Py_None;
 
-  int error = 0, i;
+  int error = 0;
   Py_ssize_t n_iterations = 2;
   double resolution_parameter = 1.0;
   double beta = 0.01;
@@ -12246,7 +12246,7 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
   igraph_vector_int_t *membership = NULL;
   igraph_bool_t start = 1;
   igraph_integer_t nb_clusters = 0;
-  igraph_real_t quality = 0.0, prev_quality = -IGRAPH_INFINITY;
+  igraph_real_t quality = 0.0;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOdOdOn", kwlist,
         &edge_weights_o, &node_weights_o, &resolution_parameter, &normalize_resolution, &beta, &initial_membership_o, &n_iterations))
