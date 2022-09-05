@@ -1,6 +1,6 @@
 # igraph Python interface changelog
 
-## [Development branch]
+## [Unreleased]
 
 ### Added
 
@@ -13,6 +13,16 @@
   data structures. See PR [#434](https://github.com/igraph/python-igraph/pull/434)
   for more details.
 
+- `Graph.list_triangles()` lists all triangles in a graph.
+
+- `Graph.reverse_edges()` reverses some or all edges of a graph.
+
+- `Graph.Degree_Sequence()` now supports the `"no_multiple_uniform"` generation
+  method, which generates simple graphs, sampled uniformly, using rejection
+  sampling.
+
+- `Graph.Lattice()` now supports per-dimension periodicity control.
+
 - `Graph.get_adjacency()` now allows the user to specify whether loop edges
   should be counted once or twice, or not at all.
 
@@ -20,8 +30,18 @@
 
 ### Changed
 
+- The C core of igraph was updated to version 0.10.0.
+
 - Changed default value of the `use_vids=...` argument of `Graph.DataFrame()`
   to `True`, thanks to [@fwitter](https://github.com/user/fwitter).
+
+- `Graph.Degree_Sequence()` now accepts all sorts of sequences as inputs, not
+  only lists.
+
+### Fixed
+
+- The Matplotlib backend now allows `edge_color` and `edge_width` to be set
+  on an edge-by-edge basis.
 
 ### Removed
 
@@ -38,32 +58,6 @@
   its already existing shorter alias, `Graph.components()`.
 
 - `Graph.shortest_paths()` is now deprecated; use `Graph.distances()` instead.
-
-## [Unreleased]
-
-### Added
-
-- `Graph.reverse_edges()` reverses some or all edges of a graph.
-
-- `Graph.Degree_Sequence()` now supports the `"no_multiple_uniform"` generation
-  method, which generates simple graphs, sampled uniformly, using rejection
-  sampling.
-
-- `Graph.reverse_edges()` reverses some or all edges of a graph.
-
-### Changed
-
-- `Graph.Degree_Sequence()` now accepts all sorts of sequences as inputs, not
-  only lists.
-
-### Fixed
-
-- The Matplotlib backend now allows `edge_color` and `edge_width` to be set
-  on an edge-by-edge basis.
-
-### Deprecated
-
-- `Graph.clusters()` is now deprecated, use `Graph.components()` instead.
 
 ## [0.9.11]
 
@@ -351,7 +345,6 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[Development branch]: https://github.com/igraph/python-igraph/compare/0.9.11..develop
 [Unreleased]: https://github.com/igraph/python-igraph/compare/0.9.11..master
 [0.9.11]: https://github.com/igraph/python-igraph/compare/0.9.10...0.9.11
 [0.9.10]: https://github.com/igraph/python-igraph/compare/0.9.9...0.9.10
