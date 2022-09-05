@@ -125,20 +125,6 @@ class GraphRepresentationTests(unittest.TestCase):
                 ]
             )
         )
-        self.assertTrue(
-            g.get_adjacency(eids=True)
-            == Matrix(
-                [
-                    [0, 1, 2, 3, 0, 0],
-                    [1, 0, 0, 0, 4, 5],
-                    [2, 0, 0, 0, 0, 0],
-                    [3, 0, 0, 0, 0, 0],
-                    [0, 4, 0, 0, 0, 0],
-                    [0, 5, 0, 0, 0, 0],
-                ]
-            )
-            - 1
-        )
 
         # Directed case
         g = Graph.Tree(6, 3, "tree_out")

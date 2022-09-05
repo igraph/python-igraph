@@ -266,11 +266,11 @@ class CommunityTests(unittest.TestCase):
         cl = g.community_infomap(edge_weights=e_weights, vertex_weights=v_weights)
 
     def testLabelPropagation(self):
-        # Nothing to test there really, since the algorithm
-        # is pretty nondeterministic. We just do a quick smoke
-        # test.
+        # Nothing to test there really, since the algorithm is pretty
+        # nondeterministic. We just do a few quick smoke tests.
         g = Graph.GRG(100, 0.2)
         cl = g.community_label_propagation()
+
         g = Graph([(0, 1), (1, 2), (2, 3)])
         g.es["weight"] = [2, 1, 2]
         g.vs["initial"] = [0, -1, -1, 1]
@@ -283,8 +283,25 @@ class CommunityTests(unittest.TestCase):
             or cl.membership == [0, 0, 0, 1]
         )
 
+        g = Graph.GRG(100, 0.2)
+        g.vs["initial"] = [
+            0 if i == 0 else 1 if i == 99 else 2 if i == 49 else random.randint(0, 50)
+            for i in range(g.vcount())
+        ]
+        g.vs["dont_move"] = [i in (0, 49, 99) for i in range(g.vcount())]
+        cl = g.community_label_propagation(initial="initial", fixed="dont_move")
+
+        # igraph is free to reorder the clusters so only co-membership will be
+        # preserved, hence the next assertion
+        self.assertTrue(
+            cl.membership[0] != cl.membership[49]
+            and cl.membership[49] != cl.membership[99]
+        )
+        self.assertTrue(x >= 0 and x <= 5 for x in cl.membership)
+
     def testMultilevel(self):
         # Example graph from the paper
+        random.seed(42)
         g = Graph(16)
         g += [
             (0, 2),
@@ -457,7 +474,7 @@ class CommunityTests(unittest.TestCase):
 
         import random
 
-        random.seed(0)
+        random.seed(42)
         set_random_number_generator(random)
         # We don't find the optimal partition if we are greedy
         cl = G.community_leiden(
@@ -465,7 +482,7 @@ class CommunityTests(unittest.TestCase):
         )
         self.assertMembershipsEqual(cl, [0, 0, 1, 1, 1, 2, 2, 2])
 
-        random.seed(0)
+        random.seed(42)
         set_random_number_generator(random)
         # We can find the optimal partition if we allow for non-decreasing moves
         # (The randomness is only present in the refinement, which is why we

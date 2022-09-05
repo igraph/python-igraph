@@ -39,24 +39,9 @@ typedef struct
   PyObject* weakreflist;
 } igraphmodule_EdgeSeqObject;
 
-PyObject* igraphmodule_EdgeSeq_new(PyTypeObject *subtype,
-  PyObject *args, PyObject *kwds);
-igraphmodule_EdgeSeqObject* igraphmodule_EdgeSeq_copy(
-  igraphmodule_EdgeSeqObject *o);
-int igraphmodule_EdgeSeq_init(igraphmodule_EdgeSeqObject *self,
-  PyObject *args, PyObject *kwds);
-void igraphmodule_EdgeSeq_dealloc(igraphmodule_EdgeSeqObject* self);
+extern PyTypeObject* igraphmodule_EdgeSeqType;
 
-int igraphmodule_EdgeSeq_sq_length(igraphmodule_EdgeSeqObject *self);
-
-PyObject* igraphmodule_EdgeSeq_find(igraphmodule_EdgeSeqObject *self,
-  PyObject *args);
-PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self,
-  PyObject *args);
-
-PyObject* igraphmodule_EdgeSeq_get_graph(igraphmodule_EdgeSeqObject *self,
-  void* closure);
-
-extern PyTypeObject igraphmodule_EdgeSeqType;
+int igraphmodule_EdgeSeq_Check(PyObject* obj);
+int igraphmodule_EdgeSeq_register_type(void);
 
 #endif

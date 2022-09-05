@@ -37,27 +37,16 @@
  * \defgroup python_interface_vertexseq Vertex sequence object
  */
 
-PyTypeObject igraphmodule_VertexSeqType;
+PyTypeObject* igraphmodule_VertexSeqType;
+
+PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self, PyObject *args);
 
 /**
  * \ingroup python_interface_vertexseq
- * \brief Allocate a new vertex sequence object for a given graph
- * \return the allocated PyObject
+ * \brief Checks whether the given Python object is a vertex sequence
  */
-PyObject* igraphmodule_VertexSeq_new(PyTypeObject *subtype,
-  PyObject *args, PyObject *kwds) {
-  igraphmodule_VertexSeqObject *o;
-
-  o=(igraphmodule_VertexSeqObject*)PyType_GenericNew(subtype, args, kwds);
-  if (o == NULL) return NULL;
-
-  igraph_vs_all(&o->vs);
-  o->gref=0;
-  o->weakreflist=0;
-
-  RC_ALLOC("VertexSeq", o);
-
-  return (PyObject*)o;
+int igraphmodule_VertexSeq_Check(PyObject* obj) {
+  return obj ? PyObject_IsInstance(obj, (PyObject*)igraphmodule_VertexSeqType) : 0;
 }
 
 /**
@@ -69,21 +58,23 @@ igraphmodule_VertexSeqObject*
 igraphmodule_VertexSeq_copy(igraphmodule_VertexSeqObject* o) {
   igraphmodule_VertexSeqObject *copy;
 
-  copy=(igraphmodule_VertexSeqObject*)PyType_GenericNew(Py_TYPE(o), 0, 0);
-  if (copy == NULL) return NULL;
+  copy = (igraphmodule_VertexSeqObject*) PyType_GenericNew(Py_TYPE(o), 0, 0);
+  if (copy == NULL) {
+    return NULL;
+  }
 
   if (igraph_vs_type(&o->vs) == IGRAPH_VS_VECTOR) {
-    igraph_vector_t v;
-    if (igraph_vector_copy(&v, o->vs.data.vecptr)) {
+    igraph_vector_int_t v;
+    if (igraph_vector_int_init_copy(&v, o->vs.data.vecptr)) {
       igraphmodule_handle_igraph_error();
       return 0;
     }
     if (igraph_vs_vector_copy(&copy->vs, &v)) {
       igraphmodule_handle_igraph_error();
-      igraph_vector_destroy(&v);
+      igraph_vector_int_destroy(&v);
       return 0;
     }
-    igraph_vector_destroy(&v);
+    igraph_vector_int_destroy(&v);
   } else {
     copy->vs = o->vs;
   }
@@ -107,7 +98,7 @@ int igraphmodule_VertexSeq_init(igraphmodule_VertexSeqObject *self,
   igraph_vs_t vs;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O", kwlist,
-    &igraphmodule_GraphType, &g, &vsobj))
+    igraphmodule_GraphType, &g, &vsobj))
       return -1;
 
   if (vsobj == Py_None) {
@@ -115,28 +106,34 @@ int igraphmodule_VertexSeq_init(igraphmodule_VertexSeqObject *self,
     igraph_vs_all(&vs);
   } else if (PyLong_Check(vsobj)) {
     /* We selected a single vertex */
-    long int idx = PyLong_AsLong(vsobj);
+    igraph_integer_t idx;
+
+    if (igraphmodule_PyObject_to_integer_t(vsobj, &idx)) {
+      return -1;
+    }
+
     if (idx < 0 || idx >= igraph_vcount(&((igraphmodule_GraphObject*)g)->g)) {
       PyErr_SetString(PyExc_ValueError, "vertex index out of range");
       return -1;
     }
-    igraph_vs_1(&vs, (igraph_integer_t)idx);
+
+    igraph_vs_1(&vs, idx);
   } else {
-    igraph_vector_t v;
+    igraph_vector_int_t v;
     igraph_integer_t n = igraph_vcount(&((igraphmodule_GraphObject*)g)->g);
-    if (igraphmodule_PyObject_to_vector_t(vsobj, &v, 1))
+    if (igraphmodule_PyObject_to_vector_int_t(vsobj, &v))
       return -1;
-    if (!igraph_vector_isininterval(&v, 0, n-1)) {
-      igraph_vector_destroy(&v);
+    if (!igraph_vector_int_isininterval(&v, 0, n-1)) {
+      igraph_vector_int_destroy(&v);
       PyErr_SetString(PyExc_ValueError, "vertex index out of range");
       return -1;
     }
     if (igraph_vs_vector_copy(&vs, &v)) {
       igraphmodule_handle_igraph_error();
-      igraph_vector_destroy(&v);
+      igraph_vector_int_destroy(&v);
       return -1;
     }
-    igraph_vector_destroy(&v);
+    igraph_vector_int_destroy(&v);
   }
 
   self->vs = vs;
@@ -151,31 +148,39 @@ int igraphmodule_VertexSeq_init(igraphmodule_VertexSeqObject *self,
  * \brief Deallocates a Python representation of a given vertex sequence object
  */
 void igraphmodule_VertexSeq_dealloc(igraphmodule_VertexSeqObject* self) {
-  if (self->weakreflist != NULL)
+  RC_DEALLOC("VertexSeq", self);
+
+  if (self->weakreflist != NULL) {
     PyObject_ClearWeakRefs((PyObject *) self);
+  }
+
   if (self->gref) {
     igraph_vs_destroy(&self->vs);
-    Py_DECREF(self->gref);
-    self->gref=0;
   }
-  Py_TYPE(self)->tp_free((PyObject*)self);
-  RC_DEALLOC("VertexSeq", self);
+
+  Py_CLEAR(self->gref);
+  PY_FREE_AND_DECREF_TYPE(self, igraphmodule_VertexSeqType);
 }
 
 /**
  * \ingroup python_interface_vertexseq
  * \brief Returns the length of the sequence
  */
-int igraphmodule_VertexSeq_sq_length(igraphmodule_VertexSeqObject* self) {
+Py_ssize_t igraphmodule_VertexSeq_sq_length(igraphmodule_VertexSeqObject* self) {
   igraph_t *g;
   igraph_integer_t result;
-  if (!self->gref) return -1;
-  g=&GET_GRAPH(self);
+
+  if (!self->gref) {
+    return -1;
+  }
+
+  g = &GET_GRAPH(self);
   if (igraph_vs_size(g, &self->vs, &result)) {
     igraphmodule_handle_igraph_error();
     return -1;
   }
-  return (int)result;
+
+  return result;
 }
 
 /**
@@ -187,24 +192,28 @@ PyObject* igraphmodule_VertexSeq_sq_item(igraphmodule_VertexSeqObject* self,
   igraph_t *g;
   igraph_integer_t idx = -1;
 
-  if (!self->gref) return NULL;
-  g=&GET_GRAPH(self);
+  if (!self->gref) {
+    return NULL;
+  }
+
+  g = &GET_GRAPH(self);
+
   switch (igraph_vs_type(&self->vs)) {
     case IGRAPH_VS_ALL:
       if (i < 0) {
         i = igraph_vcount(g) + i;
       }
       if (i >= 0 && i < igraph_vcount(g)) {
-        idx = (igraph_integer_t)i;
+        idx = i;
       }
       break;
     case IGRAPH_VS_VECTOR:
     case IGRAPH_VS_VECTORPTR:
       if (i < 0) {
-        i = igraph_vector_size(self->vs.data.vecptr) + i;
+        i = igraph_vector_int_size(self->vs.data.vecptr) + i;
       }
-      if (i >= 0 && i < igraph_vector_size(self->vs.data.vecptr)) {
-        idx = (igraph_integer_t)VECTOR(*self->vs.data.vecptr)[i];
+      if (i >= 0 && i < igraph_vector_int_size(self->vs.data.vecptr)) {
+        idx = VECTOR(*self->vs.data.vecptr)[i];
       }
       break;
     case IGRAPH_VS_1:
@@ -212,16 +221,22 @@ PyObject* igraphmodule_VertexSeq_sq_item(igraphmodule_VertexSeqObject* self,
         idx = self->vs.data.vid;
       }
       break;
-    case IGRAPH_VS_SEQ:
+    case IGRAPH_VS_NONE:
+      break;
+    case IGRAPH_VS_RANGE:
       if (i < 0) {
-        i = self->vs.data.seq.to - self->vs.data.seq.from + i;
+        i = self->vs.data.range.end - self->vs.data.range.start + i;
       }
-      if (i >= 0 && i < self->vs.data.seq.to - self->vs.data.seq.from) {
-        idx = self->vs.data.seq.from + (igraph_integer_t)i;
+      if (i >= 0 && i < self->vs.data.range.end - self->vs.data.range.start) {
+        idx = self->vs.data.range.start + i;
       }
       break;
     /* TODO: IGRAPH_VS_ADJ, IGRAPH_VS_NONADJ - someday :) They are unused
        yet in the Python interface */
+    default:
+      return PyErr_Format(
+        igraphmodule_InternalError, "unsupported vertex selector type: %d", igraph_vs_type(&self->vs)
+      );
   }
 
   if (idx < 0) {
@@ -245,7 +260,7 @@ PyObject* igraphmodule_VertexSeq_attribute_names(igraphmodule_VertexSeqObject* s
 PyObject* igraphmodule_VertexSeq_get_attribute_values(igraphmodule_VertexSeqObject* self, PyObject* o) {
   igraphmodule_GraphObject *gr = self->gref;
   PyObject *result=0, *values, *item;
-  long int i, n;
+  igraph_integer_t i, n;
 
   if (!igraphmodule_attribute_name_check(o))
     return 0;
@@ -266,38 +281,74 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values(igraphmodule_VertexSeqObje
     case IGRAPH_VS_ALL:
       n = PyList_Size(values);
       result = PyList_New(n);
-      if (!result) return 0;
+      if (!result) {
+        return 0;
+      }
 
-      for (i=0; i<n; i++) {
-        item = PyList_GET_ITEM(values, i);
+      for (i = 0; i < n; i++) {
+        item = PyList_GetItem(values, i);
+        if (!item) {
+          Py_DECREF(result);
+          return 0;
+        }
+
         Py_INCREF(item);
-        PyList_SET_ITEM(result, i, item);
+
+        if (PyList_SetItem(result, i, item)) {
+          Py_DECREF(item);
+          Py_DECREF(result);
+          return 0;
+        }
       }
       break;
 
     case IGRAPH_VS_VECTOR:
     case IGRAPH_VS_VECTORPTR:
-      n = igraph_vector_size(self->vs.data.vecptr);
+      n = igraph_vector_int_size(self->vs.data.vecptr);
       result = PyList_New(n);
-      if (!result) return 0;
-
-      for (i=0; i<n; i++) {
-        item = PyList_GET_ITEM(values, (long)VECTOR(*self->vs.data.vecptr)[i]);
-        Py_INCREF(item);
-        PyList_SET_ITEM(result, i, item);
+      if (!result) {
+        return 0;
       }
+
+      for (i = 0; i < n; i++) {
+        item = PyList_GetItem(values, VECTOR(*self->vs.data.vecptr)[i]);
+        if (!item) {
+          Py_DECREF(result);
+          return 0;
+        }
+
+        Py_INCREF(item);
+
+        if (PyList_SetItem(result, i, item)) {
+          Py_DECREF(item);
+          Py_DECREF(result);
+          return 0;
+        }
+      }
+
       break;
 
-    case IGRAPH_VS_SEQ:
-      n = self->vs.data.seq.to - self->vs.data.seq.from;
+    case IGRAPH_VS_RANGE:
+      n = self->vs.data.range.end - self->vs.data.range.start;
       result = PyList_New(n);
       if (!result) return 0;
 
-      for (i=0; i<n; i++) {
-        item = PyList_GET_ITEM(values, (long)self->vs.data.seq.from+i);
+      for (i = 0; i < n; i++) {
+        item = PyList_GetItem(values, self->vs.data.range.start + i);
+        if (!item) {
+          Py_DECREF(result);
+          return 0;
+        }
+
         Py_INCREF(item);
-        PyList_SET_ITEM(result, i, item);
+
+        if (PyList_SetItem(result, i, item)) {
+          Py_DECREF(item);
+          Py_DECREF(result);
+          return 0;
+        }
       }
+
       break;
 
     default:
@@ -308,13 +359,8 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values(igraphmodule_VertexSeqObje
 }
 
 PyObject* igraphmodule_VertexSeq_get_attribute_values_mapping(igraphmodule_VertexSeqObject *self, PyObject *o) {
-  long int index;
-
-  /* Handle integer indices according to the sequence protocol */
-  if (PyIndex_Check(o)) {
-    index = PyNumber_AsSsize_t(o, 0);
-    return igraphmodule_VertexSeq_sq_item(self, index);
-  }
+  Py_ssize_t index;
+  PyObject* index_o;
 
   /* Handle strings according to the mapping protocol */
   if (PyBaseString_Check(o)) {
@@ -332,7 +378,24 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values_mapping(igraphmodule_Verte
 
     result = igraphmodule_VertexSeq_select(self, args);
     Py_DECREF(args);
+
     return result;
+  }
+
+  /* Handle integer indices according to the sequence protocol */
+  index_o = PyNumber_Index(o);
+  if (index_o) {
+    index = PyLong_AsSsize_t(index_o);
+    if (PyErr_Occurred()) {
+      Py_DECREF(index_o);
+      return NULL;
+    } else {
+      Py_DECREF(index_o);
+      return igraphmodule_VertexSeq_sq_item(self, index);
+    }
+  } else {
+    /* clear TypeError raised by PyNumber_Index() */
+    PyErr_Clear();
   }
 
   /* Handle everything else according to the mapping protocol */
@@ -345,8 +408,8 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values_mapping(igraphmodule_Verte
 int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqObject* self, PyObject* attrname, PyObject* values) {
   PyObject *dict, *list, *item;
   igraphmodule_GraphObject *gr;
-  igraph_vector_t vs;
-  long i, j, n, no_of_nodes;
+  igraph_vector_int_t vs;
+  igraph_integer_t i, j, n, no_of_nodes;
 
   gr = self->gref;
   dict = ATTR_STRUCT_DICT(&gr->g)[ATTRHASH_IDX_VERTEX];
@@ -369,19 +432,28 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
      * single element (the value itself) and then call ourselves again */
     int result;
     PyObject *newList = PyList_New(1);
-    if (newList == 0) return -1;
+    if (newList == 0) {
+      return -1;
+    }
+
     Py_INCREF(values);
-    PyList_SET_ITEM(newList, 0, values);    /* reference stolen here */
+    if (PyList_SetItem(newList, 0, values)) {  /* reference stolen here */
+      return -1;
+    }
+    
     result = igraphmodule_VertexSeq_set_attribute_values_mapping(self, attrname, newList);
     Py_DECREF(newList);
+
     return result;
   }
 
-  n=PySequence_Size(values);
-  if (n<0) return -1;
+  n = PySequence_Size(values);
+  if (n < 0) {
+    return -1;
+  }
 
   if (igraph_vs_type(&self->vs) == IGRAPH_VS_ALL) {
-    no_of_nodes = (long)igraph_vcount(&gr->g);
+    no_of_nodes = igraph_vcount(&gr->g);
     if (n == 0 && no_of_nodes > 0) {
       PyErr_SetString(PyExc_ValueError, "sequence must not be empty");
       return -1;
@@ -391,7 +463,7 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
     list = PyDict_GetItem(dict, attrname);
     if (list != 0) {
       /* Yes, we have. Modify its items to the items found in values */
-      for (i=0, j=0; i<no_of_nodes; i++, j++) {
+      for (i = 0, j = 0; i < no_of_nodes; i++, j++) {
         if (j == n) j = 0;
         item = PySequence_GetItem(values, j);
         if (item == 0) return -1;
@@ -406,12 +478,19 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
        * in the dict, create a new list and copy everything */
       list = PyList_New(no_of_nodes);
       if (list == 0) return -1;
-      for (i=0, j=0; i<no_of_nodes; i++, j++) {
+      for (i = 0, j = 0; i < no_of_nodes; i++, j++) {
         if (j == n) j = 0;
         item = PySequence_GetItem(values, j);
-        if (item == 0) { Py_DECREF(list); return -1; }
+        if (item == 0) {
+          Py_DECREF(list);
+          return -1;
+        }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
-        PyList_SET_ITEM(list, i, item);
+        if (PyList_SetItem(list, i, item)) {
+          Py_DECREF(item);
+          Py_DECREF(list);
+          return -1;
+        }
         /* PyList_SET_ITEM stole a reference to the item automatically */
       }
       if (PyDict_SetItem(dict, attrname, list)) {
@@ -423,19 +502,19 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
   } else {
     /* We are working with a subset of the graph. Convert the sequence to a
      * vector and loop through it */
-    if (igraph_vector_init(&vs, 0)) {
+    if (igraph_vector_int_init(&vs, 0)) {
       igraphmodule_handle_igraph_error();
       return -1;
     }
     if (igraph_vs_as_vector(&gr->g, self->vs, &vs)) {
       igraphmodule_handle_igraph_error();
-      igraph_vector_destroy(&vs);
+      igraph_vector_int_destroy(&vs);
       return -1;
     }
-    no_of_nodes = (long)igraph_vector_size(&vs);
+    no_of_nodes = igraph_vector_int_size(&vs);
     if (n == 0 && no_of_nodes > 0) {
       PyErr_SetString(PyExc_ValueError, "sequence must not be empty");
-      igraph_vector_destroy(&vs);
+      igraph_vector_int_destroy(&vs);
       return -1;
     }
     /* Check if we already have attributes with the given name */
@@ -446,43 +525,55 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
         if (j == n) j = 0;
         item = PySequence_GetItem(values, j);
         if (item == 0) {
-          igraph_vector_destroy(&vs);
+          igraph_vector_int_destroy(&vs);
           return -1;
         }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
-        if (PyList_SetItem(list, (long)VECTOR(vs)[i], item)) {
+        if (PyList_SetItem(list, VECTOR(vs)[i], item)) {
           Py_DECREF(item);
-          igraph_vector_destroy(&vs);
+          igraph_vector_int_destroy(&vs);
           return -1;
         } /* PyList_SetItem stole a reference to the item automatically */
       }
-      igraph_vector_destroy(&vs);
+      igraph_vector_int_destroy(&vs);
     } else if (values != 0) {
       /* We don't have attributes with the given name yet. Create an entry
        * in the dict, create a new list, fill with None for vertices not in the
        * sequence and copy the rest */
-      long n2 = igraph_vcount(&gr->g);
+      igraph_integer_t n2 = igraph_vcount(&gr->g);
       list = PyList_New(n2);
       if (list == 0) {
-        igraph_vector_destroy(&vs);
+        igraph_vector_int_destroy(&vs);
         return -1;
       }
-      for (i=0; i<n2; i++) {
+      for (i = 0; i < n2; i++) {
         Py_INCREF(Py_None);
-        PyList_SET_ITEM(list, i, Py_None);
+        if (PyList_SetItem(list, i, Py_None)) {
+          Py_DECREF(Py_None);
+          Py_DECREF(list);
+          igraph_vector_int_destroy(&vs);
+          return -1;
+        }
       }
-      for (i=0, j=0; i<no_of_nodes; i++, j++) {
-        if (j == n) j = 0;
+      for (i = 0, j = 0; i < no_of_nodes; i++, j++) {
+        if (j == n) {
+          j = 0;
+        }
         item = PySequence_GetItem(values, j);
         if (item == 0) {
-          igraph_vector_destroy(&vs);
+          igraph_vector_int_destroy(&vs);
           Py_DECREF(list); return -1;
         }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
-        PyList_SET_ITEM(list, (long)VECTOR(vs)[i], item);
+        if (PyList_SetItem(list, VECTOR(vs)[i], item)) {
+          Py_DECREF(list);
+          Py_DECREF(item);
+          igraph_vector_int_destroy(&vs);
+          return -1;
+        }
         /* PyList_SET_ITEM stole a reference to the item automatically */
       }
-      igraph_vector_destroy(&vs);
+      igraph_vector_int_destroy(&vs);
       if (PyDict_SetItem(dict, attrname, list)) {
         Py_DECREF(list);
         return -1;
@@ -525,7 +616,7 @@ PyObject* igraphmodule_VertexSeq_find(igraphmodule_VertexSeqObject *self, PyObje
     /* Call the callable for every vertex in the current sequence and return
      * the first one for which it evaluates to True */
     n = PySequence_Size((PyObject*)self);
-    for (i=0; i<n; i++) {
+    for (i = 0; i < n; i++) {
       PyObject *vertex = PySequence_GetItem((PyObject*)self, i);
       PyObject *call_result;
       if (vertex == 0)
@@ -545,7 +636,12 @@ PyObject* igraphmodule_VertexSeq_find(igraphmodule_VertexSeqObject *self, PyObje
   } else if (PyLong_Check(item)) {
     /* Integers are interpreted as indices on the vertex set and NOT on the
      * original, untouched vertex sequence of the graph */
-    return PySequence_GetItem((PyObject*)self, PyLong_AsLong(item));
+    Py_ssize_t index = PyLong_AsSsize_t(item);
+    if (PyErr_Occurred()) {
+      return NULL;
+    } else {
+      return PySequence_GetItem((PyObject*)self, index);
+    }
   } else if (PyBaseString_Check(item)) {
     /* Strings are interpreted as vertex names */
     if (igraphmodule_get_vertex_id_by_name(&self->gref->g, item, &i))
@@ -587,22 +683,25 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
   PyObject *args) {
   igraphmodule_VertexSeqObject *result;
   igraphmodule_GraphObject *gr;
-  igraph_integer_t igraph_idx;
+  igraph_integer_t igraph_idx, i, j, n, m;
   igraph_bool_t working_on_whole_graph = igraph_vs_is_all(&self->vs);
-  igraph_vector_t v, v2;
-  long i, j, n, m;
+  igraph_vector_int_t v, v2;
 
   gr = self->gref;
   result = igraphmodule_VertexSeq_copy(self);
-  if (result == 0)
+  if (result == 0) {
     return NULL;
+  }
 
   /* First, filter by positional arguments */
   n = PyTuple_Size(args);
-  for (i = 0; i < n; i++) {
-    PyObject *item = PyTuple_GET_ITEM(args, i);
 
-    if (item == Py_None) {
+  for (i = 0; i < n; i++) {
+    PyObject *item = PyTuple_GetItem(args, i);
+
+    if (item == 0) {
+      return 0;
+    } else if (item == Py_None) {
       /* None means: select nothing */
       igraph_vs_destroy(&result->vs);
       igraph_vs_none(&result->vs);
@@ -612,9 +711,9 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
       /* Call the callable for every vertex in the current sequence to
        * determine what's up */
       igraph_bool_t was_excluded = 0;
-      igraph_vector_t v;
+      igraph_vector_int_t v;
 
-      if (igraph_vector_init(&v, 0)) {
+      if (igraph_vector_int_init(&v, 0)) {
         igraphmodule_handle_igraph_error();
         return 0;
       }
@@ -625,18 +724,18 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
         PyObject *call_result;
         if (vertex == 0) {
           Py_DECREF(result);
-          igraph_vector_destroy(&v);
+          igraph_vector_int_destroy(&v);
           return NULL;
         }
         call_result = PyObject_CallFunctionObjArgs(item, vertex, NULL);
         if (call_result == 0) {
           Py_DECREF(vertex); Py_DECREF(result);
-          igraph_vector_destroy(&v);
+          igraph_vector_int_destroy(&v);
           return NULL;
         }
         if (PyObject_IsTrue(call_result)) {
-          igraph_vector_push_back(&v,
-            igraphmodule_Vertex_get_index_long((igraphmodule_VertexObject*)vertex));
+          igraph_vector_int_push_back(&v,
+            igraphmodule_Vertex_get_index_igraph_integer((igraphmodule_VertexObject*)vertex));
         } else {
           was_excluded = 1;
         }
@@ -648,38 +747,38 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
         igraph_vs_destroy(&result->vs);
         if (igraph_vs_vector_copy(&result->vs, &v)) {
           Py_DECREF(result);
-          igraph_vector_destroy(&v);
+          igraph_vector_int_destroy(&v);
           igraphmodule_handle_igraph_error();
           return NULL;
         }
       }
 
-      igraph_vector_destroy(&v);
+      igraph_vector_int_destroy(&v);
     } else if (PyLong_Check(item)) {
       /* Integers are treated specially: from now on, all remaining items
        * in the argument list must be integers and they will be used together
        * to restrict the vertex set. Integers are interpreted as indices on the
        * vertex set and NOT on the original, untouched vertex sequence of the
        * graph */
-      if (igraph_vector_init(&v, 0)) {
+      if (igraph_vector_int_init(&v, 0)) {
         igraphmodule_handle_igraph_error();
         return 0;
       }
 
       if (!working_on_whole_graph) {
         /* Extract the current vertex sequence into a vector */
-        if (igraph_vector_init(&v2, 0)) {
-          igraph_vector_destroy(&v);
+        if (igraph_vector_int_init(&v2, 0)) {
+          igraph_vector_int_destroy(&v);
           igraphmodule_handle_igraph_error();
           return 0;
         }
         if (igraph_vs_as_vector(&gr->g, self->vs, &v2)) {
-          igraph_vector_destroy(&v);
-          igraph_vector_destroy(&v2);
+          igraph_vector_int_destroy(&v);
+          igraph_vector_int_destroy(&v2);
           igraphmodule_handle_igraph_error();
           return 0;
         }
-        m = igraph_vector_size(&v2);
+        m = igraph_vector_int_size(&v2);
       } else {
         /* v2 left uninitialized, we are not going to use it as it would
          * simply contain integers from 0 to vcount(g)-1 */
@@ -687,39 +786,47 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
       }
 
       for (; i < n; i++) {
-        PyObject *item2 = PyTuple_GET_ITEM(args, i);
-        long idx;
-        if (!PyLong_Check(item2)) {
+        PyObject *item2 = PyTuple_GetItem(args, i);
+        igraph_integer_t idx;
+        if (item2 == 0) {
+          Py_DECREF(result);
+          igraph_vector_int_destroy(&v);
+          if (!working_on_whole_graph) {
+            igraph_vector_int_destroy(&v2);
+          }
+          return NULL;
+        }
+        if (igraphmodule_PyObject_to_integer_t(item2, &idx)) {
           Py_DECREF(result);
           PyErr_SetString(PyExc_TypeError, "vertex indices expected");
-          igraph_vector_destroy(&v);
+          igraph_vector_int_destroy(&v);
           if (!working_on_whole_graph) {
-            igraph_vector_destroy(&v2);
+            igraph_vector_int_destroy(&v2);
           }
           return NULL;
         }
-        idx = PyLong_AsLong(item2);
         if (idx >= m || idx < 0) {
+          Py_DECREF(result);
           PyErr_SetString(PyExc_ValueError, "vertex index out of range");
-          igraph_vector_destroy(&v);
+          igraph_vector_int_destroy(&v);
           if (!working_on_whole_graph) {
-            igraph_vector_destroy(&v2);
+            igraph_vector_int_destroy(&v2);
           }
           return NULL;
         }
-        if (igraph_vector_push_back(&v, working_on_whole_graph ? idx : VECTOR(v2)[idx])) {
+        if (igraph_vector_int_push_back(&v, working_on_whole_graph ? idx : VECTOR(v2)[idx])) {
           Py_DECREF(result);
           igraphmodule_handle_igraph_error();
-          igraph_vector_destroy(&v);
+          igraph_vector_int_destroy(&v);
           if (!working_on_whole_graph) {
-            igraph_vector_destroy(&v2);
+            igraph_vector_int_destroy(&v2);
           }
           return NULL;
         }
       }
 
       if (!working_on_whole_graph) {
-        igraph_vector_destroy(&v2);
+        igraph_vector_int_destroy(&v2);
       }
 
       igraph_vs_destroy(&result->vs);
@@ -727,17 +834,17 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
       if (igraph_vs_vector_copy(&result->vs, &v)) {
         Py_DECREF(result);
         igraphmodule_handle_igraph_error();
-        igraph_vector_destroy(&v);
+        igraph_vector_int_destroy(&v);
         return NULL;
       }
 
-      igraph_vector_destroy(&v);
+      igraph_vector_int_destroy(&v);
     } else {
       /* Iterators, slices and everything that was not handled directly */
       PyObject *iter=0, *item2;
 
       /* Allocate stuff */
-      if (igraph_vector_init(&v, 0)) {
+      if (igraph_vector_int_init(&v, 0)) {
         igraphmodule_handle_igraph_error();
         Py_DECREF(result);
         return 0;
@@ -745,20 +852,20 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
 
       if (!working_on_whole_graph) {
         /* Extract the current vertex sequence into a vector */
-        if (igraph_vector_init(&v2, 0)) {
-          igraph_vector_destroy(&v);
+        if (igraph_vector_int_init(&v2, 0)) {
+          igraph_vector_int_destroy(&v);
           Py_DECREF(result);
           igraphmodule_handle_igraph_error();
           return 0;
         }
         if (igraph_vs_as_vector(&gr->g, self->vs, &v2)) {
-          igraph_vector_destroy(&v);
-          igraph_vector_destroy(&v2);
+          igraph_vector_int_destroy(&v);
+          igraph_vector_int_destroy(&v2);
           Py_DECREF(result);
           igraphmodule_handle_igraph_error();
           return 0;
         }
-        m = igraph_vector_size(&v2);
+        m = igraph_vector_int_size(&v2);
       } else {
         /* v2 left uninitialized, we are not going to use it as it would
          * simply contain integers from 0 to vcount(g)-1 */
@@ -783,9 +890,9 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
           ok = (iter != 0);
         }
         if (!ok) {
-          igraph_vector_destroy(&v);
+          igraph_vector_int_destroy(&v);
           if (!working_on_whole_graph) {
-            igraph_vector_destroy(&v2);
+            igraph_vector_int_destroy(&v2);
           }
           PyErr_SetString(PyExc_TypeError, "error while converting slice to iterator");
           Py_DECREF(result);
@@ -798,9 +905,9 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
 
       /* Did we manage to get an iterator? */
       if (iter == 0) {
-        igraph_vector_destroy(&v);
+        igraph_vector_int_destroy(&v);
         if (!working_on_whole_graph) {
-          igraph_vector_destroy(&v2);
+          igraph_vector_int_destroy(&v2);
         }
         PyErr_SetString(PyExc_TypeError, "invalid vertex filter among positional arguments");
         Py_DECREF(result);
@@ -818,19 +925,19 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
             PyErr_SetString(PyExc_ValueError, "vertex index out of range");
             Py_DECREF(result);
             Py_DECREF(iter);
-            igraph_vector_destroy(&v);
+            igraph_vector_int_destroy(&v);
             if (!working_on_whole_graph) {
-              igraph_vector_destroy(&v2);
+              igraph_vector_int_destroy(&v2);
             }
             return NULL;
           }
-          if (igraph_vector_push_back(&v, working_on_whole_graph ? igraph_idx : VECTOR(v2)[(long int) igraph_idx])) {
+          if (igraph_vector_int_push_back(&v, working_on_whole_graph ? igraph_idx : VECTOR(v2)[(long int) igraph_idx])) {
             Py_DECREF(result);
             Py_DECREF(iter);
             igraphmodule_handle_igraph_error();
-            igraph_vector_destroy(&v);
+            igraph_vector_int_destroy(&v);
             if (!working_on_whole_graph) {
-              igraph_vector_destroy(&v2);
+              igraph_vector_int_destroy(&v2);
             }
             return NULL;
           }
@@ -839,12 +946,12 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
 
       /* Deallocate stuff */
       if (!working_on_whole_graph) {
-        igraph_vector_destroy(&v2);
+        igraph_vector_int_destroy(&v2);
       }
 
       Py_DECREF(iter);
       if (PyErr_Occurred()) {
-        igraph_vector_destroy(&v);
+        igraph_vector_int_destroy(&v);
         Py_DECREF(result);
         return 0;
       }
@@ -854,11 +961,11 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
       if (igraph_vs_vector_copy(&result->vs, &v)) {
         Py_DECREF(result);
         igraphmodule_handle_igraph_error();
-        igraph_vector_destroy(&v);
+        igraph_vector_int_destroy(&v);
         return NULL;
       }
 
-      igraph_vector_destroy(&v);
+      igraph_vector_int_destroy(&v);
     }
   }
 
@@ -872,7 +979,7 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
  * \return 0 if everything was ok, 1 otherwise
  */
 int igraphmodule_VertexSeq_to_vector_t(igraphmodule_VertexSeqObject *self,
-  igraph_vector_t *v) {
+  igraph_vector_int_t *v) {
   return igraph_vs_as_vector(&self->gref->g, self->vs, v);
 }
 
@@ -893,21 +1000,22 @@ PyObject* igraphmodule_VertexSeq_get_graph(igraphmodule_VertexSeqObject* self,
 PyObject* igraphmodule_VertexSeq_get_indices(igraphmodule_VertexSeqObject* self,
   void* closure) {
   igraphmodule_GraphObject *gr = self->gref;
-  igraph_vector_t vs;
+  igraph_vector_int_t vs;
   PyObject *result;
 
-  if (igraph_vector_init(&vs, 0)) {
+  if (igraph_vector_int_init(&vs, 0)) {
     igraphmodule_handle_igraph_error();
-    return 0;
-  }
-  if (igraph_vs_as_vector(&gr->g, self->vs, &vs)) {
-    igraphmodule_handle_igraph_error();
-    igraph_vector_destroy(&vs);
     return 0;
   }
 
-  result = igraphmodule_vector_t_to_PyList(&vs, IGRAPHMODULE_TYPE_INT);
-  igraph_vector_destroy(&vs);
+  if (igraph_vs_as_vector(&gr->g, self->vs, &vs)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_int_destroy(&vs);
+    return 0;
+  }
+
+  result = igraphmodule_vector_int_t_to_PyList(&vs);
+  igraph_vector_int_destroy(&vs);
 
   return result;
 }
@@ -920,8 +1028,11 @@ PyObject* igraphmodule_VertexSeq__name_index(igraphmodule_VertexSeqObject* self,
   void* closure) {
   igraphmodule_GraphObject *gr = self->gref;
   PyObject* result = ATTR_NAME_INDEX(&gr->g);
-  if (result == 0)
+
+  if (result == 0) {
     Py_RETURN_NONE;
+  }
+
   Py_INCREF(result);
   return result;
 }
@@ -983,39 +1094,6 @@ PyMethodDef igraphmodule_VertexSeq_methods[] = {
 
 /**
  * \ingroup python_interface_vertexseq
- * This is the collection of functions necessary to implement the
- * vertex sequence as a real sequence (e.g. allowing to reference
- * vertices by indices)
- */
-static PySequenceMethods igraphmodule_VertexSeq_as_sequence = {
-  (lenfunc)igraphmodule_VertexSeq_sq_length,
-  0,               /* sq_concat */
-  0,               /* sq_repeat */
-  (ssizeargfunc)igraphmodule_VertexSeq_sq_item, /* sq_item */
-  0,                                          /* sq_slice */
-  0,                                          /* sq_ass_item */
-  0,                                          /* sq_ass_slice */
-  0,                                          /* sq_contains */
-  0,                                          /* sq_inplace_concat */
-  0,                                          /* sq_inplace_repeat */
-};
-
-/**
- * \ingroup python_interface_vertexseq
- * This is the collection of functions necessary to implement the
- * vertex sequence as a mapping (which maps attribute names to values)
- */
-static PyMappingMethods igraphmodule_VertexSeq_as_mapping = {
-  /* this must be null, otherwise it f.cks up sq_length when inherited */
-  (lenfunc) 0,
-  /* returns the values of an attribute by name */
-  (binaryfunc) igraphmodule_VertexSeq_get_attribute_values_mapping,
-  /* sets the values of an attribute by name */
-  (objobjargproc) igraphmodule_VertexSeq_set_attribute_values_mapping,
-};
-
-/**
- * \ingroup python_interface_vertexseq
  * Getter/setter table for the \c igraph.VertexSeq object
  */
 PyGetSetDef igraphmodule_VertexSeq_getseters[] = {
@@ -1031,57 +1109,48 @@ PyGetSetDef igraphmodule_VertexSeq_getseters[] = {
   {NULL}
 };
 
-/** \ingroup python_interface_vertexseq
- * Python type object referencing the methods Python calls when it performs various operations on
- * a vertex sequence of a graph
+/**
+ * \ingroup python_interface_vertexseq
+ * Member table for the \c igraph.VertexSeq object
  */
-PyTypeObject igraphmodule_VertexSeqType =
-{
-  PyVarObject_HEAD_INIT(0, 0)
-  "igraph._igraph.VertexSeq",                 /* tp_name */
-  sizeof(igraphmodule_VertexSeqObject),       /* tp_basicsize */
-  0,                                          /* tp_itemsize */
-  (destructor)igraphmodule_VertexSeq_dealloc, /* tp_dealloc */
-  0,                                          /* tp_print */
-  0,                                          /* tp_getattr */
-  0,                                          /* tp_setattr */
-  0,                                          /* tp_compare (2.x) / tp_reserved (3.x) */
-  0,                                          /* tp_repr */
-  0,                                          /* tp_as_number */
-  &igraphmodule_VertexSeq_as_sequence,        /* tp_as_sequence */
-  &igraphmodule_VertexSeq_as_mapping,         /* tp_as_mapping */
-  0,                                          /* tp_hash */
-  0,                                          /* tp_call */
-  0,                                          /* tp_str */
-  0,                                          /* tp_getattro */
-  0,                                          /* tp_setattro */
-  0,                                          /* tp_as_buffer */
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /* tp_flags */
+PyMemberDef igraphmodule_VertexSeq_members[] = {
+  {"__weaklistoffset__", T_PYSSIZET, offsetof(igraphmodule_VertexSeqObject, weakreflist), READONLY},
+  { 0 }
+};
+
+PyDoc_STRVAR(
+  igraphmodule_VertexSeq_doc,
   "Low-level representation of a vertex sequence.\n\n" /* tp_doc */
   "Don't use it directly, use L{igraph.VertexSeq} instead.\n\n"
-  "@deffield ref: Reference",
-  0,                                          /* tp_traverse */
-  0,                                          /* tp_clear */
-  0,                                          /* tp_richcompare */
-  offsetof(igraphmodule_VertexSeqObject, weakreflist),  /* tp_weaklistoffset */
-  0,                                          /* tp_iter */
-  0,                                          /* tp_iternext */
-  igraphmodule_VertexSeq_methods,             /* tp_methods */
-  0,                                          /* tp_members */
-  igraphmodule_VertexSeq_getseters,           /* tp_getset */
-  0,                                          /* tp_base */
-  0,                                          /* tp_dict */
-  0,                                          /* tp_descr_get */
-  0,                                          /* tp_descr_set */
-  0,                                          /* tp_dictoffset */
-  (initproc) igraphmodule_VertexSeq_init,     /* tp_init */
-  0,                                          /* tp_alloc */
-  (newfunc) igraphmodule_VertexSeq_new,       /* tp_new */
-  0,                                          /* tp_free */
-  0,                                          /* tp_is_gc */
-  0,                                          /* tp_bases */
-  0,                                          /* tp_mro */
-  0,                                          /* tp_cache  */
-  0,                                          /* tp_subclasses */
-  0,                                          /* tp_weakreflist */
-};
+  "@deffield ref: Reference"
+);
+
+int igraphmodule_VertexSeq_register_type() {
+  PyType_Slot slots[] = {
+    { Py_tp_init, igraphmodule_VertexSeq_init },
+    { Py_tp_dealloc, igraphmodule_VertexSeq_dealloc },
+    { Py_tp_members, igraphmodule_VertexSeq_members },
+    { Py_tp_methods, igraphmodule_VertexSeq_methods },
+    { Py_tp_getset, igraphmodule_VertexSeq_getseters },
+    { Py_tp_doc, (void*) igraphmodule_VertexSeq_doc },
+
+    { Py_sq_length, igraphmodule_VertexSeq_sq_length },
+    { Py_sq_item, igraphmodule_VertexSeq_sq_item },
+
+    { Py_mp_subscript, igraphmodule_VertexSeq_get_attribute_values_mapping },
+    { Py_mp_ass_subscript, igraphmodule_VertexSeq_set_attribute_values_mapping },
+  
+    { 0 }
+  };
+
+  PyType_Spec spec = {
+    "igraph._igraph.VertexSeq",                 /* name */
+    sizeof(igraphmodule_VertexSeqObject),       /* basicsize */
+    0,                                          /* itemsize */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /* flags */
+    slots,                                      /* slots */
+  };
+
+  igraphmodule_VertexSeqType = (PyTypeObject*) PyType_FromSpec(&spec);
+  return igraphmodule_VertexSeqType == 0;
+}

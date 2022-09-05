@@ -1,3 +1,4 @@
+/* pre-generated arith.h for f2c when compiling on Apple M1 */
 #define IEEE_8087
 #define Arith_Kind_ASL 1
 #define Long int

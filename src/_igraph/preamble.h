@@ -23,6 +23,10 @@
 #ifndef PYTHON_IGRAPH_PREAMBLE_H
 #define PYTHON_IGRAPH_PREAMBLE_H
 
+#ifndef PY_IGRAPH_ALLOW_ENTIRE_PYTHON_API
+#  define Py_LIMITED_API 0x03060100
+#endif
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 

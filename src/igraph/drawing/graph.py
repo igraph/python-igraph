@@ -13,627 +13,11 @@ L{CytoscapeGraphDrawer}. L{CytoscapeGraphDrawer} can also fetch the current
 network from Cytoscape and convert it to igraph format.
 """
 
-from math import atan2, cos, pi, sin, tan, sqrt
 from warnings import warn
 
-from igraph._igraph import convex_hull, VertexSeq
-from igraph.configuration import Configuration
-from igraph.drawing.baseclasses import (
-    AbstractDrawer,
-    AbstractCairoDrawer,
-    AbstractXMLRPCDrawer,
-)
-from igraph.drawing.colors import color_to_html_format, color_name_to_rgb
-from igraph.drawing.edge import ArrowEdgeDrawer
-from igraph.drawing.text import TextAlignment, TextDrawer
-from igraph.drawing.metamagic import AttributeCollectorBase
-from igraph.drawing.shapes import PolygonDrawer
-from igraph.drawing.utils import find_cairo, Point
-from igraph.drawing.vertex import DefaultVertexDrawer
-from igraph.layout import Layout
+from igraph.drawing.baseclasses import AbstractGraphDrawer, AbstractXMLRPCDrawer
 
-__all__ = (
-    "DefaultGraphDrawer", "MatplotlibGraphDrawer", "CytoscapeGraphDrawer",
-    "UbiGraphDrawer"
-)
-
-cairo = find_cairo()
-
-#####################################################################
-
-
-class AbstractGraphDrawer(AbstractDrawer):
-    """Abstract class that serves as a base class for anything that
-    draws an igraph.Graph."""
-
-    def draw(self, graph, *args, **kwds):
-        """Abstract method, must be implemented in derived classes."""
-        raise NotImplementedError("abstract class")
-
-    def ensure_layout(self, layout, graph=None):
-        """Helper method that ensures that I{layout} is an instance
-        of L{Layout}. If it is not, the method will try to convert
-        it to a L{Layout} according to the following rules:
-
-          - If I{layout} is a string, it is assumed to be a name
-            of an igraph layout, and it will be passed on to the
-            C{layout} method of the given I{graph} if I{graph} is
-            not C{None}.
-
-          - If I{layout} is C{None}, the C{layout} method of
-            I{graph} will be invoked with no parameters, which
-            will call the default layout algorithm.
-
-          - Otherwise, I{layout} will be passed on to the constructor
-            of L{Layout}. This handles lists of lists, lists of tuples
-            and such.
-
-        If I{layout} is already a L{Layout} instance, it will still
-        be copied and a copy will be returned. This is because graph
-        drawers are allowed to transform the layout for their purposes,
-        and we don't want the transformation to propagate back to the
-        caller.
-        """
-        if isinstance(layout, Layout):
-            layout = Layout(layout.coords)
-        elif isinstance(layout, str) or layout is None:
-            layout = graph.layout(layout)
-        else:
-            layout = Layout(layout)
-        return layout
-
-
-#####################################################################
-
-
-class AbstractCairoGraphDrawer(AbstractGraphDrawer, AbstractCairoDrawer):
-    """Abstract base class for graph drawers that draw on a Cairo canvas."""
-
-    def __init__(self, context, bbox):
-        """Constructs the graph drawer and associates it to the given
-        Cairo context and the given L{BoundingBox}.
-
-        @param context: the context on which we will draw
-        @param bbox:    the bounding box within which we will draw.
-                        Can be anything accepted by the constructor
-                        of L{BoundingBox} (i.e., a 2-tuple, a 4-tuple
-                        or a L{BoundingBox} object).
-        """
-        AbstractCairoDrawer.__init__(self, context, bbox)
-        AbstractGraphDrawer.__init__(self)
-
-
-#####################################################################
-
-
-class DefaultGraphDrawer(AbstractCairoGraphDrawer):
-    """Class implementing the default visualisation of a graph.
-
-    The default visualisation of a graph draws the nodes on a 2D plane
-    according to a given L{Layout}, then draws a straight or curved
-    edge between nodes connected by edges. This is the visualisation
-    used when one invokes the L{plot()} function on a L{Graph} object.
-
-    See L{Graph.__plot__()} for the keyword arguments understood by
-    this drawer."""
-
-    def __init__(
-        self,
-        context,
-        bbox,
-        vertex_drawer_factory=DefaultVertexDrawer,
-        edge_drawer_factory=ArrowEdgeDrawer,
-        label_drawer_factory=TextDrawer,
-    ):
-        """Constructs the graph drawer and associates it to the given
-        Cairo context and the given L{BoundingBox}.
-
-        @param context: the context on which we will draw
-        @param bbox:    the bounding box within which we will draw.
-                        Can be anything accepted by the constructor
-                        of L{BoundingBox} (i.e., a 2-tuple, a 4-tuple
-                        or a L{BoundingBox} object).
-        @param vertex_drawer_factory: a factory method that returns an
-                        L{AbstractCairoVertexDrawer} instance bound to a
-                        given Cairo context. The factory method must take
-                        three parameters: the Cairo context, the bounding
-                        box of the drawing area and the palette to be
-                        used for drawing colored vertices. The default
-                        vertex drawer is L{DefaultVertexDrawer}.
-        @param edge_drawer_factory: a factory method that returns an
-                        L{AbstractEdgeDrawer} instance bound to a
-                        given Cairo context. The factory method must take
-                        two parameters: the Cairo context and the palette
-                        to be used for drawing colored edges. You can use
-                        any of the actual L{AbstractEdgeDrawer}
-                        implementations here to control the style of
-                        edges drawn by igraph. The default edge drawer is
-                        L{ArrowEdgeDrawer}.
-        @param label_drawer_factory: a factory method that returns a
-                        L{TextDrawer} instance bound to a given Cairo
-                        context. The method must take one parameter: the
-                        Cairo context. The default label drawer is
-                        L{TextDrawer}.
-        """
-        AbstractCairoGraphDrawer.__init__(self, context, bbox)
-        self.vertex_drawer_factory = vertex_drawer_factory
-        self.edge_drawer_factory = edge_drawer_factory
-        self.label_drawer_factory = label_drawer_factory
-
-    def _determine_edge_order(self, graph, kwds):
-        """Returns the order in which the edge of the given graph have to be
-        drawn, assuming that the relevant keyword arguments (C{edge_order} and
-        C{edge_order_by}) are given in C{kwds} as a dictionary. If neither
-        C{edge_order} nor C{edge_order_by} is present in C{kwds}, this
-        function returns C{None} to indicate that the graph drawer is free to
-        choose the most convenient edge ordering."""
-        if "edge_order" in kwds:
-            # Edge order specified explicitly
-            return kwds["edge_order"]
-
-        if kwds.get("edge_order_by") is None:
-            # No edge order specified
-            return None
-
-        # Order edges by the value of some attribute
-        edge_order_by = kwds["edge_order_by"]
-        reverse = False
-        if isinstance(edge_order_by, tuple):
-            edge_order_by, reverse = edge_order_by
-            if isinstance(reverse, str):
-                reverse = reverse.lower().startswith("desc")
-        attrs = graph.es[edge_order_by]
-        edge_order = sorted(
-            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
-        )
-
-        return edge_order
-
-    def _determine_vertex_order(self, graph, kwds):
-        """Returns the order in which the vertices of the given graph have to be
-        drawn, assuming that the relevant keyword arguments (C{vertex_order} and
-        C{vertex_order_by}) are given in C{kwds} as a dictionary. If neither
-        C{vertex_order} nor C{vertex_order_by} is present in C{kwds}, this
-        function returns C{None} to indicate that the graph drawer is free to
-        choose the most convenient vertex ordering."""
-        if "vertex_order" in kwds:
-            # Vertex order specified explicitly
-            return kwds["vertex_order"]
-
-        if kwds.get("vertex_order_by") is None:
-            # No vertex order specified
-            return None
-
-        # Order vertices by the value of some attribute
-        vertex_order_by = kwds["vertex_order_by"]
-        reverse = False
-        if isinstance(vertex_order_by, tuple):
-            vertex_order_by, reverse = vertex_order_by
-            if isinstance(reverse, str):
-                reverse = reverse.lower().startswith("desc")
-        attrs = graph.vs[vertex_order_by]
-        vertex_order = sorted(
-            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
-        )
-
-        return vertex_order
-
-    def draw(self, graph, palette, *args, **kwds):
-        # Some abbreviations for sake of simplicity
-        directed = graph.is_directed()
-        context = self.context
-
-        # Calculate/get the layout of the graph
-        layout = self.ensure_layout(kwds.get("layout", None), graph)
-
-        # Determine the size of the margin on each side
-        margin = kwds.get("margin", 0)
-        try:
-            margin = list(margin)
-        except TypeError:
-            margin = [margin]
-        while len(margin) < 4:
-            margin.extend(margin)
-
-        # Contract the drawing area by the margin and fit the layout
-        bbox = self.bbox.contract(margin)
-        layout.fit_into(bbox, keep_aspect_ratio=kwds.get("keep_aspect_ratio", False))
-
-        # Decide whether we need to calculate the curvature of edges
-        # automatically -- and calculate them if needed.
-        autocurve = kwds.get("autocurve", None)
-        if autocurve or (
-            autocurve is None
-            and "edge_curved" not in kwds
-            and "curved" not in graph.edge_attributes()
-            and graph.ecount() < 10000
-        ):
-            from igraph import autocurve
-
-            default = kwds.get("edge_curved", 0)
-            if default is True:
-                default = 0.5
-            default = float(default)
-            kwds["edge_curved"] = autocurve(graph, attribute=None, default=default)
-
-        # Construct the vertex, edge and label drawers
-        vertex_drawer = self.vertex_drawer_factory(context, bbox, palette, layout)
-        edge_drawer = self.edge_drawer_factory(context, palette)
-        label_drawer = self.label_drawer_factory(context)
-
-        # Construct the visual vertex/edge builders based on the specifications
-        # provided by the vertex_drawer and the edge_drawer
-        vertex_builder = vertex_drawer.VisualVertexBuilder(graph.vs, kwds)
-        edge_builder = edge_drawer.VisualEdgeBuilder(graph.es, kwds)
-
-        # Determine the order in which we will draw the vertices and edges
-        vertex_order = self._determine_vertex_order(graph, kwds)
-        edge_order = self._determine_edge_order(graph, kwds)
-
-        # Draw the highlighted groups (if any)
-        if "mark_groups" in kwds:
-            mark_groups = kwds["mark_groups"]
-
-            # Deferred import to avoid a cycle in the import graph
-            from igraph.clustering import VertexClustering, VertexCover
-
-            # Figure out what to do with mark_groups in order to be able to
-            # iterate over it and get memberlist-color pairs
-            if isinstance(mark_groups, dict):
-                # Dictionary mapping vertex indices or tuples of vertex
-                # indices to colors
-                group_iter = iter(mark_groups.items())
-            elif isinstance(mark_groups, (VertexClustering, VertexCover)):
-                # Vertex clustering
-                group_iter = ((group, color) for color, group in enumerate(mark_groups))
-            elif hasattr(mark_groups, "__iter__"):
-                # Lists, tuples, iterators etc
-                group_iter = iter(mark_groups)
-            else:
-                # False
-                group_iter = iter({}.items())
-
-            # We will need a polygon drawer to draw the convex hulls
-            polygon_drawer = PolygonDrawer(context, bbox)
-
-            # Iterate over color-memberlist pairs
-            for group, color_id in group_iter:
-                if not group or color_id is None:
-                    continue
-
-                color = palette.get(color_id)
-
-                if isinstance(group, VertexSeq):
-                    group = [vertex.index for vertex in group]
-                if not hasattr(group, "__iter__"):
-                    raise TypeError("group membership list must be iterable")
-
-                # Get the vertex indices that constitute the convex hull
-                hull = [group[i] for i in convex_hull([layout[idx] for idx in group])]
-
-                # Calculate the preferred rounding radius for the corners
-                corner_radius = 1.25 * max(vertex_builder[idx].size for idx in hull)
-
-                # Construct the polygon
-                polygon = [layout[idx] for idx in hull]
-
-                if len(polygon) == 2:
-                    # Expand the polygon (which is a flat line otherwise)
-                    a, b = Point(*polygon[0]), Point(*polygon[1])
-                    c = corner_radius * (a - b).normalized()
-                    n = Point(-c[1], c[0])
-                    polygon = [a + n, b + n, b - c, b - n, a - n, a + c]
-                else:
-                    # Expand the polygon around its center of mass
-                    center = Point(
-                        *[sum(coords) / float(len(coords)) for coords in zip(*polygon)]
-                    )
-                    polygon = [
-                        Point(*point).towards(center, -corner_radius)
-                        for point in polygon
-                    ]
-
-                # Draw the hull
-                context.set_source_rgba(color[0], color[1], color[2], color[3] * 0.25)
-                polygon_drawer.draw_path(polygon, corner_radius=corner_radius)
-                context.fill_preserve()
-                context.set_source_rgba(*color)
-                context.stroke()
-
-        # Construct the iterator that we will use to draw the edges
-        es = graph.es
-        if edge_order is None:
-            # Default edge order
-            edge_coord_iter = zip(es, edge_builder)
-        else:
-            # Specified edge order
-            edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
-
-        # Draw the edges
-        if directed:
-            drawer_method = edge_drawer.draw_directed_edge
-        else:
-            drawer_method = edge_drawer.draw_undirected_edge
-        for edge, visual_edge in edge_coord_iter:
-            src, dest = edge.tuple
-            src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
-            drawer_method(visual_edge, src_vertex, dest_vertex)
-
-        # Construct the iterator that we will use to draw the vertices
-        vs = graph.vs
-        if vertex_order is None:
-            # Default vertex order
-            vertex_coord_iter = zip(vs, vertex_builder, layout)
-        else:
-            # Specified vertex order
-            vertex_coord_iter = (
-                (vs[i], vertex_builder[i], layout[i]) for i in vertex_order
-            )
-
-        # Draw the vertices
-        drawer_method = vertex_drawer.draw
-        context.set_line_width(1)
-        for vertex, visual_vertex, coords in vertex_coord_iter:
-            drawer_method(visual_vertex, vertex, coords)
-
-        # Decide whether the labels have to be wrapped
-        wrap = kwds.get("wrap_labels")
-        if wrap is None:
-            wrap = Configuration.instance()["plotting.wrap_labels"]
-        wrap = bool(wrap)
-
-        # Construct the iterator that we will use to draw the vertex labels
-        if vertex_order is None:
-            # Default vertex order
-            vertex_coord_iter = zip(vertex_builder, layout)
-        else:
-            # Specified vertex order
-            vertex_coord_iter = ((vertex_builder[i], layout[i]) for i in vertex_order)
-
-        # Draw the vertex labels
-        for vertex, coords in vertex_coord_iter:
-            if vertex.label is None:
-                continue
-
-            # Set the font family, size, color and text
-            context.select_font_face(
-                vertex.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL
-            )
-            context.set_font_size(vertex.label_size)
-            context.set_source_rgba(*vertex.label_color)
-            label_drawer.text = vertex.label
-
-            if vertex.label_dist:
-                # Label is displaced from the center of the vertex.
-                _, yb, w, h, _, _ = label_drawer.text_extents()
-                w, h = w / 2.0, h / 2.0
-                radius = vertex.label_dist * vertex.size / 2.0
-                # First we find the reference point that is at distance `radius'
-                # from the vertex in the direction given by `label_angle'.
-                # Then we place the label in a way that the line connecting the
-                # center of the bounding box of the label with the center of the
-                # vertex goes through the reference point and the reference
-                # point lies exactly on the bounding box of the vertex.
-                alpha = vertex.label_angle % (2 * pi)
-                cx = coords[0] + radius * cos(alpha)
-                cy = coords[1] - radius * sin(alpha)
-                # Now we have the reference point. We have to decide which side
-                # of the label box will intersect with the line that connects
-                # the center of the label with the center of the vertex.
-                if w > 0:
-                    beta = atan2(h, w) % (2 * pi)
-                else:
-                    beta = pi / 2.0
-                gamma = pi - beta
-                if alpha > 2 * pi - beta or alpha <= beta:
-                    # Intersection at left edge of label
-                    cx += w
-                    cy -= tan(alpha) * w
-                elif alpha > beta and alpha <= gamma:
-                    # Intersection at bottom edge of label
-                    try:
-                        cx += h / tan(alpha)
-                    except Exception:
-                        pass  # tan(alpha) == inf
-                    cy -= h
-                elif alpha > gamma and alpha <= gamma + 2 * beta:
-                    # Intersection at right edge of label
-                    cx -= w
-                    cy += tan(alpha) * w
-                else:
-                    # Intersection at top edge of label
-                    try:
-                        cx -= h / tan(alpha)
-                    except Exception:
-                        pass  # tan(alpha) == inf
-                    cy += h
-                # Draw the label
-                label_drawer.draw_at(cx - w, cy - h - yb, wrap=wrap)
-            else:
-                # Label is exactly in the center of the vertex
-                cx, cy = coords
-                half_size = vertex.size / 2.0
-                label_drawer.bbox = (
-                    cx - half_size,
-                    cy - half_size,
-                    cx + half_size,
-                    cy + half_size,
-                )
-                label_drawer.draw(wrap=wrap)
-
-        # Construct the iterator that we will use to draw the edge labels
-        es = graph.es
-        if edge_order is None:
-            # Default edge order
-            edge_coord_iter = zip(es, edge_builder)
-        else:
-            # Specified edge order
-            edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
-
-        # Draw the edge labels
-        for edge, visual_edge in edge_coord_iter:
-            if visual_edge.label is None:
-                continue
-
-            # Set the font family, size, color and text
-            context.select_font_face(
-                visual_edge.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL
-            )
-            context.set_font_size(visual_edge.label_size)
-            context.set_source_rgba(*visual_edge.label_color)
-            label_drawer.text = visual_edge.label
-
-            # Ask the edge drawer to propose an anchor point for the label
-            src, dest = edge.tuple
-            src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
-            (x, y), (halign, valign) = edge_drawer.get_label_position(
-                visual_edge, src_vertex, dest_vertex
-            )
-
-            # Measure the text
-            _, yb, w, h, _, _ = label_drawer.text_extents()
-            w /= 2.0
-            h /= 2.0
-
-            # Place the text relative to the edge
-            if halign == TextAlignment.RIGHT:
-                x -= w
-            elif halign == TextAlignment.LEFT:
-                x += w
-            if valign == TextAlignment.BOTTOM:
-                y -= h - yb / 2.0
-            elif valign == TextAlignment.TOP:
-                y += h
-
-            # Draw the edge label
-            label_drawer.halign = halign
-            label_drawer.valign = valign
-            label_drawer.bbox = (x - w, y - h, x + w, y + h)
-            label_drawer.draw(wrap=wrap)
-
-
-#####################################################################
-
-
-class UbiGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
-    """Graph drawer that draws a given graph on an UbiGraph display
-    using the XML-RPC API of UbiGraph.
-
-    The following vertex attributes are supported: C{color}, C{label},
-    C{shape}, C{size}. See the Ubigraph documentation for supported shape
-    names. Sizes are relative to the default Ubigraph size.
-
-    The following edge attributes are supported: C{color}, C{label},
-    C{width}. Edge widths are relative to the default Ubigraph width.
-
-    All color specifications supported by igraph (e.g., color names,
-    palette indices, RGB triplets, RGBA quadruplets, HTML format)
-    are understood by the Ubigraph graph drawer.
-
-    The drawer also has two attributes, C{vertex_defaults} and
-    C{edge_defaults}. These are dictionaries that can be used to
-    set default values for the vertex/edge attributes in Ubigraph.
-
-    @deprecated: UbiGraph has not received updates since 2008 and is now not
-        available for download (at least not from the official sources).
-        The UbiGraph graph drawer will be removed from igraph in 0.10.0.
-    """
-
-    def __init__(self, url="http://localhost:20738/RPC2"):
-        """Constructs an UbiGraph drawer using the display at the given
-        URL."""
-        super().__init__(url, "ubigraph")
-        self.vertex_defaults = dict(color="#ff0000", shape="cube", size=1.0)
-        self.edge_defaults = dict(color="#ffffff", width=1.0)
-
-        warn(
-            "UbiGraphDrawer is deprecated from igraph 0.9.4",
-            DeprecationWarning
-        )
-
-    def draw(self, graph, *args, **kwds):
-        """Draws the given graph on an UbiGraph display.
-
-        @keyword clear: whether to clear the current UbiGraph display before
-                        plotting. Default: C{True}."""
-        display = self.service
-
-        # Clear the display and set the default visual attributes
-        if kwds.get("clear", True):
-            display.clear()
-
-            for k, v in self.vertex_defaults.items():
-                display.set_vertex_style_attribute(0, k, str(v))
-            for k, v in self.edge_defaults.items():
-                display.set_edge_style_attribute(0, k, str(v))
-
-        # Custom color converter function
-        def color_conv(color):
-            return color_to_html_format(color_name_to_rgb(color))
-
-        # Construct the visual vertex/edge builders
-        class VisualVertexBuilder(AttributeCollectorBase):
-            """Collects some visual properties of a vertex for drawing"""
-
-            _kwds_prefix = "vertex_"
-            color = (str(self.vertex_defaults["color"]), color_conv)
-            label = None
-            shape = str(self.vertex_defaults["shape"])
-            size = float(self.vertex_defaults["size"])
-
-        class VisualEdgeBuilder(AttributeCollectorBase):
-            """Collects some visual properties of an edge for drawing"""
-
-            _kwds_prefix = "edge_"
-            color = (str(self.edge_defaults["color"]), color_conv)
-            label = None
-            width = float(self.edge_defaults["width"])
-
-        vertex_builder = VisualVertexBuilder(graph.vs, kwds)
-        edge_builder = VisualEdgeBuilder(graph.es, kwds)
-
-        # Add the vertices
-        n = graph.vcount()
-        new_vertex = display.new_vertex
-        vertex_ids = [new_vertex() for _ in range(n)]
-
-        # Add the edges
-        new_edge = display.new_edge
-        eids = [
-            new_edge(vertex_ids[edge.source], vertex_ids[edge.target])
-            for edge in graph.es
-        ]
-
-        # Add arrowheads if needed
-        if graph.is_directed():
-            display.set_edge_style_attribute(0, "arrow", "true")
-
-        # Set the vertex attributes
-        set_attr = display.set_vertex_attribute
-        vertex_defaults = self.vertex_defaults
-        for vertex_id, vertex in zip(vertex_ids, vertex_builder):
-            if vertex.color != vertex_defaults["color"]:
-                set_attr(vertex_id, "color", vertex.color)
-            if vertex.label:
-                set_attr(vertex_id, "label", str(vertex.label))
-            if vertex.shape != vertex_defaults["shape"]:
-                set_attr(vertex_id, "shape", vertex.shape)
-            if vertex.size != vertex_defaults["size"]:
-                set_attr(vertex_id, "size", str(vertex.size))
-
-        # Set the edge attributes
-        set_attr = display.set_edge_attribute
-        edge_defaults = self.edge_defaults
-        for edge_id, edge in zip(eids, edge_builder):
-            if edge.color != edge_defaults["color"]:
-                set_attr(edge_id, "color", edge.color)
-            if edge.label:
-                set_attr(edge_id, "label", edge.label)
-            if edge.width != edge_defaults["width"]:
-                set_attr(edge_id, "width", str(edge.width))
-
-
-#####################################################################
+__all__ = ("CytoscapeGraphDrawer", "__plot__")
 
 
 class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
@@ -678,6 +62,14 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
           for each node in the graph. The default is C{None}, which
           simply uses the vertex index for each vertex."""
         from xmlrpc.client import Fault
+
+        # Positional arguments are not used
+        if args:
+            warn(
+                "Positional arguments to plot functions are ignored "
+                "and will be deprecated soon.",
+                DeprecationWarning,
+            )
 
         cy = self.service
 
@@ -797,7 +189,7 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
         version = tuple(map(int, version.split(".")[:2]))
         if version < (1, 3):
             raise NotImplementedError(
-                "CytoscapeGraphDrawer requires " "Cytoscape-RPC 1.3 or newer"
+                "CytoscapeGraphDrawer requires Cytoscape-RPC 1.3 or newer"
             )
 
         # Find out the ID of the network we are interested in
@@ -955,416 +347,212 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
             - C{encoder} lets one specify an instance of C{json.JSONEncoder} that
               will be used to encode the JSON objects.
         """
+        # Positional arguments are not used
+        if args:
+            warn(
+                "Positional arguments to plot functions are ignored "
+                "and will be deprecated soon.",
+                DeprecationWarning,
+            )
+
         self.streamer.post(graph, self.connection, encoder=kwds.get("encoder"))
 
 
-#####################################################################
+def __plot__(self, backend, context, *args, **kwds):
+    """Plots the graph to the given Cairo context or matplotlib Axes.
 
+    The visual style of vertices and edges can be modified at three
+    places in the following order of precedence (lower indices override
+    higher indices):
 
-class MatplotlibGraphDrawer(AbstractGraphDrawer):
-    """Graph drawer that uses a pyplot.Axes as context"""
+      1. Keyword arguments of this function (or of L{plot()} which is
+         passed intact to C{Graph.__plot__()}.
 
-    _shape_dict = {
-        "rectangle": "s",
-        "circle": "o",
-        "hidden": "none",
-        "triangle-up": "^",
-        "triangle-down": "v",
-    }
+      2. Vertex or edge attributes, specified later in the list of
+         keyword arguments.
 
-    def __init__(self, ax):
-        """Constructs the graph drawer and associates it with the mpl axes"""
-        self.ax = ax
+      3. igraph-wide plotting defaults (see
+         L{igraph.config.Configuration})
 
-    def draw(self, graph, *args, **kwds):
-        # NOTE: matplotlib has numpy as a dependency, so we can use it in here
-        from collections import defaultdict
-        import matplotlib as mpl
-        import matplotlib.markers as mmarkers
-        from matplotlib.path import Path
-        from matplotlib.patches import FancyArrowPatch
-        from matplotlib.patches import ArrowStyle
-        import numpy as np
+      4. Built-in defaults.
 
-        # Deferred import to avoid a cycle in the import graph
-        from igraph.clustering import VertexClustering, VertexCover
+    E.g., if the C{vertex_size} keyword attribute is not present,
+    but there exists a vertex attribute named C{size}, the sizes of
+    the vertices will be specified by that attribute.
 
-        def shrink_vertex(ax, aux, vcoord, vsize_squared):
-            """Shrink edge by vertex size"""
-            aux_display, vcoord_display = ax.transData.transform([aux, vcoord])
-            d = sqrt(((aux_display - vcoord_display) ** 2).sum())
-            fr = sqrt(vsize_squared) / d if d > 0 else 0
-            end_display = vcoord_display + fr * (aux_display - vcoord_display)
-            end = ax.transData.inverted().transform(end_display)
-            return end
+    Besides the usual self-explanatory plotting parameters (C{context},
+    C{bbox}, C{palette}), it accepts the following keyword arguments:
 
-        def callback_factory(ax, vcoord, vsizes, arrows):
-            def callback_edge_offset(event):
-                for arrow, src, tgt in arrows:
-                    v1, v2 = vcoord[src], vcoord[tgt]
-                    # This covers both cases (curved and straight)
-                    aux1, aux2 = arrow._path_original.vertices[[1, -2]]
-                    start = shrink_vertex(ax, aux1, v1, vsizes[src])
-                    end = shrink_vertex(ax, aux2, v2, vsizes[tgt])
-                    arrow._path_original.vertices[0] = start
-                    arrow._path_original.vertices[-1] = end
+      - C{autocurve}: whether to use curves instead of straight lines for
+        multiple edges on the graph plot. This argument may be C{True}
+        or C{False}; when omitted, C{True} is assumed for graphs with
+        less than 10.000 edges and C{False} otherwise.
 
-            return callback_edge_offset
+      - C{drawer_factory}: a subclass of L{AbstractCairoGraphDrawer}
+        which will be used to draw the graph. You may also provide
+        a function here which takes two arguments: the Cairo context
+        to draw on and a bounding box (an instance of L{BoundingBox}).
+        If this keyword argument is missing, igraph will use the
+        default graph drawer which should be suitable for most purposes.
+        It is safe to omit this keyword argument unless you need to use
+        a specific graph drawer.
 
-        ax = self.ax
+      - C{keep_aspect_ratio}: whether to keep the aspect ratio of the layout
+        that igraph calculates to place the nodes. C{True} means that the
+        layout will be scaled proportionally to fit into the bounding box
+        where the graph is to be drawn but the aspect ratio will be kept
+        the same (potentially leaving empty space next to, below or above
+        the graph). C{False} means that the layout will be scaled independently
+        along the X and Y axis in order to fill the entire bounding box.
+        The default is C{False}.
 
-        # FIXME: deal with unnamed *args
+      - C{layout}: the layout to be used. If not an instance of
+        L{Layout}, it will be passed to L{layout} to calculate
+        the layout. Note that if you want a deterministic layout that
+        does not change with every plot, you must either use a
+        deterministic layout function (like L{GraphBase.layout_circle}) or
+        calculate the layout in advance and pass a L{Layout} object here.
 
-        # graph is not necessarily a graph, it can be a VertexClustering. If so
-        # extract the graph. The clustering itself can be overridden using
-        # the "mark_groups" option
-        clustering = None
-        if isinstance(graph, (VertexClustering, VertexCover)):
-            clustering = graph
-            graph = clustering.graph
+      - C{margin}: the top, right, bottom, left margins as a 4-tuple.
+        If it has less than 4 elements or is a single float, the elements
+        will be re-used until the length is at least 4.
 
-        # Get layout
-        layout = kwds.get("layout", graph.layout())
-        if isinstance(layout, str):
-            layout = graph.layout(layout)
+      - C{mark_groups}: whether to highlight some of the vertex groups by
+        colored polygons. This argument can be one of the following:
 
-        # Vertex coordinates
-        vcoord = layout.coords
+          - C{False}: no groups will be highlighted
 
-        # mark groups: the used data structure is eventually the dict option:
-        # tuples of vertex indices as the keys, colors as the values. We
-        # convert other formats into that one here
-        if "mark_groups" not in kwds:
-            kwds["mark_groups"] = False
-        if kwds["mark_groups"] is False:
-            pass
-        elif (kwds["mark_groups"] is True) and (clustering is not None):
-            pass
-        elif isinstance(kwds["mark_groups"], (VertexClustering, VertexCover)):
-            if clustering is not None:
-                raise ValueError(
-                    "mark_groups cannot override a clustering with another"
-                )
-            else:
-                clustering = kwds["mark_groups"]
-                kwds["mark_groups"] = True
-        else:
-            try:
-                mg_iter = iter(kwds["mark_groups"])
-            except TypeError:
-                raise TypeError("mark_groups is not in the right format")
-            kwds["mark_groups"] = dict(mg_iter)
+          - C{True}: only valid if the object plotted is a
+            L{VertexClustering} or L{VertexCover}. The vertex groups in the
+            clutering or cover will be highlighted such that the i-th
+            group will be colored by the i-th color from the current
+            palette. If used when plotting a graph, it will throw an error.
 
-        # If a clustering is set and marks are requested but without a specific
-        # colormap, make the colormap
+          - A dict mapping tuples of vertex indices to color names.
+            The given vertex groups will be highlighted by the given
+            colors.
 
-        # Two things need coloring: vertices and groups/clusters (polygon)
-        # The coloring needs to be coordinated between the two.
-        if clustering is not None:
-            # If mark_groups is a dict, we don't need a default color dict, we
-            # can just use the mark_groups dict. If mark_groups is False and
-            # vertex_color is set, we don't need either because the colors are
-            # already fully specified. In all other cases, we need a default
-            # color dict.
-            if isinstance(kwds["mark_groups"], dict):
-                group_colordict = kwds["mark_groups"]
-            elif (kwds["mark_groups"] is False) and ("vertex_color" in kwds):
-                pass
-            else:
-                membership = clustering.membership
-                if isinstance(clustering, VertexCover):
-                    membership = [x[0] for x in membership]
-                clusters = sorted(set(membership))
-                n_colors = len(clusters)
-                cmap = mpl.cm.get_cmap("viridis")
-                colors = [cmap(1.0 * i / n_colors) for i in range(n_colors)]
-                cluster_colordict = {g: c for g, c in zip(clusters, colors)}
+          - A list containing pairs or an iterable yielding pairs, where
+            the first element of each pair is a list of vertex indices and
+            the second element is a color.
 
-                # mark_groups if not explicitly marked
-                group_colordict = defaultdict(list)
-                for i, g in enumerate(membership):
-                    color = cluster_colordict[g]
-                    group_colordict[color].append(i)
-                del cluster_colordict
-                # Invert keys and values
-                group_colordict = {tuple(v): k for k, v in group_colordict.items()}
+          - A L{VertexClustering} or L{VertexCover} instance. The vertex
+            groups in the clustering or cover will be highlighted such that
+            the i-th group will be colored by the i-th color from the
+            current palette.
 
-            # If mark_groups is set but not defined, make a default colormap
-            if kwds["mark_groups"] is True:
-                kwds["mark_groups"] = group_colordict
+        In place of lists of vertex indices, you may also use L{VertexSeq}
+        instances.
 
-            if "vertex_color" not in kwds:
-                kwds["vertex_color"] = ['none' for m in membership]
-                for group_vs, color in group_colordict.items():
-                    for i in group_vs:
-                        kwds["vertex_color"][i] = color
+        In place of color names, you may also use color indices into the
+        current palette. C{None} as a color name will mean that the
+        corresponding group is ignored.
 
-            # Now mark_groups is either a dict or False
-            # If vertex_color is not set, we can rely on mark_groups if a dict,
-            # else we need to make up the same colormap as if we were requested groups
-            if "vertex_color" not in kwds:
-                if isinstance(kwds["mark_groups"], dict):
-                    membership = clustering.membership
-                    if isinstance(clustering, VertexCover):
-                        membership = [x[0] for x in membership]
+      - C{vertex_size}: size of the vertices. The corresponding vertex
+        attribute is called C{size}. The default is 10. Vertex sizes
+        are measured in the unit of the Cairo context on which igraph
+        is drawing.
 
-        # Mark groups
-        if "mark_groups" in kwds and isinstance(kwds["mark_groups"], dict):
-            for idx, color in kwds["mark_groups"].items():
-                points = [vcoord[i] for i in idx]
-                vertices = np.asarray(convex_hull(points, coords=True))
-                # 15% expansion
-                vertices += 0.15 * (vertices - vertices.mean(axis=0))
+      - C{vertex_color}: color of the vertices. The corresponding vertex
+        attribute is C{color}, the default is red.  Colors can be
+        specified either by common X11 color names (see the source
+        code of L{igraph.drawing.colors} for a list of known colors), by
+        3-tuples of floats (ranging between 0 and 255 for the R, G and
+        B components), by CSS-style string specifications (C{#rrggbb})
+        or by integer color indices of the specified palette.
 
-                # NOTE: we could include a corner cutting algorithm close to
-                # the vertices (e.g. Chaikin) for beautification, or a corner
-                # radius like it's done in the Cairo interface
-                polygon = mpl.patches.Polygon(
-                    vertices,
-                    facecolor=color,
-                    alpha=0.3,
-                    zorder=0,
-                    edgecolor=color,
-                    lw=2,
-                )
-                ax.add_artist(polygon)
+      - C{vertex_frame_color}: color of the frame (i.e. stroke) of the
+        vertices. The corresponding vertex attribute is C{frame_color},
+        the default is black. See C{vertex_color} for the possible ways
+        of specifying a color.
 
-        # Vertex properties
-        nv = graph.vcount()
+      - C{vertex_frame_width}: the width of the frame (i.e. stroke) of the
+        vertices. The corresponding vertex attribute is C{frame_width}.
+        The default is 1. Vertex frame widths are measured in the unit of the
+        Cairo context on which igraph is drawing.
 
-        # Vertex size
-        vsizes = kwds.get("vertex_size", 5)
-        # Enforce numpy array for sizes, because (1) we need the square and (2)
-        # they are needed to calculate autoshrinking of edges
-        if np.isscalar(vsizes):
-            vsizes = np.repeat(vsizes, nv)
-        else:
-            vsizes = np.asarray(vsizes)
-        # ax.scatter uses the *square* of diameter
-        vsizes **= 2
+      - C{vertex_shape}: shape of the vertices. Alternatively it can
+        be specified by the C{shape} vertex attribute. Possibilities
+        are: C{square}, {circle}, {triangle}, {triangle-down} or
+        C{hidden}. See the source code of L{igraph.drawing} for a
+        list of alternative shape names that are also accepted and
+        mapped to these.
 
-        # Vertex color
-        c = kwds.get("vertex_color", "steelblue")
+      - C{vertex_label}: labels drawn next to the vertices.
+        The corresponding vertex attribute is C{label}.
 
-        # Vertex opacity
-        alpha = kwds.get("alpha", 1.0)
+      - C{vertex_label_dist}: distance of the midpoint of the vertex
+        label from the center of the corresponding vertex.
+        The corresponding vertex attribute is C{label_dist}.
 
-        # Vertex labels
-        label = kwds.get("vertex_label", None)
+      - C{vertex_label_color}: color of the label. Corresponding
+        vertex attribute: C{label_color}. See C{vertex_color} for
+        color specification syntax.
 
-        # Vertex label size
-        label_size = kwds.get("vertex_label_size", mpl.rcParams["font.size"])
+      - C{vertex_label_size}: font size of the label, specified
+        in the unit of the Cairo context on which we are drawing.
+        Corresponding vertex attribute: C{label_size}.
 
-        # Vertex zorder
-        vzorder = kwds.get("vertex_order", 2)
+      - C{vertex_label_angle}: the direction of the line connecting
+        the midpoint of the vertex with the midpoint of the label.
+        This can be used to position the labels relative to the
+        vertices themselves in conjunction with C{vertex_label_dist}.
+        Corresponding vertex attribute: C{label_angle}. The
+        default is C{-math.pi/2}.
 
-        # Vertex shapes
-        # mpl shapes use slightly different names from Cairo, but we want the
-        # API to feel consistent, so we use a conversion dictionary
-        shapes = kwds.get("vertex_shape", "o")
-        if shapes is not None:
-            if isinstance(shapes, str):
-                shapes = self._shape_dict.get(shapes, shapes)
-            elif isinstance(shapes, mmarkers.MarkerStyle):
-                pass
+      - C{vertex_order}: drawing order of the vertices. This must be
+        a list or tuple containing vertex indices; vertices are then
+        drawn according to this order.
 
-        # Scatter vertices
-        x, y = list(zip(*vcoord))
-        ax.scatter(x, y, s=vsizes, c=c, marker=shapes, zorder=vzorder, alpha=alpha)
+      - C{vertex_order_by}: an alternative way to specify the drawing
+        order of the vertices; this attribute is interpreted as the name
+        of a vertex attribute, and vertices are drawn such that those
+        with a smaller attribute value are drawn first. You may also
+        reverse the order by passing a tuple here; the first element of
+        the tuple should be the name of the attribute, the second element
+        specifies whether the order is reversed (C{True}, C{False},
+        C{"asc"} and C{"desc"} are accepted values).
 
-        # Vertex labels
-        if label is not None:
-            for i, lab in enumerate(label):
-                xi, yi = x[i], y[i]
-                ax.text(xi, yi, lab, fontsize=label_size)
+      - C{edge_color}: color of the edges. The corresponding edge
+        attribute is C{color}, the default is red. See C{vertex_color}
+        for color specification syntax.
 
-        # Find the X and Y range of coordinates; use a minimum range even if there
-        # is only one vertex to avoid singularities and division by zero later
-        dx, dy = max(x) - min(x), max(y) - min(y)
-        if dx <= 0:
-            dx = 1
-            ax.set_xlim(min(x) - dx / 2, max(x) + dx / 2)
-        else:
-            ax.set_xlim(min(x) - 0.05 * dx, max(x) + 0.05 * dx)
-        if dy <= 0:
-            dy = 1
-            ax.set_ylim(min(y) - dy / 2, max(y) + dy / 2)
-        else:
-            ax.set_ylim(min(y) - 0.05 * dy, max(y) + 0.05 * dy)
+      - C{edge_curved}: whether the edges should be curved. Positive
+        numbers correspond to edges curved in a counter-clockwise
+        direction, negative numbers correspond to edges curved in a
+        clockwise direction. Zero represents straight edges. C{True}
+        is interpreted as 0.5, C{False} is interpreted as 0. The
+        default is 0 which makes all the edges straight.
 
-        # Edge properties
-        ne = graph.ecount()
-        edge_color = kwds.get("edge_color", "black")
-        edge_width = kwds.get("edge_width", 1)
-        arrow_width = kwds.get("edge_arrow_width", 2)
-        arrow_length = kwds.get("edge_arrow_size", 4)
-        edge_alpha = kwds.get("edge_alpha", 1.0)
-        ezorder = kwds.get("edge_order", 1.0)
-        try:
-            ezorder = float(ezorder)
-            ezorder = [ezorder] * ne
-        except TypeError:
-            pass
+      - C{edge_width}: width of the edges in the default unit of the
+        Cairo context on which we are drawing. The corresponding
+        edge attribute is C{width}, the default is 1.
 
-        # Expand edge_width and edge_color to a list if needed
-        if isinstance(edge_width, (int, float)):
-            edge_width = [edge_width] * ne
-        if isinstance(edge_color, (str, int, float)):
-            edge_color = [edge_color] * ne
-        if isinstance(edge_alpha, (int, float)):
-            edge_alpha = [edge_alpha] * ne
+      - C{edge_arrow_size}: arrow size of the edges. The
+        corresponding edge attribute is C{arrow_size}, the default
+        is 1.
 
-        # Decide whether we need to calculate the curvature of edges
-        # automatically -- and calculate them if needed.
-        autocurve = kwds.get("autocurve", None)
-        if autocurve or (
-            autocurve is None
-            and "edge_curved" not in kwds
-            and "curved" not in graph.edge_attributes()
-            and graph.ecount() < 10000
-        ):
-            from igraph import autocurve
+      - C{edge_arrow_width}: width of the arrowhead on the edge. The
+        corresponding edge attribute is C{arrow_width}, the default
+        is 1.
 
-            default = kwds.get("edge_curved", 0)
-            if default is True:
-                default = 0.5
-            default = float(default)
-            ecurved = autocurve(graph, attribute=None, default=default)
-        elif "edge_curved" in kwds:
-            ecurved = kwds["edge_curved"]
-        elif "curved" in graph.edge_attributes():
-            ecurved = graph.es["curved"]
-        else:
-            ecurved = [0] * ne
+      - C{edge_order}: drawing order of the edges. This must be
+        a list or tuple containing edge indices; edges are then
+        drawn according to this order.
 
-        # Arrow style for directed and undirected graphs
-        if graph.is_directed():
-            arrowstyle = ArrowStyle(
-                "-|>",
-                head_length=arrow_length,
-                head_width=arrow_width,
-            )
-        else:
-            arrowstyle = "-"
+      - C{edge_order_by}: an alternative way to specify the drawing
+        order of the edges; this attribute is interpreted as the name
+        of an edge attribute, and edges are drawn such that those
+        with a smaller attribute value are drawn first. You may also
+        reverse the order by passing a tuple here; the first element of
+        the tuple should be the name of the attribute, the second element
+        specifies whether the order is reversed (C{True}, C{False},
+        C{"asc"} and C{"desc"} are accepted values).
+    """
+    from igraph.drawing import DrawerDirectory
 
-        # Edge coordinates and curvature
-        nloops = [0 for x in range(ne)]
-        arrows = []
-        for ie, edge in enumerate(graph.es):
-            src, tgt = edge.source, edge.target
-            x1, y1 = vcoord[src]
-            x2, y2 = vcoord[tgt]
-
-            # Loops require special treatment
-            if src == tgt:
-                # Find all non-loop edges
-                nloopstot = 0
-                angles = []
-                for tgtn in graph.neighbors(src):
-                    if tgtn == src:
-                        nloopstot += 1
-                        continue
-                    xn, yn = vcoord[tgtn]
-                    angles.append(180.0 / pi * atan2(yn - y1, xn - x1) % 360)
-                # with .neighbors(mode=ALL), which is default, loops are double
-                # counted
-                nloopstot //= 2
-                angles = sorted(set(angles))
-
-                # Only loops or one non-loop
-                if len(angles) < 2:
-                    ashift = angles[0] if angles else 270
-                    if nloopstot == 1:
-                        # Only one self loop, use a quadrant only
-                        angles = [(ashift + 135) % 360, (ashift + 225) % 360]
-                    else:
-                        nshift = 360.0 / nloopstot
-                        angles = [
-                            (ashift + nshift * nloops[src]) % 360,
-                            (ashift + nshift * (nloops[src] + 1)) % 360,
-                        ]
-                    nloops[src] += 1
-                else:
-                    angles.append(angles[0] + 360)
-                    idiff = 0
-                    diff = 0
-                    for i in range(len(angles) - 1):
-                        diffi = abs(angles[i + 1] - angles[i])
-                        if diffi > diff:
-                            idiff = i
-                            diff = diffi
-                    angles = angles[idiff : idiff + 2]
-                    ashift = angles[0]
-                    nshift = (angles[1] - angles[0]) / nloopstot
-                    angles = [
-                        (ashift + nshift * nloops[src]),
-                        (ashift + nshift * (nloops[src] + 1)),
-                    ]
-                    nloops[src] += 1
-
-                # this is not great, but alright
-                angspan = angles[1] - angles[0]
-                if angspan < 180:
-                    angmid1 = angles[0] + 0.1 * angspan
-                    angmid2 = angles[1] - 0.1 * angspan
-                else:
-                    angmid1 = angles[0] + 0.5 * (angspan - 180) + 45
-                    angmid2 = angles[1] - 0.5 * (angspan - 180) - 45
-                aux1 = (
-                    x1 + 0.2 * dx * cos(pi / 180 * angmid1),
-                    y1 + 0.2 * dy * sin(pi / 180 * angmid1),
-                )
-                aux2 = (
-                    x1 + 0.2 * dx * cos(pi / 180 * angmid2),
-                    y1 + 0.2 * dy * sin(pi / 180 * angmid2),
-                )
-                start = shrink_vertex(ax, aux1, (x1, y1), vsizes[src])
-                end = shrink_vertex(ax, aux2, (x2, y2), vsizes[tgt])
-
-                path = Path(
-                    [start, aux1, aux2, end],
-                    # Cubic bezier by mpl
-                    codes=[1, 4, 4, 4],
-                )
-
-            else:
-                curved = ecurved[ie]
-                if curved:
-                    aux1 = (2 * x1 + x2) / 3.0 - curved * 0.5 * (y2 - y1), (
-                        2 * y1 + y2
-                    ) / 3.0 + curved * 0.5 * (x2 - x1)
-                    aux2 = (x1 + 2 * x2) / 3.0 - curved * 0.5 * (y2 - y1), (
-                        y1 + 2 * y2
-                    ) / 3.0 + curved * 0.5 * (x2 - x1)
-                    start = shrink_vertex(ax, aux1, (x1, y1), vsizes[src])
-                    end = shrink_vertex(ax, aux2, (x2, y2), vsizes[tgt])
-
-                    path = Path(
-                        [start, aux1, aux2, end],
-                        # Cubic bezier by mpl
-                        codes=[1, 4, 4, 4],
-                    )
-                else:
-                    start = shrink_vertex(ax, (x2, y2), (x1, y1), vsizes[src])
-                    end = shrink_vertex(ax, (x1, y1), (x2, y2), vsizes[tgt])
-
-                    path = Path([start, end], codes=[1, 2])
-
-            arrow = FancyArrowPatch(
-                path=path,
-                arrowstyle=arrowstyle,
-                lw=edge_width[ie],
-                color=edge_color[ie],
-                alpha=edge_alpha[ie],
-                zorder=ezorder[ie],
-            )
-            ax.add_artist(arrow)
-
-            # Store arrows and their sources and targets for autoscaling
-            arrows.append((arrow, src, tgt))
-
-        # Autoscaling during zoom, figure resize, reset axis limits
-        callback = callback_factory(ax, vcoord, vsizes, arrows)
-        ax.get_figure().canvas.mpl_connect("resize_event", callback)
-        ax.callbacks.connect("xlim_changed", callback)
-        ax.callbacks.connect("ylim_changed", callback)
+    drawer = kwds.pop(
+        "drawer_factory",
+        DrawerDirectory.resolve(self, backend)(context),
+    )
+    drawer.draw(self, *args, **kwds)

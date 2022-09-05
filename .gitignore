@@ -4,8 +4,8 @@
 *.pyc
 build/
 dist/
-doc/api/
 src/igraph/*.so
+result_images/
 *.egg-info/
 .python-version
 .eggs/
@@ -15,4 +15,9 @@ src/igraph/*.so
 .vscode/
 vendor/build/
 vendor/install/
+.DS_Store
 
+doc/source/gallery.rst
+doc/api/
+doc/html/
+doc/jekyll_tools/vendor

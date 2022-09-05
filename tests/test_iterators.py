@@ -8,7 +8,7 @@ class IteratorTests(unittest.TestCase):
         g = Graph.Tree(10, 2)
         vs, layers, ps = g.bfs(0)
         self.assertEqual(vs, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        self.assertEqual(ps, [0, 0, 0, 1, 1, 2, 2, 3, 3, 4])
+        self.assertEqual(ps, [-1, 0, 0, 1, 1, 2, 2, 3, 3, 4])
 
     def testBFSIter(self):
         g = Graph.Tree(10, 2)
@@ -35,7 +35,7 @@ class IteratorTests(unittest.TestCase):
         g = Graph.Tree(10, 2)
         vs, ps = g.dfs(0)
         self.assertEqual(vs, [0, 2, 6, 5, 1, 4, 9, 3, 8, 7])
-        self.assertEqual(ps, [0, 0, 2, 2, 0, 1, 4, 1, 3, 3])
+        self.assertEqual(ps, [-1, 0, 2, 2, 0, 1, 4, 1, 3, 3])
 
     def testDFSIter(self):
         g = Graph.Tree(10, 2)

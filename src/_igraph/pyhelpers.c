@@ -23,6 +23,15 @@
 
 #include "pyhelpers.h"
 
+#ifdef PY_IGRAPH_PROVIDES_PY_NONE
+PyObject* Py_None;
+#endif
+
+#ifdef PY_IGRAPH_PROVIDES_BOOL_CONSTANTS
+PyObject* Py_True;
+PyObject* Py_False;
+#endif
+
 /**
  * Closes a Python file-like object by calling its close() method.
  */
@@ -66,12 +75,17 @@ PyObject* igraphmodule_PyList_NewFill(Py_ssize_t len, PyObject* item) {
 	Py_ssize_t i;
 	PyObject* result = PyList_New(len);
 
-	if (result == 0)
+	if (result == 0) {
 		return 0;
+  }
 
 	for (i = 0; i < len; i++) {
 		Py_INCREF(item);
-		PyList_SET_ITEM(result, i, item);  /* reference to item stolen */
+		if (PyList_SetItem(result, i, item)) {
+      Py_DECREF(item);
+      Py_DECREF(result);
+      return 0;
+    }
 	}
 
 	return result;
@@ -161,14 +175,21 @@ char* PyUnicode_CopyAsString(PyObject* string) {
     bytes = PyUnicode_AsUTF8String(string);
   }
 
-  if (bytes == 0)
+  if (bytes == 0) {
     return 0;
-  
-  result = strdup(PyBytes_AS_STRING(bytes));
+  }
+
+  result = PyBytes_AsString(bytes);
+  if (result == 0) {
+    Py_DECREF(bytes);
+    return 0;
+  }
   Py_DECREF(bytes);
 
-  if (result == 0)
+  result = strdup(result);
+  if (result == 0) {
     PyErr_NoMemory();
+  }
 
   return result;
 }
@@ -208,4 +229,60 @@ long igraphmodule_Py_HashPointer(void *p) {
   if (x == -1)
     x = -2;
   return x;
+}
+
+/**
+ * @brief Initializer function that must be called from igraphmodule_init()
+ * 
+ * Initializes borrowed references to \c None, \c True and \c False to cope
+ * with the fact that \c Py_None, \c Py_False and \c Py_True are not exposed
+ * in PyPy as part of the limited API.
+ */
+int igraphmodule_helpers_init() {
+  static int called = 0;
+  int success = 0;
+
+  if (called) {
+    PyErr_SetString(PyExc_RuntimeError, "igraphmodule_helpers_init() called twice");
+    return 1;
+  }
+
+#ifdef PY_IGRAPH_PROVIDES_PY_NONE
+  Py_None = Py_BuildValue("");
+  if (Py_None == NULL) {
+    goto cleanup;
+  }
+#endif
+  
+#ifdef PY_IGRAPH_PROVIDES_BOOL_CONSTANTS
+  Py_False = Py_True = NULL;
+
+  Py_True = PyBool_FromLong(1);
+  if (Py_True == NULL) {
+    goto cleanup;
+  }
+
+  Py_False = PyBool_FromLong(0);
+  if (Py_False == NULL) {
+    goto cleanup;
+  }
+#endif
+
+  called = 1;
+  success = 1;
+
+#if defined(PY_IGRAPH_PROVIDES_PY_NONE) || defined(PY_IGRAPH_PROVIDES_BOOL_CONSTANTS)
+cleanup:
+#endif
+  if (!success) {
+#ifdef PY_IGRAPH_PROVIDES_PY_NONE
+    Py_XDECREF(Py_None);
+#endif
+#ifdef PY_IGRAPH_PROVIDES_BOOL_CONSTANTS
+    Py_XDECREF(Py_True);
+    Py_XDECREF(Py_False);
+#endif
+  }
+
+  return success ? 0 : 1;
 }

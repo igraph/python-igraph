@@ -13,7 +13,7 @@ if sys.version_info < (3, 6):
 
 ###########################################################################
 
-from setuptools import setup, Command, Extension
+from setuptools import find_packages, setup, Command, Extension
 
 import glob
 import shlex
@@ -230,7 +230,7 @@ class IgraphCCoreCMakeBuilder:
         args = [cmake]
 
         # Build the Python interface with vendored libraries
-        for deps in "ARPACK BLAS CXSPARSE GLPK GMP LAPACK".split():
+        for deps in "ARPACK BLAS GLPK GMP LAPACK".split():
             args.append("-DIGRAPH_USE_INTERNAL_" + deps + "=ON")
 
         # -fPIC is needed on Linux so we can link to a static igraph lib from a
@@ -791,7 +791,7 @@ buildcfg.process_args_from_command_line()
 # Define the extension
 sources = glob.glob(os.path.join("src", "_igraph", "*.c"))
 sources.append(os.path.join("src", "_igraph", "force_cpp_linker.cpp"))
-igraph_extension = Extension("igraph._igraph", sources)
+igraph_extension = Extension("igraph._igraph", sources, py_limited_api=True)
 
 description = """Python interface to the igraph high performance graph
 library, primarily aimed at complex network research and analysis.
@@ -830,11 +830,20 @@ options = dict(
         # See: https://github.com/igraph/python-igraph/issues/464
         "": "src"
     },
-    packages=["igraph", "igraph.app", "igraph.drawing", "igraph.remote"],
+    packages=find_packages(where="src"),
     scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
     extras_require={
         # Dependencies needed for plotting with Cairo
+        "cairo": ["cairocffi>=1.2.0"],
+
+        # Dependencies needed for plotting with Matplotlib
+        "matplotlib": ["matplotlib>=3.3.0; platform_python_implementation != 'PyPy'"],
+
+        # Dependencies needed for plotting with Plotly
+        "plotly": ["plotly>=5.3.0"],
+
+        # Compatibility alias to 'cairo' for python-igraph <= 0.9.6
         "plotting": ["cairocffi>=1.2.0"],
 
         # Dependencies needed for testing only
@@ -844,6 +853,13 @@ options = dict(
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
+            "matplotlib>=3.3.4; platform_python_implementation != 'PyPy'",
+            "plotly>=5.3.0",
+            # matplotlib requires Pillow; however, Pillow >= 8.4 does not
+            # provide manylinux2010 wheels any more, but we need those in
+            # cibuildwheel for Linux so we need to restrict Pillow's version
+            # range
+            "Pillow>=8,<8.4; platform_python_implementation != 'PyPy'",
         ],
 
         # Dependencies needed for testing on musllinux; only those that are either

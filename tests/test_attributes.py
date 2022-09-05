@@ -105,8 +105,7 @@ class AttributeTests(unittest.TestCase):
 
         # Check the exception
         self.assertTrue(isinstance(err, RuntimeError))
-        if sys.version_info >= (3, 4):
-            self.assertTrue(repr(value) in str(err))
+        self.assertTrue(repr(value) in str(err))
 
     def testVertexNameIndexingBug196(self):
         g = Graph()
@@ -271,9 +270,11 @@ def suite():
     attribute_suite = unittest.makeSuite(AttributeTests)
     attribute_combination_suite = unittest.makeSuite(AttributeCombinationTests)
     unicode_attributes_suite = unittest.makeSuite(UnicodeAttributeTests)
-    return unittest.TestSuite(
-        [attribute_suite, attribute_combination_suite, unicode_attributes_suite]
-    )
+    return unittest.TestSuite([
+        attribute_suite,
+        attribute_combination_suite,
+        unicode_attributes_suite,
+    ])
 
 
 def test():

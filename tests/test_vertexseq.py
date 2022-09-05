@@ -102,7 +102,7 @@ class VertexTests(unittest.TestCase):
     @unittest.skipIf(is_pypy, "skipped on PyPy because we do not have access to docstrings")
     def testProxyMethods(self):
         # We only test with connected graphs because disconnected graphs might
-        # print a warning when shortest_paths() is invoked on them and we want
+        # print a warning when distances() is invoked on them and we want
         # to avoid that in the test output.
         while True:
             g = Graph.GRG(10, 0.6)
@@ -119,15 +119,16 @@ class VertexTests(unittest.TestCase):
         #   edge indices.
         # - pagerank() and personalized_pagerank() are ignored because of numerical
         #   inaccuracies
+        # - shortest_paths() is ignored because it's a deprecated alias
         # - delete() is ignored because it mutates the graph
         ignore = (
             "neighbors predecessors successors pagerank personalized_pagerank"
-            " delete incident all_edges in_edges out_edges"
+            " delete incident all_edges in_edges out_edges shortest_paths"
         )
         ignore = set(ignore.split())
 
         # Methods not listed here are expected to return an int or a float
-        return_types = {"get_shortest_paths": list, "shortest_paths": list}
+        return_types = {"distances": list, "get_shortest_paths": list}
 
         for name in Vertex.__dict__:
             if name in ignore:

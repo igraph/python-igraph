@@ -18,6 +18,18 @@ class SpectralTests(unittest.TestCase):
             g.laplacian(normalized=True),
             [[1, -0.5, -0.5], [-0.5, 1, -0.5], [-0.5, -0.5, 1]],
         )
+        self.assertAlmostEqualMatrix(
+            g.laplacian(normalized="symmetric"),
+            [[1, -0.5, -0.5], [-0.5, 1, -0.5], [-0.5, -0.5, 1]],
+        )
+        self.assertAlmostEqualMatrix(
+            g.laplacian(normalized="left"),
+            [[1, -0.5, -0.5], [-0.5, 1, -0.5], [-0.5, -0.5, 1]],
+        )
+        self.assertAlmostEqualMatrix(
+            g.laplacian(normalized="right"),
+            [[1, -0.5, -0.5], [-0.5, 1, -0.5], [-0.5, -0.5, 1]],
+        )
 
         mx0 = [
             [1.0, -1 / (12 ** 0.5), -2 / (15 ** 0.5)],
@@ -38,6 +50,24 @@ class SpectralTests(unittest.TestCase):
                 [0, -1, 0, 0, 1, 0],
                 [0, 0, 0, 0, 0, 0],
             ]
+        )
+
+        g = Graph.Formula("A --> B --> C --> D --> E --> A, A --> C")
+        self.assertAlmostEqualMatrix(
+            g.laplacian(mode="out"),
+            [[2, -1, -1, 0, 0], [0, 1, -1, 0, 0], [0, 0, 1, -1, 0], [0, 0, 0, 1, -1], [-1, 0, 0, 0, 1]]
+        )
+        self.assertAlmostEqualMatrix(
+            g.laplacian(mode="in"),
+            [[1, -1, -1, 0, 0], [0, 1, -1, 0, 0], [0, 0, 2, -1, 0], [0, 0, 0, 1, -1], [-1, 0, 0, 0, 1]]
+        )
+        self.assertAlmostEqualMatrix(
+            g.laplacian(mode="out", normalized="left"),
+            [[1, -0.5, -0.5, 0, 0], [0, 1, -1, 0, 0], [0, 0, 1, -1, 0], [0, 0, 0, 1, -1], [-1, 0, 0, 0, 1]]
+        )
+        self.assertAlmostEqualMatrix(
+            g.laplacian(mode="in", normalized="right"),
+            [[1, -1, -0.5, 0, 0], [0, 1, -0.5, 0, 0], [0, 0, 1, -1, 0], [0, 0, 0, 1, -1], [-1, 0, 0, 0, 1]]
         )
 
 

@@ -45,7 +45,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 9
             and g.ecount() == 9
-            and g.components().membership == [0, 0, 0, 1, 1, 1, 2, 2, 2]
+            and g.connected_components().membership == [0, 0, 0, 1, 1, 1, 2, 2, 2]
         )
 
     def testDifference(self):
@@ -252,7 +252,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 5
             and g.ecount() == 3
-            and g.components().membership == [0, 0, 0, 1, 2]
+            and g.connected_components().membership == [0, 0, 0, 1, 2]
         )
 
         # Adding a vertex by name
@@ -260,7 +260,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 6
             and g.ecount() == 3
-            and g.components().membership == [0, 0, 0, 1, 2, 3]
+            and g.connected_components().membership == [0, 0, 0, 1, 2, 3]
         )
 
         # Adding a single edge
@@ -268,13 +268,13 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 6
             and g.ecount() == 4
-            and g.components().membership == [0, 0, 0, 0, 1, 2]
+            and g.connected_components().membership == [0, 0, 0, 0, 1, 2]
         )
 
         # Adding two edges
         g += [(3, 4), (2, 4), (4, 5)]
         self.assertTrue(
-            g.vcount() == 6 and g.ecount() == 7 and g.components().membership == [0] * 6
+            g.vcount() == 6 and g.ecount() == 7 and g.connected_components().membership == [0] * 6
         )
 
         # Adding two more vertices
@@ -293,7 +293,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 11
             and g.ecount() == 10
-            and g.components().membership == [0, 0, 0, 0, 0, 0, 1, 2, 3, 3, 3]
+            and g.connected_components().membership == [0, 0, 0, 0, 0, 0, 1, 2, 3, 3, 3]
         )
 
         # Adding two graphs
@@ -301,7 +301,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 16
             and g.ecount() == 14
-            and g.components().membership
+            and g.connected_components().membership
             == [0, 0, 0, 0, 0, 0, 1, 2, 3, 3, 3, 4, 4, 4, 5, 5]
         )
 
@@ -313,7 +313,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 5
             and g.ecount() == 3
-            and g.components().membership == [0, 0, 0, 1, 2]
+            and g.connected_components().membership == [0, 0, 0, 1, 2]
         )
         g0 = g
 
@@ -322,7 +322,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 6
             and g.ecount() == 3
-            and g.components().membership == [0, 0, 0, 1, 2, 3]
+            and g.connected_components().membership == [0, 0, 0, 1, 2, 3]
         )
         g0 = g
 
@@ -331,14 +331,15 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 6
             and g.ecount() == 4
-            and g.components().membership == [0, 0, 0, 0, 1, 2]
+            and g.connected_components().membership == [0, 0, 0, 0, 1, 2]
         )
         g0 = g
 
         # Adding two edges
         g = g0 + [(3, 4), (2, 4), (4, 5)]
         self.assertTrue(
-            g.vcount() == 6 and g.ecount() == 7 and g.components().membership == [0] * 6
+            g.vcount() == 6 and g.ecount() == 7 and
+            g.connected_components().membership == [0] * 6
         )
         g0 = g
 
@@ -347,7 +348,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 9
             and g.ecount() == 10
-            and g.components().membership == [0, 0, 0, 0, 0, 0, 1, 1, 1]
+            and g.connected_components().membership == [0, 0, 0, 0, 0, 0, 1, 1, 1]
         )
 
     def testInPlaceSubtraction(self):
@@ -359,7 +360,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 7
             and g.ecount() == 21
-            and g.components().membership == [0, 0, 0, 0, 0, 0, 0]
+            and g.connected_components().membership == [0, 0, 0, 0, 0, 0, 0]
         )
 
         # Deleting a vertex
@@ -367,7 +368,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 6
             and g.ecount() == 15
-            and g.components().membership == [0, 0, 0, 0, 0, 0]
+            and g.connected_components().membership == [0, 0, 0, 0, 0, 0]
         )
 
         # Deleting two vertices
@@ -375,7 +376,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 4
             and g.ecount() == 6
-            and g.components().membership == [0, 0, 0, 0]
+            and g.connected_components().membership == [0, 0, 0, 0]
         )
 
         # Deleting an edge
@@ -383,7 +384,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 4
             and g.ecount() == 5
-            and g.components().membership == [0, 0, 0, 0]
+            and g.connected_components().membership == [0, 0, 0, 0]
         )
 
         # Deleting three more edges
@@ -391,7 +392,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 4
             and g.ecount() == 2
-            and g.components().membership == [0, 0, 1, 1]
+            and g.connected_components().membership == [0, 0, 1, 1]
         )
 
         # Did we really use the original graph so far?
@@ -403,7 +404,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(
             g.vcount() == 4
             and g.ecount() == 1
-            and g.components().membership == [0, 1, 2, 2]
+            and g.connected_components().membership == [0, 1, 2, 2]
         )
 
     def testNonzero(self):

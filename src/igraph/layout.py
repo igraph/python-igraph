@@ -9,8 +9,20 @@ This package contains the implementation of the L{Layout} object.
 
 from math import sin, cos, pi
 
+from igraph._igraph import GraphBase
 from igraph.drawing.utils import BoundingBox
 from igraph.statistics import RunningMean
+
+
+__all__ = (
+    "Layout",
+    "_layout",
+    "_layout_auto",
+    "_layout_sugiyama",
+    "_layout_method_wrapper",
+    "_3d_version_for",
+    "_layout_mapping",
+)
 
 
 class Layout:
@@ -238,7 +250,7 @@ class Layout:
         top-down ones (that's why the Y coordinate belongs to the radius).
         It can also be used in conjunction with the Fruchterman-Reingold
         layout algorithm via its I{miny} and I{maxy} parameters (see
-        L{Graph.layout_fruchterman_reingold()<igraph._igraph.GraphBase.layout_fruchterman_reingold()>})
+        L{Graph.layout_fruchterman_reingold()<GraphBase.layout_fruchterman_reingold()>})
         to produce radial layouts where the radius belongs to some property of
         the vertices.
 
@@ -424,3 +436,317 @@ class Layout:
 
         self.scale(*ratios)
         self.translate(*translations)
+
+
+def _layout(graph, layout=None, *args, **kwds):
+    """Returns the layout of the graph according to a layout algorithm.
+
+    Parameters and keyword arguments not specified here are passed to the
+    layout algorithm directly. See the documentation of the layout
+    algorithms for the explanation of these parameters.
+
+    Registered layout names understood by this method are:
+
+      - C{auto}, C{automatic}: automatic layout
+        (see L{Graph.layout_auto})
+
+      - C{bipartite}: bipartite layout (see L{GraphBase.layout_bipartite})
+
+      - C{circle}, C{circular}: circular layout
+        (see L{GraphBase.layout_circle})
+
+      - C{dh}, C{davidson_harel}: Davidson-Harel layout (see
+        L{GraphBase.layout_davidson_harel})
+
+      - C{drl}: DrL layout for large graphs (see L{GraphBase.layout_drl})
+
+      - C{drl_3d}: 3D DrL layout for large graphs
+        (see L{GraphBase.layout_drl})
+
+      - C{fr}, C{fruchterman_reingold}: Fruchterman-Reingold layout
+        (see L{GraphBase.layout_fruchterman_reingold}).
+
+      - C{fr_3d}, C{fr3d}, C{fruchterman_reingold_3d}: 3D Fruchterman-
+        Reingold layout (see L{GraphBase.layout_fruchterman_reingold}).
+
+      - C{grid}: regular grid layout in 2D (see L{GraphBase.layout_grid})
+
+      - C{grid_3d}: regular grid layout in 3D (see L{GraphBase.layout_grid})
+
+      - C{graphopt}: the graphopt algorithm (see L{GraphBase.layout_graphopt})
+
+      - C{kk}, C{kamada_kawai}: Kamada-Kawai layout
+        (see L{GraphBase.layout_kamada_kawai})
+
+      - C{kk_3d}, C{kk3d}, C{kamada_kawai_3d}: 3D Kamada-Kawai layout
+        (see L{GraphBase.layout_kamada_kawai})
+
+      - C{lgl}, C{large}, C{large_graph}: Large Graph Layout
+        (see L{GraphBase.layout_lgl})
+
+      - C{mds}: multidimensional scaling layout (see L{GraphBase.layout_mds})
+
+      - C{random}: random layout (see L{GraphBase.layout_random})
+
+      - C{random_3d}: random 3D layout (see L{GraphBase.layout_random})
+
+      - C{rt}, C{tree}, C{reingold_tilford}: Reingold-Tilford tree
+        layout (see L{GraphBase.layout_reingold_tilford})
+
+      - C{rt_circular}, C{reingold_tilford_circular}: circular
+        Reingold-Tilford tree layout
+        (see L{GraphBase.layout_reingold_tilford_circular})
+
+      - C{sphere}, C{spherical}, C{circle_3d}, C{circular_3d}: spherical
+        layout (see L{GraphBase.layout_circle})
+
+      - C{star}: star layout (see L{GraphBase.layout_star})
+
+      - C{sugiyama}: Sugiyama layout (see L{Graph.layout_sugiyama})
+
+    @param layout: the layout to use. This can be one of the registered
+      layout names or a callable which returns either a L{Layout} object or
+      a list of lists containing the coordinates. If C{None}, uses the
+      value of the C{plotting.layout} configuration key.
+    @return: a L{Layout} object.
+    """
+    # Deferred import to avoid cycles
+    from igraph import config
+
+    if layout is None:
+        layout = config["plotting.layout"]
+    if hasattr(layout, "__call__"):
+        method = layout
+    else:
+        layout = layout.lower()
+        if layout[-3:] == "_3d":
+            kwds["dim"] = 3
+            layout = layout[:-3]
+        elif layout[-2:] == "3d":
+            kwds["dim"] = 3
+            layout = layout[:-2]
+        method = getattr(graph.__class__, graph._layout_mapping[layout])
+    if not hasattr(method, "__call__"):
+        raise ValueError("layout method must be callable")
+    layout = method(graph, *args, **kwds)
+    if not isinstance(layout, Layout):
+        layout = Layout(layout)
+    return layout
+
+
+def _layout_auto(graph, *args, **kwds):
+    """Chooses and runs a suitable layout function based on simple
+    topological properties of the graph.
+
+    This function tries to choose an appropriate layout function for
+    the graph using the following rules:
+
+      1. If the graph has an attribute called C{layout}, it will be
+         used. It may either be a L{Layout} instance, a list of
+         coordinate pairs, the name of a layout function, or a
+         callable function which generates the layout when called
+         with the graph as a parameter.
+
+      2. Otherwise, if the graph has vertex attributes called C{x}
+         and C{y}, these will be used as coordinates in the layout.
+         When a 3D layout is requested (by setting C{dim} to 3),
+         a vertex attribute named C{z} will also be needed.
+
+      3. Otherwise, if the graph is connected and has at most 100
+         vertices, the Kamada-Kawai layout will be used (see
+         L{GraphBase.layout_kamada_kawai()}).
+
+      4. Otherwise, if the graph has at most 1000 vertices, the
+         Fruchterman-Reingold layout will be used (see
+         L{GraphBase.layout_fruchterman_reingold()}).
+
+      5. If everything else above failed, the DrL layout algorithm
+         will be used (see L{GraphBase.layout_drl()}).
+
+    All the arguments of this function except C{dim} are passed on
+    to the chosen layout function (in case we have to call some layout
+    function).
+
+    @keyword dim: specifies whether we would like to obtain a 2D or a
+      3D layout.
+    @return: a L{Layout} object.
+    """
+    if "layout" in graph.attributes():
+        layout = graph["layout"]
+        if isinstance(layout, Layout):
+            # Layouts are used intact
+            return layout
+        if isinstance(layout, (list, tuple)):
+            # Lists/tuples are converted to layouts
+            return Layout(layout)
+        if hasattr(layout, "__call__"):
+            # Callables are called
+            return Layout(layout(*args, **kwds))
+        # Try Graph.layout()
+        return graph.layout(layout, *args, **kwds)
+
+    dim = kwds.get("dim", 2)
+    vattrs = graph.vertex_attributes()
+    if "x" in vattrs and "y" in vattrs:
+        if dim == 3 and "z" in vattrs:
+            return Layout(list(zip(graph.vs["x"], graph.vs["y"], graph.vs["z"])))
+        else:
+            return Layout(list(zip(graph.vs["x"], graph.vs["y"])))
+
+    if graph.vcount() <= 100 and graph.is_connected():
+        algo = "kk"
+    elif graph.vcount() <= 1000:
+        algo = "fr"
+    else:
+        algo = "drl"
+    return graph.layout(algo, *args, **kwds)
+
+
+def _layout_sugiyama(
+    graph,
+    layers=None,
+    weights=None,
+    hgap=1,
+    vgap=1,
+    maxiter=100,
+    return_extended_graph=False,
+):
+    """Places the vertices using a layered Sugiyama layout.
+
+    This is a layered layout that is most suitable for directed acyclic graphs,
+    although it works on undirected or cyclic graphs as well.
+
+    Each vertex is assigned to a layer and each layer is placed on a horizontal
+    line. Vertices within the same layer are then permuted using the barycenter
+    heuristic that tries to minimize edge crossings.
+
+    Dummy vertices will be added on edges that span more than one layer. The
+    returned layout therefore contains more rows than the number of nodes in
+    the original graph; the extra rows correspond to the dummy vertices.
+
+    @param layers: a vector specifying a non-negative integer layer index for
+      each vertex, or the name of a numeric vertex attribute that contains
+      the layer indices. If C{None}, a layering will be determined
+      automatically. For undirected graphs, a spanning tree will be extracted
+      and vertices will be assigned to layers using a breadth first search from
+      the node with the largest degree. For directed graphs, cycles are broken
+      by reversing the direction of edges in an approximate feedback arc set
+      using the heuristic of Eades, Lin and Smyth, and then using longest path
+      layering to place the vertices in layers.
+    @param weights: edge weights to be used. Can be a sequence or iterable or
+      even an edge attribute name.
+    @param hgap: minimum horizontal gap between vertices in the same layer.
+    @param vgap: vertical gap between layers. The layer index will be
+      multiplied by I{vgap} to obtain the Y coordinate.
+    @param maxiter: maximum number of iterations to take in the crossing
+      reduction step. Increase this if you feel that you are getting too many
+      edge crossings.
+    @param return_extended_graph: specifies that the extended graph with the
+      added dummy vertices should also be returned. When this is C{True}, the
+      result will be a tuple containing the layout and the extended graph. The
+      first |V| nodes of the extended graph will correspond to the nodes of the
+      original graph, the remaining ones are dummy nodes. Plotting the extended
+      graph with the returned layout and hidden dummy nodes will produce a layout
+      that is similar to the original graph, but with the added edge bends.
+      The extended graph also contains an edge attribute called C{_original_eid}
+      which specifies the ID of the edge in the original graph from which the
+      edge of the extended graph was created.
+    @return: the calculated layout, which may (and usually will) have more rows
+      than the number of vertices; the remaining rows correspond to the dummy
+      nodes introduced in the layering step. When C{return_extended_graph} is
+      C{True}, it will also contain the extended graph.
+
+    @newfield ref: Reference
+    @ref: K Sugiyama, S Tagawa, M Toda: Methods for visual understanding of
+      hierarchical system structures. IEEE Systems, Man and Cybernetics\
+      11(2):109-125, 1981.
+    @ref: P Eades, X Lin and WF Smyth: A fast effective heuristic for the
+      feedback arc set problem. Information Processing Letters 47:319-323, 1993.
+    """
+    if not return_extended_graph:
+        return Layout(
+            GraphBase._layout_sugiyama(
+                graph, layers, weights, hgap, vgap, maxiter, return_extended_graph
+            )
+        )
+
+    layout, extd_graph, extd_to_orig_eids = GraphBase._layout_sugiyama(
+        graph, layers, weights, hgap, vgap, maxiter, return_extended_graph
+    )
+    extd_graph.es["_original_eid"] = extd_to_orig_eids
+    return Layout(layout), extd_graph
+
+
+def _layout_method_wrapper(func):
+    """Wraps an existing layout method to ensure that it returns a Layout
+    instead of a list of lists.
+
+    @param func: the method to wrap. Must be a method of the Graph object.
+    @return: a new method
+    """
+
+    def result(*args, **kwds):
+        layout = func(*args, **kwds)
+        if not isinstance(layout, Layout):
+            layout = Layout(layout)
+        return layout
+
+    result.__name__ = func.__name__
+    result.__doc__ = func.__doc__
+    return result
+
+
+def _3d_version_for(func):
+    """Creates an alias for the 3D version of the given layout algoritm.
+
+    This function is a decorator that creates a method which calls I{func} after
+    attaching C{dim=3} to the list of keyword arguments.
+
+    @param func: must be a method of the Graph object.
+    @return: a new method
+    """
+
+    def result(*args, **kwds):
+        kwds["dim"] = 3
+        return func(*args, **kwds)
+
+    result.__name__ = "%s_3d" % func.__name__
+    result.__doc__ = """Alias for L{%s()} with dim=3.\n\n@see: Graph.%s()""" % (
+        func.__name__,
+        func.__name__,
+    )
+    return result
+
+
+# After adjusting something here, don't forget to update the docstring
+# of Graph.layout if necessary!
+_layout_mapping = {
+    "auto": "layout_auto",
+    "automatic": "layout_auto",
+    "bipartite": "layout_bipartite",
+    "circle": "layout_circle",
+    "circular": "layout_circle",
+    "davidson_harel": "layout_davidson_harel",
+    "dh": "layout_davidson_harel",
+    "drl": "layout_drl",
+    "fr": "layout_fruchterman_reingold",
+    "fruchterman_reingold": "layout_fruchterman_reingold",
+    "graphopt": "layout_graphopt",
+    "grid": "layout_grid",
+    "kk": "layout_kamada_kawai",
+    "kamada_kawai": "layout_kamada_kawai",
+    "lgl": "layout_lgl",
+    "large": "layout_lgl",
+    "large_graph": "layout_lgl",
+    "mds": "layout_mds",
+    "random": "layout_random",
+    "rt": "layout_reingold_tilford",
+    "tree": "layout_reingold_tilford",
+    "reingold_tilford": "layout_reingold_tilford",
+    "rt_circular": "layout_reingold_tilford_circular",
+    "reingold_tilford_circular": "layout_reingold_tilford_circular",
+    "sphere": "layout_sphere",
+    "spherical": "layout_sphere",
+    "star": "layout_star",
+    "sugiyama": "layout_sugiyama",
+}

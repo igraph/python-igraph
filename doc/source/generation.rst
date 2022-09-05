@@ -1,5 +1,9 @@
 .. include:: include/global.rst
 
+.. _generation:
+
+.. currentmodule:: igraph
+
 Graph generation
 ================
 
@@ -32,27 +36,44 @@ To specify edge weights (or any other vertex/edge attributes), use dictionaries:
     ...     vertex_attrs={'color': ['b', 'g', 'g', 'y']}
     ... )
 
-Variations on this constructor is :meth:`Graph.DictList`, which constructs a graph from a list-of-dictionaries representation, and :meth:`Graph.TupleList`, which constructs a graph from a list-of-tuples representation.
-
 To create a bipartite graph from a list of types and a list of edges, use :meth:`Graph.Bipartite`.
+
+From Python builtin structures (lists, tuples, dicts)
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+|igraph| supports a number of "conversion" methods to import graphs from Python builtin data structures such as dictionaries, lists and tuples:
+
+ - :meth:`Graph.DictList`: from a list of dictionaries
+ - :meth:`Graph.TupleList`: from a list of tuples
+ - :meth:`Graph.ListDict`: from a dict of lists
+ - :meth:`Graph.DictDict`: from a dict of dictionaries
+
+Equivalent methods are available to export a graph, i.e. to convert a graph into
+a representation that uses Python builtin data structures:
+
+ - :meth:`Graph.to_dict_list`
+ - :meth:`Graph.to_tuple_list`
+ - :meth:`Graph.to_list_dict`
+ - :meth:`Graph.to_dict_dict`
+
+See the `API documentation`_ of each function for details and examples.
 
 From matrices
 +++++++++++++
 
-To create a graph from an adjecency matrix, use :meth:`Graph.Adjacency` or, for weighted matrices, :meth:`Graph.Weighted_Adjacency`::
+To create a graph from an adjacency matrix, use :meth:`Graph.Adjacency` or, for weighted matrices, :meth:`Graph.Weighted_Adjacency`::
 
     >>> g = Graph.Adjacency([[0, 1, 1], [0, 0, 0], [0, 0, 1]])
 
-This graph is directed and has edges `[0, 1]`, `[0, 2]` and `[2, 2]` (a loop).
+This graph is directed and has edges `[0, 1]`, `[0, 2]` and `[2, 2]` (a self-loop).
 
 To create a bipartite graph from an incidence matrix, use :meth:`Graph.Incidence`::
 
     >>> g = Graph.Incidence([[0, 1, 1], [1, 1, 0]])
 
-From file
-+++++++++
+From files
+++++++++++
 
-To load a graph from a preexisting file in any of the supported formats, use :meth:`Graph.Load`. For instance::
+To load a graph from a file in any of the supported formats, use :meth:`Graph.Load`. For instance::
 
     >>> g = Graph.Load('myfile.gml', format='gml')
 
@@ -93,18 +114,18 @@ To create a graph from a string formula, use :meth:`Graph.Formula`, e.g.::
 
 .. note:: This particular formula also assigns the 'name' attribute to vertices.
 
-Full graphs
-+++++++++++
+Complete graphs
++++++++++++++++
 
-To create a full graph, use :meth:`Graph.Full`::
+To create a complete graph, use :meth:`Graph.Full`::
 
     >>> g = Graph.Full(n=3)
 
-where `n` is the number of nodes. You can specify directedness and whether self loops are allowed::
+where `n` is the number of nodes. You can specify directedness and whether self-loops are included::
 
     >>> g = Graph.Full(n=3, directed=True, loops=True)
 
-A similar method, :meth:`Graph.Full_Bipartite`, generates a full bipartite graph. Finally, the metho :meth:`Graph.Full_Citation` created the full citation graph, in which each vertex `i` has a directed edge to all vertices strictly smaller than `i`.
+A similar method, :meth:`Graph.Full_Bipartite`, generates a complete bipartite graph. Finally, the metho :meth:`Graph.Full_Citation` created the full citation graph, in which a vertex with index `i` has a directed edge to all vertices with index strictly smaller than `i`.
 
 Tree and star
 +++++++++++++
@@ -124,7 +145,7 @@ Lattice
 
     >>> g = Graph.Lattice(dim=[3, 3], circular=False)
 
-creates a 3x3 grid in two dimensions (9 vertices total). `circular` is used to connect each edge of the lattice back onto the other side, a process also known as "periodic boundary condition" that is sometimes helpful to smoothen out edge effects.
+creates a 3×3 grid in two dimensions (9 vertices total). `circular` is used to connect each edge of the lattice back onto the other side, a process also known as "periodic boundary condition" that is sometimes helpful to smoothen out edge effects.
 
 The one dimensional case (path graph or cycle graph) is important enough to deserve its own constructor :meth:`Graph.Ring`, which can be circular or not::
 
@@ -133,7 +154,7 @@ The one dimensional case (path graph or cycle graph) is important enough to dese
 Graph Atlas
 +++++++++++
 
-The book ‘An Atlas of Graphs’ by Roland C. Read and Robin J. Wilson contains all undirected graphs with up to seven vertices, numbered from 0 up to 1252. You can create any graph from this list by index with :meth:`Graph.Atlas`, e.g.::
+The book ‘An Atlas of Graphs’ by Roland C. Read and Robin J. Wilson contains all unlabeled undirected graphs with up to seven vertices, numbered from 0 up to 1252. You can create any graph from this list by index with :meth:`Graph.Atlas`, e.g.::
 
     >>> g = Graph.Atlas(44)
 
@@ -159,8 +180,8 @@ Random graphs
 
 Stochastic graphs can be created according to several different models or games:
 
- - Barabasi-Albert model: :meth:`Graph.Barabasi`
- - Erdos-Renyi: :meth:`Graph.Erdos_Renyi`
+ - Barabási-Albert model: :meth:`Graph.Barabasi`
+ - Erdős-Rényi: :meth:`Graph.Erdos_Renyi`
  - Watts-Strogatz :meth:`Graph.Watts_Strogatz`
  - stochastic block model :meth:`Graph.SBM`
  - random tree :meth:`Graph.Tree_Game`
@@ -171,7 +192,7 @@ Stochastic graphs can be created according to several different models or games:
  - preference, the non-growing variant of establishment :meth:`Graph.Preference`
  - asymmetric preference :meth:`Graph.Asymmetric_Prefernce`
  - recent degree :meth:`Graph.Recent_Degree`
- - k-regular (each node has degree K) :meth:`Graph.K_Regular`
+ - k-regular (each node has degree k) :meth:`Graph.K_Regular`
  - non-growing graph with edge probabilities proportional to node fitnesses :meth:`Graph.Static_Fitness`
  - non-growing graph with prescribed power-law degree distribution(s) :meth:`Graph.Static_Power_Law`
  - random graph with a given degree sequence :meth:`Graph.Degree_Sequence`
@@ -184,8 +205,8 @@ Finally, there are some ways of generating graphs that are not covered by the pr
 
  - Kautz graphs :meth:`Graph.Kautz`
  - De Bruijn graphs :meth:`Graph.De_Bruijn`
- - Lederberg-Coxeter-Frucht graphs :meth:`Graph.LCF`
- - graphs with a specified isomorphism class :meth:`Graph.Isoclass`
+ - graphs from LCF notation :meth:`Graph.LCF`
+ - small graphs of any "isomorphism class" :meth:`Graph.Isoclass`
  - graphs with a specified degree sequence :meth:`Graph.Realize_Degree_Sequence`
                      
 .. _API documentation: https://igraph.org/python/doc/igraph-module.html

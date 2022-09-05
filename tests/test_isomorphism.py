@@ -410,9 +410,11 @@ def suite():
     isomorphism_suite = unittest.makeSuite(IsomorphismTests)
     subisomorphism_suite = unittest.makeSuite(SubisomorphismTests)
     permutation_suite = unittest.makeSuite(PermutationTests)
-    return unittest.TestSuite(
-        [isomorphism_suite, subisomorphism_suite, permutation_suite]
-    )
+    return unittest.TestSuite([
+        isomorphism_suite,
+        subisomorphism_suite,
+        permutation_suite,
+    ])
 
 
 def test():

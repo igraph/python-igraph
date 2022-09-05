@@ -1,0 +1,521 @@
+from igraph._igraph import GraphBase
+from igraph.clustering import VertexDendrogram, VertexClustering
+from igraph.utils import (
+    safemax,
+)
+
+
+def _community_fastgreedy(graph, weights=None):
+    """Community structure based on the greedy optimization of modularity.
+
+    This algorithm merges individual nodes into communities in a way that
+    greedily maximizes the modularity score of the graph. It can be proven
+    that if no merge can increase the current modularity score, the
+    algorithm can be stopped since no further increase can be achieved.
+
+    This algorithm is said to run almost in linear time on sparse graphs.
+
+    @param weights: edge attribute name or a list containing edge
+      weights
+    @return: an appropriate L{VertexDendrogram} object.
+
+    @newfield ref: Reference
+    @ref: A Clauset, MEJ Newman and C Moore: Finding community structure
+      in very large networks. Phys Rev E 70, 066111 (2004).
+    """
+    merges, qs = GraphBase.community_fastgreedy(graph, weights)
+
+    # qs may be shorter than |V|-1 if we are left with a few separated
+    # communities in the end; take this into account
+    diff = graph.vcount() - len(qs)
+    qs.reverse()
+    if qs:
+        optimal_count = qs.index(max(qs)) + diff + 1
+    else:
+        optimal_count = diff
+
+    return VertexDendrogram(
+        graph, merges, optimal_count, modularity_params=dict(weights=weights)
+    )
+
+
+def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10):
+    """Finds the community structure of the network according to the Infomap
+    method of Martin Rosvall and Carl T. Bergstrom.
+
+    @param edge_weights: name of an edge attribute or a list containing
+      edge weights.
+    @param vertex_weights: name of an vertex attribute or a list containing
+      vertex weights.
+    @param trials: the number of attempts to partition the network.
+    @return: an appropriate L{VertexClustering} object with an extra attribute
+      called C{codelength} that stores the code length determined by the
+      algorithm.
+
+    @newfield ref: Reference
+    @ref: M. Rosvall and C. T. Bergstrom: Maps of information flow reveal
+      community structure in complex networks, PNAS 105, 1118 (2008).
+      U{http://dx.doi.org/10.1073/pnas.0706851105},
+      U{http://arxiv.org/abs/0707.0609}.
+    @ref: M. Rosvall, D. Axelsson, and C. T. Bergstrom: The map equation,
+      Eur. Phys. J. Special Topics 178, 13 (2009).
+      U{http://dx.doi.org/10.1140/epjst/e2010-01179-1},
+      U{http://arxiv.org/abs/0906.1405}.
+    """
+    membership, codelength = GraphBase.community_infomap(
+        graph, edge_weights, vertex_weights, trials
+    )
+    return VertexClustering(
+        graph,
+        membership,
+        params={"codelength": codelength},
+        modularity_params={"weights": edge_weights},
+    )
+
+
+def _community_leading_eigenvector_naive(graph, clusters=None, return_merges=False):
+    """Naive implementation of Newman's eigenvector community structure detection.
+
+    This function splits the network into two components
+    according to the leading eigenvector of the modularity matrix and
+    then recursively takes the given number of steps by splitting the
+    communities as individual networks. This is not the correct way,
+    however, see the reference for explanation. Consider using the
+    correct L{Graph.community_leading_eigenvector} method instead.
+
+    @param clusters: the desired number of communities. If C{None}, the
+      algorithm tries to do as many splits as possible. Note that the
+      algorithm won't split a community further if the signs of the leading
+      eigenvector are all the same, so the actual number of discovered
+      communities can be less than the desired one.
+    @param return_merges: whether the returned object should be a
+      dendrogram instead of a single clustering.
+    @return: an appropriate L{VertexClustering} or L{VertexDendrogram}
+      object.
+
+    @newfield ref: Reference
+    @ref: MEJ Newman: Finding community structure in networks using the
+    eigenvectors of matrices, arXiv:physics/0605087"""
+    if clusters is None:
+        clusters = -1
+    cl, merges, q = GraphBase.community_leading_eigenvector_naive(
+        graph, clusters, return_merges
+    )
+    if merges is None:
+        return VertexClustering(graph, cl, modularity=q)
+    else:
+        return VertexDendrogram(graph, merges, safemax(cl) + 1)
+
+
+def _community_leading_eigenvector(
+    graph, clusters=None, weights=None, arpack_options=None
+):
+    """Newman's leading eigenvector method for detecting community structure.
+
+    This is the proper implementation of the recursive, divisive algorithm:
+    each split is done by maximizing the modularity regarding the
+    original network.
+
+    @param clusters: the desired number of communities. If C{None}, the
+      algorithm tries to do as many splits as possible. Note that the
+      algorithm won't split a community further if the signs of the leading
+      eigenvector are all the same, so the actual number of discovered
+      communities can be less than the desired one.
+    @param weights: name of an edge attribute or a list containing
+      edge weights.
+    @param arpack_options: an L{ARPACKOptions} object used to fine-tune
+      the ARPACK eigenvector calculation. If omitted, the module-level
+      variable called C{arpack_options} is used.
+    @return: an appropriate L{VertexClustering} object.
+
+    @newfield ref: Reference
+    @ref: MEJ Newman: Finding community structure in networks using the
+    eigenvectors of matrices, arXiv:physics/0605087"""
+    if clusters is None:
+        clusters = -1
+
+    kwds = dict(weights=weights)
+    if arpack_options is not None:
+        kwds["arpack_options"] = arpack_options
+
+    membership, _, q = GraphBase.community_leading_eigenvector(graph, clusters, **kwds)
+    return VertexClustering(graph, membership, modularity=q)
+
+
+def _community_label_propagation(graph, weights=None, initial=None, fixed=None):
+    """Finds the community structure of the graph according to the label
+    propagation method of Raghavan et al.
+
+    Initially, each vertex is assigned a different label. After that,
+    each vertex chooses the dominant label in its neighbourhood in each
+    iteration. Ties are broken randomly and the order in which the
+    vertices are updated is randomized before every iteration. The
+    algorithm ends when vertices reach a consensus.
+
+    Note that since ties are broken randomly, there is no guarantee that
+    the algorithm returns the same community structure after each run.
+    In fact, they frequently differ. See the paper of Raghavan et al
+    on how to come up with an aggregated community structure.
+
+    Also note that the community _labels_ (numbers) have no semantic meaning
+    and igraph is free to re-number communities. If you use fixed labels,
+    igraph may still re-number the communities, but co-community membership
+    constraints will be respected: if you had two vertices with fixed labels
+    that belonged to the same community, they will still be in the same
+    community at the end. Similarly, if you had two vertices with fixed
+    labels that belonged to different communities, they will still be in
+    different communities at the end.
+
+    @param weights: name of an edge attribute or a list containing
+      edge weights
+    @param initial: name of a vertex attribute or a list containing
+      the initial vertex labels. Labels are identified by integers from
+      zero to M{n-1} where M{n} is the number of vertices. Negative
+      numbers may also be present in this vector, they represent unlabeled
+      vertices.
+    @param fixed: a list of booleans for each vertex. C{True} corresponds
+      to vertices whose labeling should not change during the algorithm.
+      It only makes sense if initial labels are also given. Unlabeled
+      vertices cannot be fixed. It may also be the name of a vertex
+      attribute; each attribute value will be interpreted as a Boolean.
+    @return: an appropriate L{VertexClustering} object.
+
+    @newfield ref: Reference
+    @ref: Raghavan, U.N. and Albert, R. and Kumara, S. Near linear
+      time algorithm to detect community structures in large-scale
+      networks. Phys Rev E 76:036106, 2007.
+      U{http://arxiv.org/abs/0709.2938}.
+    """
+    if isinstance(fixed, str):
+        fixed = [bool(o) for o in graph.vs[fixed]]
+    cl = GraphBase.community_label_propagation(graph, weights, initial, fixed)
+    return VertexClustering(graph, cl, modularity_params=dict(weights=weights))
+
+
+def _community_multilevel(graph, weights=None, return_levels=False):
+    """Community structure based on the multilevel algorithm of
+    Blondel et al.
+
+    This is a bottom-up algorithm: initially every vertex belongs to a
+    separate community, and vertices are moved between communities
+    iteratively in a way that maximizes the vertices' local contribution
+    to the overall modularity score. When a consensus is reached (i.e. no
+    single move would increase the modularity score), every community in
+    the original graph is shrank to a single vertex (while keeping the
+    total weight of the adjacent edges) and the process continues on the
+    next level. The algorithm stops when it is not possible to increase
+    the modularity any more after shrinking the communities to vertices.
+
+    This algorithm is said to run almost in linear time on sparse graphs.
+
+    @param weights: edge attribute name or a list containing edge
+      weights
+    @param return_levels: if C{True}, the communities at each level are
+      returned in a list. If C{False}, only the community structure with
+      the best modularity is returned.
+    @return: a list of L{VertexClustering} objects, one corresponding to
+      each level (if C{return_levels} is C{True}), or a L{VertexClustering}
+      corresponding to the best modularity.
+
+    @newfield ref: Reference
+    @ref: VD Blondel, J-L Guillaume, R Lambiotte and E Lefebvre: Fast
+      unfolding of community hierarchies in large networks, J Stat Mech
+      P10008 (2008), http://arxiv.org/abs/0803.0476
+    """
+    if graph.is_directed():
+        raise ValueError("input graph must be undirected")
+
+    if return_levels:
+        levels, qs = GraphBase.community_multilevel(graph, weights, True)
+        result = []
+        for level, q in zip(levels, qs):
+            result.append(
+                VertexClustering(
+                    graph, level, q, modularity_params=dict(weights=weights)
+                )
+            )
+    else:
+        membership = GraphBase.community_multilevel(graph, weights, False)
+        result = VertexClustering(
+            graph, membership, modularity_params=dict(weights=weights)
+        )
+    return result
+
+
+def _community_optimal_modularity(graph, *args, **kwds):
+    """Calculates the optimal modularity score of the graph and the
+    corresponding community structure.
+
+    This function uses the GNU Linear Programming Kit to solve a large
+    integer optimization problem in order to find the optimal modularity
+    score and the corresponding community structure, therefore it is
+    unlikely to work for graphs larger than a few (less than a hundred)
+    vertices. Consider using one of the heuristic approaches instead if
+    you have such a large graph.
+
+    @return: the calculated membership vector and the corresponding
+      modularity in a tuple."""
+    membership, modularity = GraphBase.community_optimal_modularity(
+        graph, *args, **kwds
+    )
+    return VertexClustering(graph, membership, modularity)
+
+
+def _community_edge_betweenness(graph, clusters=None, directed=True, weights=None):
+    """Community structure based on the betweenness of the edges in the
+    network.
+
+    The idea is that the betweenness of the edges connecting two
+    communities is typically high, as many of the shortest paths between
+    nodes in separate communities go through them. So we gradually remove
+    the edge with the highest betweenness and recalculate the betweennesses
+    after every removal. This way sooner or later the network falls of to
+    separate components. The result of the clustering will be represented
+    by a dendrogram.
+
+    @param clusters: the number of clusters we would like to see. This
+      practically defines the "level" where we "cut" the dendrogram to
+      get the membership vector of the vertices. If C{None}, the dendrogram
+      is cut at the level which maximizes the modularity when the graph is
+      unweighted; otherwise the dendrogram is cut at at a single cluster
+      (because cluster count selection based on modularities does not make
+      sense for this method if not all the weights are equal).
+    @param directed: whether the directionality of the edges should be
+      taken into account or not.
+    @param weights: name of an edge attribute or a list containing
+      edge weights.
+    @return: a L{VertexDendrogram} object, initally cut at the maximum
+      modularity or at the desired number of clusters.
+    """
+    merges, qs = GraphBase.community_edge_betweenness(graph, directed, weights)
+    if qs is not None:
+        qs.reverse()
+    if clusters is None:
+        if qs:
+            clusters = qs.index(max(qs)) + 1
+        else:
+            clusters = 1
+    return VertexDendrogram(
+        graph, merges, clusters, modularity_params=dict(weights=weights)
+    )
+
+
+def _community_spinglass(graph, *args, **kwds):
+    """Finds the community structure of the graph according to the
+    spinglass community detection method of Reichardt & Bornholdt.
+
+    @keyword weights: edge weights to be used. Can be a sequence or
+      iterable or even an edge attribute name.
+    @keyword spins: integer, the number of spins to use. This is the
+      upper limit for the number of communities. It is not a problem
+      to supply a (reasonably) big number here, in which case some
+      spin states will be unpopulated.
+    @keyword parupdate: whether to update the spins of the vertices in
+      parallel (synchronously) or not
+    @keyword start_temp: the starting temperature
+    @keyword stop_temp: the stop temperature
+    @keyword cool_fact: cooling factor for the simulated annealing
+    @keyword update_rule: specifies the null model of the simulation.
+      Possible values are C{"config"} (a random graph with the same
+      vertex degrees as the input graph) or C{"simple"} (a random
+      graph with the same number of edges)
+    @keyword gamma: the gamma argument of the algorithm, specifying the
+      balance between the importance of present and missing edges
+      within a community. The default value of 1.0 assigns equal
+      importance to both of them.
+    @keyword implementation: currently igraph contains two implementations
+      of the spinglass community detection algorithm. The faster
+      original implementation is the default. The other implementation
+      is able to take into account negative weights, this can be
+      chosen by setting C{implementation} to C{"neg"}
+    @keyword lambda_: the lambda argument of the algorithm, which
+      specifies the balance between the importance of present and missing
+      negatively weighted edges within a community. Smaller values of
+      lambda lead to communities with less negative intra-connectivity.
+      If the argument is zero, the algorithm reduces to a graph coloring
+      algorithm, using the number of spins as colors. This argument is
+      ignored if the original implementation is used. Note the underscore
+      at the end of the argument name; this is due to the fact that
+      lambda is a reserved keyword in Python.
+    @return: an appropriate L{VertexClustering} object.
+
+    @newfield ref: Reference
+    @ref: Reichardt J and Bornholdt S: Statistical mechanics of
+      community detection. Phys Rev E 74:016110 (2006).
+      U{http://arxiv.org/abs/cond-mat/0603718}.
+    @ref: Traag VA and Bruggeman J: Community detection in networks
+      with positive and negative links. Phys Rev E 80:036115 (2009).
+      U{http://arxiv.org/abs/0811.2329}.
+    """
+    membership = GraphBase.community_spinglass(graph, *args, **kwds)
+    if "weights" in kwds:
+        modularity_params = dict(weights=kwds["weights"])
+    else:
+        modularity_params = {}
+    return VertexClustering(graph, membership, modularity_params=modularity_params)
+
+
+def _community_walktrap(graph, weights=None, steps=4):
+    """Community detection algorithm of Latapy & Pons, based on random
+    walks.
+
+    The basic idea of the algorithm is that short random walks tend to stay
+    in the same community. The result of the clustering will be represented
+    as a dendrogram.
+
+    @param weights: name of an edge attribute or a list containing
+      edge weights
+    @param steps: length of random walks to perform
+
+    @return: a L{VertexDendrogram} object, initially cut at the maximum
+      modularity.
+
+    @newfield ref: Reference
+    @ref: Pascal Pons, Matthieu Latapy: Computing communities in large
+      networks using random walks, U{http://arxiv.org/abs/physics/0512106}.
+    """
+    merges, qs = GraphBase.community_walktrap(graph, weights, steps)
+    qs.reverse()
+    if qs:
+        optimal_count = qs.index(max(qs)) + 1
+    else:
+        optimal_count = 1
+    return VertexDendrogram(
+        graph, merges, optimal_count, modularity_params=dict(weights=weights)
+    )
+
+
+def _k_core(graph, *args):
+    """Returns some k-cores of the graph.
+
+    The method accepts an arbitrary number of arguments representing
+    the desired indices of the M{k}-cores to be returned. The arguments
+    can also be lists or tuples. The result is a single L{Graph} object
+    if an only integer argument was given, otherwise the result is a
+    list of L{Graph} objects representing the desired k-cores in the
+    order the arguments were specified. If no argument is given, returns
+    all M{k}-cores in increasing order of M{k}.
+    """
+    if len(args) == 0:
+        indices = range(graph.vcount())
+        return_single = False
+    else:
+        return_single = True
+        indices = []
+        for arg in args:
+            try:
+                indices.extend(arg)
+            except Exception:
+                indices.append(arg)
+
+    if len(indices) > 1 or hasattr(args[0], "__iter__"):
+        return_single = False
+
+    corenesses = graph.coreness()
+    result = []
+    vidxs = range(graph.vcount())
+    for idx in indices:
+        core_idxs = [vidx for vidx in vidxs if corenesses[vidx] >= idx]
+        result.append(graph.subgraph(core_idxs))
+
+    if return_single:
+        return result[0]
+    return result
+
+
+def _community_leiden(
+    graph,
+    objective_function="CPM",
+    weights=None,
+    resolution_parameter=1.0,
+    beta=0.01,
+    initial_membership=None,
+    n_iterations=2,
+    node_weights=None,
+):
+    """Finds the community structure of the graph using the Leiden
+    algorithm of Traag, van Eck & Waltman.
+
+    @param objective_function: whether to use the Constant Potts
+      Model (CPM) or modularity. Must be either C{"CPM"} or C{"modularity"}.
+    @param weights: edge weights to be used. Can be a sequence or
+      iterable or even an edge attribute name.
+    @param resolution_parameter: the resolution parameter to use.
+      Higher resolutions lead to more smaller communities, while
+      lower resolutions lead to fewer larger communities.
+    @param beta: parameter affecting the randomness in the Leiden
+      algorithm. This affects only the refinement step of the algorithm.
+    @param initial_membership: if provided, the Leiden algorithm
+      will try to improve this provided membership. If no argument is
+      provided, the aglorithm simply starts from the singleton partition.
+    @param n_iterations: the number of iterations to iterate the Leiden
+      algorithm. Each iteration may improve the partition further. Using
+      a negative number of iterations will run until a stable iteration is
+      encountered (i.e. the quality was not increased during that
+      iteration).
+    @param node_weights: the node weights used in the Leiden algorithm.
+      If this is not provided, it will be automatically determined on the
+      basis of whether you want to use CPM or modularity. If you do provide
+      this, please make sure that you understand what you are doing.
+    @return: an appropriate L{VertexClustering} object.
+
+    @newfield ref: Reference
+    @ref: Traag, V. A., Waltman, L., & van Eck, N. J. (2019). From Louvain
+      to Leiden: guaranteeing well-connected communities. Scientific
+      reports, 9(1), 5233. doi: 10.1038/s41598-019-41695-z
+    """
+    if objective_function.lower() not in ("cpm", "modularity"):
+        raise ValueError('objective_function must be "CPM" or "modularity".')
+
+    membership = GraphBase.community_leiden(
+        graph,
+        edge_weights=weights,
+        node_weights=node_weights,
+        resolution_parameter=resolution_parameter,
+        normalize_resolution=(objective_function == "modularity"),
+        beta=beta,
+        initial_membership=initial_membership,
+        n_iterations=n_iterations,
+    )
+
+    if weights is not None:
+        modularity_params = dict(weights=weights)
+    else:
+        modularity_params = {}
+    return VertexClustering(graph, membership, modularity_params=modularity_params)
+
+
+def _modularity(self, membership, weights=None):
+    """Calculates the modularity score of the graph with respect to a given
+    clustering.
+
+    The modularity of a graph w.r.t. some division measures how good the
+    division is, or how separated are the different vertex types from each
+    other. It's defined as M{Q=1/(2m)*sum(Aij-ki*kj/(2m)delta(ci,cj),i,j)}.
+    M{m} is the number of edges, M{Aij} is the element of the M{A}
+    adjacency matrix in row M{i} and column M{j}, M{ki} is the degree of
+    node M{i}, M{kj} is the degree of node M{j}, and M{Ci} and C{cj} are
+    the types of the two vertices (M{i} and M{j}). M{delta(x,y)} is one iff
+    M{x=y}, 0 otherwise.
+
+    If edge weights are given, the definition of modularity is modified as
+    follows: M{Aij} becomes the weight of the corresponding edge, M{ki}
+    is the total weight of edges adjacent to vertex M{i}, M{kj} is the
+    total weight of edges adjacent to vertex M{j} and M{m} is the total
+    edge weight in the graph.
+
+    @param membership: a membership list or a L{VertexClustering} object
+    @param weights: optional edge weights or C{None} if all edges are
+      weighed equally. Attribute names are also allowed.
+    @return: the modularity score
+
+    @newfield ref: Reference
+    @ref: MEJ Newman and M Girvan: Finding and evaluating community
+      structure in networks. Phys Rev E 69 026113, 2004.
+    """
+    if isinstance(membership, VertexClustering):
+        if membership.graph != self:
+            raise ValueError("clustering object belongs to another graph")
+        return GraphBase.modularity(self, membership.membership, weights)
+    else:
+        return GraphBase.modularity(self, membership, weights)

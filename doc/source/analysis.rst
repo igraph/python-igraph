@@ -1,5 +1,8 @@
 .. include:: include/global.rst
 
+.. currentmodule:: igraph
+
+
 Graph analysis
 ==============
 
@@ -338,7 +341,7 @@ Clustering
 ++++++++++
 |igraph| includes several approaches to unsupervised graph clustering and community detection:
 
-- :meth:`Graph.components` (aka :meth:`Graph.clusters`): the connected components
+- :meth:`Graph.components` (aka :meth:`Graph.connected_components`): the connected components
 - :meth:`Graph.cohesive_blocks`
 - :meth:`Graph.community_edge_betweenness`
 - :meth:`Graph.community_fastgreedy`

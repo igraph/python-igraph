@@ -5,7 +5,6 @@
 from contextlib import contextmanager
 
 from collections.abc import MutableMapping
-from ctypes import c_double, sizeof
 from itertools import chain
 
 import os
@@ -59,15 +58,17 @@ def numpy_to_contiguous_memoryview(obj):
     directly when constructing a Graph.
     """
     # Deferred import to prevent a hard dependency on NumPy
-    from numpy import float32, float64, require
+    from numpy import int32, int64, require
+    from igraph._igraph import INTEGER_SIZE
 
-    size = sizeof(c_double)
-    if size == 8:
-        dtype = float64
-    elif size == 4:
-        dtype = float32
+    if INTEGER_SIZE == 64:
+        dtype = int64
+    elif INTEGER_SIZE == 32:
+        dtype = int32
     else:
-        raise TypeError("size of C double (%d bytes) is not supported" % size)
+        raise TypeError(
+            f"size of igraph_integer_t in the C layer ({INTEGER_SIZE} bits) is not supported"
+        )
 
     return memoryview(require(obj, dtype=dtype, requirements="AC"))
 
@@ -97,6 +98,16 @@ def rescale(values, out_range=(0.0, 1.0), in_range=None, clamp=False, scale=None
     the actual values. A typical use-case is to map a range of values to color
     identifiers on a logarithmic scale. Scaling also applies to the ``in_range``
     parameter if present.
+
+    :param out_range: the range of output values
+    :param in_range: the range of the input values; this is the range that is mapped
+        to ``out_range``. ``None`` means to use the minimum and maximum of
+        the input, respectively.
+    :param clamp: specifies what to do when an input value falls outside ``in_range``.
+        ``True`` means to clamp the value to the bounds of ``in_range``,
+        ``False`` means not to clamp.
+    :param scale: an optional transformation to perform on the input values before
+        mapping them to the output range.
 
     Examples:
 
@@ -138,54 +149,6 @@ def rescale(values, out_range=(0.0, 1.0), in_range=None, clamp=False, scale=None
         return [max(min(x, max_out), min_out) for x in result]
     else:
         return result
-
-
-def str_to_orientation(value, reversed_horizontal=False, reversed_vertical=False):
-    """Tries to interpret a string as an orientation value.
-
-    The following basic values are understood: ``left-right``, ``bottom-top``,
-    ``right-left``, ``top-bottom``. Possible aliases are:
-
-      - ``horizontal``, ``horiz``, ``h`` and ``lr`` for ``left-right``
-
-      - ``vertical``, ``vert``, ``v`` and ``tb`` for top-bottom.
-
-      - ``lr`` for ``left-right``.
-
-      - ``rl`` for ``right-left``.
-
-    ``reversed_horizontal`` reverses the meaning of ``horizontal``, ``horiz``
-    and ``h`` to ``rl`` (instead of ``lr``); similarly, ``reversed_vertical``
-    reverses the meaning of ``vertical``, ``vert`` and ``v`` to ``bt``
-    (instead of ``tb``).
-
-    Returns one of ``lr``, ``rl``, ``tb`` or ``bt``, or throws ``ValueError``
-    if the string cannot be interpreted as an orientation.
-    """
-
-    aliases = {
-        "left-right": "lr",
-        "right-left": "rl",
-        "top-bottom": "tb",
-        "bottom-top": "bt",
-        "top-down": "tb",
-        "bottom-up": "bt",
-        "top-bottom": "tb",
-        "bottom-top": "bt",
-        "td": "tb",
-        "bu": "bt",
-    }
-
-    dir = ["lr", "rl"][reversed_horizontal]
-    aliases.update(horizontal=dir, horiz=dir, h=dir)
-
-    dir = ["tb", "bt"][reversed_vertical]
-    aliases.update(vertical=dir, vert=dir, v=dir)
-
-    result = aliases.get(value, value)
-    if result not in ("lr", "rl", "tb", "bt"):
-        raise ValueError("unknown orientation: %s" % result)
-    return result
 
 
 def consecutive_pairs(iterable, circular=False):
@@ -251,14 +214,15 @@ class multidict(MutableMapping):
         self.update(kwds)
 
     def __contains__(self, key):
-        """Returns whether there are any items associated to the given key."""
+        """Returns whether there are any items associated to the given
+        ``key``."""
         try:
             return len(self._dict[key]) > 0
         except KeyError:
             return False
 
     def __delitem__(self, key):
-        """Removes all the items associated to the given key."""
+        """Removes all the items associated to the given ``key``."""
         del self._dict[key]
 
     def __getitem__(self, key):
@@ -285,7 +249,7 @@ class multidict(MutableMapping):
         return len(self._dict)
 
     def __setitem__(self, key, value):
-        """Sets the item associated to the given key. Any values associated to the
+        """Sets the item associated to the given ``key``. Any values associated to the
         key will be erased and replaced by ``value``.
 
         Example:
@@ -298,7 +262,7 @@ class multidict(MutableMapping):
         self._dict[key] = [value]
 
     def add(self, key, value):
-        """Adds ``value`` to the list of items associated to ``key``.
+        """Adds `value` to the list of items associated to ``key``.
 
         Example:
 

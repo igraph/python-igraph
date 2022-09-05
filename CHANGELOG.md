@@ -1,8 +1,49 @@
 # igraph Python interface changelog
 
+## [Development branch]
+
+### Added
+
+- More robust support for Matplotlib and initial support for plotly as graph
+  plotting backends, controlled by a configuration option. See PR
+  [#425](https://github.com/igraph/python-igraph/pull/425) for more details.
+
+- Added support for additional ways to construct a graph, such as from a 
+  dictionary of dictionaries, and to export a graph object back to those
+  data structures. See PR [#434](https://github.com/igraph/python-igraph/pull/434)
+  for more details.
+
+- `Graph.get_adjacency()` now allows the user to specify whether loop edges
+  should be counted once or twice, or not at all.
+
+- `Graph.get_laplacian()` now supports left-, right- and symmetric normalization.
+
+### Changed
+
+- Changed default value of the `use_vids=...` argument of `Graph.DataFrame()`
+  to `True`, thanks to [@fwitter](https://github.com/user/fwitter).
+
+### Removed
+
+- Removed deprecated `UbiGraphDrawer`.
+
+- Removed deprecated `show()` method of `Plot` instances as well as the feature
+  that automatically shows the plot when `plot()` is called with no target.
+
+- Removed the `eids` keyword argument of `get_adjacency()`.
+
+### Deprecated
+
+- `Graph.clusters()` is now deprecated; use `Graph.connected_components()` or
+  its already existing shorter alias, `Graph.components()`.
+
+- `Graph.shortest_paths()` is now deprecated; use `Graph.distances()` instead.
+
 ## [Unreleased]
 
 ### Added
+
+- `Graph.reverse_edges()` reverses some or all edges of a graph.
 
 - `Graph.Degree_Sequence()` now supports the `"no_multiple_uniform"` generation
   method, which generates simple graphs, sampled uniformly, using rejection
@@ -113,7 +154,7 @@
 
 ## [0.9.7]
 
-### Added 
+### Added
 
 - Added support for graph chordality which was already available in the C core:
   `Graph.is_chordal()`, `Graph.chordal_completion()`, and
@@ -246,7 +287,6 @@
 
 - Reading GraphML files is now also supported on Windows if you use one of the
   official Python wheels.
-  
 
 ## [0.9.0]
 
@@ -304,7 +344,6 @@
 - The core C library is now built with `-fPIC` on Linux to allow linking to the
   Python interface.
 
-
 ## [0.8.3]
 
 This is the last released version of `python-igraph` without a changelog file.
@@ -312,6 +351,7 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
+[Development branch]: https://github.com/igraph/python-igraph/compare/0.9.11..develop
 [Unreleased]: https://github.com/igraph/python-igraph/compare/0.9.11..master
 [0.9.11]: https://github.com/igraph/python-igraph/compare/0.9.10...0.9.11
 [0.9.10]: https://github.com/igraph/python-igraph/compare/0.9.9...0.9.10

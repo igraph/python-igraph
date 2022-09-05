@@ -519,11 +519,50 @@ class MiscTests(unittest.TestCase):
 
     def testBridges(self):
         g = Graph(5, [(0, 1), (1, 2), (2, 0), (0, 3), (3, 4)])
-        self.assertTrue(g.bridges() == [3, 4])
+        self.assertEqual(g.bridges(), [3, 4])
         g = Graph(7, [(0, 1), (1, 2), (2, 0), (1, 6), (1, 3), (1, 4), (3, 5), (4, 5)])
-        self.assertTrue(g.bridges() == [3])
+        self.assertEqual(g.bridges(), [3])
         g = Graph(3, [(0, 1), (1, 2), (2, 3)])
-        self.assertTrue(g.bridges() == [0, 1, 2])
+        self.assertEqual(g.bridges(), [0, 1, 2])
+
+    def testChordalCompletion(self):
+        g = Graph()
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Full(3)
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Full(5)
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Ring(4)
+        cc = g.chordal_completion()
+        self.assertEqual(len(cc), 1)
+        g += cc
+        self.assertTrue(g.is_chordal())
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Ring(5)
+        cc = g.chordal_completion()
+        self.assertEqual(len(cc), 2)
+        g += cc
+        self.assertListEqual([], g.chordal_completion())
+
+    def testChordalCompletionWithHints(self):
+        g = Graph.Ring(4)
+        alpha, _ = g.maximum_cardinality_search()
+        cc = g.chordal_completion(alpha=alpha)
+        self.assertEqual(len(cc), 1)
+        g += cc
+        self.assertTrue(g.is_chordal())
+        self.assertListEqual([], g.chordal_completion())
+
+        g = Graph.Ring(5)
+        _, alpham1 = g.maximum_cardinality_search()
+        cc = g.chordal_completion(alpham1=alpham1)
+        self.assertEqual(len(cc), 2)
+        g += cc
+        self.assertListEqual([], g.chordal_completion())
 
     def testChordalCompletion(self):
         g = Graph()
@@ -695,7 +734,7 @@ class MiscTests(unittest.TestCase):
 
 
 class PathTests(unittest.TestCase):
-    def testShortestPaths(self):
+    def testDistances(self):
         g = Graph(
             10,
             [
@@ -736,10 +775,10 @@ class PathTests(unittest.TestCase):
             [inf, inf, inf, inf, inf, inf, inf, inf, 0, 4],
             [inf, inf, inf, inf, inf, inf, inf, inf, inf, 0],
         ]
-        self.assertTrue(g.shortest_paths(weights=ws) == expected)
-        self.assertTrue(g.shortest_paths(weights="weight") == expected)
+        self.assertTrue(g.distances(weights=ws) == expected)
+        self.assertTrue(g.distances(weights="weight") == expected)
         self.assertTrue(
-            g.shortest_paths(weights="weight", target=[2, 3])
+            g.distances(weights="weight", target=[2, 3])
             == [row[2:4] for row in expected]
         )
 

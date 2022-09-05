@@ -1,10 +1,15 @@
+import gc
+import sys
 import unittest
 import warnings
 
+from contextlib import contextmanager
 from functools import partial
 
 from igraph import (
     ALL,
+    Edge,
+    EdgeSeq,
     Graph,
     IN,
     InternalError,
@@ -12,7 +17,12 @@ from igraph import (
     is_graphical,
     is_graphical_degree_sequence,
     Matrix,
+    Vertex,
+    VertexSeq
 )
+from igraph._igraph import EdgeSeq as _EdgeSeq, VertexSeq as _VertexSeq
+
+from .utils import is_pypy
 
 try:
     import numpy as np
@@ -323,11 +333,10 @@ class BasicTests(unittest.TestCase):
         g = Graph.Famous("petersen")
         eids = g.get_eids(pairs=[(0, 1), (0, 5), (1, 6), (4, 9), (8, 6)])
         self.assertTrue(eids == [0, 2, 4, 9, 12])
-        eids = g.get_eids(path=[0, 1, 2, 3, 4])
-        self.assertTrue(eids == [0, 3, 5, 7])
-        eids = g.get_eids(pairs=[(7, 9), (9, 6)], path=[7, 9, 6])
-        self.assertTrue(eids == [14, 13, 14, 13])
+        eids = g.get_eids(pairs=[(7, 9), (9, 6)])
+        self.assertTrue(eids == [14, 13])
         self.assertRaises(InternalError, g.get_eids, pairs=[(0, 1), (0, 2)])
+        self.assertRaises(TypeError, g.get_eids, pairs=None)
 
     def testAdjacency(self):
         g = Graph(4, [(0, 1), (1, 2), (2, 0), (2, 3)], directed=True)
@@ -603,6 +612,88 @@ class GraphTupleListTests(unittest.TestCase):
             self.assertTrue(g.edge_attributes() == [])
 
 
+class GraphListDictTests(unittest.TestCase):
+    def setUp(self):
+        self.eids = {
+            0: [1],
+            2: [1, 0],
+            3: [0, 1],
+        }
+        self.edges = {
+            "Alice": ["Bob"],
+            "Cecil": ["Bob", "Alice"],
+            "David": ["Alice", "Bob"],
+        }
+
+    def testEmptyGraphListDict(self):
+        g = Graph.ListDict({})
+        self.assertEqual(g.vcount(), 0)
+
+    def testGraphFromListDict(self):
+        g = Graph.ListDict(self.eids)
+        self.checkIfOK(g, ())
+
+    def testGraphFromListDictWithNames(self):
+        g = Graph.ListDict(self.edges)
+        self.checkIfOK(g, "name")
+
+    def checkIfOK(self, g, name_attr):
+        self.assertTrue(g.vcount() == 4 and g.ecount() == 5 and not g.is_directed())
+        self.assertTrue(g.get_edgelist() == [(0, 1), (1, 2), (0, 2), (0, 3), (1, 3)])
+        self.assertTrue(g.attributes() == [])
+        if name_attr:
+            self.assertTrue(g.vertex_attributes() == [name_attr])
+            self.assertTrue(g.vs[name_attr] == ["Alice", "Bob", "Cecil", "David"])
+        self.assertTrue(g.edge_attributes() == [])
+
+
+class GraphDictDictTests(unittest.TestCase):
+    def setUp(self):
+        self.eids = {
+            0: {1: {}},
+            2: {1: {}, 0: {}},
+            3: {0: {}, 1: {}},
+        }
+        self.edges = {
+            "Alice": {"Bob": {}},
+            "Cecil": {"Bob": {}, "Alice": {}},
+            "David": {"Alice": {}, "Bob": {}},
+        }
+        self.eids_with_props = {
+            0: {1: {"weight": 5.6, "additional": 'abc'}},
+            2: {1: {"weight": 3.4}, 0: {"weight": 2}},
+            3: {0: {"weight": 1}, 1: {"weight": 5.6}},
+        }
+
+    def testEmptyGraphDictDict(self):
+        g = Graph.DictDict({})
+        self.assertEqual(g.vcount(), 0)
+
+    def testGraphFromDictDict(self):
+        g = Graph.DictDict(self.eids)
+        self.checkIfOK(g, ())
+
+    def testGraphFromDictDict(self):
+        g = Graph.DictDict(self.eids_with_props)
+        self.checkIfOK(g, (), edge_attrs=["additional", "weight"])
+
+    def testGraphFromDictDictWithNames(self):
+        g = Graph.DictDict(self.edges)
+        self.checkIfOK(g, "name")
+
+    def checkIfOK(self, g, name_attr, edge_attrs=None):
+        self.assertTrue(g.vcount() == 4 and g.ecount() == 5 and not g.is_directed())
+        self.assertTrue(g.get_edgelist() == [(0, 1), (1, 2), (0, 2), (0, 3), (1, 3)])
+        self.assertTrue(g.attributes() == [])
+        if name_attr:
+            self.assertTrue(g.vertex_attributes() == [name_attr])
+            self.assertTrue(g.vs[name_attr] == ["Alice", "Bob", "Cecil", "David"])
+        if edge_attrs is None:
+            self.assertEqual(g.edge_attributes(), [])
+        else:
+            self.assertEqual(sorted(g.edge_attributes()), sorted(edge_attrs))
+
+
 class DegreeSequenceTests(unittest.TestCase):
     def testIsDegreeSequence(self):
         # Catch and suppress warnings because is_degree_sequence() is now
@@ -721,7 +812,7 @@ class InheritedGraph(Graph):
         self.init_called = True
 
     def __new__(cls, *args, **kwds):
-        result = Graph.__new__(cls, *args, **kwds)
+        result = Graph.__new__(cls)
         result.new_called = True
         return result
 
@@ -798,21 +889,80 @@ class InheritanceTests(unittest.TestCase):
         self.assertEqual(42, g)
 
 
+@contextmanager
+def assert_reference_not_leaked(case, *args):
+    gc.collect()
+    refs_before = [sys.getrefcount(obj) for obj in args]
+    try:
+        yield
+    finally:
+        gc.collect()
+        refs_after = [sys.getrefcount(obj) for obj in args]
+        case.assertListEqual(refs_before, refs_after)
+
+
+@unittest.skipIf(is_pypy, "reference counts are not relevant for PyPy")
+class ReferenceCountTests(unittest.TestCase):
+    def testEdgeReferenceCounting(self):
+        with assert_reference_not_leaked(self, Edge, EdgeSeq, _EdgeSeq):
+            g = Graph.Tree(3, 2)
+            edge = g.es[1]
+            del edge, g
+
+    def testEdgeSeqReferenceCounting(self):
+        with assert_reference_not_leaked(self, Edge, EdgeSeq, _EdgeSeq):
+            g = Graph.Tree(3, 2)
+            es = g.es
+            es2 = EdgeSeq(g)
+            del es, es2, g
+
+    def testGraphReferenceCounting(self):
+        with assert_reference_not_leaked(self, Graph, InheritedGraph):
+            g = Graph.Tree(3, 2)
+            self.assertTrue(gc.is_tracked(g))
+            del g
+
+    def testInheritedGraphReferenceCounting(self):
+        with assert_reference_not_leaked(self, Graph, InheritedGraph):
+            g = InheritedGraph.Tree(3, 2)
+            self.assertTrue(gc.is_tracked(g))
+            del g
+    
+    def testVertexReferenceCounting(self):
+        with assert_reference_not_leaked(self, Vertex, VertexSeq, _VertexSeq):
+            g = Graph.Tree(3, 2)
+            vertex = g.vs[2]
+            del vertex, g
+    
+    def testVertexSeqReferenceCounting(self):
+        with assert_reference_not_leaked(self, Vertex, VertexSeq, _VertexSeq):
+            g = Graph.Tree(3, 2)
+            vs = g.vs
+            vs2 = VertexSeq(g)
+            del vs2, vs, g
+
+
 def suite():
     basic_suite = unittest.makeSuite(BasicTests)
     datatype_suite = unittest.makeSuite(DatatypeTests)
     graph_dict_list_suite = unittest.makeSuite(GraphDictListTests)
     graph_tuple_list_suite = unittest.makeSuite(GraphTupleListTests)
+    graph_list_dict_suite = unittest.makeSuite(GraphListDictTests)
+    graph_dict_dict_suite = unittest.makeSuite(GraphDictDictTests)
     degree_sequence_suite = unittest.makeSuite(DegreeSequenceTests)
     inheritance_suite = unittest.makeSuite(InheritanceTests)
+    refcount_suite = unittest.makeSuite(ReferenceCountTests)
     return unittest.TestSuite(
         [
             basic_suite,
             datatype_suite,
             graph_dict_list_suite,
             graph_tuple_list_suite,
+            graph_list_dict_suite,
+            graph_dict_dict_suite,
             degree_sequence_suite,
             inheritance_suite,
+            refcount_suite
         ]
     )
 

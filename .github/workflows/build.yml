@@ -94,7 +94,7 @@ jobs:
           - cmake_arch: x86_64
             wheel_arch: x86_64
           - cmake_arch: arm64
-            cmake_extra_args: -DF2C_EXTERNAL_ARITH_HEADER=../../../etc/arith_apple_m1.h
+            cmake_extra_args: -DF2C_EXTERNAL_ARITH_HEADER=../../../etc/arith_apple_m1.h -DIEEE754_DOUBLE_ENDIANNESS_MATCHES=ON
             wheel_arch: arm64
 
     steps:
@@ -257,3 +257,66 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: dist/*.tar.gz
+
+  # When updating 'runs-on', the ASan/UBSan library paths/versions must also be updated for LD_PRELOAD
+  # for the "Test" step below.
+  #
+  # The C core is temporarily compiled with -DCMAKE_C_FLAGS="-DNDEBUG" because the Python test suite
+  # triggers a bug/assertion in RNG_INTEGER(): https://github.com/igraph/igraph/issues/2031
+  # When this bug is fixed, remove NDEBUG and increment the cache version to v1.
+  build_with_sanitizer:
+    name: Build with sanitizers for debugging purposes
+    runs-on: ubuntu-20.04
+    env:
+      CC: "gcc -fsanitize=address -fsanitize=undefined"
+      CXX: "g++ -fsanitize=address -fsanitize=undefined"
+      CFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
+      CXXFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
+      IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address;Undefined" -DCMAKE_BUILD_TYPE=Debug -DFLEX_KEEP_LINE_NUMBERS=ON -DFORCE_COLORED_OUTPUT=ON -DCMAKE_C_FLAGS="-DNDEBUG"
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+          
+      - name: Cache installed C core
+        id: cache-c-core
+        uses: actions/cache@v2
+        with:
+          path: |
+            vendor/build
+            vendor/install
+          key: C-core-build-sanitizer-v0-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
+
+      - name: Install OS dependencies
+        if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
+        run:
+          sudo apt install ninja-build cmake flex bison
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.10'
+
+      - name: Build C core
+        run: |
+          python setup.py build_c_core
+
+      - name: Build and install Python extension
+        run: |
+          # NOTE: install calls "build" first
+          python setup.py install
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest numpy scipy pandas networkx
+
+      # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
+      # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.
+      # Leak detection is disabled because of many false (?) positives in Python itself.
+      - name: Test
+        env:
+          LD_PRELOAD: "/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.1"
+          ASAN_OPTIONS: "detect_leaks=0"
+        run: |
+          python -m pytest --capture=sys tests
