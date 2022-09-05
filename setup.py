@@ -14,7 +14,11 @@ if sys.version_info < (3, 7):
 ###########################################################################
 
 from setuptools import find_packages, setup, Command, Extension
-from wheel.bdist_wheel import bdist_wheel
+
+try:
+    from wheel.bdist_wheel import bdist_wheel
+except ImportError:
+    bdist_wheel = None
 
 import glob
 import shlex
@@ -780,14 +784,17 @@ class BuildConfiguration:
 
 ###########################################################################
 
-class bdist_wheel_abi3(bdist_wheel):
-    def get_tag(self):
-        python, abi, plat = super().get_tag()
-        if python.startswith("cp"):
-            # on CPython, our wheels are abi3 and compatible back to 3.7
-            return "cp37", "abi3", plat
+if bdist_wheel is not None:
+    class bdist_wheel_abi3(bdist_wheel):
+        def get_tag(self):
+            python, abi, plat = super().get_tag()
+            if python.startswith("cp"):
+                # on CPython, our wheels are abi3 and compatible back to 3.7
+                return "cp37", "abi3", plat
 
-        return python, abi, plat
+            return python, abi, plat
+else:
+    bdist_wheel_abi3 = None
 
 
 ###########################################################################
@@ -819,6 +826,15 @@ graph plots in Jupyter notebooks when using ``pycairo`` (but not with
 """
 
 headers = ["src/_igraph/igraphmodule_api.h"] if not SKIP_HEADER_INSTALL else []
+
+cmdclass = {
+    "build_c_core": buildcfg.build_c_core,  # used by CI
+    "build_ext": buildcfg.build_ext,
+    "sdist": buildcfg.sdist,
+}
+
+if bdist_wheel_abi3 is not None:
+    cmdclass["bdist_wheel"] = bdist_wheel_abi3
 
 options = dict(
     name="igraph",
@@ -919,12 +935,7 @@ options = dict(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    cmdclass={
-        "build_c_core": buildcfg.build_c_core,  # used by CI
-        "build_ext": buildcfg.build_ext,
-        "sdist": buildcfg.sdist,
-        "bdist_wheel": bdist_wheel_abi3,
-    },
+    cmdclass=cmdclass,
 )
 
 setup(**options)
