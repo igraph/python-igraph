@@ -69,7 +69,7 @@ class Layout:
         length of the coordinate list is zero, otherwise it should be left as
         is.
         """
-        if coords:
+        if coords is not None:
             self._coords = [list(coord) for coord in coords]
         else:
             self._coords = []
