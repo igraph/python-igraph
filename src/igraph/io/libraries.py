@@ -98,7 +98,7 @@ def _construct_graph_from_networkx(cls, g, vertex_attr_hashable : str = "_nx_nam
     vcount = len(vnames)
 
     # Dictionary connecting networkx hashables with igraph indices
-    if len(g) and "_igraph_index" in g.nodes[0]:
+    if len(g) and "_igraph_index" in next(iter(g.nodes)):
         # Collect _igraph_index and fill gaps
         idx = [x["_igraph_index"] for v, x in g.nodes.data()]
         idx.sort()
