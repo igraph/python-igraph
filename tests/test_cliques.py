@@ -59,7 +59,7 @@ class CliqueTests(unittest.TestCase):
                 [1, 2, 4, 5],
             ],
         }
-        for (lo, hi), exp in list(tests.items()):
+        for (lo, hi), exp in tests.items():
             self.assertEqual(sorted(exp), sorted(map(sorted, self.g.cliques(lo, hi))))
 
     def testLargestCliques(self):
@@ -129,7 +129,7 @@ class IndependentVertexSetTests(unittest.TestCase):
                 (2, 3, 4),
             ],
         }
-        for (lo, hi), exp in list(tests.items()):
+        for (lo, hi), exp in tests.items():
             self.assertEqual(exp, self.g1.independent_vertex_sets(lo, hi))
 
     def testLargestIndependentVertexSets(self):

@@ -77,7 +77,7 @@ class VertexTests(unittest.TestCase):
 
         for i in range(g.vcount()):
             vertex = g.vs[i]
-            for mode, method_name in list(method_table.items()):
+            for mode, method_name in method_table.items():
                 method = getattr(vertex, method_name)
                 self.assertEqual(
                     g.incident(i, mode=mode),

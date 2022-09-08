@@ -41,7 +41,7 @@ def _add_edges(graph, es, attributes=None):
     res = GraphBase.add_edges(graph, es)
     n = graph.ecount() - eid
     if (attributes is not None) and (n > 0):
-        for key, val in list(attributes.items()):
+        for key, val in attributes.items():
             graph.es[eid:][key] = val
     return res
 
@@ -90,7 +90,7 @@ def _add_vertices(graph, n, attributes=None):
         result = GraphBase.add_vertices(graph, 1)
         graph.vs[m]["name"] = n
         if attributes is not None:
-            for key, val in list(attributes.items()):
+            for key, val in attributes.items():
                 graph.vs[m][key] = val
     elif hasattr(n, "__iter__"):
         m = graph.vcount()
@@ -102,13 +102,13 @@ def _add_vertices(graph, n, attributes=None):
         if len(names) > 0:
             graph.vs[m:]["name"] = names
             if attributes is not None:
-                for key, val in list(attributes.items()):
+                for key, val in attributes.items():
                     graph.vs[m:][key] = val
     else:
         result = GraphBase.add_vertices(graph, n)
         if (attributes is not None) and (n > 0):
             m = graph.vcount() - n
-            for key, val in list(attributes.items()):
+            for key, val in attributes.items():
                 graph.vs[m:][key] = val
     return result
 

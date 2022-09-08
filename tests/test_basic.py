@@ -321,7 +321,7 @@ class BasicTests(unittest.TestCase):
         g = Graph.Famous("petersen")
         g.vs["name"] = list("ABCDEFGHIJ")
         edges_to_ids = dict((v, k) for k, v in enumerate(g.get_edgelist()))
-        for (source, target), edge_id in list(edges_to_ids.items()):
+        for (source, target), edge_id in edges_to_ids.items():
             source_name, target_name = g.vs[(source, target)]["name"]
             self.assertEqual(edge_id, g.get_eid(source, target))
             self.assertEqual(edge_id, g.get_eid(source_name, target_name))

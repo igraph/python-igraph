@@ -313,7 +313,7 @@ class multidict(MutableMapping):
 
     def update(self, arg, **kwds):
         if hasattr(arg, "keys") and callable(arg.keys):
-            for key in list(arg.keys()):
+            for key in arg.keys():
                 self.add(key, arg[key])
         else:
             for key, value in arg:
