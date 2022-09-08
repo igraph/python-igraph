@@ -118,7 +118,7 @@ def _construct_graph_from_networkx(cls, g, vertex_attr_hashable : str = "_nx_nam
 
     # Vertex attributes
     for v, datum in g.nodes.data():
-        for key, val in list(datum.items()):
+        for key, val in datum.items():
             # Get rid of _igraph_index (we used it already)
             if key == "_igraph_index":
                 continue
