@@ -690,6 +690,19 @@ class ForeignTests(unittest.TestCase):
         self.assertEqual(g.vcount(), g2.vcount())
         self.assertEqual(sorted(g.get_edgelist()), sorted(g2.get_edgelist()))
 
+        # Test networkx with custom node hashables
+        # In this case each node is a tuple of ints
+        g_nx = nx.DiGraph()
+        inf = float("inf")
+        g_nx.add_edges_from((
+            ((0, 0), (1, 1), {"weight": 3.0}),
+            ((0, 0), (1, 0), {"weight": inf}),
+        ))
+        g = Graph.from_networkx(g_nx)
+        self.assertTrue(g.is_directed())
+        self.assertEqual(g.vcount(), 3)
+        self.assertTrue(g.es["weight"] == [3.0, inf] or g.es["weight"] == [inf, 3.0])
+
     @unittest.skipIf(nx is None, "test case depends on networkx")
     def testMultigraphNetworkx(self):
         # Undirected
