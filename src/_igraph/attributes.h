@@ -85,8 +85,6 @@ void igraphmodule_index_vertex_names(igraph_t *graph, igraph_bool_t force);
 void igraphmodule_invalidate_vertex_name_index(igraph_t *graph);
 int igraphmodule_get_vertex_id_by_name(igraph_t *graph, PyObject* o, igraph_integer_t* id);
 
-PyObject* igraphmodule_create_edge_attribute(const igraph_t* graph,
-    const char* name);
 PyObject* igraphmodule_create_or_get_edge_attribute_values(const igraph_t* graph,
     const char* name);
 PyObject* igraphmodule_get_edge_attribute_values(const igraph_t* graph,
