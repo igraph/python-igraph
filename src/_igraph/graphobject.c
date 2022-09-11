@@ -430,25 +430,6 @@ PyObject *igraphmodule_Graph_ecount(igraphmodule_GraphObject * self)
 }
 
 /** \ingroup python_interface_graph
- * \brief Checks whether an \c igraph.Graph object is a DAG.
- * \return \c True if the graph is directed, \c False otherwise.
- * \sa igraph_is_dag
- */
-PyObject *igraphmodule_Graph_is_dag(igraphmodule_GraphObject * self)
-{
-  igraph_bool_t res;
-
-  if (igraph_is_dag(&self->g, &res)) {
-    igraphmodule_handle_igraph_error();
-    return NULL;
-  }
-
-  if (res)
-    Py_RETURN_TRUE;
-  Py_RETURN_FALSE;
-}
-
-/** \ingroup python_interface_graph
  * \brief Checks whether an \c igraph.Graph object is directed.
  * \return \c True if the graph is directed, \c False otherwise.
  * \sa igraph_is_directed
@@ -2756,9 +2737,8 @@ PyObject *igraphmodule_Graph_Lattice(PyTypeObject * type,
 
   static char *kwlist[] = { "dim", "nei", "directed", "mutual", "circular", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|nOOO", kwlist,
-                                   &PyList_Type, &o_dimvector,
-                                   &nei, &o_directed, &o_mutual, &o_circular))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|nOOO", kwlist,
+                                   &o_dimvector, &nei, &o_directed, &o_mutual, &o_circular))
     return NULL;
 
   directed = PyObject_IsTrue(o_directed);
@@ -6779,6 +6759,115 @@ PyObject *igraphmodule_Graph_triad_census(igraphmodule_GraphObject *self) {
   igraph_vector_destroy(&res);
 
   return list;
+}
+
+/**********************************************************************
+ * Cycles and cycle bases                                             *
+ **********************************************************************/
+
+PyObject *igraphmodule_Graph_is_acyclic(igraphmodule_GraphObject *self) {
+  igraph_bool_t res;
+
+  if (igraph_is_acyclic(&self->g, &res)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (res) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
+}
+
+PyObject *igraphmodule_Graph_is_dag(igraphmodule_GraphObject * self) {
+  igraph_bool_t res;
+
+  if (igraph_is_dag(&self->g, &res)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (res) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
+}
+
+PyObject *igraphmodule_Graph_fundamental_cycles(
+  igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds
+) {
+  PyObject *cutoff_o = Py_None;
+  PyObject *start_vid_o = Py_None;
+  PyObject *result_o;
+  igraph_integer_t cutoff = -1, start_vid = -1;
+  igraph_vector_int_list_t result;
+
+  static char *kwlist[] = { "start_vid", "cutoff", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &start_vid_o, &cutoff_o))
+    return NULL;
+
+  if (start_vid_o != Py_None && igraphmodule_PyObject_to_vid(start_vid_o, &start_vid, &self->g))
+    return NULL;
+
+  if (cutoff_o != Py_None && igraphmodule_PyObject_to_integer_t(cutoff_o, &cutoff))
+    return NULL;
+
+  if (igraph_vector_int_list_init(&result, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_fundamental_cycles(&self->g, &result, start_vid, cutoff, /* weights = */ NULL)) {
+    igraph_vector_int_list_destroy(&result);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  result_o = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&result);
+  igraph_vector_int_list_destroy(&result);
+
+  return result_o;
+}
+
+PyObject *igraphmodule_Graph_minimum_cycle_basis(
+  igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds
+) {
+  PyObject *cutoff_o = Py_None;
+  PyObject *complete_o = Py_True;
+  PyObject *use_cycle_order_o = Py_True;
+  PyObject *result_o;
+  igraph_integer_t cutoff = -1;
+  igraph_vector_int_list_t result;
+
+  static char *kwlist[] = { "cutoff", "complete", "use_cycle_order", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist, &cutoff_o, &complete_o, &use_cycle_order_o))
+    return NULL;
+
+  if (cutoff_o != Py_None && igraphmodule_PyObject_to_integer_t(cutoff_o, &cutoff))
+    return NULL;
+
+  if (igraph_vector_int_list_init(&result, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_minimum_cycle_basis(
+    &self->g, &result, cutoff, PyObject_IsTrue(complete_o),
+    PyObject_IsTrue(use_cycle_order_o), /* weights = */ NULL
+  )) {
+    igraph_vector_int_list_destroy(&result);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  result_o = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&result);
+  igraph_vector_int_list_destroy(&result);
+
+  return result_o;
 }
 
 /**********************************************************************
@@ -12570,15 +12659,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the number of edges in the graph.\n"
    "@rtype: integer\n"},
 
-  // interface to igraph_is_dag
-  {"is_dag", (PyCFunction) igraphmodule_Graph_is_dag,
-   METH_NOARGS,
-   "is_dag()\n--\n\n"
-   "Checks whether the graph is a DAG (directed acyclic graph).\n\n"
-   "A DAG is a directed graph with no directed cycles.\n\n"
-   "@return: C{True} if it is a DAG, C{False} otherwise.\n"
-   "@rtype: boolean"},
-
   // interface to igraph_is_directed
   {"is_directed", (PyCFunction) igraphmodule_Graph_is_directed,
    METH_NOARGS,
@@ -14887,6 +14967,61 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Lists the triangles of the graph\n\n"
    "@return: the list of triangles in the graph; each triangle is represented\n"
    "  by a tuple of length 3, containing the corresponding vertex IDs."
+  },
+
+  /***********************/
+  /* CYCLES, CYCLE BASES */
+  /***********************/
+
+  {"is_acyclic", (PyCFunction) igraphmodule_Graph_is_acyclic,
+   METH_NOARGS,
+   "is_acyclic()\n--\n\n"
+   "Returns whether the graph is acyclic (i.e. contains no cycles).\n\n"
+   "@return: C{True} if the graph is acyclic, C{False} otherwise.\n"
+   "@rtype: boolean"
+  },
+
+  {"is_dag", (PyCFunction) igraphmodule_Graph_is_dag,
+   METH_NOARGS,
+   "is_dag()\n--\n\n"
+   "Checks whether the graph is a DAG (directed acyclic graph).\n\n"
+   "A DAG is a directed graph with no directed cycles.\n\n"
+   "@return: C{True} if it is a DAG, C{False} otherwise.\n"
+   "@rtype: boolean"
+  },
+
+  {"fundamental_cycles", (PyCFunction) igraphmodule_Graph_fundamental_cycles,
+   METH_VARARGS | METH_KEYWORDS,
+   "fundamental_cycles(start_vid=None, cutoff=None)\n--\n\n"
+   "Finds a single fundamental cycle basis of the graph\n\n"
+   "@param start_vid: when C{None} or negative, a complete fundamental cycle basis is\n"
+   "  returned. When it is a vertex or a vertex ID, the fundamental cycles\n"
+   "  associated with the BFS tree rooted in that vertex will be returned,\n"
+   "  only for the weakly connected component containing that vertex\n"
+   "@param cutoff: when C{None} or negative, a complete cycle basis is returned. Otherwise\n"
+   "  the BFS is stopped after this many steps, so the result will effectively\n"
+   "  include cycles of length M{2 * cutoff + 1} or shorter only.\n"
+   "@return: the cycle basis as a list of tuples containing edge IDs"
+  },
+  {"minimum_cycle_basis", (PyCFunction) igraphmodule_Graph_minimum_cycle_basis,
+   METH_VARARGS | METH_KEYWORDS,
+   "minimum_cycle_basis(cutoff=None, complete=True, use_cycle_order=True)\n--\n\n"
+   "Computes a minimum cycle basis of the graph\n\n"
+   "@param cutoff: when C{None} or negative, a complete minimum cycle basis is returned.\n"
+   "  Otherwise only those cycles in the result will be part of some minimum\n"
+   "  cycle basis that are of length M{2 * cutoff + 1} or shorter. Cycles\n"
+   "  longer than this limit may not be of the smallest possible size. This\n"
+   "  parameter effectively limits the depth of the BFS tree when computing\n"
+   "  candidate cycles and may speed up the computation substantially.\n"
+   "@param complete: used only when a cutoff is specified, and in this case it\n"
+   "  specifies whether a complete basis is returned (C{True}) or the result\n"
+   "  will be limited to cycles of length M{2 * cutoff + 1} or shorter only.\n"
+   "  This limits computation time, but the result may not span the entire\n"
+   "  cycle space.\n"
+   "@param use_cycle_order: if C{True}, every cycle is returned in natural\n"
+   "  order: the edge IDs will appear ordered along the cycle. If C{False},\n"
+   "  no guarantees are given about the ordering of edge IDs within cycles.\n"
+   "@return: the cycle basis as a list of tuples containing edge IDs"
   },
 
   /********************/

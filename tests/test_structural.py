@@ -614,18 +614,6 @@ class MiscTests(unittest.TestCase):
         g.to_undirected()
         self.assertRaises(InternalError, g.topological_sorting)
 
-    def testIsDAG(self):
-        g = Graph(5, [(0, 1), (0, 2), (1, 2), (1, 3), (2, 3)], directed=True)
-        self.assertTrue(g.is_dag())
-        g.to_undirected()
-        self.assertFalse(g.is_dag())
-        g = Graph.Barabasi(1000, 2, directed=True)
-        self.assertTrue(g.is_dag())
-        g = Graph.GRG(100, 0.2)
-        self.assertFalse(g.is_dag())
-        g = Graph.Ring(10, directed=True, mutual=False)
-        self.assertFalse(g.is_dag())
-
     def testIsTree(self):
         g = Graph()
         self.assertFalse(g.is_tree())
