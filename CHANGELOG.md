@@ -1,5 +1,16 @@
 # igraph Python interface changelog
 
+## [Unreleased]
+
+### Added
+
+- Added `Graph.minimum_cycle_basis()` and `Graph.fundamental_cycles()`
+
+### Fixed
+
+- Restored missing exports from `igraph.__all__` that used to be in the main
+  `igraph` package before 0.10.0.
+
 ## [0.10.0] - 2022-09-05
 
 ### Added
