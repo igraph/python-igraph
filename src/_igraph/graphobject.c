@@ -3809,16 +3809,31 @@ PyObject *igraphmodule_Graph_average_path_length(igraphmodule_GraphObject *
                                                  self, PyObject * args,
                                                  PyObject * kwds)
 {
-  static char *kwlist[] = { "directed", "unconn", NULL };
+  static char *kwlist[] = { "directed", "unconn", "weights", NULL };
+  PyObject *weights_o = Py_None;
   PyObject *directed = Py_True, *unconn = Py_True;
   igraph_real_t res;
+  igraph_vector_t *weights = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &directed,  &unconn))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist, &directed, &unconn, &weights_o))
     return NULL;
 
-  if (igraph_average_path_length(&self->g, &res, 0, PyObject_IsTrue(directed), PyObject_IsTrue(unconn))) {
-    igraphmodule_handle_igraph_error();
-    return NULL;
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
+      ATTRIBUTE_TYPE_EDGE)) return NULL;
+
+  if (weights) {
+    if (igraph_average_path_length_dijkstra(&self->g, &res, 0, weights, PyObject_IsTrue(directed), PyObject_IsTrue(unconn))) {
+      igraph_vector_destroy(weights); free(weights);
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
+
+    igraph_vector_destroy(weights); free(weights);
+  } else {
+    if (igraph_average_path_length(&self->g, &res, 0, PyObject_IsTrue(directed), PyObject_IsTrue(unconn))) {
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
   }
 
   return PyFloat_FromDouble(res);
@@ -13623,7 +13638,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"average_path_length",
    (PyCFunction) igraphmodule_Graph_average_path_length,
    METH_VARARGS | METH_KEYWORDS,
-   "average_path_length(directed=True, unconn=True)\n--\n\n"
+   "average_path_length(directed=True, unconn=True, weights=None)\n--\n\n"
    "Calculates the average path length in a graph.\n\n"
    "@param directed: whether to consider directed paths in case of a\n"
    "  directed graph. Ignored for undirected graphs.\n"
@@ -13631,6 +13646,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  the average of the geodesic lengths in the components is\n"
    "  calculated. Otherwise for all unconnected vertex pairs,\n"
    "  a path length equal to the number of vertices is used.\n"
+   "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
+   "  even an edge attribute name.\n"
    "@return: the average path length in the graph\n"},
 
   /* interface to igraph_authority_score */

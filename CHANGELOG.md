@@ -6,6 +6,8 @@
 
 - Added `Graph.minimum_cycle_basis()` and `Graph.fundamental_cycles()`
 
+- `Graph.average_path_length()` now supports edge weights.
+
 ### Fixed
 
 - Restored missing exports from `igraph.__all__` that used to be in the main
@@ -38,6 +40,9 @@
   should be counted once or twice, or not at all.
 
 - `Graph.get_laplacian()` now supports left-, right- and symmetric normalization.
+
+- `Graph.modularity()` now supports setting the resolution with the
+  `resolution=...` parameter.
 
 ### Changed
 
