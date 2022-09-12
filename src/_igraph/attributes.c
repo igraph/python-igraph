@@ -1417,23 +1417,24 @@ static igraph_error_t igraphmodule_i_attribute_combine_dicts(PyObject *dict,
   /* Allocate memory for the attribute_combination_records */
   n = PyDict_Size(dict);
   todo = (igraph_attribute_combination_record_t*)calloc(
-    n+1, sizeof(igraph_attribute_combination_record_t)
+    n + 1, sizeof(igraph_attribute_combination_record_t)
   );
   if (todo == 0) {
     IGRAPH_ERROR("cannot allocate memory for attribute combination", IGRAPH_ENOMEM);
   }
-  for (i = 0; i < n+1; i++)
+  for (i = 0; i < n + 1; i++) {
     todo[i].name = 0;       /* sentinel elements */
+  }
   IGRAPH_FINALLY(igraphmodule_i_free_attribute_combination_records, todo);
 
   /* Collect what to do for each attribute in the source dict */
   pos = 0; i = 0;
   while (PyDict_Next(dict, &pos, &key, &value)) {
     todo[i].name = PyUnicode_CopyAsString(key);
-    if (todo[i].name == 0)
+    if (todo[i].name == 0) {
       IGRAPH_ERROR("PyUnicode_CopyAsString failed", IGRAPH_FAILURE);
-    igraph_attribute_combination_query(comb, todo[i].name,
-        &todo[i].type, &todo[i].func);
+    }
+    IGRAPH_CHECK(igraph_attribute_combination_query(comb, todo[i].name, &todo[i].type, &todo[i].func));
     i++;
   }
 
@@ -1564,8 +1565,8 @@ static igraph_error_t igraphmodule_i_attribute_combine_edges(const igraph_t *gra
   PyObject *dict, *newdict;
 
   /* Get the attribute dicts */
-  dict=ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_EDGE];
-  newdict=ATTR_STRUCT_DICT(newgraph)[ATTRHASH_IDX_EDGE];
+  dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_EDGE];
+  newdict = ATTR_STRUCT_DICT(newgraph)[ATTRHASH_IDX_EDGE];
 
   return igraphmodule_i_attribute_combine_dicts(dict, newdict,
       merges, comb);
@@ -1599,13 +1600,13 @@ static igraph_error_t igraphmodule_i_attribute_get_info(const igraph_t *graph,
     if (n) {
       retval = igraphmodule_PyList_to_existing_strvector_t(keys, n);
       if (retval) {
-        return retval ? IGRAPH_FAILURE : IGRAPH_SUCCESS;
+        IGRAPH_ERROR("Cannot convert Python list to existing igraph_strvector_t", IGRAPH_FAILURE);
       }
     }
 
     if (t) {
       k = PyList_Size(keys);
-      igraph_vector_int_resize(t, k);
+      IGRAPH_CHECK(igraph_vector_int_resize(t, k));
       for (j = 0; j < k; j++) {
         int is_numeric = 1;
         int is_string = 1;
@@ -1763,8 +1764,9 @@ igraph_error_t igraphmodule_i_get_boolean_graph_attr(const igraph_t *graph,
   /* No error checking, if we get here, the type has already been checked by previous
      attribute handler calls... hopefully :) Same applies for the other handlers. */
   o = PyDict_GetItemString(dict, name);
-  if (!o)
+  if (!o) {
     IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+  }
   IGRAPH_CHECK(igraph_vector_bool_resize(value, 1));
   VECTOR(*value)[0] = PyObject_IsTrue(o);
   return IGRAPH_SUCCESS;
@@ -1778,7 +1780,9 @@ igraph_error_t igraphmodule_i_get_numeric_graph_attr(const igraph_t *graph,
   /* No error checking, if we get here, the type has already been checked by previous
      attribute handler calls... hopefully :) Same applies for the other handlers. */
   o = PyDict_GetItemString(dict, name);
-  if (!o) IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+  if (!o) {
+    IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+  }
   IGRAPH_CHECK(igraph_vector_resize(value, 1));
   if (o == Py_None) {
     VECTOR(*value)[0] = IGRAPH_NAN;
@@ -1801,8 +1805,9 @@ igraph_error_t igraphmodule_i_get_string_graph_attr(const igraph_t *graph,
 
   dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_GRAPH];
   o = PyDict_GetItemString(dict, name);
-  if (!o)
+  if (!o) {
     IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+  }
   IGRAPH_CHECK(igraph_strvector_resize(value, 1));
 
   /* For Python 3.x, we simply call PyObject_Str, which produces a
@@ -1815,8 +1820,9 @@ igraph_error_t igraphmodule_i_get_string_graph_attr(const igraph_t *graph,
     Py_INCREF(str);
   } else {
     PyObject* unicode = PyObject_Str(o);
-    if (unicode == 0)
+    if (unicode == 0) {
       IGRAPH_ERROR("Internal error in PyObject_Str", IGRAPH_EINVAL);
+    }
     str = PyUnicode_AsEncodedString(unicode, "utf-8", "xmlcharrefreplace");
     Py_DECREF(unicode);
   }
