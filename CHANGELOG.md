@@ -1,6 +1,6 @@
 # igraph Python interface changelog
 
-## [Unreleased]
+## [0.10.1] - 2022-09-12
 
 ### Added
 
