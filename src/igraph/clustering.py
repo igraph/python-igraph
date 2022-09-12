@@ -234,11 +234,11 @@ class VertexClustering(Clustering):
           containing a C{weight} key with the appropriate value here.
         """
         if membership is None:
-            Clustering.__init__(self, [0] * graph.vcount(), params)
+            super().__init__([0] * graph.vcount(), params)
         else:
             if len(membership) != graph.vcount():
                 raise ValueError("membership list has invalid length")
-            Clustering.__init__(self, membership, params)
+            super().__init__(membership, params)
 
         self._graph = graph
         self._modularity = modularity
@@ -805,7 +805,7 @@ class VertexDendrogram(Dendrogram):
           original graph was weighted, you should pass a dictionary
           containing a C{weight} key with the appropriate value here.
         """
-        Dendrogram.__init__(self, merges)
+        super().__init__(merges)
         self._graph = graph
         self._optimal_count = optimal_count
         if modularity_params is None:
@@ -1082,7 +1082,7 @@ class VertexCover(Cover):
         if clusters is None:
             clusters = [range(graph.vcount())]
 
-        Cover.__init__(self, clusters, n=graph.vcount())
+        super().__init__(clusters, n=graph.vcount())
         if self._n > graph.vcount():
             raise ValueError(
                 "cluster list contains vertex ID larger than the "
@@ -1247,7 +1247,7 @@ class CohesiveBlocks(VertexCover):
         if blocks is None or cohesion is None or parent is None:
             blocks, cohesion, parent = graph.cohesive_blocks()
 
-        VertexCover.__init__(self, graph, blocks)
+        super().__init__(graph, blocks)
 
         self._cohesion = cohesion
         self._parent = parent

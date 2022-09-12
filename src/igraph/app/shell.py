@@ -336,7 +336,7 @@ class IDLEShell(Shell):
         Imports IDLE's embedded shell. The implementation of this method is
         ripped from idlelib.PyShell.main() after removing the unnecessary
         parts."""
-        Shell.__init__(self)
+        super().__init__()
 
         import idlelib.PyShell
 

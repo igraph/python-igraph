@@ -108,7 +108,7 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
                         Cairo context. The default label drawer is
                         L{CairoTextDrawer}.
         """
-        AbstractCairoGraphDrawer.__init__(self, context, bbox)
+        super().__init__(context, bbox)
         self.vertex_drawer_factory = vertex_drawer_factory
         self.edge_drawer_factory = edge_drawer_factory
         self.label_drawer_factory = label_drawer_factory

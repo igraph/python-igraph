@@ -23,7 +23,7 @@ class CairoDendrogramDrawer(AbstractCairoDrawer):
         @param palette: the palette that can be used to map integer
                         color indices to colors when drawing vertices
         """
-        AbstractCairoDrawer.__init__(self, context, bbox)
+        super().__init__(context, bbox)
         self.palette = palette
 
     @staticmethod

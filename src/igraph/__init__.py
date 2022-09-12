@@ -436,9 +436,9 @@ class Graph(GraphBase):
 
         # Initialize the graph
         if ptr:
-            GraphBase.__init__(self, __ptr=ptr)
+            super().__init__(__ptr=ptr)
         else:
-            GraphBase.__init__(self, nverts, edges, directed)
+            super().__init__(nverts, edges, directed)
 
         # Set the graph attributes
         for key, value in graph_attrs.items():
