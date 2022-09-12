@@ -140,6 +140,10 @@ class VertexClusteringTests(unittest.TestCase):
         self.assertTrue(clg.vs["string"] == ["aaa", "bbc", "ccab"])
         self.assertTrue(clg.vs["int"] == [41, 64, 47])
 
+    def testSizesWithNone(self):
+        cl = VertexClustering(self.graph, [0, 0, 0, None, 1, 1, 2, None, 2, None])
+        self.assertTrue(cl.sizes() == [3, 2, 2])
+
 
 class CoverTests(unittest.TestCase):
     def setUp(self):

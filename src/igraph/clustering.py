@@ -140,7 +140,8 @@ class Clustering:
         """
         counts = [0] * len(self)
         for x in self._membership:
-            counts[x] += 1
+            if x is not None:
+                counts[x] += 1
 
         if args:
             return [counts[idx] for idx in args]
