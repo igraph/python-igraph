@@ -1,5 +1,12 @@
 # igraph Python interface changelog
 
+## [Unreleased]
+
+### Fixed
+
+- `Clustering.sizes()` now works correctly even if the membership vector
+  contains `None` items.
+
 ## [0.10.1] - 2022-09-12
 
 ### Added
@@ -370,7 +377,8 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[Unreleased]: https://github.com/igraph/python-igraph/compare/0.10.0...master
+[Unreleased]: https://github.com/igraph/python-igraph/compare/0.10.1...master
+[0.10.1]: https://github.com/igraph/python-igraph/compare/0.10.0...0.10.1
 [0.10.0]: https://github.com/igraph/python-igraph/compare/0.9.11...0.10.0
 [0.9.11]: https://github.com/igraph/python-igraph/compare/0.9.10...0.9.11
 [0.9.10]: https://github.com/igraph/python-igraph/compare/0.9.9...0.9.10
