@@ -13457,13 +13457,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "      igraph uses the original implementation of Fabien Viger; see the\n"
    "      following URL and the paper cited on it for the details of the\n"
    "      algorithm: U{https://www-complexnetworks.lip6.fr/~latapy/FV/generation.html}.\n"
-   "  \n"
-   "  Legacy names that were valid before igraph 0.10 are also supported, but\n"
-   "  these may be removed without further notice:\n"
-   "  \n"
-   "    - C{\"simple\"} -- equivalent to C{\"configuration\"}"
-   "    - C{\"no_multiple\"} -- equivalent to C{\"fast_heur_simple\"}"
-   "    - C{\"no_multiple_uniform\"} -- equivalent to C{\"configuration_simple\"}\n"
   },
 
   /* interface to igraph_isoclass_create */
@@ -14388,8 +14381,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "personalized_pagerank(vertices=None, directed=True, damping=0.85,\n"
    "        reset=None, reset_vertices=None, weights=None, \n"
-   "        arpack_options=None, implementation=\"prpack\", niter=1000,\n"
-   "        eps=0.001)\n--\n\n"
+   "        arpack_options=None, implementation=\"prpack\")\n--\n\n"
    "Calculates the personalized PageRank values of a graph.\n\n"
    "The personalized PageRank calculation is similar to the PageRank\n"
    "calculation, but the random walk is reset to a non-uniform distribution\n"
@@ -14424,10 +14416,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "      implementation in igraph 0.7\n\n"
    "    - C{\"arpack\"}: use the ARPACK library. This implementation\n"
    "      was used from version 0.5, until version 0.7.\n\n"
-   "@param niter: unused, kept for sake of backwards compatibility. It will\n"
-   "  be removed in igraph 0.10.\n"
-   "@param eps: unused, kept for sake of backwards compatibility. It will\n"
-   "  be removed in igraph 0.10.\n"
    "@return: a list with the personalized PageRank values of the specified\n"
    "  vertices.\n"},
 
