@@ -19,5 +19,6 @@ vendor/install/
 
 doc/source/gallery.rst
 doc/api/
+doc/dash/
 doc/html/
 doc/jekyll_tools/vendor
