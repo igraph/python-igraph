@@ -86,8 +86,8 @@ Finally, we call our function with the two graphs:
         gridspec_kw=dict(height_ratios=(15, 1, 1)),
         )
     #plt.subplots_adjust(bottom=0.3)
-    plot_betweenness(g1, fig, *axs[:, 0])
-    plot_betweenness(g2, fig, *axs[:, 1])
+    plot_betweenness(g1, *axs[:, 0])
+    plot_betweenness(g2, *axs[:, 1])
     fig.tight_layout(h_pad=1)
     plt.show()
 
