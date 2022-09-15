@@ -46,12 +46,16 @@ cd ${ROOT_FOLDER}
 if [ ! -d ".venv" ]; then
   python3 -m venv .venv
 
-  # Install sphinx, matplotlib, wheel, and pydoctor into the venv
+  # Install sphinx, matplotlib, wheel and pydoctor into the venv.
+  # doc2dash is optional; it will be installed when -d is given
   .venv/bin/pip install -U pip sphinx sphinxbootstrap4theme matplotlib wheel pydoctor
 fi
 
-# Make sure that Sphinx and PyDoctor are up-to-date in the virtualenv
+# Make sure that Sphinx, PyDoctor (and maybe doc2dash) are up-to-date in the virtualenv
 .venv/bin/pip install -U sphinx pydoctor
+if [ x$DOC2DASH = x1 ]; then
+    .venv/bin/pip install -U doc2dash
+fi
 
 #echo "Set PyDoctor theme"
 #$SCRIPTS_FOLDER/set-pydoctor-theme.sh ${ROOT_FOLDER} ${STANDALONE}
