@@ -117,7 +117,7 @@ if [ "x$DOC2DASH" = "x1" ]; then
   if [ "x$DOC2DASH" != x ]; then
       echo "Generating Dash docset..."
       "$DOC2DASH" \
-          --online-redirect-url "https://igraph.org/python/api" \
+          --online-redirect-url "https://igraph.org/python/api/latest" \
           --name "python-igraph" \
           -d "${DASH_FOLDER}" \
           -f \
