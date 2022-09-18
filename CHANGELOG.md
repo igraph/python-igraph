@@ -4,6 +4,9 @@
 
 ### Fixed
 
+- Fixed a crash in `Graph.decompose()` that was accidentally introduced in
+  0.10.0 during the transition to `igraph_graph_list_t` in the C core.
+
 - `Clustering.sizes()` now works correctly even if the membership vector
   contains `None` items.
 
