@@ -2495,41 +2495,49 @@ PyObject* igraphmodule_vector_int_list_t_to_PyList_of_tuples(const igraph_vector
  * will destroy each graph inside, which in turns destroys the vertices and edges
  * data structures that are now supposedly managed by Python.
  *
- * \param v the \c igraph_graph_list_t containing the list to be converted
+ * \param v the \c igraph_graph_list_t containing the list to be converted; the
+ *     list will become empty after executing this function
  * \param type the GraphBase subclass you want your graphs to use. When called from
  *   a GraphBase method, this is typically Py_TYPE(self)
  * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
  */
-PyObject* igraphmodule_graph_list_t_to_PyList(const igraph_graph_list_t *v, PyTypeObject* type) {
+PyObject* igraphmodule_graph_list_t_to_PyList(igraph_graph_list_t *v, PyTypeObject* type) {
   PyObject *list;
   Py_ssize_t n, i;
-  igraph_t *g;
+  igraph_t g;
   igraphmodule_GraphObject *o;
 
   /* We have to create a Python igraph object for every graph returned */
   n = igraph_graph_list_size(v);
   list = PyList_New(n);
-  for (i = 0; i < n; i++) {
-    /* Python takes ownership of vertices and nodes here */
-    g = igraph_graph_list_get_ptr(v, i);
-    o = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t(type, g);
+  for (i = n - 1; i >= 0; i--) {
+    /* Remove the last graph from the list and take ownership of it temporarily */
+    if (igraph_graph_list_remove(v, i, &g)) {
+      igraphmodule_handle_igraph_error();
+      Py_DECREF(list);
+      return NULL;
+    }
 
+    /* Transfer ownership of the graph to Python */
+    o = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t(type, &g);
+    if (o == NULL) {
+      igraph_destroy(&g);
+      Py_DECREF(list);
+      return NULL;
+    }
+
+    /* Put the graph into the result list; the list will take ownership */
     if (PyList_SetItem(list, i, (PyObject *) o)) {
       Py_DECREF(o);
       Py_DECREF(list);
-      return 0;
+      return NULL;
     }
   }
 
-  /* Now we know the function went fine, so we can free pointers without worrying
-   * that we won't be able to find them again */
-
-  /* reference has been transferred by PyList_SetItem, no need to DECREF.
-   *
-   * we mustn't call igraph_destroy here, because it would free the vertices
-   * and the edges as well, but we need them in o->g. So just call free */
-  for (i = 0; i < n; i++) {
-    free(igraph_graph_list_get_ptr(v, i));
+  if (!igraph_graph_list_empty(v)) {
+    PyErr_SetString(PyExc_RuntimeError, "expected empty graph list after conversion");
+    Py_DECREF(list);
+    return NULL;
   }
 
   return list;

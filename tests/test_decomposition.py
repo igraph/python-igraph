@@ -44,6 +44,29 @@ class SubgraphTests(unittest.TestCase):
 
 
 class DecompositionTests(unittest.TestCase):
+    def testDecomposeUndirected(self):
+        g = Graph([(0, 1), (1, 2), (2, 3)], n=4, directed=False)
+        components = g.decompose()
+
+        assert len(components) == 1
+        assert components[0].isomorphic(g)
+
+        g = Graph.Full(5) + Graph.Full(3)
+        components = g.decompose()
+
+        assert len(components) == 2
+        assert components[0].isomorphic(Graph.Full(5))
+        assert components[1].isomorphic(Graph.Full(3))
+
+    def testDecomposeDirected(self):
+        g = Graph([(0, 1), (1, 2), (2, 3)], n=4, directed=True)
+        components = g.decompose()
+
+        g1 = Graph(1, directed=True)
+        assert len(components) == 4
+        for component in components:
+            assert component.isomorphic(g1)
+
     def testKCores(self):
         g = Graph(
             11,
