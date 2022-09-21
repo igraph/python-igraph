@@ -306,7 +306,12 @@ class IgraphCCoreCMakeBuilder:
                         libraries.extend(
                             word[2:] for word in words if word.startswith("-l")
                         )
-
+                    # Remap known library names in Requires and Requires.private with
+                    # prior knowledge -- we don't want to rebuild pkg-config in Python
+                    if line.startswith("Requires: ") or line.startswith("Requires.private: "):
+                        for word in line.strip().split():
+                            if word.startswith("libxml-"):
+                                libraries.append("xml2")
             if not libraries:
                 # Educated guess
                 libraries = ["igraph"]
