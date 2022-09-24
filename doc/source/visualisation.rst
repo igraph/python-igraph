@@ -223,7 +223,7 @@ You can also specify vertex and edge color, size, and labels - and more - via ad
 
 See the `tutorial`_ for examples and a full list of options.
 
-.. _API documentation: https://igraph.org/python/doc/igraph-module.html
+.. _API documentation: https://igraph.org/python/api/latest/
 .. _matplotlib: https://matplotlib.org
 .. _Jupyter: https://jupyter.org/
 .. _tutorial: https://igraph.org/python/doc/tutorial/tutorial.html#layouts-and-plotting

@@ -443,4 +443,4 @@ Flow and cuts are closely related, therefore you might find the following functi
 - :meth:`Graph.edge_connectivity` or :meth:`Graph.edge_disjoint_paths` or :meth:`Graph.adhesion`
 - :meth:`Graph.vertex_connectivity` or :meth:`Graph.cohesion`
 
-.. _API documentation: https://igraph.org/python/doc/igraph-module.html
+.. _API documentation: https://igraph.org/python/api/latest/

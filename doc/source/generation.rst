@@ -209,4 +209,4 @@ Finally, there are some ways of generating graphs that are not covered by the pr
  - small graphs of any "isomorphism class" :meth:`Graph.Isoclass`
  - graphs with a specified degree sequence :meth:`Graph.Realize_Degree_Sequence`
                      
-.. _API documentation: https://igraph.org/python/doc/igraph-module.html
+.. _API documentation: https://igraph.org/python/api/latest/
