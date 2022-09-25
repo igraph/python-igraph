@@ -889,7 +889,7 @@ options = dict(
         "cairo": ["cairocffi>=1.2.0"],
 
         # Dependencies needed for plotting with Matplotlib
-        "matplotlib": ["matplotlib>=3.3.0; platform_python_implementation != 'PyPy'"],
+        "matplotlib": ["matplotlib>=3.6.0; platform_python_implementation != 'PyPy'"],
 
         # Dependencies needed for plotting with Plotly
         "plotly": ["plotly>=5.3.0"],
@@ -904,7 +904,7 @@ options = dict(
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
-            "matplotlib>=3.3.4; platform_python_implementation != 'PyPy'",
+            "matplotlib>=3.6.0; platform_python_implementation != 'PyPy'",
             "plotly>=5.3.0",
             # matplotlib requires Pillow; however, Pillow >= 8.4 does not
             # provide manylinux2010 wheels any more, but we need those in
