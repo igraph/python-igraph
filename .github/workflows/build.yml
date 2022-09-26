@@ -9,6 +9,7 @@ env:
   CIBW_MANYLINUX_PYPY_X86_64_IMAGE: "manylinux2014"
   CIBW_MANYLINUX_PYPY_I686_IMAGE: "manylinux2014"
   CIBW_SKIP: "cp36-*"
+  PYTEST_TIMEOUT: 60
   MACOSX_DEPLOYMENT_TARGET: "10.9"
 
 jobs:
@@ -252,7 +253,7 @@ jobs:
 
       - name: Test
         run: |
-          pip install numpy scipy pandas networkx pytest
+          pip install numpy scipy pandas networkx pytest pytest-timeout
           python -m pytest tests
 
       - uses: actions/upload-artifact@v2
@@ -310,7 +311,7 @@ jobs:
 
       - name: Install test dependencies
         run: |
-          pip install pytest numpy scipy pandas networkx
+          pip install pytest pytest-timeout numpy scipy pandas networkx
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.

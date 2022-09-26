@@ -901,6 +901,7 @@ options = dict(
         "test": [
             "networkx>=2.5",
             "pytest>=7.0.1",
+            "pytest-timeout>=2.1.0",
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
@@ -920,6 +921,7 @@ options = dict(
         "test-musl": [
             "networkx>=2.5",
             "pytest>=7.0.1",
+            "pytest-timeout>=2.1.0",
         ],
 
         # Dependencies needed for building the documentation
