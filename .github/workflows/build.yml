@@ -35,7 +35,7 @@ jobs:
       - name: Build wheels (manylinux)
         uses: joerick/cibuildwheel@v2.6.1
         env:
-          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake wheel && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
           # Skip tests for Python 3.10 because SciPy does not have a 32-bit
           # wheel for Linux yet
@@ -44,7 +44,7 @@ jobs:
       - name: Build wheels (musllinux)
         uses: joerick/cibuildwheel@v2.6.1
         env:
-          CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install cmake wheel && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
           CIBW_TEST_EXTRAS: "test-musl"
 
@@ -69,14 +69,14 @@ jobs:
       - name: Build wheels (manylinux)
         uses: joerick/cibuildwheel@v2.6.1
         env:
-          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install cmake wheel && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
 
       - name: Build wheels (musllinux)
         uses: joerick/cibuildwheel@v2.6.1
         env:
-          CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install cmake wheel && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-musllinux_aarch64"
           CIBW_TEST_EXTRAS: "test-musl"
@@ -253,8 +253,8 @@ jobs:
 
       - name: Test
         run: |
-          pip install numpy scipy pandas networkx pytest pytest-timeout
-          python -m pytest tests
+          pip install --prefer-binary numpy scipy pandas networkx pytest pytest-timeout
+          python -m pytest -v tests
 
       - uses: actions/upload-artifact@v2
         with:
@@ -311,7 +311,7 @@ jobs:
 
       - name: Install test dependencies
         run: |
-          pip install pytest pytest-timeout numpy scipy pandas networkx
+          pip install --prefer-binary pytest pytest-timeout numpy scipy pandas networkx
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.
