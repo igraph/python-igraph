@@ -2,6 +2,7 @@ name: Build and test, upload to PyPI on release
 
 on: [push, pull_request]
 env:
+  CIBW_ENVIRONMENT_PASS_LINUX: PYTEST_TIMEOUT
   CIBW_TEST_COMMAND: "cd {project} && python -m pytest -v tests"
   CIBW_TEST_EXTRAS: "test"
   CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
