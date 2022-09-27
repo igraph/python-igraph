@@ -277,7 +277,6 @@ class VertexSeqTests(unittest.TestCase):
         self.assertEqual(self.g.vs.select(2, 3, 4, 2).find(3).index, 2)
         self.assertRaises(IndexError, self.g.vs.find, 17)
 
-    """
     def testIntegerFilteringSelect(self):
         subset = self.g.vs.select(2, 3, 4, 2)
         self.assertEqual(len(subset), 4)
@@ -287,7 +286,6 @@ class VertexSeqTests(unittest.TestCase):
         subset = self.g.vs[2, 3, 4, 2]
         self.assertTrue(len(subset) == 4)
         self.assertTrue(subset["test"] == [2, 3, 4, 2])
-    """
 
     def testStringFilteringFind(self):
         self.assertEqual(self.g.vs.find("D").index, 3)
