@@ -5155,7 +5155,7 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
     return NULL;
 
-  if (PyLong_AsInt(k_o, &k))
+  if (igraphmodule_PyObject_to_integer_t(k_o, &k))
     return NULL;
 
   if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
