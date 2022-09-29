@@ -5130,6 +5130,68 @@ PyObject *igraphmodule_Graph_get_all_shortest_paths(igraphmodule_GraphObject *
   igraph_vector_int_list_destroy(&res);
   return list ? list : NULL;
 }
+/** \ingroup python_interface_graph
+ * \brief Calculates the k-shortest paths from/to a given node in the graph
+ * \return a list containing the k-shortest paths from/to the given node
+ * \sa TODO I don't know what to write here : igraph_get_shortest_paths
+ */
+PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
+                                                    self, PyObject * args,
+                                                    PyObject * kwds)
+{
+  static char *kwlist[] = {"k", "v", "to", "weights", "mode", NULL };
+  igraph_vector_int_list_t res;
+  igraph_vector_t *weights = 0;
+  igraph_neimode_t mode = IGRAPH_OUT;
+  igraph_integer_t from;
+  igraph_integer_t k;
+  igraph_vs_t to;
+  PyObject *list, *from_o, *mode_o=Py_None, *to_o=Py_None, *weights_o=Py_None,*k=Py_None;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &k, &from_o,
+        &to_o, &weights_o, &mode_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vs_t(to_o, &to, &self->g, 0, 0))
+    return NULL;
+
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
+      ATTRIBUTE_TYPE_EDGE)) {
+    igraph_vs_destroy(&to);
+    return NULL;
+  }
+
+  if (igraph_vector_int_list_init(&res, 0)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vs_destroy(&to);
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    return NULL;
+  }
+  if (igraph_get_k_shortest_paths(&self->g,
+        weights,
+        /* vertices, edges */
+        &res, NULL,
+        k, from, to, mode)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_int_list_destroy(&res);
+    igraph_vs_destroy(&to);
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    return NULL;
+  }
+
+  igraph_vs_destroy(&to);
+  if (weights) { igraph_vector_destroy(weights); free(weights); }
+
+  list = igraphmodule_vector_int_list_t_to_PyList(&res);
+  igraph_vector_int_list_destroy(&res);
+  return list ? list : NULL;
+}
 
 /** \ingroup python_interface_graph
  * \brief Calculates all the simple paths from a single source to other nodes
@@ -14130,6 +14192,28 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: all of the shortest path from the given node to every other\n"
    "  reachable node in the graph in a list. Note that in case of mode=C{\"in\"},\n"
    "  the vertices in a path are returned in reversed order!"},
+
+   {"get_k_shortest_paths",
+   (PyCFunction) igraphmodule_Graph_get_k_shortest_paths,
+   METH_VARARGS | METH_KEYWORDS,
+   "get_all_shortest_paths(k, v, to=None, weights=None, mode=\"out\")\n--\n\n"
+   "Calculates all of the shortest paths from/to a given node in a graph.\n\n"
+   "@param k: the number of shortest path desired\n"
+   "@param v: the source for the calculated paths\n"
+   "@param to: a vertex selector describing the destination for\n"
+   "  the calculated paths. This can be a single vertex ID, a list of\n"
+   "  vertex IDs, a single vertex name, a list of vertex names or a\n"
+   "  L{VertexSeq} object. C{None} means all the vertices.\n"
+   "@param weights: edge weights in a list or the name of an edge attribute\n"
+   "  holding edge weights. If C{None}, all edges are assumed to have\n"
+   "  equal weight.\n"
+   "@param mode: the directionality of the paths. C{\"in\"} means to\n"
+   "  calculate incoming paths, C{\"out\"} means to calculate outgoing\n"
+   "  paths, C{\"all\"} means to calculate both ones.\n"
+   "@return: the k-shortest path from the given node to every other depnding on param to\n"
+   "  reachable node in the graph in a list. Note that in case of mode=C{\"in\"},\n"
+   "  the vertices in a path are returned in reversed order!"},
+
 
   /* interface to igraph_get_all_simple_paths */
   {"_get_all_simple_paths",
