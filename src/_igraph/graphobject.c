@@ -5139,13 +5139,13 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
                                                     self, PyObject * args,
                                                     PyObject * kwds)
 {
-  static char *kwlist[] = {"k", "v", "to", "weights", "mode", NULL };
+  static char *kwlist[] = {"k", "from", "to", "weights", "mode", NULL };
   igraph_vector_int_list_t res;
   igraph_vector_t *weights = 0;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_integer_t from;
   igraph_integer_t k;
-  igraph_vs_t to;
+  igraph_integer_t to;
   PyObject *list, *from_o, *mode_o=Py_None, *to_o=Py_None, *weights_o=Py_None,*k_o=Py_None;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &k_o, &from_o,
@@ -5158,10 +5158,10 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
   if (igraphmodule_PyObject_to_integer_t(k_o, &k))
     return NULL;
 
-  if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
+  if (igraphmodule_PyObject_to_integer_t(from_o, &from))
     return NULL;
 
-  if (igraphmodule_PyObject_to_vs_t(to_o, &to, &self->g, 0, 0))
+  if (igraphmodule_PyObject_to_integer_t(to_o, &to))
     return NULL;
 
   if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
@@ -14202,11 +14202,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "get_all_shortest_paths(k, v, to=None, weights=None, mode=\"out\")\n--\n\n"
    "Calculates all of the shortest paths from/to a given node in a graph.\n\n"
    "@param k: the number of shortest path desired\n"
-   "@param v: the source for the calculated paths\n"
-   "@param to: a vertex selector describing the destination for\n"
-   "  the calculated paths. This can be a single vertex ID, a list of\n"
-   "  vertex IDs, a single vertex name, a list of vertex names or a\n"
-   "  L{VertexSeq} object. C{None} means all the vertices.\n"
+   "@param from: the ID of the vertex from which the paths are calculated.\n"
+   "@param to: the ID of the vertex to which the paths are calculated.\n"
    "@param weights: edge weights in a list or the name of an edge attribute\n"
    "  holding edge weights. If C{None}, all edges are assumed to have\n"
    "  equal weight.\n"
