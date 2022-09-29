@@ -5146,13 +5146,16 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
   igraph_integer_t from;
   igraph_integer_t k;
   igraph_vs_t to;
-  PyObject *list, *from_o, *mode_o=Py_None, *to_o=Py_None, *weights_o=Py_None,*k=Py_None;
+  PyObject *list, *from_o, *mode_o=Py_None, *to_o=Py_None, *weights_o=Py_None,*k_o=Py_None;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &k, &from_o,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &k_o, &from_o,
         &to_o, &weights_o, &mode_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+    return NULL;
+
+  if (PyLong_AsInt(k_o, &k))
     return NULL;
 
   if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
