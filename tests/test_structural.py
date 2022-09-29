@@ -841,6 +841,64 @@ class PathTests(unittest.TestCase):
         self.assertEqual(4, sum(1 for path in sps if path[-1] == 12))
         self.assertEqual(12, sum(1 for path in sps if path[-1] == 15))
 
+    def testGetKShortestPaths(self):
+        g = Graph(4, [(0, 1), (1, 2), (1, 3), (2, 4), (3, 4), (4, 5)], directed=True)
+    
+        sps = sorted(g.get_k_shortest_paths(1,0, 0))
+        expected = [[0]]
+        self.assertEqual(expected, sps)
+    
+        sps = sorted(g.get_k_shortest_paths(2,0, 5))
+        expected = [[0, 1, 2, 4, 5], [0, 1, 3, 4, 5]]
+        self.assertEqual(expected, sps)
+    
+        sps = sorted(g.get_k_shortest_paths(2,1, 4))
+        expected = [[1, 2, 4], [1, 3, 4]]
+        self.assertEqual(expected, sps)
+    
+        g = Graph.Lattice([5, 5], circular=False)
+    
+        sps = sorted(g.get_k_shortest_paths(6,0, 12))
+        expected = [
+            [0, 1, 2, 7, 12],
+            [0, 1, 6, 7, 12],
+            [0, 1, 6, 11, 12],
+            [0, 5, 6, 7, 12],
+            [0, 5, 6, 11, 12],
+            [0, 5, 10, 11, 12],
+        ]
+        self.assertEqual(expected, sps)
+    
+        g = Graph.Lattice([100, 100], circular=False)
+        sps = sorted(g.get_k_shortest_paths(6,0, 202))
+        expected = [
+            [0, 1, 2, 102, 202],
+            [0, 1, 101, 102, 202],
+            [0, 1, 101, 201, 202],
+            [0, 100, 101, 102, 202],
+            [0, 100, 101, 201, 202],
+            [0, 100, 200, 201, 202],
+        ]
+        self.assertEqual(expected, sps)
+    
+        g = Graph.Lattice([100, 100], circular=False)
+        sps = sorted(g.get_k_shortest_paths(1,0, [0, 202]))
+        self.assertEqual([[0]] + expected, sps)
+    
+        g = Graph([(0, 1), (1, 2), (0, 2)])
+        g.es["weight"] = [0.5, 0.5, 1]
+        sps = sorted(g.get_k_shortest_paths(4,0, weights="weight"))
+        self.assertEqual([[0], [0, 1], [0, 1, 2], [0, 2]], sps)
+    
+        g = Graph.Lattice([4, 4], circular=False)
+        g.es["weight"] = 1
+        g.es[2, 8]["weight"] = 100
+        sps = sorted(g.get_k_shortest_paths(20,0, [3, 12, 15], weights="weight"))
+        self.assertEqual(20, len(sps))
+        self.assertEqual(4, sum(1 for path in sps if path[-1] == 3))
+        self.assertEqual(4, sum(1 for path in sps if path[-1] == 12))
+        self.assertEqual(12, sum(1 for path in sps if path[-1] == 15))
+    
     def testGetAllSimplePaths(self):
         g = Graph.Ring(20)
         sps = sorted(g.get_all_simple_paths(0, 10))
