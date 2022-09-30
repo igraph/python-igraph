@@ -306,7 +306,12 @@ class IgraphCCoreCMakeBuilder:
                         libraries.extend(
                             word[2:] for word in words if word.startswith("-l")
                         )
-
+                    # Remap known library names in Requires and Requires.private with
+                    # prior knowledge -- we don't want to rebuild pkg-config in Python
+                    if line.startswith("Requires: ") or line.startswith("Requires.private: "):
+                        for word in line.strip().split():
+                            if word.startswith("libxml-"):
+                                libraries.append("xml2")
             if not libraries:
                 # Educated guess
                 libraries = ["igraph"]
@@ -884,7 +889,7 @@ options = dict(
         "cairo": ["cairocffi>=1.2.0"],
 
         # Dependencies needed for plotting with Matplotlib
-        "matplotlib": ["matplotlib>=3.3.0; platform_python_implementation != 'PyPy'"],
+        "matplotlib": ["matplotlib>=3.5.0,<3.6.0; platform_python_implementation != 'PyPy'"],
 
         # Dependencies needed for plotting with Plotly
         "plotly": ["plotly>=5.3.0"],
@@ -896,10 +901,12 @@ options = dict(
         "test": [
             "networkx>=2.5",
             "pytest>=7.0.1",
+            "pytest-timeout>=2.1.0",
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
-            "matplotlib>=3.3.4,<3.6; platform_python_implementation != 'PyPy'",
+            # Matplotlib 3.6.0 does not support Python 3.7 any more
+            "matplotlib>=3.5.0,<3.6.0; platform_python_implementation != 'PyPy' and python_version >= '3.8'",
             "plotly>=5.3.0",
             # matplotlib requires Pillow; however, Pillow >= 8.4 does not
             # provide manylinux2010 wheels any more, but we need those in
@@ -914,6 +921,7 @@ options = dict(
         "test-musl": [
             "networkx>=2.5",
             "pytest>=7.0.1",
+            "pytest-timeout>=2.1.0",
         ],
 
         # Dependencies needed for building the documentation

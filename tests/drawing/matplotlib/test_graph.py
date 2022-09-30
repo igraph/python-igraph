@@ -13,6 +13,7 @@ except ImportError:
 
 try:
     import matplotlib as mpl
+    mpl.use("agg")
     import matplotlib.pyplot as plt
 except ImportError:
     mpl = None

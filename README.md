@@ -137,7 +137,7 @@ the packaged igraph library instead of bringing its own copy.
 It is also useful on macOS if you want to link to the igraph library installed
 from Homebrew.
 
-Due to the lack of support of `pkg-config` on Window, it is currently not
+Due to the lack of support of `pkg-config` on Windows, it is currently not
 possible to build against an external library on Windows.
 
 ## Compiling the development version
