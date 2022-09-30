@@ -881,23 +881,10 @@ class PathTests(unittest.TestCase):
         ]
         self.assertEqual(expected, sps)
     
-        g = Graph.Lattice([100, 100], circular=False)
-        sps = sorted(g.get_k_shortest_paths(1,0, [0, 202]))
-        self.assertEqual([[0]] + expected, sps)
-    
         g = Graph([(0, 1), (1, 2), (0, 2)])
         g.es["weight"] = [0.5, 0.5, 1]
-        sps = sorted(g.get_k_shortest_paths(4,0, weights="weight"))
-        self.assertEqual([[0], [0, 1], [0, 1, 2], [0, 2]], sps)
-    
-        g = Graph.Lattice([4, 4], circular=False)
-        g.es["weight"] = 1
-        g.es[2, 8]["weight"] = 100
-        sps = sorted(g.get_k_shortest_paths(20,0, [3, 12, 15], weights="weight"))
-        self.assertEqual(20, len(sps))
-        self.assertEqual(4, sum(1 for path in sps if path[-1] == 3))
-        self.assertEqual(4, sum(1 for path in sps if path[-1] == 12))
-        self.assertEqual(12, sum(1 for path in sps if path[-1] == 15))
+        sps = sorted(g.get_k_shortest_paths(2,0,2, weights="weight"))
+        self.assertEqual([[0, 2],[0,1,2]], sps)
     
     def testGetAllSimplePaths(self):
         g = Graph.Ring(20)

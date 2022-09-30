@@ -14199,8 +14199,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    {"get_k_shortest_paths",
    (PyCFunction) igraphmodule_Graph_get_k_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "get_all_shortest_paths(k, v, to=None, weights=None, mode=\"out\")\n--\n\n"
-   "Calculates all of the shortest paths from/to a given node in a graph.\n\n"
+   "get_k_shortest_paths(k, from, to, weights=None, mode=\"out\")\n--\n\n"
+   "Calculates the k shortest paths from/to a given node in a graph.\n\n"
    "@param k: the number of shortest path desired\n"
    "@param from: the ID of the vertex from which the paths are calculated.\n"
    "@param to: the ID of the vertex to which the paths are calculated.\n"
