@@ -5185,7 +5185,6 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
     return NULL;
   }
 
-  igraph_vs_destroy(&to);
   if (weights) { igraph_vector_destroy(weights); free(weights); }
 
   list = igraphmodule_vector_int_list_t_to_PyList(&res);
