@@ -419,8 +419,8 @@ class EdgeSeqTests(unittest.TestCase):
 
 
 def suite():
-    edge_suite = unittest.makeSuite(EdgeTests)
-    es_suite = unittest.makeSuite(EdgeSeqTests)
+    edge_suite = unittest.defaultTestLoader.loadTestsFromTestCase(EdgeTests)
+    es_suite = unittest.defaultTestLoader.loadTestsFromTestCase(EdgeSeqTests)
     return unittest.TestSuite([edge_suite, es_suite])
 
 

@@ -104,8 +104,8 @@ class PaletteTests(unittest.TestCase):
 
 
 def suite():
-    color_suite = unittest.makeSuite(ColorTests)
-    palette_suite = unittest.makeSuite(PaletteTests)
+    color_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ColorTests)
+    palette_suite = unittest.defaultTestLoader.loadTestsFromTestCase(PaletteTests)
     return unittest.TestSuite([color_suite, palette_suite])
 
 

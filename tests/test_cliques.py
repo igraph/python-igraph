@@ -249,8 +249,8 @@ class CliqueBenchmark:
 
 
 def suite():
-    clique_suite = unittest.makeSuite(CliqueTests)
-    indvset_suite = unittest.makeSuite(IndependentVertexSetTests)
+    clique_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CliqueTests)
+    indvset_suite = unittest.defaultTestLoader.loadTestsFromTestCase(IndependentVertexSetTests)
     return unittest.TestSuite([clique_suite, indvset_suite])
 
 

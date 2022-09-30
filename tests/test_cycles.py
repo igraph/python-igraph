@@ -170,7 +170,7 @@ class CycleTests(unittest.TestCase):
 
 
 def suite():
-    cycle_suite = unittest.makeSuite(CycleTests)
+    cycle_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CycleTests)
     return unittest.TestSuite([cycle_suite])
 
 

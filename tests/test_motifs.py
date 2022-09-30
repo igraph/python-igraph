@@ -54,8 +54,8 @@ class TrianglesTests(unittest.TestCase):
 
 
 def suite():
-    motif_suite = unittest.makeSuite(MotifTests)
-    triangles_suite = unittest.makeSuite(TrianglesTests)
+    motif_suite = unittest.defaultTestLoader.loadTestsFromTestCase(MotifTests)
+    triangles_suite = unittest.defaultTestLoader.loadTestsFromTestCase(TrianglesTests)
     return unittest.TestSuite([motif_suite, triangles_suite])
 
 

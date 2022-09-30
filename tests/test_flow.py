@@ -249,9 +249,9 @@ class GomoryHuTests(unittest.TestCase):
 
 
 def suite():
-    flow_suite = unittest.makeSuite(MaxFlowTests)
-    cut_suite = unittest.makeSuite(CutTests)
-    gomory_hu_suite = unittest.makeSuite(GomoryHuTests)
+    flow_suite = unittest.defaultTestLoader.loadTestsFromTestCase(MaxFlowTests)
+    cut_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CutTests)
+    gomory_hu_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GomoryHuTests)
     return unittest.TestSuite([flow_suite, cut_suite, gomory_hu_suite])
 
 

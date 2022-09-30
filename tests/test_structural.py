@@ -1034,15 +1034,15 @@ class DominatorTests(unittest.TestCase):
 
 
 def suite():
-    simple_suite = unittest.makeSuite(SimplePropertiesTests)
-    degree_suite = unittest.makeSuite(DegreeTests)
-    local_transitivity_suite = unittest.makeSuite(LocalTransitivityTests)
-    biconnected_suite = unittest.makeSuite(BiconnectedComponentTests)
-    centrality_suite = unittest.makeSuite(CentralityTests)
-    neighborhood_suite = unittest.makeSuite(NeighborhoodTests)
-    path_suite = unittest.makeSuite(PathTests)
-    misc_suite = unittest.makeSuite(MiscTests)
-    dominator_suite = unittest.makeSuite(DominatorTests)
+    simple_suite = unittest.defaultTestLoader.loadTestsFromTestCase(SimplePropertiesTests)
+    degree_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DegreeTests)
+    local_transitivity_suite = unittest.defaultTestLoader.loadTestsFromTestCase(LocalTransitivityTests)
+    biconnected_suite = unittest.defaultTestLoader.loadTestsFromTestCase(BiconnectedComponentTests)
+    centrality_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CentralityTests)
+    neighborhood_suite = unittest.defaultTestLoader.loadTestsFromTestCase(NeighborhoodTests)
+    path_suite = unittest.defaultTestLoader.loadTestsFromTestCase(PathTests)
+    misc_suite = unittest.defaultTestLoader.loadTestsFromTestCase(MiscTests)
+    dominator_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DominatorTests)
     return unittest.TestSuite(
         [
             simple_suite,

@@ -649,13 +649,13 @@ class ComparisonTests(unittest.TestCase):
 
 
 def suite():
-    decomposition_suite = unittest.makeSuite(DecompositionTests)
-    clustering_suite = unittest.makeSuite(ClusteringTests)
-    vertex_clustering_suite = unittest.makeSuite(VertexClusteringTests)
-    cover_suite = unittest.makeSuite(CoverTests)
-    community_suite = unittest.makeSuite(CommunityTests)
-    cohesive_blocks_suite = unittest.makeSuite(CohesiveBlocksTests)
-    comparison_suite = unittest.makeSuite(ComparisonTests)
+    decomposition_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DecompositionTests)
+    clustering_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ClusteringTests)
+    vertex_clustering_suite = unittest.defaultTestLoader.loadTestsFromTestCase(VertexClusteringTests)
+    cover_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CoverTests)
+    community_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CommunityTests)
+    cohesive_blocks_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CohesiveBlocksTests)
+    comparison_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ComparisonTests)
     return unittest.TestSuite(
         [
             decomposition_suite,
