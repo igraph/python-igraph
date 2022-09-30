@@ -13411,7 +13411,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Generates a tree in which almost all vertices have the same number of children.\n\n"
    "@param n: the number of vertices in the graph\n"
    "@param children: the number of children of a vertex in the graph\n"
-   "@param type: determines whether the tree should be directed, and if\n"
+   "@param mode: determines whether the tree should be directed, and if\n"
    "  this is the case, also its orientation. Must be one of\n"
    "  C{\"in\"}, C{\"out\"} and C{\"undirected\"}.\n"},
 
