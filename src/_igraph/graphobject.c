@@ -5158,21 +5158,19 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
   if (igraphmodule_PyObject_to_integer_t(k_o, &k))
     return NULL;
 
-  if (igraphmodule_PyObject_to_integer_t(from_o, &from))
+  if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
     return NULL;
 
-  if (igraphmodule_PyObject_to_integer_t(to_o, &to))
+  if (igraphmodule_PyObject_to_vid(to_o, &to, &self->g))
     return NULL;
 
   if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
       ATTRIBUTE_TYPE_EDGE)) {
-    igraph_vs_destroy(&to);
     return NULL;
   }
 
   if (igraph_vector_int_list_init(&res, 0)) {
     igraphmodule_handle_igraph_error();
-    igraph_vs_destroy(&to);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     return NULL;
   }
@@ -5183,7 +5181,6 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
         k, from, to, mode)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_int_list_destroy(&res);
-    igraph_vs_destroy(&to);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     return NULL;
   }
