@@ -149,6 +149,8 @@ jobs:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
+          # Skip tests for Python 3.11 because SciPy does not have wheels for 3.11 at all
+          CIBW_TEST_SKIP: "cp311-*"
 
       - uses: actions/upload-artifact@v2
         with:
