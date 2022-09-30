@@ -844,21 +844,21 @@ class PathTests(unittest.TestCase):
     def testGetKShortestPaths(self):
         g = Graph(4, [(0, 1), (1, 2), (1, 3), (2, 4), (3, 4), (4, 5)], directed=True)
     
-        sps = sorted(g.get_k_shortest_paths(1,0, 0))
+        sps = sorted(g.get_k_shortest_paths(1, 0, 0))
         expected = [[0]]
         self.assertEqual(expected, sps)
     
-        sps = sorted(g.get_k_shortest_paths(2,0, 5))
+        sps = sorted(g.get_k_shortest_paths(2, 0, 5))
         expected = [[0, 1, 2, 4, 5], [0, 1, 3, 4, 5]]
         self.assertEqual(expected, sps)
     
-        sps = sorted(g.get_k_shortest_paths(2,1, 4))
+        sps = sorted(g.get_k_shortest_paths(2, 1, 4))
         expected = [[1, 2, 4], [1, 3, 4]]
         self.assertEqual(expected, sps)
     
         g = Graph.Lattice([5, 5], circular=False)
     
-        sps = sorted(g.get_k_shortest_paths(6,0, 12))
+        sps = sorted(g.get_k_shortest_paths(6, 0, 12))
         expected = [
             [0, 1, 2, 7, 12],
             [0, 1, 6, 7, 12],
@@ -870,7 +870,7 @@ class PathTests(unittest.TestCase):
         self.assertEqual(expected, sps)
     
         g = Graph.Lattice([100, 100], circular=False)
-        sps = sorted(g.get_k_shortest_paths(6,0, 202))
+        sps = sorted(g.get_k_shortest_paths(6, 0, 202))
         expected = [
             [0, 1, 2, 102, 202],
             [0, 1, 101, 102, 202],
@@ -883,8 +883,8 @@ class PathTests(unittest.TestCase):
     
         g = Graph([(0, 1), (1, 2), (0, 2)])
         g.es["weight"] = [0.5, 0.5, 1]
-        sps = sorted(g.get_k_shortest_paths(2,0,2, weights="weight"))
-        self.assertEqual([[0, 2],[0,1,2]], sps)
+        sps = sorted(g.get_k_shortest_paths(2, 0, 2, weights="weight"))
+        self.assertEqual([[0, 2], [0, 1, 2]], sps)
     
     def testGetAllSimplePaths(self):
         g = Graph.Ring(20)
