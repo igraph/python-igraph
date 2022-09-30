@@ -316,7 +316,7 @@ jobs:
 
       - name: Install test dependencies
         run: |
-          pip install --prefer-binary pytest pytest-timeout numpy scipy pandas networkx
+          pip install --prefer-binary pytest pytest-timeout
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.
