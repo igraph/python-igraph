@@ -89,8 +89,8 @@ class MaximumBipartiteMatchingTests(unittest.TestCase):
 
 
 def suite():
-    matching_suite = unittest.makeSuite(MatchingTests)
-    bipartite_unweighted_suite = unittest.makeSuite(MaximumBipartiteMatchingTests)
+    matching_suite = unittest.defaultTestLoader.loadTestsFromTestCase(MatchingTests)
+    bipartite_unweighted_suite = unittest.defaultTestLoader.loadTestsFromTestCase(MaximumBipartiteMatchingTests)
     return unittest.TestSuite([matching_suite, bipartite_unweighted_suite])
 
 

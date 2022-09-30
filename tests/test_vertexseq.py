@@ -361,8 +361,8 @@ class VertexSeqTests(unittest.TestCase):
 
 
 def suite():
-    vertex_suite = unittest.makeSuite(VertexTests)
-    vs_suite = unittest.makeSuite(VertexSeqTests)
+    vertex_suite = unittest.defaultTestLoader.loadTestsFromTestCase(VertexTests)
+    vs_suite = unittest.defaultTestLoader.loadTestsFromTestCase(VertexSeqTests)
     return unittest.TestSuite([vertex_suite, vs_suite])
 
 

@@ -38,7 +38,7 @@ class HomepageExampleTests(unittest.TestCase):
 
 
 def suite():
-    homepage_example_suite = unittest.makeSuite(HomepageExampleTests)
+    homepage_example_suite = unittest.defaultTestLoader.loadTestsFromTestCase(HomepageExampleTests)
     return unittest.TestSuite([homepage_example_suite])
 
 
