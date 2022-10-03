@@ -563,14 +563,15 @@ PyObject* igraphmodule_is_graphical(PyObject *self, PyObject *args, PyObject *kw
 
 
 PyObject* igraphmodule_power_law_fit(PyObject *self, PyObject *args, PyObject *kwds) {
-  static char* kwlist[] = { "data", "xmin", "force_continuous", NULL };
+  static char* kwlist[] = { "data", "xmin", "force_continuous", "p_precision", NULL };
   PyObject *data_o, *force_continuous_o = Py_False;
   igraph_vector_t data;
   igraph_plfit_result_t result;
-  double xmin = -1;
+  double xmin = -1, p_precision = 0.01;
+  igraph_real_t p;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|dO", kwlist, &data_o,
-        &xmin, &force_continuous_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|dOd", kwlist, &data_o,
+        &xmin, &force_continuous_o, &p_precision))
     return NULL;
 
   if (igraphmodule_PyObject_float_to_vector_t(data_o, &data))
@@ -582,10 +583,16 @@ PyObject* igraphmodule_power_law_fit(PyObject *self, PyObject *args, PyObject *k
     return NULL;
   }
 
+  if (igraph_plfit_result_calculate_p_value(&result, &p, p_precision)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_destroy(&data);
+    return NULL;
+  }
+
   igraph_vector_destroy(&data);
 
-  return Py_BuildValue("Odddd", result.continuous ? Py_True : Py_False,
-      result.alpha, result.xmin, result.L, result.D);
+  return Py_BuildValue("Oddddd", result.continuous ? Py_True : Py_False,
+      result.alpha, result.xmin, result.L, result.D, (double) p);
 }
 
 PyObject* igraphmodule_split_join_distance(PyObject *self,
