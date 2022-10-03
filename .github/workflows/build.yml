@@ -19,7 +19,7 @@ jobs:
         wheel_arch: [x86_64, i686]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-20.04
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
@@ -98,7 +98,7 @@ jobs:
             wheel_arch: arm64
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
@@ -166,7 +166,7 @@ jobs:
             vcpkg_arch: x64
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
@@ -223,7 +223,7 @@ jobs:
     name: Build sdist and test extra dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
@@ -277,7 +277,7 @@ jobs:
       CXXFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
       IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address;Undefined" -DCMAKE_BUILD_TYPE=Debug -DFLEX_KEEP_LINE_NUMBERS=ON -DFORCE_COLORED_OUTPUT=ON -DCMAKE_C_FLAGS="-DNDEBUG"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
