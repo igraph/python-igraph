@@ -5302,7 +5302,11 @@ PyObject *igraphmodule_Graph_is_chordal(
     igraph_vector_int_destroy(alpham1_ptr);
   }
 
-  return res ? Py_True : Py_False;
+  if (res) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
 }
 
 /** \ingroup python_interface_graph
