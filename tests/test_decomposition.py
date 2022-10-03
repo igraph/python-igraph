@@ -360,6 +360,7 @@ class CommunityTests(unittest.TestCase):
             (10, 14),
             (11, 13),
         ]
+
         cls = g.community_multilevel(return_levels=True)
         self.assertTrue(len(cls) == 2)
         self.assertMembershipsEqual(
@@ -370,6 +371,13 @@ class CommunityTests(unittest.TestCase):
         )
         self.assertAlmostEqual(cls[0].q, 0.346301, places=5)
         self.assertAlmostEqual(cls[1].q, 0.392219, places=5)
+
+        cls = g.community_multilevel()
+        self.assertTrue(len(cls.membership) == g.vcount())
+        self.assertMembershipsEqual(
+            cls, [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
+        )
+        self.assertAlmostEqual(cls.q, 0.392219, places=5)
 
     def testOptimalModularity(self):
         try:

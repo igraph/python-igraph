@@ -16575,8 +16575,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  C{True} will use the directed variant of the modularity measure where the\n"
    "  in- and out-degrees of nodes are treated separately; C{False} will treat\n"
    "  directed graphs as undirected.\n"
-   "@return: the modularity score. Score larger than 0.3 usually indicates\n"
-   "  strong community structure.\n"
+   "@return: the modularity score.\n"
    "@newfield ref: Reference\n"
    "@ref: MEJ Newman and M Girvan: Finding and evaluating community structure\n"
    "  in networks. Phys Rev E 69 026113, 2004.\n"
@@ -16702,7 +16701,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_multilevel",
    (PyCFunction) igraphmodule_Graph_community_multilevel,
    METH_VARARGS | METH_KEYWORDS,
-   "community_multilevel(weights=None, return_levels=True, resolution=1)\n--\n\n"
+   "community_multilevel(weights=None, return_levels=False, resolution=1)\n--\n\n"
    "Finds the community structure of the graph according to the multilevel\n"
    "algorithm of Blondel et al. This is a bottom-up algorithm: initially\n"
    "every vertex belongs to a separate community, and vertices are moved\n"
