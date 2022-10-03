@@ -805,11 +805,7 @@ else:
 # This is because the C code contains conditionals for CPython 3.7 and
 # 3.8 so we cannot use an abi3 wheel built with CPython 3.7 or 3.8 on
 # CPython 3.9
-should_build_abi3_wheel = (
-    bdist_wheel_abi3 and
-    platform.python_implementation() == "CPython" and
-    sys.version_info >= (3, 9)
-)
+should_build_abi3_wheel = False
 
 ###########################################################################
 
@@ -904,7 +900,7 @@ options = dict(
             "pytest-timeout>=2.1.0",
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0; platform_python_implementation != 'PyPy'",
-            "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
+            # "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
             # Matplotlib 3.6.0 does not support Python 3.7 any more
             "matplotlib>=3.5.0,<3.6.0; platform_python_implementation != 'PyPy' and python_version >= '3.8'",
             "plotly>=5.3.0",
