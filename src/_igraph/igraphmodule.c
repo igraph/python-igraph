@@ -693,7 +693,7 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"_power_law_fit", (PyCFunction)igraphmodule_power_law_fit,
     METH_VARARGS | METH_KEYWORDS,
-    "_power_law_fit(data, xmin=-1, force_continuous=False)\n--\n\n"
+    "_power_law_fit(data, xmin=-1, force_continuous=False, p_precision=0.01)\n--\n\n"
   },
   {"convex_hull", (PyCFunction)igraphmodule_convex_hull,
     METH_VARARGS | METH_KEYWORDS,
