@@ -5,10 +5,6 @@ env:
   CIBW_ENVIRONMENT_PASS_LINUX: PYTEST_TIMEOUT
   CIBW_TEST_COMMAND: "cd {project} && python -m pytest -v tests"
   CIBW_TEST_EXTRAS: "test"
-  CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
-  CIBW_MANYLINUX_I686_IMAGE: "manylinux2014"
-  CIBW_MANYLINUX_PYPY_X86_64_IMAGE: "manylinux2014"
-  CIBW_MANYLINUX_PYPY_I686_IMAGE: "manylinux2014"
   CIBW_SKIP: "cp36-*"
   PYTEST_TIMEOUT: 60
   MACOSX_DEPLOYMENT_TARGET: "10.9"
@@ -34,16 +30,17 @@ jobs:
           python-version: '3.8'
 
       - name: Build wheels (manylinux)
-        uses: joerick/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
           # Skip tests for Python 3.10 because SciPy does not have a 32-bit
-          # wheel for Linux yet
-          CIBW_TEST_SKIP: "cp310-manylinux_i686"
+          # wheel for Linux yet, and for Python 3.11 because SciPy does not
+          # have wheels for 3.11 at all
+          CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-*"
 
       - name: Build wheels (musllinux)
-        uses: joerick/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
@@ -68,14 +65,14 @@ jobs:
         uses: docker/setup-qemu-action@v1
 
       - name: Build wheels (manylinux)
-        uses: joerick/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
 
       - name: Build wheels (musllinux)
-        uses: joerick/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -142,12 +139,14 @@ jobs:
           cmake --install .
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
+          # Skip tests for Python 3.11 because SciPy does not have wheels for 3.11 at all
+          CIBW_TEST_SKIP: "cp311-*"
 
       - uses: actions/upload-artifact@v2
         with:
@@ -201,13 +200,14 @@ jobs:
         shell: cmd
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
           # Skip tests for Python 3.10 because SciPy does not have a 32-bit
-          # wheel for Python 3.10 yet
-          CIBW_TEST_SKIP: "cp310-win32"
+          # wheel for Python 3.10 yet, and for Python 3.11 because SciPy does
+          # not have wheels for Python 3.11 at all yet
+          CIBW_TEST_SKIP: "cp310-win32 cp311-*"
           CIBW_TEST_COMMAND: "cd /d {project} && python -m pytest tests"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
@@ -299,7 +299,7 @@ jobs:
       - uses: actions/setup-python@v2
         name: Install Python
         with:
-          python-version: '3.10'
+          python-version: '3.11.0-rc.2'
 
       - name: Build C core
         run: |
@@ -312,7 +312,7 @@ jobs:
 
       - name: Install test dependencies
         run: |
-          pip install --prefer-binary pytest pytest-timeout numpy scipy pandas networkx
+          pip install --prefer-binary pytest pytest-timeout
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.
