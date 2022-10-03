@@ -476,8 +476,8 @@ def _construct_graph_from_dataframe(
         # Map source and target names in 'edges' to IDs
         vid_map = pd.Series(vertices.index, index=vertices.iloc[:, 0])
         edges = edges.copy()
-        edges.iloc[:, 0] = edges.iloc[:, 0].map(vid_map)
-        edges.iloc[:, 1] = edges.iloc[:, 1].map(vid_map)
+        edges[edges.columns[0]] = edges.iloc[:, 0].map(vid_map)
+        edges[edges.columns[1]] = edges.iloc[:, 1].map(vid_map)
 
     # Create graph
     if vertices is None:
