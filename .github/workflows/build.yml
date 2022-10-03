@@ -46,7 +46,7 @@ jobs:
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
           CIBW_TEST_EXTRAS: "test-musl"
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
 
@@ -79,7 +79,7 @@ jobs:
           CIBW_BUILD: "*-musllinux_aarch64"
           CIBW_TEST_EXTRAS: "test-musl"
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
 
@@ -148,7 +148,7 @@ jobs:
           # Skip tests for Python 3.11 because SciPy does not have wheels for 3.11 at all
           CIBW_TEST_SKIP: "cp311-*"
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
 
@@ -215,7 +215,7 @@ jobs:
           IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset
           IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
 
@@ -257,7 +257,7 @@ jobs:
           pip install --prefer-binary numpy scipy pandas networkx pytest pytest-timeout
           python -m pytest -v tests
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: dist/*.tar.gz
 
