@@ -127,8 +127,13 @@ Alternatively, if you have already downloaded and extracted the source code
 of igraph, you can run `setup.py` directly:
 
 ```bash
+python setup.py build --use-pkg-config
 python setup.py install --use-pkg-config
 ```
+
+(Note that you need `--use-pkg-config` for both invocations, otherwise the call
+to `setup.py install` would still build the vendored C core instead of linking
+to an existing installation).
 
 This option is primarily intended for package maintainers in Linux
 distributions so they can ensure that the packaged Python interface links to
