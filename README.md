@@ -62,6 +62,9 @@ set IGRAPH_CMAKE_EXTRA_ARGS=-A [arch]
 ```
 
 where `[arch]` is either `Win32` for 32-bit builds or `x64` for 64-bit builds.
+Also, when building in MSYS2, you need to set the `SETUPTOOLS_USE_DISTUTILS`
+environment variable to `stdlib`; this is because MSYS2 uses a patched version
+of `distutils` that conflicts with `setuptools >= 60.0`.
 
 #### Enabling GraphML
 
