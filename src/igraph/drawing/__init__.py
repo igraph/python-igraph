@@ -138,17 +138,24 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
           backend, and you can use interactive backends and matplotlib
           functions to save to file as well.
 
-        - C{string} -- a file with the given name will be created and an
-          appropriate Cairo surface will be attached to it. The supported image
-          formats are: PNG, PDF, SVG and PostScript.
+        - C{string} -- a file with the given name will be created and the plot
+          will be stored there. If you are using the Cairo backend, an
+          appropriate Cairo surface will be attached to the file. If you are
+          using the matplotlib backend, the Figure will be saved to that file
+          using Figure.savefig with default parameters. The supported image
+          formats for Cairo are: PNG, PDF, SVG and PostScript; matplotlib might
+          support additional formats.
 
         - C{cairo.Surface} -- the given Cairo surface will be used. This can
           refer to a PNG image, an arbitrary window, an SVG file, anything that
           Cairo can handle.
 
-        - C{None} -- no plotting will be performed; igraph simply returns a
-          CairoPlot_ object that you can use to manipulate the plot and save it
-          to a file later.
+        - C{None} -- If you are using the Cairo backend, no plotting will be
+          performed; igraph simply returns a CairoPlot_ object that you can use
+          to manipulate the plot and save it to a file later. If you are using
+          the matplotlib backend, a Figure objet and an Axes are created and
+          the Axes is returned so you can manipulate it further. Similarly, if
+          you are using the plotly backend, a Figure object is returned.
 
     @param bbox: the bounding box of the plot. It must be a tuple with either
       two or four integers, or a L{BoundingBox} object. If this is a tuple
@@ -185,8 +192,9 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
       argument has an effect only if igraph is run inside IPython and C{target}
       is C{None}.
 
-    @return: an appropriate L{CairoPlot} object for the Cairo backend or the
-      Matplotlib C{Axes} object for the Matplotlib backend
+    @return: an appropriate L{CairoPlot} object for the Cairo backend, the
+      Matplotlib C{Axes} object for the Matplotlib backend, and the C{Figure}
+      object for the plotly backend.
 
     @see: Graph.__plot__
     """
@@ -227,11 +235,16 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
         if palette is not None and not isinstance(palette, Palette):
             palette = palettes[palette]
 
+        if isinstance(target, (str, Path)):
+            save_path = target
+            target = None
+        else:
+            save_path = None
+
         if target is None:
             if backend == "matplotlib":
                 # Create a new axes if needed
                 _, target = plt.subplots()
-
             elif backend == "plotly":
                 # Create a new figure if needed
                 target = plotly.graph_objects.Figure()
@@ -249,6 +262,13 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
                 *args,
                 **kwds,
             )
+
+            if save_path is not None:
+                if backend == "matplotlib":
+                    target.figure.savefig(save_path)
+                elif backend == "plotly":
+                    target.write_image(save_path)
+
             return target
 
     # Cairo backend
