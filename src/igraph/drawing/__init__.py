@@ -236,7 +236,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
             palette = palettes[palette]
 
         if isinstance(target, (str, Path)):
-            save_path = target
+            save_path = str(target)
             target = None
         else:
             save_path = None
