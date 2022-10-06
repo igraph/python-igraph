@@ -4,6 +4,8 @@ import unittest
 
 from igraph import Graph, InternalError, plot, VertexClustering, config
 
+from ...utils import overridden_configuration
+
 # FIXME: find a better way to do this that works for both direct call and module
 # import e.g. tox
 try:
@@ -84,11 +86,8 @@ class GraphTestRunner(unittest.TestCase):
     def test_gh_587(self):
         plt.close("all")
         g = Graph.Ring(5)
-        config['plotting.backend'] = 'matplotlib'
-        try:
+        with overridden_configuration('plotting.backend', 'matplotlib'):
             plot(g, target="graph_basic.png", layout=self.layout_small_ring)
-        finally:
-            config['plotting.backend'] = 'cairo'
 
 
 class ClusteringTestRunner(unittest.TestCase):
