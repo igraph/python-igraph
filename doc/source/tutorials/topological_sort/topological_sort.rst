@@ -6,7 +6,7 @@
 Topological sorting
 ===================
 
-.. _topological_sorting: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#topological_sorting
+.. _topological_sorting: https://igraph.org/python/doc/api/igraph.GraphBase.html#topological_sorting
 .. |topological_sorting| replace:: :meth:`topological_sorting`
 
 

@@ -6,7 +6,7 @@
 Isomorphism
 ===========
 
-.. _isomorphic: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#isomorphic
+.. _isomorphic: https://igraph.org/python/doc/api/igraph.GraphBase.html#isomorphic
 .. |isomorphic| replace:: :meth:`isomorphic`
 
 This example shows how to check for `isomorphism <https://en.wikipedia.org/wiki/Graph_isomorphism>`_ between small graphs using |isomorphic|_.

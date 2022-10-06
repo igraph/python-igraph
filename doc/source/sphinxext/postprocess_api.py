@@ -1,9 +1,5 @@
 """
-Sphinx plugin to run example scripts and create a gallery page.
-
-Lightly modified from the seaborn project (Michael Waskom).
-Originally, lightly modified from the mpld3 project.
-
+Sphinx extension to convert pydoctor API output from HTML and Jekyll.
 """
 
 from pathlib import Path

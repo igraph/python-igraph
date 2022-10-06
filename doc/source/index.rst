@@ -82,7 +82,7 @@ Documentation
 
        **Reference**
  
-       - :doc:`../../api/latest/index`
+       - :doc:`api/index`
        - `Source code <https://github.com/igraph/python-igraph>`_
 
     .. container::

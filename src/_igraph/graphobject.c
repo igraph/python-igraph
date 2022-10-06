@@ -7915,13 +7915,13 @@ PyObject *igraphmodule_Graph_layout_sugiyama(
   return (PyObject *) result_o;
 }
 
-  /** \ingroup python_interface_graph
- * \brief Places the vertices of a graph using Uniform Manifold Approximation and Projection (UMAP)
+/** \ingroup python_interface_graph
+ * \brief Places the vertices using Uniform Manifold Approximation and Projection (UMAP)
  * \return the calculated coordinates as a Python list of lists
  * \sa igraph_layout_umap
  */
-PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
-                                        PyObject * args, PyObject * kwds)
+PyObject *igraphmodule_Graph_layout_umap(
+    igraphmodule_GraphObject * self, PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] =
     { "dist", "dim", "seed", "min_dist", "epochs", "sampling_prob", NULL };
@@ -15437,7 +15437,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param epochs: the number of epochs (iterations) the algorithm will iterate\n"
    "  over. Accuracy increases with more epochs, at the cost of longer\n "
    "  runtimes. Values between 50 and 1000 are typical.\n"
-   "  Notice that UMAP does not technically converge for symmetry reasons, but a \n"
+   "  Notice that UMAP does not technically converge for symmetry reasons, but a\n"
    "  larger number of epochs should generally give an equivalent or better layout.\n"
    "@param sampling_prob: the probability of sampling each vertex for repulsion at\n"
    "  each epoch or iteration. A higher probability will give better results but\n"

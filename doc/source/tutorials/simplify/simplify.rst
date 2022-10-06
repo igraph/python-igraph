@@ -6,7 +6,7 @@
 Simplify
 ========
 
-.. _simplify: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#simplify
+.. _simplify: https://igraph.org/python/doc/api/igraph.GraphBase.html#simplify
 .. |simplify| replace:: :meth:`simplify`
 
 This example shows how to remove self loops and multiple edges using |simplify|_.
