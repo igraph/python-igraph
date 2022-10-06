@@ -808,13 +808,13 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"_enter_safelocale", (PyCFunction)igraphmodule__enter_safelocale,
     METH_NOARGS,
-    "_enter_safelocale() -> object\n--\n\n"
+    "_enter_safelocale()\n--\n\n"
     "Helper function for the L{safe_locale()} context manager. Do not use\n"
     "directly in your own code."
   },
   {"_exit_safelocale", (PyCFunction)igraphmodule__exit_safelocale,
     METH_O,
-    "_exit_safelocale(locale: object) -> None\n--\n\n"
+    "_exit_safelocale(locale)\n--\n\n"
     "Helper function for the L{safe_locale()} context manager. Do not use\n"
     "directly in your own code."
   },
