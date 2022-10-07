@@ -5148,7 +5148,7 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
   igraph_integer_t to;
   PyObject *list, *from_o, *mode_o=Py_None, *to_o=Py_None, *weights_o=Py_None,*k_o=Py_None;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &k_o, &from_o,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOO|OO", kwlist, &k_o, &from_o,
         &to_o, &weights_o, &mode_o))
     return NULL;
 
@@ -14206,7 +14206,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param mode: the directionality of the paths. C{\"in\"} means to\n"
    "  calculate incoming paths, C{\"out\"} means to calculate outgoing\n"
    "  paths, C{\"all\"} means to calculate both ones.\n"
-   "@return: the k-shortest path from the given node to every other depnding on param to\n"
+   "@return: the k-shortest path from the given node to every other depending on param to\n"
    "  reachable node in the graph in a list. Note that in case of mode=C{\"in\"},\n"
    "  the vertices in a path are returned in reversed order!"},
 
