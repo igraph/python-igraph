@@ -884,7 +884,7 @@ class PathTests(unittest.TestCase):
         g = Graph([(0, 1), (1, 2), (0, 2)])
         g.es["weight"] = [0.5, 0.5, 1]
         sps = sorted(g.get_k_shortest_paths(2, 0, 2, weights="weight"))
-        self.assertEqual([[0, 2], [0, 1, 2]], sps)
+        self.assertEqual(sorted([[0, 2], [0, 1, 2]]), sorted(sps))
     
     def testGetAllSimplePaths(self):
         g = Graph.Ring(20)
