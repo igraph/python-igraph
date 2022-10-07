@@ -8,7 +8,7 @@ Configuration Instance
 
 This example shows how to use |igraph|'s `configuration instance <https://igraph.org/python/doc/api/igraph.configuration.Configuration.html>`_ to set default |igraph| settings. This is useful for setting global settings so that they don't need to be explicitly stated at the beginning of every |igraph| project you work on.
 
-First we define the default plotting backend, layout, and color palette, and save them. By default, ``ig.config.save()`` will save files to ``~/.igraphrc`` on Linux and Max OS X systems, or in ``%USERPROFILE%\username\.igraphrc`` for Windows systems.
+First we define the default plotting backend, layout, and color palette, and save them. By default, ``ig.config.save()`` will save files to ``~/.igraphrc`` on Linux and Max OS X systems, or in ``%USERPROFILE%\.igraphrc`` for Windows systems.
 
 .. code-block:: python
 
