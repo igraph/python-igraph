@@ -368,8 +368,8 @@ class LayoutAlgorithmTests(unittest.TestCase):
 
 
 def suite():
-    layout_suite = unittest.makeSuite(LayoutTests)
-    layout_algorithm_suite = unittest.makeSuite(LayoutAlgorithmTests)
+    layout_suite = unittest.defaultTestLoader.loadTestsFromTestCase(LayoutTests)
+    layout_algorithm_suite = unittest.defaultTestLoader.loadTestsFromTestCase(LayoutAlgorithmTests)
     return unittest.TestSuite([layout_suite, layout_algorithm_suite])
 
 

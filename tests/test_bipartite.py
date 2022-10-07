@@ -216,7 +216,7 @@ class BipartiteTests(unittest.TestCase):
 
 
 def suite():
-    bipartite_suite = unittest.makeSuite(BipartiteTests)
+    bipartite_suite = unittest.defaultTestLoader.loadTestsFromTestCase(BipartiteTests)
     return unittest.TestSuite([bipartite_suite])
 
 

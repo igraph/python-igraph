@@ -884,7 +884,7 @@ class ForeignTests(unittest.TestCase):
 
 
 def suite():
-    foreign_suite = unittest.makeSuite(ForeignTests)
+    foreign_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ForeignTests)
     return unittest.TestSuite([foreign_suite])
 
 

@@ -2,7 +2,9 @@ import random
 import unittest
 
 
-from igraph import Graph, InternalError, plot, VertexClustering
+from igraph import Graph, InternalError, plot, VertexClustering, config
+
+from ...utils import overridden_configuration
 
 # FIXME: find a better way to do this that works for both direct call and module
 # import e.g. tox
@@ -79,6 +81,13 @@ class GraphTestRunner(unittest.TestCase):
         dot = ax.get_children()[0]
         dot.set_facecolor("blue")
         dot.radius *= 0.5
+
+    @image_comparison(baseline_images=["graph_basic"], remove_text=True)
+    def test_gh_587(self):
+        plt.close("all")
+        g = Graph.Ring(5)
+        with overridden_configuration('plotting.backend', 'matplotlib'):
+            plot(g, target="graph_basic.png", layout=self.layout_small_ring)
 
 
 class ClusteringTestRunner(unittest.TestCase):
@@ -172,8 +181,8 @@ class ClusteringTestRunner(unittest.TestCase):
 
 
 def suite():
-    graph = unittest.makeSuite(GraphTestRunner)
-    clustering = unittest.makeSuite(ClusteringTestRunner)
+    graph = unittest.defaultTestLoader.loadTestsFromTestCase(GraphTestRunner)
+    clustering = unittest.defaultTestLoader.loadTestsFromTestCase(ClusteringTestRunner)
     return unittest.TestSuite([graph, clustering])
 
 

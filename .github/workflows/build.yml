@@ -5,10 +5,6 @@ env:
   CIBW_ENVIRONMENT_PASS_LINUX: PYTEST_TIMEOUT
   CIBW_TEST_COMMAND: "cd {project} && python -m pytest -v tests"
   CIBW_TEST_EXTRAS: "test"
-  CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
-  CIBW_MANYLINUX_I686_IMAGE: "manylinux2014"
-  CIBW_MANYLINUX_PYPY_X86_64_IMAGE: "manylinux2014"
-  CIBW_MANYLINUX_PYPY_I686_IMAGE: "manylinux2014"
   CIBW_SKIP: "cp36-*"
   PYTEST_TIMEOUT: 60
   MACOSX_DEPLOYMENT_TARGET: "10.9"
@@ -23,33 +19,34 @@ jobs:
         wheel_arch: [x86_64, i686]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         name: Install Python
         with:
           python-version: '3.8'
 
       - name: Build wheels (manylinux)
-        uses: joerick/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
           # Skip tests for Python 3.10 because SciPy does not have a 32-bit
-          # wheel for Linux yet
-          CIBW_TEST_SKIP: "cp310-manylinux_i686"
+          # wheel for Linux yet, and for Python 3.11 because SciPy does not
+          # have wheels for 3.11 at all
+          CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-*"
 
       - name: Build wheels (musllinux)
-        uses: joerick/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
           CIBW_TEST_EXTRAS: "test-musl"
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
 
@@ -58,31 +55,31 @@ jobs:
     runs-on: ubuntu-20.04
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
 
       - name: Set up QEMU
         id: qemu
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
 
       - name: Build wheels (manylinux)
-        uses: joerick/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
 
       - name: Build wheels (musllinux)
-        uses: joerick/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-musllinux_aarch64"
           CIBW_TEST_EXTRAS: "test-musl"
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
 
@@ -101,26 +98,26 @@ jobs:
             wheel_arch: arm64
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
 
       - name: Cache installed C core
         id: cache-c-core
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: vendor/install
           key: C-core-cache-${{ runner.os }}-${{ matrix.cmake_arch }}-llvm${{ env.LLVM_VERSION }}-${{ hashFiles('.git/modules/**/HEAD') }}
 
       - name: Cache C core dependencies
         id: cache-c-deps
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/local
           key: deps-cache-v2-${{ runner.os }}-${{ matrix.cmake_arch }}-llvm${{ env.LLVM_VERSION }}
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         name: Install Python
         with:
           python-version: '3.8'
@@ -142,14 +139,16 @@ jobs:
           cmake --install .
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
+          # Skip tests for Python 3.11 because SciPy does not have wheels for 3.11 at all
+          CIBW_TEST_SKIP: "cp311-*"
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
 
@@ -167,25 +166,25 @@ jobs:
             vcpkg_arch: x64
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         name: Install Python
         with:
           python-version: '3.8'
 
       - name: Cache installed C core
         id: cache-c-core
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: vendor/install
           key: C-core-cache-${{ runner.os }}-${{ matrix.cmake_arch }}-${{ hashFiles('.git/modules/**/HEAD') }}
 
       - name: Cache VCPKG
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: C:/vcpkg/installed/
           key: vcpkg-${{ runner.os }}-${{ matrix.vcpkg_arch }}
@@ -201,13 +200,14 @@ jobs:
         shell: cmd
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v2.6.1
+        uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
           # Skip tests for Python 3.10 because SciPy does not have a 32-bit
-          # wheel for Python 3.10 yet
-          CIBW_TEST_SKIP: "cp310-win32"
+          # wheel for Python 3.10 yet, and for Python 3.11 because SciPy does
+          # not have wheels for Python 3.11 at all yet
+          CIBW_TEST_SKIP: "cp310-win32 cp311-*"
           CIBW_TEST_COMMAND: "cd /d {project} && python -m pytest tests"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
@@ -215,7 +215,7 @@ jobs:
           IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset
           IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
 
@@ -223,14 +223,14 @@ jobs:
     name: Build sdist and test extra dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
 
       - name: Cache installed C core
         id: cache-c-core
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             vendor/install
@@ -241,7 +241,7 @@ jobs:
         run:
           sudo apt install ninja-build cmake flex bison
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         name: Install Python
         with:
           python-version: '3.8'
@@ -257,7 +257,7 @@ jobs:
           pip install --prefer-binary numpy scipy pandas networkx pytest pytest-timeout
           python -m pytest -v tests
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: dist/*.tar.gz
 
@@ -277,14 +277,14 @@ jobs:
       CXXFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
       IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address;Undefined" -DCMAKE_BUILD_TYPE=Debug -DFLEX_KEEP_LINE_NUMBERS=ON -DFORCE_COLORED_OUTPUT=ON -DCMAKE_C_FLAGS="-DNDEBUG"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
           
       - name: Cache installed C core
         id: cache-c-core
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             vendor/build
@@ -296,10 +296,10 @@ jobs:
         run:
           sudo apt install ninja-build cmake flex bison
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         name: Install Python
         with:
-          python-version: '3.10'
+          python-version: '3.11.0-rc.2'
 
       - name: Build C core
         run: |
@@ -312,7 +312,7 @@ jobs:
 
       - name: Install test dependencies
         run: |
-          pip install --prefer-binary pytest pytest-timeout numpy scipy pandas networkx
+          pip install --prefer-binary pytest pytest-timeout
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.

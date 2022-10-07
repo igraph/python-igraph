@@ -187,7 +187,7 @@ class GameTests(unittest.TestCase):
 
 
 def suite():
-    game_suite = unittest.makeSuite(GameTests)
+    game_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GameTests)
     return unittest.TestSuite([game_suite])
 
 

@@ -360,6 +360,7 @@ class CommunityTests(unittest.TestCase):
             (10, 14),
             (11, 13),
         ]
+
         cls = g.community_multilevel(return_levels=True)
         self.assertTrue(len(cls) == 2)
         self.assertMembershipsEqual(
@@ -370,6 +371,13 @@ class CommunityTests(unittest.TestCase):
         )
         self.assertAlmostEqual(cls[0].q, 0.346301, places=5)
         self.assertAlmostEqual(cls[1].q, 0.392219, places=5)
+
+        cls = g.community_multilevel()
+        self.assertTrue(len(cls.membership) == g.vcount())
+        self.assertMembershipsEqual(
+            cls, [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
+        )
+        self.assertAlmostEqual(cls.q, 0.392219, places=5)
 
     def testOptimalModularity(self):
         try:
@@ -649,13 +657,13 @@ class ComparisonTests(unittest.TestCase):
 
 
 def suite():
-    decomposition_suite = unittest.makeSuite(DecompositionTests)
-    clustering_suite = unittest.makeSuite(ClusteringTests)
-    vertex_clustering_suite = unittest.makeSuite(VertexClusteringTests)
-    cover_suite = unittest.makeSuite(CoverTests)
-    community_suite = unittest.makeSuite(CommunityTests)
-    cohesive_blocks_suite = unittest.makeSuite(CohesiveBlocksTests)
-    comparison_suite = unittest.makeSuite(ComparisonTests)
+    decomposition_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DecompositionTests)
+    clustering_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ClusteringTests)
+    vertex_clustering_suite = unittest.defaultTestLoader.loadTestsFromTestCase(VertexClusteringTests)
+    cover_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CoverTests)
+    community_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CommunityTests)
+    cohesive_blocks_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CohesiveBlocksTests)
+    comparison_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ComparisonTests)
     return unittest.TestSuite(
         [
             decomposition_suite,

@@ -192,7 +192,7 @@ def _community_label_propagation(graph, weights=None, initial=None, fixed=None):
     return VertexClustering(graph, cl, modularity_params=dict(weights=weights))
 
 
-def _community_multilevel(graph, weights=None, return_levels=False):
+def _community_multilevel(graph, weights=None, return_levels=False, resolution=1):
     """Community structure based on the multilevel algorithm of
     Blondel et al.
 
@@ -202,7 +202,7 @@ def _community_multilevel(graph, weights=None, return_levels=False):
     to the overall modularity score. When a consensus is reached (i.e. no
     single move would increase the modularity score), every community in
     the original graph is shrank to a single vertex (while keeping the
-    total weight of the adjacent edges) and the process continues on the
+    total weight of the incident edges) and the process continues on the
     next level. The algorithm stops when it is not possible to increase
     the modularity any more after shrinking the communities to vertices.
 
@@ -213,6 +213,10 @@ def _community_multilevel(graph, weights=None, return_levels=False):
     @param return_levels: if C{True}, the communities at each level are
       returned in a list. If C{False}, only the community structure with
       the best modularity is returned.
+    @param resolution: the resolution parameter to use in the modularity
+      measure. Smaller values result in a smaller number of larger clusters,
+      while higher values yield a large number of small clusters. The classical
+      modularity measure assumes a resolution parameter of 1.
     @return: a list of L{VertexClustering} objects, one corresponding to
       each level (if C{return_levels} is C{True}), or a L{VertexClustering}
       corresponding to the best modularity.
@@ -225,20 +229,26 @@ def _community_multilevel(graph, weights=None, return_levels=False):
     if graph.is_directed():
         raise ValueError("input graph must be undirected")
 
+    modularity_params = dict(weights=weights, resolution=resolution)
     if return_levels:
-        levels, qs = GraphBase.community_multilevel(graph, weights, True)
+        levels, qs = GraphBase.community_multilevel(
+            graph, weights, return_levels=True, resolution=resolution
+        )
         result = []
         for level, q in zip(levels, qs):
             result.append(
                 VertexClustering(
-                    graph, level, q, modularity_params=dict(weights=weights)
+                    graph, level, q, modularity_params=modularity_params
                 )
             )
     else:
-        membership = GraphBase.community_multilevel(graph, weights, False)
-        result = VertexClustering(
-            graph, membership, modularity_params=dict(weights=weights)
+        membership = GraphBase.community_multilevel(
+            graph, weights, return_levels=False, resolution=resolution
         )
+        result = VertexClustering(
+            graph, membership, modularity_params=modularity_params
+        )
+
     return result
 
 
@@ -485,18 +495,19 @@ def _community_leiden(
     return VertexClustering(graph, membership, modularity_params=modularity_params)
 
 
-def _modularity(self, membership, weights=None):
+def _modularity(self, membership, weights=None, resolution=1, directed=True):
     """Calculates the modularity score of the graph with respect to a given
     clustering.
 
     The modularity of a graph w.r.t. some division measures how good the
     division is, or how separated are the different vertex types from each
-    other. It's defined as M{Q=1/(2m)*sum(Aij-ki*kj/(2m)delta(ci,cj),i,j)}.
+    other. It's defined as M{Q=1/(2m)*sum(Aij-gamma*ki*kj/(2m)delta(ci,cj),i,j)}.
     M{m} is the number of edges, M{Aij} is the element of the M{A}
     adjacency matrix in row M{i} and column M{j}, M{ki} is the degree of
     node M{i}, M{kj} is the degree of node M{j}, and M{Ci} and C{cj} are
-    the types of the two vertices (M{i} and M{j}). M{delta(x,y)} is one iff
-    M{x=y}, 0 otherwise.
+    the types of the two vertices (M{i} and M{j}), and M{gamma} is a resolution
+    parameter that defaults to 1 for the classical definition of modularity.
+    M{delta(x,y)} is one iff M{x=y}, 0 otherwise.
 
     If edge weights are given, the definition of modularity is modified as
     follows: M{Aij} becomes the weight of the corresponding edge, M{ki}
@@ -507,6 +518,13 @@ def _modularity(self, membership, weights=None):
     @param membership: a membership list or a L{VertexClustering} object
     @param weights: optional edge weights or C{None} if all edges are
       weighed equally. Attribute names are also allowed.
+    @param resolution: the resolution parameter I{gamma} in the formula above.
+      The classical definition of modularity is retrieved when the resolution
+      parameter is set to 1.
+    @param directed: whether to consider edge directions if the graph is directed.
+      C{True} will use the directed variant of the modularity measure where the
+      in- and out-degrees of nodes are treated separately; C{False} will treat
+      directed graphs as undirected.
     @return: the modularity score
 
     @newfield ref: Reference

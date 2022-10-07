@@ -62,6 +62,9 @@ set IGRAPH_CMAKE_EXTRA_ARGS=-A [arch]
 ```
 
 where `[arch]` is either `Win32` for 32-bit builds or `x64` for 64-bit builds.
+Also, when building in MSYS2, you need to set the `SETUPTOOLS_USE_DISTUTILS`
+environment variable to `stdlib`; this is because MSYS2 uses a patched version
+of `distutils` that conflicts with `setuptools >= 60.0`.
 
 #### Enabling GraphML
 
@@ -127,8 +130,13 @@ Alternatively, if you have already downloaded and extracted the source code
 of igraph, you can run `setup.py` directly:
 
 ```bash
+python setup.py build --use-pkg-config
 python setup.py install --use-pkg-config
 ```
+
+(Note that you need `--use-pkg-config` for both invocations, otherwise the call
+to `setup.py install` would still build the vendored C core instead of linking
+to an existing installation).
 
 This option is primarily intended for package maintainers in Linux
 distributions so they can ensure that the packaged Python interface links to

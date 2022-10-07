@@ -130,8 +130,6 @@ def _unittest_image_comparison(
                 res = compare_image(baseline, fig, tol)
                 self.assertLessEqual(res, tol)
 
-            return figs
-
         parameters = list(old_sig.parameters.values())
         new_sig = old_sig.replace(parameters=parameters)
         wrapper.__signature__ = new_sig

@@ -63,8 +63,8 @@ class MatplotlibDendrogramDrawer(AbstractDrawer):
         Other keyword arguments are passed to mpl.patches.Polygon.
 
         @param dendro: the igraph.Dendrogram to plot.
-        @orientation: the direction of the plot. Accepted values are "lr" (root
-          on the right), "rl" (root on the left), "tb" (root at the bottom),
+        @param orientation: the direction of the plot. Accepted values are "lr"
+          (root on the right), "rl" (root on the left), "tb" (root at the bottom),
           and "bt" (root at the top). A few aliases are available (see
           L{utils.str_to_orientation}).
         """
