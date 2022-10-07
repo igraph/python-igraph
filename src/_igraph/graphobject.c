@@ -5139,7 +5139,7 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
                                                     self, PyObject * args,
                                                     PyObject * kwds)
 {
-  static char *kwlist[] = {"k", "from", "to", "weights", "mode", NULL };
+  static char *kwlist[] = {"k", "v", "to", "weights", "mode", NULL };
   igraph_vector_int_list_t res;
   igraph_vector_t *weights = 0;
   igraph_neimode_t mode = IGRAPH_OUT;
@@ -14195,10 +14195,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    {"get_k_shortest_paths",
    (PyCFunction) igraphmodule_Graph_get_k_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "get_k_shortest_paths(k, from, to, weights=None, mode=\"out\")\n--\n\n"
+   "get_k_shortest_paths(k, v, to, weights=None, mode=\"out\")\n--\n\n"
    "Calculates the k shortest paths from/to a given node in a graph.\n\n"
    "@param k: the number of shortest path desired\n"
-   "@param from: the ID of the vertex from which the paths are calculated.\n"
+   "@param v: the ID of the vertex from which the paths are calculated.\n"
    "@param to: the ID of the vertex to which the paths are calculated.\n"
    "@param weights: edge weights in a list or the name of an edge attribute\n"
    "  holding edge weights. If C{None}, all edges are assumed to have\n"
