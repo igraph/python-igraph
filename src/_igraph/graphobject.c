@@ -5005,15 +5005,8 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
         &to_o, &weights_o, &mode_o, &PyUnicode_Type, &output_o))
     return NULL;
 
-  if (output_o == 0 || output_o == Py_None ||
-      PyUnicode_IsEqualToASCIIString(output_o, "vpath")) {
-    use_edges = 0;
-  } else if (PyUnicode_IsEqualToASCIIString(output_o, "epath")) {
-    use_edges = 1;
-  } else {
-    PyErr_SetString(PyExc_ValueError, "output argument must be \"vpath\" or \"epath\"");
+  if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
     return NULL;
-  }
 
   if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
     return NULL;

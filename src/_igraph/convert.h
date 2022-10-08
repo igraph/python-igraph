@@ -138,6 +138,7 @@ int igraphmodule_PyObject_to_eigen_algorithm_t(PyObject *object,
 																							 igraph_eigen_algorithm_t *a);
 int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
 																					 igraph_eigen_which_t *w);
+int igraphmodule_PyObject_to_vpath_or_epath(PyObject *object, igraph_bool_t *use_edges);
 
 /* Conversion from attributes to igraph types */
 

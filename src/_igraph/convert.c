@@ -3647,6 +3647,28 @@ int igraphmodule_PyObject_to_attribute_values(PyObject *o,
   return 0;
 }
 
+int igraphmodule_PyObject_to_vpath_or_epath(PyObject *object, igraph_bool_t *use_edges) {
+  if (object == 0 || object == Py_None) {
+    *use_edges = 0;
+    return 0;
+  }
+
+  if (!PyUnicode_Check(object)) {
+    PyErr_SetString(PyExc_ValueError, "output argument must be \"vpath\" or \"epath\"");
+    return 1;
+  }
+
+  if (PyUnicode_IsEqualToASCIIString(object, "vpath")) {
+    *use_edges = 0;
+    return 0;
+  } else if (PyUnicode_IsEqualToASCIIString(object, "epath")) {
+    *use_edges = 1;
+    return 0;
+  } else {
+    PyErr_SetString(PyExc_ValueError, "output argument must be \"vpath\" or \"epath\"");
+    return 1;
+  }
+}
 
 int igraphmodule_PyObject_to_drl_options_t(PyObject *obj,
     igraph_layout_drl_options_t *options) {
