@@ -3,8 +3,7 @@ name: Build and test, upload to PyPI on release
 on: [push, pull_request]
 env:
   CIBW_ENVIRONMENT_PASS_LINUX: PYTEST_TIMEOUT
-  CIBW_TEST_COMMAND: "cd {project} && python -m pytest -v tests"
-  CIBW_TEST_EXTRAS: "test"
+  CIBW_TEST_COMMAND: "cd {project} && pip install -E test --prefer-binary . && python -m pytest -v tests"
   CIBW_SKIP: "cp36-*"
   PYTEST_TIMEOUT: 60
   MACOSX_DEPLOYMENT_TARGET: "10.9"
@@ -34,17 +33,13 @@ jobs:
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
-          # Skip tests for Python 3.10 because SciPy does not have a 32-bit
-          # wheel for Linux yet, and for Python 3.11 because SciPy does not
-          # have wheels for 3.11 at all
-          CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-*"
 
       - name: Build wheels (musllinux)
         uses: pypa/cibuildwheel@v2.10.2
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
-          CIBW_TEST_EXTRAS: "test-musl"
+          CIBW_TEST_COMMAND: "cd {project} && pip install -E test-musl --prefer-binary . && python -m pytest -v tests"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -77,7 +72,7 @@ jobs:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-musllinux_aarch64"
-          CIBW_TEST_EXTRAS: "test-musl"
+          CIBW_TEST_COMMAND: "cd {project} && pip install -E test-musl --prefer-binary . && python -m pytest -v tests"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -145,8 +140,6 @@ jobs:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
-          # Skip tests for Python 3.11 because SciPy does not have wheels for 3.11 at all
-          CIBW_TEST_SKIP: "cp311-*"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -204,11 +197,7 @@ jobs:
         env:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
-          # Skip tests for Python 3.10 because SciPy does not have a 32-bit
-          # wheel for Python 3.10 yet, and for Python 3.11 because SciPy does
-          # not have wheels for Python 3.11 at all yet
-          CIBW_TEST_SKIP: "cp310-win32 cp311-*"
-          CIBW_TEST_COMMAND: "cd /d {project} && python -m pytest tests"
+          CIBW_TEST_COMMAND: "cd /d {project} && pip install -E test --prefer-binary . && python -m pytest tests"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
           IGRAPH_STATIC_EXTENSION: True
