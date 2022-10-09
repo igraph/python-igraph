@@ -3,7 +3,7 @@ name: Build and test, upload to PyPI on release
 on: [push, pull_request]
 env:
   CIBW_ENVIRONMENT_PASS_LINUX: PYTEST_TIMEOUT
-  CIBW_TEST_COMMAND: "cd {project} && pip install -E test --prefer-binary . && python -m pytest -v tests"
+  CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test]' && python -m pytest -v tests"
   CIBW_SKIP: "cp36-*"
   PYTEST_TIMEOUT: 60
   MACOSX_DEPLOYMENT_TARGET: "10.9"
@@ -39,7 +39,7 @@ jobs:
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
-          CIBW_TEST_COMMAND: "cd {project} && pip install -E test-musl --prefer-binary . && python -m pytest -v tests"
+          CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -72,7 +72,7 @@ jobs:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-musllinux_aarch64"
-          CIBW_TEST_COMMAND: "cd {project} && pip install -E test-musl --prefer-binary . && python -m pytest -v tests"
+          CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -197,7 +197,7 @@ jobs:
         env:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
-          CIBW_TEST_COMMAND: "cd /d {project} && pip install -E test --prefer-binary . && python -m pytest tests"
+          CIBW_TEST_COMMAND: "cd /d {project} && pip install --prefer-binary '.[test]' && python -m pytest tests"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
           IGRAPH_STATIC_EXTENSION: True
