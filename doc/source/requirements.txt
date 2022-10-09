@@ -2,6 +2,7 @@ pip
 wheel
 
 sphinxbootstrap4theme
+pydoctor
 
 numpy
 pandas
