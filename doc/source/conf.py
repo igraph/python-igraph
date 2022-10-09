@@ -45,6 +45,11 @@ def get_igraphdir():
 
 def get_igraph_version():
     '''Get igraph version'''
+    # If inside readthedocs, use an env variable
+    version = os.getenv('READTHEDOCS_VERSION')
+    if version is not None:
+        return version
+
     version_file = op.join(
         get_igraphdir(),
         'version.py',
@@ -55,7 +60,7 @@ def get_igraph_version():
                          .split('=')[1]
                          .strip()[1:-1]
                          .split(', '))
-        version = '.'.join(version_info)
+    version = '.'.join(version_info)
         
     return version
 
