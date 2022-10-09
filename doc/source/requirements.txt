@@ -1,0 +1,8 @@
+pip
+wheel
+
+sphinxbootstrap4theme
+
+numpy
+pandas
+matplotlib
