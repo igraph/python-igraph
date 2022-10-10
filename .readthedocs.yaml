@@ -22,6 +22,13 @@ build:
     # rust: "1.55"
     # golang: "1.17"
 
+  jobs:
+    pre_create_environment:
+      - echo "Install igraph into venv and prepare for sphinx build"
+      - .venv/bin/pip wheel -q -w dist .
+      - .venv/bin/pip install -q --force-reinstall dist/*.whl
+      - .venv/bin/python3 scripts/patch_modularized_graph_methods.py
+
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
