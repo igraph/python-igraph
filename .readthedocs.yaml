@@ -30,11 +30,11 @@ build:
   jobs:
     pre_build:
       - echo "Compile and install igraph into venv. This might take a few minutes..."
-        - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/pip wheel -q -w dist .
-        - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/pip install -q --force-reinstall dist/*.whl
-        #- /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python setup.py build_c_core
-        #- /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python setup.py build
-        #- /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python setup.py install
+      - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/pip wheel -q -w dist .
+      - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/pip install -q --force-reinstall dist/*.whl
+      #- /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python setup.py build_c_core
+      #- /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python setup.py build
+      #- /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python setup.py install
       - echo "Modularize pure Python modules"
       - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python3 scripts/patch_modularized_graph_methods.py
 
