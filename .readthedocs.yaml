@@ -5,6 +5,11 @@
 # Required
 version: 2
 
+submodules:
+  include:
+    - vendor/source/igraph
+  recursive: true
+
 # Set the version of Python and other tools you might need
 build:
   os: ubuntu-20.04
@@ -27,6 +32,7 @@ build:
       - echo "Install igraph into venv and prepare for sphinx build"
         #- /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/pip wheel -q -w dist .
         #- /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/pip install -q --force-reinstall dist/*.whl
+        #- git submodule update --init --recursive
       - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python setup.py build_c_core
       - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python setup.py build
       - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python setup.py install
