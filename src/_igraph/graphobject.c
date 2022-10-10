@@ -5132,17 +5132,18 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
                                                     self, PyObject * args,
                                                     PyObject * kwds)
 {
-  static char *kwlist[] = {"k", "v", "to", "weights", "mode", NULL };
+  static char *kwlist[] = {"v", "to", "k", "weights", "mode", "output", NULL };
   igraph_vector_int_list_t res;
   igraph_vector_t *weights = 0;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_integer_t from;
-  igraph_integer_t k;
   igraph_integer_t to;
-  PyObject *list, *from_o, *mode_o=Py_None, *to_o=Py_None, *weights_o=Py_None,*k_o=Py_None;
-
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOO|OO", kwlist, &k_o, &from_o,
-        &to_o, &weights_o, &mode_o))
+  igraph_integer_t k = 1;
+  PyObject *list, *from_o, *output_o=Py_None,
+    *mode_o=Py_None, *to_o=Py_None, *weights_o=Py_None,*k_o=Py_None;
+  igraph_bool_t use_edges = 0;
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|OOO0", kwlist, &k_o, &from_o,
+        &to_o, &weights_o, &mode_o, &output_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
@@ -5161,6 +5162,8 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
       ATTRIBUTE_TYPE_EDGE)) {
     return NULL;
   }
+  if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
+    return NULL;
 
   if (igraph_vector_int_list_init(&res, 0)) {
     igraphmodule_handle_igraph_error();
@@ -5170,7 +5173,8 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
   if (igraph_get_k_shortest_paths(&self->g,
         weights,
         /* vertices, edges */
-        &res, NULL,
+        use_edges ? 0 : &res,
+        use_edges ? &res : 0,
         k, from, to, mode)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_int_list_destroy(&res);
@@ -14203,17 +14207,23 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    {"get_k_shortest_paths",
    (PyCFunction) igraphmodule_Graph_get_k_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "get_k_shortest_paths(k, v, to, weights=None, mode=\"out\")\n--\n\n"
+   "get_k_shortest_paths(v, to, k=1, weights=None, mode=\"out\",output=\"vpath\")\n--\n\n"
    "Calculates the k shortest paths from/to a given node in a graph.\n\n"
-   "@param k: the number of shortest path desired\n"
    "@param v: the ID of the vertex from which the paths are calculated.\n"
    "@param to: the ID of the vertex to which the paths are calculated.\n"
+   "@param k: the number of shortest path desired\n"
    "@param weights: edge weights in a list or the name of an edge attribute\n"
    "  holding edge weights. If C{None}, all edges are assumed to have\n"
    "  equal weight.\n"
    "@param mode: the directionality of the paths. C{\"in\"} means to\n"
    "  calculate incoming paths, C{\"out\"} means to calculate outgoing\n"
    "  paths, C{\"all\"} means to calculate both ones.\n"
+   "@param output: determines what should be returned. If this is\n"
+   "  C{\"vpath\"}, a list of vertex IDs will be returned, one path\n"
+   "  for each target vertex. For unconnected graphs, some of the list\n"
+   "  elements may be empty. Note that in case of mode=C{\"in\"}, the vertices\n"
+   "  in a path are returned in reversed order. If C{output=\"epath\"},\n"
+   "  edge IDs are returned instead of vertex IDs.\n"
    "@return: the k-shortest path from the given node to every other depending on param to\n"
    "  reachable node in the graph in a list. Note that in case of mode=C{\"in\"},\n"
    "  the vertices in a path are returned in reversed order!"},
