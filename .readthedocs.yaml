@@ -27,6 +27,8 @@ build:
       - echo "Install igraph into venv and prepare for sphinx build"
         #- /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/pip wheel -q -w dist .
         #- /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/pip install -q --force-reinstall dist/*.whl
+      - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python setup.py build_c_core
+      - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python setup.py build
       - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python setup.py install
       - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python3 scripts/patch_modularized_graph_methods.py
 
