@@ -6,7 +6,7 @@
 Cliques
 ============
 
-.. _cliques: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#cliques
+.. _cliques: https://igraph.org/python/doc/api/igraph.GraphBase.html#cliques
 .. |cliques| replace:: :meth:`cliques`
 
 This example shows how to compute and visualize cliques of a graph using |cliques|_.

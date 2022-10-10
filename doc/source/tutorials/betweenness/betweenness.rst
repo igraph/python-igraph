@@ -6,9 +6,9 @@
 Betweenness
 =======================
 
-.. _betweenness: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#betweenness
+.. _betweenness: https://igraph.org/python/doc/api/igraph.GraphBase.html#betweenness
 .. |betweenness| replace:: :meth:`betweenness`
-.. _edge_betweenness: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#edge_betweenness
+.. _edge_betweenness: https://igraph.org/python/doc/api/igraph.GraphBase.html#edge_betweenness
 .. |edge_betweenness| replace:: :meth:`edge_betweenness`
 
 This example demonstrates how to visualize both vertex and edge betweenness with a custom defined color palette. We use the methods |betweenness|_ and |edge_betweenness|_ respectively, and demonstrate the effects on a standard `Krackhardt Kite <https://www.wikiwand.com/en/Krackhardt_kite_graph>`_ graph, as well as a `Watts-Strogatz <https://en.wikipedia.org/wiki/Watts%E2%80%93Strogatz_model>`_ random graph.

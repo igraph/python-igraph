@@ -52,7 +52,7 @@ if [ ! -d ".venv" ]; then
 fi
 
 # Make sure that Sphinx, PyDoctor (and maybe doc2dash) are up-to-date in the virtualenv
-.venv/bin/pip install -U sphinx pydoctor
+.venv/bin/pip install -U sphinx pydoctor sphinxbootstrap4theme
 if [ x$DOC2DASH = x1 ]; then
     .venv/bin/pip install -U doc2dash
 fi
@@ -74,11 +74,10 @@ echo "Patching modularized Graph methods"
 .venv/bin/python3 ${SCRIPTS_FOLDER}/patch_modularized_graph_methods.py
 
 
-# Remove previous docs
+echo "Clean previous docs"
 rm -rf "${DOC_HTML_FOLDER}"
 
 
-# Make sphinx
 echo "Generating HTML documentation..."
 if [ "x$STANDALONE" = "x1" ]; then
   echo "Build standalone docs"

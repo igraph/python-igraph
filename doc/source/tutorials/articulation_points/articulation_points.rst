@@ -6,7 +6,7 @@
 Articulation Points
 ===================
 
-.. _articulation_points: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#articulation_points
+.. _articulation_points: https://igraph.org/python/doc/api/igraph.GraphBase.html#articulation_points
 .. |articulation_points| replace:: :meth:`articulation_points`
 
 This example shows how to compute and visualize the `articulation points <https://en.wikipedia.org/wiki/Biconnected_component>`_ in a graph using |articulation_points|_. For an example on bridges instead, see :ref:`tutorials-bridges`.

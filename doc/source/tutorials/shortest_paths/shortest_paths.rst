@@ -6,9 +6,9 @@
 Shortest Paths
 ==============
 
-.. _get_shortest_paths: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#get_shortest_paths
+.. _get_shortest_paths: https://igraph.org/python/doc/api/igraph.GraphBase.html#get_shortest_paths
 .. |get_shortest_paths| replace:: :meth:`get_shortest_paths`
-.. _get_all_shortest_paths: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#get_all_shortest_paths
+.. _get_all_shortest_paths: https://igraph.org/python/doc/api/igraph.GraphBase.html#get_all_shortest_paths
 .. |get_all_shortest_paths| replace:: :meth:`get_all_shortest_paths`
 
 This example demonstrates how to find the shortest distance between two vertices on a weighted and unweighted graph.

@@ -21,7 +21,7 @@ First we create a 6 by 6 lattice graph.
 
     g = ig.Graph.Lattice([6, 6], circular=False)
 
-.. _permute_vertices: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#permute_vertices
+.. _permute_vertices: https://igraph.org/python/doc/api/igraph.GraphBase.html#permute_vertices
 .. |permute_vertices| replace:: :meth:`permute_vertices`
 
 As an optional step, we randomly rearrange some of the vertex IDs with |permute_vertices|_ in order to generate a more interesting spanning tree.

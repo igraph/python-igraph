@@ -6,7 +6,7 @@
 Erdős-Rényi Graph
 =================
 
-.. _Erdos_Renyi: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#Erdos_Renyi
+.. _Erdos_Renyi: https://igraph.org/python/doc/api/igraph.GraphBase.html#Erdos_Renyi
 .. |Erdos_Renyi| replace:: :meth:`Erdos_Renyi`
 
 

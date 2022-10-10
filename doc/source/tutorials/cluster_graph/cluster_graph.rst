@@ -88,7 +88,7 @@ This is so we can define how each of these attributes get combined together when
 
 Here, we take the mean of x and y values so that the nodes in the cluster graph are placed at the center of the original cluster's position.
 
-.. _contract_vertices: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#contract_vertices
+.. _contract_vertices: https://igraph.org/python/doc/api/igraph.GraphBase.html#contract_vertices
 .. |contract_vertices| replace:: :meth:`contract_vertices`
 
 .. note::
