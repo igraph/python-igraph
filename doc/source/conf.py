@@ -67,15 +67,22 @@ def get_igraph_version():
                          .strip()[1:-1]
                          .split(', '))
     version = '.'.join(version_info)
-        
+
     return version
+
+
+# API docs relative to the rest of the docs, needed for pydoctor to play nicely
+# with intersphinx (https://pypi.org/project/pydoctor/#pydoctor-21-2-0)
+# NOTE: As of 2022 AD, pydoctor requires this to be a subfolder of the docs.
+pydoctor_url_path = 'api/'
 
 
 def get_pydoctor_html_outputdir():
     '''Get HTML output dir for pydoctor'''
     # NOTE: obviously this is a little tricky, but it does work for both
-    # the sphinx-build script and the python -m sphinx module calls.
-    return op.join(sys.argv[-1], 'api')
+    # the sphinx-build script and the python -m sphinx module calls. It works
+    # locally, on github pages, and on RTD.
+    return op.join(sys.argv[-1], pydoctor_url_path.strip('/'))
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -97,9 +104,13 @@ extensions = [
     'sphinx.ext.intersphinx',
     'gallery_generator',
     'pydoctor.sphinx_ext.build_apidocs',
-    'postprocess_api',
     #'sphinx_panels',
 ]
+
+# RTD needs no postprocessing for pydoctor, while Jekyll does
+if os.getenv('READTHEDOCS') is None:
+    extensions.append('postprocess_api')
+
 
 # Using --no-sidebar option to skip the sidebar whole together not to generate noise in the HTML.
 # Because the pydoctor output is integrated in a smaller div with a custom CSS it's not optimal to include the sidebar.
@@ -116,12 +127,6 @@ pydoctor_args = [
     '--project-base-dir=' + get_igraphdir(),
     get_igraphdir(),
 ]
-
-# API docs relative to the rest of the docs
-# NOTE: there is a bug in pydoctor that requires this to be a subfolder
-# of the main docs. Although we patch pydoctor to work anyway, links might
-# be broken if that constraint is not satisfied
-pydoctor_url_path = 'api/'
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -182,26 +187,43 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ---------------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-html_theme = 'sphinxbootstrap4theme'
-#html_theme = 'alabaster'
+# The theme to use for HTML and HTML Help pages. RTD overloads this with their
+# standard theme if the variable 'html_theme' is not set
+if os.getenv('READTHEDOCS') is None:
+    html_theme = 'sphinxbootstrap4theme'
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = [
-        '_templates',
-]
+    # Add any paths that contain templates here, relative to this directory.
+    templates_path = [
+            '_templates',
+    ]
 
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-html_theme_options = {
-        "navbar_style": "full",
-        "navbar_color_class": "dark",
-}
+    # Theme options are theme-specific and customize the look and feel of a theme
+    # further.  For a list of options available for each theme, see the
+    # documentation.
+    html_theme_options = {
+            "navbar_style": "full",
+            "navbar_color_class": "dark",
+    }
 
-# Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [sphinxbootstrap4theme.get_path()]
+    # Add any paths that contain custom themes here, relative to this directory.
+    html_theme_path = [sphinxbootstrap4theme.get_path()]
+
+    # Add any paths that contain custom static files (such as style sheets) here,
+    # relative to this directory. They are copied after the builtin static files,
+    # so a file named "default.css" will overwrite the builtin "default.css".
+    html_static_path = ['_static']
+
+    # If false, no module index is generated.
+    html_domain_indices = False
+
+    # If false, no index is generated.
+    html_use_index = False
+
+    # If true, the index is split into individual pages for each letter.
+    #html_split_index = False
+
+    # If true, links to the reST sources are added to the pages.
+    html_show_sourcelink = False
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -219,11 +241,6 @@ html_theme_path = [sphinxbootstrap4theme.get_path()]
 # pixels large.
 #html_favicon = None
 
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
-
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
 #html_last_updated_fmt = '%b %d, %Y'
@@ -238,18 +255,6 @@ html_static_path = ['_static']
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
 #html_additional_pages = {}
-
-# If false, no module index is generated.
-html_domain_indices = False
-
-# If false, no index is generated.
-html_use_index = False
-
-# If true, the index is split into individual pages for each letter.
-#html_split_index = False
-
-# If true, links to the reST sources are added to the pages.
-html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #html_show_sphinx = True

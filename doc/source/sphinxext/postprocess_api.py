@@ -1,5 +1,9 @@
 """
-Sphinx extension to convert pydoctor API output from HTML and Jekyll.
+Sphinx extension to postprocess pydoctor API output.
+
+- If this is released via Jekyll (e.g. GitHub pages), we need to ensure Jekyll
+  headers are present everywhere and consistent.
+- If this is released via readthedocs (RTD), we can skip this step, see conf.py
 """
 
 from pathlib import Path
