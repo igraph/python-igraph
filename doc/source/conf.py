@@ -71,6 +71,15 @@ def get_igraph_version():
     return version
 
 
+def get_pydoctor_html_outputdir():
+    '''Get HTML output dir for pydoctor'''
+    version = os.getenv('READTHEDOCS_VERSION')
+    if version is not None:
+        return op.join(get_root_dir(), '_build', 'html')
+    else:
+        return op.join(get_root_dir(), 'doc', 'html', 'api')
+
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -104,7 +113,7 @@ pydoctor_args = [
     '--no-sidebar',
     '--docformat=epytext',
     #'--intersphinx='+get_root_dir()+'/doc/tutorial/objects.inv',
-    '--html-output=' + op.join(get_root_dir(), 'doc', 'html', 'api'),
+    '--html-output=' + get_pydoctor_html_outputdir(),
     #'--html-viewsource-base=https://github.com/igraph/python-igraph/tree/default',
     '--project-base-dir=' + get_igraphdir(),
     get_igraphdir(),
