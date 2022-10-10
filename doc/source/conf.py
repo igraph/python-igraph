@@ -73,11 +73,9 @@ def get_igraph_version():
 
 def get_pydoctor_html_outputdir():
     '''Get HTML output dir for pydoctor'''
-    version = os.getenv('READTHEDOCS_VERSION')
-    if version is not None:
-        return op.join(get_root_dir(), '_build', 'html')
-    else:
-        return op.join(get_root_dir(), 'doc', 'html', 'api')
+    # NOTE: obviously this is a little tricky, but it does work for both
+    # the sphinx-build script and the python -m sphinx module calls.
+    return op.join(sys.argv[-1], 'api')
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
