@@ -905,14 +905,11 @@ options = dict(
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
-            # Matplotlib 3.6.0 does not support Python 3.7 any more
-            "matplotlib>=3.5.0,<3.6.0; platform_python_implementation != 'PyPy' and python_version >= '3.8'",
+            # Matplotlib 3.6.0 does not support Python 3.7 any more, but we need
+            # it because Python 3.11 support came in Matplotlib 3.6.0 first
+            "matplotlib>=3.6.0; platform_python_implementation != 'PyPy' and python_version >= '3.8'",
             "plotly>=5.3.0",
-            # matplotlib requires Pillow; however, Pillow >= 8.4 does not
-            # provide manylinux2010 wheels any more, but we need those in
-            # cibuildwheel for Linux so we need to restrict Pillow's version
-            # range
-            "Pillow>=8,<8.4; platform_python_implementation != 'PyPy'",
+            "Pillow>=9; platform_python_implementation != 'PyPy'",
         ],
 
         # Dependencies needed for testing on musllinux; only those that are either
