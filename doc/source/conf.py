@@ -30,11 +30,17 @@ def get_root_dir():
 
 def get_igraphdir():
     '''Get igraph folder'''
+    # Python version
     vmaj, vmin = sys.version_info[:2]
-    root_folder = get_root_dir()
+
+    version = os.getenv('READTHEDOCS_VERSION')
+    if version is not None:
+        venv_folder = f'/home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/{version}/'
+    else:
+        venv_folder = op.join(get_root_dir(), '.venv')
+
     ig_folder = op.join(
-        root_folder,
-        '.venv',
+        venv_folder,
         'lib',
         f'python{vmaj}.{vmin}',
         'site-packages',
