@@ -23,11 +23,8 @@ build:
     # golang: "1.17"
 
   jobs:
-    pre_create_environment:
+    pre_build:
       - echo "Install igraph into venv and prepare for sphinx build"
-      - python -mvirtualenv /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest
-      -  /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python -m pip install --upgrade --no-cache-dir pip setuptools<58.3.0
-      -  /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python -m pip install --exists-action=w --no-cache-dir -r doc/source/requirements.txt 
       - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/pip wheel -q -w dist .
       - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/pip install -q --force-reinstall dist/*.whl
       - /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/latest/bin/python3 scripts/patch_modularized_graph_methods.py
