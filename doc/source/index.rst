@@ -25,9 +25,9 @@
 
 python-igraph |release|
 =======================
-|igraph| is a fast open source tool to manipulate and analyze graphs or networks. It is primarily written in C. `python-igraph` is |igraph|'s interface for the Python programming language.
+`python-igraph` is the Python interface of `igraph`_, a fast open source tool to manipulate and analyze graphs or networks primarily written in C.
 
-`python-graph` includes functionality for graph plotting and conversion from/to `networkx`_.
+`python-graph` let you create, manipulate, analyze, and plot graphs or networks. You can also convert graphs from/to `networkx`_, `graph-tool`_, and a number of file formats.
 
 
 Installation
@@ -63,9 +63,9 @@ Documentation
 
        **Tutorials**
 
-       - :doc:`tutorials/quickstart/quickstart`
-       - :doc:`Gallery <gallery>`
-       - :doc:`tutorial`
+       - :doc:`Quick Start <tutorials/quickstart/quickstart>`
+       - :doc:`Example Gallery <gallery>`
+       - :doc:`Extended tutorial <tutorial>`
 
     .. container::
 
@@ -74,7 +74,7 @@ Documentation
        - :doc:`Generation <generation>`
        - :doc:`Analysis <analysis>`
        - :doc:`Visualization <visualisation>`
-       - :doc:`configuration`
+       - :doc:`Configuration <configuration>`
 
 .. container:: twocol
 
@@ -115,4 +115,6 @@ Indices and tables
 * :ref:`modindex`
 
 
+.. _igraph: https://igraph.org
 .. _networkx: https://networkx.org/documentation/stable/
+.. _graph-tool: https://graph-tool.skewed.de/

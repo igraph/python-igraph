@@ -117,16 +117,19 @@ if os.getenv('READTHEDOCS') is None:
 pydoctor_args = [
     '--project-name="igraph"',
     '--project-version=' + get_igraph_version(),
-    '--project-url=https://igraph.org/python',
+    '--project-url=https://igraph.readthedocs.io',
     '--introspect-c-modules',
-    '--no-sidebar',
     '--docformat=epytext',
     #'--intersphinx='+get_root_dir()+'/doc/tutorial/objects.inv',
     '--html-output=' + get_pydoctor_html_outputdir(),
     #'--html-viewsource-base=https://github.com/igraph/python-igraph/tree/default',
     '--project-base-dir=' + get_igraphdir(),
-    get_igraphdir(),
-]
+    ]
+if os.getenv('READTHEDOCS') is None:
+    pydoctor_args.extend([
+        '--no-sidebar',
+        ])
+pydoctor_args.append(get_igraphdir())
 
 # The suffix of source filenames.
 source_suffix = '.rst'
