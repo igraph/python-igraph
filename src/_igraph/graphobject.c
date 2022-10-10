@@ -5131,16 +5131,17 @@ PyObject *igraphmodule_Graph_get_all_shortest_paths(igraphmodule_GraphObject *
 PyObject *igraphmodule_Graph_get_k_shortest_paths(
     igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds
 ) {
-  static char *kwlist[] = {"v", "to", "k", "weights", "mode", "output", NULL };
+  static char *kwlist[] = { "v", "to", "k", "weights", "mode", "output", NULL };
   igraph_vector_int_list_t res;
   igraph_vector_t *weights = 0;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_integer_t from;
   igraph_integer_t to;
   igraph_integer_t k = 1;
-  PyObject *list, *from_o, *output_o=Py_None,
-    *mode_o=Py_None, *to_o=Py_None, *weights_o=Py_None,*k_o=Py_None;
+  PyObject *list, *from_o, *to_o;
+  PyObject *output_o = Py_None, *mode_o = Py_None, *weights_o = Py_None, *k_o = NULL;
   igraph_bool_t use_edges = 0;
+
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|OOOO", kwlist, &from_o,
         &to_o, &k_o, &weights_o, &mode_o, &output_o))
     return NULL;
@@ -5148,7 +5149,7 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
     return NULL;
 
-  if (igraphmodule_PyObject_to_integer_t(k_o, &k))
+  if (k_o != NULL && igraphmodule_PyObject_to_integer_t(k_o, &k))
     return NULL;
 
   if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
@@ -5186,6 +5187,7 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(
 
   list = igraphmodule_vector_int_list_t_to_PyList(&res);
   igraph_vector_int_list_destroy(&res);
+
   return list ? list : NULL;
 }
 
