@@ -5128,10 +5128,9 @@ PyObject *igraphmodule_Graph_get_all_shortest_paths(igraphmodule_GraphObject *
  * \return a list containing the k-shortest paths from/to the given node
  * \sa TODO I don't know what to write here : igraph_get_shortest_paths
  */
-PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
-                                                    self, PyObject * args,
-                                                    PyObject * kwds)
-{
+PyObject *igraphmodule_Graph_get_k_shortest_paths(
+    igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds
+) {
   static char *kwlist[] = {"v", "to", "k", "weights", "mode", "output", NULL };
   igraph_vector_int_list_t res;
   igraph_vector_t *weights = 0;
@@ -5142,7 +5141,7 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
   PyObject *list, *from_o, *output_o=Py_None,
     *mode_o=Py_None, *to_o=Py_None, *weights_o=Py_None,*k_o=Py_None;
   igraph_bool_t use_edges = 0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|OOO0", kwlist, &from_o,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|OOOO", kwlist, &from_o,
         &to_o, &k_o, &weights_o, &mode_o, &output_o))
     return NULL;
 
@@ -5158,10 +5157,9 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
   if (igraphmodule_PyObject_to_vid(to_o, &to, &self->g))
     return NULL;
 
-  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
-      ATTRIBUTE_TYPE_EDGE)) {
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights, ATTRIBUTE_TYPE_EDGE))
     return NULL;
-  }
+
   if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
     return NULL;
 
@@ -5170,12 +5168,14 @@ PyObject *igraphmodule_Graph_get_k_shortest_paths(igraphmodule_GraphObject *
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     return NULL;
   }
+
   if (igraph_get_k_shortest_paths(&self->g,
         weights,
         /* vertices, edges */
         use_edges ? 0 : &res,
         use_edges ? &res : 0,
-        k, from, to, mode)) {
+        k, from, to, mode)
+  ) {
     igraphmodule_handle_igraph_error();
     igraph_vector_int_list_destroy(&res);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -14204,14 +14204,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  reachable node in the graph in a list. Note that in case of mode=C{\"in\"},\n"
    "  the vertices in a path are returned in reversed order!"},
 
-   {"get_k_shortest_paths",
+  /* interface to igraph_get_k_shortest_paths */
+  {"get_k_shortest_paths",
    (PyCFunction) igraphmodule_Graph_get_k_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "get_k_shortest_paths(v, to, k=1, weights=None, mode=\"out\",output=\"vpath\")\n--\n\n"
+   "get_k_shortest_paths(v, to, k=1, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
    "Calculates the k shortest paths from/to a given node in a graph.\n\n"
-   "@param v: the ID of the vertex from which the paths are calculated.\n"
-   "@param to: the ID of the vertex to which the paths are calculated.\n"
-   "@param k: the number of shortest path desired\n"
+   "@param v: the ID or name of the vertex from which the paths are calculated.\n"
+   "@param to: the ID or name of the vertex to which the paths are calculated.\n"
+   "@param k: the desired number of shortest path\n"
    "@param weights: edge weights in a list or the name of an edge attribute\n"
    "  holding edge weights. If C{None}, all edges are assumed to have\n"
    "  equal weight.\n"
@@ -14224,10 +14225,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  elements may be empty. Note that in case of mode=C{\"in\"}, the vertices\n"
    "  in a path are returned in reversed order. If C{output=\"epath\"},\n"
    "  edge IDs are returned instead of vertex IDs.\n"
-   "@return: the k-shortest path from the given node to every other depending on param to\n"
-   "  reachable node in the graph in a list. Note that in case of mode=C{\"in\"},\n"
+   "@return: the k shortest paths from the given source node to the given target node\n"
+   "  in a list of vertex or edge IDs (depending on the value of the C{output}\n"
+   "  argument). Note that in case of mode=C{\"in\"},\n"
    "  the vertices in a path are returned in reversed order!"},
-
 
   /* interface to igraph_get_all_simple_paths */
   {"_get_all_simple_paths",
