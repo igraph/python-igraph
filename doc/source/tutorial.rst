@@ -637,7 +637,7 @@ Method name                          Short name      Algorithm description
                                      ``circular_3d``
 ==================================== =============== =============================================
 
-.. _Distributed Recursive Layout: https://www.osti.gov/biblio/1231060-dr-distributed-recursive-graph-layout
+.. _Distributed Recursive Layout: https://www.osti.gov/doecode/biblio/54626
 .. _Large Graph Layout: https://sourceforge.net/projects/lgl/
 
 Layout algorithms can either be called directly or using the common layout method called

@@ -10,7 +10,7 @@ Installing |igraph|
 
 Binary package (recommended)
 ============================
-It is recommended to install a binary package that includes both C core and Python interface. You can choose either of `PyPI <https://pypi.python.org/pypi/igraph>`_ or `Conda <https://anaconda.org/conda-forge/python-igraph>`_. Linux users can also use their package manager.
+It is recommended to install a binary package that includes both C core and Python interface. You can choose either of `PyPI <https://pypi.python.org/project/igraph>`_ or `Conda <https://anaconda.org/conda-forge/python-igraph>`_. Linux users can also use their package manager.
 
 PyPI
 ----
@@ -22,7 +22,7 @@ To install the Python interface of |igraph| globally, use the following command
   $ pip install igraph
 
 If you prefer to install |igraph| in a user folder using a `virtual environment
-<https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments>`_, use the following commands instead::
+<https://packaging.python.org/en/latest/tutorials/installing-packages/#creating-virtual-environments>`_, use the following commands instead::
 
   $ python -m venv my_environment
   $ source my_environment/bin/activate
@@ -145,7 +145,7 @@ Q: I am trying to install |igraph| on Windows but am getting DLL import errors
 A: The most common reason for this error is that you do not have the Visual C++
 Redistributable library installed on your machine. Python's own installer is
 supposed to install it, but in case it was not installed on your system, you can
-`download it from Microsoft <https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist>`_.
+`download it from Microsoft <https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170>`_.
 
 Q: I am trying to use |igraph| but get errors about something called Cairo
 ----------------------------------------------------------------------------------
