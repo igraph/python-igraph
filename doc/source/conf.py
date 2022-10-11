@@ -15,7 +15,8 @@ from datetime import datetime
 
 import sys
 import os
-import os.path as op
+import importlib
+from pathlib import Path
 import sphinxbootstrap4theme
 
 
@@ -30,28 +31,12 @@ rtd_version = os.getenv("READTHEDOCS_VERSION", "")
 # docs indeed import itself... perhaps there's a decent way to solve this.
 def get_root_dir():
     '''Get project root folder'''
-    root_folder = op.abspath('../..')
-    return root_folder
+    return str(Path('.').absolute().parent.parent)
 
 
 def get_igraphdir():
     '''Get igraph folder'''
-    # Python version
-    vmaj, vmin = sys.version_info[:2]
-
-    if is_inside_rtd:
-        venv_folder = f'/home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/{rtd_version}/'
-    else:
-        venv_folder = op.join(get_root_dir(), '.venv')
-
-    ig_folder = op.join(
-        venv_folder,
-        'lib',
-        f'python{vmaj}.{vmin}',
-        'site-packages',
-        'igraph',
-    )
-    return ig_folder
+    return Path(importlib.util.find_spec('igraph').origin).parent
 
 
 def get_igraph_version():
@@ -59,10 +44,7 @@ def get_igraph_version():
     if is_inside_rtd:
         return rtd_version
 
-    version_file = op.join(
-        get_igraphdir(),
-        'version.py',
-    )
+    version_file = get_igraphdir() / 'version.py'
     with open(version_file, 'rt') as f:
         version_info = (f.readline()
                          .rstrip('\n')
@@ -76,7 +58,7 @@ def get_igraph_version():
 
 # -- General configuration -----------------------------------------------------
 
-_igraph_dir = get_igraphdir()
+_igraph_dir = str(get_igraphdir())
 _igraph_version = get_igraph_version()
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -259,7 +241,7 @@ def get_pydoctor_html_outputdir(pydoctor_url_path):
     # NOTE: obviously this is a little tricky, but it does work for both
     # the sphinx-build script and the python -m sphinx module calls. It works
     # locally, on github pages, and on RTD.
-    return op.join(sys.argv[-1], pydoctor_url_path.strip('/'))
+    return str(Path(sys.argv[-1]) / pydoctor_url_path.strip('/'))
 
 
 # API docs relative to the rest of the docs, needed for pydoctor to play nicely
