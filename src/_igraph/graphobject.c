@@ -7913,7 +7913,7 @@ PyObject *igraphmodule_Graph_layout_sugiyama(
 }
 
 /** \ingroup python_interface_graph
- * \brief Places the vertices using Uniform Manifold Approximation and Projection (UMAP)
+ * \brief Uniform Manifold Approximation and Projection (UMAP)
  * \return the calculated coordinates as a Python list of lists
  * \sa igraph_layout_umap
  */
@@ -15429,7 +15429,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_umap",
    (PyCFunction) igraphmodule_Graph_layout_umap,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_umap(dist=None, dim=2, seed=None, min_dist=0.01, epochs=500, sampling_prob=0.3)\n--\n\n"
+   "layout_umap(\n"
+   "    dist=None, dim=2, seed=None, min_dist=0.01,\n"
+   "    epochs=500, sampling_prob=0.3)\n--\n\n"
    "Uniform Manifold Approximation and Projection (UMAP).\n\n"
    "This layout is a probabilistic algorithm that places vertices that are connected\n"
    "and have a short distance close by in the embedded space.\n\n"
@@ -15443,8 +15445,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param min_dist: the minimal distance in the embedded space beyond which the\n"
    "  probability of being located closeby decreases.\n"
    "@param epochs: the number of epochs (iterations) the algorithm will iterate\n"
-   "  over. Accuracy increases with more epochs, at the cost of longer\n "
-   "  runtimes. Values between 50 and 1000 are typical.\n"
+   "  over. Accuracy increases with more epochs, at the cost of longer runtimes.\n"
+   "  Values between 50 and 1000 are typical.\n"
    "  Notice that UMAP does not technically converge for symmetry reasons, but a\n"
    "  larger number of epochs should generally give an equivalent or better layout.\n"
    "@param sampling_prob: the probability of sampling each vertex for repulsion at\n"
@@ -15452,7 +15454,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  also require more computations.\n"
    "@return: the calculated layout.\n\n"
    "@newfield ref: Reference\n"
-   "@ref: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation \n"
+   "@ref: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation\n"
    "  and Projection for Dimension Reduction. arXiv:1802.03426."},
 
   ////////////////////////////
