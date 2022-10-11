@@ -10,7 +10,7 @@ Installing |igraph|
 
 Binary package (recommended)
 ============================
-It is recommended to install a binary package that includes both C core and Python interface. You can choose either of `PyPI <http://pypi.python.org/pypi/igraph>`_ or `Conda <https://anaconda.org/conda-forge/python-igraph>`_. Linux users can also use their package manager.
+It is recommended to install a binary package that includes both C core and Python interface. You can choose either of `PyPI <https://pypi.python.org/pypi/igraph>`_ or `Conda <https://anaconda.org/conda-forge/python-igraph>`_. Linux users can also use their package manager.
 
 PyPI
 ----
@@ -149,7 +149,7 @@ supposed to install it, but in case it was not installed on your system, you can
 
 Q: I am trying to use |igraph| but get errors about something called Cairo
 ----------------------------------------------------------------------------------
-A: |igraph| by default uses a third-party called `Cairo <http://www.cairographics.org>`_ for plotting.
+A: |igraph| by default uses a third-party called `Cairo <https://www.cairographics.org>`_ for plotting.
 If Cairo is not installed on your computer, you might get an import error. This error is most commonly
 encountered on Windows machines.
 
@@ -165,7 +165,7 @@ you need to install Cairo headers using your package manager (Linux) or `homebre
 The Cairo project does not provide pre-compiled binaries for Windows, but Christoph Gohlke
 maintains a site containing unofficial Windows binaries for several Python extension packages,
 including Cairo. Therefore, the easiest way to install Cairo on Windows along with its Python bindings
-is simply to download it from `Christoph's site <http://www.lfd.uci.edu/~gohlke/pythonlibs/#pycairo>`_.
+is simply to download it from `Christoph's site <https://www.lfd.uci.edu/~gohlke/pythonlibs/#pycairo>`_.
 Make sure you use an installer that is suitable for your Windows platform (32-bit or 64-bit) and the
 version of Python you are using.
 
