@@ -12,8 +12,9 @@ set -e
 STANDALONE=0
 SERVE=0
 DOC2DASH=0
+LINKCHECK=0
 
-while getopts ":sjd" OPTION; do
+while getopts ":sjdl" OPTION; do
   case $OPTION in
     s)
       STANDALONE=1
@@ -23,6 +24,9 @@ while getopts ":sjd" OPTION; do
       ;;
     d)
       DOC2DASH=1
+      ;;
+    l)
+      LINKCHECK=1
       ;;
     \?)
       echo "Usage: $0 [-sjd]"
@@ -38,6 +42,7 @@ cd ${SCRIPTS_FOLDER}/..
 ROOT_FOLDER=`pwd`
 DOC_SOURCE_FOLDER=${ROOT_FOLDER}/doc/source
 DOC_HTML_FOLDER=${ROOT_FOLDER}/doc/html
+DOC_LINKCHECK_FOLDER=${ROOT_FOLDER}/doc/linkcheck
 SCRIPTS_FOLDER=${ROOT_FOLDER}/scripts
 
 cd ${ROOT_FOLDER}
@@ -76,6 +81,17 @@ echo "Patching modularized Graph methods"
 
 echo "Clean previous docs"
 rm -rf "${DOC_HTML_FOLDER}"
+
+
+if [ "x$LINKCHECK" = "x1" ]; then
+  echo "Check for broken links"
+  .venv/bin/python -m sphinx \
+   -T \
+   -b linkcheck \
+   -Dtemplates_path='' \
+   -Dhtml_theme='alabaster' \
+   ${DOC_SOURCE_FOLDER} ${DOC_LINKCHECK_FOLDER}
+fi
 
 
 echo "Generating HTML documentation..."

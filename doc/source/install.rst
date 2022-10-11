@@ -10,7 +10,7 @@ Installing |igraph|
 
 Binary package (recommended)
 ============================
-It is recommended to install a binary package that includes both C core and Python interface. You can choose either of `PyPI <https://pypi.python.org/project/igraph/>`_ or `Conda <https://anaconda.org/conda-forge/python-igraph>`_. Linux users can also use their package manager.
+It is recommended to install a binary package that includes both C core and Python interface. You can choose either of `PyPI <https://pypi.org/project/igraph/>`_ or `Conda <https://anaconda.org/conda-forge/python-igraph>`_. Linux users can also use their package manager.
 
 PyPI
 ----
