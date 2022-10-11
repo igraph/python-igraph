@@ -12,8 +12,9 @@ set -e
 STANDALONE=0
 SERVE=0
 DOC2DASH=0
+LINKCHECK=0
 
-while getopts ":sjd" OPTION; do
+while getopts ":sjdl" OPTION; do
   case $OPTION in
     s)
       STANDALONE=1
@@ -23,6 +24,9 @@ while getopts ":sjd" OPTION; do
       ;;
     d)
       DOC2DASH=1
+      ;;
+    l)
+      LINKCHECK=1
       ;;
     \?)
       echo "Usage: $0 [-sjd]"
@@ -38,6 +42,7 @@ cd ${SCRIPTS_FOLDER}/..
 ROOT_FOLDER=`pwd`
 DOC_SOURCE_FOLDER=${ROOT_FOLDER}/doc/source
 DOC_HTML_FOLDER=${ROOT_FOLDER}/doc/html
+DOC_LINKCHECK_FOLDER=${ROOT_FOLDER}/doc/linkcheck
 SCRIPTS_FOLDER=${ROOT_FOLDER}/scripts
 
 cd ${ROOT_FOLDER}
@@ -52,7 +57,7 @@ if [ ! -d ".venv" ]; then
 fi
 
 # Make sure that Sphinx, PyDoctor (and maybe doc2dash) are up-to-date in the virtualenv
-.venv/bin/pip install -U sphinx pydoctor
+.venv/bin/pip install -U sphinx pydoctor sphinxbootstrap4theme
 if [ x$DOC2DASH = x1 ]; then
     .venv/bin/pip install -U doc2dash
 fi
@@ -74,15 +79,27 @@ echo "Patching modularized Graph methods"
 .venv/bin/python3 ${SCRIPTS_FOLDER}/patch_modularized_graph_methods.py
 
 
-# Remove previous docs
+echo "Clean previous docs"
 rm -rf "${DOC_HTML_FOLDER}"
 
 
-# Make sphinx
+if [ "x$LINKCHECK" = "x1" ]; then
+  echo "Check for broken links"
+  .venv/bin/python -m sphinx \
+   -T \
+   -b linkcheck \
+   -Dtemplates_path='' \
+   -Dhtml_theme='alabaster' \
+   ${DOC_SOURCE_FOLDER} ${DOC_LINKCHECK_FOLDER}
+fi
+
+
 echo "Generating HTML documentation..."
 if [ "x$STANDALONE" = "x1" ]; then
   echo "Build standalone docs"
-  .venv/bin/sphinx-build \
+  .venv/bin/python -m sphinx \
+   -T \
+   -b html \
    -Dtemplates_path='' \
    -Dhtml_theme='alabaster' \
    ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}

@@ -6,12 +6,7 @@
 Betweenness
 =======================
 
-.. _betweenness: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#betweenness
-.. |betweenness| replace:: :meth:`betweenness`
-.. _edge_betweenness: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#edge_betweenness
-.. |edge_betweenness| replace:: :meth:`edge_betweenness`
-
-This example demonstrates how to visualize both vertex and edge betweenness with a custom defined color palette. We use the methods |betweenness|_ and |edge_betweenness|_ respectively, and demonstrate the effects on a standard `Krackhardt Kite <https://www.wikiwand.com/en/Krackhardt_kite_graph>`_ graph, as well as a `Watts-Strogatz <https://en.wikipedia.org/wiki/Watts%E2%80%93Strogatz_model>`_ random graph.
+This example demonstrates how to visualize both vertex and edge betweenness with a custom defined color palette. We use the methods :meth:`igraph.GraphBase.betweenness` and :meth:`igraph.GraphBase.edge_betweenness` respectively, and demonstrate the effects on a standard `Krackhardt Kite <https://www.wikiwand.com/en/Krackhardt_kite_graph>`_ graph, as well as a `Watts-Strogatz <https://en.wikipedia.org/wiki/Watts%E2%80%93Strogatz_model>`_ random graph.
 
 First we import |igraph| and some libraries for plotting et al:
 
@@ -23,10 +18,7 @@ First we import |igraph| and some libraries for plotting et al:
     from matplotlib.colors import LinearSegmentedColormap, Normalize
     import igraph as ig
 
-.. _rescale: https://igraph.org/python/doc/api/igraph.utils.html#rescale
-.. |rescale| replace:: :meth:`rescale`
-
-Next we define a function for drawing a graph on an Matplotlib axis. We set the color and size of each vertex and edge based on the betweenness value, and also generate some color bars on the sides to see how they translate to each other. We use `Matplotlib's Normalize class <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Normalize.html>`_ to ensure that our color bar ranges are correct, as well as *igraph*'s |rescale|_ to rescale the betweennesses in the interval ``[0, 1]``:
+Next we define a function for drawing a graph on an Matplotlib axis. We set the color and size of each vertex and edge based on the betweenness value, and also generate some color bars on the sides to see how they translate to each other. We use `Matplotlib's Normalize class <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Normalize.html>`_ to ensure that our color bar ranges are correct, as well as *igraph*'s :meth:`igraph.utils.rescale` to rescale the betweennesses in the interval ``[0, 1]``:
 
 .. code-block:: python
 
@@ -85,7 +77,6 @@ Finally, we call our function with the two graphs:
         figsize=(7, 6),
         gridspec_kw=dict(height_ratios=(15, 1, 1)),
         )
-    #plt.subplots_adjust(bottom=0.3)
     plot_betweenness(g1, fig, *axs[:, 0])
     plot_betweenness(g2, fig, *axs[:, 1])
     fig.tight_layout(h_pad=1)

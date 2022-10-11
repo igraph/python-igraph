@@ -6,7 +6,7 @@
 Graph analysis
 ==============
 
-|igraph| enables analysis of graphs/networks from simple operations such as adding and removing nodes to complex theoretical constructs such as community detection. Read the `API documentation`_ for details on each function and class.
+|igraph| enables analysis of graphs/networks from simple operations such as adding and removing nodes to complex theoretical constructs such as community detection. Read the :doc:`api/index` for details on each function and class.
 
 The context for the following examples will be to import |igraph| (commonly as `ig`), have the :class:`Graph` class and to have one or more graphs available::
 
@@ -51,7 +51,7 @@ You can index and slice vertices and edges like indexing and slicing a list::
     >>> g.vs[0, 2, 4]
     >>> g.es[3]
 
-.. note:: The `vs` and `es` attributes are special sequences with their own useful methods. See `API documentation`_ for a full list.
+.. note:: The `vs` and `es` attributes are special sequences with their own useful methods. See the :doc:`api/index` for a full list.
 
 If you prefer a vanilla edge list, you can use :meth:`Graph.get_edge_list`.
 
@@ -442,5 +442,3 @@ Flow and cuts are closely related, therefore you might find the following functi
 - :meth:`Graph.all_st_mincuts`
 - :meth:`Graph.edge_connectivity` or :meth:`Graph.edge_disjoint_paths` or :meth:`Graph.adhesion`
 - :meth:`Graph.vertex_connectivity` or :meth:`Graph.cohesion`
-
-.. _API documentation: https://igraph.org/python/api/latest/

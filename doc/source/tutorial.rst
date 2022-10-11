@@ -573,6 +573,8 @@ The adjacency matrix for the example graph is
 For example, Claire (``[1, 0, 0, 1, 1, 1, 0]``) is directly connected to Alice (who has vertex index 0), Dennis (index 3),
 Esther (index 4), and Frank (index 5), but not to Bob (index 1) nor George (index 6).
 
+.. _tutorial-layouts-plotting:
+
 Layouts and plotting
 ====================
 
@@ -582,7 +584,7 @@ mapping from vertices to coordinates in two- or three-dimensional space first,
 preferably in a way that is pleasing for the eye. A separate branch of graph theory,
 namely graph drawing, tries to solve this problem via several graph layout algorithms.
 |igraph| implements quite a few layout algorithms and is also able to draw them onto
-the screen or to a PDF, PNG or SVG file using the `Cairo library <http://www.cairographics.org>`_.
+the screen or to a PDF, PNG or SVG file using the `Cairo library <https://www.cairographics.org>`_.
 
 .. important::
    To follow the examples of this subsection, you need the Python bindings of the
@@ -636,7 +638,7 @@ Method name                          Short name      Algorithm description
 ==================================== =============== =============================================
 
 .. _Distributed Recursive Layout: https://www.osti.gov/doecode/biblio/54626
-.. _Large Graph Layout: http://sourceforge.net/projects/lgl/
+.. _Large Graph Layout: https://sourceforge.net/projects/lgl/
 
 Layout algorithms can either be called directly or using the common layout method called
 :meth:`~Graph.layout`::
@@ -874,7 +876,7 @@ Specifying colors in plots
 color (e.g., edge, vertex or label colors in the respective attributes):
 
 X11 color names
-    See the `list of X11 color names <http://en.wikipedia.org/wiki/X11_color_names>`_
+    See the `list of X11 color names <https://en.wikipedia.org/wiki/X11_color_names>`_
     in Wikipedia for the complete list. Alternatively you can see the
     keys of the igraph.drawing.colors.known_colors dictionary. Color
     names are case insensitive in igraph so "DarkBlue" can be written as
@@ -962,13 +964,13 @@ Labeled edgelist ``ncol``      :meth:`Graph.Read_Ncol`      :meth:`Graph.write_n
 Pickled graph    ``pickle``    :meth:`Graph.Read_Pickle`    :meth:`Graph.write_pickle`
 ================ ============= ============================ =============================
 
-.. _GraphViz: http://www.graphviz.org
-.. _LGL: http://lgl.sourceforge.net/#FileFormat
-.. _NCOL: http://lgl.sourceforge.net/#FileFormat
-.. _Pajek: http://pajek.imfm.si/doku.php
+.. _GraphViz: https://www.graphviz.org
+.. _LGL: https://lgl.sourceforge.net/#FileFormat
+.. _NCOL: https://lgl.sourceforge.net/#FileFormat
+.. _Pajek: http://mrvar.fdv.uni-lj.si/pajek/
 
 As an exercise, download the graph representation of the well-known
-`Zachary karate club study <http://nexus.igraph.org/api/dataset?id=1&format=GraphML>`_
+`Zachary karate club study <https://en.wikipedia.org/wiki/Zachary%27s_karate_club>`_
 from :download:`this file </assets/zachary.zip>`, unzip it and try to load it into
 |igraph|. Since it is a GraphML file, you must use the GraphML reader method from
 the table above (make sure you use the appropriate path to the downloaded file)::

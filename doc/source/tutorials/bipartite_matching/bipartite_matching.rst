@@ -6,10 +6,7 @@
 Maximum Bipartite Matching
 ==========================
 
-.. _maximum_bipartite_matching: https://igraph.org/python/doc/api/igraph.Graph.html#maximum_bipartite_matching
-.. |maximum_bipartite_matching| replace:: :meth:`maximum_bipartite_matching`
-
-This example demonstrates an efficient way to find and visualise a maximum biparite matching using |maximum_bipartite_matching|_. First construct a bipartite graph
+This example demonstrates an efficient way to find and visualise a maximum biparite matching using :meth:`igraph.Graph.maximum_bipartite_matching`. First construct a bipartite graph
 
 .. code-block:: python
 

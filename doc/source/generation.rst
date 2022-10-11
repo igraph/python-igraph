@@ -7,7 +7,7 @@
 Graph generation
 ================
 
-The first step of most |igraph| applications is to generate a graph. This section will explain a number of ways to do that. Read the `API documentation`_ for details on each function and class.
+The first step of most |igraph| applications is to generate a graph. This section will explain a number of ways to do that. Read the :doc:`api/index` for details on each function and class.
 
 The :class:`Graph` class is the main object used to generate graphs::
 
@@ -55,7 +55,7 @@ a representation that uses Python builtin data structures:
  - :meth:`Graph.to_list_dict`
  - :meth:`Graph.to_dict_dict`
 
-See the `API documentation`_ of each function for details and examples.
+See the :doc:`api/index` of each function for details and examples.
 
 From matrices
 +++++++++++++
@@ -208,5 +208,3 @@ Finally, there are some ways of generating graphs that are not covered by the pr
  - graphs from LCF notation :meth:`Graph.LCF`
  - small graphs of any "isomorphism class" :meth:`Graph.Isoclass`
  - graphs with a specified degree sequence :meth:`Graph.Realize_Degree_Sequence`
-                     
-.. _API documentation: https://igraph.org/python/api/latest/

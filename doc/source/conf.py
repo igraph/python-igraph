@@ -15,57 +15,51 @@ from datetime import datetime
 
 import sys
 import os
-import os.path as op
+import importlib
+from pathlib import Path
 import sphinxbootstrap4theme
+
+
+# Check if we are inside readthedocs, the conf is quite different there
+is_inside_rtd = os.getenv("READTHEDOCS", "") == "True"
+rtd_version = os.getenv("READTHEDOCS_VERSION", "")
 
 
 # Utility functions
 # NOTE: these could be improved, esp by importing igraph, but that
-# currently generates a conflict with pydoctor
+# currently generates a conflict with pydoctor. It is funny because pydoctor's
+# docs indeed import itself... perhaps there's a decent way to solve this.
 def get_root_dir():
     '''Get project root folder'''
-    root_folder = op.abspath('../..')
-    return root_folder
+    return str(Path('.').absolute().parent.parent)
 
 
 def get_igraphdir():
     '''Get igraph folder'''
-    vmaj, vmin = sys.version_info[:2]
-    root_folder = get_root_dir()
-    ig_folder = op.join(
-        root_folder,
-        '.venv',
-        'lib',
-        f'python{vmaj}.{vmin}',
-        'site-packages',
-        'igraph',
-    )
-    return ig_folder
+    return Path(importlib.util.find_spec('igraph').origin).parent
 
 
 def get_igraph_version():
     '''Get igraph version'''
-    version_file = op.join(
-        get_igraphdir(),
-        'version.py',
-    )
+    if is_inside_rtd:
+        return rtd_version
+
+    version_file = get_igraphdir() / 'version.py'
     with open(version_file, 'rt') as f:
         version_info = (f.readline()
                          .rstrip('\n')
                          .split('=')[1]
                          .strip()[1:-1]
                          .split(', '))
-        version = '.'.join(version_info)
-        
+    version = '.'.join(version_info)
+
     return version
 
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.append(os.path.abspath('.'))
-
 # -- General configuration -----------------------------------------------------
+
+_igraph_dir = str(get_igraphdir())
+_igraph_version = get_igraph_version()
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
@@ -78,32 +72,14 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.intersphinx',
     'gallery_generator',
-    'pydoctor.sphinx_ext.build_apidocs',
-    'postprocess_api',
     #'sphinx_panels',
+    'pydoctor.sphinx_ext.build_apidocs',
 ]
 
-# Using --no-sidebar option to skip the sidebar whole together not to generate noise in the HTML.
-# Because the pydoctor output is integrated in a smaller div with a custom CSS it's not optimal to include the sidebar.
-pydoctor_args = [
-    '--project-name="igraph"',
-    '--project-version=' + get_igraph_version(),
-    '--project-url=https://igraph.org/python',
-    '--introspect-c-modules',
-    '--no-sidebar',
-    '--docformat=epytext',
-    #'--intersphinx='+get_root_dir()+'/doc/tutorial/objects.inv',
-    '--html-output=' + op.join(get_root_dir(), 'doc', 'html', 'api'),
-    #'--html-viewsource-base=https://github.com/igraph/python-igraph/tree/default',
-    '--project-base-dir=' + get_igraphdir(),
-    get_igraphdir(),
-]
-
-# API docs relative to the rest of the docs
-# NOTE: there is a bug in pydoctor that requires this to be a subfolder
-# of the main docs. Although we patch pydoctor to work anyway, links might
-# be broken if that constraint is not satisfied
-pydoctor_url_path = 'api/'
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
+#sys.path.append(os.path.abspath('.'))
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -123,7 +99,7 @@ copyright = '2010-{0}, The igraph development team'.format(datetime.now().year)
 # built documents.
 #
 # The short X.Y version.
-version = get_igraph_version()
+version = _igraph_version
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -164,26 +140,50 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ---------------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-html_theme = 'sphinxbootstrap4theme'
-#html_theme = 'alabaster'
+# The theme to use for HTML and HTML Help pages. RTD overloads this with their
+# standard theme if the variable 'html_theme' is not set
+if not is_inside_rtd:
+    html_theme = 'sphinxbootstrap4theme'
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = [
-        '_templates',
-]
+    # Add any paths that contain templates here, relative to this directory.
+    templates_path = [
+            '_templates',
+    ]
 
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-html_theme_options = {
-        "navbar_style": "full",
-        "navbar_color_class": "dark",
-}
+    # Theme options are theme-specific and customize the look and feel of a theme
+    # further.  For a list of options available for each theme, see the
+    # documentation.
+    html_theme_options = {
+            "navbar_style": "full",
+            "navbar_color_class": "dark",
+    }
 
-# Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [sphinxbootstrap4theme.get_path()]
+    # Add any paths that contain custom themes here, relative to this directory.
+    html_theme_path = [sphinxbootstrap4theme.get_path()]
+
+    # Add any paths that contain custom static files (such as style sheets) here,
+    # relative to this directory. They are copied after the builtin static files,
+    # so a file named "default.css" will overwrite the builtin "default.css".
+    html_static_path = ['_static']
+
+    # If false, no module index is generated.
+    html_domain_indices = False
+
+    # If false, no index is generated.
+    html_use_index = False
+
+    # If true, the index is split into individual pages for each letter.
+    #html_split_index = False
+
+    # If true, links to the reST sources are added to the pages.
+    html_show_sourcelink = False
+
+else:
+
+    # Inspired by pydoctor's RTD page itself
+    # https://github.com/twisted/pydoctor/blob/master/docs/source/conf.py
+    html_theme = "sphinx_rtd_theme"
+    html_static_path = []
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -201,11 +201,6 @@ html_theme_path = [sphinxbootstrap4theme.get_path()]
 # pixels large.
 #html_favicon = None
 
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
-
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
 #html_last_updated_fmt = '%b %d, %Y'
@@ -220,18 +215,6 @@ html_static_path = ['_static']
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
 #html_additional_pages = {}
-
-# If false, no module index is generated.
-html_domain_indices = False
-
-# If false, no index is generated.
-html_use_index = False
-
-# If true, the index is split into individual pages for each letter.
-#html_split_index = False
-
-# If true, links to the reST sources are added to the pages.
-html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #html_show_sphinx = True
@@ -250,6 +233,49 @@ html_show_sourcelink = False
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'igraphdoc'
 
+
+# -- Options for pydoctor ------------------------------------------------------
+
+def get_pydoctor_html_outputdir(pydoctor_url_path):
+    '''Get HTML output dir for pydoctor'''
+    # NOTE: obviously this is a little tricky, but it does work for both
+    # the sphinx-build script and the python -m sphinx module calls. It works
+    # locally, on github pages, and on RTD.
+    return str(Path(sys.argv[-1]) / pydoctor_url_path.strip('/'))
+
+
+# API docs relative to the rest of the docs, needed for pydoctor to play nicely
+# with intersphinx (https://pypi.org/project/pydoctor/#pydoctor-21-2-0)
+# NOTE: As of 2022 AD, pydoctor requires this to be a subfolder of the docs.
+pydoctor_url_path = 'api/'
+
+pydoctor_args = [
+    '--project-name="igraph"',
+    '--project-version=' + version,
+    '--project-url=https://igraph.readthedocs.io',
+    '--introspect-c-modules',
+    '--docformat=epytext',
+    #'--intersphinx='+get_root_dir()+'/doc/tutorial/objects.inv',
+    '--html-output=' + get_pydoctor_html_outputdir(pydoctor_url_path),
+    #'--html-viewsource-base=https://github.com/igraph/python-igraph/tree/default',
+    '--project-base-dir=' + _igraph_dir,
+    ]
+
+# Using --no-sidebar option to skip the sidebar because the pydoctor output is
+# integrated in a smaller div with a custom CSS.
+if not is_inside_rtd:
+    pydoctor_args.extend([
+        '--no-sidebar',
+        ])
+else:
+    pydoctor_args.extend([
+        '--theme=readthedocs',
+        ])
+pydoctor_args.append(_igraph_dir)
+
+# RTD needs no postprocessing for pydoctor, while Jekyll does
+if not is_inside_rtd:
+    extensions.append('postprocess_api')
 
 # -- Options for LaTeX output --------------------------------------------------
 
