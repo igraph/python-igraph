@@ -637,7 +637,7 @@ Method name                          Short name      Algorithm description
                                      ``circular_3d``
 ==================================== =============== =============================================
 
-.. _Distributed Recursive Layout: https://www.osti.gov/doecode/biblio/54626
+.. _Distributed Recursive Layout: http://www.osti.gov/doecode/biblio/54626
 .. _Large Graph Layout: https://sourceforge.net/projects/lgl/
 
 Layout algorithms can either be called directly or using the common layout method called
@@ -967,7 +967,7 @@ Pickled graph    ``pickle``    :meth:`Graph.Read_Pickle`    :meth:`Graph.write_p
 .. _GraphViz: https://www.graphviz.org
 .. _LGL: https://lgl.sourceforge.net/#FileFormat
 .. _NCOL: https://lgl.sourceforge.net/#FileFormat
-.. _Pajek: https://pajek.imfm.si/doku.php
+.. _Pajek: http://mrvar.fdv.uni-lj.si/pajek/
 
 As an exercise, download the graph representation of the well-known
 `Zachary karate club study <https://en.wikipedia.org/wiki/Zachary%27s_karate_club>`_
