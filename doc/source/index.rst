@@ -25,10 +25,9 @@
 
 python-igraph |release|
 =======================
-Python interface of `igraph`_, a fast and open source C library to manipulate and analyze graphs (aka networks).
+Python interface of `igraph`_, a fast and open source C library to manipulate and analyze graphs (aka networks). It can be used to:
 
-`python-graph` can also:
-
+ - Create, manipulate, and analyze networks.
  - Convert graphs from/to `networkx`_, `graph-tool`_ and many file formats.
  - Plot networks using `Cairo`_, `matplotlib`_, and `plotly`_.
 
