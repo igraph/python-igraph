@@ -47,4 +47,4 @@ The plots looks like this:
    Four graphs using the same palette and layout algorithm.
 
 .. note::
-    If you would like to set global defaults, for example, always using the Matplotlib plotting backend, or using a particular color palette by default, you can use |igraph|'s `configuration instance <https://igraph.org/python/doc/api/igraph.configuration.Configuration.html>`_. A quick example on how to use it can be found here: :ref:`tutorials-configuration`
+    If you would like to set global defaults, for example, always using the Matplotlib plotting backend, or using a particular color palette by default, you can use |igraph|'s `configuration instance :class:`igraph.configuration.Configuration`. A quick example on how to use it can be found here: :ref:`tutorials-configuration`

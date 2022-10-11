@@ -53,9 +53,6 @@ The received output is:
    Sequentially Animated Ring Graph
 
 
-.. _induced_subgraph: https://igraph.org/python/api/latest/igraph._igraph.GraphBase.html#induced_subgraph
-.. |induced_subgraph| replace:: :meth:`induced_subgraph`
-
 .. note::
     
-    We use *igraph*'s :meth:`Graph.subgraph()` (see |induced_subgraph|_) in order to obtain a section of the ring graph at a time for each frame.
+    We use *igraph*'s :meth:`Graph.subgraph()` (see :meth:`igraph.GraphBase.induced_subgraph`) in order to obtain a section of the ring graph at a time for each frame.

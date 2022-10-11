@@ -6,10 +6,7 @@
 Connected Components
 =====================
 
-.. _connected_components: https://igraph.org/python/doc/api/igraph.Graph.html#connected_components
-.. |connected_components| replace:: :meth:`connected_components`
-
-This example demonstrates how to visualise the connected components in a graph using |connected_components|_.
+This example demonstrates how to visualise the connected components in a graph using :meth:`igraph.GraphBase.connected_components`.
 
 .. code-block:: python
 
@@ -47,4 +44,4 @@ The plotting results are:
 
 .. note::
 
-    We use the integers from 0 to 200 instead of 0 to 255 in our vertex colors, since 255 in the `rainbow palette <https://igraph.org/python/doc/api/igraph.drawing.colors.RainbowPalette.html>`_ corresponds to looping back to red.
+    We use the integers from 0 to 200 instead of 0 to 255 in our vertex colors, since 255 in the :class:`igraph.drawing.colors.RainbowPalette` corresponds to looping back to red.

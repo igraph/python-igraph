@@ -573,6 +573,8 @@ The adjacency matrix for the example graph is
 For example, Claire (``[1, 0, 0, 1, 1, 1, 0]``) is directly connected to Alice (who has vertex index 0), Dennis (index 3),
 Esther (index 4), and Frank (index 5), but not to Bob (index 1) nor George (index 6).
 
+.. _tutorial-layouts-plotting:
+
 Layouts and plotting
 ====================
 

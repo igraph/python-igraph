@@ -6,12 +6,7 @@
 Generating Cluster Graphs
 ===========================
 
-.. _cluster_graph: https://igraph.org/python/doc/api/igraph.clustering.VertexClustering.html#cluster_graph
-.. |cluster_graph| replace:: :meth:`cluster_graph`
-.. _community_edge_betweenness: https://igraph.org/python/doc/api/igraph.Graph.html#community_edge_betweenness
-.. |community_edge_betweenness| replace:: :meth:`community_edge_betweenness`
-
-This example shows how to find the communities in a graph, then contract each community into a single node using |cluster_graph|_. For this tutorial, we'll use the *Donald Knuth's Les Miserables Network*, which shows the coapperances of characters in the novel *Les Miserables*. The network can be obtained `here <http://www-personal.umich.edu/~mejn/netdata/>`_. 
+This example shows how to find the communities in a graph, then contract each community into a single node using :class:`igraph.clustering.VertexClustering`. For this tutorial, we'll use the *Donald Knuth's Les Miserables Network*, which shows the coapperances of characters in the novel *Les Miserables*. The network can be obtained `here <http://www-personal.umich.edu/~mejn/netdata/>`_. 
 
 .. code-block:: python
     
@@ -21,7 +16,7 @@ This example shows how to find the communities in a graph, then contract each co
     # Load the graph
     g = ig.load("./lesmis/lesmis.gml")
 
-First, let's visualise the original communities, using |community_edge_betweenness|_ to separate out vertices into clusters. (For a more focused tutorial on just visualising communities, check out :ref:`tutorials-visualize-communities`).
+First, let's visualise the original communities, using :meth:`igraph.Graph.community_edge_betweenness` to separate out vertices into clusters. (For a more focused tutorial on just visualising communities, check out :ref:`tutorials-visualize-communities`).
 
 .. code-block:: python
 
@@ -69,7 +64,7 @@ Now let's try and contract the information down, using only a single vertex to r
     g.vs["size"] = 1
     g.es["size"] = 1
 
-This is so we can define how each of these attributes get combined together when we call |cluster_graph|_.
+This is so we can define how each of these attributes get combined together when we call :meth:`igraph.VertexClustering.cluster_graph`.
 
 .. code-block:: python
     
@@ -88,12 +83,9 @@ This is so we can define how each of these attributes get combined together when
 
 Here, we take the mean of x and y values so that the nodes in the cluster graph are placed at the center of the original cluster's position.
 
-.. _contract_vertices: https://igraph.org/python/doc/api/igraph.GraphBase.html#contract_vertices
-.. |contract_vertices| replace:: :meth:`contract_vertices`
-
 .. note::
 
-    ``mean``, ``first``, and ``sum`` are all built-in collapsing functions, along with ``prod``, ``median``, ``max``, ``min``, ``last``, ``random``. You can also define your own custom collapsing functions, which take in a list and return a single element representing the combined attribute value. For more details on |igraph| contraction, see |contract_vertices|_
+    ``mean``, ``first``, and ``sum`` are all built-in collapsing functions, along with ``prod``, ``median``, ``max``, ``min``, ``last``, ``random``. You can also define your own custom collapsing functions, which take in a list and return a single element representing the combined attribute value. For more details on |igraph| contraction, see :meth:`igraph.GraphBase.contract_vertices`
 
 Finally we plot out the graph using our calculated attributes:
 

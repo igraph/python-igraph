@@ -6,14 +6,9 @@
 Shortest Paths
 ==============
 
-.. _get_shortest_paths: https://igraph.org/python/doc/api/igraph.GraphBase.html#get_shortest_paths
-.. |get_shortest_paths| replace:: :meth:`get_shortest_paths`
-.. _get_all_shortest_paths: https://igraph.org/python/doc/api/igraph.GraphBase.html#get_all_shortest_paths
-.. |get_all_shortest_paths| replace:: :meth:`get_all_shortest_paths`
-
 This example demonstrates how to find the shortest distance between two vertices on a weighted and unweighted graph.
 
-To find the shortest path or distance between two nodes, we can use |get_shortest_paths|_. If we're only interested in counting the unweighted distance, then we can do the following:
+To find the shortest path or distance between two nodes, we can use :meth:`igraph.GraphBase.get_shortest_paths`. If we're only interested in counting the unweighted distance, then we can do the following:
 
 .. code-block:: python
 
@@ -76,8 +71,8 @@ The output of these these two shortest paths are:
 
 .. note::
 
-    - |get_shortest_paths|_ returns a list of lists becuase the `to` argument can also accept a list of vertex IDs. In that case, the shortest path to all each vertex is found and stored in the results array.
-    - If you're interested in finding *all* shortest paths, take a look at |get_all_shortest_paths|_.
+    - :meth:`igraph.GraphBase.get_shortest_paths` returns a list of lists becuase the `to` argument can also accept a list of vertex IDs. In that case, the shortest path to all each vertex is found and stored in the results array.
+    - If you're interested in finding *all* shortest paths, take a look at :meth:`igraph.GraphBase.get_all_shortest_paths`.
 
 
 In case you are wondering how the visualization figure was done, here's the code:

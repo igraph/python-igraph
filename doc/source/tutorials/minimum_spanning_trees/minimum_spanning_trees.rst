@@ -6,10 +6,7 @@
 Minimum Spanning Trees
 ======================
 
-.. _spanning_tree: https://igraph.org/python/doc/api/igraph.Graph.html#spanning_tree
-.. |spanning_tree| replace:: :meth:`spanning_tree`
-
-This example shows how to generate a `minimum spanning tree <https://en.wikipedia.org/wiki/Minimum_spanning_tree>`_ from an input graph using |spanning_tree|_. If you only need a regular spanning tree, check out :ref:`tutorials-spanning-trees`.
+This example shows how to generate a `minimum spanning tree <https://en.wikipedia.org/wiki/Minimum_spanning_tree>`_ from an input graph using :meth:`igraph.Graph.spanning_tree`. If you only need a regular spanning tree, check out :ref:`tutorials-spanning-trees`.
 
 We start by generating a grid graph with random integer weights between 1 and 20:
 
@@ -25,7 +22,7 @@ We start by generating a grid graph with random integer weights between 1 and 20
     g = ig.Graph.Lattice([5, 5], circular=False)
     g.es["weight"] = [random.randint(1, 20) for _ in g.es]
 
-We then call |spanning_tree|_, making sure to pass in the randomly generated weights.
+We then call :meth:`igraph.Graph.spanning_tree`, making sure to pass in the randomly generated weights.
 
 .. code-block:: python
 

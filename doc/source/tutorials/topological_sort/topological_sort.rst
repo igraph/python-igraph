@@ -6,11 +6,7 @@
 Topological sorting
 ===================
 
-.. _topological_sorting: https://igraph.org/python/doc/api/igraph.GraphBase.html#topological_sorting
-.. |topological_sorting| replace:: :meth:`topological_sorting`
-
-
-This example demonstrates how to get a topological sorting on a directed acyclic graph (DAG). A topological sorting of a directed graph is a linear ordering based on the precedence implied by the directed edges. It exists iff the graph doesn't have any cycle. In ``igraph``, we can use |topological_sorting|_ to get a topological ordering of the vertices.
+This example demonstrates how to get a topological sorting on a directed acyclic graph (DAG). A topological sorting of a directed graph is a linear ordering based on the precedence implied by the directed edges. It exists iff the graph doesn't have any cycle. In ``igraph``, we can use :meth:`igraph.GraphBase.topological_sorting` to get a topological ordering of the vertices.
 
 .. code-block:: python
 
@@ -31,7 +27,7 @@ This example demonstrates how to get a topological sorting on a directed acyclic
     results = g.topological_sorting(mode='in')
     print('Topological sort of g (in):', *results)
 
-There are two modes of |topological_sorting|_. ``'out'`` is the default mode which starts from a node with indegree equal to 0. Vice versa, the mode ``'in'`` starts from a node with outdegree equal to 0.
+There are two modes of :meth:`igraph.GraphBase.topological_sorting`. ``'out'`` is the default mode which starts from a node with indegree equal to 0. Vice versa, the mode ``'in'`` starts from a node with outdegree equal to 0.
 
 The output of the code above is:
 
