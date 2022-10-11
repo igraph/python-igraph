@@ -25,9 +25,12 @@
 
 python-igraph |release|
 =======================
-`python-igraph` is the Python interface of `igraph`_, a fast open source tool to manipulate and analyze graphs or networks primarily written in C.
+Python interface of `igraph`_, a fast and open source C library to manipulate and analyze graphs (aka networks).
 
-`python-graph` let you create, manipulate, analyze, and plot graphs or networks. You can also convert graphs from/to `networkx`_, `graph-tool`_, and a number of file formats.
+`python-graph` can also:
+
+ - Convert graphs from/to `networkx`_, `graph-tool`_ and many file formats.
+ - Plot networks using `Cairo`_, `matplotlib`_, and `plotly`_.
 
 
 Installation
@@ -92,6 +95,7 @@ Documentation
        - :doc:`FAQs <faq>`
        - `Forum <https://igraph.discourse.group/>`_
 
+Documentation for `python-igraph <= 0.10.1` is available on our `old website <https://igraph.org/python/versions/0.10.1>`_.
 
 .. toctree::
    :maxdepth: 1
@@ -118,3 +122,6 @@ Indices and tables
 .. _igraph: https://igraph.org
 .. _networkx: https://networkx.org/documentation/stable/
 .. _graph-tool: https://graph-tool.skewed.de/
+.. _Cairo: https://www.cairographics.org
+.. _matplotlib: https://matplotlib.org
+.. _plotly: https://plotly.com/python/
