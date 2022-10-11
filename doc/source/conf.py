@@ -284,6 +284,7 @@ pydoctor_args = [
 if not is_inside_rtd:
     pydoctor_args.extend([
         '--no-sidebar',
+        '--theme=readthedocs',
         ])
 pydoctor_args.append(_igraph_dir)
 
