@@ -3,6 +3,7 @@ wheel
 requests>=2.28.1
 
 sphinxbootstrap4theme
+sphinx-gallery
 pydoctor
 
 numpy

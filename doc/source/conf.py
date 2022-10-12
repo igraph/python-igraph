@@ -72,6 +72,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.intersphinx',
     'gallery_generator',
+    'sphinx_gallery.gen_gallery',
     #'sphinx_panels',
     'pydoctor.sphinx_ext.build_apidocs',
 ]
@@ -276,6 +277,17 @@ pydoctor_args.append(_igraph_dir)
 # RTD needs no postprocessing for pydoctor, while Jekyll does
 if not is_inside_rtd:
     extensions.append('postprocess_api')
+
+
+# -- Options for sphinx-gallery ------------------------------------------------
+
+sphinx_gallery_conf = {
+     'examples_dirs': '../examples_sphinx-gallery',   # path to your example scripts
+     'gallery_dirs': 'examples',  # path to where to save gallery generated output
+     'filename_pattern': '/',
+     'matplotlib_animations': True,
+     'remove_config_comments': True,
+}
 
 # -- Options for LaTeX output --------------------------------------------------
 

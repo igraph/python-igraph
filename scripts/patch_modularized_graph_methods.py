@@ -5,6 +5,13 @@ import inspect
 import igraph
 
 
+# FIXME: there must be a better way to do this
+auxiliary_imports = [
+    ('typing', '*'),
+    ('igraph.io.files', '_identify_format'),
+]
+
+
 def main():
 
     # Get instance and classmethods
@@ -14,7 +21,7 @@ def main():
     # Get the source code for each method and replace the method name
     # in the signature
     methodsources = {}
-    underscore_functions= set()
+    underscore_functions = set()
     for mname, method in methods:
         # Source code of the function that uses the method
         source = inspect.getsourcelines(method)[0]
@@ -27,7 +34,6 @@ def main():
 
         # Make new source code, which is the same but with the name swapped
         newsource = [source[0].replace(fname, mname)] + source[1:]
-
         methodsources[mname] = newsource
 
         # Prepare to delete the import for underscore functions
@@ -36,18 +42,23 @@ def main():
 
     newmodule = igraph.__file__ + '.new'
     with open(newmodule, 'wt') as fout:
+        # FIXME: whitelisting all cases is not great, try to improve
+        for (origin, value) in auxiliary_imports:
+            fout.write(f'from {origin} import {value}\n')
+
         with open(igraph.__file__, 'rt') as f:
             # Swap in the method sources
             for line in f:
                 mtype = None
+
                 for mname in methodsources:
                     # Class methods (constructors)
-                    if mname + ' = classmethod(_' in line:
+                    if ' ' + mname + ' = classmethod(_' in line:
                         mtype = 'class'
                         break
 
                     # Instance methods (excluding factories e.g. 3d layouts)
-                    if (mname + ' = _' in line) and ('(' not in line):
+                    if (' ' + mname + ' = _' in line) and ('(' not in line):
                         mtype = 'instance'
                         break
 
@@ -55,13 +66,15 @@ def main():
                     fout.write(line)
                     continue
 
-                # Method found, substitute
+                # Method found, substitute and remove from dict
                 fout.write('\n')
                 if mtype == 'class':
                     fout.write('    @classmethod\n')
                 for mline in methodsources[mname]:
                     # Correct indentation
                     fout.write('    ' + mline)
+
+                del methodsources[mname]
 
     # Move the new file back
     with open(igraph.__file__, 'wt') as fout:
