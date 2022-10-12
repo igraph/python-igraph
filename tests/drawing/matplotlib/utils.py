@@ -7,7 +7,7 @@ import functools
 
 try:
     import matplotlib
-    from matplotlib.testing.decorators import _ImageComparisonBase
+    from matplotlib.testing.decorators import _collect_new_figures, _ImageComparisonBase
     from matplotlib.testing.compare import comparable_formats
     import matplotlib.pyplot as plt
 except ImportError:
@@ -53,15 +53,16 @@ def _unittest_image_comparison(
             )
             matplotlib.testing.set_font_settings_for_testing()
 
-            func(*args, **kwargs)
+            with _collect_new_figures() as figs:
+                func(*args, **kwargs)
 
-            assert len(plt.get_fignums()) == len(
+            assert len(figs) == len(
                 baseline_images
             ), "Test generated {} images but there are {} baseline images".format(
-                len(plt.get_fignums()), len(baseline_images)
+                len(figs), len(baseline_images)
             )
-            for idx, baseline in enumerate(baseline_images):
-                img.compare(idx, baseline, _default_extension, _lock=False)
+            for fig, baseline in zip(figs, baseline_images):
+                img.compare(fig, baseline, _default_extension, _lock=False)
 
         parameters = list(old_sig.parameters.values())
         new_sig = old_sig.replace(parameters=parameters)

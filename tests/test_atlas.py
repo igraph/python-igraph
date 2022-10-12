@@ -173,8 +173,8 @@ IsoclassTests.graphs = [g for idx, g in enumerate(IsoclassTests.graphs) if idx n
 
 
 def suite():
-    atlas_suite = unittest.makeSuite(GraphAtlasTests)
-    isoclass_suite = unittest.makeSuite(IsoclassTests)
+    atlas_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphAtlasTests)
+    isoclass_suite = unittest.defaultTestLoader.loadTestsFromTestCase(IsoclassTests)
     return unittest.TestSuite([atlas_suite, isoclass_suite])
 
 

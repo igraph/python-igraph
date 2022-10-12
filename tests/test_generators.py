@@ -564,7 +564,7 @@ class GeneratorTests(unittest.TestCase):
 
 
 def suite():
-    generator_suite = unittest.makeSuite(GeneratorTests)
+    generator_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GeneratorTests)
     return unittest.TestSuite([generator_suite])
 
 

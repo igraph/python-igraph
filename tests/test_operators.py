@@ -543,7 +543,7 @@ class OperatorTests(unittest.TestCase):
 
 
 def suite():
-    operator_suite = unittest.makeSuite(OperatorTests)
+    operator_suite = unittest.defaultTestLoader.loadTestsFromTestCase(OperatorTests)
     return unittest.TestSuite([operator_suite])
 
 

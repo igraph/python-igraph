@@ -1,9 +1,9 @@
 """
-Sphinx plugin to run example scripts and create a gallery page.
+Sphinx extension to postprocess pydoctor API output.
 
-Lightly modified from the seaborn project (Michael Waskom).
-Originally, lightly modified from the mpld3 project.
-
+- If this is released via Jekyll (e.g. GitHub pages), we need to ensure Jekyll
+  headers are present everywhere and consistent.
+- If this is released via readthedocs (RTD), we can skip this step, see conf.py
 """
 
 from pathlib import Path
@@ -18,8 +18,8 @@ def on_build_finished(app: Sphinx, exception: Exception) -> None:
     # Check if the index has Jekyll template marks. If it does, extract the
     # YAML frontmatter into a separate variable
     index_html = html_dir / 'index.html'
-    with open(index_html, 'rt') as f:
-        lines = f.readlines()
+    with open(index_html, 'rt') as handle:
+        lines = handle.readlines()
         # The Jekyll template starts with a --- line
         # Nontemplated HTML starts with some kind of XML tag
         if lines[0] != '---\n':
@@ -78,14 +78,13 @@ def on_build_finished(app: Sphinx, exception: Exception) -> None:
         footer = footer.replace('"container"', '"container-fluid text-muted credit"').strip()
 
         # Patch-up content for Jekyll
-        content = (''.join(lines_mark[:-1]) + 
-                   indent(head, "    ") + "\n" +
-                   'extrafoot: |\n' +
-                   indent(footer, "    ") +
-                   indent(rest, "    ") +
-                   '\n' +
-                   lines_mark[-1] +
-                   body)
+        content = (''.join(lines_mark[:-1])
+                   + indent(head, "    ") + "\n"
+                   + 'extrafoot: |\n'
+                   + indent(footer, "    ")
+                   + indent(rest, "    ") + '\n'
+                   + lines_mark[-1]
+                   + body)
 
         # Write the patched content back to the file
         path.write_text(content)

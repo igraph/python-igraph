@@ -11,7 +11,7 @@ In the following examples, we will assume |igraph| is imported as `ig` and a
    >>> import igraph as ig
    >>> g = ig.Graph(edges=[[0, 1], [2, 3]])
 
-Read the `API documentation`_ for details on each function and class. The `tutorial`_ contains examples to get started.
+Read the :doc:`api/index` for details on each function and class. See the :ref:`tutorial <tutorial-layouts-plotting>` and the :doc:`gallery` for examples.
 
 Graph layouts
 =============
@@ -221,12 +221,10 @@ You can also specify vertex and edge color, size, and labels - and more - via ad
    ...         edge_color=['black', 'grey'],
    ...         )
 
-See the `tutorial`_ for examples and a full list of options.
+See the :ref:`tutorial <tutorial-layouts-plotting>` for examples and a full list of options.
 
-.. _API documentation: https://igraph.org/python/doc/igraph-module.html
 .. _matplotlib: https://matplotlib.org
 .. _Jupyter: https://jupyter.org/
-.. _tutorial: https://igraph.org/python/doc/tutorial/tutorial.html#layouts-and-plotting
 .. _Cairo: https://www.cairographics.org
 .. _graphviz: http://www.graphviz.org
 .. _networkx: https://networkx.org/

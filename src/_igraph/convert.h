@@ -138,6 +138,7 @@ int igraphmodule_PyObject_to_eigen_algorithm_t(PyObject *object,
 																							 igraph_eigen_algorithm_t *a);
 int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
 																					 igraph_eigen_which_t *w);
+int igraphmodule_PyObject_to_vpath_or_epath(PyObject *object, igraph_bool_t *use_edges);
 
 /* Conversion from attributes to igraph types */
 
@@ -168,7 +169,7 @@ PyObject* igraphmodule_vector_int_ptr_t_to_PyList(const igraph_vector_ptr_t *v);
 PyObject* igraphmodule_vector_list_t_to_PyList(const igraph_vector_list_t *v); 
 PyObject* igraphmodule_vector_int_list_t_to_PyList(const igraph_vector_int_list_t *v); 
 PyObject* igraphmodule_vector_int_list_t_to_PyList_of_tuples(const igraph_vector_int_list_t *v); 
-PyObject* igraphmodule_graph_list_t_to_PyList(const igraph_graph_list_t *v, PyTypeObject *type);
+PyObject* igraphmodule_graph_list_t_to_PyList(igraph_graph_list_t *v, PyTypeObject *type);
 PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v);
 PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
         igraphmodule_conv_t type);

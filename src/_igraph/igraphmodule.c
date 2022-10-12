@@ -563,14 +563,15 @@ PyObject* igraphmodule_is_graphical(PyObject *self, PyObject *args, PyObject *kw
 
 
 PyObject* igraphmodule_power_law_fit(PyObject *self, PyObject *args, PyObject *kwds) {
-  static char* kwlist[] = { "data", "xmin", "force_continuous", NULL };
+  static char* kwlist[] = { "data", "xmin", "force_continuous", "p_precision", NULL };
   PyObject *data_o, *force_continuous_o = Py_False;
   igraph_vector_t data;
   igraph_plfit_result_t result;
-  double xmin = -1;
+  double xmin = -1, p_precision = 0.01;
+  igraph_real_t p;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|dO", kwlist, &data_o,
-        &xmin, &force_continuous_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|dOd", kwlist, &data_o,
+        &xmin, &force_continuous_o, &p_precision))
     return NULL;
 
   if (igraphmodule_PyObject_float_to_vector_t(data_o, &data))
@@ -582,10 +583,16 @@ PyObject* igraphmodule_power_law_fit(PyObject *self, PyObject *args, PyObject *k
     return NULL;
   }
 
+  if (igraph_plfit_result_calculate_p_value(&result, &p, p_precision)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_destroy(&data);
+    return NULL;
+  }
+
   igraph_vector_destroy(&data);
 
-  return Py_BuildValue("Odddd", result.continuous ? Py_True : Py_False,
-      result.alpha, result.xmin, result.L, result.D);
+  return Py_BuildValue("Oddddd", result.continuous ? Py_True : Py_False,
+      result.alpha, result.xmin, result.L, result.D, (double) p);
 }
 
 PyObject* igraphmodule_split_join_distance(PyObject *self,
@@ -686,7 +693,7 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"_power_law_fit", (PyCFunction)igraphmodule_power_law_fit,
     METH_VARARGS | METH_KEYWORDS,
-    "_power_law_fit(data, xmin=-1, force_continuous=False)\n--\n\n"
+    "_power_law_fit(data, xmin=-1, force_continuous=False, p_precision=0.01)\n--\n\n"
   },
   {"convex_hull", (PyCFunction)igraphmodule_convex_hull,
     METH_VARARGS | METH_KEYWORDS,
@@ -765,12 +772,15 @@ static PyMethodDef igraphmodule_methods[] =
       "  with at least three attributes: C{random}, C{randint} and C{gauss}.\n"
       "  Each of them must be callable and their signature and behaviour\n"
       "  must be identical to C{random.random}, C{random.randint} and\n"
-      "  C{random.gauss}. By default, igraph uses the C{random} module for\n"
-      "  random number generation, but you can supply your alternative\n"
-      "  implementation here. If the given generator is C{None}, igraph\n"
-      "  reverts to the default Mersenne twister generator implemented in the\n"
-      "  C layer, which might be slightly faster than calling back to Python\n"
-      "  for random numbers, but you cannot set its seed or save its state.\n"
+      "  C{random.gauss}. Optionally, the object can provide a function named\n"
+      "  C{getrandbits} with a signature identical to C{randpm.getrandbits}\n"
+      "  that provides a given number of random bits on demand. By default,\n"
+      "  igraph uses the C{random} module for random number generation, but\n"
+      "  you can supply your alternative implementation here. If the given\n"
+      "  generator is C{None}, igraph reverts to the default PCG32 generator\n"
+      "  implemented in the C layer, which might be slightly faster than\n"
+      "  calling back to Python for random numbers, but you cannot set its\n"
+      "  seed or save its state.\n"
   },
   {"set_status_handler", igraphmodule_set_status_handler, METH_O,
       "set_status_handler(handler)\n--\n\n"
@@ -801,13 +811,13 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"_enter_safelocale", (PyCFunction)igraphmodule__enter_safelocale,
     METH_NOARGS,
-    "_enter_safelocale() -> object\n--\n\n"
+    "_enter_safelocale()\n--\n\n"
     "Helper function for the L{safe_locale()} context manager. Do not use\n"
     "directly in your own code."
   },
   {"_exit_safelocale", (PyCFunction)igraphmodule__exit_safelocale,
     METH_O,
-    "_exit_safelocale(locale: object) -> None\n--\n\n"
+    "_exit_safelocale(locale)\n--\n\n"
     "Helper function for the L{safe_locale()} context manager. Do not use\n"
     "directly in your own code."
   },

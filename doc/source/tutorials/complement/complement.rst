@@ -6,10 +6,7 @@
 Complement
 ================
 
-.. _complementer: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#complementer
-.. |complementer| replace:: :meth:`complementer`
-
-This example shows how to generate the `complement graph <https://en.wikipedia.org/wiki/Complement_graph>`_ of a graph (sometimes known as the anti-graph) using |complementer|_.
+This example shows how to generate the `complement graph <https://en.wikipedia.org/wiki/Complement_graph>`_ of a graph (sometimes known as the anti-graph) using :meth:`igraph.GraphBase.complementer`.
 
 First we generate a random graph
 

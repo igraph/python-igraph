@@ -6,10 +6,7 @@
 Spanning Trees
 ==============
 
-.. _spanning_tree: https://igraph.org/python/doc/api/igraph.Graph.html#spanning_tree
-.. |spanning_tree| replace:: :meth:`spanning_tree`
-
-This example shows how to generate a spanning tree from an input graph using |spanning_tree|_. For the related idea of finding a *minimum spanning tree*, see :ref:`tutorials-minimum-spanning-trees`.
+This example shows how to generate a spanning tree from an input graph using :meth:`igraph.Graph.spanning_tree`. For the related idea of finding a *minimum spanning tree*, see :ref:`tutorials-minimum-spanning-trees`.
 
 First we create a 6 by 6 lattice graph.
 
@@ -21,10 +18,7 @@ First we create a 6 by 6 lattice graph.
 
     g = ig.Graph.Lattice([6, 6], circular=False)
 
-.. _permute_vertices: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#permute_vertices
-.. |permute_vertices| replace:: :meth:`permute_vertices`
-
-As an optional step, we randomly rearrange some of the vertex IDs with |permute_vertices|_ in order to generate a more interesting spanning tree.
+As an optional step, we randomly rearrange some of the vertex IDs with :meth:`igraph.GraphBase.permute_vertices` in order to generate a more interesting spanning tree.
 
 .. code-block:: python
 

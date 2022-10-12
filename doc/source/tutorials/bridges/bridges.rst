@@ -6,10 +6,7 @@
 Bridges
 ========
 
-.. _bridges_method: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#bridges
-.. |bridges_method| replace:: :meth:`bridges_method`
-
-This example shows how to compute and visualize the `bridges <https://en.wikipedia.org/wiki/Bridge_(graph_theory)>`_ in a graph using |bridges_method|_. For an example on articulation points instead, see :ref:`tutorials-articulation-points`.
+This example shows how to compute and visualize the `bridges <https://en.wikipedia.org/wiki/Bridge_(graph_theory)>`_ in a graph using :meth:`igraph.GraphBase.bridges`. For an example on articulation points instead, see :ref:`tutorials-articulation-points`.
 
 .. code-block:: python
 

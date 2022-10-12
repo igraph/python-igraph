@@ -6,11 +6,7 @@
 Cliques
 ============
 
-.. _cliques: https://igraph.org/python/doc/api/igraph._igraph.GraphBase.html#cliques
-.. |cliques| replace:: :meth:`cliques`
-
-This example shows how to compute and visualize cliques of a graph using |cliques|_.
-
+This example shows how to compute and visualize cliques of a graph using :meth:`igraph.GraphBase.cliques`.
 
 .. code-block:: python
 

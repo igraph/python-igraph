@@ -174,8 +174,8 @@ class GraphRepresentationTests(unittest.TestCase):
 
 
 def suite():
-    direction_suite = unittest.makeSuite(DirectedUndirectedTests)
-    representation_suite = unittest.makeSuite(GraphRepresentationTests)
+    direction_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DirectedUndirectedTests)
+    representation_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphRepresentationTests)
     return unittest.TestSuite([direction_suite, representation_suite])
 
 

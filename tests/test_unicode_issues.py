@@ -14,7 +14,7 @@ class UnicodeTests(unittest.TestCase):
 
 
 def suite():
-    generator_suite = unittest.makeSuite(UnicodeTests)
+    generator_suite = unittest.defaultTestLoader.loadTestsFromTestCase(UnicodeTests)
     return unittest.TestSuite([generator_suite])
 
 

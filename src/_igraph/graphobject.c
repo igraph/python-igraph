@@ -5005,15 +5005,8 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
         &to_o, &weights_o, &mode_o, &PyUnicode_Type, &output_o))
     return NULL;
 
-  if (output_o == 0 || output_o == Py_None ||
-      PyUnicode_IsEqualToASCIIString(output_o, "vpath")) {
-    use_edges = 0;
-  } else if (PyUnicode_IsEqualToASCIIString(output_o, "epath")) {
-    use_edges = 1;
-  } else {
-    PyErr_SetString(PyExc_ValueError, "output argument must be \"vpath\" or \"epath\"");
+  if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
     return NULL;
-  }
 
   if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
     return NULL;
@@ -5128,6 +5121,73 @@ PyObject *igraphmodule_Graph_get_all_shortest_paths(igraphmodule_GraphObject *
 
   list = igraphmodule_vector_int_list_t_to_PyList(&res);
   igraph_vector_int_list_destroy(&res);
+  return list ? list : NULL;
+}
+/** \ingroup python_interface_graph
+ * \brief Calculates the k-shortest paths from/to a given node in the graph
+ * \return a list containing the k-shortest paths from/to the given node
+ * \sa TODO I don't know what to write here : igraph_get_shortest_paths
+ */
+PyObject *igraphmodule_Graph_get_k_shortest_paths(
+    igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds
+) {
+  static char *kwlist[] = { "v", "to", "k", "weights", "mode", "output", NULL };
+  igraph_vector_int_list_t res;
+  igraph_vector_t *weights = 0;
+  igraph_neimode_t mode = IGRAPH_OUT;
+  igraph_integer_t from;
+  igraph_integer_t to;
+  igraph_integer_t k = 1;
+  PyObject *list, *from_o, *to_o;
+  PyObject *output_o = Py_None, *mode_o = Py_None, *weights_o = Py_None, *k_o = NULL;
+  igraph_bool_t use_edges = 0;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|OOOO", kwlist, &from_o,
+        &to_o, &k_o, &weights_o, &mode_o, &output_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+    return NULL;
+
+  if (k_o != NULL && igraphmodule_PyObject_to_integer_t(k_o, &k))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vid(to_o, &to, &self->g))
+    return NULL;
+
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights, ATTRIBUTE_TYPE_EDGE))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
+    return NULL;
+
+  if (igraph_vector_int_list_init(&res, 0)) {
+    igraphmodule_handle_igraph_error();
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    return NULL;
+  }
+
+  if (igraph_get_k_shortest_paths(&self->g,
+        weights,
+        /* vertices, edges */
+        use_edges ? 0 : &res,
+        use_edges ? &res : 0,
+        k, from, to, mode)
+  ) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_int_list_destroy(&res);
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    return NULL;
+  }
+
+  if (weights) { igraph_vector_destroy(weights); free(weights); }
+
+  list = igraphmodule_vector_int_list_t_to_PyList(&res);
+  igraph_vector_int_list_destroy(&res);
+
   return list ? list : NULL;
 }
 
@@ -5302,7 +5362,11 @@ PyObject *igraphmodule_Graph_is_chordal(
     igraph_vector_int_destroy(alpham1_ptr);
   }
 
-  return res ? Py_True : Py_False;
+  if (res) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
 }
 
 /** \ingroup python_interface_graph
@@ -7915,13 +7979,13 @@ PyObject *igraphmodule_Graph_layout_sugiyama(
   return (PyObject *) result_o;
 }
 
-  /** \ingroup python_interface_graph
- * \brief Places the vertices of a graph using Uniform Manifold Approximation and Projection (UMAP)
+/** \ingroup python_interface_graph
+ * \brief Uniform Manifold Approximation and Projection (UMAP)
  * \return the calculated coordinates as a Python list of lists
  * \sa igraph_layout_umap
  */
-PyObject *igraphmodule_Graph_layout_umap(igraphmodule_GraphObject * self,
-                                        PyObject * args, PyObject * kwds)
+PyObject *igraphmodule_Graph_layout_umap(
+    igraphmodule_GraphObject * self, PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] =
     { "dist", "dim", "seed", "min_dist", "epochs", "sampling_prob", NULL };
@@ -12881,23 +12945,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_get_eids */
   {"get_eids", (PyCFunction) igraphmodule_Graph_get_eids,
    METH_VARARGS | METH_KEYWORDS,
-   "get_eids(pairs=None, path=None, directed=True, error=True)\n--\n\n"
+   "get_eids(pairs=None, directed=True, error=True)\n--\n\n"
    "Returns the edge IDs of some edges between some vertices.\n\n"
-   "This method can operate in two different modes, depending on which\n"
-   "of the keyword arguments C{pairs} and C{path} are given.\n\n"
    "The method does not consider multiple edges; if there are multiple\n"
    "edges between a pair of vertices, only the ID of one of the edges\n"
    "is returned.\n\n"
    "@param pairs: a list of integer pairs. Each integer pair is considered\n"
    "  as a source-target vertex pair; the corresponding edge is looked up\n"
    "  in the graph and the edge ID is returned for each pair.\n"
-   "@param path: a list of vertex IDs. The list is considered as a\n"
-   "  continuous path from the first vertex to the last, passing\n"
-   "  through the intermediate vertices. The corresponding edge IDs\n"
-   "  between the first and the second, the second and the third and\n"
-   "  so on are looked up in the graph and the edge IDs are returned.\n"
-   "  If both C{path} and C{pairs} are given, the two lists are\n"
-   "  concatenated.\n"
    "@param directed: whether edge directions should be considered in\n"
    "  directed graphs. The default is C{True}. Ignored for undirected\n"
    "  graphs.\n"
@@ -13336,6 +13391,26 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
     "    - C{smallest}: The vertex with smallest remaining degree first.\n"
     "    - C{largest}: The vertex with the largest remaining degree first.\n"
     "    - C{index}: The vertices are selected in order of their index.\n"
+    "\n"
+    "  In the undirected case, C{smallest} is guaranteed to produce a connected graph.\n"
+    "  See Horvát and Modes (2021) for details.\n"
+    "\n"
+    "@newfield ref: Reference\n"
+    "@ref: V. Havel,\n"
+    "  Poznámka o existenci konečných grafů (A remark on the existence of finite graphs),\n"
+    "  Časopis pro pěstování matematiky 80, 477-480 (1955).\n"
+    "  U{http://eudml.org/doc/19050}\n"
+    "@ref: S. L. Hakimi,\n"
+    "  On Realizability of a Set of Integers as Degrees of the Vertices of a Linear Graph,\n"
+    "  Journal of the SIAM 10, 3 (1962).\n"
+    "  U{https://www.jstor.org/stable/2098770}\n"
+    "@ref: D. J. Kleitman and D. L. Wang,\n"
+    "  Algorithms for Constructing Graphs and Digraphs with Given Valences and Factors,\n"
+    "  Discrete Mathematics 6, 1 (1973).\n"
+    "  U{https://doi.org/10.1016/0012-365X%2873%2990037-X}\n"
+    "@ref: Sz. Horvát and C. D. Modes,\n"
+    "  Connectedness matters: construction and exact random sampling of connected networks (2021).\n"
+    "  U{https://doi.org/10.1088/2632-072X/abced5}\n"
   },
 
   // interface to igraph_ring
@@ -13411,7 +13486,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Generates a tree in which almost all vertices have the same number of children.\n\n"
    "@param n: the number of vertices in the graph\n"
    "@param children: the number of children of a vertex in the graph\n"
-   "@param type: determines whether the tree should be directed, and if\n"
+   "@param mode: determines whether the tree should be directed, and if\n"
    "  this is the case, also its orientation. Must be one of\n"
    "  C{\"in\"}, C{\"out\"} and C{\"undirected\"}.\n"},
 
@@ -13559,7 +13634,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_assortativity */
   {"assortativity", (PyCFunction)igraphmodule_Graph_assortativity,
    METH_VARARGS | METH_KEYWORDS,
-   "assortativity(types1, types2=None, directed=True)\n--\n\n"
+   "assortativity(types1, types2=None, directed=True, normalized=True)\n--\n\n"
    "Returns the assortativity of the graph based on numeric properties\n"
    "of the vertices.\n\n"
    "This coefficient is basically the correlation between the actual\n"
@@ -13808,9 +13883,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "connected_components(mode=\"strong\")\n--\n\n"
    "Calculates the (strong or weak) connected components for a given graph.\n\n"
-   "@attention: this function has a more convenient interface in class\n"
-   "  L{Graph} which wraps the result in a L{VertexClustering} object.\n"
-   "  It is advised to use that.\n"
+   "Atttention: this function has a more convenient interface in class\n"
+   "L{Graph}, which wraps the result in a L{VertexClustering} object.\n"
+   "It is advised to use that.\n"
    "@param mode: must be either C{\"strong\"} or C{\"weak\"}, depending on\n"
    "  the clusters being sought. Optional, defaults to C{\"strong\"}.\n"
    "@return: the component index for every node in the graph.\n"},
@@ -14131,6 +14206,32 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  reachable node in the graph in a list. Note that in case of mode=C{\"in\"},\n"
    "  the vertices in a path are returned in reversed order!"},
 
+  /* interface to igraph_get_k_shortest_paths */
+  {"get_k_shortest_paths",
+   (PyCFunction) igraphmodule_Graph_get_k_shortest_paths,
+   METH_VARARGS | METH_KEYWORDS,
+   "get_k_shortest_paths(v, to, k=1, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
+   "Calculates the k shortest paths from/to a given node in a graph.\n\n"
+   "@param v: the ID or name of the vertex from which the paths are calculated.\n"
+   "@param to: the ID or name of the vertex to which the paths are calculated.\n"
+   "@param k: the desired number of shortest path\n"
+   "@param weights: edge weights in a list or the name of an edge attribute\n"
+   "  holding edge weights. If C{None}, all edges are assumed to have\n"
+   "  equal weight.\n"
+   "@param mode: the directionality of the paths. C{\"in\"} means to\n"
+   "  calculate incoming paths, C{\"out\"} means to calculate outgoing\n"
+   "  paths, C{\"all\"} means to calculate both ones.\n"
+   "@param output: determines what should be returned. If this is\n"
+   "  C{\"vpath\"}, a list of vertex IDs will be returned, one path\n"
+   "  for each target vertex. For unconnected graphs, some of the list\n"
+   "  elements may be empty. Note that in case of mode=C{\"in\"}, the vertices\n"
+   "  in a path are returned in reversed order. If C{output=\"epath\"},\n"
+   "  edge IDs are returned instead of vertex IDs.\n"
+   "@return: the k shortest paths from the given source node to the given target node\n"
+   "  in a list of vertex or edge IDs (depending on the value of the C{output}\n"
+   "  argument). Note that in case of mode=C{\"in\"},\n"
+   "  the vertices in a path are returned in reversed order!"},
+
   /* interface to igraph_get_all_simple_paths */
   {"_get_all_simple_paths",
    (PyCFunction) igraphmodule_Graph_get_all_simple_paths,
@@ -14424,8 +14525,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "path_length_hist(directed=True)\n--\n\n"
    "Calculates the path length histogram of the graph\n"
-   "@attention: this function is wrapped in a more convenient syntax in the\n"
-   "  derived class L{Graph}. It is advised to use that instead of this version.\n\n"
+   "Attention: this function is wrapped in a more convenient syntax in the\n"
+   "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
    "@param directed: whether to consider directed paths\n"
    "@return: a tuple. The first item of the tuple is a list of path lengths,\n"
    "  the M{i}th element of the list contains the number of paths with length\n"
@@ -14947,9 +15048,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "I{b} and also from I{b} to I{a}; asymmetric, there is an edge\n"
    "either from I{a} to I{b} or from I{b} to I{a} but not the other way\n"
    "and null, no edges between I{a} and I{b}.\n\n"
-   "@attention: this function has a more convenient interface in class\n"
-   "  L{Graph} which wraps the result in a L{DyadCensus} object.\n"
-   "  It is advised to use that.\n\n"
+   "Attention: this function has a more convenient interface in class\n"
+   "L{Graph}, which wraps the result in a L{DyadCensus} object.\n"
+   "It is advised to use that.\n\n"
    "@return: the number of mutual, asymmetric and null connections in a\n"
    "  3-tuple."
   },
@@ -14961,10 +15062,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "vertices in a directed graph. A triplet can be in one of 16 states,\n"
    "these are listed in the documentation of the C interface of igraph.\n"
    "\n"
-   "@attention: this function has a more convenient interface in class\n"
-   "  L{Graph} which wraps the result in a L{TriadCensus} object.\n"
-   "  It is advised to use that. The name of the triplet classes are\n"
-   "  also documented there.\n\n"
+   "Attention: this function has a more convenient interface in class\n"
+   "L{Graph}, which wraps the result in a L{TriadCensus} object.\n"
+   "It is advised to use that. The name of the triplet classes are\n"
+   "also documented there.\n\n"
   },
   {"list_triangles", (PyCFunction) igraphmodule_Graph_list_triangles,
    METH_NOARGS,
@@ -15421,7 +15522,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_umap",
    (PyCFunction) igraphmodule_Graph_layout_umap,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_umap(dist=None, dim=2, seed=None, min_dist=0.01, epochs=500, sampling_prob=0.3)\n--\n\n"
+   "layout_umap(\n"
+   "    dist=None, dim=2, seed=None, min_dist=0.01,\n"
+   "    epochs=500, sampling_prob=0.3)\n--\n\n"
    "Uniform Manifold Approximation and Projection (UMAP).\n\n"
    "This layout is a probabilistic algorithm that places vertices that are connected\n"
    "and have a short distance close by in the embedded space.\n\n"
@@ -15435,16 +15538,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param min_dist: the minimal distance in the embedded space beyond which the\n"
    "  probability of being located closeby decreases.\n"
    "@param epochs: the number of epochs (iterations) the algorithm will iterate\n"
-   "  over. Accuracy increases with more epochs, at the cost of longer\n "
-   "  runtimes. Values between 50 and 1000 are typical.\n"
-   "  Notice that UMAP does not technically converge for symmetry reasons, but a \n"
+   "  over. Accuracy increases with more epochs, at the cost of longer runtimes.\n"
+   "  Values between 50 and 1000 are typical.\n"
+   "  Notice that UMAP does not technically converge for symmetry reasons, but a\n"
    "  larger number of epochs should generally give an equivalent or better layout.\n"
    "@param sampling_prob: the probability of sampling each vertex for repulsion at\n"
    "  each epoch or iteration. A higher probability will give better results but\n"
    "  also require more computations.\n"
    "@return: the calculated layout.\n\n"
    "@newfield ref: Reference\n"
-   "@ref: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation \n"
+   "@ref: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation\n"
    "  and Projection for Dimension Reduction. arXiv:1802.03426."},
 
   ////////////////////////////
@@ -16270,9 +16373,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "maxflow(source, target, capacity=None)\n--\n\n"
    "Returns the maximum flow between the source and target vertices.\n\n"
-   "@attention: this function has a more convenient interface in class\n"
-   "  L{Graph} which wraps the result in a L{Flow} object. It is advised\n"
-   "  to use that.\n"
+   "Attention: this function has a more convenient interface in class\n"
+   "L{Graph}, which wraps the result in a L{Flow} object. It is advised\n"
+   "to use that.\n"
    "@param source: the source vertex ID\n"
    "@param target: the target vertex ID\n"
    "@param capacity: the capacity of the edges. It must be a list or a valid\n"
@@ -16297,11 +16400,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "directed graph.\n\n"
    "This function lists all edge-cuts between a source and a target vertex.\n"
    "Every cut is listed exactly once.\n\n"
+   "Attention: this function has a more convenient interface in class\n"
+   "L{Graph}, which wraps the result in a list of L{Cut} objects. It is\n"
+   "advised to use that.\n"
    "@param source: the source vertex ID\n"
    "@param target: the target vertex ID\n"
-   "@attention: this function has a more convenient interface in class\n"
-   "  L{Graph} which wraps the result in a list of L{Cut} objects. It is\n"
-   "  advised to use that.\n"
    "@return: a tuple where the first element is a list of lists of edge IDs\n"
    "  representing a cut and the second element is a list of lists of vertex\n"
    "  IDs representing the sets of vertices that were separated by the cuts.\n"
@@ -16311,11 +16414,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "all_st_mincuts(source, target)\n--\n\n"
    "Returns all minimum cuts between the source and target vertices in a\n"
    "directed graph.\n\n"
+   "Attention: this function has a more convenient interface in class\n"
+   "L{Graph}, which wraps the result in a list of L{Cut} objects. It is\n"
+   "advised to use that.\n\n"
    "@param source: the source vertex ID\n"
    "@param target: the target vertex ID\n"
-   "@attention: this function has a more convenient interface in class\n"
-   "  L{Graph} which wraps the result in a list of L{Cut} objects. It is\n"
-   "  advised to use that.\n"
   },
   {"mincut_value", (PyCFunction) igraphmodule_Graph_mincut_value,
    METH_VARARGS | METH_KEYWORDS,
@@ -16344,9 +16447,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "For undirected graphs and no source and target, the method uses the Stoer-Wagner\n"
    "algorithm. For a given source and target, the method uses the push-relabel\n"
    "algorithm; see the references below.\n\n"
-   "@attention: this function has a more convenient interface in class\n"
-   "  L{Graph} which wraps the result in a L{Cut} object. It is advised\n"
-   "  to use that.\n"
+   "Attention: this function has a more convenient interface in class\n"
+   "L{Graph}, which wraps the result in a L{Cut} object. It is advised\n"
+   "to use that.\n\n"
    "@param source: the source vertex ID. If C{None}, target must also be\n"
    "  {None} and the calculation will be done for the entire graph (i.e. all\n"
    "  possible vertex pairs).\n"
@@ -16371,6 +16474,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "st_mincut(source, target, capacity=None)\n--\n\n"
    "Calculates the minimum cut between the source and target vertices in a\n"
    "graph.\n\n"
+   "Attention: this function has a more convenient interface in class\n"
+   "L{Graph}, which wraps the result in a list of L{Cut} objects. It is\n"
+   "advised to use that.\n\n"
    "@param source: the source vertex ID\n"
    "@param target: the target vertex ID\n"
    "@param capacity: the capacity of the edges. It must be a list or a valid\n"
@@ -16379,9 +16485,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the value of the minimum cut, the IDs of vertices in the\n"
    "  first and second partition, and the IDs of edges in the cut,\n"
    "  packed in a 4-tuple\n\n"
-   "@attention: this function has a more convenient interface in class\n"
-   "  L{Graph} which wraps the result in a list of L{Cut} objects. It is\n"
-   "  advised to use that.\n"
   },
 
   {"gomory_hu_tree", (PyCFunction) igraphmodule_Graph_gomory_hu_tree,
@@ -16445,9 +16548,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_NOARGS,
    "cohesive_blocks()\n--\n\n"
    "Calculates the cohesive block structure of the graph.\n\n"
-   "@attention: this function has a more convenient interface in class\n"
-   "  L{Graph} which wraps the result in a L{CohesiveBlocks} object.\n"
-   "  It is advised to use that.\n"
+   "Attention: this function has a more convenient interface in class\n"
+   "L{Graph}, which wraps the result in a L{CohesiveBlocks} object.\n"
+   "It is advised to use that.\n"
   },
 
   /********************************/
@@ -16566,9 +16669,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "is the total weight of edges incident on vertex M{i}, M{kj} is the\n"
    "total weight of edges incident on vertex M{j} and M{m} is the total\n"
    "edge weight in the graph.\n\n"
-   "@attention: method overridden in L{Graph} to allow L{VertexClustering}\n"
-   "  objects as a parameter. This method is not strictly necessary, since\n"
-   "  the L{VertexClustering} class provides a variable called C{modularity}.\n"
+   "Attention: method overridden in L{Graph} to allow L{VertexClustering}\n"
+   "objects as a parameter. This method is not strictly necessary, since\n"
+   "the L{VertexClustering} class provides a variable called C{modularity}.\n\n"
    "@param membership: the membership vector, e.g. the vertex type index for\n"
    "  each vertex.\n"
    "@param weights: optional edge weights or C{None} if all edges are weighed\n"
@@ -16580,8 +16683,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  C{True} will use the directed variant of the modularity measure where the\n"
    "  in- and out-degrees of nodes are treated separately; C{False} will treat\n"
    "  directed graphs as undirected.\n"
-   "@return: the modularity score. Score larger than 0.3 usually indicates\n"
-   "  strong community structure.\n"
+   "@return: the modularity score.\n"
    "@newfield ref: Reference\n"
    "@ref: MEJ Newman and M Girvan: Finding and evaluating community structure\n"
    "  in networks. Phys Rev E 69 026113, 2004.\n"
@@ -16611,8 +16713,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "community, and communities are merged one by one. In every step, the two\n"
    "communities being merged are the ones which result in the maximal increase\n"
    "in modularity.\n\n"
-   "@attention: this function is wrapped in a more convenient syntax in the\n"
-   "  derived class L{Graph}. It is advised to use that instead of this version.\n\n"
+   "Attention: this function is wrapped in a more convenient syntax in the\n"
+   "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
    "@param weights: name of an edge attribute or a list containing\n"
    "  edge weights\n"
    "@return: a tuple with the following elements:\n"
@@ -16687,8 +16789,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "A proper implementation of Newman's eigenvector community structure\n"
    "detection. Each split is done by maximizing the modularity regarding\n"
    "the original network. See the reference for details.\n\n"
-   "@attention: this function is wrapped in a more convenient syntax in the\n"
-   "  derived class L{Graph}. It is advised to use that instead of this version.\n\n"
+   "Attention: this function is wrapped in a more convenient syntax in the\n"
+   "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
    "@param n: the desired number of communities. If negative, the algorithm\n"
    "  tries to do as many splits as possible. Note that the algorithm\n"
    "  won't split a community further if the signs of the leading eigenvector\n"
@@ -16707,7 +16809,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_multilevel",
    (PyCFunction) igraphmodule_Graph_community_multilevel,
    METH_VARARGS | METH_KEYWORDS,
-   "community_multilevel(weights=None, return_levels=True, resolution=1)\n--\n\n"
+   "community_multilevel(weights=None, return_levels=False, resolution=1)\n--\n\n"
    "Finds the community structure of the graph according to the multilevel\n"
    "algorithm of Blondel et al. This is a bottom-up algorithm: initially\n"
    "every vertex belongs to a separate community, and vertices are moved\n"
@@ -16718,8 +16820,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "keeping the total weight of the incident edges) and the process continues\n"
    "on the next level. The algorithm stops when it is not possible to increase\n"
    "the modularity any more after shrinking the communities to vertices.\n\n"
-   "@attention: this function is wrapped in a more convenient syntax in the\n"
-   "  derived class L{Graph}. It is advised to use that instead of this version.\n\n"
+   "Attention: this function is wrapped in a more convenient syntax in the\n"
+   "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
    "@param weights: name of an edge attribute or a list containing\n"
    "  edge weights\n"
    "@param return_levels: if C{True}, returns the multilevel result. If\n"
@@ -16752,8 +16854,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   "is typically high. So we gradually remove the edge with the highest\n"
   "betweenness from the network and recalculate edge betweenness after every\n"
   "removal, as long as all edges are removed.\n\n"
-  "@attention: this function is wrapped in a more convenient syntax in the\n"
-  "  derived class L{Graph}. It is advised to use that instead of this version.\n\n"
+  "Attention: this function is wrapped in a more convenient syntax in the\n"
+  "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
   "@param directed: whether to take into account the directedness of the edges\n"
   "  when we calculate the betweenness values.\n"
   "@param weights: name of an edge attribute or a list containing\n"
@@ -16857,8 +16959,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "method of Latapy & Pons.\n\n"
    "The basic idea of the algorithm is that short random walks tend to stay\n"
    "in the same community. The method provides a dendrogram.\n\n"
-   "@attention: this function is wrapped in a more convenient syntax in the\n"
-   "  derived class L{Graph}. It is advised to use that instead of this version.\n\n"
+   "Attention: this function is wrapped in a more convenient syntax in the\n"
+   "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
    "@param weights: name of an edge attribute or a list containing\n"
    "  edge weights\n"
    "@return: a tuple with the list of merges and the modularity scores corresponding\n"

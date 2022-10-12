@@ -841,6 +841,51 @@ class PathTests(unittest.TestCase):
         self.assertEqual(4, sum(1 for path in sps if path[-1] == 12))
         self.assertEqual(12, sum(1 for path in sps if path[-1] == 15))
 
+    def testGetKShortestPaths(self):
+        g = Graph(4, [(0, 1), (1, 2), (1, 3), (2, 4), (3, 4), (4, 5)], directed=True)
+    
+        sps = sorted(g.get_k_shortest_paths(0, 0))
+        expected = [[0]]
+        self.assertEqual(expected, sps)
+    
+        sps = sorted(g.get_k_shortest_paths(0, 5, 2))
+        expected = [[0, 1, 2, 4, 5], [0, 1, 3, 4, 5]]
+        self.assertEqual(expected, sps)
+    
+        sps = sorted(g.get_k_shortest_paths(1, 4, 2))
+        expected = [[1, 2, 4], [1, 3, 4]]
+        self.assertEqual(expected, sps)
+    
+        g = Graph.Lattice([5, 5], circular=False)
+    
+        sps = sorted(g.get_k_shortest_paths(0, 12, 6))
+        expected = [
+            [0, 1, 2, 7, 12],
+            [0, 1, 6, 7, 12],
+            [0, 1, 6, 11, 12],
+            [0, 5, 6, 7, 12],
+            [0, 5, 6, 11, 12],
+            [0, 5, 10, 11, 12],
+        ]
+        self.assertEqual(expected, sps)
+    
+        g = Graph.Lattice([100, 100], circular=False)
+        sps = sorted(g.get_k_shortest_paths(0, 202, 6))
+        expected = [
+            [0, 1, 2, 102, 202],
+            [0, 1, 101, 102, 202],
+            [0, 1, 101, 201, 202],
+            [0, 100, 101, 102, 202],
+            [0, 100, 101, 201, 202],
+            [0, 100, 200, 201, 202],
+        ]
+        self.assertEqual(expected, sps)
+    
+        g = Graph([(0, 1), (1, 2), (0, 2)])
+        g.es["weight"] = [0.5, 0.5, 1]
+        sps = sorted(g.get_k_shortest_paths(0, 2, 2, weights="weight"))
+        self.assertEqual(sorted([[0, 2], [0, 1, 2]]), sorted(sps))
+    
     def testGetAllSimplePaths(self):
         g = Graph.Ring(20)
         sps = sorted(g.get_all_simple_paths(0, 10))
@@ -1034,15 +1079,15 @@ class DominatorTests(unittest.TestCase):
 
 
 def suite():
-    simple_suite = unittest.makeSuite(SimplePropertiesTests)
-    degree_suite = unittest.makeSuite(DegreeTests)
-    local_transitivity_suite = unittest.makeSuite(LocalTransitivityTests)
-    biconnected_suite = unittest.makeSuite(BiconnectedComponentTests)
-    centrality_suite = unittest.makeSuite(CentralityTests)
-    neighborhood_suite = unittest.makeSuite(NeighborhoodTests)
-    path_suite = unittest.makeSuite(PathTests)
-    misc_suite = unittest.makeSuite(MiscTests)
-    dominator_suite = unittest.makeSuite(DominatorTests)
+    simple_suite = unittest.defaultTestLoader.loadTestsFromTestCase(SimplePropertiesTests)
+    degree_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DegreeTests)
+    local_transitivity_suite = unittest.defaultTestLoader.loadTestsFromTestCase(LocalTransitivityTests)
+    biconnected_suite = unittest.defaultTestLoader.loadTestsFromTestCase(BiconnectedComponentTests)
+    centrality_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CentralityTests)
+    neighborhood_suite = unittest.defaultTestLoader.loadTestsFromTestCase(NeighborhoodTests)
+    path_suite = unittest.defaultTestLoader.loadTestsFromTestCase(PathTests)
+    misc_suite = unittest.defaultTestLoader.loadTestsFromTestCase(MiscTests)
+    dominator_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DominatorTests)
     return unittest.TestSuite(
         [
             simple_suite,

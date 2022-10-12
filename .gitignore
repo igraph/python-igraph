@@ -18,6 +18,8 @@ vendor/install/
 .DS_Store
 
 doc/source/gallery.rst
+doc/linkcheck
 doc/api/
+doc/dash/
 doc/html/
 doc/jekyll_tools/vendor

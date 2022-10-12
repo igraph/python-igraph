@@ -6,14 +6,9 @@
 Maximum Bipartite Matching by Maximum Flow
 ==========================================
 
-.. _maximum_bipartite_matching: https://igraph.org/python/doc/api/igraph.Graph.html#maximum_bipartite_matching
-.. |maximum_bipartite_matching| replace:: :meth:`maximum_bipartite_matching`
-.. _maxflow: https://igraph.org/python/doc/api/igraph.Graph.html#maxflow
-.. |maxflow| replace:: :meth:`maxflow`
+This example presents how to visualise bipartite matching using maximum flow (see :meth:`igraph.Graph.maxflow`).
 
-This example presents how to visualise bipartite matching using maximum flow (see |maxflow|_).
-
-.. note::  |maximum_bipartite_matching|_ is usually a better way to find the maximum bipartite matching. For a demonstration on how to use that method instead, check out :ref:`tutorials-bipartite-matching`.
+.. note::  :meth:`igraph.Graph.maximum_bipartite_matching` is usually a better way to find the maximum bipartite matching. For a demonstration on how to use that method instead, check out :ref:`tutorials-bipartite-matching`.
 
 .. code-block:: python
 
@@ -38,7 +33,7 @@ This example presents how to visualise bipartite matching using maximum flow (se
     flow = g.maxflow(9, 10) # not setting capacities means that all edges have capacity 1.0
     print("Size of maximum matching (maxflow) is:", flow.value)
 
-Let's compare the output against |maximum_bipartite_matching|_
+Let's compare the output against :meth:`igraph.Graph.maximum_bipartite_matching`:
 
 .. code-block:: python
 

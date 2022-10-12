@@ -43,7 +43,7 @@ class RandomNumberGeneratorTests(unittest.TestCase):
 
 
 def suite():
-    random_suite = unittest.makeSuite(RandomNumberGeneratorTests)
+    random_suite = unittest.defaultTestLoader.loadTestsFromTestCase(RandomNumberGeneratorTests)
     return unittest.TestSuite([random_suite])
 
 

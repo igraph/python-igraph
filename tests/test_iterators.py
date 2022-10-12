@@ -60,7 +60,7 @@ class IteratorTests(unittest.TestCase):
 
 
 def suite():
-    iterator_suite = unittest.makeSuite(IteratorTests)
+    iterator_suite = unittest.defaultTestLoader.loadTestsFromTestCase(IteratorTests)
     return unittest.TestSuite([iterator_suite])
 
 
