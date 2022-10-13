@@ -67,7 +67,7 @@ Documentation
 
        - :doc:`Quick start <tutorials/quickstart/quickstart>`
        - :doc:`Gallery of examples (old) <gallery>`
-       - :doc:`Gallery of examples <examples>`
+       - :ref:`Gallery of examples <gallery-of-examples>`
        - :doc:`Extended tutorial <tutorial>`
 
     .. container::

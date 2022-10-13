@@ -63,27 +63,28 @@ def plot_betweenness(g, vertex_betweenness, edge_betweenness, ax, cax1, cax2):
 
 
 # %%
-# Generate Krackhardt Kite Graph
+# First, generate a graph, e.g. the Krackhardt Kite Graph:
 random.seed(0)
 g1 = ig.Graph.Famous("Krackhardt_Kite")
 
 # %%
-# Compute vertex and edge betweenness
+# Then we can compute vertex and edge betweenness:
 vertex_betweenness1 = g1.betweenness()
 edge_betweenness1 = g1.edge_betweenness()
 
-# %% Generate and analyze a Watts Strogatz graph as a second example
+# %% As a second example, we generate and analyze a Watts Strogatz graph:
 g2 = ig.Graph.Watts_Strogatz(dim=1, size=150, nei=2, p=0.1)
 vertex_betweenness2 = g2.betweenness()
 edge_betweenness2 = g2.edge_betweenness()
 
 # %%
-# Plot the graphs, each with two colorbars for vertex/edge betweenness
+# Finally, we plot the two graphs, each with two colorbars for vertex/edge
+# betweenness
 fig, axs = plt.subplots(
     3, 2,
     figsize=(7, 6),
     gridspec_kw=dict(height_ratios=(20, 1, 1)),
-    )
+)
 plot_betweenness(g1, vertex_betweenness1, edge_betweenness1, *axs[:, 0])
 plot_betweenness(g2, vertex_betweenness2, edge_betweenness2, *axs[:, 1])
 fig.tight_layout(h_pad=1)

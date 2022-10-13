@@ -12,17 +12,17 @@ import igraph as ig
 import matplotlib.pyplot as plt
 
 # %%
-# Construct graph
+# First, we construct a graph. This example shows usage of graph formulae:
 g = ig.Graph.Formula(
     "0-1-2-0, 3:4:5:6 - 3:4:5:6, 2-3-7-8",
 )
 
 # %%
-# Find the set of articulation points as a vertex sequence
+# Now we are aready to find the articulation points as a vertex sequence
 articulation_points = g.vs[g.articulation_points()]
 
 # %%
-# Plot graph
+# Finally, we can plot the graph
 fig, ax = plt.subplots()
 ig.plot(
     g, 
