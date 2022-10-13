@@ -1,4 +1,8 @@
-This is my gallery
-==================
+Gallery of Examples
+===================
 
-Below is a gallery of examples made using sphinx-gallery
+Gallery of examples for `python-igraph` illustrating graph generation, analysis, and plotting.
+
+Impatient? Check out the :ref:`tutorials-quickstart`.
+
+Too little detail? Read the :doc:`extended tutorial <tutorial>`.

@@ -11,13 +11,17 @@ This example shows how to compute and visualize the `articulation points <https:
 import igraph as ig
 import matplotlib.pyplot as plt
 
+# %%
 # Construct graph
 g = ig.Graph.Formula(
     "0-1-2-0, 3:4:5:6 - 3:4:5:6, 2-3-7-8",
 )
+
+# %%
 # Find the set of articulation points as a vertex sequence
 articulation_points = g.vs[g.articulation_points()]
 
+# %%
 # Plot graph
 fig, ax = plt.subplots()
 ig.plot(

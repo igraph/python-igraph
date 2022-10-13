@@ -7,8 +7,6 @@ Betweenness
 
 This example demonstrates how to visualize both vertex and edge betweenness with a custom defined color palette. We use the methods :meth:`igraph.GraphBase.betweenness` and :meth:`igraph.GraphBase.edge_betweenness` respectively, and demonstrate the effects on a standard `Krackhardt Kite <https://www.wikiwand.com/en/Krackhardt_kite_graph>`_ graph, as well as a `Watts-Strogatz <https://en.wikipedia.org/wiki/Watts%E2%80%93Strogatz_model>`_ random graph.
 
-First we import |igraph| and some libraries for plotting et al:
-
 """
 import random
 import matplotlib.pyplot as plt
@@ -17,7 +15,15 @@ from matplotlib.colors import LinearSegmentedColormap, Normalize
 import igraph as ig
 
 
-def plot_betweenness(g, ax, cax1, cax2):
+# %%
+# We define a function that plots the graph  on a Matplotlib axis, along with
+# its vertex and edge betweenness values. The function also generates some
+# color bars on the sides to see how they translate to each other. We use
+# `Matplotlib's Normalize class <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Normalize.html>`_
+# to ensure that our color bar ranges are correct, as well as *igraph*'s
+# :meth:`igraph.utils.rescale` to rescale the betweennesses in the interval
+# ``[0, 1]``.
+def plot_betweenness(g, vertex_betweenness, edge_betweenness, ax, cax1, cax2):
     '''Plot vertex/edge betweenness, with colorbars
 
     Args:
@@ -27,9 +33,7 @@ def plot_betweenness(g, ax, cax1, cax2):
         cax2: the Axes for the edge betweenness colorbar
     '''
 
-    # Calculate vertex betweenness and scale it to be between 0.0 and 1.0
-    vertex_betweenness = g.betweenness()
-    edge_betweenness = g.edge_betweenness()
+    # Rescale betweenness to be between 0.0 and 1.0
     scaled_vertex_betweenness = ig.rescale(vertex_betweenness, clamp=True)
     scaled_edge_betweenness = ig.rescale(edge_betweenness, clamp=True)
     print(f"vertices: {min(vertex_betweenness)} - {max(vertex_betweenness)}")
@@ -58,20 +62,29 @@ def plot_betweenness(g, ax, cax1, cax2):
     plt.colorbar(norm2, cax=cax2, orientation="horizontal", label='Edge Betweenness')
 
 
-# Generate Krackhardt Kite Graphs and Watts Strogatz graphs
+# %%
+# Generate Krackhardt Kite Graph
 random.seed(0)
 g1 = ig.Graph.Famous("Krackhardt_Kite")
-g2 = ig.Graph.Watts_Strogatz(dim=1, size=150, nei=2, p=0.1)
 
+# %%
+# Compute vertex and edge betweenness
+vertex_betweenness1 = g1.betweenness()
+edge_betweenness1 = g1.edge_betweenness()
+
+# %% Generate and analyze a Watts Strogatz graph as a second example
+g2 = ig.Graph.Watts_Strogatz(dim=1, size=150, nei=2, p=0.1)
+vertex_betweenness2 = g2.betweenness()
+edge_betweenness2 = g2.edge_betweenness()
+
+# %%
 # Plot the graphs, each with two colorbars for vertex/edge betweenness
 fig, axs = plt.subplots(
     3, 2,
     figsize=(7, 6),
     gridspec_kw=dict(height_ratios=(20, 1, 1)),
     )
-#plt.subplots_adjust(bottom=0.3)
-plot_betweenness(g1, *axs[:, 0])
-plot_betweenness(g2, *axs[:, 1])
+plot_betweenness(g1, vertex_betweenness1, edge_betweenness1, *axs[:, 0])
+plot_betweenness(g2, vertex_betweenness2, edge_betweenness2, *axs[:, 1])
 fig.tight_layout(h_pad=1)
-
 plt.show()
