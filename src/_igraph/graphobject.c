@@ -11815,7 +11815,6 @@ PyObject *igraphmodule_Graph_modularity_matrix(igraphmodule_GraphObject *self,
   static char *kwlist[] = {"weights", "resolution", "directed", 0};
   igraph_vector_t *weights=0;
   double resolution = 1;
-  igraph_real_t modularity;
   igraph_matrix_t result;
   PyObject *wvec = Py_None;
   PyObject *directed = Py_True;
