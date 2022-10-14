@@ -9326,7 +9326,7 @@ igraph_error_t igraphmodule_i_Graph_isomorphic_vf2_callback_fn(
   if (map21_o == NULL) {
     /* Error in conversion, return an error code */
     PyErr_WriteUnraisable(data->callback_fn);
-    Py_DECREF(map21_o);
+    Py_DECREF(map12_o);
     return IGRAPH_FAILURE;
   }
 
