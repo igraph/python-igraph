@@ -71,7 +71,6 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.intersphinx',
-    'gallery_generator',
     'sphinx_gallery.gen_gallery',
     #'sphinx_panels',
     'pydoctor.sphinx_ext.build_apidocs',
@@ -283,7 +282,7 @@ if not is_inside_rtd:
 
 sphinx_gallery_conf = {
      'examples_dirs': '../examples_sphinx-gallery',   # path to your example scripts
-     'gallery_dirs': 'examples',  # path to where to save gallery generated output
+     'gallery_dirs': 'tutorials',  # path to where to save gallery generated output
      'filename_pattern': '/',
      'matplotlib_animations': True,
      'remove_config_comments': True,
