@@ -5,7 +5,7 @@
 Ring Graph Animation
 ====================
 
-This example demonstrates how to use :ref:`matplotlib:matplotlib.animation` in
+This example demonstrates how to use :doc:`matplotlib:api/animation_api` in
 order to animate a ring graph sequentially being revealed.
 
 """

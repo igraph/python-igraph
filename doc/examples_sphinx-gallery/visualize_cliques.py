@@ -11,12 +11,17 @@ This example shows how to compute and visualize cliques of a graph using :meth:`
 import igraph as ig
 import matplotlib.pyplot as plt
 
+# %%
+# First, let's create a graph, for instance the famous karate club graph:
 g = ig.Graph.Famous('Zachary')
 
-# Compute cliques
+# %%
+# Computing cliques can be done as follows:
 cliques = g.cliques(4, 4)
 
-# Plot each clique highlighted in a separate axes
+# %%
+# We can plot the result of the computation. To make things a little more
+# interesting, we plot each clique highlighted in a separate axes:
 fig, axs = plt.subplots(3, 4)
 axs = axs.ravel()
 for clique, ax in zip(cliques, axs):
@@ -26,15 +31,15 @@ for clique, ax in zip(cliques, axs):
         edge_width=0.5,
         target=ax,
     )
-
 plt.axis('off')
 plt.show()
 
 
-# Same visualization, but including the edges
-g = ig.Graph.Famous('Zachary')
-cliques = g.cliques(4, 4)
-
+# %%
+# Advanced: improving plotting style
+# ----------------------------------
+# If you want a little more style, you can color the vertices/edges within each
+# clique to make them stand out:
 fig, axs = plt.subplots(3, 4)
 axs = axs.ravel()
 for clique, ax in zip(cliques, axs):
@@ -56,7 +61,6 @@ for clique, ax in zip(cliques, axs):
         palette=ig.RainbowPalette(),
         target=ax,
     )
-
 plt.axis('off')
 plt.show()
 
