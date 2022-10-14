@@ -30,7 +30,7 @@ ig.plot(
     components,
     target=ax,
     palette=ig.RainbowPalette(),
-    vertex_size=0.07,
+    vertex_size=0.5,
     vertex_color=list(map(int, ig.rescale(components.membership, (0, 200), clamp=True))),
     edge_width=0.7
 )
