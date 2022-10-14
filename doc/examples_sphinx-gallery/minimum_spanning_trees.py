@@ -7,22 +7,33 @@ Minimum Spanning Trees
 
 This example shows how to generate a `minimum spanning tree <https://en.wikipedia.org/wiki/Minimum_spanning_tree>`_ from an input graph using :meth:`igraph.Graph.spanning_tree`. If you only need a regular spanning tree, check out :ref:`tutorials-spanning-trees`.
 
-We start by generating a grid graph with random integer weights between 1 and 20:
-
 """
 import random
 import igraph as ig
 import matplotlib.pyplot as plt
 
-# Generate grid graph with random weights
+# %%
+# We start by generating a grid graph with random integer weights between 1 and
+# 20:
 random.seed(0)
 g = ig.Graph.Lattice([5, 5], circular=False)
 g.es["weight"] = [random.randint(1, 20) for _ in g.es]
 
-# Generate minimum spanning tree
+# %%
+# We can then compute a minimum spanning tree using
+# :meth:`igraph.Graph.spanning_tree`, making sure to pass in the randomly
+# generated weights.
 mst_edges = g.spanning_tree(weights=g.es["weight"], return_tree=False)
 
-# Plot graph
+# %%
+# We can print out the minimum edge weight sum
+print("Minimum edge weight sum:", sum(g.es[mst_edges]["weight"]))
+
+# Minimum edge weight sum: 136
+
+# %%
+# Finally, we can plot the graph, highlighting the edges that are part of the
+# minimum spanning tree.
 g.es["color"] = "lightgray"
 g.es[mst_edges]["color"] = "midnightblue"
 g.es["width"] = 1.0
@@ -40,7 +51,3 @@ ig.plot(
 )
 plt.show()
 
-# Print out minimum edge weight sum
-print("Minimum edge weight sum:", sum(g.es[mst_edges]["weight"]))
-
-# Minimum edge weight sum: 136

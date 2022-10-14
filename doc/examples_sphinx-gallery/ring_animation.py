@@ -5,7 +5,8 @@
 Ring Graph Animation
 ====================
 
-This example demonstrates how to use `Matplotlib's animation features <https://matplotlib.org/stable/api/animation_api.html>`_ in order to animate a ring graph sequentially being revealed.
+This example demonstrates how to use :ref:`matplotlib:matplotlib.animation` in
+order to animate a ring graph sequentially being revealed.
 
 """
 import igraph as ig
@@ -14,16 +15,25 @@ import matplotlib.animation as animation
 
 # sphinx_gallery_thumbnail_path = '_static/gallery_thumbnails/ring_animation.gif'
 
-# Animate a directed ring graph
+# %%
+# Create a ring graph, which we will then animate
 g = ig.Graph.Ring(10, directed=True)
 
-# Make 2D ring layout
+# %%
+# Compute a 2D ring layout that looks like an actual ring
 layout = g.layout_circle()
 
-# Prepare interactive backend for autoupdate
-plt.ion()
-plt.show()
-
+# %%
+# Prepare an update function. This "callback" function will be run at every
+# frame and takes as a single argument the frame number. For simplicity, at
+# each frame we compute a subgraph with only a fraction of the vertices and
+# edges. As time passes, the graph becomes more and more complete until the
+# whole ring is closed.
+#
+# .. note::
+#    The beginning and end of the animation are a little tricky because only
+#    a vertex or edge is added, not both. Don't worry if you cannot understand
+#    all details immediately.
 def _update_graph(frame):
     # Remove plot elements from the previous frame
     ax.clear()
@@ -61,9 +71,19 @@ def _update_graph(frame):
     handles = ax.get_children()[:nhandles]
     return handles
 
-# Create canvas
+# %%
+# Run the animation
 fig, ax = plt.subplots()
-
-
-# Animate, one vertex at a time
 ani = animation.FuncAnimation(fig, _update_graph, 12, interval=500, blit=True)
+plt.ion()
+plt.show()
+
+# %%
+# .. note::
+#
+#    We use *igraph*'s :meth:`Graph.subgraph()` (see
+#    :meth:`igraph.GraphBase.induced_subgraph`) in order to obtain a section of
+#    the ring graph at a time for each frame. While sufficient for an easy
+#    example, this approach is not very efficient. Thinking of more efficient
+#    approaches, e.g. vertices with zero radius, is a useful exercise to learn
+#    the combination of igraph and matplotlib.

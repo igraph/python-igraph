@@ -11,24 +11,28 @@ This example demonstrates how to generate `Erdős-Rényi Graphs <https://en.wiki
 - ``Erdos_Renyi(n, m)`` will pick a graph uniformly at random out of all graphs with ``n`` nodes and ``m`` edges.
 
 We generate two graphs of each, so we can confirm that our graph generator is truly random.
-
 """
 import igraph as ig
 import matplotlib.pyplot as plt
 import random
 
-# Set a random seed for reproducibility
+# %%
+# First, we set a random seed for reproducibility
 random.seed(0)
 
-# Generate two Erdos Renyi graphs based on probability
+# %%
+# Then, we generate two Erdos Renyi graphs with identical parameters:
 g1 = ig.Graph.Erdos_Renyi(n=15, p=0.2, directed=False, loops=False)
 g2 = ig.Graph.Erdos_Renyi(n=15, p=0.2, directed=False, loops=False)
 
-# Generate two Erdos Renyi graphs based on number of edges
+# %%
+# For comparison, we also generate two Erdos Renyi graphs with a fixed number
+# of edges:
 g3 = ig.Graph.Erdos_Renyi(n=20, m=35, directed=False, loops=False)
 g4 = ig.Graph.Erdos_Renyi(n=20, m=35, directed=False, loops=False)
 
-# Print out summaries of each graph
+# %%
+# We can print out summaries of each graph to verify their randomness
 ig.summary(g1)
 ig.summary(g2)
 ig.summary(g3)
@@ -39,7 +43,9 @@ ig.summary(g4)
 # IGRAPH U--- 20 35 --
 # IGRAPH U--- 20 35 --
 
-
+# %%
+# Finally, we can plot the graphs to illustrate their structures and
+# differences:
 fig, axs = plt.subplots(2, 2)
 # Probability
 ig.plot(
@@ -72,3 +78,9 @@ ig.plot(
 )
 axs[1, 0].set_ylabel('N. edges')
 plt.show()
+
+# %%
+# .. note::
+#     
+#     Even when using the same random seed, results can still differ depending
+#     on the machine the code is being run from.

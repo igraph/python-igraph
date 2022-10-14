@@ -6,7 +6,6 @@ Topological sorting
 ===================
 
 This example demonstrates how to get a topological sorting on a directed acyclic graph (DAG). A topological sorting of a directed graph is a linear ordering based on the precedence implied by the directed edges. It exists iff the graph doesn't have any cycle. In ``igraph``, we can use :meth:`igraph.GraphBase.topological_sorting` to get a topological ordering of the vertices.
-
 """
 import igraph as ig
 import matplotlib.pyplot as plt
