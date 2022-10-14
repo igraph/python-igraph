@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added `Graph.modularity_matrix()` to calculate the modularity matrix of
+  a graph.
+
 ### Fixed
 
 - Fixed a crash in `Graph.decompose()` that was accidentally introduced in
