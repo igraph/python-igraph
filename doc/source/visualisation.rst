@@ -11,7 +11,8 @@ In the following examples, we will assume |igraph| is imported as `ig` and a
    >>> import igraph as ig
    >>> g = ig.Graph(edges=[[0, 1], [2, 3]])
 
-Read the :doc:`api/index` for details on each function and class. See the :ref:`tutorial <tutorial-layouts-plotting>` and the :doc:`gallery` for examples.
+Read the :doc:`api/index` for details on each function and class. See the :ref:`tutorial <tutorial-layouts-plotting>` and
+the :doc:`tutorials/index` for examples.
 
 Graph layouts
 =============

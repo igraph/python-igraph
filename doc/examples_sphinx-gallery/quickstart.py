@@ -12,7 +12,7 @@ For the eager folks out there, this intro will give you a quick overview of the 
 - Save the plot as an image
 - Export and import a graph as a ``.gml`` file
 
-To find out more features that |igraph| has to offer, check out the :ref:`gallery`!
+To find out more features that igraph has to offer, check out the :ref:`gallery`!
 
 """
 import igraph as ig

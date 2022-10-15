@@ -44,6 +44,6 @@ plt.show()
 # .. note::
 #    If you would like to set global defaults, for example, always using the
 #    Matplotlib plotting backend, or using a particular color palette by
-#    default, you can use |igraph|'s `configuration instance
+#    default, you can use igraph's `configuration instance
 #    :class:`igraph.configuration.Configuration`. A quick example on how to use
 #    it can be found here: :ref:`tutorials-configuration`.

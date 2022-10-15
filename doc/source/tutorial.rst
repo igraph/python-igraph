@@ -11,7 +11,7 @@ Tutorial
 This page is a detailed tutorial of |igraph|'s Python capabilities. To get an quick impression of what |igraph| can do, check out the :doc:`tutorials/quickstart`. If you have not installed |igraph| yet, follow the :doc:`install`.
 
 .. note::
-   For the impatient reader, see the :doc:`gallery` page for short, self-contained examples.
+   For the impatient reader, see the :doc:`tutorials/index` page for short, self-contained examples.
 
 Starting |igraph|
 =================

@@ -5,7 +5,7 @@
 Generating Cluster Graphs
 ===========================
 
-This example shows how to find the communities in a graph, then contract each community into a single node using :class:`igraph.clustering.VertexClustering`. For this tutorial, we'll use the *Donald Knuth's Les Miserables Network*, which shows the coapperances of characters in the novel *Les Miserables*. 
+This example shows how to find the communities in a graph, then contract each community into a single node using :class:`igraph.clustering.VertexClustering`. For this tutorial, we'll use the *Donald Knuth's Les Miserables Network*, which shows the coapperances of characters in the novel *Les Miserables*.
 """
 import igraph as ig
 import matplotlib.pyplot as plt
@@ -51,7 +51,7 @@ g.vs["label"] = ["\n\n" + label for label in g.vs["label"]]
 # Finally, we can plot the communities:
 fig1, ax1 = plt.subplots()
 ig.plot(
-    communities, 
+    communities,
     target=ax1,
     mark_groups=True,
     palette=palette1,
@@ -76,7 +76,7 @@ g.es["size"] = 1
 # :meth:`igraph.VertexClustering.cluster_graph`:
 cluster_graph = communities.cluster_graph(
     combine_vertices={
-        "x": "mean", 
+        "x": "mean",
         "y": "mean",
         "color": "first",
         "size": "sum",
@@ -88,17 +88,17 @@ cluster_graph = communities.cluster_graph(
 
 # %%
 # .. note::
-
+#
 #      We took the mean of x and y values so that the nodes in the cluster
 #      graph are placed at the centroid of the original cluster.
 #
 # .. note::
-# 
+#
 #     ``mean``, ``first``, and ``sum`` are all built-in collapsing functions,
 #     along with ``prod``, ``median``, ``max``, ``min``, ``last``, ``random``.
 #     You can also define your own custom collapsing functions, which take in a
 #     list and return a single element representing the combined attribute
-#     value. For more details on |igraph| contraction, see
+#     value. For more details on igraph contraction, see
 #     :meth:`igraph.GraphBase.contract_vertices`.
 
 
@@ -110,11 +110,11 @@ g.es["color"] = [palette2.get(int(i)) for i in ig.rescale(cluster_graph.es["size
 
 fig2, ax2 = plt.subplots()
 ig.plot(
-    cluster_graph, 
+    cluster_graph,
     target=ax2,
     palette=palette1,
     # set a minimum size on vertex_size, otherwise vertices are too small
-    vertex_size=[max(0.2, size / 20) for size in cluster_graph.vs["size"]], 
+    vertex_size=[max(0.2, size / 20) for size in cluster_graph.vs["size"]],
     edge_color=g.es["color"],
     edge_width=0.8,
 )

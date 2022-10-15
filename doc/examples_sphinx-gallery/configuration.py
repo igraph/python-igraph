@@ -5,7 +5,7 @@
 Configuration Instance
 ======================
 
-This example shows how to use |igraph|'s :class:`configuration instance <igraph.Configuration>` to set default |igraph| settings. This is useful for setting global settings so that they don't need to be explicitly stated at the beginning of every |igraph| project you work on.
+This example shows how to use igraph's :class:`configuration instance <igraph.Configuration>` to set default igraph settings. This is useful for setting global settings so that they don't need to be explicitly stated at the beginning of every igraph project you work on.
 """
 import igraph as ig
 import matplotlib.pyplot as plt
@@ -25,8 +25,8 @@ ig.config.save()
 
 # %%
 # The code above only needs to be run once (to store the new config options
-# into the ``.igraphrc`` file). Whenever you use |igraph| and this file exists,
-# |igraph| will read its content and use those options as defaults. For
+# into the ``.igraphrc`` file). Whenever you use igraph and this file exists,
+# igraph will read its content and use those options as defaults. For
 # example, let's create and plot a new graph to demonstrate:
 random.seed(1)
 g = ig.Graph.Barabasi(n=100, m=1)

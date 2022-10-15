@@ -66,7 +66,7 @@ Documentation
        **Tutorials**
 
        - :doc:`Quick start <tutorials/quickstart>`
-       - :ref:`Gallery of examples <gallery-of-examples>`
+       - :doc:`Gallery of examples <tutorials/index>`
        - :doc:`Extended tutorial <tutorial>`
 
     .. container::
@@ -101,7 +101,7 @@ Documentation for `python-igraph <= 0.10.1` is available on our `old website <ht
    :hidden:
 
    install
-   gallery
+   tutorials/index
    tutorial
    api/index
    generation
