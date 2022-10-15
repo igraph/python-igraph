@@ -63,6 +63,12 @@ def exclude_from_list(items: Iterable[T], items_to_exclude: Iterable[T]) -> List
     return [item for item in items if item not in itemset]
 
 
+def fail(message: str, code: int = 1) -> None:
+    """Fails the build with the given error message and exit code."""
+    print(message)
+    sys.exit(code)
+
+
 def find_static_library(library_name: str, library_path: List[str]) -> Optional[str]:
     """Given the raw name of a library in `library_name`, tries to find a
     static library with this name in the given `library_path`. `library_path`
@@ -335,6 +341,7 @@ class BuildConfiguration:
         self.static_extension = False
         self.use_pkgconfig = False
         self.c_core_built = False
+        self.allow_educated_guess = True
         self._has_pkgconfig = None
         self.excluded_include_dirs = []
         self.excluded_library_dirs = []
@@ -396,8 +403,7 @@ class BuildConfiguration:
                 # Bail out if we don't have the Python include files
                 include_dir = sysconfig.get_path('include')
                 if not os.path.isfile(os.path.join(include_dir, "Python.h")):
-                    print("You will need the Python headers to compile this extension.")
-                    sys.exit(1)
+                    fail("You will need the Python headers to compile this extension.")
 
                 # Check whether the user asked us to discover a pre-built igraph
                 # with pkg-config
@@ -405,17 +411,19 @@ class BuildConfiguration:
                 if buildcfg.use_pkgconfig:
                     detected = buildcfg.detect_from_pkgconfig()
                     if not detected:
-                        print(
+                        fail(
                             "Cannot find the C core of igraph on this system using pkg-config."
                         )
-                        sys.exit(1)
                 else:
                     # Build the C core from the vendored igraph source
                     self.run_command("build_c_core")
                     if not buildcfg.c_core_built:
                         # Fall back to an educated guess if everything else failed
                         if not detected:
-                            buildcfg.use_educated_guess()
+                            if buildcfg.allow_educated_guess:
+                                buildcfg.use_educated_guess()
+                            else:
+                                fail("Cannot build the C core of igraph.")
 
                 # Add any extra library paths if needed; this is needed for the
                 # Appveyor CI build
@@ -618,9 +626,7 @@ class BuildConfiguration:
         )
 
         if libraries is False:
-            print("Build failed for the C core of igraph.")
-            print("")
-            sys.exit(1)
+            fail("Build failed for the C core of igraph.")
 
         assert not isinstance(libraries, bool)
 
@@ -686,7 +692,8 @@ class BuildConfiguration:
 
     def process_args_from_command_line(self):
         """Preprocesses the command line options before they are passed to
-        setup.py and sets up the build configuration."""
+        setup.py and sets up the build configuration.
+        """
         # Yes, this is ugly, but we don't want to interfere with setup.py's own
         # option handling
         opts_to_remove = []
@@ -708,6 +715,34 @@ class BuildConfiguration:
 
         for idx in reversed(opts_to_remove):
             sys.argv[idx : (idx + 1)] = []
+
+    def process_environment_variables(self):
+        """Processes environment variables that serve as replacements for the
+        command line options. This is typically useful in CI environments where
+        it is easier to set up a few environment variables permanently than to
+        pass the same options to ``setup.py build`` and ``setup.py install``
+        at the same time.
+        """
+        def process_envvar(name, attr, value):
+            name = "IGRAPH_" + name.upper()
+            if name in os.environ:
+                value = str(os.environ[name]).lower()
+                if value in ("on", "true", "yes"):
+                    value = True
+                elif value in ("off", "false", "no"):
+                    value = False
+                else:
+                    try:
+                        value = bool(int(value))
+                    except Exception:
+                        return
+
+                setattr(self, attr, value)
+
+        process_envvar("static", "static_extension", True)
+        process_envvar("no_pkg_config", "use_pkgconfig", False)
+        process_envvar("no_wait", "wait", False)
+        process_envvar("use_pkg_config", "use_pkgconfig", True)
 
     def replace_static_libraries(self, only=None, exclusions=None):
         """Replaces references to libraries with full paths to their static
@@ -820,6 +855,7 @@ exec(open("src/igraph/version.py").read())
 
 # Process command line options
 buildcfg = BuildConfiguration()
+buildcfg.process_environment_variables()
 buildcfg.process_args_from_command_line()
 
 # Define the extension

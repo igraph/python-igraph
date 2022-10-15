@@ -9326,7 +9326,7 @@ igraph_error_t igraphmodule_i_Graph_isomorphic_vf2_callback_fn(
   if (map21_o == NULL) {
     /* Error in conversion, return an error code */
     PyErr_WriteUnraisable(data->callback_fn);
-    Py_DECREF(map21_o);
+    Py_DECREF(map12_o);
     return IGRAPH_FAILURE;
   }
 
@@ -11805,6 +11805,51 @@ PyObject *igraphmodule_Graph_modularity(igraphmodule_GraphObject *self,
   }
 
   return igraphmodule_real_t_to_PyObject(modularity, IGRAPHMODULE_TYPE_FLOAT);
+}
+
+/**
+ * Modularity matrix calculation
+ */
+PyObject *igraphmodule_Graph_modularity_matrix(igraphmodule_GraphObject *self,
+  PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = {"weights", "resolution", "directed", 0};
+  igraph_vector_t *weights=0;
+  double resolution = 1;
+  igraph_matrix_t result;
+  PyObject *wvec = Py_None;
+  PyObject *directed = Py_True;
+  PyObject *result_o;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OdO", kwlist, &wvec, &resolution, &directed))
+    return NULL;
+
+  if (igraphmodule_attrib_to_vector_t(wvec, self, &weights, ATTRIBUTE_TYPE_EDGE))
+    return NULL;
+
+  if (igraph_matrix_init(&result, 0, 0)) {
+    if (weights) {
+      igraph_vector_destroy(weights); free(weights);
+    }
+    return NULL;
+  }
+
+  if (igraph_modularity_matrix(&self->g, weights, resolution, &result, PyObject_IsTrue(directed))) {
+    igraph_matrix_destroy(&result);
+    if (weights) {
+      igraph_vector_destroy(weights); free(weights);
+    }
+    return NULL;
+  }
+
+  if (weights) {
+    igraph_vector_destroy(weights); free(weights);
+  }
+
+  result_o = igraphmodule_matrix_t_to_PyList(&result, IGRAPHMODULE_TYPE_FLOAT);
+
+  igraph_matrix_destroy(&result);
+
+  return result_o;
 }
 
 /**
@@ -16651,6 +16696,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /*********************************/
   /* COMMUNITIES AND DECOMPOSITION */
   /*********************************/
+
   {"modularity", (PyCFunction) igraphmodule_Graph_modularity,
    METH_VARARGS | METH_KEYWORDS,
    "modularity(membership, weights=None, resolution=1, directed=True)\n--\n\n"
@@ -16687,6 +16733,21 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@newfield ref: Reference\n"
    "@ref: MEJ Newman and M Girvan: Finding and evaluating community structure\n"
    "  in networks. Phys Rev E 69 026113, 2004.\n"
+  },
+  {"modularity_matrix", (PyCFunction) igraphmodule_Graph_modularity_matrix,
+   METH_VARARGS | METH_KEYWORDS,
+   "modularity_matrix(weights=None, resolution=1, directed=True)\n--\n\n"
+   "Calculates the modularity matrix of the graph.\n\n"
+   "@param weights: optional edge weights or C{None} if all edges are weighed\n"
+   "  equally.\n"
+   "@param resolution: the resolution parameter I{gamma} of the modularity formula\n."
+   "  The classical definition of modularity is retrieved when the resolution\n"
+   "  parameter is set to 1.\n"
+   "@param directed: whether to consider edge directions if the graph is directed.\n"
+   "  C{True} will use the directed variant of the modularity measure where the\n"
+   "  in- and out-degrees of nodes are treated separately; C{False} will treat\n"
+   "  directed graphs as undirected.\n"
+   "@return: the modularity matrix as a list of lists.\n"
   },
   {"coreness", (PyCFunction) igraphmodule_Graph_coreness,
    METH_VARARGS | METH_KEYWORDS,

@@ -120,23 +120,25 @@ pkg-config --cflags --libs igraph
 
 If `pkg-config` responds with a set of compiler and linker flags and not an
 error message, you are probably okay. You can then proceed with the
-installation using pip:
+installation using pip after setting the environment variable named
+`IGRAPH_USE_PKG_CONFIG` to `1` to indicate that you want to use an
+igraph instance discoverable with `pkg-config`:
 
 ```bash
-pip install igraph --install-option="--use-pkg-config"
+IGRAPH_USE_PKG_CONFIG=1 pip install igraph
 ```
 
 Alternatively, if you have already downloaded and extracted the source code
 of igraph, you can run `setup.py` directly:
 
 ```bash
-python setup.py build --use-pkg-config
-python setup.py install --use-pkg-config
+IGRAPH_USE_PKG_CONFIG=1 python setup.py build
+IGRAPH_USE_PKG_CONFIG=1 python setup.py install
 ```
 
-(Note that you need `--use-pkg-config` for both invocations, otherwise the call
-to `setup.py install` would still build the vendored C core instead of linking
-to an existing installation).
+(Note that you need the `IGRAPH_USE_PKG_CONFIG=1` environment variable
+for both invocations, otherwise the call to `setup.py install` would still
+build the vendored C core instead of linking to an existing installation).
 
 This option is primarily intended for package maintainers in Linux
 distributions so they can ensure that the packaged Python interface links to

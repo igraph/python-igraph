@@ -77,7 +77,7 @@ int PyLong_AsInt(PyObject* obj, int* result) {
  * \param result the result is returned here. The default value must be
  *   passed in before calling this function, since this value is
  *   returned untouched if the given Python object is Py_None.
- * \return 0 if everything is OK, 1 otherwise. An appropriate exception
+ * \return 0 if everything is OK, -1 otherwise. An appropriate exception
  *   is raised in this case.
  */
 int igraphmodule_PyObject_to_enum(PyObject *o,
@@ -203,20 +203,34 @@ int igraphmodule_PyObject_to_enum_strict(PyObject *o,
     return -1;
 }
 
+#define TRANSLATE_ENUM_WITH(translation_table) \
+  int result_int = *result, retval; \
+  retval = igraphmodule_PyObject_to_enum(o, translation_table, &result_int); \
+  if (retval == 0) { \
+    *result = result_int; \
+  } \
+  return retval;
+
+#define TRANSLATE_ENUM_STRICTLY_WITH(translation_table) \
+  int result_int = *result, retval; \
+  retval = igraphmodule_PyObject_to_enum_strict(o, translation_table, &result_int); \
+  if (retval == 0) { \
+    *result = result_int; \
+  } \
+  return retval;
+
 /**
  * \ingroup python_interface_conversion
  * \brief Converts a Python object to an igraph \c igraph_neimode_t
  */
-int igraphmodule_PyObject_to_neimode_t(PyObject *o,
-  igraph_neimode_t *result) {
+int igraphmodule_PyObject_to_neimode_t(PyObject *o, igraph_neimode_t *result) {
   static igraphmodule_enum_translation_table_entry_t neimode_tt[] = {
         {"in", IGRAPH_IN},
         {"out", IGRAPH_OUT},
         {"all", IGRAPH_ALL},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, neimode_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(neimode_tt);
 }
 
 /**
@@ -245,7 +259,7 @@ int igraphmodule_PyObject_to_add_weights_t(PyObject *o,
     return 0;
   }
 
-  return igraphmodule_PyObject_to_enum(o, add_weights_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(add_weights_tt);
 }
 
 /**
@@ -266,8 +280,7 @@ int igraphmodule_PyObject_to_adjacency_t(PyObject *o,
         {"plus", IGRAPH_ADJ_PLUS},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, adjacency_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(adjacency_tt);
 }
 
 int igraphmodule_PyObject_to_attribute_combination_type_t(PyObject* o,
@@ -299,11 +312,11 @@ int igraphmodule_PyObject_to_attribute_combination_type_t(PyObject* o,
     return 0;
   }
 
-  return igraphmodule_PyObject_to_enum(o, attribute_combination_type_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(attribute_combination_type_tt);
 }
 
-int igraphmodule_PyObject_to_eigen_algorithm_t(PyObject *object,
-                                       igraph_eigen_algorithm_t *a) {
+int igraphmodule_PyObject_to_eigen_algorithm_t(PyObject *o,
+                                       igraph_eigen_algorithm_t *result) {
   static igraphmodule_enum_translation_table_entry_t eigen_algorithm_tt[] =
     {
       {"auto", IGRAPH_EIGEN_AUTO},
@@ -315,19 +328,19 @@ int igraphmodule_PyObject_to_eigen_algorithm_t(PyObject *object,
       {0,0}
     };
 
-  if (object == Py_None) {
-    *a = IGRAPH_EIGEN_ARPACK;
+  if (o == Py_None) {
+    *result = IGRAPH_EIGEN_ARPACK;
     return 0;
-  } else {
-    return igraphmodule_PyObject_to_enum(object, eigen_algorithm_tt,
-                                         (int*)a);
   }
+
+  TRANSLATE_ENUM_WITH(eigen_algorithm_tt);
 }
 
-int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
-                                           igraph_eigen_which_t *w) {
+int igraphmodule_PyObject_to_eigen_which_t(PyObject *o,
+                                           igraph_eigen_which_t *result) {
   PyObject *key, *value;
   Py_ssize_t pos = 0;
+  igraph_eigen_which_t *w = result;
 
   static igraphmodule_enum_translation_table_entry_t
     eigen_which_position_tt[] = {
@@ -361,13 +374,13 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
   w->vestimate = 0;
   w->balance = IGRAPH_LAPACK_DGEEVX_BALANCE_NONE;
 
-  if (object != Py_None && !PyDict_Check(object)) {
+  if (o != Py_None && !PyDict_Check(o)) {
     PyErr_SetString(PyExc_TypeError, "Python dictionary expected");
     return -1;
   }
 
-  if (object != Py_None) {
-    while (PyDict_Next(object, &pos, &key, &value)) {
+  if (o != Py_None) {
+    while (PyDict_Next(o, &pos, &key, &value)) {
       char *kv;
       PyObject *temp_bytes;
       if (!PyUnicode_Check(key)) {
@@ -390,8 +403,11 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
       }
       Py_DECREF(temp_bytes);
       if (!strcasecmp(kv, "pos")) {
-        igraphmodule_PyObject_to_enum(value, eigen_which_position_tt,
-                                      (int*) &w->pos);
+        int w_pos_int = w->pos;
+        if (igraphmodule_PyObject_to_enum(value, eigen_which_position_tt, &w_pos_int)) {
+          return -1;
+        }
+        w->pos = w_pos_int;
       } else if (!strcasecmp(kv, "howmany")) {
         if (PyLong_AsInt(value, &w->howmany)) {
           return -1;
@@ -413,8 +429,11 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
           return -1;
         }
       } else if (!strcasecmp(kv, "balance")) {
-        igraphmodule_PyObject_to_enum(value, lapack_dgeevc_balance_tt,
-                                      (int*) &w->balance);
+        int w_balance_as_int = w->balance;
+        if (igraphmodule_PyObject_to_enum(value, lapack_dgeevc_balance_tt, &w_balance_as_int)) {
+          return -1;
+        }
+        w->balance = w_balance_as_int;
       } else {
         PyErr_SetString(PyExc_TypeError, "Unknown eigen parameter");
         if (kv != 0) {
@@ -442,8 +461,7 @@ int igraphmodule_PyObject_to_barabasi_algorithm_t(PyObject *o,
         {"psumtree_multiple", IGRAPH_BARABASI_PSUMTREE_MULTIPLE},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, barabasi_algorithm_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(barabasi_algorithm_tt);
 }
 
 /**
@@ -457,8 +475,7 @@ int igraphmodule_PyObject_to_connectedness_t(PyObject *o,
         {"strong", IGRAPH_STRONG},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, connectedness_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(connectedness_tt);
 }
 
 /**
@@ -475,8 +492,7 @@ int igraphmodule_PyObject_to_vconn_nei_t(PyObject *o,
         {"ignore", IGRAPH_VCONN_NEI_IGNORE},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, vconn_nei_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(vconn_nei_tt);
 }
 
 /**
@@ -494,8 +510,7 @@ int igraphmodule_PyObject_to_bliss_sh_t(PyObject *o,
         {"fsm", IGRAPH_BLISS_FSM},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, bliss_sh_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(bliss_sh_tt);
 }
 
 /**
@@ -515,8 +530,7 @@ int igraphmodule_PyObject_to_community_comparison_t(PyObject *o,
         {"adjusted_rand", IGRAPH_COMMCMP_ADJUSTED_RAND},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, commcmp_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(commcmp_tt);
 }
 
 /**
@@ -539,8 +553,7 @@ int igraphmodule_PyObject_to_degseq_t(PyObject *o,
         {"edge_switching_simple", IGRAPH_DEGSEQ_EDGE_SWITCHING_SIMPLE},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, degseq_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(degseq_tt);
 }
 
 /**
@@ -557,8 +570,7 @@ int igraphmodule_PyObject_to_fas_algorithm_t(PyObject *o,
         {"ip", IGRAPH_FAS_EXACT_IP},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, fas_algorithm_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(fas_algorithm_tt);
 }
 
 /**
@@ -573,8 +585,7 @@ int igraphmodule_PyObject_to_get_adjacency_t(PyObject *o,
         {"both", IGRAPH_GET_ADJACENCY_BOTH},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, get_adjacency_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(get_adjacency_tt);
 }
 
 /**
@@ -594,12 +605,14 @@ int igraphmodule_PyObject_to_laplacian_normalization_t(
   if (o == Py_True) {
     *result = IGRAPH_LAPLACIAN_SYMMETRIC;
     return 0;
-  } else if (o == Py_False) {
+  }
+  
+  if (o == Py_False) {
     *result = IGRAPH_LAPLACIAN_UNNORMALIZED;
     return 0;
-  } else {
-    return igraphmodule_PyObject_to_enum(o, laplacian_normalization_tt, (int*)result);
   }
+  
+  TRANSLATE_ENUM_WITH(laplacian_normalization_tt);
 }
 
 /**
@@ -616,12 +629,14 @@ int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *re
   if (o == Py_True) {
     *result = IGRAPH_LAYOUT_GRID;
     return 0;
-  } else if (o == Py_False) {
+  }
+  
+  if (o == Py_False) {
     *result = IGRAPH_LAYOUT_NOGRID;
     return 0;
-  } else {
-    return igraphmodule_PyObject_to_enum(o, layout_grid_tt, (int*)result);
   }
+
+  TRANSLATE_ENUM_WITH(layout_grid_tt);
 }
 
 /**
@@ -638,12 +653,14 @@ int igraphmodule_PyObject_to_loops_t(PyObject *o, igraph_loops_t *result) {
   if (o == Py_True) {
     *result = IGRAPH_LOOPS_TWICE;
     return 0;
-  } else if (o == Py_False) {
+  }
+  
+  if (o == Py_False) {
     *result = IGRAPH_NO_LOOPS;
     return 0;
-  } else {
-    return igraphmodule_PyObject_to_enum(o, loops_tt, (int*)result);
   }
+
+  TRANSLATE_ENUM_WITH(loops_tt);
 }
 
 /**
@@ -657,8 +674,7 @@ int igraphmodule_PyObject_to_random_walk_stuck_t(PyObject *o,
         {"error", IGRAPH_RANDOM_WALK_STUCK_ERROR},
         {0,0}
   };
-
-  return igraphmodule_PyObject_to_enum(o, random_walk_stuck_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(random_walk_stuck_tt);
 }
 
 /**
@@ -670,8 +686,7 @@ int igraphmodule_PyObject_to_reciprocity_t(PyObject *o, igraph_reciprocity_t *re
     {"ratio", IGRAPH_RECIPROCITY_RATIO},
     {0,0}
   };
-
-  return igraphmodule_PyObject_to_enum(o, reciprocity_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(reciprocity_tt);
 }
 
 /**
@@ -684,8 +699,7 @@ int igraphmodule_PyObject_to_rewiring_t(PyObject *o, igraph_rewiring_t *result) 
     {"loops", IGRAPH_REWIRING_SIMPLE_LOOPS},
     {0,0}
   };
-
-  return igraphmodule_PyObject_to_enum(o, rewiring_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(rewiring_tt);
 }
 
 /**
@@ -697,8 +711,7 @@ int igraphmodule_PyObject_to_spinglass_implementation_t(PyObject *o, igraph_spin
     {"negative", IGRAPH_SPINCOMM_IMP_NEG},
     {0,0}
   };
-
-  return igraphmodule_PyObject_to_enum(o, spinglass_implementation_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(spinglass_implementation_tt);
 }
 
 /**
@@ -710,8 +723,7 @@ int igraphmodule_PyObject_to_spincomm_update_t(PyObject *o, igraph_spincomm_upda
     {"config", IGRAPH_SPINCOMM_UPDATE_CONFIG},
     {0,0}
   };
-
-  return igraphmodule_PyObject_to_enum(o, spincomm_update_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(spincomm_update_tt);
 }
 
 /**
@@ -727,8 +739,7 @@ int igraphmodule_PyObject_to_star_mode_t(PyObject *o,
         {"undirected", IGRAPH_STAR_UNDIRECTED},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, star_mode_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(star_mode_tt);
 }
 
 /**
@@ -745,8 +756,7 @@ int igraphmodule_PyObject_to_subgraph_implementation_t(PyObject *o,
         {"new", IGRAPH_SUBGRAPH_CREATE_FROM_SCRATCH},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, subgraph_impl_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(subgraph_impl_tt);
 }
 
 /**
@@ -766,12 +776,14 @@ int igraphmodule_PyObject_to_to_directed_t(PyObject *o,
   if (o == Py_True) {
     *result = IGRAPH_TO_DIRECTED_MUTUAL;
     return 0;
-  } else if (o == Py_False) {
+  }
+  
+  if (o == Py_False) {
     *result = IGRAPH_TO_DIRECTED_ARBITRARY;
     return 0;
   }
 
-  return igraphmodule_PyObject_to_enum(o, to_directed_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(to_directed_tt);
 }
 
 /**
@@ -790,12 +802,14 @@ int igraphmodule_PyObject_to_to_undirected_t(PyObject *o,
   if (o == Py_True) {
     *result = IGRAPH_TO_UNDIRECTED_COLLAPSE;
     return 0;
-  } else if (o == Py_False) {
+  }
+  
+  if (o == Py_False) {
     *result = IGRAPH_TO_UNDIRECTED_EACH;
     return 0;
   }
 
-  return igraphmodule_PyObject_to_enum(o, to_undirected_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(to_undirected_tt);
 }
 
 /**
@@ -811,7 +825,7 @@ int igraphmodule_PyObject_to_transitivity_mode_t(PyObject *o,
         {0,0}
     };
 
-  return igraphmodule_PyObject_to_enum(o, transitivity_mode_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(transitivity_mode_tt);
 }
 
 /**
@@ -831,7 +845,7 @@ int igraphmodule_PyObject_to_tree_mode_t(PyObject *o,
         {0,0}
     };
 
-  return igraphmodule_PyObject_to_enum(o, tree_mode_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(tree_mode_tt);
 }
 
 /**
@@ -1373,7 +1387,7 @@ PyObject* igraphmodule_integer_t_to_PyObject(igraph_integer_t value) {
  * error occurred
  */
 PyObject* igraphmodule_real_t_to_PyObject(igraph_real_t value, igraphmodule_conv_t type) {
-  if (!igraph_finite(value) || igraph_is_nan(value)) {
+  if (!isfinite(value) || isnan(value)) {
     return PyFloat_FromDouble(value);
   }
 
@@ -3852,8 +3866,7 @@ int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o, igraph_pagerank_algo_t
         {"arpack", IGRAPH_PAGERANK_ALGO_ARPACK},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, pagerank_algo_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(pagerank_algo_tt);
 }
 
 /**
@@ -3861,8 +3874,6 @@ int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o, igraph_pagerank_algo_t
  * \brief Converts a Python object to an igraph \c igraph_edge_type_sw_t
  */
 int igraphmodule_PyObject_to_edge_type_sw_t(PyObject *o, igraph_edge_type_sw_t *result) {
-  int result_int = *result;
-  int retval;
   static igraphmodule_enum_translation_table_entry_t edge_type_sw_tt[] = {
         {"simple", IGRAPH_SIMPLE_SW},
         {"loops", IGRAPH_LOOPS_SW},
@@ -3870,15 +3881,7 @@ int igraphmodule_PyObject_to_edge_type_sw_t(PyObject *o, igraph_edge_type_sw_t *
         {"all", IGRAPH_LOOPS_SW | IGRAPH_MULTI_SW},
         {0,0}
     };
-
-  retval = igraphmodule_PyObject_to_enum_strict(o, edge_type_sw_tt, &result_int);
-
-  if (retval) {
-    return retval;
-  }
-
-  *result = result_int;
-  return 0;
+  TRANSLATE_ENUM_STRICTLY_WITH(edge_type_sw_tt);
 }
 
 /**
@@ -3892,8 +3895,7 @@ int igraphmodule_PyObject_to_realize_degseq_t(PyObject *o, igraph_realize_degseq
         {"index", IGRAPH_REALIZE_DEGSEQ_INDEX},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum_strict(o, realize_degseq_tt, (int*)result);
+  TRANSLATE_ENUM_STRICTLY_WITH(realize_degseq_tt);
 }
 
 /**
@@ -3906,6 +3908,5 @@ int igraphmodule_PyObject_to_random_tree_t(PyObject *o, igraph_random_tree_t *re
         {"lerw", IGRAPH_RANDOM_TREE_LERW},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum_strict(o, random_tree_tt, (int*)result);
+  TRANSLATE_ENUM_STRICTLY_WITH(random_tree_tt);
 }

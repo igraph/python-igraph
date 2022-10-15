@@ -1,6 +1,31 @@
 # igraph Python interface changelog
 
-## [Unreleased]
+## [0.10.2] - 2022-10-14
+
+### Added
+
+- `python-igraph` is now tested in Python 3.11.
+
+- Added `Graph.modularity_matrix()` to calculate the modularity matrix of
+  a graph.
+
+- Added `Graph.get_k_shortest_paths()`, thanks to
+  [@sombreslames](https://github.com/user/sombreslames). See PR
+  [#577](https://github.com/igraph/python-igraph/pull/577) for details.
+
+- The `setup.py` script now also accepts environment variables instead of
+  command line arguments to configure several aspects of the build process
+  (i.e. whether a fully static extension is being built, or whether it is
+  allowed to use `pkg-config` to retrieve the compiler and linker flags for
+  an external `igraph` library instead of the vendored one). The environment
+  variables are named similarly to the command line arguments but in
+  uppercase, dashes replaced with underscores, and they are prefixed with
+  `IGRAPH_` (i.e. `--use-pkg-config` becomes `IGRAPH_USE_PKG_CONFIG`).
+
+### Changed
+
+- The C core of igraph was updated to version 0.10.2, fixing a range of bugs
+  originating from the C core.
 
 ### Fixed
 
@@ -9,6 +34,14 @@
 
 - `Clustering.sizes()` now works correctly even if the membership vector
   contains `None` items.
+
+- `Graph.modularity()` and `Graph.community_multilevel()` now correctly expose
+  the `resolution` parameter.
+
+- Fixed a reference leak in `Graph.is_chordal()` that decreased the reference
+  count of Python's built-in `True` and `False` constants unnecessarily.
+
+- Unit tests updated to get rid of deprecation warnings in Python 3.11.
 
 ## [0.10.1] - 2022-09-12
 
