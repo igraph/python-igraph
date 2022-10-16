@@ -197,13 +197,17 @@ PyObject *igraphmodule__union(PyObject *self,
     o = (igraphmodule_GraphObject*) igraphmodule_Graph_from_igraph_t(&g);
   }
 
-  if (with_edgemaps) {
-    /* wrap in a dictionary */
-    result = PyDict_New();
-    PyDict_SetItemString(result, "graph", (PyObject *) o);
-    Py_DECREF(o);
-    PyDict_SetItemString(result, "edgemaps", em_list);
-    Py_DECREF(em_list);
+  if (o != NULL) {
+    if (with_edgemaps) {
+      /* wrap in a dictionary */
+      result = PyDict_New();
+      PyDict_SetItemString(result, "graph", (PyObject *) o);
+      Py_DECREF(o);
+      PyDict_SetItemString(result, "edgemaps", em_list);
+      Py_DECREF(em_list);
+    } else {
+      result = (PyObject *) o;
+    }
   } else {
     result = (PyObject *) o;
   }
@@ -319,13 +323,17 @@ PyObject *igraphmodule__intersection(PyObject *self,
     o = (igraphmodule_GraphObject*) igraphmodule_Graph_from_igraph_t(&g);
   }
 
-  if (with_edgemaps) {
-    /* wrap in a dictionary */
-    result = PyDict_New();
-    PyDict_SetItemString(result, "graph", (PyObject *) o);
-    Py_DECREF(o);
-    PyDict_SetItemString(result, "edgemaps", em_list);
-    Py_DECREF(em_list);
+  if (o != NULL) {
+    if (with_edgemaps) {
+      /* wrap in a dictionary */
+      result = PyDict_New();
+      PyDict_SetItemString(result, "graph", (PyObject *) o);
+      Py_DECREF(o);
+      PyDict_SetItemString(result, "edgemaps", em_list);
+      Py_DECREF(em_list);
+    } else {
+      result = (PyObject *) o;
+    }
   } else {
     result = (PyObject *) o;
   }

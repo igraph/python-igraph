@@ -42,12 +42,14 @@ PyTypeObject* igraphmodule_GraphType;
   py_graph = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t( \
     py_type, &c_graph \
   ); \
+  if (py_graph == NULL) { igraph_destroy(&c_graph); } \
 }
 
 #define CREATE_GRAPH(py_graph, c_graph) { \
   py_graph = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t( \
     Py_TYPE(self), &c_graph \
   ); \
+  if (py_graph == NULL) { igraph_destroy(&c_graph); } \
 }
 
 /**********************************************************************
@@ -2442,10 +2444,17 @@ PyObject *igraphmodule_Graph_Full_Bipartite(PyTypeObject * type,
   }
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
+  if (self == NULL) {
+    igraph_vector_bool_destroy(&vertex_types);
+    return NULL;
+  }
 
   vertex_types_o = igraphmodule_vector_bool_t_to_PyList(&vertex_types);
   igraph_vector_bool_destroy(&vertex_types);
-  if (vertex_types_o == 0) return NULL;
+  if (vertex_types_o == 0) {
+    return NULL;
+  }
+
   return Py_BuildValue("NN", (PyObject *) self, vertex_types_o);
 }
 
@@ -2536,6 +2545,11 @@ PyObject *igraphmodule_Graph_GRG(PyTypeObject * type,
   }
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
+  if (self == NULL) {
+    Py_DECREF(o_xs);
+    Py_DECREF(o_ys);
+    return NULL;
+  }
 
   return Py_BuildValue("NNN", (PyObject*)self, o_xs, o_ys);
 }
@@ -2617,6 +2631,9 @@ PyObject *igraphmodule_Graph_Incidence(PyTypeObject * type,
 
   igraph_matrix_destroy(&matrix);
   CREATE_GRAPH_FROM_TYPE(self, g, type);
+  if (self == NULL) {
+    return NULL;
+  }
 
   vertex_types_o = igraphmodule_vector_bool_t_to_PyList(&vertex_types);
   igraph_vector_bool_destroy(&vertex_types);
@@ -2943,7 +2960,7 @@ NULL };
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
 
-  if (store_attribs) {
+  if (self != NULL && store_attribs) {
     type_vec_o = igraphmodule_vector_int_t_to_PyList(&type_vec);
     if (type_vec_o == 0) {
       igraph_matrix_destroy(&pm);
@@ -3045,7 +3062,7 @@ PyObject *igraphmodule_Graph_Asymmetric_Preference(PyTypeObject * type,
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
 
-  if (store_attribs) {
+  if (self != NULL && store_attribs) {
     type_vec_o = igraphmodule_vector_int_t_pair_to_PyList(&in_type_vec,
                                                       &out_type_vec);
     if (type_vec_o == NULL) {
@@ -3134,6 +3151,9 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
   }
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
+  if (self == NULL) {
+    return NULL;
+  }
 
   vertex_types_o = igraphmodule_vector_bool_t_to_PyList(&vertex_types);
   igraph_vector_bool_destroy(&vertex_types);
@@ -3386,6 +3406,7 @@ PyObject *igraphmodule_Graph_Static_Fitness(PyTypeObject *type,
     igraph_vector_destroy(&fitness_in);
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
+
   return (PyObject *) self;
 }
 
@@ -3616,6 +3637,10 @@ PyObject *igraphmodule_Graph_Weighted_Adjacency(PyTypeObject * type,
   igraph_matrix_destroy(&m);
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
+  if (self == NULL) {
+    return NULL;
+  }
+  
   weights_o = igraphmodule_vector_t_to_PyList(&weights, IGRAPHMODULE_TYPE_FLOAT);
   if (!weights_o) {
     Py_DECREF(self);
@@ -4098,9 +4123,17 @@ PyObject *igraphmodule_Graph_bipartite_projection(igraphmodule_GraphObject * sel
 
   if (p_g1) {
     CREATE_GRAPH(result1, g1);
+    if (result1 == NULL) {
+      return NULL;
+    }
   }
+
   if (p_g2) {
     CREATE_GRAPH(result2, g2);
+    if (result2 == NULL) {
+      Py_XDECREF(result1);
+      return NULL;
+    }
   }
 
   if (PyObject_IsTrue(multiplicity_o)) {
@@ -7967,10 +8000,19 @@ PyObject *igraphmodule_Graph_layout_sugiyama(
   if (weights != 0) { igraph_vector_destroy(weights); free(weights); }
 
   result_o = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
+  if (result_o == NULL) {
+    igraph_vector_int_destroy(&extd_to_orig_eids);
+    igraph_matrix_destroy(&m);
+    return NULL;
+  }
+
   igraph_matrix_destroy(&m);
 
   if (PyObject_IsTrue(return_extended_graph)) {
     CREATE_GRAPH(graph_o, extd_graph);
+    if (graph_o == NULL) {
+      Py_DECREF(result_o);
+    }
     extd_to_orig_eids_o = igraphmodule_vector_int_t_to_PyList(&extd_to_orig_eids);
     result_o = Py_BuildValue("NNN", result_o, graph_o, extd_to_orig_eids_o);
   }
@@ -8444,6 +8486,10 @@ PyObject *igraphmodule_Graph_Read_DIMACS(PyTypeObject * type,
     return NULL;
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
+  if (self == NULL) {
+    Py_DECREF(capacity_obj);
+    return NULL;
+  }
 
   return Py_BuildValue("NnnN", (PyObject *) self, (Py_ssize_t)source,
                        (Py_ssize_t)target, capacity_obj);
@@ -10616,6 +10662,10 @@ PyObject *igraphmodule_Graph_unfold_tree(igraphmodule_GraphObject * self,
   }
 
   CREATE_GRAPH(result_o, res);
+  if (!result_o) {
+    Py_DECREF(mapping_o);
+    return NULL;
+  }
 
   return Py_BuildValue("NN", result_o, mapping_o);
 }
@@ -11155,8 +11205,7 @@ PyObject *igraphmodule_Graph_gomory_hu_tree(igraphmodule_GraphObject * self,
 
   CREATE_GRAPH(tree_o, tree);
   if (!tree_o) {
-    igraph_destroy(&tree);
-    return 0;
+    return NULL;
   }
 
   return Py_BuildValue("NN", tree_o, flow_o);
