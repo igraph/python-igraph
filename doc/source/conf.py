@@ -71,7 +71,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.intersphinx',
-    'gallery_generator',
+    'sphinx_gallery.gen_gallery',
     #'sphinx_panels',
     'pydoctor.sphinx_ext.build_apidocs',
 ]
@@ -277,6 +277,17 @@ pydoctor_args.append(_igraph_dir)
 if not is_inside_rtd:
     extensions.append('postprocess_api')
 
+
+# -- Options for sphinx-gallery ------------------------------------------------
+
+sphinx_gallery_conf = {
+     'examples_dirs': '../examples_sphinx-gallery',   # path to your example scripts
+     'gallery_dirs': 'tutorials',  # path to where to save gallery generated output
+     'filename_pattern': '/',
+     'matplotlib_animations': True,
+     'remove_config_comments': True,
+}
+
 # -- Options for LaTeX output --------------------------------------------------
 
 # The paper size ('letter' or 'a4').
@@ -367,7 +378,7 @@ epub_copyright = '2010-2022, The igraph development team'
 
 intersphinx_mapping = {
     'numpy': ('https://numpy.org/doc/stable/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/', None),
     'matplotlib': ('https://matplotlib.org/stable', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'networkx': ('https://networkx.org/documentation/stable/', None),

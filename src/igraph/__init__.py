@@ -649,8 +649,8 @@ class Graph(GraphBase):
     clusters = _clusters
     cohesive_blocks = _cohesive_blocks
     connected_components = _connected_components
-    blocks = biconnected_components
-    components = connected_components
+    blocks = _biconnected_components
+    components = _connected_components
 
     #############################################
     # Community detection/clustering

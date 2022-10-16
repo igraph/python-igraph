@@ -57,7 +57,7 @@ if [ ! -d ".venv" ]; then
 fi
 
 # Make sure that Sphinx, PyDoctor (and maybe doc2dash) are up-to-date in the virtualenv
-.venv/bin/pip install -U sphinx pydoctor sphinxbootstrap4theme
+.venv/bin/pip install -U sphinx pydoctor sphinxbootstrap4theme sphinx-gallery
 if [ x$DOC2DASH = x1 ]; then
     .venv/bin/pip install -U doc2dash
 fi
