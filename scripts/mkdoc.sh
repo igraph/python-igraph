@@ -97,11 +97,10 @@ fi
 echo "Generating HTML documentation..."
 if [ "x$STANDALONE" = "x1" ]; then
   echo "Build standalone docs"
-  .venv/bin/python -m sphinx \
+  .venv/bin/pip install -U sphinx-rtd-theme
+  READTHEDOCS="True" .venv/bin/python -m sphinx \
    -T \
    -b html \
-   -Dtemplates_path='' \
-   -Dhtml_theme='alabaster' \
    ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
 else
   echo "Build Jekyll-style docs"
