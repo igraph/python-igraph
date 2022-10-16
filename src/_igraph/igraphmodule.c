@@ -200,7 +200,8 @@ PyObject* igraphmodule_set_progress_handler(PyObject* self, PyObject* o) {
 
   Py_XDECREF(progress_handler);
   if (o == Py_None)
-    o = 0;
+    o = NULL;
+
   Py_XINCREF(o);
   GETSTATE(self)->progress_handler=o;
 
@@ -220,9 +221,11 @@ PyObject* igraphmodule_set_status_handler(PyObject* self, PyObject* o) {
     Py_RETURN_NONE;
 
   Py_XDECREF(status_handler);
-  if (o == Py_None)
-    o = 0;
-  Py_INCREF(o);
+  if (o == Py_None) {
+    o = NULL;
+  }
+
+  Py_XINCREF(o);
   GETSTATE(self)->status_handler = o;
 
   Py_RETURN_NONE;
@@ -271,6 +274,10 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
         igraph_matrix_destroy(&mtrx);
         return NULL;
       }
+    } else {
+      PyErr_SetString(PyExc_TypeError, "convex_hull() must receive a list of indexable sequences");
+      igraph_matrix_destroy(&mtrx);
+      return NULL;
     }
     
     if (!PyNumber_Check(o1) || !PyNumber_Check(o2)) {
