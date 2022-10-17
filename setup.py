@@ -907,7 +907,7 @@ options = dict(
         "Bug Tracker": "https://github.com/igraph/python-igraph/issues",
         "Changelog": "https://github.com/igraph/python-igraph/blob/master/CHANGELOG.md",
         "CI": "https://github.com/igraph/python-igraph/actions",
-        "Documentation": "https://igraph.org/python/doc",
+        "Documentation": "https://igraph.readthedocs.io",
         "Source Code": "https://github.com/igraph/python-igraph",
     },
     ext_modules=[igraph_extension],
