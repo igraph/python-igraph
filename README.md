@@ -15,6 +15,9 @@ igraph.
 
 You can learn more about igraph [on our website](http://igraph.org/python/).
 
+igraph is a collaborative work of many people from all around the world —
+see the [list of contributors here](./CONTRIBUTORS.md).
+
 ## Installation from PyPI
 
 We aim to provide wheels on PyPI for most of the stock Python versions;
