@@ -47,7 +47,6 @@ PyObject *igraphmodule__disjoint_union(PyObject *self,
   /* Needs to be an iterable */
   it = PyObject_GetIter(graphs);
   if (!it) {
-      Py_DECREF(it);
       return igraphmodule_handle_igraph_error();
   }
 
@@ -113,7 +112,6 @@ PyObject *igraphmodule__union(PyObject *self,
   /* Needs to be an iterable */
   it = PyObject_GetIter(graphs);
   if (!it) {
-      Py_DECREF(it);
       return igraphmodule_handle_igraph_error();
   }
 
@@ -241,7 +239,6 @@ PyObject *igraphmodule__intersection(PyObject *self,
   /* Needs to be an iterable */
   it = PyObject_GetIter(graphs);
   if (!it) {
-      Py_DECREF(it);
       return igraphmodule_handle_igraph_error();
   }
 

@@ -3829,6 +3829,8 @@ int igraphmodule_PyObject_to_attribute_combination_t(PyObject* object,
     return 0;
   }
 
+  rec.type = IGRAPH_ATTRIBUTE_COMBINE_IGNORE;
+
   if (PyDict_Check(object)) {
     /* a full-fledged dict was passed */
     PyObject *key, *value;
