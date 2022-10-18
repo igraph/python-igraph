@@ -5,10 +5,10 @@
 Erdős-Rényi Graph
 =================
 
-This example demonstrates how to generate `Erdős-Rényi Graphs <https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model>`_ using :meth:`igraph.GraphBase.Erdos_Renyi`. There are two variants of graphs:
+This example demonstrates how to generate `Erdős–Rényi graphs <https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model>`_ using :meth:`igraph.GraphBase.Erdos_Renyi`. There are two variants of graphs:
 
-- ``Erdos_Renyi(n, p)`` will generate a graph where each edge between any two pair of nodes has an independent probability ``p`` of existing.
-- ``Erdos_Renyi(n, m)`` will pick a graph uniformly at random out of all graphs with ``n`` nodes and ``m`` edges.
+- ``Erdos_Renyi(n, p)`` will generate a graph from the so-called :math:`G(n,p)` model where each edge between any two pair of nodes has an independent probability ``p`` of existing.
+- ``Erdos_Renyi(n, m)`` will pick a graph uniformly at random out of all graphs with ``n`` nodes and ``m`` edges. This is referred to as the :math:`G(n,m)` model.
 
 We generate two graphs of each, so we can confirm that our graph generator is truly random.
 """
@@ -21,12 +21,12 @@ import random
 random.seed(0)
 
 # %%
-# Then, we generate two Erdos Renyi graphs with identical parameters:
+# Then, we generate two :math:`G(n,p)` Erdős–Rényi graphs with identical parameters:
 g1 = ig.Graph.Erdos_Renyi(n=15, p=0.2, directed=False, loops=False)
 g2 = ig.Graph.Erdos_Renyi(n=15, p=0.2, directed=False, loops=False)
 
 # %%
-# For comparison, we also generate two Erdos Renyi graphs with a fixed number
+# For comparison, we also generate two :math:`G(n,m)` Erdős–Rényi graphs with a fixed number
 # of edges:
 g3 = ig.Graph.Erdos_Renyi(n=20, m=35, directed=False, loops=False)
 g4 = ig.Graph.Erdos_Renyi(n=20, m=35, directed=False, loops=False)
@@ -78,9 +78,3 @@ ig.plot(
 )
 axs[1, 0].set_ylabel('N. edges')
 plt.show()
-
-# %%
-# .. note::
-#     
-#     Even when using the same random seed, results can still differ depending
-#     on the machine the code is being run from.
