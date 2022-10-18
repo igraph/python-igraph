@@ -46,12 +46,12 @@ Like virtualenv, Conda also offers virtual environments. If you prefer that opti
   $ conda activate my_environment
   $ conda install -c conda-forge python-igraph
 
-Linux package managers
-----------------------
-|igraph|'s Python interface and its dependencies have been packaged for most popular Linux
-distributions, including Arch Linux, Debian, Fedora, GNU Guix, NixOS, and Ubuntu.
-|igraph| and its underlying C core are usually in two different packages, but
-your package manager should take care of that dependency for you.
+Package managers on Linux and other systems
+-------------------------------------------
+|igraph|'s Python interface and its dependencies are included in several package management
+systems, including those of the most popular Linux distributions (Arch Linux,
+Debian and Ubuntu, Fedora, GNU Guix, etc.) as well as some cross-platofrm systems such as
+NixPkgs or MacPorts.
 
 .. note:: |igraph| is updated quite often: if you need a more recent version than your
    package manager offers, use ``pip`` or ``conda`` as shown above. For bleeding-edge
