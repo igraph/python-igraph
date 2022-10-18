@@ -50,7 +50,7 @@ Package managers on Linux and other systems
 -------------------------------------------
 |igraph|'s Python interface and its dependencies are included in several package management
 systems, including those of the most popular Linux distributions (Arch Linux,
-Debian and Ubuntu, Fedora, GNU Guix, etc.) as well as some cross-platofrm systems such as
+Debian and Ubuntu, Fedora, GNU Guix, etc.) as well as some cross-platform systems like
 NixPkgs or MacPorts.
 
 .. note:: |igraph| is updated quite often: if you need a more recent version than your
