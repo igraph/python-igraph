@@ -119,6 +119,7 @@ int igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t(PyObject *it,
 int igraphmodule_append_PyIter_of_graphs_to_vector_ptr_t_with_type(PyObject *it,
 		igraph_vector_ptr_t *v, PyTypeObject **g_type);
 int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *graph);
+int igraphmodule_PyObject_to_optional_vid(PyObject *o, igraph_integer_t *vid, igraph_t *graph);
 int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
                   igraph_t *graph, igraph_bool_t *return_single,
 				  igraph_integer_t *single_vid);

@@ -328,6 +328,14 @@ class LayoutAlgorithmTests(unittest.TestCase):
         lo_adj = g.layout_umap(dist=dist, epochs=1, sampling_prob=1, seed=lo.coords)
         self.assertTrue(isinstance(lo_adj, Layout))
 
+    def testLGL(self):
+        g = Graph.GRG(100, 0.2)
+        lo = g.layout("lgl")
+        self.assertTrue(isinstance(lo, Layout))
+
+        g = Graph.GRG(100, 0.2)
+        lo = g.layout("lgl", root=5)
+        self.assertTrue(isinstance(lo, Layout))
 
     def testReingoldTilford(self):
         g = Graph.Barabasi(100)

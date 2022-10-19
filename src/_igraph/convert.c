@@ -3211,6 +3211,26 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
 
 /**
  * \ingroup python_interface_conversion
+ * \brief Tries to interpret a Python object as a single vertex ID, leaving
+ * the input vertex ID unmodified if the Python object is NULL or None
+ *
+ * \param o      the Python object
+ * \param vid    the vertex ID will be stored here
+ * \param graph  the graph that will be used to interpret vertex names
+ *               if a string was given in o. It may also be a null pointer
+ *               if we don't need name lookups.
+ * \return 0 if everything was OK, 1 otherwise
+ */
+int igraphmodule_PyObject_to_optional_vid(PyObject *o, igraph_integer_t *vid, igraph_t *graph) {
+  if (o == 0 || o == Py_None) {
+    return 0;
+  } else {
+    return igraphmodule_PyObject_to_vid(o, vid, graph);
+  }
+}
+
+/**
+ * \ingroup python_interface_conversion
  * \brief Tries to interpret a Python object as a vertex selector
  *
  * \param o      the Python object

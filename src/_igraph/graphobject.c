@@ -4886,11 +4886,11 @@ PyObject *igraphmodule_Graph_edge_connectivity(igraphmodule_GraphObject *self,
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist, &source_o, &target_o, &checks))
     return NULL;
 
-  if (source_o != Py_None && igraphmodule_PyObject_to_vid(source_o, &source, &self->g)) {
+  if (igraphmodule_PyObject_to_optional_vid(source_o, &source, &self->g)) {
     return NULL;
   }
 
-  if (target_o != Py_None && igraphmodule_PyObject_to_vid(target_o, &target, &self->g)) {
+  if (igraphmodule_PyObject_to_optional_vid(target_o, &target, &self->g)) {
     return NULL;
   }
 
@@ -6490,11 +6490,11 @@ PyObject *igraphmodule_Graph_vertex_connectivity(igraphmodule_GraphObject *self,
       &source_o, &target_o, &checks, &neis))
     return NULL;
 
-  if (source_o != Py_None && igraphmodule_PyObject_to_vid(source_o, &source, &self->g)) {
+  if (igraphmodule_PyObject_to_optional_vid(source_o, &source, &self->g)) {
     return NULL;
   }
 
-  if (target_o != Py_None && igraphmodule_PyObject_to_vid(target_o, &target, &self->g)) {
+  if (igraphmodule_PyObject_to_optional_vid(target_o, &target, &self->g)) {
     return NULL;
   }
 
@@ -6921,7 +6921,7 @@ PyObject *igraphmodule_Graph_fundamental_cycles(
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &start_vid_o, &cutoff_o))
     return NULL;
 
-  if (start_vid_o != Py_None && igraphmodule_PyObject_to_vid(start_vid_o, &start_vid, &self->g))
+  if (igraphmodule_PyObject_to_optional_vid(start_vid_o, &start_vid, &self->g))
     return NULL;
 
   if (cutoff_o != Py_None && igraphmodule_PyObject_to_integer_t(cutoff_o, &cutoff))
@@ -7170,8 +7170,9 @@ PyObject *igraphmodule_Graph_layout_star(igraphmodule_GraphObject* self,
     return NULL;
   }
 
-  if (igraphmodule_PyObject_to_vid(center_o, &center, &self->g))
+  if (igraphmodule_PyObject_to_optional_vid(center_o, &center, &self->g)) {
     return NULL;
+  }
 
   if (order_o != Py_None) {
     order = (igraph_vector_int_t*)calloc(1, sizeof(igraph_vector_int_t));
@@ -7728,8 +7729,9 @@ PyObject *igraphmodule_Graph_layout_lgl(igraphmodule_GraphObject * self,
   if (cellsize <= 0)
     cellsize = sqrt(sqrt(area));
 
-  if (igraphmodule_PyObject_to_vid(root_o, &proot, &self->g))
+  if (igraphmodule_PyObject_to_optional_vid(root_o, &proot, &self->g)) {
     return NULL;
+  }
 
   if (igraph_matrix_init(&m, 1, 1)) {
     igraphmodule_handle_igraph_error();
