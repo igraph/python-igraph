@@ -14,7 +14,9 @@ analysis of large graphs.
 This repository contains the source code to the Python interface of
 igraph.
 
-You can learn more about igraph [on our website](http://igraph.org/python/).
+Since version 0.10.2, the documentation is hosted on
+[readthedocs](https://igraph.readthedocs.io). Earlier versions are documented
+on [our old website](https://igraph.org/python/versions/0.10.1/).
 
 igraph is a collaborative work of many people from all around the world —
 see the [list of contributors here](./CONTRIBUTORS.md).
