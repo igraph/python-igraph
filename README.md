@@ -156,6 +156,25 @@ from Homebrew.
 Due to the lack of support of `pkg-config` on Windows, it is currently not
 possible to build against an external library on Windows.
 
+**Warning:** the Python interface is guaranteed to work only with the same
+version of the C core that is vendored inside the `vendor/source/igraph`
+folder. While we try hard not to break API or ABI in the C core of igraph
+between minor versions in the 0.x branch and we will keep on doing so for major
+versions once 1.0 is released, there are certain functions in the C API that
+are marked as _experimental_ (see the documentation of the C core for details),
+and we reserve the right to break the APIs of those functions, even if they are
+already exposed in a higher-level interface. This is because the easiest way to
+test these functions in real-life research scenarios is to expose them in one
+of the higher level interfaces. Therefore, if you unbundle the vendored source
+code of igraph and link to an external version instead, we can make no
+guarantees about stability unless you link to the exact same version as the
+one we have vendored in this source tree.
+
+If you are curious about which version of the Python interface is compatible
+with which version of the C core, you can look up the corresponding tag in
+Github and check which revision of the C core the repository points to in
+the `vendor/source/igraph` submodule.
+
 ## Compiling the development version
 
 If you want to install the development version, the easiest way to do so is to
