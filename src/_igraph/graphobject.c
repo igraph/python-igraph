@@ -13847,7 +13847,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  returned.\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name.\n"
-   "@return: the (possibly estimated) betweenness of the given vertices in a list\n"},
+   "@return: the (possibly cutoff-limited) betweenness of the given vertices in a list\n"},
 
   /* interface to biconnected_components */
   {"biconnected_components", (PyCFunction) igraphmodule_Graph_biconnected_components,
