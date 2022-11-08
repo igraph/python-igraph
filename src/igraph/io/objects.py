@@ -417,15 +417,22 @@ def _construct_graph_from_dataframe(
         raise ValueError("The 'vertices' DataFrame must contain at least one column")
 
     if use_vids:
-        if not (
-            str(edges.dtypes[0]).startswith("int")
-            and str(edges.dtypes[1]).startswith("int")
+        if (
+            str(edges.dtypes[0]).startswith(("int", "Int"))
+            and str(edges.dtypes[1]).startswith(("int", "Int"))
         ):
+            # Check pandas nullable integer data type:
+            # https://pandas.pydata.org/docs/user_guide/integer_na.html
+            if (edges.iloc[:, :2].isna()).any(axis=None):
+                 raise ValueError("Source and target IDs must not be null")
+
+            if (edges.iloc[:, :2] < 0).any(axis=None):
+                 raise ValueError("Source and target IDs must not be negative")
+        else:
             raise TypeError(
                 f"Source and target IDs must be 0-based integers, found types {edges.dtypes.tolist()[:2]}"
             )
-        elif (edges.iloc[:, :2] < 0).any(axis=None):
-            raise ValueError("Source and target IDs must not be negative")
+
         if vertices is not None:
             vertices = vertices.sort_index()
             if not vertices.index.equals(
