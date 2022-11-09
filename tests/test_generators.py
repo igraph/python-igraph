@@ -517,6 +517,11 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(df_edges.equals(g_clone.get_edge_dataframe()))
         self.assertTrue(df_vertices.equals(g_clone.get_vertex_dataframe()))
 
+        # pandas Int64 data type
+        edges = pd.DataFrame(np.array([[0, 1], [1, 1], [1, 2]]), dtype="Int64")
+        g = Graph.DataFrame(edges)
+        self.assertTrue(g.vcount() == 3)
+
         # Invalid input
         with self.assertRaisesRegex(ValueError, "two columns"):
             edges = pd.DataFrame({"source": [1, 2, 3]})
@@ -561,6 +566,9 @@ class GeneratorTests(unittest.TestCase):
             edges = pd.DataFrame({"source": [1, 2, 3], "target": [4, 5, 6]})
             vertices = pd.DataFrame({0: [1, 2, 3]}, index=[0, 1, 2])
             Graph.DataFrame(edges, vertices=vertices)
+        with self.assertRaisesRegex(ValueError, "null"):
+            edges = pd.DataFrame(np.array([[0, 1], [1, np.nan], [1, 2]]), dtype="Int64")
+            Graph.DataFrame(edges)
 
 
 def suite():
