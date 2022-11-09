@@ -1,5 +1,15 @@
 # igraph Python interface changelog
 
+## [Unreleased]
+
+### Fixed
+
+- `Graph.Data_Frame()` now handles the `Int64` data type from `pandas`, thanks
+  to [@Adriankhl](https://github.com/Adriankhl). See PR
+  [#609](https://github.com/igraph/python-igraph/pull/609) for details.
+
+- `Graph.layout_lgl()` `root` argument is now optional (as it should have been).
+
 ## [0.10.2] - 2022-10-14
 
 ### Added
