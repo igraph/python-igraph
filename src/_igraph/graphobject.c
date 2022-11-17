@@ -8032,20 +8032,19 @@ PyObject *igraphmodule_Graph_layout_umap(
     igraphmodule_GraphObject * self, PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] =
-    { "dist", "dim", "seed", "min_dist", "epochs", "sampling_prob", NULL };
+    { "dist", "dim", "seed", "min_dist", "epochs", NULL };
   igraph_matrix_t m;
   igraph_vector_t *dist = 0;
   Py_ssize_t dim = 2;
   double min_dist = 0.01;
-  double sampling_prob = 0.3;
   Py_ssize_t epochs = 500;
   PyObject *dist_o = Py_None;
   PyObject *seed_o = Py_None;
   PyObject *result_o;
   igraph_bool_t use_seed = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OnOdnd", kwlist, &dist_o,
-                                   &dim, &seed_o, &min_dist, &epochs, &sampling_prob))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OnOdn", kwlist, &dist_o,
+                                   &dim, &seed_o, &min_dist, &epochs))
     return NULL;
 
   CHECK_SSIZE_T_RANGE_POSITIVE(dim, "number of dimensions");
@@ -8088,7 +8087,7 @@ PyObject *igraphmodule_Graph_layout_umap(
           dist,
           (igraph_real_t)min_dist,
           (igraph_integer_t)epochs,
-          (igraph_real_t)sampling_prob)) {
+          /* distances_are_weights = */ 0)) {
       if (dist) {
         igraph_vector_destroy(dist); free(dist);
       }
@@ -8102,7 +8101,7 @@ PyObject *igraphmodule_Graph_layout_umap(
           dist,
           (igraph_real_t)min_dist,
           (igraph_integer_t)epochs,
-          (igraph_real_t)sampling_prob)) {
+          /* distances_are_weights = */ 0)) {
       if (dist) {
         igraph_vector_destroy(dist); free(dist);
       }
@@ -15618,9 +15617,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_umap",
    (PyCFunction) igraphmodule_Graph_layout_umap,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_umap(\n"
-   "    dist=None, dim=2, seed=None, min_dist=0.01,\n"
-   "    epochs=500, sampling_prob=0.3)\n--\n\n"
+   "layout_umap(dist=None, dim=2, seed=None, min_dist=0.01, epochs=500)\n"
+   "--\n\n"
    "Uniform Manifold Approximation and Projection (UMAP).\n\n"
    "This layout is a probabilistic algorithm that places vertices that are connected\n"
    "and have a short distance close by in the embedded space.\n\n"
@@ -15638,9 +15636,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  Values between 50 and 1000 are typical.\n"
    "  Notice that UMAP does not technically converge for symmetry reasons, but a\n"
    "  larger number of epochs should generally give an equivalent or better layout.\n"
-   "@param sampling_prob: the probability of sampling each vertex for repulsion at\n"
-   "  each epoch or iteration. A higher probability will give better results but\n"
-   "  also require more computations.\n"
    "@return: the calculated layout.\n\n"
    "@newfield ref: Reference\n"
    "@ref: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation\n"

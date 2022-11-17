@@ -265,16 +265,6 @@ class LayoutAlgorithmTests(unittest.TestCase):
             )
 
         self.assertRaises(
-                InternalError, g.layout_umap,
-                sampling_prob=-0.01,
-            )
-
-        self.assertRaises(
-                InternalError, g.layout_umap,
-                sampling_prob=1.01,
-            )
-
-        self.assertRaises(
                 ValueError, g.layout_umap,
                 dim=1,
             )
@@ -303,7 +293,7 @@ class LayoutAlgorithmTests(unittest.TestCase):
             0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.08, 0.05, 0.1, 0.08, 0.12, 0.09, 0.11
             ]
         g = Graph(edges)
-        lo = g.layout_umap(dist=dist, epochs=500, sampling_prob=0.3)
+        lo = g.layout_umap(dist=dist, epochs=500)
         self.assertTrue(isinstance(lo, Layout))
 
         # One should get two clusters in this case
@@ -321,11 +311,11 @@ class LayoutAlgorithmTests(unittest.TestCase):
                 self.assertLess(dxy, 0.2 * distmax)
 
         # Test single epoch with seed
-        lo_adj = g.layout_umap(dist=dist, epochs=1, sampling_prob=1, seed=lo)
+        lo_adj = g.layout_umap(dist=dist, epochs=1, seed=lo)
         self.assertTrue(isinstance(lo_adj, Layout))
 
         # Same but inputting the coordinates
-        lo_adj = g.layout_umap(dist=dist, epochs=1, sampling_prob=1, seed=lo.coords)
+        lo_adj = g.layout_umap(dist=dist, epochs=1, seed=lo.coords)
         self.assertTrue(isinstance(lo_adj, Layout))
 
     def testLGL(self):
