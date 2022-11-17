@@ -2564,10 +2564,14 @@ PyObject* igraphmodule_graph_list_t_to_PyList(igraph_graph_list_t *v, PyTypeObje
  *
  * \param o the Python object representing the list of lists
  * \param m the address of an uninitialized \c igraph_matrix_t
+ * \param arg_name  name of the argument we are attempting to convert, if
+ *        applicable. May be used in error messages.
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyList_to_matrix_t(PyObject* o, igraph_matrix_t *m) {
-  return igraphmodule_PyList_to_matrix_t_with_minimum_column_count(o, m, 0);
+int igraphmodule_PyList_to_matrix_t(
+  PyObject* o, igraph_matrix_t *m, const char *arg_name
+) {
+  return igraphmodule_PyList_to_matrix_t_with_minimum_column_count(o, m, 0, arg_name);
 }
 
 /**
@@ -2578,16 +2582,24 @@ int igraphmodule_PyList_to_matrix_t(PyObject* o, igraph_matrix_t *m) {
  * \param o the Python object representing the list of lists
  * \param m the address of an uninitialized \c igraph_matrix_t
  * \param num_cols the minimum number of columns in the matrix
+ * \param arg_name  name of the argument we are attempting to convert, if
+ *        applicable. May be used in error messages.
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igraph_matrix_t *m, int min_cols) {
+int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(
+  PyObject *o, igraph_matrix_t *m, int min_cols, const char *arg_name
+) {
   Py_ssize_t nr, nc, n, i, j;
   PyObject *row, *item;
   igraph_real_t value;
 
   /* calculate the matrix dimensions */
   if (!PySequence_Check(o) || PyUnicode_Check(o)) {
-    PyErr_SetString(PyExc_TypeError, "matrix expected (list of sequences)");
+    if (arg_name) {
+      PyErr_Format(PyExc_TypeError, "matrix expected in '%s'", arg_name);
+    } else {
+      PyErr_SetString(PyExc_TypeError, "matrix expected");
+    }
     return 1;
   }
 
@@ -2597,7 +2609,11 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igrap
     row = PySequence_GetItem(o, i);
     if (!PySequence_Check(row)) {
       Py_DECREF(row);
-      PyErr_SetString(PyExc_TypeError, "matrix expected (list of sequences)");
+      if (arg_name) {
+        PyErr_Format(PyExc_TypeError, "matrix expected in '%s'", arg_name);
+      } else {
+        PyErr_SetString(PyExc_TypeError, "matrix expected");
+      }
       return 1;
     }
     n = PySequence_Size(row);
@@ -2632,10 +2648,14 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igrap
  *
  * \param o the Python object representing the list of lists
  * \param m the address of an uninitialized \c igraph_matrix_int_t
+ * \param arg_name  name of the argument we are attempting to convert, if
+ *        applicable. May be used in error messages.
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyList_to_matrix_int_t(PyObject* o, igraph_matrix_int_t *m) {
-  return igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(o, m, 0);
+int igraphmodule_PyList_to_matrix_int_t(
+  PyObject* o, igraph_matrix_int_t *m, const char* arg_name
+) {
+  return igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(o, m, 0, arg_name);
 }
 
 /**
@@ -2646,16 +2666,24 @@ int igraphmodule_PyList_to_matrix_int_t(PyObject* o, igraph_matrix_int_t *m) {
  * \param o the Python object representing the list of lists
  * \param m the address of an uninitialized \c igraph_matrix_int_t
  * \param num_cols the minimum number of columns in the matrix
+ * \param arg_name  name of the argument we are attempting to convert, if
+ *        applicable. May be used in error messages.
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, igraph_matrix_int_t *m, int min_cols) {
+int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(
+  PyObject *o, igraph_matrix_int_t *m, int min_cols, const char* arg_name
+) {
   Py_ssize_t nr, nc, n, i, j;
   PyObject *row, *item;
   igraph_integer_t value;
 
   /* calculate the matrix dimensions */
   if (!PySequence_Check(o) || PyUnicode_Check(o)) {
-    PyErr_SetString(PyExc_TypeError, "integer matrix expected (list of sequences)");
+    if (arg_name) {
+      PyErr_Format(PyExc_TypeError, "integer matrix expected in '%s'", arg_name);
+    } else {
+      PyErr_SetString(PyExc_TypeError, "integer matrix expected");
+    }
     return 1;
   }
 
@@ -2665,7 +2693,11 @@ int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, i
     row = PySequence_GetItem(o, i);
     if (!PySequence_Check(row)) {
       Py_DECREF(row);
-      PyErr_SetString(PyExc_TypeError, "integer matrix expected (list of sequences)");
+      if (arg_name) {
+        PyErr_Format(PyExc_TypeError, "integer matrix expected in '%s'", arg_name);
+      } else {
+        PyErr_SetString(PyExc_TypeError, "integer matrix expected");
+      }
       return 1;
     }
     n = PySequence_Size(row);
@@ -2675,7 +2707,11 @@ int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, i
     }
   }
 
-  igraph_matrix_int_init(m, nr, nc);
+  if (igraph_matrix_int_init(m, nr, nc)) {
+    igraphmodule_handle_igraph_error();
+    return 1;
+  }
+
   for (i = 0; i < nr; i++) {
     row = PySequence_GetItem(o, i);
     n = PySequence_Size(row);

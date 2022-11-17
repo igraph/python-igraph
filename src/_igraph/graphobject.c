@@ -1944,9 +1944,7 @@ PyObject *igraphmodule_Graph_Adjacency(PyTypeObject * type,
   if (igraphmodule_PyObject_to_loops_t(loops_o, &loops))
     return NULL;
 
-  if (igraphmodule_PyList_to_matrix_t(matrix, &m)) {
-    PyErr_SetString(PyExc_TypeError,
-                    "Error while converting adjacency matrix");
+  if (igraphmodule_PyList_to_matrix_t(matrix, &m, "matrix")) {
     return NULL;
   }
 
@@ -2280,9 +2278,7 @@ PyObject *igraphmodule_Graph_Establishment(PyTypeObject * type,
 
   types = PyList_Size(type_dist);
 
-  if (igraphmodule_PyList_to_matrix_t(pref_matrix, &pm)) {
-    PyErr_SetString(PyExc_TypeError,
-                    "Error while converting preference matrix");
+  if (igraphmodule_PyList_to_matrix_t(pref_matrix, &pm, "pref_matrix")) {
     return NULL;
   }
   if (igraph_matrix_nrow(&pm) != igraph_matrix_ncol(&pm) ||
@@ -2614,10 +2610,8 @@ PyObject *igraphmodule_Graph_Incidence(PyTypeObject * type,
     return NULL;
   }
 
-  if (igraphmodule_PyList_to_matrix_t(matrix_o, &matrix)) {
+  if (igraphmodule_PyList_to_matrix_t(matrix_o, &matrix, "matrix")) {
     igraph_vector_bool_destroy(&vertex_types);
-    PyErr_SetString(PyExc_TypeError,
-                    "Error while converting incidence matrix");
     return NULL;
   }
 
@@ -2932,7 +2926,9 @@ NULL };
   CHECK_SSIZE_T_RANGE(n, "vertex count");
   types = PyList_Size(type_dist);
 
-  if (igraphmodule_PyList_to_matrix_t(pref_matrix, &pm)) return NULL;
+  if (igraphmodule_PyList_to_matrix_t(pref_matrix, &pm, "pref_matrix")) {
+    return NULL;
+  }
   if (igraphmodule_PyObject_float_to_vector_t(type_dist, &td)) {
     igraph_matrix_destroy(&pm);
     return NULL;
@@ -3022,8 +3018,10 @@ PyObject *igraphmodule_Graph_Asymmetric_Preference(PyTypeObject * type,
 
   CHECK_SSIZE_T_RANGE(n, "vertex count");
 
-  if (igraphmodule_PyList_to_matrix_t(pref_matrix, &pm)) return NULL;
-  if (igraphmodule_PyList_to_matrix_t(type_dist_matrix, &td)) {
+  if (igraphmodule_PyList_to_matrix_t(pref_matrix, &pm, "pref_matrix")) {
+    return NULL;
+  }
+  if (igraphmodule_PyList_to_matrix_t(type_dist_matrix, &td, "type_dist_matrix")) {
     igraph_matrix_destroy(&pm);
     return NULL;
   }
@@ -3279,7 +3277,7 @@ PyObject *igraphmodule_Graph_SBM(PyTypeObject * type,
 
   CHECK_SSIZE_T_RANGE(n, "vertex count");
 
-  if (igraphmodule_PyList_to_matrix_t(pref_matrix_o, &pref_matrix)) {
+  if (igraphmodule_PyList_to_matrix_t(pref_matrix_o, &pref_matrix, "pref_matrix")) {
     return NULL;
   }
 
@@ -3615,9 +3613,7 @@ PyObject *igraphmodule_Graph_Weighted_Adjacency(PyTypeObject * type,
   } else if (igraphmodule_PyObject_to_loops_t(loops_o, &loops))
     return NULL;
 
-  if (igraphmodule_PyList_to_matrix_t(matrix, &m)) {
-    PyErr_SetString(PyExc_TypeError,
-                    "Error while converting adjacency matrix");
+  if (igraphmodule_PyList_to_matrix_t(matrix, &m, "matrix")) {
     return NULL;
   }
 
@@ -7261,8 +7257,10 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai(igraphmodule_GraphObject *
       return NULL;
     }
   } else {
-    use_seed=1;
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m)) return NULL;
+    use_seed = 1;
+    if (igraphmodule_PyList_to_matrix_t(seed_o, &m, "seed")) {
+      return NULL;
+    }
   }
 
   /* Convert minimum and maximum x-y-z values */
@@ -7398,10 +7396,10 @@ PyObject* igraphmodule_Graph_layout_davidson_harel(igraphmodule_GraphObject *sel
       return NULL;
     }
   } else {
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m)) {
+    if (igraphmodule_PyList_to_matrix_t(seed_o, &m, "seed")) {
       return NULL;
     }
-    use_seed=1;
+    use_seed = 1;
   }
 
   retval = igraph_layout_davidson_harel(&self->g, &m, use_seed,
@@ -7467,10 +7465,10 @@ PyObject* igraphmodule_Graph_layout_drl(igraphmodule_GraphObject *self,
       return NULL;
     }
   } else {
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m)) {
+    if (igraphmodule_PyList_to_matrix_t(seed_o, &m, "seed")) {
       return NULL;
     }
-    use_seed=1;
+    use_seed = 1;
   }
 
   /* Convert the weight parameter to a vector */
@@ -7566,8 +7564,10 @@ PyObject
       return NULL;
     }
   } else {
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m)) return NULL;
-    use_seed=1;
+    if (igraphmodule_PyList_to_matrix_t(seed_o, &m, "seed")) {
+      return NULL;
+    }
+    use_seed = 1;
   }
 
   /* Convert the weight parameter to a vector */
@@ -7675,8 +7675,9 @@ PyObject *igraphmodule_Graph_layout_graphopt(igraphmodule_GraphObject *self,
     }
   } else {
     use_seed = 1;
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m))
-            return NULL;
+    if (igraphmodule_PyList_to_matrix_t(seed_o, &m, "seed")) {
+      return NULL;
+    }
   }
 
   if (igraph_layout_graphopt(&self->g, &m, niter,
@@ -7783,7 +7784,7 @@ PyObject *igraphmodule_Graph_layout_mds(igraphmodule_GraphObject * self,
       PyErr_NoMemory();
       return NULL;
     }
-    if (igraphmodule_PyList_to_matrix_t(dist_o, dist)) {
+    if (igraphmodule_PyList_to_matrix_t(dist_o, dist, "dist")) {
       free(dist);
       return NULL;
     }
@@ -8063,7 +8064,9 @@ PyObject *igraphmodule_Graph_layout_umap(
     }
   } else {
     use_seed = 1;
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m)) return NULL;
+    if (igraphmodule_PyList_to_matrix_t(seed_o, &m, "seed")) {
+      return NULL;
+    }
   }
 
   /* Initialize distances */

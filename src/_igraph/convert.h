@@ -107,10 +107,10 @@ int igraphmodule_PyObject_to_edgelist(
     igraph_bool_t *list_is_owned
 );
 
-int igraphmodule_PyList_to_matrix_t(PyObject *o, igraph_matrix_t *m);
-int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igraph_matrix_t *m, int min_cols);
-int igraphmodule_PyList_to_matrix_int_t(PyObject *o, igraph_matrix_int_t *m);
-int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, igraph_matrix_int_t *m, int min_cols);
+int igraphmodule_PyList_to_matrix_t(PyObject *o, igraph_matrix_t *m, const char *arg_name);
+int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igraph_matrix_t *m, int min_cols, const char *arg_name);
+int igraphmodule_PyList_to_matrix_int_t(PyObject *o, igraph_matrix_int_t *m, const char *arg_name);
+int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, igraph_matrix_int_t *m, int min_cols, const char *arg_name);
 PyObject* igraphmodule_strvector_t_to_PyList(igraph_strvector_t *v);
 int igraphmodule_PyList_to_strvector_t(PyObject* v, igraph_strvector_t *result);
 int igraphmodule_PyList_to_existing_strvector_t(PyObject* v, igraph_strvector_t *result);

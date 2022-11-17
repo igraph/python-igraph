@@ -358,7 +358,9 @@ PyObject* igraphmodule_community_to_membership(PyObject *self,
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!nn|O", kwlist,
       &PyList_Type, &merges_o, &nodes, &steps, &return_csize)) return NULL;
 
-  if (igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(merges_o, &merges, 2)) return NULL;
+  if (igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(merges_o, &merges, 2, "merges")) {
+    return NULL;
+  }
 
   CHECK_SSIZE_T_RANGE(nodes, "number of nodes");
   CHECK_SSIZE_T_RANGE(steps, "number of steps");
