@@ -2583,7 +2583,7 @@ int igraphmodule_PyList_to_matrix_t(PyObject* o, igraph_matrix_t *m) {
 int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igraph_matrix_t *m, int min_cols) {
   Py_ssize_t nr, nc, n, i, j;
   PyObject *row, *item;
-  int was_warned = 0;
+  igraph_real_t value;
 
   /* calculate the matrix dimensions */
   if (!PySequence_Check(o) || PyUnicode_Check(o)) {
@@ -2613,17 +2613,12 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igrap
     n = PySequence_Size(row);
     for (j = 0; j < n; j++) {
       item = PySequence_GetItem(row, j);
-      if (PyLong_Check(item)) {
-        MATRIX(*m, i, j) = PyLong_AsLong(item);
-      } else if (PyLong_Check(item)) {
-        MATRIX(*m, i, j) = PyLong_AsLong(item);
-      } else if (PyFloat_Check(item)) {
-        MATRIX(*m, i, j) = PyFloat_AsDouble(item);
-      } else if (!was_warned) {
-        PY_IGRAPH_WARN("non-numeric value in matrix ignored");
-        was_warned=1;
+      if (igraphmodule_PyObject_to_real_t(item, &value)) {
+        Py_DECREF(item);
+        return 1;
       }
       Py_DECREF(item);
+      MATRIX(*m, i, j) = value;
     }
     Py_DECREF(row);
   }
@@ -2656,11 +2651,11 @@ int igraphmodule_PyList_to_matrix_int_t(PyObject* o, igraph_matrix_int_t *m) {
 int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, igraph_matrix_int_t *m, int min_cols) {
   Py_ssize_t nr, nc, n, i, j;
   PyObject *row, *item;
-  int ok, was_warned = 0;
+  igraph_integer_t value;
 
   /* calculate the matrix dimensions */
   if (!PySequence_Check(o) || PyUnicode_Check(o)) {
-    PyErr_SetString(PyExc_TypeError, "matrix expected (list of sequences)");
+    PyErr_SetString(PyExc_TypeError, "integer matrix expected (list of sequences)");
     return 1;
   }
 
@@ -2670,7 +2665,7 @@ int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, i
     row = PySequence_GetItem(o, i);
     if (!PySequence_Check(row)) {
       Py_DECREF(row);
-      PyErr_SetString(PyExc_TypeError, "matrix expected (list of sequences)");
+      PyErr_SetString(PyExc_TypeError, "integer matrix expected (list of sequences)");
       return 1;
     }
     n = PySequence_Size(row);
@@ -2686,23 +2681,12 @@ int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, i
     n = PySequence_Size(row);
     for (j = 0; j < n; j++) {
       item = PySequence_GetItem(row, j);
-      ok = 1;
-      if (PyLong_Check(item)) {
-        if (igraphmodule_PyObject_to_integer_t(item, &MATRIX(*m, i, j))) {
-          ok = 0;
-        }
-      } else if (PyFloat_Check(item)) {
-        MATRIX(*m, i, j) = (igraph_integer_t)PyFloat_AsDouble(item);
-      } else {
-        ok = 0;
+      if (igraphmodule_PyObject_to_integer_t(item, &value)) {
+        Py_DECREF(item);
+        return 1;
       }
-      
-      if (!ok && !was_warned) {
-        PY_IGRAPH_WARN("non-numeric value in matrix ignored");
-        was_warned = 1;
-      }
-
       Py_DECREF(item);
+      MATRIX(*m, i, j) = value;
     }
     Py_DECREF(row);
   }
