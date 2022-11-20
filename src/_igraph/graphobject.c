@@ -8150,7 +8150,7 @@ PyObject *igraphmodule_Graph_layout_umap(
  * \return the weights given that graph
  * \sa igraph_layout_umap_compute_weights
  */
-PyObject *igraphmodule_Graph_layout_umap(
+PyObject *igraphmodule_Graph_layout_umap_compute_weights(
     igraphmodule_GraphObject * self, PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] =
@@ -8183,7 +8183,7 @@ PyObject *igraphmodule_Graph_layout_umap(
   }
 
   /* Call the function */
-  if (igraph_layout_umap_compute_weights(graph, dist, &weights)) {
+  if (igraph_layout_umap_compute_weights(&self->g, dist, &weights)) {
       igraph_vector_destroy(&weights);
       igraph_vector_destroy(dist); free(dist);
       PyErr_NoMemory();
