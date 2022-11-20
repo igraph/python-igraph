@@ -8033,19 +8033,20 @@ PyObject *igraphmodule_Graph_layout_umap(
     igraphmodule_GraphObject * self, PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] =
-    { "dist", "dim", "seed", "min_dist", "epochs", NULL };
+    { "dist", "weights", "dim", "seed", "min_dist", "epochs", NULL };
   igraph_matrix_t m;
   igraph_vector_t *dist = 0;
   Py_ssize_t dim = 2;
   double min_dist = 0.01;
   Py_ssize_t epochs = 500;
-  PyObject *dist_o = Py_None;
+  PyObject *dist_o = Py_None, *weights_o = Py_None;
   PyObject *seed_o = Py_None;
   PyObject *result_o;
   igraph_bool_t use_seed = 0;
+  igraph_bool_t distances_are_weights = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OnOdn", kwlist, &dist_o,
-                                   &dim, &seed_o, &min_dist, &epochs))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOnOdn", kwlist, &dist_o,
+                                   &weights_o, &dim, &seed_o, &min_dist, &epochs))
     return NULL;
 
   CHECK_SSIZE_T_RANGE_POSITIVE(dim, "number of dimensions");
@@ -8055,6 +8056,12 @@ PyObject *igraphmodule_Graph_layout_umap(
   }
 
   CHECK_SSIZE_T_RANGE_POSITIVE(epochs, "number of epochs");
+
+  /* Check whether distances and weights are both set, which is not allowed */
+  if ((dist_o != Py_None) && (weights_o != Py_None)) {
+    PyErr_SetString(PyExc_ValueError, "dist and weights cannot be both set");
+    return NULL;
+  }
 
   /* Precomputed starting layout */
   if (seed_o == 0 || seed_o == Py_None) {
@@ -8069,7 +8076,7 @@ PyObject *igraphmodule_Graph_layout_umap(
     }
   }
 
-  /* Initialize distances */
+  /* Initialize distances or weights */
   if (dist_o != Py_None) {
     dist = (igraph_vector_t*)malloc(sizeof(igraph_vector_t));
     if (!dist) {
@@ -8082,6 +8089,21 @@ PyObject *igraphmodule_Graph_layout_umap(
       free(dist);
       return NULL;
     }
+  } else if (weights_o != Py_None) {
+    distances_are_weights = 1;
+    /* they are actually weights, but let's keep them into the same variable
+     * for simplicity */
+    dist = (igraph_vector_t*)malloc(sizeof(igraph_vector_t));
+    if (!dist) {
+      igraph_matrix_destroy(&m);
+      PyErr_NoMemory();
+      return NULL;
+    }
+    if (igraphmodule_PyObject_to_vector_t(weights_o, dist, 0)) {
+      igraph_matrix_destroy(&m);
+      free(dist);
+      return NULL;
+    }
   }
 
   if (dim == 2) {
@@ -8090,7 +8112,7 @@ PyObject *igraphmodule_Graph_layout_umap(
           dist,
           (igraph_real_t)min_dist,
           (igraph_integer_t)epochs,
-          /* distances_are_weights = */ 0)) {
+          distances_are_weights)) {
       if (dist) {
         igraph_vector_destroy(dist); free(dist);
       }
@@ -8104,7 +8126,7 @@ PyObject *igraphmodule_Graph_layout_umap(
           dist,
           (igraph_real_t)min_dist,
           (igraph_integer_t)epochs,
-          /* distances_are_weights = */ 0)) {
+          distances_are_weights)) {
       if (dist) {
         igraph_vector_destroy(dist); free(dist);
       }
@@ -8122,6 +8144,60 @@ PyObject *igraphmodule_Graph_layout_umap(
   igraph_matrix_destroy(&m);
   return (PyObject *) result_o;
 }
+
+/** \ingroup python_interface_graph
+ * \brief Compute weights for Uniform Manifold Approximation and Projection (UMAP)
+ * \return the weights given that graph
+ * \sa igraph_layout_umap_compute_weights
+ */
+PyObject *igraphmodule_Graph_layout_umap(
+    igraphmodule_GraphObject * self, PyObject * args, PyObject * kwds)
+{
+  static char *kwlist[] =
+    { "dist", NULL };
+  igraph_vector_t *dist = 0;
+  igraph_vector_t weights;
+  PyObject *dist_o = Py_None;
+  PyObject *result_o;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &dist_o))
+    return NULL;
+
+  /* Initialize distances */
+  if (dist_o != Py_None) {
+    dist = (igraph_vector_t*)malloc(sizeof(igraph_vector_t));
+    if (!dist) {
+      PyErr_NoMemory();
+      return NULL;
+    }
+    if (igraphmodule_PyObject_to_vector_t(dist_o, dist, 0)) {
+      free(dist);
+      return NULL;
+    }
+
+  /* Initialize weights */
+  if (igraph_vector_init(&weights, 0)) {
+      igraph_vector_destroy(dist); free(dist);
+      PyErr_NoMemory();
+      return NULL;
+  }
+
+  /* Call the function */
+  if (igraph_layout_umap_compute_weights(graph, dist, &weights)) {
+      igraph_vector_destroy(&weights);
+      igraph_vector_destroy(dist); free(dist);
+      PyErr_NoMemory();
+      return NULL;
+  }
+  igraph_vector_destroy(dist); free(dist);
+
+  /* Convert output to Python list */
+  result_o = igraphmodule_vector_t_to_PyList(&weights, IGRAPHMODULE_TYPE_FLOAT);
+  igraph_vector_destroy(&weights);
+  return (PyObject *) result_o;
+  
+}
+
 
 /** \ingroup python_interface_graph
  * \brief Places the vertices of a bipartite graph according to a simple two-layer
