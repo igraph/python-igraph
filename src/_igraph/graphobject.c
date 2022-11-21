@@ -8153,8 +8153,7 @@ PyObject *igraphmodule_Graph_layout_umap(
 PyObject *igraphmodule_Graph_layout_umap_compute_weights(
     igraphmodule_GraphObject * self, PyObject * args, PyObject * kwds)
 {
-  static char *kwlist[] =
-    { "dist", NULL };
+  static char *kwlist[] = { "dist", NULL };
   igraph_vector_t *dist = 0;
   igraph_vector_t weights;
   PyObject *dist_o = Py_None;
@@ -8174,6 +8173,7 @@ PyObject *igraphmodule_Graph_layout_umap_compute_weights(
       free(dist);
       return NULL;
     }
+  }
 
   /* Initialize weights */
   if (igraph_vector_init(&weights, 0)) {
@@ -8195,7 +8195,6 @@ PyObject *igraphmodule_Graph_layout_umap_compute_weights(
   result_o = igraphmodule_vector_t_to_PyList(&weights, IGRAPHMODULE_TYPE_FLOAT);
   igraph_vector_destroy(&weights);
   return (PyObject *) result_o;
-  
 }
 
 
