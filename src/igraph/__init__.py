@@ -963,7 +963,7 @@ Graph._layout_mapping = _layout_mapping
 for name in dir(Graph):
     if not name.startswith("layout_"):
         continue
-    if name in ("layout_auto", "layout_sugiyama"):
+    if name in ("layout_auto", "layout_sugiyama", "layout_umap_compute_weights"):
         continue
     setattr(Graph, name, _layout_method_wrapper(getattr(Graph, name)))
 
