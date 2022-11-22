@@ -51,8 +51,7 @@ def _pagerank(
     @param vertices: the indices of the vertices being queried.
       C{None} means all of the vertices.
     @param directed: whether to consider directed paths.
-    @param damping: the damping factor. M{1-damping} is the PageRank value
-      for nodes with no incoming links. It is also the probability of
+    @param damping: the damping factor. It is also the probability of
       resetting the random walk to a uniform distribution in each step.
     @param weights: edge weights to be used. Can be a sequence or iterable
       or even an edge attribute name.

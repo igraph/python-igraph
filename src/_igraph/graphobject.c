@@ -14590,8 +14590,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  C{None} means all of the vertices.\n"
    "@param directed: whether to consider directed paths.\n"
    "@param damping: the damping factor.\n"
-   "  M{1-damping} is the PageRank value for vertices with no\n"
-   "  incoming links.\n"
    "@param reset: the distribution over the vertices to be used when resetting\n"
    "  the random walk. Can be a sequence, an iterable or a vertex attribute\n"
    "  name as long as they return a list of floats whose length is equal to\n"
