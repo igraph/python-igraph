@@ -85,7 +85,7 @@ int igraphmodule_i_attribute_struct_index_vertex_names(
     igraphmodule_i_attribute_struct *attrs, igraph_bool_t force) {
   Py_ssize_t n = 0;
   PyObject *name_list, *key, *value;
-  igraph_bool_t success = 0;
+  igraph_bool_t success = false;
 
   if (attrs->vertex_name_index && !force) {
     return 0;
@@ -102,7 +102,7 @@ int igraphmodule_i_attribute_struct_index_vertex_names(
 
   name_list = PyDict_GetItemString(attrs->attrs[ATTRHASH_IDX_VERTEX], "name");
   if (name_list == 0) {
-    success = 1;
+    success = true;
     goto cleanup;
   }
 
@@ -143,7 +143,7 @@ int igraphmodule_i_attribute_struct_index_vertex_names(
     n--;
   }
 
-  success = 1;
+  success = true;
 
 cleanup:
   if (!success) {

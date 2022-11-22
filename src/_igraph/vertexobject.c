@@ -329,7 +329,7 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
   PyObject** pObj;
   PyObject *key, *value, *it, *item, *keys;
 
-  igraph_bool_t ok = 1;
+  igraph_bool_t ok = true;
 
   if (!PyArg_ParseTuple(args, "|O", &items[0]))
     return NULL;
@@ -350,17 +350,17 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
       /* Object has a "keys" method, so we iterate over the keys */
       keys = PyObject_CallObject(keys_func, 0);
       if (keys == 0) {
-        ok = 0;
+        ok = false;
       } else {
         /* Iterate over the keys */
         it = PyObject_GetIter(keys);
         if (it == 0) {
-          ok = 0;
+          ok = false;
         } else {
           while (ok && ((key = PyIter_Next(it)) != 0)) {
             value = PyObject_GetItem(obj, key);
             if (value == 0) {
-              ok = 0;
+              ok = false;
             } else {
               PyObject_SetItem((PyObject*)self, key, value);
               Py_DECREF(value);
@@ -369,7 +369,7 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
           }
           Py_DECREF(it);
           if (PyErr_Occurred())
-            ok = 0;
+            ok = false;
         }
         Py_DECREF(keys);
       }
@@ -378,20 +378,20 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
        * yields tuples when treated as an iterator */
       it = PyObject_GetIter(obj);
       if (!it) {
-        ok = 0;
+        ok = false;
       } else {
         while (ok && ((item = PyIter_Next(it)) != 0)) {
           if (!PySequence_Check(item) || PyBaseString_Check(item)) {
             PyErr_SetString(PyExc_TypeError, "cannot convert update sequence element to a sequence");
-            ok = 0;
+            ok = false;
           } else {
             key = PySequence_GetItem(item, 0);
             if (key == 0) {
-              ok = 0;
+              ok = false;
             } else {
               value = PySequence_GetItem(item, 1);
               if (value == 0) {
-                ok = 0;
+                ok = false;
               } else {
                 PyObject_SetItem((PyObject*)self, key, value);
                 Py_DECREF(value);
@@ -403,7 +403,7 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
         }
         Py_DECREF(it);
         if (PyErr_Occurred())
-          ok = 0;
+          ok = false;
       }
     }
 
