@@ -117,7 +117,7 @@ help(igraph.Graph)
 /**
  * Whether the module was initialized already
  */
-static igraph_bool_t igraphmodule_initialized = 0;
+static igraph_bool_t igraphmodule_initialized = false;
 
 /**
  * Module-specific global variables

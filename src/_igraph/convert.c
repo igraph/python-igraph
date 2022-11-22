@@ -1038,7 +1038,7 @@ int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v, igraph
   it = PyObject_GetIter(list);
   if (it) {
     while ((item = PyIter_Next(it)) != 0) {
-      ok = 1;
+      ok = true;
 
       if (igraphmodule_PyObject_to_integer_t(item, &number)) {
         PyErr_SetString(PyExc_ValueError, "iterable must yield integers");
@@ -1144,7 +1144,7 @@ int igraphmodule_PyObject_float_to_vector_t(PyObject *list, igraph_vector_t *v) 
   it = PyObject_GetIter(list);
   if (it) {
     while ((item = PyIter_Next(it)) != 0) {
-      ok = 1;
+      ok = true;
 
       if (igraphmodule_PyObject_to_real_t(item, &number)) {
         PyErr_SetString(PyExc_ValueError, "iterable must yield numbers");
@@ -1222,7 +1222,7 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
       while ((item = PyIter_Next(it)) != 0) {
         if (!PyNumber_Check(item)) {
           PyErr_SetString(PyExc_TypeError, "iterable must return numbers");
-          ok = 0;
+          ok = false;
         } else {
           ok = (igraphmodule_PyObject_to_integer_t(item, &value) == 0);
         }
@@ -1267,7 +1267,7 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
     if (item) {
       if (!PyNumber_Check(item)) {
         PyErr_SetString(PyExc_TypeError, "sequence elements must be integers");
-        ok = 0;
+        ok = false;
       } else {
         ok = (igraphmodule_PyObject_to_integer_t(item, &value) == 0);
       }
@@ -1795,10 +1795,10 @@ int igraphmodule_PyObject_to_edgelist(
   }
 
   while ((item = PyIter_Next(it)) != 0) {
-    ok = 1;
+    ok = true;
     if (!PySequence_Check(item) || PySequence_Size(item) != 2) {
       PyErr_SetString(PyExc_TypeError, "iterable must return pairs of integers or strings");
-      ok = 0;
+      ok = false;
     } else {
       i1 = PySequence_GetItem(item, 0);
       i2 = i1 ? PySequence_GetItem(item, 1) : 0;
@@ -1813,11 +1813,11 @@ int igraphmodule_PyObject_to_edgelist(
     if (ok) {
       if (igraph_vector_int_push_back(v, idx1)) {
         igraphmodule_handle_igraph_error();
-        ok = 0;
+        ok = false;
       }
       if (ok && igraph_vector_int_push_back(v, idx2)) {
         igraphmodule_handle_igraph_error();
-        ok = 0;
+        ok = false;
       }
     }
 
@@ -3067,7 +3067,7 @@ int igraphmodule_PyList_to_existing_strvector_t(PyObject* v, igraph_strvector_t 
   for (i = 0; i < n; i++) {
     PyObject *item = PyList_GetItem(v, i);
     char* ptr;
-    igraph_bool_t will_free = 0;
+    igraph_bool_t will_free = false;
 
     if (PyUnicode_Check(item)) {
       ptr = PyUnicode_CopyAsString(item);
@@ -3075,7 +3075,7 @@ int igraphmodule_PyList_to_existing_strvector_t(PyObject* v, igraph_strvector_t 
         igraph_strvector_destroy(result);
         return 1;
       }
-      will_free = 1;
+      will_free = true;
     } else {
       o = PyObject_Str(item);
       if (o == 0) {
@@ -3088,7 +3088,7 @@ int igraphmodule_PyList_to_existing_strvector_t(PyObject* v, igraph_strvector_t 
         igraph_strvector_destroy(result);
         return 1;
       }
-      will_free = 1;
+      will_free = true;
     }
 
     if (igraph_strvector_set(result, i, ptr)) {
@@ -3399,7 +3399,7 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
 
   /* The object can be converted into a single vertex ID */
   if (return_single)
-    *return_single = 1;
+    *return_single = true;
   if (single_vid)
     *single_vid = vid;
 
@@ -3610,7 +3610,7 @@ int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
 
   /* The object can be converted into a single edge ID */
   if (return_single) {
-    *return_single = 1;
+    *return_single = true;
   }
 
   /*

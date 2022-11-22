@@ -23,6 +23,8 @@
 
 #include "pyhelpers.h"
 
+#include <stdbool.h>
+
 #ifdef PY_IGRAPH_PROVIDES_PY_NONE
 PyObject* Py_None;
 #endif
@@ -239,8 +241,8 @@ long igraphmodule_Py_HashPointer(void *p) {
  * in PyPy as part of the limited API.
  */
 int igraphmodule_helpers_init() {
-  static int called = 0;
-  int success = 0;
+  static bool called = false;
+  bool success = false;
 
   if (called) {
     PyErr_SetString(PyExc_RuntimeError, "igraphmodule_helpers_init() called twice");
@@ -268,8 +270,8 @@ int igraphmodule_helpers_init() {
   }
 #endif
 
-  called = 1;
-  success = 1;
+  called = true;
+  success = true;
 
 #if defined(PY_IGRAPH_PROVIDES_PY_NONE) || defined(PY_IGRAPH_PROVIDES_BOOL_CONSTANTS)
 cleanup:

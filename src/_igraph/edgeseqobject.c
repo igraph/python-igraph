@@ -709,7 +709,7 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
     } else if (PyCallable_Check(item)) {
       /* Call the callable for every edge in the current sequence to
        * determine what's up */
-      igraph_bool_t was_excluded = 0;
+      igraph_bool_t was_excluded = false;
       igraph_vector_int_t v;
 
       if (igraph_vector_int_init(&v, 0)) {
