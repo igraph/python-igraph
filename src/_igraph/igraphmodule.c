@@ -639,6 +639,64 @@ PyObject* igraphmodule_split_join_distance(PyObject *self,
   return Py_BuildValue("nn", (Py_ssize_t)distance12, (Py_ssize_t)distance21);
 }
 
+
+/** \ingroup python_interface_graph
+ * \brief Compute weights for Uniform Manifold Approximation and Projection (UMAP)
+ * \return the weights given that graph
+ * \sa igraph_umap_compute_weights
+ */
+PyObject *igraphmodule_umap_compute_weights(
+    PyObject *self, PyObject * args, PyObject * kwds)
+{
+  static char *kwlist[] = { "graph", "dist", NULL };
+  igraph_vector_t *dist = 0;
+  igraph_vector_t weights;
+  PyObject *dist_o = Py_None, *graph_o = Py_None;
+  PyObject *result_o;
+  igraphmodule_GraphObject * graph;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &graph_o, &dist_o))
+    return NULL;
+
+  /* Initialize distances */
+  if (dist_o != Py_None) {
+    dist = (igraph_vector_t*)malloc(sizeof(igraph_vector_t));
+    if (!dist) {
+      PyErr_NoMemory();
+      return NULL;
+    }
+    if (igraphmodule_PyObject_to_vector_t(dist_o, dist, 0)) {
+      free(dist);
+      return NULL;
+    }
+  }
+
+  /* Extract graph from Python object */
+  graph = (igraphmodule_GraphObject*)graph_o;
+
+  /* Initialize weights */
+  if (igraph_vector_init(&weights, 0)) {
+      igraph_vector_destroy(dist); free(dist);
+      PyErr_NoMemory();
+      return NULL;
+  }
+
+  /* Call the function */
+  if (igraph_layout_umap_compute_weights(&graph->g, dist, &weights)) {
+      igraph_vector_destroy(&weights);
+      igraph_vector_destroy(dist); free(dist);
+      PyErr_NoMemory();
+      return NULL;
+  }
+  igraph_vector_destroy(dist); free(dist);
+
+  /* Convert output to Python list */
+  result_o = igraphmodule_vector_t_to_PyList(&weights, IGRAPHMODULE_TYPE_FLOAT);
+  igraph_vector_destroy(&weights);
+  return (PyObject *) result_o;
+}
+
+
 #define LOCALE_CAPSULE_TYPE "igraph._igraph.locale_capsule"
 
 void igraphmodule__destroy_locale_capsule(PyObject *capsule) {
@@ -765,6 +823,36 @@ static PyMethodDef igraphmodule_methods[] =
     "  must be C{None} for undirected graphs.\n"
     "@return: C{True} if there exists some simple graph that can realize the given\n"
     "  degree sequence, C{False} otherwise.\n"
+  },
+  {"umap_compute_weights", (PyCFunction)igraphmodule_umap_compute_weights,
+   METH_VARARGS | METH_KEYWORDS,
+   "layout_umap_compute_weights(graph, dist)\n"
+   "--\n\n"
+   "@param graph: directed graph to compute weights for.\n"
+   "@param dist: distances associated with the graph edges.\n"
+   "@return: Symmetrized weights associated with each edge. If the distance\n"
+   "  graph has both directed edges between a pair of vertices, one of the\n"
+   "  returned weights will be set to zero.\n\n"
+   "Compute undirected UMAP weights from directed distance graph.\n\n"
+   "UMAP is a layout algorithm that usually takes as input a directed\n"
+   "distance graph, e.g. a k nearest neighbor graph based on Euclidean\n"
+   "distance between points in a vector space. The graph is directed\n"
+   "because vertex v1 might consider vertex v2 a close neighbor, but v2\n"
+   "itself might have many neighbors that are closer than v1.\n"
+   "This function computes the symmetrized weights from the distance graph\n"
+   "using union as the symmetry operator. In simple terms, if either vertex\n"
+   "considers the other a close neighbor, they will be treated as close\n"
+   "neighbors.\n\n"
+   "This function can be used as a separate preprocessing step to\n"
+   "Graph.layout_umap(). For efficiency reasons, the returned weights have the\n"
+   "same length as the input distances, however because of the symmetryzation\n"
+   "some information is lost. Therefore, the weight of one of the edges is set\n"
+   "to zero whenever edges in opposite directions are found in the input\n"
+   "distance graph. You can pipe the output of this function directly into\n"
+   "Graph.layout_umap() as follows:\n"
+   "C{weights = igraph.layout_umap_compute_weights(graph, dist)}\n"
+   "C{layout = graph.layout_umap(weights=weights)}\n\n"
+   "@see: Graph.layout_umap()\n"
   },
   {"set_progress_handler", igraphmodule_set_progress_handler, METH_O,
       "set_progress_handler(handler)\n--\n\n"

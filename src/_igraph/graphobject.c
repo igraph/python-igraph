@@ -8145,58 +8145,6 @@ PyObject *igraphmodule_Graph_layout_umap(
   return (PyObject *) result_o;
 }
 
-/** \ingroup python_interface_graph
- * \brief Compute weights for Uniform Manifold Approximation and Projection (UMAP)
- * \return the weights given that graph
- * \sa igraph_layout_umap_compute_weights
- */
-PyObject *igraphmodule_Graph_layout_umap_compute_weights(
-    igraphmodule_GraphObject * self, PyObject * args, PyObject * kwds)
-{
-  static char *kwlist[] = { "dist", NULL };
-  igraph_vector_t *dist = 0;
-  igraph_vector_t weights;
-  PyObject *dist_o = Py_None;
-  PyObject *result_o;
-
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &dist_o))
-    return NULL;
-
-  /* Initialize distances */
-  if (dist_o != Py_None) {
-    dist = (igraph_vector_t*)malloc(sizeof(igraph_vector_t));
-    if (!dist) {
-      PyErr_NoMemory();
-      return NULL;
-    }
-    if (igraphmodule_PyObject_to_vector_t(dist_o, dist, 0)) {
-      free(dist);
-      return NULL;
-    }
-  }
-
-  /* Initialize weights */
-  if (igraph_vector_init(&weights, 0)) {
-      igraph_vector_destroy(dist); free(dist);
-      PyErr_NoMemory();
-      return NULL;
-  }
-
-  /* Call the function */
-  if (igraph_layout_umap_compute_weights(&self->g, dist, &weights)) {
-      igraph_vector_destroy(&weights);
-      igraph_vector_destroy(dist); free(dist);
-      PyErr_NoMemory();
-      return NULL;
-  }
-  igraph_vector_destroy(dist); free(dist);
-
-  /* Convert output to Python list */
-  result_o = igraphmodule_vector_t_to_PyList(&weights, IGRAPHMODULE_TYPE_FLOAT);
-  igraph_vector_destroy(&weights);
-  return (PyObject *) result_o;
-}
-
 
 /** \ingroup python_interface_graph
  * \brief Places the vertices of a bipartite graph according to a simple two-layer
@@ -15691,37 +15639,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Internal function, undocumented.\n\n"
    "@see: Graph.layout_sugiyama()\n\n"},
 
-  /* interface to igraph_layout_umap_compute_weights */
-  {"layout_umap_compute_weights",
-   (PyCFunction) igraphmodule_Graph_layout_umap_compute_weights,
-   METH_VARARGS | METH_KEYWORDS,
-   "layout_umap_compute_weights(dist)\n"
-   "--\n\n"
-   "@param dist: distances associated with the graph edges.\n"
-   "@return: Symmetrized weights associated with each edge. If the distance\n"
-   "  graph has both directed edges between a pair of vertices, one of the\n"
-   "  returned weights will be set to zero.\n\n"
-   "Compute undirected UMAP weights from directed distance graph.\n\n"
-   "UMAP is a layout algorithm that usually takes as input a directed\n"
-   "distance graph, e.g. a k nearest neighbor graph based on Euclidean\n"
-   "distance between points in a vector space. The graph is directed\n"
-   "because vertex v1 might consider vertex v2 a close neighbor, but v2\n"
-   "itself might have many neighbors that are closer than v1.\n"
-   "This function computes the symmetrized weights from the distance graph\n"
-   "using union as the symmetry operator. In simple terms, if either vertex\n"
-   "considers the other a close neighbor, they will be treated as close\n"
-   "neighbors.\n\n"
-   "This function can be used as a separate preprocessing step to\n"
-   "Graph.layout_umap(). For efficiency reasons, the returned weights have the\n"
-   "same length as the input distances, however because of the symmetryzation\n"
-   "some information is lost. Therefore, the weight of one of the edges is set\n"
-   "to zero whenever edges in opposite directions are found in the input\n"
-   "distance graph. You can pipe the output of this function directly into\n"
-   "Graph.layout_umap() as follows:\n"
-   "C{weights = graph.layout_umap_compute_weights(dist)}\n"
-   "C{layout = graph.layout_umap(weights=weights)}\n\n"
-   "@see: Graph.layout_umap()\n\n"},
-
   /* interface to igraph_layout_umap */
   {"layout_umap",
    (PyCFunction) igraphmodule_Graph_layout_umap,
@@ -15738,7 +15655,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param weights: precomputed edge weights if you have them, as an alternative\n"
    "  to setting the C{dist} argument. Zero weights will be ignored if this\n"
    "  argument is set, e.g. if you computed the weights via\n"
-   "  Graph.layout_umap_compute_weights().\n"
+   "  igraph.layout_umap_compute_weights().\n"
    "@param dim: the desired number of dimensions for the layout. dim=2\n"
    "  means a 2D layout, dim=3 means a 3D layout.\n"
    "@param seed: if C{None}, uses a random starting layout for the\n"
@@ -15756,13 +15673,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "if weights are precomputed, the graph will be treated as undirected. A special\n"
    "case is when the graph is directed but the precomputed weights are symmetrized\n"
    "in a way only one of each pair of opposite edges has nonzero weight, e.g. as\n"
-   "computed by Graph.layout_umap_compute_weights(). For example:\n"
-   "C{weights = graph.layout_umap_compute_weights(dist)}\n"
+   "computed by igraph.layout_umap_compute_weights(). For example:\n"
+   "C{weights = igraph.layout_umap_compute_weights(graph, dist)}\n"
    "C{layout = graph.layout_umap(weights=weights)}\n\n"
    "@newfield ref: Reference\n"
    "@ref: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation\n"
    "  and Projection for Dimension Reduction. arXiv:1802.03426.\n"
-   "@see: Graph.layout_umap_compute_weights()\n\n"},
+   "@see: igraph.layout_umap_compute_weights()\n\n"},
 
   ////////////////////////////
   // VISITOR-LIKE FUNCTIONS //

@@ -71,6 +71,7 @@ from igraph._igraph import (
     set_progress_handler,
     set_random_number_generator,
     set_status_handler,
+    umap_compute_weights,
     __igraph_version__,
 )
 from igraph.adjacency import (
@@ -963,7 +964,7 @@ Graph._layout_mapping = _layout_mapping
 for name in dir(Graph):
     if not name.startswith("layout_"):
         continue
-    if name in ("layout_auto", "layout_sugiyama", "layout_umap_compute_weights"):
+    if name in ("layout_auto", "layout_sugiyama"):
         continue
     setattr(Graph, name, _layout_method_wrapper(getattr(Graph, name)))
 

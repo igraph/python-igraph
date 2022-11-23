@@ -1,6 +1,7 @@
 import unittest
 from math import hypot
 from igraph import Graph, Layout, BoundingBox, InternalError
+from igraph import umap_compute_weights
 
 
 class LayoutTests(unittest.TestCase):
@@ -324,7 +325,7 @@ class LayoutAlgorithmTests(unittest.TestCase):
         dist = [1, 1.5, 1.8, 2.0, 3.4, 0.5]
         # NOTE: you need a directed graph to make sense of the symmetryzation
         g = Graph(edges, directed=True)
-        weights = g.layout_umap_compute_weights(dist)
+        weights = umap_compute_weights(g, dist)
         self.assertEqual(
             weights,
             [1.0, 1.0, 1.0, 1.1253517471925912e-07, 6.14421235332821e-06, 0.0])
