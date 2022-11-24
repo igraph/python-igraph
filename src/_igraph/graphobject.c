@@ -8033,19 +8033,20 @@ PyObject *igraphmodule_Graph_layout_umap(
     igraphmodule_GraphObject * self, PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] =
-    { "dist", "dim", "seed", "min_dist", "epochs", NULL };
+    { "dist", "weights", "dim", "seed", "min_dist", "epochs", NULL };
   igraph_matrix_t m;
   igraph_vector_t *dist = 0;
   Py_ssize_t dim = 2;
   double min_dist = 0.01;
   Py_ssize_t epochs = 500;
-  PyObject *dist_o = Py_None;
+  PyObject *dist_o = Py_None, *weights_o = Py_None;
   PyObject *seed_o = Py_None;
   PyObject *result_o;
   igraph_bool_t use_seed = false;
+  igraph_bool_t distances_are_weights = false;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OnOdn", kwlist, &dist_o,
-                                   &dim, &seed_o, &min_dist, &epochs))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOnOdn", kwlist, &dist_o,
+                                   &weights_o, &dim, &seed_o, &min_dist, &epochs))
     return NULL;
 
   CHECK_SSIZE_T_RANGE_POSITIVE(dim, "number of dimensions");
@@ -8055,6 +8056,12 @@ PyObject *igraphmodule_Graph_layout_umap(
   }
 
   CHECK_SSIZE_T_RANGE_POSITIVE(epochs, "number of epochs");
+
+  /* Check whether distances and weights are both set, which is not allowed */
+  if ((dist_o != Py_None) && (weights_o != Py_None)) {
+    PyErr_SetString(PyExc_ValueError, "dist and weights cannot be both set");
+    return NULL;
+  }
 
   /* Precomputed starting layout */
   if (seed_o == 0 || seed_o == Py_None) {
@@ -8069,7 +8076,7 @@ PyObject *igraphmodule_Graph_layout_umap(
     }
   }
 
-  /* Initialize distances */
+  /* Initialize distances or weights */
   if (dist_o != Py_None) {
     dist = (igraph_vector_t*)malloc(sizeof(igraph_vector_t));
     if (!dist) {
@@ -8082,6 +8089,21 @@ PyObject *igraphmodule_Graph_layout_umap(
       free(dist);
       return NULL;
     }
+  } else if (weights_o != Py_None) {
+    distances_are_weights = true;
+    /* they are actually weights, but let's keep them into the same variable
+     * for simplicity */
+    dist = (igraph_vector_t*)malloc(sizeof(igraph_vector_t));
+    if (!dist) {
+      igraph_matrix_destroy(&m);
+      PyErr_NoMemory();
+      return NULL;
+    }
+    if (igraphmodule_PyObject_to_vector_t(weights_o, dist, 0)) {
+      igraph_matrix_destroy(&m);
+      free(dist);
+      return NULL;
+    }
   }
 
   if (dim == 2) {
@@ -8090,7 +8112,7 @@ PyObject *igraphmodule_Graph_layout_umap(
           dist,
           (igraph_real_t)min_dist,
           (igraph_integer_t)epochs,
-          /* distances_are_weights = */ 0)) {
+          distances_are_weights)) {
       if (dist) {
         igraph_vector_destroy(dist); free(dist);
       }
@@ -8104,7 +8126,7 @@ PyObject *igraphmodule_Graph_layout_umap(
           dist,
           (igraph_real_t)min_dist,
           (igraph_integer_t)epochs,
-          /* distances_are_weights = */ 0)) {
+          distances_are_weights)) {
       if (dist) {
         igraph_vector_destroy(dist); free(dist);
       }
@@ -8122,6 +8144,7 @@ PyObject *igraphmodule_Graph_layout_umap(
   igraph_matrix_destroy(&m);
   return (PyObject *) result_o;
 }
+
 
 /** \ingroup python_interface_graph
  * \brief Places the vertices of a bipartite graph according to a simple two-layer
@@ -15618,13 +15641,19 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_umap",
    (PyCFunction) igraphmodule_Graph_layout_umap,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_umap(dist=None, dim=2, seed=None, min_dist=0.01, epochs=500)\n"
+   "layout_umap(dist=None, weights=None, dim=2, seed=None, min_dist=0.01, epochs=500)\n"
    "--\n\n"
    "Uniform Manifold Approximation and Projection (UMAP).\n\n"
    "This layout is a probabilistic algorithm that places vertices that are connected\n"
    "and have a short distance close by in the embedded space.\n\n"
    "@param dist: distances associated with the graph edges. If None, all edges will\n"
-   "  be assumed to convey the same distance between the vertices.\n"
+   "  be assumed to convey the same distance between the vertices. Either this\n"
+   "  argument of the C{weights} argument can be set, but not both. It is fine to\n"
+   "  set neither.\n"
+   "@param weights: precomputed edge weights if you have them, as an alternative\n"
+   "  to setting the C{dist} argument. Zero weights will be ignored if this\n"
+   "  argument is set, e.g. if you computed the weights via\n"
+   "  igraph.layout_umap_compute_weights().\n"
    "@param dim: the desired number of dimensions for the layout. dim=2\n"
    "  means a 2D layout, dim=3 means a 3D layout.\n"
    "@param seed: if C{None}, uses a random starting layout for the\n"
@@ -15638,9 +15667,17 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  Notice that UMAP does not technically converge for symmetry reasons, but a\n"
    "  larger number of epochs should generally give an equivalent or better layout.\n"
    "@return: the calculated layout.\n\n"
+   "Please note that if distances are set, the graph is usually directed, whereas\n"
+   "if weights are precomputed, the graph will be treated as undirected. A special\n"
+   "case is when the graph is directed but the precomputed weights are symmetrized\n"
+   "in a way only one of each pair of opposite edges has nonzero weight, e.g. as\n"
+   "computed by igraph.layout_umap_compute_weights(). For example:\n"
+   "C{weights = igraph.layout_umap_compute_weights(graph, dist)}\n"
+   "C{layout = graph.layout_umap(weights=weights)}\n\n"
    "@newfield ref: Reference\n"
    "@ref: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation\n"
-   "  and Projection for Dimension Reduction. arXiv:1802.03426."},
+   "  and Projection for Dimension Reduction. arXiv:1802.03426.\n"
+   "@see: igraph.layout_umap_compute_weights()\n\n"},
 
   ////////////////////////////
   // VISITOR-LIKE FUNCTIONS //

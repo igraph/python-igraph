@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Changed
+
+- UMAP layout now exposes the computation of the symmetrized edge weights via
+  `umap_compute_weights()`. The layout function, `Graph.layout_umap()`, can
+  now be called either on a directed graph with edge distances, or on an
+  undirected graph with edge weights, typically computed via
+  `umap_compute_weights()` or precomputed by the user. Moreover, the
+  `sampling_prob` argument was faulty and has been removed. See PR
+  [#613](https://github.com/igraph/python-igraph/pull/613) for details.
+
 ### Fixed
 
 - `Graph.Data_Frame()` now handles the `Int64` data type from `pandas`, thanks

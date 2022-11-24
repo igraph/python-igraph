@@ -71,6 +71,7 @@ from igraph._igraph import (
     set_progress_handler,
     set_random_number_generator,
     set_status_handler,
+    umap_compute_weights,
     __igraph_version__,
 )
 from igraph.adjacency import (
