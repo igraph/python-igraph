@@ -522,6 +522,11 @@ class GeneratorTests(unittest.TestCase):
         g = Graph.DataFrame(edges)
         self.assertTrue(g.vcount() == 3)
 
+        # dataframe with both int data and str data
+        edges = pd.DataFrame({"source": [1, 2, 2], "target": ["A", "B", "A"]})
+        g = Graph.DataFrame(edges, use_vids=False)
+        self.assertTrue(g.vs["name"] == [1, "A", 2, "B"])
+
         # Invalid input
         with self.assertRaisesRegex(ValueError, "two columns"):
             edges = pd.DataFrame({"source": [1, 2, 3]})
