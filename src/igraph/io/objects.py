@@ -459,7 +459,7 @@ def _construct_graph_from_dataframe(
 
         # Bring DataFrame(s) into same format as with 'use_vids=True'
         if vertices is None:
-            vertices = pd.DataFrame({"name": np.unique(edges.values[:, :2])})
+            vertices = pd.DataFrame({"name": pd.unique(edges.values[:, :2].ravel())})
 
         if vertices.iloc[:, 0].isna().any():
             warn(
