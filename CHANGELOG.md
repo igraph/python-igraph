@@ -20,6 +20,8 @@
 
 - `Graph.layout_lgl()` `root` argument is now optional (as it should have been).
 
+- The `VertexClustering` class now handles partial dendrograms correctly.
+
 ## [0.10.2] - 2022-10-14
 
 ### Added

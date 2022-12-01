@@ -1,8 +1,8 @@
 from igraph._igraph import GraphBase
 from igraph.clustering import VertexDendrogram, VertexClustering
-from igraph.utils import (
-    safemax,
-)
+from igraph.utils import safemax
+
+from typing import List, Sequence, Tuple
 
 
 def _community_fastgreedy(graph, weights=None):
@@ -24,16 +24,7 @@ def _community_fastgreedy(graph, weights=None):
       in very large networks. Phys Rev E 70, 066111 (2004).
     """
     merges, qs = GraphBase.community_fastgreedy(graph, weights)
-
-    # qs may be shorter than |V|-1 if we are left with a few separated
-    # communities in the end; take this into account
-    diff = graph.vcount() - len(qs)
-    qs.reverse()
-    if qs:
-        optimal_count = qs.index(max(qs)) + diff + 1
-    else:
-        optimal_count = diff
-
+    optimal_count = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
     return VertexDendrogram(
         graph, merges, optimal_count, modularity_params=dict(weights=weights)
     )
@@ -286,7 +277,7 @@ def _community_edge_betweenness(graph, clusters=None, directed=True, weights=Non
     @param clusters: the number of clusters we would like to see. This
       practically defines the "level" where we "cut" the dendrogram to
       get the membership vector of the vertices. If C{None}, the dendrogram
-      is cut at the level which maximizes the modularity when the graph is
+      is cut at the level that maximizes the modularity when the graph is
       unweighted; otherwise the dendrogram is cut at at a single cluster
       (because cluster count selection based on modularities does not make
       sense for this method if not all the weights are equal).
@@ -298,13 +289,12 @@ def _community_edge_betweenness(graph, clusters=None, directed=True, weights=Non
       modularity or at the desired number of clusters.
     """
     merges, qs = GraphBase.community_edge_betweenness(graph, directed, weights)
-    if qs is not None:
-        qs.reverse()
     if clusters is None:
-        if qs:
-            clusters = qs.index(max(qs)) + 1
+        if qs is not None:
+            clusters = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
         else:
             clusters = 1
+
     return VertexDendrogram(
         graph, merges, clusters, modularity_params=dict(weights=weights)
     )
@@ -385,11 +375,7 @@ def _community_walktrap(graph, weights=None, steps=4):
       networks using random walks, U{http://arxiv.org/abs/physics/0512106}.
     """
     merges, qs = GraphBase.community_walktrap(graph, weights, steps)
-    qs.reverse()
-    if qs:
-        optimal_count = qs.index(max(qs)) + 1
-    else:
-        optimal_count = 1
+    optimal_count = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
     return VertexDendrogram(
         graph, merges, optimal_count, modularity_params=dict(weights=weights)
     )
@@ -537,3 +523,17 @@ def _modularity(self, membership, weights=None, resolution=1, directed=True):
         return GraphBase.modularity(self, membership.membership, weights)
     else:
         return GraphBase.modularity(self, membership, weights)
+
+
+def _optimal_cluster_count_from_merges_and_modularity(
+    graph, merges: Sequence[Tuple[int, int]], qs: List[float]
+) -> float:
+    """Helper function to find the optimal cluster count for a hierarchical
+    clustering of a graph, given the merge matrix and the list of modularity
+    values after each merge.
+
+    Reverses the modularity vector as a side effect.
+    """
+    no_of_comps = graph.vcount() - len(merges)
+    qs.reverse()
+    return qs.index(max(qs)) + no_of_comps
