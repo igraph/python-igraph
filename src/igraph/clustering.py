@@ -848,13 +848,17 @@ class VertexDendrogram(Dendrogram):
             return self._optimal_count
 
         n = self._graph.vcount()
-        max_q, optimal_count = 0, 1
-        for step in range(min(n - 1, len(self._merges))):
+        if n == 0:
+            return 0
+
+        max_q, optimal_count = 0, n - len(self._merges)
+        for step in range(min(n - 1, len(self._merges) + 1)):
             membs = community_to_membership(self._merges, n, step)
             q = self._graph.modularity(membs, **self._modularity_params)
             if q > max_q:
                 optimal_count = n - step
                 max_q = q
+
         self._optimal_count = optimal_count
         return optimal_count
 
