@@ -6,12 +6,14 @@ from contextlib import contextmanager
 
 from collections.abc import MutableMapping
 from itertools import chain
+from warnings import warn
 
 import os
 import tempfile
 
 __all__ = (
     "dbl_epsilon",
+    "deprecated",
     "multidict",
     "named_temporary_file",
     "numpy_to_contiguous_memoryview",
@@ -21,6 +23,12 @@ __all__ = (
 )
 
 __docformat__ = "restructuredtext en"
+
+
+def deprecated(message):
+    """Prints a warning message related to the deprecation of some igraph
+    feature."""
+    warn(message, DeprecationWarning, stacklevel=3)
 
 
 def _is_running_in_ipython():

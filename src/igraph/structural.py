@@ -4,6 +4,7 @@ from igraph._igraph import (
     arpack_options as default_arpack_options,
 )
 from igraph.statistics import Histogram
+from igraph.utils import deprecated
 
 
 def _indegree(graph, *args, **kwds):
@@ -84,7 +85,5 @@ def _pagerank(
 
 def _shortest_paths(graph, *args, **kwds):
     """Deprecated alias to L{Graph.distances()}."""
-    from igraph import deprecated
-
     deprecated("Graph.shortest_paths() is deprecated; use Graph.distances() instead")
     return graph.distances(*args, **kwds)

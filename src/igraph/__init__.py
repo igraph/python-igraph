@@ -259,6 +259,7 @@ from igraph.structural import (
 )
 from igraph.summary import GraphSummary, summary
 from igraph.utils import (
+    deprecated,
     numpy_to_contiguous_memoryview,
     rescale,
 )
@@ -266,14 +267,6 @@ from igraph.version import __version__, __version_info__
 
 import os
 import sys
-
-from warnings import warn
-
-
-def deprecated(message):
-    """Prints a warning message related to the deprecation of some igraph
-    feature."""
-    warn(message, DeprecationWarning, stacklevel=3)
 
 
 class Graph(GraphBase):

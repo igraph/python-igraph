@@ -14,6 +14,7 @@ from igraph.drawing.cairo.dendrogram import CairoDendrogramDrawer
 from igraph.drawing.matplotlib.dendrogram import MatplotlibDendrogramDrawer
 from igraph.statistics import Histogram
 from igraph.summary import _get_wrapper_for_width
+from igraph.utils import deprecated
 
 
 class Clustering:
@@ -1599,7 +1600,5 @@ def _connected_components(graph, mode="strong"):
 
 def _clusters(graph, mode="strong"):
     """Deprecated alias to L{Graph.connected_components()}."""
-    from igraph import deprecated
-
     deprecated("Graph.clusters() is deprecated; use Graph.connected_components() instead")
     return graph.connected_components(mode=mode)
