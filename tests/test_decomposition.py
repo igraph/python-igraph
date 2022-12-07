@@ -513,7 +513,7 @@ class CommunityTests(unittest.TestCase):
         set_random_number_generator(random)
         # We don't find the optimal partition if we are greedy
         cl = G.community_leiden(
-            "CPM", resolution_parameter=1, weights="weight", beta=0, n_iterations=-1
+            "CPM", resolution=1, weights="weight", beta=0, n_iterations=-1
         )
         self.assertMembershipsEqual(cl, [0, 0, 1, 1, 1, 2, 2, 2])
 
@@ -525,7 +525,7 @@ class CommunityTests(unittest.TestCase):
         # refined).
         cl = G.community_leiden(
             "CPM",
-            resolution_parameter=1,
+            resolution=1,
             weights="weight",
             beta=5,
             n_iterations=-1,

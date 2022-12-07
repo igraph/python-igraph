@@ -1,6 +1,6 @@
 from igraph._igraph import GraphBase
 from igraph.clustering import VertexDendrogram, VertexClustering
-from igraph.utils import safemax
+from igraph.utils import deprecated, safemax
 
 from typing import List, Sequence, Tuple
 
@@ -423,11 +423,12 @@ def _community_leiden(
     graph,
     objective_function="CPM",
     weights=None,
-    resolution_parameter=1.0,
+    resolution=1.0,
     beta=0.01,
     initial_membership=None,
     n_iterations=2,
     node_weights=None,
+    **kwds
 ):
     """Finds the community structure of the graph using the Leiden
     algorithm of Traag, van Eck & Waltman.
@@ -436,9 +437,9 @@ def _community_leiden(
       Model (CPM) or modularity. Must be either C{"CPM"} or C{"modularity"}.
     @param weights: edge weights to be used. Can be a sequence or
       iterable or even an edge attribute name.
-    @param resolution_parameter: the resolution parameter to use.
-      Higher resolutions lead to more smaller communities, while
-      lower resolutions lead to fewer larger communities.
+    @param resolution: the resolution parameter to use. Higher resolutions 
+      lead to more smaller communities, while lower resolutions lead to fewer
+      larger communities.
     @param beta: parameter affecting the randomness in the Leiden
       algorithm. This affects only the refinement step of the algorithm.
     @param initial_membership: if provided, the Leiden algorithm
@@ -463,11 +464,18 @@ def _community_leiden(
     if objective_function.lower() not in ("cpm", "modularity"):
         raise ValueError('objective_function must be "CPM" or "modularity".')
 
+    if "resolution_parameter" in kwds:
+        deprecated("resolution_parameter keyword argument is deprecated, use resolution=... instead")
+        resolution = kwds.pop("resolution_parameter")
+
+    if kwds:
+        raise TypeError('unexpected keyword argument')
+
     membership = GraphBase.community_leiden(
         graph,
         edge_weights=weights,
         node_weights=node_weights,
-        resolution_parameter=resolution_parameter,
+        resolution=resolution,
         normalize_resolution=(objective_function == "modularity"),
         beta=beta,
         initial_membership=initial_membership,

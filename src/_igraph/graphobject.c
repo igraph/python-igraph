@@ -12518,7 +12518,7 @@ PyObject *igraphmodule_Graph_community_walktrap(igraphmodule_GraphObject * self,
 PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
         PyObject *args, PyObject *kwds) {
 
-  static char *kwlist[] = {"edge_weights", "node_weights", "resolution_parameter",
+  static char *kwlist[] = {"edge_weights", "node_weights", "resolution",
                            "normalize_resolution", "beta", "initial_membership", "n_iterations", NULL};
 
   PyObject *edge_weights_o = Py_None;
@@ -12529,7 +12529,7 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
 
   int error = 0;
   Py_ssize_t n_iterations = 2;
-  double resolution_parameter = 1.0;
+  double resolution = 1.0;
   double beta = 0.01;
   igraph_vector_t *edge_weights = NULL, *node_weights = NULL;
   igraph_vector_int_t *membership = NULL;
@@ -12538,7 +12538,7 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
   igraph_real_t quality = 0.0;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOdOdOn", kwlist,
-        &edge_weights_o, &node_weights_o, &resolution_parameter, &normalize_resolution, &beta, &initial_membership_o, &n_iterations))
+        &edge_weights_o, &node_weights_o, &resolution, &normalize_resolution, &beta, &initial_membership_o, &n_iterations))
     return NULL;
 
   if (n_iterations >= 0) {
@@ -12597,14 +12597,14 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
         }
       }
     }
-    resolution_parameter /= igraph_vector_sum(node_weights);
+    resolution /= igraph_vector_sum(node_weights);
   }
 
   /* Run actual Leiden algorithm for several iterations. */
   if (!error) {
     error = igraph_community_leiden(&self->g,
                                     edge_weights, node_weights,
-                                    resolution_parameter, beta,
+                                    resolution, beta,
                                     start, n_iterations, membership,
                                     &nb_clusters, &quality);
   }
@@ -17070,14 +17070,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    (PyCFunction) igraphmodule_Graph_community_leiden,
    METH_VARARGS | METH_KEYWORDS,
    "community_leiden(edge_weights=None, node_weights=None, "
-   "resolution_parameter=1.0, normalize_resolution=False, beta=0.01, "
+   "resolution=1.0, normalize_resolution=False, beta=0.01, "
    "initial_membership=None, n_iterations=2)\n--\n\n"
    "Finds the community structure of the graph using the Leiden algorithm of\n"
    "Traag, van Eck & Waltman.\n\n"
    "@param edge_weights: edge weights to be used. Can be a sequence or\n"
    "  iterable or even an edge attribute name.\n"
    "@param node_weights: the node weights used in the Leiden algorithm.\n"
-   "@param resolution_parameter: the resolution parameter to use.\n"
+   "@param resolution: the resolution parameter to use.\n"
    "  Higher resolutions lead to more smaller communities, while \n"
    "  lower resolutions lead to fewer larger communities.\n"
    "@param normalize_resolution: if set to true, the resolution parameter\n"

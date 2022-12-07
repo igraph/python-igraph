@@ -11,6 +11,9 @@
   `umap_compute_weights()` or precomputed by the user. Moreover, the
   `sampling_prob` argument was faulty and has been removed. See PR
   [#613](https://github.com/igraph/python-igraph/pull/613) for details.
+- The `resolution_parameter` argument of `Graph.community_leiden()` was renamed
+  to `resolution` for sake of consistency. The old variant still works with a
+  deprecation warning, but will be removed in a future version.
 
 ### Fixed
 
