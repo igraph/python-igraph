@@ -294,7 +294,7 @@ jobs:
       - uses: actions/setup-python@v4
         name: Install Python
         with:
-          python-version: '3.11.0-rc.2'
+          python-version: '3.11'
 
       - name: Build C core
         run: |
