@@ -362,10 +362,13 @@ class Graph(GraphBase):
         @keyword directed: whether the graph should be directed
         @keyword graph_attrs: the attributes of the graph as a dictionary.
         @keyword vertex_attrs: the attributes of the vertices as a dictionary.
-          Every dictionary value must be an iterable with exactly M{n} items.
-        @keyword edge_attrs: the attributes of the edges as a dictionary. Every
-          dictionary value must be an iterable with exactly M{m} items where
-          M{m} is the number of edges.
+          The keys of the dictionary must be the names of the attributes; the
+          values must be iterables with exactly M{n} items where M{n} is the
+          number of vertices.
+        @keyword edge_attrs: the attributes of the edges as a dictionary. The
+          keys of the dictionary must be the names of the attributes; the values
+          must be iterables with exactly M{m} items where M{m} is the number of
+          edges.
         """
         # Pop the special __ptr keyword argument
         ptr = kwds.pop("__ptr", None)
