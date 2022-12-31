@@ -4,6 +4,8 @@
 
 ### Changed
 
+- The C core of igraph was updated to version 0.10.3.
+
 - UMAP layout now exposes the computation of the symmetrized edge weights via
   `umap_compute_weights()`. The layout function, `Graph.layout_umap()`, can
   now be called either on a directed graph with edge distances, or on an
@@ -11,6 +13,7 @@
   `umap_compute_weights()` or precomputed by the user. Moreover, the
   `sampling_prob` argument was faulty and has been removed. See PR
   [#613](https://github.com/igraph/python-igraph/pull/613) for details.
+
 - The `resolution_parameter` argument of `Graph.community_leiden()` was renamed
   to `resolution` for sake of consistency. The old variant still works with a
   deprecation warning, but will be removed in a future version.
