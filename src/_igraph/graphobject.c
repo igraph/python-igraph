@@ -6283,7 +6283,7 @@ PyObject *igraphmodule_Graph_subgraph_edges(igraphmodule_GraphObject * self,
   if (igraphmodule_PyObject_to_es_t(list, &es, &self->g, 0))
     return NULL;
 
-  if (igraph_subgraph_edges(&self->g, &sg, es, PyObject_IsTrue(delete_vertices))) {
+  if (igraph_subgraph_from_edges(&self->g, &sg, es, PyObject_IsTrue(delete_vertices))) {
     igraphmodule_handle_igraph_error();
     igraph_es_destroy(&es);
     return NULL;
