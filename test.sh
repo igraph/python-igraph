@@ -38,6 +38,8 @@ if [ x$CLEAN = x1 ]; then
     rm -rf vendor/build vendor/install
 fi
 
+export MACOSX_DEPLOYMENT_TARGET=12.0
+
 # pip install is called in verbose mode so we can see the compiler warnings
 $VENV_DIR/bin/pip install -v .[plotting,test]
 $VENV_DIR/bin/pytest tests ${PYTEST_ARGS}
