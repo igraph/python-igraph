@@ -5,8 +5,7 @@
 from copy import deepcopy
 from io import StringIO
 
-from igraph._igraph import GraphBase
-from igraph import community_to_membership
+from igraph._igraph import GraphBase, community_to_membership
 from igraph.configuration import Configuration
 from igraph.datatypes import UniqueIdGenerator
 from igraph.drawing.colors import ClusterColoringPalette
