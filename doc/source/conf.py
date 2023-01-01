@@ -17,13 +17,14 @@ import sys
 import os
 import importlib
 from pathlib import Path
-import sphinxbootstrap4theme
 
 
 # Check if we are inside readthedocs, the conf is quite different there
 is_inside_rtd = os.getenv("READTHEDOCS", "") == "True"
 rtd_version = os.getenv("READTHEDOCS_VERSION", "")
 
+if not is_inside_rtd:
+    import sphinxbootstrap4theme
 
 # Utility functions
 # NOTE: these could be improved, esp by importing igraph, but that
