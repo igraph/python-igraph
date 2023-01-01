@@ -68,6 +68,7 @@ _igraph_version = get_igraph_version()
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 sys.path.insert(0, os.path.abspath('sphinxext'))
 extensions = [
+    'sphinxcontrib.jquery',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.intersphinx',

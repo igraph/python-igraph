@@ -2,8 +2,9 @@ pip
 wheel
 requests>=2.28.1
 
-sphinxbootstrap4theme
 sphinx-gallery
+sphinx-rtd-theme
+sphinxcontrib-jquery
 pydoctor
 
 numpy
