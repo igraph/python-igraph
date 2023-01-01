@@ -9,6 +9,7 @@ import igraph
 auxiliary_imports = [
     ('typing', '*'),
     ('igraph.io.files', '_identify_format'),
+    ('igraph.community', '_optimal_cluster_count_from_merges_and_modularity'),
 ]
 
 
