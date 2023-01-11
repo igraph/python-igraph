@@ -18,8 +18,8 @@ To find out more features that igraph has to offer, check out the :ref:`gallery`
 import igraph as ig
 import matplotlib.pyplot as plt
 
-# Construct a graph with 3 vertices
-n_vertices = 3
+# Construct a graph with 5 vertices
+n_vertices = 5
 edges = [(0, 1), (0, 2), (0, 3), (0, 4), (1, 2), (1, 3), (1, 4), (3, 4)]
 g = ig.Graph(n_vertices, edges)
 
