@@ -7214,9 +7214,11 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai(igraphmodule_GraphObject *
   igraph_matrix_t m;
   igraph_bool_t use_seed = false;
   igraph_error_t ret;
-  Py_ssize_t niter = 1000, dim = 2;
-  double kkconst, epsilon = 0.0;
-  PyObject *result_o, *seed_o=Py_None;
+  igraph_integer_t maxiter;
+  Py_ssize_t dim = 2;
+  igraph_real_t kkconst;
+  double epsilon = 0.0;
+  PyObject *result_o, *maxiter_o=Py_None, *seed_o=Py_None, *kkconst_o=Py_None;
   PyObject *minx_o=Py_None, *maxx_o=Py_None;
   PyObject *miny_o=Py_None, *maxy_o=Py_None;
   PyObject *minz_o=Py_None, *maxz_o=Py_None;
@@ -7234,10 +7236,11 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai(igraphmodule_GraphObject *
 }
 
   kkconst = igraph_vcount(&self->g);
+  maxiter = 50 * igraph_vcount(&self->g);
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nddOOOOOOOn", kwlist,
-                                   &niter, &epsilon,
-                                   &kkconst, &seed_o,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OdOOOOOOOOn", kwlist,
+                                   &maxiter_o, &epsilon,
+                                   &kkconst_o, &seed_o,
                                    &minx_o, &maxx_o,
                                    &miny_o, &maxy_o,
                                    &minz_o, &maxz_o, &dim))
@@ -7249,8 +7252,22 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai(igraphmodule_GraphObject *
     return NULL;
   }
 
-  CHECK_SSIZE_T_RANGE_POSITIVE(niter, "number of iterations");
+  /* Convert number of iterations */
+  if (maxiter_o != 0 && maxiter_o != Py_None) {
+    if (igraphmodule_PyObject_to_integer_t(maxiter_o, &maxiter)) {
+      return NULL;
+    }
+  }
+  CHECK_SSIZE_T_RANGE_POSITIVE(maxiter, "number of iterations");
 
+  /* Convert Kamada-Kawai constant */
+  if (kkconst_o != 0 && kkconst_o != Py_None) {
+    if (igraphmodule_PyObject_to_real_t(kkconst_o, &kkconst)) {
+      return NULL;
+    }
+  }
+
+  /* Handle seed */
   if (seed_o == 0 || seed_o == Py_None) {
     if (igraph_matrix_init(&m, 1, 1)) {
       igraphmodule_handle_igraph_error();
@@ -7304,11 +7321,11 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai(igraphmodule_GraphObject *
   }
   if (dim == 2)
     ret = igraph_layout_kamada_kawai
-      (&self->g, &m, use_seed, niter, epsilon, kkconst,
+      (&self->g, &m, use_seed, maxiter, epsilon, kkconst,
        /*weights=*/ 0, /*bounds*/ minx, maxx, miny, maxy);
   else
     ret = igraph_layout_kamada_kawai_3d
-      (&self->g, &m, use_seed, niter, epsilon, kkconst,
+      (&self->g, &m, use_seed, maxiter, epsilon, kkconst,
        /*weights=*/ 0, /*bounds*/ minx, maxx, miny, maxy, minz, maxz);
 
   DESTROY_VECTORS;
@@ -15315,13 +15332,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"layout_kamada_kawai",
    (PyCFunction) igraphmodule_Graph_layout_kamada_kawai,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_kamada_kawai(maxiter=1000, epsilon=0, kkconst=None, seed=None, "
+   "layout_kamada_kawai(maxiter=None, epsilon=0, kkconst=None, seed=None, "
    "minx=None, maxx=None, miny=None, maxy=None, minz=None, maxz=None, dim=2)\n--\n\n"
    "Places the vertices on a plane according to the Kamada-Kawai algorithm.\n\n"
    "This is a force directed layout, see Kamada, T. and Kawai, S.:\n"
    "An Algorithm for Drawing General Undirected Graphs.\n"
    "Information Processing Letters, 31/1, 7--15, 1989.\n\n"
-   "@param maxiter: the maximum number of iterations to perform.\n"
+   "@param maxiter: the maximum number of iterations to perform. C{None} selects\n"
+   "  a reasonable default based on the number of vertices.\n"
    "@param seed: when C{None}, uses a circular layout as a starting point for the\n"
    "  algorithm when no bounds are given, or a random layout when bounds are\n"
    "  specified for the coordinated. When the argument is a matrix (list of\n"
@@ -15329,7 +15347,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param epsilon: quit if the energy of the system changes less than\n"
    "  epsilon. See the original paper for details.\n"
    "@param kkconst: the Kamada-Kawai vertex attraction constant.\n"
-   "  C{None} means the square of the number of vertices.\n"
+   "  C{None} means the number of vertices.\n"
    "@param minx: if not C{None}, it must be a vector with exactly as many\n"
    "  elements as there are vertices in the graph. Each element is a\n"
    "  minimum constraint on the X value of the vertex in the layout.\n"
