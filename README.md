@@ -270,8 +270,8 @@ faster than the first one as the C core does not need to be recompiled.
 
 We aim to keep up with the development cycle of Python and support all official
 Python versions that have not reached their end of life yet. Currently this
-means that we support Python 3.7 to 3.10, inclusive. Please refer to [this
-page](https://devguide.python.org/#branchstatus) for the status of Python
+means that we support Python 3.7 to 3.11, inclusive. Please refer to [this
+page](https://devguide.python.org/versions/) for the status of Python
 branches and let us know if you encounter problems with `igraph` on any
 of the non-EOL Python versions.
 
