@@ -1,5 +1,12 @@
 # igraph Python interface changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed the drawing of `VertexDendrogram` instances, both in the Cairo and the
+  Matplotlib backends.
+
 ## [0.10.3] - 2022-12-31
 
 ### Changed
