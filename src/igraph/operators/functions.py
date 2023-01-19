@@ -128,7 +128,7 @@ def union(graphs, byname="auto"):
             False, ignore vertex names. If True, merge vertices based on names. If
             'auto', use True if all graphs have named vertices and False otherwise
             (in the latter case, a warning is generated too).
-    
+
     Returns:
         the union graph
 
@@ -148,9 +148,14 @@ def union(graphs, byname="auto"):
     if byname == "auto":
         byname = n_named == ngr
         if n_named not in (0, ngr):
-            warn("Some, but not all graphs are named, not using vertex names")
+            warn(
+                f"Some, but not all graphs are named (got {n_named} named, "
+                f"{ngr-n_named} unnamed), not using vertex names"
+            )
     elif byname and (n_named != ngr):
-        raise RuntimeError("Some graphs are not named")
+        raise RuntimeError(
+            f"Some graphs are not named (got {n_named} named, {ngr-n_named} unnamed)"
+        )
     # Now we know that byname is only used is all graphs are named
 
     # Trivial cases
@@ -337,9 +342,14 @@ def intersection(graphs, byname="auto", keep_all_vertices=True):
     if byname == "auto":
         byname = n_named == ngr
         if n_named not in (0, ngr):
-            warn("Some, but not all graphs are named, not using vertex names")
+            warn(
+                f"Some, but not all graphs are named (got {n_named} named, "
+                f"{ngr-n_named} unnamed), not using vertex names"
+            )
     elif byname and (n_named != ngr):
-        raise AttributeError("Some graphs are not named")
+        raise RuntimeError(
+            f"Some graphs are not named (got {n_named} named, {ngr-n_named} unnamed)"
+        )
     # Now we know that byname is only used is all graphs are named
 
     # Trivial cases
