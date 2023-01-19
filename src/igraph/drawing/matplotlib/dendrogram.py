@@ -72,6 +72,10 @@ class MatplotlibDendrogramDrawer(AbstractDrawer):
 
         ax = self.context
 
+        # Pop unneeded arguments from kwds that are passed down to us by
+        # default but cannot be interpreted by Matplotlib
+        kwds.pop("palette", None)
+
         # Styling defaults
         kwds["edgecolor"] = kwds.pop("color", "black")
         if ("lw" not in kwds) and ("linewidth" not in kwds):
