@@ -1620,7 +1620,7 @@ PyObject *igraphmodule_Graph_get_diameter(igraphmodule_GraphObject * self,
   } else {
     if (igraph_diameter(&self->g, 0,
           /* from, to, vertex_path, edge_path */
-          0, 0, &res, 0, 
+          0, 0, &res, 0,
           PyObject_IsTrue(dir), PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
       return NULL;
@@ -1657,7 +1657,7 @@ PyObject *igraphmodule_Graph_farthest_points(igraphmodule_GraphObject * self,
 
   if (weights) {
     if (igraph_diameter_dijkstra(&self->g, weights, &len,
-          /* from, to, vertex_path, edge_path */          
+          /* from, to, vertex_path, edge_path */
           &from, &to, 0, 0,
           PyObject_IsTrue(dir), PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
@@ -1673,7 +1673,7 @@ PyObject *igraphmodule_Graph_farthest_points(igraphmodule_GraphObject * self,
   } else {
     if (igraph_diameter(&self->g, &len,
           /* from, to, vertex_path, edge_path */
-          &from, &to, 0, 0, 
+          &from, &to, 0, 0,
           PyObject_IsTrue(dir), PyObject_IsTrue(vcount_if_unconnected))) {
       igraphmodule_handle_igraph_error();
       return NULL;
@@ -3636,7 +3636,7 @@ PyObject *igraphmodule_Graph_Weighted_Adjacency(PyTypeObject * type,
   if (self == NULL) {
     return NULL;
   }
-  
+
   weights_o = igraphmodule_vector_t_to_PyList(&weights, IGRAPHMODULE_TYPE_FLOAT);
   if (!weights_o) {
     Py_DECREF(self);
@@ -4258,7 +4258,7 @@ PyObject *igraphmodule_Graph_chordal_completion(
 
     alpham1_ptr = &alpham1;
   }
-  
+
   if (igraph_vector_int_init(&edges, 0)) {
     igraphmodule_handle_igraph_error();
     if (alpham1_ptr) {
@@ -4490,7 +4490,7 @@ PyObject *igraphmodule_Graph_connected_components(
     igraphmodule_handle_igraph_error();
     return NULL;
   }
-  
+
   if (igraph_vector_int_init(&res2, 10)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_int_destroy(&res1);
@@ -5362,7 +5362,7 @@ PyObject *igraphmodule_Graph_is_chordal(
 
     alpham1_ptr = &alpham1;
   }
-  
+
   if (igraph_is_chordal(
         &self->g,
         alpha_ptr, /* alpha */
@@ -5430,7 +5430,7 @@ PyObject *igraphmodule_Graph_maximum_cardinality_search(igraphmodule_GraphObject
     igraphmodule_handle_igraph_error();
     return NULL;
   }
-  
+
   if (igraph_vector_int_init(&alpham1, 0)) {
     igraph_vector_int_destroy(&alpha);
     igraphmodule_handle_igraph_error();
@@ -6755,7 +6755,7 @@ PyObject *igraphmodule_Graph_motifs_randesu_no(igraphmodule_GraphObject *self,
     return NULL;
 
   CHECK_SSIZE_T_RANGE_POSITIVE(size, "motif size");
-  
+
   if (cut_prob_list == Py_None) {
     if (igraph_vector_init(&cut_prob, size)) {
       return igraphmodule_handle_igraph_error();
@@ -6795,7 +6795,7 @@ PyObject *igraphmodule_Graph_motifs_randesu_estimate(igraphmodule_GraphObject *s
     return NULL;
 
   CHECK_SSIZE_T_RANGE_POSITIVE(size, "motif size");
-  
+
   if (sample == Py_None) {
     PyErr_SetString(PyExc_TypeError, "sample size must be given");
     return NULL;
@@ -8381,7 +8381,7 @@ PyObject *igraphmodule_Graph_laplacian(igraphmodule_GraphObject * self,
  * \sa igraph_get_edgelist
  */
 PyObject *igraphmodule_Graph_get_edgelist(igraphmodule_GraphObject * self,
-                                          PyObject * args, PyObject * kwds)
+                                          PyObject * _null)
 {
   igraph_vector_int_t edgelist;
   PyObject *result_o;
@@ -10585,7 +10585,7 @@ PyObject *igraphmodule_Graph_bfs(igraphmodule_GraphObject * self,
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &vid_o, &mode_o))
     return NULL;
-  
+
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) return NULL;
 
   if (igraphmodule_PyObject_to_vid(vid_o, &vid, &self->g)) {
@@ -13700,7 +13700,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "      graph to uniformly sample its spanning trees (Wilson's algorithm).\n"
    "      This is the default choice as it supports both directed and\n"
    "      undirected graphs.\n"
-  }, 
+  },
 
   /* interface to igraph_watts_strogatz_game */
   {"Watts_Strogatz", (PyCFunction) igraphmodule_Graph_Watts_Strogatz,
@@ -17249,7 +17249,7 @@ int igraphmodule_Graph_register_type() {
 
     { Py_mp_subscript, igraphmodule_Graph_mp_subscript },
     { Py_mp_ass_subscript, igraphmodule_Graph_mp_assign_subscript },
-  
+
     { 0 }
   };
 
