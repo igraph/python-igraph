@@ -37,7 +37,7 @@
 
 PyTypeObject* igraphmodule_EdgeType;
 
-PyObject* igraphmodule_Edge_attributes(igraphmodule_EdgeObject* self);
+PyObject* igraphmodule_Edge_attributes(igraphmodule_EdgeObject* self, PyObject* _null);
 
 /**
  * \ingroup python_interface_edge
@@ -151,7 +151,7 @@ static PyObject* igraphmodule_Edge_repr(igraphmodule_EdgeObject *self) {
   PyObject *s;
   PyObject *attrs;
 
-  attrs = igraphmodule_Edge_attributes(self);
+  attrs = igraphmodule_Edge_attributes(self, NULL);
   if (attrs == 0)
     return NULL;
 
@@ -256,14 +256,14 @@ Py_ssize_t igraphmodule_Edge_attribute_count(igraphmodule_EdgeObject* self) {
 /** \ingroup python_interface_edge
  * \brief Returns the list of attribute names
  */
-PyObject* igraphmodule_Edge_attribute_names(igraphmodule_EdgeObject* self) {
-  return self->gref ? igraphmodule_Graph_edge_attributes(self->gref) : 0;
+PyObject* igraphmodule_Edge_attribute_names(igraphmodule_EdgeObject* self, PyObject* Py_UNUSED(_null)) {
+  return self->gref ? igraphmodule_Graph_edge_attributes(self->gref, NULL) : NULL;
 }
 
 /** \ingroup python_interface_edge
  * \brief Returns a dict with attribute names and values
  */
-PyObject* igraphmodule_Edge_attributes(igraphmodule_EdgeObject* self) {
+PyObject* igraphmodule_Edge_attributes(igraphmodule_EdgeObject* self, PyObject* Py_UNUSED(_null)) {
   igraphmodule_GraphObject *o = self->gref;
   PyObject *names, *dict;
   Py_ssize_t i, n;
@@ -277,7 +277,7 @@ PyObject* igraphmodule_Edge_attributes(igraphmodule_EdgeObject* self) {
     return NULL;
   }
 
-  names = igraphmodule_Graph_edge_attributes(o);
+  names = igraphmodule_Graph_edge_attributes(o, NULL);
   if (!names) {
     Py_DECREF(dict);
     return NULL;

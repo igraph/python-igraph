@@ -706,7 +706,7 @@ void igraphmodule__destroy_locale_capsule(PyObject *capsule) {
   }
 }
 
-PyObject* igraphmodule__enter_safelocale(PyObject* self) {
+PyObject* igraphmodule__enter_safelocale(PyObject* self, PyObject* Py_UNUSED(_null)) {
   igraph_safelocale_t* loc;
   PyObject* capsule;
 

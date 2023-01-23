@@ -37,7 +37,7 @@
 
 PyTypeObject* igraphmodule_VertexType;
 
-PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self);
+PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self, PyObject* _null);
 
 /**
  * \ingroup python_interface_vertex
@@ -151,7 +151,7 @@ static PyObject* igraphmodule_Vertex_repr(igraphmodule_VertexObject *self) {
   PyObject *s;
   PyObject *attrs;
 
-  attrs = igraphmodule_Vertex_attributes(self);
+  attrs = igraphmodule_Vertex_attributes(self, NULL);
   if (attrs == 0) {
     return NULL;
   }
@@ -257,14 +257,14 @@ Py_ssize_t igraphmodule_Vertex_attribute_count(igraphmodule_VertexObject* self) 
 /** \ingroup python_interface_vertex
  * \brief Returns the list of attribute names
  */
-PyObject* igraphmodule_Vertex_attribute_names(igraphmodule_VertexObject* self) {
-  return self->gref ? igraphmodule_Graph_vertex_attributes(self->gref) : 0;
+PyObject* igraphmodule_Vertex_attribute_names(igraphmodule_VertexObject* self, PyObject* Py_UNUSED(_null)) {
+  return self->gref ? igraphmodule_Graph_vertex_attributes(self->gref, NULL) : NULL;
 }
 
 /** \ingroup python_interface_vertex
  * \brief Returns a dict with attribue names and values
  */
-PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self) {
+PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self, PyObject* Py_UNUSED(_null)) {
   igraphmodule_GraphObject *o = self->gref;
   PyObject *names, *dict;
   Py_ssize_t i, n;
@@ -278,7 +278,7 @@ PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self) {
     return NULL;
   }
 
-  names = igraphmodule_Graph_vertex_attributes(o);
+  names = igraphmodule_Graph_vertex_attributes(o, NULL);
   if (!names) {
     Py_DECREF(dict);
     return NULL;
@@ -425,7 +425,7 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
  * \param args positional arguments
  * \param kwds keyword arguments
  */
-PyObject* igraphmodule_Vertex_all_edges(PyObject* self) {
+PyObject* igraphmodule_Vertex_all_edges(PyObject* self, PyObject* Py_UNUSED(_null)) {
   return PyObject_CallMethod(self, "incident", "i", (int) IGRAPH_ALL);
 }
 
@@ -437,7 +437,7 @@ PyObject* igraphmodule_Vertex_all_edges(PyObject* self) {
  * \param args positional arguments
  * \param kwds keyword arguments
  */
-PyObject* igraphmodule_Vertex_in_edges(PyObject* self) {
+PyObject* igraphmodule_Vertex_in_edges(PyObject* self, PyObject* Py_UNUSED(_null)) {
   return PyObject_CallMethod(self, "incident", "i", (int) IGRAPH_IN);
 }
 
@@ -449,7 +449,7 @@ PyObject* igraphmodule_Vertex_in_edges(PyObject* self) {
  * \param args positional arguments
  * \param kwds keyword arguments
  */
-PyObject* igraphmodule_Vertex_out_edges(PyObject* self) {
+PyObject* igraphmodule_Vertex_out_edges(PyObject* self, PyObject* Py_UNUSED(_null)) {
   return PyObject_CallMethod(self, "incident", "i", (int) IGRAPH_OUT);
 }
 

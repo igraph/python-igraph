@@ -392,7 +392,7 @@ PyObject *igraphmodule_Graph_str(igraphmodule_GraphObject * self)
  * \brief Creates a copy of the graph
  * \return the copy of the graph
  */
-PyObject *igraphmodule_Graph_copy(igraphmodule_GraphObject * self)
+PyObject *igraphmodule_Graph_copy(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null))
 {
   igraphmodule_GraphObject *result_o;
   igraph_t g;
@@ -416,7 +416,7 @@ PyObject *igraphmodule_Graph_copy(igraphmodule_GraphObject * self)
  * \return the number of vertices as a \c PyObject
  * \sa igraph_vcount
  */
-PyObject *igraphmodule_Graph_vcount(igraphmodule_GraphObject * self)
+PyObject *igraphmodule_Graph_vcount(igraphmodule_GraphObject* self, PyObject* Py_UNUSED(_null))
 {
   return igraphmodule_integer_t_to_PyObject(igraph_vcount(&self->g));
 }
@@ -426,7 +426,7 @@ PyObject *igraphmodule_Graph_vcount(igraphmodule_GraphObject * self)
  * \return the number of edges as a \c PyObject
  * \sa igraph_ecount
  */
-PyObject *igraphmodule_Graph_ecount(igraphmodule_GraphObject * self)
+PyObject *igraphmodule_Graph_ecount(igraphmodule_GraphObject* self, PyObject* Py_UNUSED(_null))
 {
   return igraphmodule_integer_t_to_PyObject(igraph_ecount(&self->g));
 }
@@ -436,7 +436,7 @@ PyObject *igraphmodule_Graph_ecount(igraphmodule_GraphObject * self)
  * \return \c True if the graph is directed, \c False otherwise.
  * \sa igraph_is_directed
  */
-PyObject *igraphmodule_Graph_is_directed(igraphmodule_GraphObject * self)
+PyObject *igraphmodule_Graph_is_directed(igraphmodule_GraphObject* self, PyObject* Py_UNUSED(_null))
 {
   if (igraph_is_directed(&self->g))
     Py_RETURN_TRUE;
@@ -533,7 +533,7 @@ PyObject *igraphmodule_Graph_is_maximal_matching(igraphmodule_GraphObject* self,
  * \return \c True if the graph is simple, \c False otherwise.
  * \sa igraph_is_simple
  */
-PyObject *igraphmodule_Graph_is_simple(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph_is_simple(igraphmodule_GraphObject* self, PyObject* Py_UNUSED(_null)) {
   igraph_bool_t res;
 
   if (igraph_is_simple(&self->g, &res)) {
@@ -551,8 +551,8 @@ PyObject *igraphmodule_Graph_is_simple(igraphmodule_GraphObject *self) {
  * \brief Determines whether a graph is a (directed or undirected) tree
  * \sa igraph_is_tree
  */
-PyObject *igraphmodule_Graph_is_tree(igraphmodule_GraphObject * self,
-                                     PyObject * args, PyObject * kwds)
+PyObject *igraphmodule_Graph_is_tree(igraphmodule_GraphObject* self,
+                                     PyObject* args, PyObject* kwds)
 {
   static char *kwlist[] = { "mode", NULL };
   PyObject *mode_o = Py_None;
@@ -1133,7 +1133,7 @@ PyObject *igraphmodule_Graph_is_mutual(igraphmodule_GraphObject *self,
  * \return \c True if the graph has multiple edges, \c False otherwise.
  * \sa igraph_has_multiple
  */
-PyObject *igraphmodule_Graph_has_multiple(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph_has_multiple(igraphmodule_GraphObject* self, PyObject* Py_UNUSED(_null)) {
   igraph_bool_t res;
 
   if (igraph_has_multiple(&self->g, &res)) {
@@ -1739,9 +1739,9 @@ PyObject *igraphmodule_Graph_girth(igraphmodule_GraphObject *self,
  * \ingroup python_interface_graph
  * \brief Calculates the convergence degree of the edges in a graph
  */
-PyObject *igraphmodule_Graph_convergence_degree(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph_convergence_degree(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   igraph_vector_t res;
-    PyObject *o;
+  PyObject *o;
 
   igraph_vector_init(&res, 0);
   if (igraph_convergence_degree(&self->g, &res, 0, 0)) {
@@ -1750,8 +1750,9 @@ PyObject *igraphmodule_Graph_convergence_degree(igraphmodule_GraphObject *self) 
     return NULL;
   }
 
-  o=igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT);
+  o = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT);
   igraph_vector_destroy(&res);
+
   return o;
 }
 
@@ -1759,7 +1760,7 @@ PyObject *igraphmodule_Graph_convergence_degree(igraphmodule_GraphObject *self) 
  * \ingroup python_interface_graph
  * \brief Calculates the sizes of the convergence fields in a graph
  */
-PyObject *igraphmodule_Graph_convergence_field_size(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph_convergence_field_size(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   igraph_vector_t ins, outs;
   PyObject *o1, *o2;
 
@@ -1772,8 +1773,8 @@ PyObject *igraphmodule_Graph_convergence_field_size(igraphmodule_GraphObject *se
     return NULL;
   }
 
-  o1=igraphmodule_vector_t_to_PyList(&ins, IGRAPHMODULE_TYPE_INT);
-  o2=igraphmodule_vector_t_to_PyList(&outs, IGRAPHMODULE_TYPE_INT);
+  o1 = igraphmodule_vector_t_to_PyList(&ins, IGRAPHMODULE_TYPE_INT);
+  o2 = igraphmodule_vector_t_to_PyList(&outs, IGRAPHMODULE_TYPE_INT);
   igraph_vector_destroy(&ins);
   igraph_vector_destroy(&outs);
   return Py_BuildValue("NN", o1, o2);
@@ -1893,7 +1894,7 @@ PyObject *igraphmodule_Graph_radius(igraphmodule_GraphObject * self,
  * \return the Prufer sequence as a Python object
  * \sa igraph_to_prufer
  */
-PyObject *igraphmodule_Graph_to_prufer(igraphmodule_GraphObject * self)
+PyObject *igraphmodule_Graph_to_prufer(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null))
 {
   igraph_vector_int_t res;
   PyObject *list;
@@ -3658,7 +3659,7 @@ PyObject *igraphmodule_Graph_Weighted_Adjacency(PyTypeObject * type,
  * \return the list of articulation points in a PyObject
  * \sa igraph_articulation_points
  */
-PyObject *igraphmodule_Graph_articulation_points(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph_articulation_points(igraphmodule_GraphObject* self, PyObject* Py_UNUSED(_null)) {
   igraph_vector_int_t res;
   PyObject *o;
   if (igraph_vector_int_init(&res, 0)) {
@@ -4207,7 +4208,7 @@ PyObject *igraphmodule_Graph_bipartite_projection_size(igraphmodule_GraphObject 
  * \return the list of bridges in a PyObject
  * \sa igraph_bridges
  */
-PyObject *igraphmodule_Graph_bridges(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph_bridges(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   igraph_vector_int_t res;
   PyObject *o;
   if (igraph_vector_int_init(&res, 0)) {
@@ -5422,7 +5423,7 @@ PyObject *igraphmodule_Graph_linegraph(igraphmodule_GraphObject * self) {
  * \brief Conducts a maximum cardinality search on the graph.
  * \sa igraph_maximum_cardinality_search
  */
-PyObject *igraphmodule_Graph_maximum_cardinality_search(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph_maximum_cardinality_search(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   igraph_vector_int_t alpha, alpham1;
   PyObject *alpha_o, *alpham1_o;
 
@@ -6583,7 +6584,7 @@ PyObject *igraphmodule_Graph_is_bipartite(igraphmodule_GraphObject *self,
  * \return the dyad census as a 3-tuple
  * \sa igraph_dyad_census
  */
-PyObject *igraphmodule_Graph_dyad_census(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph_dyad_census(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   igraph_real_t mut, asym, nul;
   PyObject *mut_o, *asym_o, *nul_o;
 
@@ -6617,7 +6618,7 @@ PyObject *igraphmodule_Graph_dyad_census(igraphmodule_GraphObject *self) {
  * \return the triangles of the graph as a list of triplets with vertex IDs
  * \sa igraph_list_triangles
  */
-PyObject *igraphmodule_Graph_list_triangles(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph_list_triangles(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   igraph_vector_int_t res;
   PyObject *res_o;
 
@@ -6850,7 +6851,7 @@ PyObject *igraphmodule_Graph_motifs_randesu_estimate(igraphmodule_GraphObject *s
  * \return the triad census as a list
  * \sa igraph_triad_census
  */
-PyObject *igraphmodule_Graph_triad_census(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph_triad_census(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   igraph_vector_t res;
   PyObject *list;
 
@@ -6873,7 +6874,7 @@ PyObject *igraphmodule_Graph_triad_census(igraphmodule_GraphObject *self) {
  * Cycles and cycle bases                                             *
  **********************************************************************/
 
-PyObject *igraphmodule_Graph_is_acyclic(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph_is_acyclic(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   igraph_bool_t res;
 
   if (igraph_is_acyclic(&self->g, &res)) {
@@ -6888,7 +6889,7 @@ PyObject *igraphmodule_Graph_is_acyclic(igraphmodule_GraphObject *self) {
   }
 }
 
-PyObject *igraphmodule_Graph_is_dag(igraphmodule_GraphObject * self) {
+PyObject *igraphmodule_Graph_is_dag(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   igraph_bool_t res;
 
   if (igraph_is_dag(&self->g, &res)) {
@@ -8381,7 +8382,7 @@ PyObject *igraphmodule_Graph_laplacian(igraphmodule_GraphObject * self,
  * \sa igraph_get_edgelist
  */
 PyObject *igraphmodule_Graph_get_edgelist(igraphmodule_GraphObject * self,
-                                          PyObject * _null)
+                                          PyObject* Py_UNUSED(_null))
 {
   igraph_vector_int_t edgelist;
   PyObject *result_o;
@@ -10398,7 +10399,7 @@ int igraphmodule_Graph_mp_assign_subscript(igraphmodule_GraphObject * self,
 /** \ingroup python_interface_graph
  * \brief Returns the attribute list of the graph
  */
-PyObject *igraphmodule_Graph_attributes(igraphmodule_GraphObject * self)
+PyObject *igraphmodule_Graph_attributes(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null))
 {
   return PyDict_Keys(ATTR_STRUCT_DICT(&self->g)[ATTRHASH_IDX_GRAPH]);
 }
@@ -10406,8 +10407,7 @@ PyObject *igraphmodule_Graph_attributes(igraphmodule_GraphObject * self)
 /** \ingroup python_interface_graph
  * \brief Returns the attribute list of the graph's vertices
  */
-PyObject *igraphmodule_Graph_vertex_attributes(igraphmodule_GraphObject *
-                                               self)
+PyObject *igraphmodule_Graph_vertex_attributes(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null))
 {
   return PyDict_Keys(ATTR_STRUCT_DICT(&self->g)[ATTRHASH_IDX_VERTEX]);
 }
@@ -10415,7 +10415,7 @@ PyObject *igraphmodule_Graph_vertex_attributes(igraphmodule_GraphObject *
 /** \ingroup python_interface_graph
  * \brief Returns the attribute list of the graph's edges
  */
-PyObject *igraphmodule_Graph_edge_attributes(igraphmodule_GraphObject * self)
+PyObject *igraphmodule_Graph_edge_attributes(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null))
 {
   return PyDict_Keys(ATTR_STRUCT_DICT(&self->g)[ATTRHASH_IDX_EDGE]);
 }
@@ -11346,7 +11346,7 @@ PyObject *igraphmodule_Graph_st_mincut(igraphmodule_GraphObject * self,
  * \brief Returns all minimal s-t separators of a graph
  */
 PyObject *igraphmodule_Graph_all_minimal_st_separators(
-    igraphmodule_GraphObject * self) {
+    igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   PyObject* result_o;
   igraph_vector_int_list_t res;
 
@@ -11437,7 +11437,7 @@ PyObject *igraphmodule_Graph_is_minimal_separator(igraphmodule_GraphObject * sel
  * \brief Returns the minimum size separators of the graph
  */
 PyObject *igraphmodule_Graph_minimum_size_separators(
-    igraphmodule_GraphObject * self) {
+    igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   PyObject* result_o;
   igraph_vector_int_list_t res;
 
@@ -11465,8 +11465,7 @@ PyObject *igraphmodule_Graph_minimum_size_separators(
 /** \ingroup python_interface_graph
  * \brief Calculates the cohesive block structure of a graph
  */
-PyObject *igraphmodule_Graph_cohesive_blocks(igraphmodule_GraphObject *self,
-    PyObject *args, PyObject *kwds) {
+PyObject *igraphmodule_Graph_cohesive_blocks(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   PyObject *blocks_o, *cohesion_o, *parents_o, *result_o;
   igraph_vector_int_list_t blocks;
   igraph_vector_int_t cohesion, parents;
@@ -11582,7 +11581,7 @@ PyObject *igraphmodule_Graph_cliques(igraphmodule_GraphObject * self,
 /** \ingroup python_interface_graph
  * \brief Find all largest cliques in a graph
  */
-PyObject *igraphmodule_Graph_largest_cliques(igraphmodule_GraphObject * self)
+PyObject *igraphmodule_Graph_largest_cliques(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null))
 {
   PyObject *list;
   igraph_vector_int_list_t res;
@@ -11702,7 +11701,7 @@ PyObject *igraphmodule_Graph_maximal_cliques(igraphmodule_GraphObject * self,
 /** \ingroup python_interface_graph
  * \brief Returns the clique number of the graph
  */
-PyObject *igraphmodule_Graph_clique_number(igraphmodule_GraphObject * self)
+PyObject *igraphmodule_Graph_clique_number(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null))
 {
   igraph_integer_t i;
 
@@ -11759,10 +11758,9 @@ PyObject *igraphmodule_Graph_independent_vertex_sets(igraphmodule_GraphObject
 /** \ingroup python_interface_graph
  * \brief Find all largest independent_vertex_sets in a graph
  */
-PyObject
-  *igraphmodule_Graph_largest_independent_vertex_sets(igraphmodule_GraphObject
-                                                      * self)
-{
+PyObject *igraphmodule_Graph_largest_independent_vertex_sets(
+  igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)
+) {
   PyObject *list;
   igraph_vector_int_list_t res;
 
@@ -11784,10 +11782,9 @@ PyObject
 /** \ingroup python_interface_graph
  * \brief Find all maximal independent vertex sets in a graph
  */
-PyObject
-  *igraphmodule_Graph_maximal_independent_vertex_sets(igraphmodule_GraphObject
-                                                      * self)
-{
+PyObject *igraphmodule_Graph_maximal_independent_vertex_sets(
+  igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)
+) {
   PyObject *list;
   igraph_vector_int_list_t res;
 
@@ -11809,9 +11806,9 @@ PyObject
 /** \ingroup python_interface_graph
  * \brief Returns the independence number of the graph
  */
-PyObject *igraphmodule_Graph_independence_number(igraphmodule_GraphObject *
-                                                 self)
-{
+PyObject *igraphmodule_Graph_independence_number(
+  igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)
+) {
   igraph_integer_t i;
 
   if (igraph_independence_number(&self->g, &i)) {
@@ -12813,7 +12810,7 @@ PyObject *igraphmodule_Graph___graph_as_capsule__(igraphmodule_GraphObject *
  * Python integer. This allows us to use igraph graphs with the Python ctypes
  * module without any additional conversions.
  */
-PyObject *igraphmodule_Graph__raw_pointer(igraphmodule_GraphObject *self) {
+PyObject *igraphmodule_Graph__raw_pointer(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)) {
   return PyLong_FromVoidPtr(&self->g);
 }
 
@@ -13920,7 +13917,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@see: Graph.bipartite_projection_size()\n"},
 
   /* interface to igraph_bridges */
-  {"bridges", (PyCFunction)igraphmodule_Graph_bridges,
+  {"bridges", (PyCFunction) igraphmodule_Graph_bridges,
    METH_NOARGS,
    "bridges()\n--\n\n"
    "Returns the list of bridges in the graph.\n\n"

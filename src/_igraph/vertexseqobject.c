@@ -250,8 +250,8 @@ PyObject* igraphmodule_VertexSeq_sq_item(igraphmodule_VertexSeqObject* self,
 /** \ingroup python_interface_vertexseq
  * \brief Returns the list of attribute names
  */
-PyObject* igraphmodule_VertexSeq_attribute_names(igraphmodule_VertexSeqObject* self) {
-  return igraphmodule_Graph_vertex_attributes(self->gref);
+PyObject* igraphmodule_VertexSeq_attribute_names(igraphmodule_VertexSeqObject* self, PyObject* Py_UNUSED(_null)) {
+  return igraphmodule_Graph_vertex_attributes(self->gref, NULL);
 }
 
 /** \ingroup python_interface_vertexseq
@@ -1041,7 +1041,7 @@ PyObject* igraphmodule_VertexSeq__name_index(igraphmodule_VertexSeqObject* self,
  * \ingroup python_interface_vertexseq
  * Re-creates the dictionary that maps vertex names to vertex IDs.
  */
-PyObject* igraphmodule_VertexSeq__reindex_names(igraphmodule_VertexSeqObject* self) {
+PyObject* igraphmodule_VertexSeq__reindex_names(igraphmodule_VertexSeqObject* self, PyObject* Py_UNUSED(_null)) {
   igraphmodule_index_vertex_names(&self->gref->g, 1);
   Py_RETURN_NONE;
 }
