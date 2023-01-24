@@ -72,7 +72,7 @@ class SpectralTests(unittest.TestCase):
 
 
 def suite():
-    spectral_suite = unittest.makeSuite(SpectralTests)
+    spectral_suite = unittest.defaultTestLoader.loadTestsFromTestCase(SpectralTests)
     return unittest.TestSuite([spectral_suite])
 
 

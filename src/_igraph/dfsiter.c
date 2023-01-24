@@ -166,7 +166,7 @@ static PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self)
   /* the design is to return the top of the stack and then proceed until
    * we have found an unvisited neighbor and push that on top */
   igraph_integer_t parent_out, dist_out, vid_out;
-  igraph_bool_t any = 0;
+  igraph_bool_t any = false;
 
   /* nothing on the stack, end of iterator */
   if (igraph_stack_int_empty(&self->stack)) {

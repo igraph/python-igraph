@@ -63,7 +63,7 @@ class Cut(VertexClustering):
         membership = [1] * graph.vcount()
         for vid in partition:
             membership[vid] = 0
-        VertexClustering.__init__(self, graph, membership)
+        super().__init__(graph, membership)
 
         if value is None:
             # Value of the cut not given, count the number of edges

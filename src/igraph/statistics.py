@@ -502,7 +502,7 @@ def percentile(xs, p=(25, 50, 75), sort=True):
     return quantile(xs, p / 100.0, sort)
 
 
-def power_law_fit(data, xmin=None, method="auto"):
+def power_law_fit(data, xmin=None, method="auto", p_precision=0.01):
     """Fitting a power-law distribution to empirical data
 
     @param data: the data to fit, a list containing integer values
@@ -530,6 +530,11 @@ def power_law_fit(data, xmin=None, method="auto"):
           method is used if the input vector contains at least one fractional
           value and the discrete method is used if the input vector contains
           integers only.
+    @param p_precision: desired precision of the p-value calculation. The
+      precision ultimately depends on the number of resampling attempts. The
+      number of resampling trials is determined by 0.25 divided by the square
+      of the required precision. For instance, a required precision of 0.01
+      means that 2500 samples will be drawn.
 
     @return: a L{FittedPowerLaw} object. The fitted C{xmin} value and the
       power-law exponent can be queried from the C{xmin} and C{alpha}
@@ -551,7 +556,7 @@ def power_law_fit(data, xmin=None, method="auto"):
         raise ValueError("unknown method: %s" % method)
 
     force_continuous = method in ("continuous", "hill")
-    return FittedPowerLaw(*_power_law_fit(data, xmin, force_continuous))
+    return FittedPowerLaw(*_power_law_fit(data, xmin, force_continuous, p_precision))
 
 
 def quantile(xs, q=(0.25, 0.5, 0.75), sort=True):

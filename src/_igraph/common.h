@@ -23,6 +23,8 @@
 #ifndef PYTHON_COMMON_H
 #define PYTHON_COMMON_H
 
+#include <stdbool.h>
+
 #include "preamble.h"
 
 #ifdef RC_DEBUG

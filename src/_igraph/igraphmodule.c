@@ -117,7 +117,7 @@ help(igraph.Graph)
 /**
  * Whether the module was initialized already
  */
-static igraph_bool_t igraphmodule_initialized = 0;
+static igraph_bool_t igraphmodule_initialized = false;
 
 /**
  * Module-specific global variables
@@ -200,7 +200,8 @@ PyObject* igraphmodule_set_progress_handler(PyObject* self, PyObject* o) {
 
   Py_XDECREF(progress_handler);
   if (o == Py_None)
-    o = 0;
+    o = NULL;
+
   Py_XINCREF(o);
   GETSTATE(self)->progress_handler=o;
 
@@ -220,9 +221,11 @@ PyObject* igraphmodule_set_status_handler(PyObject* self, PyObject* o) {
     Py_RETURN_NONE;
 
   Py_XDECREF(status_handler);
-  if (o == Py_None)
-    o = 0;
-  Py_INCREF(o);
+  if (o == Py_None) {
+    o = NULL;
+  }
+
+  Py_XINCREF(o);
   GETSTATE(self)->status_handler = o;
 
   Py_RETURN_NONE;
@@ -271,6 +274,10 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
         igraph_matrix_destroy(&mtrx);
         return NULL;
       }
+    } else {
+      PyErr_SetString(PyExc_TypeError, "convex_hull() must receive a list of indexable sequences");
+      igraph_matrix_destroy(&mtrx);
+      return NULL;
     }
     
     if (!PyNumber_Check(o1) || !PyNumber_Check(o2)) {
@@ -351,7 +358,9 @@ PyObject* igraphmodule_community_to_membership(PyObject *self,
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!nn|O", kwlist,
       &PyList_Type, &merges_o, &nodes, &steps, &return_csize)) return NULL;
 
-  if (igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(merges_o, &merges, 2)) return NULL;
+  if (igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(merges_o, &merges, 2, "merges")) {
+    return NULL;
+  }
 
   CHECK_SSIZE_T_RANGE(nodes, "number of nodes");
   CHECK_SSIZE_T_RANGE(steps, "number of steps");
@@ -563,14 +572,15 @@ PyObject* igraphmodule_is_graphical(PyObject *self, PyObject *args, PyObject *kw
 
 
 PyObject* igraphmodule_power_law_fit(PyObject *self, PyObject *args, PyObject *kwds) {
-  static char* kwlist[] = { "data", "xmin", "force_continuous", NULL };
+  static char* kwlist[] = { "data", "xmin", "force_continuous", "p_precision", NULL };
   PyObject *data_o, *force_continuous_o = Py_False;
   igraph_vector_t data;
   igraph_plfit_result_t result;
-  double xmin = -1;
+  double xmin = -1, p_precision = 0.01;
+  igraph_real_t p;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|dO", kwlist, &data_o,
-        &xmin, &force_continuous_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|dOd", kwlist, &data_o,
+        &xmin, &force_continuous_o, &p_precision))
     return NULL;
 
   if (igraphmodule_PyObject_float_to_vector_t(data_o, &data))
@@ -582,10 +592,16 @@ PyObject* igraphmodule_power_law_fit(PyObject *self, PyObject *args, PyObject *k
     return NULL;
   }
 
+  if (igraph_plfit_result_calculate_p_value(&result, &p, p_precision)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_destroy(&data);
+    return NULL;
+  }
+
   igraph_vector_destroy(&data);
 
-  return Py_BuildValue("Odddd", result.continuous ? Py_True : Py_False,
-      result.alpha, result.xmin, result.L, result.D);
+  return Py_BuildValue("Oddddd", result.continuous ? Py_True : Py_False,
+      result.alpha, result.xmin, result.L, result.D, (double) p);
 }
 
 PyObject* igraphmodule_split_join_distance(PyObject *self,
@@ -623,6 +639,64 @@ PyObject* igraphmodule_split_join_distance(PyObject *self,
   return Py_BuildValue("nn", (Py_ssize_t)distance12, (Py_ssize_t)distance21);
 }
 
+
+/** \ingroup python_interface_graph
+ * \brief Compute weights for Uniform Manifold Approximation and Projection (UMAP)
+ * \return the weights given that graph
+ * \sa igraph_umap_compute_weights
+ */
+PyObject *igraphmodule_umap_compute_weights(
+    PyObject *self, PyObject * args, PyObject * kwds)
+{
+  static char *kwlist[] = { "graph", "dist", NULL };
+  igraph_vector_t *dist = 0;
+  igraph_vector_t weights;
+  PyObject *dist_o = Py_None, *graph_o = Py_None;
+  PyObject *result_o;
+  igraphmodule_GraphObject * graph;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &graph_o, &dist_o))
+    return NULL;
+
+  /* Initialize distances */
+  if (dist_o != Py_None) {
+    dist = (igraph_vector_t*)malloc(sizeof(igraph_vector_t));
+    if (!dist) {
+      PyErr_NoMemory();
+      return NULL;
+    }
+    if (igraphmodule_PyObject_to_vector_t(dist_o, dist, 0)) {
+      free(dist);
+      return NULL;
+    }
+  }
+
+  /* Extract graph from Python object */
+  graph = (igraphmodule_GraphObject*)graph_o;
+
+  /* Initialize weights */
+  if (igraph_vector_init(&weights, 0)) {
+      igraph_vector_destroy(dist); free(dist);
+      PyErr_NoMemory();
+      return NULL;
+  }
+
+  /* Call the function */
+  if (igraph_layout_umap_compute_weights(&graph->g, dist, &weights)) {
+      igraph_vector_destroy(&weights);
+      igraph_vector_destroy(dist); free(dist);
+      PyErr_NoMemory();
+      return NULL;
+  }
+  igraph_vector_destroy(dist); free(dist);
+
+  /* Convert output to Python list */
+  result_o = igraphmodule_vector_t_to_PyList(&weights, IGRAPHMODULE_TYPE_FLOAT);
+  igraph_vector_destroy(&weights);
+  return (PyObject *) result_o;
+}
+
+
 #define LOCALE_CAPSULE_TYPE "igraph._igraph.locale_capsule"
 
 void igraphmodule__destroy_locale_capsule(PyObject *capsule) {
@@ -632,7 +706,7 @@ void igraphmodule__destroy_locale_capsule(PyObject *capsule) {
   }
 }
 
-PyObject* igraphmodule__enter_safelocale(PyObject* self) {
+PyObject* igraphmodule__enter_safelocale(PyObject* self, PyObject* Py_UNUSED(_null)) {
   igraph_safelocale_t* loc;
   PyObject* capsule;
 
@@ -686,7 +760,7 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"_power_law_fit", (PyCFunction)igraphmodule_power_law_fit,
     METH_VARARGS | METH_KEYWORDS,
-    "_power_law_fit(data, xmin=-1, force_continuous=False)\n--\n\n"
+    "_power_law_fit(data, xmin=-1, force_continuous=False, p_precision=0.01)\n--\n\n"
   },
   {"convex_hull", (PyCFunction)igraphmodule_convex_hull,
     METH_VARARGS | METH_KEYWORDS,
@@ -750,6 +824,36 @@ static PyMethodDef igraphmodule_methods[] =
     "@return: C{True} if there exists some simple graph that can realize the given\n"
     "  degree sequence, C{False} otherwise.\n"
   },
+  {"umap_compute_weights", (PyCFunction)igraphmodule_umap_compute_weights,
+   METH_VARARGS | METH_KEYWORDS,
+   "layout_umap_compute_weights(graph, dist)\n"
+   "--\n\n"
+   "@param graph: directed graph to compute weights for.\n"
+   "@param dist: distances associated with the graph edges.\n"
+   "@return: Symmetrized weights associated with each edge. If the distance\n"
+   "  graph has both directed edges between a pair of vertices, one of the\n"
+   "  returned weights will be set to zero.\n\n"
+   "Compute undirected UMAP weights from directed distance graph.\n\n"
+   "UMAP is a layout algorithm that usually takes as input a directed\n"
+   "distance graph, e.g. a k nearest neighbor graph based on Euclidean\n"
+   "distance between points in a vector space. The graph is directed\n"
+   "because vertex v1 might consider vertex v2 a close neighbor, but v2\n"
+   "itself might have many neighbors that are closer than v1.\n"
+   "This function computes the symmetrized weights from the distance graph\n"
+   "using union as the symmetry operator. In simple terms, if either vertex\n"
+   "considers the other a close neighbor, they will be treated as close\n"
+   "neighbors.\n\n"
+   "This function can be used as a separate preprocessing step to\n"
+   "Graph.layout_umap(). For efficiency reasons, the returned weights have the\n"
+   "same length as the input distances, however because of the symmetryzation\n"
+   "some information is lost. Therefore, the weight of one of the edges is set\n"
+   "to zero whenever edges in opposite directions are found in the input\n"
+   "distance graph. You can pipe the output of this function directly into\n"
+   "Graph.layout_umap() as follows:\n"
+   "C{weights = igraph.layout_umap_compute_weights(graph, dist)}\n"
+   "C{layout = graph.layout_umap(weights=weights)}\n\n"
+   "@see: Graph.layout_umap()\n"
+  },
   {"set_progress_handler", igraphmodule_set_progress_handler, METH_O,
       "set_progress_handler(handler)\n--\n\n"
       "Sets the handler to be called when igraph is performing a long operation.\n"
@@ -765,12 +869,15 @@ static PyMethodDef igraphmodule_methods[] =
       "  with at least three attributes: C{random}, C{randint} and C{gauss}.\n"
       "  Each of them must be callable and their signature and behaviour\n"
       "  must be identical to C{random.random}, C{random.randint} and\n"
-      "  C{random.gauss}. By default, igraph uses the C{random} module for\n"
-      "  random number generation, but you can supply your alternative\n"
-      "  implementation here. If the given generator is C{None}, igraph\n"
-      "  reverts to the default Mersenne twister generator implemented in the\n"
-      "  C layer, which might be slightly faster than calling back to Python\n"
-      "  for random numbers, but you cannot set its seed or save its state.\n"
+      "  C{random.gauss}. Optionally, the object can provide a function named\n"
+      "  C{getrandbits} with a signature identical to C{randpm.getrandbits}\n"
+      "  that provides a given number of random bits on demand. By default,\n"
+      "  igraph uses the C{random} module for random number generation, but\n"
+      "  you can supply your alternative implementation here. If the given\n"
+      "  generator is C{None}, igraph reverts to the default PCG32 generator\n"
+      "  implemented in the C layer, which might be slightly faster than\n"
+      "  calling back to Python for random numbers, but you cannot set its\n"
+      "  seed or save its state.\n"
   },
   {"set_status_handler", igraphmodule_set_status_handler, METH_O,
       "set_status_handler(handler)\n--\n\n"
@@ -801,13 +908,13 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"_enter_safelocale", (PyCFunction)igraphmodule__enter_safelocale,
     METH_NOARGS,
-    "_enter_safelocale() -> object\n--\n\n"
+    "_enter_safelocale()\n--\n\n"
     "Helper function for the L{safe_locale()} context manager. Do not use\n"
     "directly in your own code."
   },
   {"_exit_safelocale", (PyCFunction)igraphmodule__exit_safelocale,
     METH_O,
-    "_exit_safelocale(locale: object) -> None\n--\n\n"
+    "_exit_safelocale(locale)\n--\n\n"
     "Helper function for the L{safe_locale()} context manager. Do not use\n"
     "directly in your own code."
   },

@@ -98,7 +98,7 @@ def _construct_graph_from_networkx(cls, g, vertex_attr_hashable : str = "_nx_nam
     vcount = len(vnames)
 
     # Dictionary connecting networkx hashables with igraph indices
-    if len(g) and "_igraph_index" in g.nodes[0]:
+    if len(g) and "_igraph_index" in next(iter(g.nodes.values())):
         # Collect _igraph_index and fill gaps
         idx = [x["_igraph_index"] for v, x in g.nodes.data()]
         idx.sort()
@@ -118,7 +118,7 @@ def _construct_graph_from_networkx(cls, g, vertex_attr_hashable : str = "_nx_nam
 
     # Vertex attributes
     for v, datum in g.nodes.data():
-        for key, val in list(datum.items()):
+        for key, val in datum.items():
             # Get rid of _igraph_index (we used it already)
             if key == "_igraph_index":
                 continue
@@ -201,7 +201,7 @@ def _export_graph_to_graph_tool(
 
     # Graph attributes
     if graph_attributes is not None:
-        for x, dtype in list(graph_attributes.items()):
+        for x, dtype in graph_attributes.items():
             # Strange syntax for setting internal properties
             gprop = g.new_graph_property(str(dtype))
             g.graph_properties[x] = gprop
@@ -209,7 +209,7 @@ def _export_graph_to_graph_tool(
 
     # Vertex attributes
     if vertex_attributes is not None:
-        for x, dtype in list(vertex_attributes.items()):
+        for x, dtype in vertex_attributes.items():
             # Create a new vertex property
             g.vertex_properties[x] = g.new_vertex_property(str(dtype))
             # Fill the values from the igraph.Graph
@@ -218,12 +218,12 @@ def _export_graph_to_graph_tool(
 
     # Edges and edge attributes
     if edge_attributes is not None:
-        for x, dtype in list(edge_attributes.items()):
+        for x, dtype in edge_attributes.items():
             g.edge_properties[x] = g.new_edge_property(str(dtype))
     for edge in graph.es:
         e = g.add_edge(edge.source, edge.target)
         if edge_attributes is not None:
-            for x, dtype in list(edge_attributes.items()):
+            for x, dtype in edge_attributes.items():
                 prop = edge.attributes().get(x, None)
                 g.edge_properties[x][e] = prop
 

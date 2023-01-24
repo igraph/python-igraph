@@ -24,7 +24,9 @@
 #define PYTHON_IGRAPH_PREAMBLE_H
 
 #ifndef PY_IGRAPH_ALLOW_ENTIRE_PYTHON_API
-#  define Py_LIMITED_API 0x03060100
+#  ifndef Py_LIMITED_API
+#    define Py_LIMITED_API 0x03090000
+#  endif
 #endif
 
 #define PY_SSIZE_T_CLEAN

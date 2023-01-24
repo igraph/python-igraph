@@ -41,7 +41,7 @@ def _add_edges(graph, es, attributes=None):
     res = GraphBase.add_edges(graph, es)
     n = graph.ecount() - eid
     if (attributes is not None) and (n > 0):
-        for key, val in list(attributes.items()):
+        for key, val in attributes.items():
             graph.es[eid:][key] = val
     return res
 
@@ -90,7 +90,7 @@ def _add_vertices(graph, n, attributes=None):
         result = GraphBase.add_vertices(graph, 1)
         graph.vs[m]["name"] = n
         if attributes is not None:
-            for key, val in list(attributes.items()):
+            for key, val in attributes.items():
                 graph.vs[m][key] = val
     elif hasattr(n, "__iter__"):
         m = graph.vcount()
@@ -102,13 +102,13 @@ def _add_vertices(graph, n, attributes=None):
         if len(names) > 0:
             graph.vs[m:]["name"] = names
             if attributes is not None:
-                for key, val in list(attributes.items()):
+                for key, val in attributes.items():
                     graph.vs[m:][key] = val
     else:
         result = GraphBase.add_vertices(graph, n)
         if (attributes is not None) and (n > 0):
             m = graph.vcount() - n
-            for key, val in list(attributes.items()):
+            for key, val in attributes.items():
                 graph.vs[m:][key] = val
     return result
 
@@ -124,15 +124,15 @@ def _delete_edges(graph, *args, **kwds):
     arguments. Edges in the derived edge sequence will be removed.
     Otherwise the first positional argument is considered as follows:
 
+    Deprecation notice: C{delete_edges(None)} has been replaced by
+    C{delete_edges()} - with no arguments - since igraph 0.8.3.
+
       - C{None} - deletes all edges (deprecated since 0.8.3)
       - a single integer - deletes the edge with the given ID
       - a list of integers - deletes the edges denoted by the given IDs
       - a list of 2-tuples - deletes the edges denoted by the given
         source-target vertex pairs. When multiple edges are present
         between a given source-target vertex pair, only one is removed.
-
-    @deprecated: C{delete_edges(None)} has been replaced by
-    C{delete_edges()} - with no arguments - since igraph 0.8.3.
     """
     if len(args) == 0 and len(kwds) == 0:
         return GraphBase.delete_edges(graph)

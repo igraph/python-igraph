@@ -1,6 +1,7 @@
 import unittest
 from math import hypot
 from igraph import Graph, Layout, BoundingBox, InternalError
+from igraph import umap_compute_weights
 
 
 class LayoutTests(unittest.TestCase):
@@ -265,16 +266,6 @@ class LayoutAlgorithmTests(unittest.TestCase):
             )
 
         self.assertRaises(
-                InternalError, g.layout_umap,
-                sampling_prob=-0.01,
-            )
-
-        self.assertRaises(
-                InternalError, g.layout_umap,
-                sampling_prob=1.01,
-            )
-
-        self.assertRaises(
                 ValueError, g.layout_umap,
                 dim=1,
             )
@@ -303,7 +294,7 @@ class LayoutAlgorithmTests(unittest.TestCase):
             0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.08, 0.05, 0.1, 0.08, 0.12, 0.09, 0.11
             ]
         g = Graph(edges)
-        lo = g.layout_umap(dist=dist, epochs=500, sampling_prob=0.3)
+        lo = g.layout_umap(dist=dist, epochs=500)
         self.assertTrue(isinstance(lo, Layout))
 
         # One should get two clusters in this case
@@ -321,13 +312,31 @@ class LayoutAlgorithmTests(unittest.TestCase):
                 self.assertLess(dxy, 0.2 * distmax)
 
         # Test single epoch with seed
-        lo_adj = g.layout_umap(dist=dist, epochs=1, sampling_prob=1, seed=lo)
+        lo_adj = g.layout_umap(dist=dist, epochs=1, seed=lo)
         self.assertTrue(isinstance(lo_adj, Layout))
 
         # Same but inputting the coordinates
-        lo_adj = g.layout_umap(dist=dist, epochs=1, sampling_prob=1, seed=lo.coords)
+        lo_adj = g.layout_umap(dist=dist, epochs=1, seed=lo.coords)
         self.assertTrue(isinstance(lo_adj, Layout))
 
+    def testUMAPComputeWeights(self):
+        edges = [0, 1, 0, 2, 1, 2, 1, 3, 2, 3, 2, 0]
+        edges = list(zip(edges[::2], edges[1::2]))
+        dist = [1, 1.5, 1.8, 2.0, 3.4, 0.5]
+        # NOTE: you need a directed graph to make sense of the symmetryzation
+        g = Graph(edges, directed=True)
+        weights = umap_compute_weights(g, dist)
+        self.assertEqual(
+            weights,
+            [1.0, 1.0, 1.0, 1.1253517471925912e-07, 6.14421235332821e-06, 0.0])
+
+    def testLGL(self):
+        g = Graph.Barabasi(100)
+        lo = g.layout("lgl")
+        self.assertTrue(isinstance(lo, Layout))
+
+        lo = g.layout("lgl", root=5)
+        self.assertTrue(isinstance(lo, Layout))
 
     def testReingoldTilford(self):
         g = Graph.Barabasi(100)
@@ -368,8 +377,8 @@ class LayoutAlgorithmTests(unittest.TestCase):
 
 
 def suite():
-    layout_suite = unittest.makeSuite(LayoutTests)
-    layout_algorithm_suite = unittest.makeSuite(LayoutAlgorithmTests)
+    layout_suite = unittest.defaultTestLoader.loadTestsFromTestCase(LayoutTests)
+    layout_algorithm_suite = unittest.defaultTestLoader.loadTestsFromTestCase(LayoutAlgorithmTests)
     return unittest.TestSuite([layout_suite, layout_algorithm_suite])
 
 

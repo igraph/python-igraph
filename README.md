@@ -1,7 +1,8 @@
 
 [![Build and test with tox](https://github.com/igraph/python-igraph/actions/workflows/build.yml/badge.svg)](https://github.com/igraph/python-igraph/actions/workflows/build.yml)
-[![PyPI pyversions](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue)](https://pypi.python.org/pypi/igraph)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/igraph)](https://pypi.python.org/pypi/igraph)
 [![PyPI wheels](https://img.shields.io/pypi/wheel/igraph.svg)](https://pypi.python.org/pypi/igraph)
+[![Documentation Status](https://readthedocs.org/projects/igraph/badge/?version=latest)](https://igraph.readthedocs.io/)
 
 Python interface for the igraph library
 ---------------------------------------
@@ -13,7 +14,12 @@ analysis of large graphs.
 This repository contains the source code to the Python interface of
 igraph.
 
-You can learn more about igraph [on our website](http://igraph.org/python/).
+Since version 0.10.2, the documentation is hosted on
+[readthedocs](https://igraph.readthedocs.io). Earlier versions are documented
+on [our old website](https://igraph.org/python/versions/0.10.1/).
+
+igraph is a collaborative work of many people from all around the world —
+see the [list of contributors here](./CONTRIBUTORS.md).
 
 ## Installation from PyPI
 
@@ -49,8 +55,8 @@ automatically.
 ### Installation from source on Windows
 
 It is now also possible to compile `igraph` from source under Windows for
-Python 3.6 and later. Make sure that you have Microsoft Visual Studio 2015 or
-later installed, and of course Python 3.6 or later. First extract the source to
+Python 3.7 and later. Make sure that you have Microsoft Visual Studio 2015 or
+later installed, and of course Python 3.7 or later. First extract the source to
 a suitable directory. If you launch the Developer command prompt and navigate to
 the directory where you extracted the source code, you should be able to build
 and install igraph using `python setup.py install`
@@ -62,6 +68,9 @@ set IGRAPH_CMAKE_EXTRA_ARGS=-A [arch]
 ```
 
 where `[arch]` is either `Win32` for 32-bit builds or `x64` for 64-bit builds.
+Also, when building in MSYS2, you need to set the `SETUPTOOLS_USE_DISTUTILS`
+environment variable to `stdlib`; this is because MSYS2 uses a patched version
+of `distutils` that conflicts with `setuptools >= 60.0`.
 
 #### Enabling GraphML
 
@@ -117,18 +126,25 @@ pkg-config --cflags --libs igraph
 
 If `pkg-config` responds with a set of compiler and linker flags and not an
 error message, you are probably okay. You can then proceed with the
-installation using pip:
+installation using pip after setting the environment variable named
+`IGRAPH_USE_PKG_CONFIG` to `1` to indicate that you want to use an
+igraph instance discoverable with `pkg-config`:
 
 ```bash
-pip install igraph --install-option="--use-pkg-config"
+IGRAPH_USE_PKG_CONFIG=1 pip install igraph
 ```
 
 Alternatively, if you have already downloaded and extracted the source code
 of igraph, you can run `setup.py` directly:
 
 ```bash
-python setup.py install --use-pkg-config
+IGRAPH_USE_PKG_CONFIG=1 python setup.py build
+IGRAPH_USE_PKG_CONFIG=1 python setup.py install
 ```
+
+(Note that you need the `IGRAPH_USE_PKG_CONFIG=1` environment variable
+for both invocations, otherwise the call to `setup.py install` would still
+build the vendored C core instead of linking to an existing installation).
 
 This option is primarily intended for package maintainers in Linux
 distributions so they can ensure that the packaged Python interface links to
@@ -137,8 +153,27 @@ the packaged igraph library instead of bringing its own copy.
 It is also useful on macOS if you want to link to the igraph library installed
 from Homebrew.
 
-Due to the lack of support of `pkg-config` on Window, it is currently not
+Due to the lack of support of `pkg-config` on Windows, it is currently not
 possible to build against an external library on Windows.
+
+**Warning:** the Python interface is guaranteed to work only with the same
+version of the C core that is vendored inside the `vendor/source/igraph`
+folder. While we try hard not to break API or ABI in the C core of igraph
+between minor versions in the 0.x branch and we will keep on doing so for major
+versions once 1.0 is released, there are certain functions in the C API that
+are marked as _experimental_ (see the documentation of the C core for details),
+and we reserve the right to break the APIs of those functions, even if they are
+already exposed in a higher-level interface. This is because the easiest way to
+test these functions in real-life research scenarios is to expose them in one
+of the higher level interfaces. Therefore, if you unbundle the vendored source
+code of igraph and link to an external version instead, we can make no
+guarantees about stability unless you link to the exact same version as the
+one we have vendored in this source tree.
+
+If you are curious about which version of the Python interface is compatible
+with which version of the C core, you can look up the corresponding tag in
+Github and check which revision of the C core the repository points to in
+the `vendor/source/igraph` submodule.
 
 ## Compiling the development version
 
@@ -235,8 +270,8 @@ faster than the first one as the C core does not need to be recompiled.
 
 We aim to keep up with the development cycle of Python and support all official
 Python versions that have not reached their end of life yet. Currently this
-means that we support Python 3.6 to 3.9, inclusive. Please refer to [this
-page](https://devguide.python.org/#branchstatus) for the status of Python
+means that we support Python 3.7 to 3.11, inclusive. Please refer to [this
+page](https://devguide.python.org/versions/) for the status of Python
 branches and let us know if you encounter problems with `igraph` on any
 of the non-EOL Python versions.
 

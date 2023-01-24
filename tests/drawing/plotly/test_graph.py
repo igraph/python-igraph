@@ -177,8 +177,8 @@ class ClusteringTestRunner(unittest.TestCase):
 
 
 def suite():
-    graph = unittest.makeSuite(GraphTestRunner)
-    clustering = unittest.makeSuite(ClusteringTestRunner)
+    graph = unittest.defaultTestLoader.loadTestsFromTestCase(GraphTestRunner)
+    clustering = unittest.defaultTestLoader.loadTestsFromTestCase(ClusteringTestRunner)
     return unittest.TestSuite([
         graph,
         clustering,

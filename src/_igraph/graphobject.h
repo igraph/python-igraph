@@ -55,8 +55,8 @@ int igraphmodule_Graph_register_type(void);
 PyObject* igraphmodule_Graph_subclass_from_igraph_t(PyTypeObject* type, igraph_t *graph);
 PyObject* igraphmodule_Graph_from_igraph_t(igraph_t *graph);
 
-PyObject* igraphmodule_Graph_attributes(igraphmodule_GraphObject* self);
-PyObject* igraphmodule_Graph_vertex_attributes(igraphmodule_GraphObject* self);
-PyObject* igraphmodule_Graph_edge_attributes(igraphmodule_GraphObject* self);
+PyObject* igraphmodule_Graph_attributes(igraphmodule_GraphObject* self, PyObject* Py_UNUSED(_null));
+PyObject* igraphmodule_Graph_vertex_attributes(igraphmodule_GraphObject* self, PyObject* Py_UNUSED(_null));
+PyObject* igraphmodule_Graph_edge_attributes(igraphmodule_GraphObject* self, PyObject* Py_UNUSED(_null));
 
 #endif

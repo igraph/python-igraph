@@ -37,7 +37,7 @@
 
 PyTypeObject* igraphmodule_VertexType;
 
-PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self);
+PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self, PyObject* _null);
 
 /**
  * \ingroup python_interface_vertex
@@ -151,7 +151,7 @@ static PyObject* igraphmodule_Vertex_repr(igraphmodule_VertexObject *self) {
   PyObject *s;
   PyObject *attrs;
 
-  attrs = igraphmodule_Vertex_attributes(self);
+  attrs = igraphmodule_Vertex_attributes(self, NULL);
   if (attrs == 0) {
     return NULL;
   }
@@ -257,14 +257,14 @@ Py_ssize_t igraphmodule_Vertex_attribute_count(igraphmodule_VertexObject* self) 
 /** \ingroup python_interface_vertex
  * \brief Returns the list of attribute names
  */
-PyObject* igraphmodule_Vertex_attribute_names(igraphmodule_VertexObject* self) {
-  return self->gref ? igraphmodule_Graph_vertex_attributes(self->gref) : 0;
+PyObject* igraphmodule_Vertex_attribute_names(igraphmodule_VertexObject* self, PyObject* Py_UNUSED(_null)) {
+  return self->gref ? igraphmodule_Graph_vertex_attributes(self->gref, NULL) : NULL;
 }
 
 /** \ingroup python_interface_vertex
  * \brief Returns a dict with attribue names and values
  */
-PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self) {
+PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self, PyObject* Py_UNUSED(_null)) {
   igraphmodule_GraphObject *o = self->gref;
   PyObject *names, *dict;
   Py_ssize_t i, n;
@@ -278,7 +278,7 @@ PyObject* igraphmodule_Vertex_attributes(igraphmodule_VertexObject* self) {
     return NULL;
   }
 
-  names = igraphmodule_Graph_vertex_attributes(o);
+  names = igraphmodule_Graph_vertex_attributes(o, NULL);
   if (!names) {
     Py_DECREF(dict);
     return NULL;
@@ -329,7 +329,7 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
   PyObject** pObj;
   PyObject *key, *value, *it, *item, *keys;
 
-  igraph_bool_t ok = 1;
+  igraph_bool_t ok = true;
 
   if (!PyArg_ParseTuple(args, "|O", &items[0]))
     return NULL;
@@ -350,17 +350,17 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
       /* Object has a "keys" method, so we iterate over the keys */
       keys = PyObject_CallObject(keys_func, 0);
       if (keys == 0) {
-        ok = 0;
+        ok = false;
       } else {
         /* Iterate over the keys */
         it = PyObject_GetIter(keys);
         if (it == 0) {
-          ok = 0;
+          ok = false;
         } else {
           while (ok && ((key = PyIter_Next(it)) != 0)) {
             value = PyObject_GetItem(obj, key);
             if (value == 0) {
-              ok = 0;
+              ok = false;
             } else {
               PyObject_SetItem((PyObject*)self, key, value);
               Py_DECREF(value);
@@ -369,7 +369,7 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
           }
           Py_DECREF(it);
           if (PyErr_Occurred())
-            ok = 0;
+            ok = false;
         }
         Py_DECREF(keys);
       }
@@ -378,20 +378,20 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
        * yields tuples when treated as an iterator */
       it = PyObject_GetIter(obj);
       if (!it) {
-        ok = 0;
+        ok = false;
       } else {
         while (ok && ((item = PyIter_Next(it)) != 0)) {
           if (!PySequence_Check(item) || PyBaseString_Check(item)) {
             PyErr_SetString(PyExc_TypeError, "cannot convert update sequence element to a sequence");
-            ok = 0;
+            ok = false;
           } else {
             key = PySequence_GetItem(item, 0);
             if (key == 0) {
-              ok = 0;
+              ok = false;
             } else {
               value = PySequence_GetItem(item, 1);
               if (value == 0) {
-                ok = 0;
+                ok = false;
               } else {
                 PyObject_SetItem((PyObject*)self, key, value);
                 Py_DECREF(value);
@@ -403,7 +403,7 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
         }
         Py_DECREF(it);
         if (PyErr_Occurred())
-          ok = 0;
+          ok = false;
       }
     }
 
@@ -425,7 +425,7 @@ PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args,
  * \param args positional arguments
  * \param kwds keyword arguments
  */
-PyObject* igraphmodule_Vertex_all_edges(PyObject* self) {
+PyObject* igraphmodule_Vertex_all_edges(PyObject* self, PyObject* Py_UNUSED(_null)) {
   return PyObject_CallMethod(self, "incident", "i", (int) IGRAPH_ALL);
 }
 
@@ -437,7 +437,7 @@ PyObject* igraphmodule_Vertex_all_edges(PyObject* self) {
  * \param args positional arguments
  * \param kwds keyword arguments
  */
-PyObject* igraphmodule_Vertex_in_edges(PyObject* self) {
+PyObject* igraphmodule_Vertex_in_edges(PyObject* self, PyObject* Py_UNUSED(_null)) {
   return PyObject_CallMethod(self, "incident", "i", (int) IGRAPH_IN);
 }
 
@@ -449,7 +449,7 @@ PyObject* igraphmodule_Vertex_in_edges(PyObject* self) {
  * \param args positional arguments
  * \param kwds keyword arguments
  */
-PyObject* igraphmodule_Vertex_out_edges(PyObject* self) {
+PyObject* igraphmodule_Vertex_out_edges(PyObject* self, PyObject* Py_UNUSED(_null)) {
   return PyObject_CallMethod(self, "incident", "i", (int) IGRAPH_OUT);
 }
 

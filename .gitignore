@@ -18,6 +18,10 @@ vendor/install/
 .DS_Store
 
 doc/source/gallery.rst
+doc/source/tutorials
+doc/linkcheck
 doc/api/
+doc/dash/
 doc/html/
 doc/jekyll_tools/vendor
+doc/examples_sphinx-gallery/social_network.*

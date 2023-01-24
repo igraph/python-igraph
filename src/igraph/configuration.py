@@ -313,7 +313,7 @@ class Configuration:
         if isinstance(stream, str):
             stream = open(stream, "r")
             file_was_open = True
-        self._config.readfp(stream)
+        self._config.read_file(stream)
         self._filename = getattr(stream, "name", None)
         if file_was_open:
             stream.close()

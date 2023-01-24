@@ -269,7 +269,7 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
   PyObject *iter = 0, *item;
   igraph_vit_t vit;
   igraph_integer_t v, v1, v2, eid;
-  igraph_bool_t deleting, ok = 1;
+  igraph_bool_t deleting, ok = true;
 
   /* Check whether new_value is an iterable (and not a string). If not,
    * every assignment will use the same value (that is, new_value) */
@@ -313,7 +313,7 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
           if (igraph_vector_int_push_back(&data->to_delete, eid)) {
             igraphmodule_handle_igraph_error();
             igraph_vector_int_clear(&data->to_delete);
-            ok = 0;
+            ok = false;
             break;
           }
         }
@@ -324,7 +324,7 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
               igraph_vector_int_push_back(&data->to_add, v2)) {
             igraphmodule_handle_igraph_error();
             igraph_vector_int_clear(&data->to_add);
-            ok = 0;
+            ok = false;
             break;
           }
           if (values != 0) {
@@ -332,7 +332,7 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
             if (PyList_Append(data->to_add_values, new_value)) {
               Py_DECREF(new_value);
               igraph_vector_int_clear(&data->to_add);
-              ok = 0;
+              ok = false;
               break;
             }
           }
@@ -375,7 +375,7 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
           if (igraph_vector_int_push_back(&data->to_delete, eid)) {
             igraphmodule_handle_igraph_error();
             igraph_vector_int_clear(&data->to_delete);
-            ok = 0;
+            ok = false;
             break;
           }
         }
@@ -386,7 +386,7 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
               igraph_vector_int_push_back(&data->to_add, v2)) {
             igraphmodule_handle_igraph_error();
             igraph_vector_int_clear(&data->to_add);
-            ok = 0;
+            ok = false;
             break;
           }
           if (values != 0) {
@@ -394,7 +394,7 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
             if (PyList_Append(data->to_add_values, new_value)) {
               Py_DECREF(new_value);
               igraph_vector_int_clear(&data->to_add);
-              ok = 0;
+              ok = false;
               break;
             }
           }
@@ -424,7 +424,7 @@ int igraphmodule_Graph_adjmatrix_set_index(igraph_t* graph,
   igraph_vs_t vs1, vs2;
   igraph_vit_t vit;
   igraph_integer_t vid1 = -1, vid2 = -1, eid = -1;
-  igraph_bool_t ok = 1;
+  igraph_bool_t ok = true;
   igraphmodule_i_Graph_adjmatrix_set_index_data_t data;
   char* attr;
 
@@ -451,7 +451,7 @@ int igraphmodule_Graph_adjmatrix_set_index(igraph_t* graph,
         /* Deleting the edge between vid1 and vid2 if it is there */
         if (igraph_delete_edges(graph, igraph_ess_1(eid))) {
           igraphmodule_handle_igraph_error();
-          ok = 0;
+          ok = false;
         }
       }
     } else {
@@ -460,7 +460,7 @@ int igraphmodule_Graph_adjmatrix_set_index(igraph_t* graph,
         eid = igraph_ecount(graph);
         if (igraph_add_edge(graph, vid1, vid2)) {
           igraphmodule_handle_igraph_error();
-          ok = 0;
+          ok = false;
         }
       }
       if (ok && values != 0) {
@@ -492,13 +492,13 @@ int igraphmodule_Graph_adjmatrix_set_index(igraph_t* graph,
       /* Complete submatrix */
       if (igraph_vit_create(graph, vs1, &vit)) {
         igraphmodule_handle_igraph_error();
-        ok = 0;
+        ok = false;
       } else {
         while (!IGRAPH_VIT_END(vit)) {
           vid1 = IGRAPH_VIT_GET(vit);
           if (igraphmodule_i_Graph_adjmatrix_set_index_row(
                 graph, vid1, &vs2, IGRAPH_OUT, values, new_value, &data) == 0) {
-            ok = 0;
+            ok = false;
             break;
           }
           IGRAPH_VIT_NEXT(vit);
@@ -511,7 +511,7 @@ int igraphmodule_Graph_adjmatrix_set_index(igraph_t* graph,
       /* Second phase: do the deletions in one batch */
       if (igraph_delete_edges(graph, igraph_ess_vector(&data.to_delete))) {
         igraphmodule_handle_igraph_error();
-        ok = 0;
+        ok = false;
       }
     }
 
@@ -526,7 +526,7 @@ int igraphmodule_Graph_adjmatrix_set_index(igraph_t* graph,
           if (PyList_Size(values) != igraph_ecount(graph)) {
             PyErr_SetString(PyExc_ValueError, "hmmm, attribute value list "
                 "length mismatch, this is most likely a bug.");
-            ok = 0;
+            ok = false;
           }
         }
       }

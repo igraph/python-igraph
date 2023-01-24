@@ -25,9 +25,11 @@
 
 python-igraph |release|
 =======================
-|igraph| is a fast open source tool to manipulate and analyze graphs or networks. It is primarily written in C. `python-igraph` is |igraph|'s interface for the Python programming language.
+Python interface of `igraph`_, a fast and open source C library to manipulate and analyze graphs (aka networks). It can be used to:
 
-`python-graph` includes functionality for graph plotting and conversion from/to `networkx`_.
+ - Create, manipulate, and analyze networks.
+ - Convert graphs from/to `networkx`_, `graph-tool`_ and many file formats.
+ - Plot networks using `Cairo`_, `matplotlib`_, and `plotly`_.
 
 
 Installation
@@ -63,9 +65,9 @@ Documentation
 
        **Tutorials**
 
-       - :doc:`tutorials/quickstart/quickstart`
-       - :doc:`Gallery <gallery>`
-       - :doc:`tutorial`
+       - :doc:`Quick start <tutorials/quickstart>`
+       - :doc:`Gallery of examples <tutorials/index>`
+       - :doc:`Extended tutorial <tutorial>`
 
     .. container::
 
@@ -74,7 +76,7 @@ Documentation
        - :doc:`Generation <generation>`
        - :doc:`Analysis <analysis>`
        - :doc:`Visualization <visualisation>`
-       - :doc:`configuration`
+       - :doc:`Configuration <configuration>`
 
 .. container:: twocol
 
@@ -92,13 +94,14 @@ Documentation
        - :doc:`FAQs <faq>`
        - `Forum <https://igraph.discourse.group/>`_
 
+Documentation for `python-igraph <= 0.10.1` is available on our `old website <https://igraph.org/python/versions/0.10.1>`_.
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
    install
-   gallery
+   tutorials/index
    tutorial
    api/index
    generation
@@ -115,4 +118,9 @@ Indices and tables
 * :ref:`modindex`
 
 
+.. _igraph: https://igraph.org
 .. _networkx: https://networkx.org/documentation/stable/
+.. _graph-tool: https://graph-tool.skewed.de/
+.. _Cairo: https://www.cairographics.org
+.. _matplotlib: https://matplotlib.org
+.. _plotly: https://plotly.com/python/

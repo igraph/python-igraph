@@ -1,6 +1,97 @@
 # igraph Python interface changelog
 
-## [Development branch]
+## [Unreleased]
+
+### Fixed
+
+- Fixed the drawing of `VertexDendrogram` instances, both in the Cairo and the
+  Matplotlib backends.
+
+## [0.10.3] - 2022-12-31
+
+### Changed
+
+- The C core of igraph was updated to version 0.10.3.
+
+- UMAP layout now exposes the computation of the symmetrized edge weights via
+  `umap_compute_weights()`. The layout function, `Graph.layout_umap()`, can
+  now be called either on a directed graph with edge distances, or on an
+  undirected graph with edge weights, typically computed via
+  `umap_compute_weights()` or precomputed by the user. Moreover, the
+  `sampling_prob` argument was faulty and has been removed. See PR
+  [#613](https://github.com/igraph/python-igraph/pull/613) for details.
+
+- The `resolution_parameter` argument of `Graph.community_leiden()` was renamed
+  to `resolution` for sake of consistency. The old variant still works with a
+  deprecation warning, but will be removed in a future version.
+
+### Fixed
+
+- `Graph.Data_Frame()` now handles the `Int64` data type from `pandas`, thanks
+  to [@Adriankhl](https://github.com/Adriankhl). See PR
+  [#609](https://github.com/igraph/python-igraph/pull/609) for details.
+
+- `Graph.layout_lgl()` `root` argument is now optional (as it should have been).
+
+- The `VertexClustering` class now handles partial dendrograms correctly.
+
+## [0.10.2] - 2022-10-14
+
+### Added
+
+- `python-igraph` is now tested in Python 3.11.
+
+- Added `Graph.modularity_matrix()` to calculate the modularity matrix of
+  a graph.
+
+- Added `Graph.get_k_shortest_paths()`, thanks to
+  [@sombreslames](https://github.com/user/sombreslames). See PR
+  [#577](https://github.com/igraph/python-igraph/pull/577) for details.
+
+- The `setup.py` script now also accepts environment variables instead of
+  command line arguments to configure several aspects of the build process
+  (i.e. whether a fully static extension is being built, or whether it is
+  allowed to use `pkg-config` to retrieve the compiler and linker flags for
+  an external `igraph` library instead of the vendored one). The environment
+  variables are named similarly to the command line arguments but in
+  uppercase, dashes replaced with underscores, and they are prefixed with
+  `IGRAPH_` (i.e. `--use-pkg-config` becomes `IGRAPH_USE_PKG_CONFIG`).
+
+### Changed
+
+- The C core of igraph was updated to version 0.10.2, fixing a range of bugs
+  originating from the C core.
+
+### Fixed
+
+- Fixed a crash in `Graph.decompose()` that was accidentally introduced in
+  0.10.0 during the transition to `igraph_graph_list_t` in the C core.
+
+- `Clustering.sizes()` now works correctly even if the membership vector
+  contains `None` items.
+
+- `Graph.modularity()` and `Graph.community_multilevel()` now correctly expose
+  the `resolution` parameter.
+
+- Fixed a reference leak in `Graph.is_chordal()` that decreased the reference
+  count of Python's built-in `True` and `False` constants unnecessarily.
+
+- Unit tests updated to get rid of deprecation warnings in Python 3.11.
+
+## [0.10.1] - 2022-09-12
+
+### Added
+
+- Added `Graph.minimum_cycle_basis()` and `Graph.fundamental_cycles()`
+
+- `Graph.average_path_length()` now supports edge weights.
+
+### Fixed
+
+- Restored missing exports from `igraph.__all__` that used to be in the main
+  `igraph` package before 0.10.0.
+
+## [0.10.0] - 2022-09-05
 
 ### Added
 
@@ -13,17 +104,49 @@
   data structures. See PR [#434](https://github.com/igraph/python-igraph/pull/434)
   for more details.
 
+- `Graph.list_triangles()` lists all triangles in a graph.
+
+- `Graph.reverse_edges()` reverses some or all edges of a graph.
+
+- `Graph.Degree_Sequence()` now supports the `"no_multiple_uniform"` generation
+  method, which generates simple graphs, sampled uniformly, using rejection
+  sampling.
+
+- `Graph.Lattice()` now supports per-dimension periodicity control.
+
 - `Graph.get_adjacency()` now allows the user to specify whether loop edges
   should be counted once or twice, or not at all.
 
 - `Graph.get_laplacian()` now supports left-, right- and symmetric normalization.
 
+- `Graph.modularity()` now supports setting the resolution with the
+  `resolution=...` parameter.
+
 ### Changed
+
+- The C core of igraph was updated to version 0.10.0.
+
+- We now publish `abi3` wheels on PyPI from CPython 3.9 onwards, making it
+  possible to use an already-built Python wheel with newer minor Python
+  releases (and also reducing the number of wheels we actually need to
+  publish). Releases for CPython 3.7 and 3.8 still use version-specific wheels
+  because the code of the C part of the extension contains conditional macros
+  for CPython 3.7 and 3.8.
 
 - Changed default value of the `use_vids=...` argument of `Graph.DataFrame()`
   to `True`, thanks to [@fwitter](https://github.com/user/fwitter).
 
+- `Graph.Degree_Sequence()` now accepts all sorts of sequences as inputs, not
+  only lists.
+
+### Fixed
+
+- The Matplotlib backend now allows `edge_color` and `edge_width` to be set
+  on an edge-by-edge basis.
+
 ### Removed
+
+- Dropped support for Python 3.6.
 
 - Removed deprecated `UbiGraphDrawer`.
 
@@ -38,32 +161,6 @@
   its already existing shorter alias, `Graph.components()`.
 
 - `Graph.shortest_paths()` is now deprecated; use `Graph.distances()` instead.
-
-## [Unreleased]
-
-### Added
-
-- `Graph.reverse_edges()` reverses some or all edges of a graph.
-
-- `Graph.Degree_Sequence()` now supports the `"no_multiple_uniform"` generation
-  method, which generates simple graphs, sampled uniformly, using rejection
-  sampling.
-
-- `Graph.reverse_edges()` reverses some or all edges of a graph.
-
-### Changed
-
-- `Graph.Degree_Sequence()` now accepts all sorts of sequences as inputs, not
-  only lists.
-
-### Fixed
-
-- The Matplotlib backend now allows `edge_color` and `edge_width` to be set
-  on an edge-by-edge basis.
-
-### Deprecated
-
-- `Graph.clusters()` is now deprecated, use `Graph.components()` instead.
 
 ## [0.9.11]
 
@@ -351,8 +448,11 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[Development branch]: https://github.com/igraph/python-igraph/compare/0.9.11..develop
-[Unreleased]: https://github.com/igraph/python-igraph/compare/0.9.11..master
+[Unreleased]: https://github.com/igraph/python-igraph/compare/0.10.3...master
+[0.10.3]: https://github.com/igraph/python-igraph/compare/0.10.2...0.10.3
+[0.10.2]: https://github.com/igraph/python-igraph/compare/0.10.1...0.10.2
+[0.10.1]: https://github.com/igraph/python-igraph/compare/0.10.0...0.10.1
+[0.10.0]: https://github.com/igraph/python-igraph/compare/0.9.11...0.10.0
 [0.9.11]: https://github.com/igraph/python-igraph/compare/0.9.10...0.9.11
 [0.9.10]: https://github.com/igraph/python-igraph/compare/0.9.9...0.9.10
 [0.9.9]: https://github.com/igraph/python-igraph/compare/0.9.8...0.9.9

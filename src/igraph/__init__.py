@@ -41,7 +41,6 @@ from igraph._igraph import (
     BLISS_FSM,
     DFSIter,
     Edge,
-    EdgeSeq as _EdgeSeq,
     GET_ADJACENCY_BOTH,
     GET_ADJACENCY_LOWER,
     GET_ADJACENCY_UPPER,
@@ -62,7 +61,6 @@ from igraph._igraph import (
     TREE_OUT,
     TREE_UNDIRECTED,
     Vertex,
-    VertexSeq as _VertexSeq,
     WEAK,
     arpack_options as default_arpack_options,
     community_to_membership,
@@ -73,6 +71,7 @@ from igraph._igraph import (
     set_progress_handler,
     set_random_number_generator,
     set_status_handler,
+    umap_compute_weights,
     __igraph_version__,
 )
 from igraph.adjacency import (
@@ -260,26 +259,14 @@ from igraph.structural import (
 )
 from igraph.summary import GraphSummary, summary
 from igraph.utils import (
-    dbl_epsilon,
-    multidict,
-    named_temporary_file,
+    deprecated,
     numpy_to_contiguous_memoryview,
     rescale,
-    safemin,
-    safemax,
 )
 from igraph.version import __version__, __version_info__
 
 import os
 import sys
-
-from warnings import warn
-
-
-def deprecated(message):
-    """Prints a warning message related to the deprecation of some igraph
-    feature."""
-    warn(message, DeprecationWarning, stacklevel=3)
 
 
 class Graph(GraphBase):
@@ -375,10 +362,13 @@ class Graph(GraphBase):
         @keyword directed: whether the graph should be directed
         @keyword graph_attrs: the attributes of the graph as a dictionary.
         @keyword vertex_attrs: the attributes of the vertices as a dictionary.
-          Every dictionary value must be an iterable with exactly M{n} items.
-        @keyword edge_attrs: the attributes of the edges as a dictionary. Every
-          dictionary value must be an iterable with exactly M{m} items where
-          M{m} is the number of edges.
+          The keys of the dictionary must be the names of the attributes; the
+          values must be iterables with exactly M{n} items where M{n} is the
+          number of vertices.
+        @keyword edge_attrs: the attributes of the edges as a dictionary. The
+          keys of the dictionary must be the names of the attributes; the values
+          must be iterables with exactly M{m} items where M{m} is the number of
+          edges.
         """
         # Pop the special __ptr keyword argument
         ptr = kwds.pop("__ptr", None)
@@ -443,9 +433,9 @@ class Graph(GraphBase):
 
         # Initialize the graph
         if ptr:
-            GraphBase.__init__(self, __ptr=ptr)
+            super().__init__(__ptr=ptr)
         else:
-            GraphBase.__init__(self, nverts, edges, directed)
+            super().__init__(nverts, edges, directed)
 
         # Set the graph attributes
         for key, value in graph_attrs.items():
@@ -656,8 +646,8 @@ class Graph(GraphBase):
     clusters = _clusters
     cohesive_blocks = _cohesive_blocks
     connected_components = _connected_components
-    blocks = biconnected_components
-    components = connected_components
+    blocks = _biconnected_components
+    components = _connected_components
 
     #############################################
     # Community detection/clustering
@@ -1126,37 +1116,86 @@ del (
 # except for the objects mentioned down here.
 __all__ = (
     'config',
+    'AdvancedGradientPalette',
+    'BoundingBox',
+    'CairoGraphDrawer',
+    'ClusterColoringPalette',
+    'Clustering',
+    'CohesiveBlocks',
+    'Configuration',
+    'Cover',
     'Cut',
+    'DefaultGraphDrawer',
+    'Dendrogram',
+    'DyadCensus',
+    'Edge',
+    'EdgeSeq',
+    'FittedPowerLaw',
+    'Flow',
+    'GradientPalette',
     'Graph',
     'GraphBase',
-    'Edge',
-    'Vertex',
-    'EdgeSeq',
-    'VertexSeq',
-    'Matching',
-    'AdvancedGradientPalette',
-    'GradientPalette',
+    'GraphSummary',
+    'Histogram',
     'InternalError',
     'Layout',
-    'default_arpack_options',
+    'Matching',
+    'MatplotlibGraphDrawer',
+    'Matrix',
+    'Palette',
+    'Plot',
+    'Point',
+    'PrecalculatedPalette',
+    'RainbowPalette',
+    'Rectangle',
+    'RunningMean',
+    'TriadCensus',
+    'UniqueIdGenerator',
+    'Vertex',
+    'VertexClustering',
+    'VertexCover',
+    'VertexDendrogram',
+    'VertexSeq',
+    'autocurve',
+    'color_name_to_rgb',
+    'color_name_to_rgba',
     'community_to_membership',
+    'compare_communities',
     'convex_hull',
-    'is_degree_sequence',
-    'is_graphical_degree_sequence',
+    'default_arpack_options',
+    'disjoint_union',
+    'get_include',
     'hsla_to_rgba',
     'hsl_to_rgb',
     'hsva_to_rgba',
     'hsv_to_rgb',
+    'is_degree_sequence',
+    'is_graphical',
+    'is_graphical_degree_sequence',
+    'intersection',
+    'known_colors',
+    'load',
+    'mean',
+    'median',
+    'palettes',
+    'percentile',
+    'plot',
+    'power_law_fit',
+    'quantile',
+    'read',
+    'rescale',
     'rgba_to_hsla',
     'rgb_to_hsl',
     'rgba_to_hsva',
     'rgb_to_hsv',
+    'save',
     'set_progress_handler',
     'set_random_number_generator',
     'set_status_handler',
+    'split_join_distance',
+    'summary',
     'union',
-    'intersection',
-    'disjoint_union',
+    'write',
 
     # enums and stuff
     'ADJ_DIRECTED',

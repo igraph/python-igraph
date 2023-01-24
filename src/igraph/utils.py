@@ -6,12 +6,14 @@ from contextlib import contextmanager
 
 from collections.abc import MutableMapping
 from itertools import chain
+from warnings import warn
 
 import os
 import tempfile
 
 __all__ = (
     "dbl_epsilon",
+    "deprecated",
     "multidict",
     "named_temporary_file",
     "numpy_to_contiguous_memoryview",
@@ -21,6 +23,12 @@ __all__ = (
 )
 
 __docformat__ = "restructuredtext en"
+
+
+def deprecated(message):
+    """Prints a warning message related to the deprecation of some igraph
+    feature."""
+    warn(message, DeprecationWarning, stacklevel=3)
 
 
 def _is_running_in_ipython():
@@ -313,7 +321,7 @@ class multidict(MutableMapping):
 
     def update(self, arg, **kwds):
         if hasattr(arg, "keys") and callable(arg.keys):
-            for key in list(arg.keys()):
+            for key in arg.keys():
                 self.add(key, arg[key])
         else:
             for key, value in arg:

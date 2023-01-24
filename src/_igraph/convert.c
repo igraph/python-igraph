@@ -77,7 +77,7 @@ int PyLong_AsInt(PyObject* obj, int* result) {
  * \param result the result is returned here. The default value must be
  *   passed in before calling this function, since this value is
  *   returned untouched if the given Python object is Py_None.
- * \return 0 if everything is OK, 1 otherwise. An appropriate exception
+ * \return 0 if everything is OK, -1 otherwise. An appropriate exception
  *   is raised in this case.
  */
 int igraphmodule_PyObject_to_enum(PyObject *o,
@@ -203,20 +203,34 @@ int igraphmodule_PyObject_to_enum_strict(PyObject *o,
     return -1;
 }
 
+#define TRANSLATE_ENUM_WITH(translation_table) \
+  int result_int = *result, retval; \
+  retval = igraphmodule_PyObject_to_enum(o, translation_table, &result_int); \
+  if (retval == 0) { \
+    *result = result_int; \
+  } \
+  return retval;
+
+#define TRANSLATE_ENUM_STRICTLY_WITH(translation_table) \
+  int result_int = *result, retval; \
+  retval = igraphmodule_PyObject_to_enum_strict(o, translation_table, &result_int); \
+  if (retval == 0) { \
+    *result = result_int; \
+  } \
+  return retval;
+
 /**
  * \ingroup python_interface_conversion
  * \brief Converts a Python object to an igraph \c igraph_neimode_t
  */
-int igraphmodule_PyObject_to_neimode_t(PyObject *o,
-  igraph_neimode_t *result) {
+int igraphmodule_PyObject_to_neimode_t(PyObject *o, igraph_neimode_t *result) {
   static igraphmodule_enum_translation_table_entry_t neimode_tt[] = {
         {"in", IGRAPH_IN},
         {"out", IGRAPH_OUT},
         {"all", IGRAPH_ALL},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, neimode_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(neimode_tt);
 }
 
 /**
@@ -245,7 +259,7 @@ int igraphmodule_PyObject_to_add_weights_t(PyObject *o,
     return 0;
   }
 
-  return igraphmodule_PyObject_to_enum(o, add_weights_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(add_weights_tt);
 }
 
 /**
@@ -266,8 +280,7 @@ int igraphmodule_PyObject_to_adjacency_t(PyObject *o,
         {"plus", IGRAPH_ADJ_PLUS},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, adjacency_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(adjacency_tt);
 }
 
 int igraphmodule_PyObject_to_attribute_combination_type_t(PyObject* o,
@@ -299,11 +312,11 @@ int igraphmodule_PyObject_to_attribute_combination_type_t(PyObject* o,
     return 0;
   }
 
-  return igraphmodule_PyObject_to_enum(o, attribute_combination_type_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(attribute_combination_type_tt);
 }
 
-int igraphmodule_PyObject_to_eigen_algorithm_t(PyObject *object,
-                                       igraph_eigen_algorithm_t *a) {
+int igraphmodule_PyObject_to_eigen_algorithm_t(PyObject *o,
+                                       igraph_eigen_algorithm_t *result) {
   static igraphmodule_enum_translation_table_entry_t eigen_algorithm_tt[] =
     {
       {"auto", IGRAPH_EIGEN_AUTO},
@@ -315,19 +328,19 @@ int igraphmodule_PyObject_to_eigen_algorithm_t(PyObject *object,
       {0,0}
     };
 
-  if (object == Py_None) {
-    *a = IGRAPH_EIGEN_ARPACK;
+  if (o == Py_None) {
+    *result = IGRAPH_EIGEN_ARPACK;
     return 0;
-  } else {
-    return igraphmodule_PyObject_to_enum(object, eigen_algorithm_tt,
-                                         (int*)a);
   }
+
+  TRANSLATE_ENUM_WITH(eigen_algorithm_tt);
 }
 
-int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
-                                           igraph_eigen_which_t *w) {
+int igraphmodule_PyObject_to_eigen_which_t(PyObject *o,
+                                           igraph_eigen_which_t *result) {
   PyObject *key, *value;
   Py_ssize_t pos = 0;
+  igraph_eigen_which_t *w = result;
 
   static igraphmodule_enum_translation_table_entry_t
     eigen_which_position_tt[] = {
@@ -361,13 +374,13 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
   w->vestimate = 0;
   w->balance = IGRAPH_LAPACK_DGEEVX_BALANCE_NONE;
 
-  if (object != Py_None && !PyDict_Check(object)) {
+  if (o != Py_None && !PyDict_Check(o)) {
     PyErr_SetString(PyExc_TypeError, "Python dictionary expected");
     return -1;
   }
 
-  if (object != Py_None) {
-    while (PyDict_Next(object, &pos, &key, &value)) {
+  if (o != Py_None) {
+    while (PyDict_Next(o, &pos, &key, &value)) {
       char *kv;
       PyObject *temp_bytes;
       if (!PyUnicode_Check(key)) {
@@ -390,8 +403,11 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
       }
       Py_DECREF(temp_bytes);
       if (!strcasecmp(kv, "pos")) {
-        igraphmodule_PyObject_to_enum(value, eigen_which_position_tt,
-                                      (int*) &w->pos);
+        int w_pos_int = w->pos;
+        if (igraphmodule_PyObject_to_enum(value, eigen_which_position_tt, &w_pos_int)) {
+          return -1;
+        }
+        w->pos = w_pos_int;
       } else if (!strcasecmp(kv, "howmany")) {
         if (PyLong_AsInt(value, &w->howmany)) {
           return -1;
@@ -413,8 +429,11 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *object,
           return -1;
         }
       } else if (!strcasecmp(kv, "balance")) {
-        igraphmodule_PyObject_to_enum(value, lapack_dgeevc_balance_tt,
-                                      (int*) &w->balance);
+        int w_balance_as_int = w->balance;
+        if (igraphmodule_PyObject_to_enum(value, lapack_dgeevc_balance_tt, &w_balance_as_int)) {
+          return -1;
+        }
+        w->balance = w_balance_as_int;
       } else {
         PyErr_SetString(PyExc_TypeError, "Unknown eigen parameter");
         if (kv != 0) {
@@ -442,8 +461,7 @@ int igraphmodule_PyObject_to_barabasi_algorithm_t(PyObject *o,
         {"psumtree_multiple", IGRAPH_BARABASI_PSUMTREE_MULTIPLE},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, barabasi_algorithm_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(barabasi_algorithm_tt);
 }
 
 /**
@@ -457,8 +475,7 @@ int igraphmodule_PyObject_to_connectedness_t(PyObject *o,
         {"strong", IGRAPH_STRONG},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, connectedness_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(connectedness_tt);
 }
 
 /**
@@ -475,8 +492,7 @@ int igraphmodule_PyObject_to_vconn_nei_t(PyObject *o,
         {"ignore", IGRAPH_VCONN_NEI_IGNORE},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, vconn_nei_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(vconn_nei_tt);
 }
 
 /**
@@ -494,8 +510,7 @@ int igraphmodule_PyObject_to_bliss_sh_t(PyObject *o,
         {"fsm", IGRAPH_BLISS_FSM},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, bliss_sh_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(bliss_sh_tt);
 }
 
 /**
@@ -515,8 +530,7 @@ int igraphmodule_PyObject_to_community_comparison_t(PyObject *o,
         {"adjusted_rand", IGRAPH_COMMCMP_ADJUSTED_RAND},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, commcmp_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(commcmp_tt);
 }
 
 /**
@@ -539,8 +553,7 @@ int igraphmodule_PyObject_to_degseq_t(PyObject *o,
         {"edge_switching_simple", IGRAPH_DEGSEQ_EDGE_SWITCHING_SIMPLE},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, degseq_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(degseq_tt);
 }
 
 /**
@@ -557,8 +570,7 @@ int igraphmodule_PyObject_to_fas_algorithm_t(PyObject *o,
         {"ip", IGRAPH_FAS_EXACT_IP},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, fas_algorithm_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(fas_algorithm_tt);
 }
 
 /**
@@ -573,8 +585,7 @@ int igraphmodule_PyObject_to_get_adjacency_t(PyObject *o,
         {"both", IGRAPH_GET_ADJACENCY_BOTH},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, get_adjacency_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(get_adjacency_tt);
 }
 
 /**
@@ -594,12 +605,14 @@ int igraphmodule_PyObject_to_laplacian_normalization_t(
   if (o == Py_True) {
     *result = IGRAPH_LAPLACIAN_SYMMETRIC;
     return 0;
-  } else if (o == Py_False) {
+  }
+  
+  if (o == Py_False) {
     *result = IGRAPH_LAPLACIAN_UNNORMALIZED;
     return 0;
-  } else {
-    return igraphmodule_PyObject_to_enum(o, laplacian_normalization_tt, (int*)result);
   }
+  
+  TRANSLATE_ENUM_WITH(laplacian_normalization_tt);
 }
 
 /**
@@ -616,12 +629,14 @@ int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *re
   if (o == Py_True) {
     *result = IGRAPH_LAYOUT_GRID;
     return 0;
-  } else if (o == Py_False) {
+  }
+  
+  if (o == Py_False) {
     *result = IGRAPH_LAYOUT_NOGRID;
     return 0;
-  } else {
-    return igraphmodule_PyObject_to_enum(o, layout_grid_tt, (int*)result);
   }
+
+  TRANSLATE_ENUM_WITH(layout_grid_tt);
 }
 
 /**
@@ -638,12 +653,14 @@ int igraphmodule_PyObject_to_loops_t(PyObject *o, igraph_loops_t *result) {
   if (o == Py_True) {
     *result = IGRAPH_LOOPS_TWICE;
     return 0;
-  } else if (o == Py_False) {
+  }
+  
+  if (o == Py_False) {
     *result = IGRAPH_NO_LOOPS;
     return 0;
-  } else {
-    return igraphmodule_PyObject_to_enum(o, loops_tt, (int*)result);
   }
+
+  TRANSLATE_ENUM_WITH(loops_tt);
 }
 
 /**
@@ -657,8 +674,7 @@ int igraphmodule_PyObject_to_random_walk_stuck_t(PyObject *o,
         {"error", IGRAPH_RANDOM_WALK_STUCK_ERROR},
         {0,0}
   };
-
-  return igraphmodule_PyObject_to_enum(o, random_walk_stuck_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(random_walk_stuck_tt);
 }
 
 /**
@@ -670,8 +686,7 @@ int igraphmodule_PyObject_to_reciprocity_t(PyObject *o, igraph_reciprocity_t *re
     {"ratio", IGRAPH_RECIPROCITY_RATIO},
     {0,0}
   };
-
-  return igraphmodule_PyObject_to_enum(o, reciprocity_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(reciprocity_tt);
 }
 
 /**
@@ -684,8 +699,7 @@ int igraphmodule_PyObject_to_rewiring_t(PyObject *o, igraph_rewiring_t *result) 
     {"loops", IGRAPH_REWIRING_SIMPLE_LOOPS},
     {0,0}
   };
-
-  return igraphmodule_PyObject_to_enum(o, rewiring_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(rewiring_tt);
 }
 
 /**
@@ -697,8 +711,7 @@ int igraphmodule_PyObject_to_spinglass_implementation_t(PyObject *o, igraph_spin
     {"negative", IGRAPH_SPINCOMM_IMP_NEG},
     {0,0}
   };
-
-  return igraphmodule_PyObject_to_enum(o, spinglass_implementation_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(spinglass_implementation_tt);
 }
 
 /**
@@ -710,8 +723,7 @@ int igraphmodule_PyObject_to_spincomm_update_t(PyObject *o, igraph_spincomm_upda
     {"config", IGRAPH_SPINCOMM_UPDATE_CONFIG},
     {0,0}
   };
-
-  return igraphmodule_PyObject_to_enum(o, spincomm_update_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(spincomm_update_tt);
 }
 
 /**
@@ -727,8 +739,7 @@ int igraphmodule_PyObject_to_star_mode_t(PyObject *o,
         {"undirected", IGRAPH_STAR_UNDIRECTED},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, star_mode_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(star_mode_tt);
 }
 
 /**
@@ -745,8 +756,7 @@ int igraphmodule_PyObject_to_subgraph_implementation_t(PyObject *o,
         {"new", IGRAPH_SUBGRAPH_CREATE_FROM_SCRATCH},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, subgraph_impl_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(subgraph_impl_tt);
 }
 
 /**
@@ -766,12 +776,14 @@ int igraphmodule_PyObject_to_to_directed_t(PyObject *o,
   if (o == Py_True) {
     *result = IGRAPH_TO_DIRECTED_MUTUAL;
     return 0;
-  } else if (o == Py_False) {
+  }
+  
+  if (o == Py_False) {
     *result = IGRAPH_TO_DIRECTED_ARBITRARY;
     return 0;
   }
 
-  return igraphmodule_PyObject_to_enum(o, to_directed_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(to_directed_tt);
 }
 
 /**
@@ -790,12 +802,14 @@ int igraphmodule_PyObject_to_to_undirected_t(PyObject *o,
   if (o == Py_True) {
     *result = IGRAPH_TO_UNDIRECTED_COLLAPSE;
     return 0;
-  } else if (o == Py_False) {
+  }
+  
+  if (o == Py_False) {
     *result = IGRAPH_TO_UNDIRECTED_EACH;
     return 0;
   }
 
-  return igraphmodule_PyObject_to_enum(o, to_undirected_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(to_undirected_tt);
 }
 
 /**
@@ -811,7 +825,7 @@ int igraphmodule_PyObject_to_transitivity_mode_t(PyObject *o,
         {0,0}
     };
 
-  return igraphmodule_PyObject_to_enum(o, transitivity_mode_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(transitivity_mode_tt);
 }
 
 /**
@@ -831,7 +845,7 @@ int igraphmodule_PyObject_to_tree_mode_t(PyObject *o,
         {0,0}
     };
 
-  return igraphmodule_PyObject_to_enum(o, tree_mode_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(tree_mode_tt);
 }
 
 /**
@@ -1024,7 +1038,7 @@ int igraphmodule_PyObject_to_vector_t(PyObject *list, igraph_vector_t *v, igraph
   it = PyObject_GetIter(list);
   if (it) {
     while ((item = PyIter_Next(it)) != 0) {
-      ok = 1;
+      ok = true;
 
       if (igraphmodule_PyObject_to_integer_t(item, &number)) {
         PyErr_SetString(PyExc_ValueError, "iterable must yield integers");
@@ -1130,7 +1144,7 @@ int igraphmodule_PyObject_float_to_vector_t(PyObject *list, igraph_vector_t *v) 
   it = PyObject_GetIter(list);
   if (it) {
     while ((item = PyIter_Next(it)) != 0) {
-      ok = 1;
+      ok = true;
 
       if (igraphmodule_PyObject_to_real_t(item, &number)) {
         PyErr_SetString(PyExc_ValueError, "iterable must yield numbers");
@@ -1208,7 +1222,7 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
       while ((item = PyIter_Next(it)) != 0) {
         if (!PyNumber_Check(item)) {
           PyErr_SetString(PyExc_TypeError, "iterable must return numbers");
-          ok = 0;
+          ok = false;
         } else {
           ok = (igraphmodule_PyObject_to_integer_t(item, &value) == 0);
         }
@@ -1253,7 +1267,7 @@ int igraphmodule_PyObject_to_vector_int_t(PyObject *list, igraph_vector_int_t *v
     if (item) {
       if (!PyNumber_Check(item)) {
         PyErr_SetString(PyExc_TypeError, "sequence elements must be integers");
-        ok = 0;
+        ok = false;
       } else {
         ok = (igraphmodule_PyObject_to_integer_t(item, &value) == 0);
       }
@@ -1373,7 +1387,7 @@ PyObject* igraphmodule_integer_t_to_PyObject(igraph_integer_t value) {
  * error occurred
  */
 PyObject* igraphmodule_real_t_to_PyObject(igraph_real_t value, igraphmodule_conv_t type) {
-  if (!igraph_finite(value) || igraph_is_nan(value)) {
+  if (!isfinite(value) || isnan(value)) {
     return PyFloat_FromDouble(value);
   }
 
@@ -1781,10 +1795,10 @@ int igraphmodule_PyObject_to_edgelist(
   }
 
   while ((item = PyIter_Next(it)) != 0) {
-    ok = 1;
+    ok = true;
     if (!PySequence_Check(item) || PySequence_Size(item) != 2) {
       PyErr_SetString(PyExc_TypeError, "iterable must return pairs of integers or strings");
-      ok = 0;
+      ok = false;
     } else {
       i1 = PySequence_GetItem(item, 0);
       i2 = i1 ? PySequence_GetItem(item, 1) : 0;
@@ -1799,11 +1813,11 @@ int igraphmodule_PyObject_to_edgelist(
     if (ok) {
       if (igraph_vector_int_push_back(v, idx1)) {
         igraphmodule_handle_igraph_error();
-        ok = 0;
+        ok = false;
       }
       if (ok && igraph_vector_int_push_back(v, idx2)) {
         igraphmodule_handle_igraph_error();
-        ok = 0;
+        ok = false;
       }
     }
 
@@ -2495,41 +2509,49 @@ PyObject* igraphmodule_vector_int_list_t_to_PyList_of_tuples(const igraph_vector
  * will destroy each graph inside, which in turns destroys the vertices and edges
  * data structures that are now supposedly managed by Python.
  *
- * \param v the \c igraph_graph_list_t containing the list to be converted
+ * \param v the \c igraph_graph_list_t containing the list to be converted; the
+ *     list will become empty after executing this function
  * \param type the GraphBase subclass you want your graphs to use. When called from
  *   a GraphBase method, this is typically Py_TYPE(self)
  * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
  */
-PyObject* igraphmodule_graph_list_t_to_PyList(const igraph_graph_list_t *v, PyTypeObject* type) {
+PyObject* igraphmodule_graph_list_t_to_PyList(igraph_graph_list_t *v, PyTypeObject* type) {
   PyObject *list;
   Py_ssize_t n, i;
-  igraph_t *g;
+  igraph_t g;
   igraphmodule_GraphObject *o;
 
   /* We have to create a Python igraph object for every graph returned */
   n = igraph_graph_list_size(v);
   list = PyList_New(n);
-  for (i = 0; i < n; i++) {
-    /* Python takes ownership of vertices and nodes here */
-    g = igraph_graph_list_get_ptr(v, i);
-    o = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t(type, g);
+  for (i = n - 1; i >= 0; i--) {
+    /* Remove the last graph from the list and take ownership of it temporarily */
+    if (igraph_graph_list_remove(v, i, &g)) {
+      igraphmodule_handle_igraph_error();
+      Py_DECREF(list);
+      return NULL;
+    }
 
+    /* Transfer ownership of the graph to Python */
+    o = (igraphmodule_GraphObject*) igraphmodule_Graph_subclass_from_igraph_t(type, &g);
+    if (o == NULL) {
+      igraph_destroy(&g);
+      Py_DECREF(list);
+      return NULL;
+    }
+
+    /* Put the graph into the result list; the list will take ownership */
     if (PyList_SetItem(list, i, (PyObject *) o)) {
       Py_DECREF(o);
       Py_DECREF(list);
-      return 0;
+      return NULL;
     }
   }
 
-  /* Now we know the function went fine, so we can free pointers without worrying
-   * that we won't be able to find them again */
-
-  /* reference has been transferred by PyList_SetItem, no need to DECREF.
-   *
-   * we mustn't call igraph_destroy here, because it would free the vertices
-   * and the edges as well, but we need them in o->g. So just call free */
-  for (i = 0; i < n; i++) {
-    free(igraph_graph_list_get_ptr(v, i));
+  if (!igraph_graph_list_empty(v)) {
+    PyErr_SetString(PyExc_RuntimeError, "expected empty graph list after conversion");
+    Py_DECREF(list);
+    return NULL;
   }
 
   return list;
@@ -2542,10 +2564,14 @@ PyObject* igraphmodule_graph_list_t_to_PyList(const igraph_graph_list_t *v, PyTy
  *
  * \param o the Python object representing the list of lists
  * \param m the address of an uninitialized \c igraph_matrix_t
+ * \param arg_name  name of the argument we are attempting to convert, if
+ *        applicable. May be used in error messages.
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyList_to_matrix_t(PyObject* o, igraph_matrix_t *m) {
-  return igraphmodule_PyList_to_matrix_t_with_minimum_column_count(o, m, 0);
+int igraphmodule_PyList_to_matrix_t(
+  PyObject* o, igraph_matrix_t *m, const char *arg_name
+) {
+  return igraphmodule_PyList_to_matrix_t_with_minimum_column_count(o, m, 0, arg_name);
 }
 
 /**
@@ -2556,16 +2582,24 @@ int igraphmodule_PyList_to_matrix_t(PyObject* o, igraph_matrix_t *m) {
  * \param o the Python object representing the list of lists
  * \param m the address of an uninitialized \c igraph_matrix_t
  * \param num_cols the minimum number of columns in the matrix
+ * \param arg_name  name of the argument we are attempting to convert, if
+ *        applicable. May be used in error messages.
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igraph_matrix_t *m, int min_cols) {
+int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(
+  PyObject *o, igraph_matrix_t *m, int min_cols, const char *arg_name
+) {
   Py_ssize_t nr, nc, n, i, j;
   PyObject *row, *item;
-  int was_warned = 0;
+  igraph_real_t value;
 
   /* calculate the matrix dimensions */
   if (!PySequence_Check(o) || PyUnicode_Check(o)) {
-    PyErr_SetString(PyExc_TypeError, "matrix expected (list of sequences)");
+    if (arg_name) {
+      PyErr_Format(PyExc_TypeError, "matrix expected in '%s'", arg_name);
+    } else {
+      PyErr_SetString(PyExc_TypeError, "matrix expected");
+    }
     return 1;
   }
 
@@ -2575,7 +2609,11 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igrap
     row = PySequence_GetItem(o, i);
     if (!PySequence_Check(row)) {
       Py_DECREF(row);
-      PyErr_SetString(PyExc_TypeError, "matrix expected (list of sequences)");
+      if (arg_name) {
+        PyErr_Format(PyExc_TypeError, "matrix expected in '%s'", arg_name);
+      } else {
+        PyErr_SetString(PyExc_TypeError, "matrix expected");
+      }
       return 1;
     }
     n = PySequence_Size(row);
@@ -2591,17 +2629,12 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igrap
     n = PySequence_Size(row);
     for (j = 0; j < n; j++) {
       item = PySequence_GetItem(row, j);
-      if (PyLong_Check(item)) {
-        MATRIX(*m, i, j) = PyLong_AsLong(item);
-      } else if (PyLong_Check(item)) {
-        MATRIX(*m, i, j) = PyLong_AsLong(item);
-      } else if (PyFloat_Check(item)) {
-        MATRIX(*m, i, j) = PyFloat_AsDouble(item);
-      } else if (!was_warned) {
-        PY_IGRAPH_WARN("non-numeric value in matrix ignored");
-        was_warned=1;
+      if (igraphmodule_PyObject_to_real_t(item, &value)) {
+        Py_DECREF(item);
+        return 1;
       }
       Py_DECREF(item);
+      MATRIX(*m, i, j) = value;
     }
     Py_DECREF(row);
   }
@@ -2615,10 +2648,14 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(PyObject *o, igrap
  *
  * \param o the Python object representing the list of lists
  * \param m the address of an uninitialized \c igraph_matrix_int_t
+ * \param arg_name  name of the argument we are attempting to convert, if
+ *        applicable. May be used in error messages.
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyList_to_matrix_int_t(PyObject* o, igraph_matrix_int_t *m) {
-  return igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(o, m, 0);
+int igraphmodule_PyList_to_matrix_int_t(
+  PyObject* o, igraph_matrix_int_t *m, const char* arg_name
+) {
+  return igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(o, m, 0, arg_name);
 }
 
 /**
@@ -2629,16 +2666,24 @@ int igraphmodule_PyList_to_matrix_int_t(PyObject* o, igraph_matrix_int_t *m) {
  * \param o the Python object representing the list of lists
  * \param m the address of an uninitialized \c igraph_matrix_int_t
  * \param num_cols the minimum number of columns in the matrix
+ * \param arg_name  name of the argument we are attempting to convert, if
+ *        applicable. May be used in error messages.
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, igraph_matrix_int_t *m, int min_cols) {
+int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(
+  PyObject *o, igraph_matrix_int_t *m, int min_cols, const char* arg_name
+) {
   Py_ssize_t nr, nc, n, i, j;
   PyObject *row, *item;
-  int ok, was_warned = 0;
+  igraph_integer_t value;
 
   /* calculate the matrix dimensions */
   if (!PySequence_Check(o) || PyUnicode_Check(o)) {
-    PyErr_SetString(PyExc_TypeError, "matrix expected (list of sequences)");
+    if (arg_name) {
+      PyErr_Format(PyExc_TypeError, "integer matrix expected in '%s'", arg_name);
+    } else {
+      PyErr_SetString(PyExc_TypeError, "integer matrix expected");
+    }
     return 1;
   }
 
@@ -2648,7 +2693,11 @@ int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, i
     row = PySequence_GetItem(o, i);
     if (!PySequence_Check(row)) {
       Py_DECREF(row);
-      PyErr_SetString(PyExc_TypeError, "matrix expected (list of sequences)");
+      if (arg_name) {
+        PyErr_Format(PyExc_TypeError, "integer matrix expected in '%s'", arg_name);
+      } else {
+        PyErr_SetString(PyExc_TypeError, "integer matrix expected");
+      }
       return 1;
     }
     n = PySequence_Size(row);
@@ -2658,29 +2707,22 @@ int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(PyObject *o, i
     }
   }
 
-  igraph_matrix_int_init(m, nr, nc);
+  if (igraph_matrix_int_init(m, nr, nc)) {
+    igraphmodule_handle_igraph_error();
+    return 1;
+  }
+
   for (i = 0; i < nr; i++) {
     row = PySequence_GetItem(o, i);
     n = PySequence_Size(row);
     for (j = 0; j < n; j++) {
       item = PySequence_GetItem(row, j);
-      ok = 1;
-      if (PyLong_Check(item)) {
-        if (igraphmodule_PyObject_to_integer_t(item, &MATRIX(*m, i, j))) {
-          ok = 0;
-        }
-      } else if (PyFloat_Check(item)) {
-        MATRIX(*m, i, j) = (igraph_integer_t)PyFloat_AsDouble(item);
-      } else {
-        ok = 0;
+      if (igraphmodule_PyObject_to_integer_t(item, &value)) {
+        Py_DECREF(item);
+        return 1;
       }
-      
-      if (!ok && !was_warned) {
-        PY_IGRAPH_WARN("non-numeric value in matrix ignored");
-        was_warned = 1;
-      }
-
       Py_DECREF(item);
+      MATRIX(*m, i, j) = value;
     }
     Py_DECREF(row);
   }
@@ -3025,7 +3067,7 @@ int igraphmodule_PyList_to_existing_strvector_t(PyObject* v, igraph_strvector_t 
   for (i = 0; i < n; i++) {
     PyObject *item = PyList_GetItem(v, i);
     char* ptr;
-    igraph_bool_t will_free = 0;
+    igraph_bool_t will_free = false;
 
     if (PyUnicode_Check(item)) {
       ptr = PyUnicode_CopyAsString(item);
@@ -3033,7 +3075,7 @@ int igraphmodule_PyList_to_existing_strvector_t(PyObject* v, igraph_strvector_t 
         igraph_strvector_destroy(result);
         return 1;
       }
-      will_free = 1;
+      will_free = true;
     } else {
       o = PyObject_Str(item);
       if (o == 0) {
@@ -3046,7 +3088,7 @@ int igraphmodule_PyList_to_existing_strvector_t(PyObject* v, igraph_strvector_t 
         igraph_strvector_destroy(result);
         return 1;
       }
-      will_free = 1;
+      will_free = true;
     }
 
     if (igraph_strvector_set(result, i, ptr)) {
@@ -3185,6 +3227,26 @@ int igraphmodule_PyObject_to_vid(PyObject *o, igraph_integer_t *vid, igraph_t *g
   }
 
   return 0;
+}
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Tries to interpret a Python object as a single vertex ID, leaving
+ * the input vertex ID unmodified if the Python object is NULL or None
+ *
+ * \param o      the Python object
+ * \param vid    the vertex ID will be stored here
+ * \param graph  the graph that will be used to interpret vertex names
+ *               if a string was given in o. It may also be a null pointer
+ *               if we don't need name lookups.
+ * \return 0 if everything was OK, 1 otherwise
+ */
+int igraphmodule_PyObject_to_optional_vid(PyObject *o, igraph_integer_t *vid, igraph_t *graph) {
+  if (o == 0 || o == Py_None) {
+    return 0;
+  } else {
+    return igraphmodule_PyObject_to_vid(o, vid, graph);
+  }
 }
 
 /**
@@ -3337,7 +3399,7 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
 
   /* The object can be converted into a single vertex ID */
   if (return_single)
-    *return_single = 1;
+    *return_single = true;
   if (single_vid)
     *single_vid = vid;
 
@@ -3548,7 +3610,7 @@ int igraphmodule_PyObject_to_es_t(PyObject *o, igraph_es_t *es, igraph_t *graph,
 
   /* The object can be converted into a single edge ID */
   if (return_single) {
-    *return_single = 1;
+    *return_single = true;
   }
 
   /*
@@ -3639,6 +3701,28 @@ int igraphmodule_PyObject_to_attribute_values(PyObject *o,
   return 0;
 }
 
+int igraphmodule_PyObject_to_vpath_or_epath(PyObject *object, igraph_bool_t *use_edges) {
+  if (object == 0 || object == Py_None) {
+    *use_edges = 0;
+    return 0;
+  }
+
+  if (!PyUnicode_Check(object)) {
+    PyErr_SetString(PyExc_ValueError, "output argument must be \"vpath\" or \"epath\"");
+    return 1;
+  }
+
+  if (PyUnicode_IsEqualToASCIIString(object, "vpath")) {
+    *use_edges = 0;
+    return 0;
+  } else if (PyUnicode_IsEqualToASCIIString(object, "epath")) {
+    *use_edges = 1;
+    return 0;
+  } else {
+    PyErr_SetString(PyExc_ValueError, "output argument must be \"vpath\" or \"epath\"");
+    return 1;
+  }
+}
 
 int igraphmodule_PyObject_to_drl_options_t(PyObject *obj,
     igraph_layout_drl_options_t *options) {
@@ -3785,6 +3869,8 @@ int igraphmodule_PyObject_to_attribute_combination_t(PyObject* object,
     return 0;
   }
 
+  rec.type = IGRAPH_ATTRIBUTE_COMBINE_IGNORE;
+
   if (PyDict_Check(object)) {
     /* a full-fledged dict was passed */
     PyObject *key, *value;
@@ -3822,8 +3908,7 @@ int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o, igraph_pagerank_algo_t
         {"arpack", IGRAPH_PAGERANK_ALGO_ARPACK},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum(o, pagerank_algo_tt, (int*)result);
+  TRANSLATE_ENUM_WITH(pagerank_algo_tt);
 }
 
 /**
@@ -3831,8 +3916,6 @@ int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o, igraph_pagerank_algo_t
  * \brief Converts a Python object to an igraph \c igraph_edge_type_sw_t
  */
 int igraphmodule_PyObject_to_edge_type_sw_t(PyObject *o, igraph_edge_type_sw_t *result) {
-  int result_int = *result;
-  int retval;
   static igraphmodule_enum_translation_table_entry_t edge_type_sw_tt[] = {
         {"simple", IGRAPH_SIMPLE_SW},
         {"loops", IGRAPH_LOOPS_SW},
@@ -3840,15 +3923,7 @@ int igraphmodule_PyObject_to_edge_type_sw_t(PyObject *o, igraph_edge_type_sw_t *
         {"all", IGRAPH_LOOPS_SW | IGRAPH_MULTI_SW},
         {0,0}
     };
-
-  retval = igraphmodule_PyObject_to_enum_strict(o, edge_type_sw_tt, &result_int);
-
-  if (retval) {
-    return retval;
-  }
-
-  *result = result_int;
-  return 0;
+  TRANSLATE_ENUM_STRICTLY_WITH(edge_type_sw_tt);
 }
 
 /**
@@ -3862,8 +3937,7 @@ int igraphmodule_PyObject_to_realize_degseq_t(PyObject *o, igraph_realize_degseq
         {"index", IGRAPH_REALIZE_DEGSEQ_INDEX},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum_strict(o, realize_degseq_tt, (int*)result);
+  TRANSLATE_ENUM_STRICTLY_WITH(realize_degseq_tt);
 }
 
 /**
@@ -3876,6 +3950,5 @@ int igraphmodule_PyObject_to_random_tree_t(PyObject *o, igraph_random_tree_t *re
         {"lerw", IGRAPH_RANDOM_TREE_LERW},
         {0,0}
     };
-
-  return igraphmodule_PyObject_to_enum_strict(o, random_tree_tt, (int*)result);
+  TRANSLATE_ENUM_STRICTLY_WITH(random_tree_tt);
 }

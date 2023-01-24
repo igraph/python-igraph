@@ -12,8 +12,9 @@ set -e
 STANDALONE=0
 SERVE=0
 DOC2DASH=0
+LINKCHECK=0
 
-while getopts ":sjd" OPTION; do
+while getopts ":sjdl" OPTION; do
   case $OPTION in
     s)
       STANDALONE=1
@@ -23,6 +24,9 @@ while getopts ":sjd" OPTION; do
       ;;
     d)
       DOC2DASH=1
+      ;;
+    l)
+      LINKCHECK=1
       ;;
     \?)
       echo "Usage: $0 [-sjd]"
@@ -38,6 +42,7 @@ cd ${SCRIPTS_FOLDER}/..
 ROOT_FOLDER=`pwd`
 DOC_SOURCE_FOLDER=${ROOT_FOLDER}/doc/source
 DOC_HTML_FOLDER=${ROOT_FOLDER}/doc/html
+DOC_LINKCHECK_FOLDER=${ROOT_FOLDER}/doc/linkcheck
 SCRIPTS_FOLDER=${ROOT_FOLDER}/scripts
 
 cd ${ROOT_FOLDER}
@@ -46,12 +51,16 @@ cd ${ROOT_FOLDER}
 if [ ! -d ".venv" ]; then
   python3 -m venv .venv
 
-  # Install sphinx, matplotlib, wheel, and pydoctor into the venv
+  # Install sphinx, matplotlib, wheel and pydoctor into the venv.
+  # doc2dash is optional; it will be installed when -d is given
   .venv/bin/pip install -U pip sphinx sphinxbootstrap4theme matplotlib wheel pydoctor
 fi
 
-# Make sure that Sphinx and PyDoctor are up-to-date in the virtualenv
-.venv/bin/pip install -U sphinx pydoctor
+# Make sure that Sphinx, PyDoctor (and maybe doc2dash) are up-to-date in the virtualenv
+.venv/bin/pip install -U sphinx pydoctor sphinxbootstrap4theme sphinx-gallery sphinxcontrib-jquery
+if [ x$DOC2DASH = x1 ]; then
+    .venv/bin/pip install -U doc2dash
+fi
 
 #echo "Set PyDoctor theme"
 #$SCRIPTS_FOLDER/set-pydoctor-theme.sh ${ROOT_FOLDER} ${STANDALONE}
@@ -70,17 +79,28 @@ echo "Patching modularized Graph methods"
 .venv/bin/python3 ${SCRIPTS_FOLDER}/patch_modularized_graph_methods.py
 
 
-# Remove previous docs
+echo "Clean previous docs"
 rm -rf "${DOC_HTML_FOLDER}"
 
 
-# Make sphinx
+if [ "x$LINKCHECK" = "x1" ]; then
+  echo "Check for broken links"
+  .venv/bin/python -m sphinx \
+   -T \
+   -b linkcheck \
+   -Dtemplates_path='' \
+   -Dhtml_theme='alabaster' \
+   ${DOC_SOURCE_FOLDER} ${DOC_LINKCHECK_FOLDER}
+fi
+
+
 echo "Generating HTML documentation..."
 if [ "x$STANDALONE" = "x1" ]; then
   echo "Build standalone docs"
-  .venv/bin/sphinx-build \
-   -Dtemplates_path='' \
-   -Dhtml_theme='alabaster' \
+  .venv/bin/pip install -U sphinx-rtd-theme
+  READTHEDOCS="True" .venv/bin/python -m sphinx \
+   -T \
+   -b html \
    ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
 else
   echo "Build Jekyll-style docs"
@@ -117,7 +137,7 @@ if [ "x$DOC2DASH" = "x1" ]; then
   if [ "x$DOC2DASH" != x ]; then
       echo "Generating Dash docset..."
       "$DOC2DASH" \
-          --online-redirect-url "https://igraph.org/python/api" \
+          --online-redirect-url "https://igraph.org/python/api/latest" \
           --name "python-igraph" \
           -d "${DASH_FOLDER}" \
           -f \

@@ -195,7 +195,7 @@ class GradientPalette(Palette):
         @param color2: the color where the gradient ends.
         @param n: the number of colors in the palette.
         """
-        Palette.__init__(self, n)
+        super().__init__(n)
         self._color1 = color_name_to_rgba(color1)
         self._color2 = color_name_to_rgba(color2)
 
@@ -230,7 +230,7 @@ class AdvancedGradientPalette(Palette):
           C{None}, the colors are distributed equidistantly
         @param n: the total number of colors in the palette
         """
-        Palette.__init__(self, n)
+        super().__init__(n)
 
         if indices is None:
             diff = float(n - 1) / (len(colors) - 1)
@@ -306,7 +306,7 @@ class RainbowPalette(Palette):
         @param end: the hue at which the rainbow ends (between 0 and 1).
         @param alpha: the alpha component of the colors in the palette.
         """
-        Palette.__init__(self, n)
+        super().__init__(n)
         self._s = float(clamp(s, 0, 1))
         self._v = float(clamp(v, 0, 1))
         self._alpha = float(clamp(alpha, 0, 1))
@@ -331,7 +331,7 @@ class PrecalculatedPalette(Palette):
         RGBA quadruplets or color names, which will be resolved first by
         L{color_name_to_rgba()}. Anything that is understood by
         L{color_name_to_rgba()} is OK here."""
-        Palette.__init__(self, len(items))
+        super().__init__(len(items))
         for idx, color in enumerate(items):
             if isinstance(color, str):
                 color = color_name_to_rgba(color)
@@ -381,7 +381,7 @@ class ClusterColoringPalette(PrecalculatedPalette):
             adding_darker = not adding_darker
 
         colors = colors[0:n]
-        PrecalculatedPalette.__init__(self, colors)
+        super().__init__(colors)
 
 
 def clamp(value, min_value, max_value):

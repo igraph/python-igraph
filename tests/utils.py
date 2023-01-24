@@ -11,6 +11,18 @@ __all__ = ("temporary_file", )
 
 
 @contextmanager
+def overridden_configuration(key, value):
+    from igraph import config
+
+    old_value = config[key]
+    config[key] = value
+    try:
+        yield
+    finally:
+        config[key] = old_value
+
+
+@contextmanager
 def temporary_file(content=None, mode=None, binary=False):
     tmpf, tmpfname = tempfile.mkstemp()
     os.close(tmpf)

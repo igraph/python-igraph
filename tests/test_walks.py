@@ -110,7 +110,7 @@ class RandomWalkTests(unittest.TestCase):
 
 
 def suite():
-    random_walk_suite = unittest.makeSuite(RandomWalkTests)
+    random_walk_suite = unittest.defaultTestLoader.loadTestsFromTestCase(RandomWalkTests)
     return unittest.TestSuite([random_walk_suite])
 
 

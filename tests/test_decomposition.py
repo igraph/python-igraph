@@ -44,6 +44,29 @@ class SubgraphTests(unittest.TestCase):
 
 
 class DecompositionTests(unittest.TestCase):
+    def testDecomposeUndirected(self):
+        g = Graph([(0, 1), (1, 2), (2, 3)], n=4, directed=False)
+        components = g.decompose()
+
+        assert len(components) == 1
+        assert components[0].isomorphic(g)
+
+        g = Graph.Full(5) + Graph.Full(3)
+        components = g.decompose()
+
+        assert len(components) == 2
+        assert components[0].isomorphic(Graph.Full(5))
+        assert components[1].isomorphic(Graph.Full(3))
+
+    def testDecomposeDirected(self):
+        g = Graph([(0, 1), (1, 2), (2, 3)], n=4, directed=True)
+        components = g.decompose()
+
+        g1 = Graph(1, directed=True)
+        assert len(components) == 4
+        for component in components:
+            assert component.isomorphic(g1)
+
     def testKCores(self):
         g = Graph(
             11,
@@ -139,6 +162,10 @@ class VertexClusteringTests(unittest.TestCase):
         self.assertTrue(not clg.is_directed())
         self.assertTrue(clg.vs["string"] == ["aaa", "bbc", "ccab"])
         self.assertTrue(clg.vs["int"] == [41, 64, 47])
+
+    def testSizesWithNone(self):
+        cl = VertexClustering(self.graph, [0, 0, 0, None, 1, 1, 2, None, 2, None])
+        self.assertTrue(cl.sizes() == [3, 2, 2])
 
 
 class CoverTests(unittest.TestCase):
@@ -301,6 +328,7 @@ class CommunityTests(unittest.TestCase):
 
     def testMultilevel(self):
         # Example graph from the paper
+        random.seed(42)
         g = Graph(16)
         g += [
             (0, 2),
@@ -332,6 +360,7 @@ class CommunityTests(unittest.TestCase):
             (10, 14),
             (11, 13),
         ]
+
         cls = g.community_multilevel(return_levels=True)
         self.assertTrue(len(cls) == 2)
         self.assertMembershipsEqual(
@@ -342,6 +371,13 @@ class CommunityTests(unittest.TestCase):
         )
         self.assertAlmostEqual(cls[0].q, 0.346301, places=5)
         self.assertAlmostEqual(cls[1].q, 0.392219, places=5)
+
+        cls = g.community_multilevel()
+        self.assertTrue(len(cls.membership) == g.vcount())
+        self.assertMembershipsEqual(
+            cls, [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
+        )
+        self.assertAlmostEqual(cls.q, 0.392219, places=5)
 
     def testOptimalModularity(self):
         try:
@@ -477,7 +513,7 @@ class CommunityTests(unittest.TestCase):
         set_random_number_generator(random)
         # We don't find the optimal partition if we are greedy
         cl = G.community_leiden(
-            "CPM", resolution_parameter=1, weights="weight", beta=0, n_iterations=-1
+            "CPM", resolution=1, weights="weight", beta=0, n_iterations=-1
         )
         self.assertMembershipsEqual(cl, [0, 0, 1, 1, 1, 2, 2, 2])
 
@@ -489,7 +525,7 @@ class CommunityTests(unittest.TestCase):
         # refined).
         cl = G.community_leiden(
             "CPM",
-            resolution_parameter=1,
+            resolution=1,
             weights="weight",
             beta=5,
             n_iterations=-1,
@@ -621,13 +657,13 @@ class ComparisonTests(unittest.TestCase):
 
 
 def suite():
-    decomposition_suite = unittest.makeSuite(DecompositionTests)
-    clustering_suite = unittest.makeSuite(ClusteringTests)
-    vertex_clustering_suite = unittest.makeSuite(VertexClusteringTests)
-    cover_suite = unittest.makeSuite(CoverTests)
-    community_suite = unittest.makeSuite(CommunityTests)
-    cohesive_blocks_suite = unittest.makeSuite(CohesiveBlocksTests)
-    comparison_suite = unittest.makeSuite(ComparisonTests)
+    decomposition_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DecompositionTests)
+    clustering_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ClusteringTests)
+    vertex_clustering_suite = unittest.defaultTestLoader.loadTestsFromTestCase(VertexClusteringTests)
+    cover_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CoverTests)
+    community_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CommunityTests)
+    cohesive_blocks_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CohesiveBlocksTests)
+    comparison_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ComparisonTests)
     return unittest.TestSuite(
         [
             decomposition_suite,

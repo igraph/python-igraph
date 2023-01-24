@@ -258,7 +258,7 @@ def _construct_graph_from_list_dict(
 
     @param edges: the dict of sequences describing the edges
     @param directed: whether to create a directed graph
-    @vertex_name_attr: vertex attribute that will store the names
+    @param vertex_name_attr: vertex attribute that will store the names
 
     @returns: a Graph object
 
@@ -325,7 +325,7 @@ def _construct_graph_from_dict_dict(
     @param edges: the dict of dict of dicts specifying the edges and their
       attributes
     @param directed: whether to create a directed graph
-    @vertex_name_attr: vertex attribute that will store the names
+    @param vertex_name_attr: vertex attribute that will store the names
 
     @returns: a Graph object
     """
@@ -417,15 +417,22 @@ def _construct_graph_from_dataframe(
         raise ValueError("The 'vertices' DataFrame must contain at least one column")
 
     if use_vids:
-        if not (
-            str(edges.dtypes[0]).startswith("int")
-            and str(edges.dtypes[1]).startswith("int")
+        if (
+            str(edges.dtypes[0]).startswith(("int", "Int"))
+            and str(edges.dtypes[1]).startswith(("int", "Int"))
         ):
+            # Check pandas nullable integer data type:
+            # https://pandas.pydata.org/docs/user_guide/integer_na.html
+            if (edges.iloc[:, :2].isna()).any(axis=None):
+                 raise ValueError("Source and target IDs must not be null")
+
+            if (edges.iloc[:, :2] < 0).any(axis=None):
+                 raise ValueError("Source and target IDs must not be negative")
+        else:
             raise TypeError(
                 f"Source and target IDs must be 0-based integers, found types {edges.dtypes.tolist()[:2]}"
             )
-        elif (edges.iloc[:, :2] < 0).any(axis=None):
-            raise ValueError("Source and target IDs must not be negative")
+
         if vertices is not None:
             vertices = vertices.sort_index()
             if not vertices.index.equals(
@@ -452,7 +459,7 @@ def _construct_graph_from_dataframe(
 
         # Bring DataFrame(s) into same format as with 'use_vids=True'
         if vertices is None:
-            vertices = pd.DataFrame({"name": np.unique(edges.values[:, :2])})
+            vertices = pd.DataFrame({"name": pd.unique(edges.values[:, :2].ravel())})
 
         if vertices.iloc[:, 0].isna().any():
             warn(
@@ -476,8 +483,8 @@ def _construct_graph_from_dataframe(
         # Map source and target names in 'edges' to IDs
         vid_map = pd.Series(vertices.index, index=vertices.iloc[:, 0])
         edges = edges.copy()
-        edges.iloc[:, 0] = edges.iloc[:, 0].map(vid_map)
-        edges.iloc[:, 1] = edges.iloc[:, 1].map(vid_map)
+        edges[edges.columns[0]] = edges.iloc[:, 0].map(vid_map)
+        edges[edges.columns[1]] = edges.iloc[:, 1].map(vid_map)
 
     # Create graph
     if vertices is None:
@@ -535,7 +542,7 @@ def _export_graph_to_dict_list(
     @param skip_none: whether to skip, for each edge, attributes that
       have a value of None. This is useful if only some edges are expected to
       possess an attribute.
-    @vertex_name_attr: only used with use_vids=False to choose what
+    @param vertex_name_attr: only used with use_vids=False to choose what
       vertex attribute to use to name your vertices in the output data
       structure.
 
@@ -607,7 +614,7 @@ def _export_graph_to_tuple_list(
       elements of each tuple. None (default) is equivalent to an empty list. A
       string is acceptable to signify a single attribute and will be wrapped in
       a list internally.
-    @vertex_name_attr: only used with use_vids=False to choose what
+    @param vertex_name_attr: only used with use_vids=False to choose what
       vertex attribute to use to name your vertices in the output data
       structure.
 
@@ -669,7 +676,7 @@ def _export_graph_to_list_dict(
       to be used as values of the dictionary. The default (list) makes a dict
       of lists, with each list representing the neighbors of the vertex
       specified in the respective dictionary key.
-    @vertex_name_attr: only used with use_vids=False to choose what
+    @param vertex_name_attr: only used with use_vids=False to choose what
       vertex attribute to use to name your vertices in the output data
       structure.
 
@@ -726,7 +733,7 @@ def _export_graph_to_dict_dict(
     @param skip_none: whether to skip, for each edge, attributes that
       have a value of None. This is useful if only some edges are expected to
       possess an attribute.
-    @vertex_name_attr: only used with use_vids=False to choose what
+    @param vertex_name_attr: only used with use_vids=False to choose what
       vertex attribute to use to name your vertices in the output data
       structure.
 

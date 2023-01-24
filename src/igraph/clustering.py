@@ -5,8 +5,7 @@
 from copy import deepcopy
 from io import StringIO
 
-from igraph._igraph import GraphBase
-from igraph import community_to_membership
+from igraph._igraph import GraphBase, community_to_membership
 from igraph.configuration import Configuration
 from igraph.datatypes import UniqueIdGenerator
 from igraph.drawing.colors import ClusterColoringPalette
@@ -14,6 +13,7 @@ from igraph.drawing.cairo.dendrogram import CairoDendrogramDrawer
 from igraph.drawing.matplotlib.dendrogram import MatplotlibDendrogramDrawer
 from igraph.statistics import Histogram
 from igraph.summary import _get_wrapper_for_width
+from igraph.utils import deprecated
 
 
 class Clustering:
@@ -140,7 +140,8 @@ class Clustering:
         """
         counts = [0] * len(self)
         for x in self._membership:
-            counts[x] += 1
+            if x is not None:
+                counts[x] += 1
 
         if args:
             return [counts[idx] for idx in args]
@@ -233,11 +234,11 @@ class VertexClustering(Clustering):
           containing a C{weight} key with the appropriate value here.
         """
         if membership is None:
-            Clustering.__init__(self, [0] * graph.vcount(), params)
+            super().__init__([0] * graph.vcount(), params)
         else:
             if len(membership) != graph.vcount():
                 raise ValueError("membership list has invalid length")
-            Clustering.__init__(self, membership, params)
+            super().__init__(membership, params)
 
         self._graph = graph
         self._modularity = modularity
@@ -804,7 +805,7 @@ class VertexDendrogram(Dendrogram):
           original graph was weighted, you should pass a dictionary
           containing a C{weight} key with the appropriate value here.
         """
-        Dendrogram.__init__(self, merges)
+        super().__init__(merges)
         self._graph = graph
         self._optimal_count = optimal_count
         if modularity_params is None:
@@ -847,13 +848,17 @@ class VertexDendrogram(Dendrogram):
             return self._optimal_count
 
         n = self._graph.vcount()
-        max_q, optimal_count = 0, 1
-        for step in range(min(n - 1, len(self._merges))):
+        if n == 0:
+            return 0
+
+        max_q, optimal_count = 0, n - len(self._merges)
+        for step in range(min(n - 1, len(self._merges) + 1)):
             membs = community_to_membership(self._merges, n, step)
             q = self._graph.modularity(membs, **self._modularity_params)
             if q > max_q:
                 optimal_count = n - step
                 max_q = q
+
         self._optimal_count = optimal_count
         return optimal_count
 
@@ -1081,7 +1086,7 @@ class VertexCover(Cover):
         if clusters is None:
             clusters = [range(graph.vcount())]
 
-        Cover.__init__(self, clusters, n=graph.vcount())
+        super().__init__(clusters, n=graph.vcount())
         if self._n > graph.vcount():
             raise ValueError(
                 "cluster list contains vertex ID larger than the "
@@ -1246,7 +1251,7 @@ class CohesiveBlocks(VertexCover):
         if blocks is None or cohesion is None or parent is None:
             blocks, cohesion, parent = graph.cohesive_blocks()
 
-        VertexCover.__init__(self, graph, blocks)
+        super().__init__(graph, blocks)
 
         self._cohesion = cohesion
         self._parent = parent
@@ -1594,7 +1599,5 @@ def _connected_components(graph, mode="strong"):
 
 def _clusters(graph, mode="strong"):
     """Deprecated alias to L{Graph.connected_components()}."""
-    from igraph import deprecated
-
     deprecated("Graph.clusters() is deprecated; use Graph.connected_components() instead")
     return graph.connected_components(mode=mode)

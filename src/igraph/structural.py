@@ -4,6 +4,7 @@ from igraph._igraph import (
     arpack_options as default_arpack_options,
 )
 from igraph.statistics import Histogram
+from igraph.utils import deprecated
 
 
 def _indegree(graph, *args, **kwds):
@@ -51,8 +52,7 @@ def _pagerank(
     @param vertices: the indices of the vertices being queried.
       C{None} means all of the vertices.
     @param directed: whether to consider directed paths.
-    @param damping: the damping factor. M{1-damping} is the PageRank value
-      for nodes with no incoming links. It is also the probability of
+    @param damping: the damping factor. M{1-damping} is the probability of
       resetting the random walk to a uniform distribution in each step.
     @param weights: edge weights to be used. Can be a sequence or iterable
       or even an edge attribute name.
@@ -85,7 +85,5 @@ def _pagerank(
 
 def _shortest_paths(graph, *args, **kwds):
     """Deprecated alias to L{Graph.distances()}."""
-    from igraph import deprecated
-
     deprecated("Graph.shortest_paths() is deprecated; use Graph.distances() instead")
     return graph.distances(*args, **kwds)

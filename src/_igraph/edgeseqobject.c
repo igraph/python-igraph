@@ -259,8 +259,8 @@ PyObject* igraphmodule_EdgeSeq_sq_item(igraphmodule_EdgeSeqObject* self,
 /** \ingroup python_interface_edgeseq
  * \brief Returns the list of attribute names
  */
-PyObject* igraphmodule_EdgeSeq_attribute_names(igraphmodule_EdgeSeqObject* self) {
-  return igraphmodule_Graph_edge_attributes(self->gref);
+PyObject* igraphmodule_EdgeSeq_attribute_names(igraphmodule_EdgeSeqObject* self, PyObject* Py_UNUSED(_null)) {
+  return igraphmodule_Graph_edge_attributes(self->gref, NULL);
 }
 
 /** \ingroup python_interface_edgeseq
@@ -373,7 +373,7 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
   return result;
 }
 
-PyObject* igraphmodule_EdgeSeq_is_all(igraphmodule_EdgeSeqObject* self) {
+PyObject* igraphmodule_EdgeSeq_is_all(igraphmodule_EdgeSeqObject* self, PyObject* Py_UNUSED(_null)) {
   if (igraph_es_is_all(&self->es)) {
     Py_RETURN_TRUE;
   } else {
@@ -709,7 +709,7 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
     } else if (PyCallable_Check(item)) {
       /* Call the callable for every edge in the current sequence to
        * determine what's up */
-      igraph_bool_t was_excluded = 0;
+      igraph_bool_t was_excluded = false;
       igraph_vector_int_t v;
 
       if (igraph_vector_int_init(&v, 0)) {

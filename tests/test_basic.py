@@ -321,7 +321,7 @@ class BasicTests(unittest.TestCase):
         g = Graph.Famous("petersen")
         g.vs["name"] = list("ABCDEFGHIJ")
         edges_to_ids = dict((v, k) for k, v in enumerate(g.get_edgelist()))
-        for (source, target), edge_id in list(edges_to_ids.items()):
+        for (source, target), edge_id in edges_to_ids.items():
             source_name, target_name = g.vs[(source, target)]["name"]
             self.assertEqual(edge_id, g.get_eid(source, target))
             self.assertEqual(edge_id, g.get_eid(source_name, target_name))
@@ -943,15 +943,15 @@ class ReferenceCountTests(unittest.TestCase):
 
 
 def suite():
-    basic_suite = unittest.makeSuite(BasicTests)
-    datatype_suite = unittest.makeSuite(DatatypeTests)
-    graph_dict_list_suite = unittest.makeSuite(GraphDictListTests)
-    graph_tuple_list_suite = unittest.makeSuite(GraphTupleListTests)
-    graph_list_dict_suite = unittest.makeSuite(GraphListDictTests)
-    graph_dict_dict_suite = unittest.makeSuite(GraphDictDictTests)
-    degree_sequence_suite = unittest.makeSuite(DegreeSequenceTests)
-    inheritance_suite = unittest.makeSuite(InheritanceTests)
-    refcount_suite = unittest.makeSuite(ReferenceCountTests)
+    basic_suite = unittest.defaultTestLoader.loadTestsFromTestCase(BasicTests)
+    datatype_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DatatypeTests)
+    graph_dict_list_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphDictListTests)
+    graph_tuple_list_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphTupleListTests)
+    graph_list_dict_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphListDictTests)
+    graph_dict_dict_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphDictDictTests)
+    degree_sequence_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DegreeSequenceTests)
+    inheritance_suite = unittest.defaultTestLoader.loadTestsFromTestCase(InheritanceTests)
+    refcount_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ReferenceCountTests)
     return unittest.TestSuite(
         [
             basic_suite,
