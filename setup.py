@@ -39,9 +39,12 @@ LIBIGRAPH_FALLBACK_INCLUDE_DIRS = ["/usr/include/igraph", "/usr/local/include/ig
 LIBIGRAPH_FALLBACK_LIBRARIES = ["igraph"]
 LIBIGRAPH_FALLBACK_LIBRARY_DIRS = []
 
-# Check whether we are compiling for PyPy. Headers will not be installed
-# for PyPy.
-SKIP_HEADER_INSTALL = (platform.python_implementation() == "PyPy") or (
+# Check whether we are compiling for PyPy or wasm with emscripten. Headers will
+# not be installed in these cases, or when the SKIP_HEADER_INSTALL envvar is
+# set explicitly.
+SKIP_HEADER_INSTALL = (
+    platform.python_implementation() == "PyPy" or
+    (sysconfig.get_config_var("HOST_GNU_TYPE") or "").endswith("emscripten") or
     "SKIP_HEADER_INSTALL" in os.environ
 )
 
