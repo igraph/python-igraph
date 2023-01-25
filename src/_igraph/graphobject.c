@@ -4362,8 +4362,8 @@ PyObject *igraphmodule_Graph_closeness(igraphmodule_GraphObject * self,
       if (weights) { igraph_vector_destroy(weights); free(weights); }
       return NULL;
     }
-    if (igraph_closeness_cutoff(&self->g, &res, 0, 0, vs, mode, weights,
-        PyFloat_AsDouble(cutoff_num), PyObject_IsTrue(normalized_o))) {
+    if (igraph_closeness_cutoff(&self->g, &res, NULL, NULL, vs, mode, weights,
+        PyObject_IsTrue(normalized_o), PyFloat_AsDouble(cutoff_num))) {
       igraph_vs_destroy(&vs);
       igraph_vector_destroy(&res);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
