@@ -186,8 +186,9 @@ pip install git+https://github.com/igraph/python-igraph
 
 This automatically fetches the development version from the repository, builds
 the package and installs it. By default, this will install the Python interface
-from the `master` branch, which is used as the basis for the development of the
-current release series. Unstable and breaking changes are being made in the `develop` branch. You can install this similarly by doing
+from the `main` branch, which is used as the basis for the development of the
+current release series. Unstable and breaking changes are being made in the
+`develop` branch. You can install this similarly by doing
 
 ```bash
 pip install git+https://github.com/igraph/python-igraph@develop
