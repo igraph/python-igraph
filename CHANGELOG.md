@@ -6,6 +6,7 @@
 
 - Fixed the drawing of `VertexDendrogram` instances, both in the Cairo and the
   Matplotlib backends.
+- The `cutoff` and `normalized` arguments of `Graph.closeness()` did not function correctly.
 
 ## [0.10.3] - 2022-12-31
 
