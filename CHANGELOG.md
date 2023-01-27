@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- Betweenness and edge betweenness scores can now be calculated for a subset of
+  the shortest paths originating from or terminating in a certain set of
+  vertices only.
+
 ### Fixed
 
 - Fixed the drawing of `VertexDendrogram` instances, both in the Cairo and the

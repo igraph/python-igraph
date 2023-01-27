@@ -3870,28 +3870,46 @@ PyObject *igraphmodule_Graph_betweenness(igraphmodule_GraphObject * self,
                                          PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] = { "vertices", "directed", "cutoff", "weights",
-    "nobigint", NULL };
+    "sources", "targets", NULL };
   PyObject *directed = Py_True;
   PyObject *vobj = Py_None, *list;
   PyObject *cutoff = Py_None;
   PyObject *weights_o = Py_None;
-  PyObject *nobigint = Py_True;
+  PyObject *sources_o = Py_None;
+  PyObject *targets_o = Py_None;
   igraph_vector_t res, *weights = 0;
   igraph_bool_t return_single = false;
-  igraph_vs_t vs;
+  igraph_bool_t is_subsetted = false;
+  igraph_vs_t vs, sources, targets;
+  igraph_error_t retval;
 
-  /* nobigint is now unused but we kept here for sake of backwards compatibility */
-
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOOO", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOOOO", kwlist,
                                    &vobj, &directed, &cutoff, &weights_o,
-                                   &nobigint)) {
+                                   &sources_o, &targets_o)) {
     return NULL;
   }
 
   if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
       ATTRIBUTE_TYPE_EDGE)) return NULL;
 
+  if (igraphmodule_PyObject_to_vs_t(sources_o, &sources, &self->g, NULL, NULL)) {
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraphmodule_PyObject_to_vs_t(targets_o, &targets, &self->g, NULL, NULL)) {
+    igraph_vs_destroy(&sources);
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  is_subsetted = !igraph_vs_is_all(&sources) || !igraph_vs_is_all(&targets);
+
   if (igraphmodule_PyObject_to_vs_t(vobj, &vs, &self->g, &return_single, 0)) {
+    igraph_vs_destroy(&targets);
+    igraph_vs_destroy(&sources);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraphmodule_handle_igraph_error();
     return NULL;
@@ -3899,13 +3917,25 @@ PyObject *igraphmodule_Graph_betweenness(igraphmodule_GraphObject * self,
 
   if (igraph_vector_init(&res, 0)) {
     igraph_vs_destroy(&vs);
+    igraph_vs_destroy(&targets);
+    igraph_vs_destroy(&sources);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     return igraphmodule_handle_igraph_error();
   }
 
   if (cutoff == Py_None) {
-    if (igraph_betweenness(&self->g, &res, vs, PyObject_IsTrue(directed), weights)) {
+    if (is_subsetted) {
+      retval = igraph_betweenness_subset(
+        &self->g, &res, vs, PyObject_IsTrue(directed), sources, targets, weights
+      );
+    } else {
+      retval = igraph_betweenness(&self->g, &res, vs, PyObject_IsTrue(directed), weights);
+    }
+
+    if (retval) {
       igraph_vs_destroy(&vs);
+      igraph_vs_destroy(&targets);
+      igraph_vs_destroy(&sources);
       igraph_vector_destroy(&res);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
       igraphmodule_handle_igraph_error();
@@ -3915,13 +3945,29 @@ PyObject *igraphmodule_Graph_betweenness(igraphmodule_GraphObject * self,
     PyObject *cutoff_num = PyNumber_Float(cutoff);
     if (cutoff_num == NULL) {
       igraph_vs_destroy(&vs);
+      igraph_vs_destroy(&targets);
+      igraph_vs_destroy(&sources);
       igraph_vector_destroy(&res);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
       return NULL;
     }
+
+    if (is_subsetted) {
+      igraph_vs_destroy(&vs);
+      igraph_vs_destroy(&targets);
+      igraph_vs_destroy(&sources);
+      igraph_vector_destroy(&res);
+      if (weights) { igraph_vector_destroy(weights); free(weights); }
+      Py_DECREF(cutoff_num);
+      PyErr_SetString(PyExc_ValueError, "subsetting and cutoffs may not be used at the same time");
+      return NULL;
+    }
+
     if (igraph_betweenness_cutoff(&self->g, &res, vs, PyObject_IsTrue(directed),
         weights, PyFloat_AsDouble(cutoff_num))) {
       igraph_vs_destroy(&vs);
+      igraph_vs_destroy(&targets);
+      igraph_vs_destroy(&sources);
       igraph_vector_destroy(&res);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
       Py_DECREF(cutoff_num);
@@ -3932,6 +3978,8 @@ PyObject *igraphmodule_Graph_betweenness(igraphmodule_GraphObject * self,
   } else {
     PyErr_SetString(PyExc_TypeError, "cutoff value must be None or integer");
     igraph_vs_destroy(&vs);
+    igraph_vs_destroy(&targets);
+    igraph_vs_destroy(&sources);
     igraph_vector_destroy(&res);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     return NULL;
@@ -3942,8 +3990,10 @@ PyObject *igraphmodule_Graph_betweenness(igraphmodule_GraphObject * self,
   else
     list = PyFloat_FromDouble(VECTOR(res)[0]);
 
-  igraph_vector_destroy(&res);
   igraph_vs_destroy(&vs);
+  igraph_vs_destroy(&targets);
+  igraph_vs_destroy(&sources);
+  igraph_vector_destroy(&res);
   if (weights) { igraph_vector_destroy(weights); free(weights); }
 
   return list;
@@ -4819,39 +4869,92 @@ PyObject *igraphmodule_Graph_edge_betweenness(igraphmodule_GraphObject * self,
                                               PyObject * args,
                                               PyObject * kwds)
 {
-  static char *kwlist[] = { "directed", "cutoff", "weights", NULL };
+  static char *kwlist[] = { "directed", "cutoff", "weights", "sources", "targets", NULL };
   igraph_vector_t res, *weights = 0;
   PyObject *list, *directed = Py_True, *cutoff = Py_None;
   PyObject *weights_o = Py_None;
+  PyObject *sources_o = Py_None;
+  PyObject *targets_o = Py_None;
+  igraph_vs_t sources;
+  igraph_vs_t targets;
+  igraph_error_t retval;
+  igraph_bool_t is_subsetted = false;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist,
-                                   &directed, &cutoff, &weights_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOOO", kwlist,
+                                   &directed, &cutoff, &weights_o, &sources_o, &targets_o))
     return NULL;
 
   if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
     ATTRIBUTE_TYPE_EDGE)) return NULL;
 
-  igraph_vector_init(&res, igraph_ecount(&self->g));
+  if (igraphmodule_PyObject_to_vs_t(sources_o, &sources, &self->g, NULL, NULL)) {
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraphmodule_PyObject_to_vs_t(targets_o, &targets, &self->g, NULL, NULL)) {
+    igraph_vs_destroy(&sources);
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  is_subsetted = !igraph_vs_is_all(&sources) || !igraph_vs_is_all(&targets);
+
+  if (igraph_vector_init(&res, igraph_ecount(&self->g))) {
+    igraph_vs_destroy(&targets);
+    igraph_vs_destroy(&sources);
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    igraphmodule_handle_igraph_error();
+  }
 
   if (cutoff == Py_None) {
-    if (igraph_edge_betweenness(&self->g, &res, PyObject_IsTrue(directed), weights)) {
-      igraphmodule_handle_igraph_error();
+    if (is_subsetted) {
+      retval = igraph_edge_betweenness_subset(
+        &self->g, &res, igraph_ess_all(IGRAPH_EDGEORDER_ID),
+        PyObject_IsTrue(directed), sources, targets, weights
+      );
+    } else {
+      retval = igraph_edge_betweenness(
+        &self->g, &res, PyObject_IsTrue(directed), weights
+      );
+    }
+    if (retval) {
+      igraph_vs_destroy(&targets);
+      igraph_vs_destroy(&sources);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
       igraph_vector_destroy(&res);
+      igraphmodule_handle_igraph_error();
       return NULL;
     }
   } else if (PyNumber_Check(cutoff)) {
     PyObject *cutoff_num = PyNumber_Float(cutoff);
     if (!cutoff_num) {
+      igraph_vs_destroy(&targets);
+      igraph_vs_destroy(&sources);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
       igraph_vector_destroy(&res); return NULL;
     }
+
+    if (is_subsetted) {
+      igraph_vs_destroy(&targets);
+      igraph_vs_destroy(&sources);
+      if (weights) { igraph_vector_destroy(weights); free(weights); }
+      igraph_vector_destroy(&res);
+      Py_DECREF(cutoff_num);
+      PyErr_SetString(PyExc_ValueError, "subsetting and cutoffs may not be used at the same time");
+      return NULL;
+    }
+
     if (igraph_edge_betweenness_cutoff(&self->g, &res, PyObject_IsTrue(directed),
         weights, PyFloat_AsDouble(cutoff_num))) {
-      igraphmodule_handle_igraph_error();
       igraph_vector_destroy(&res);
+      igraph_vs_destroy(&targets);
+      igraph_vs_destroy(&sources);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
       Py_DECREF(cutoff_num);
+      igraphmodule_handle_igraph_error();
       return NULL;
     }
     Py_DECREF(cutoff_num);
@@ -4861,10 +4964,13 @@ PyObject *igraphmodule_Graph_edge_betweenness(igraphmodule_GraphObject * self,
     return NULL;
   }
 
+  igraph_vs_destroy(&targets);
+  igraph_vs_destroy(&sources);
   if (weights) { igraph_vector_destroy(weights); free(weights); }
 
   list = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT);
   igraph_vector_destroy(&res);
+
   return list;
 }
 
@@ -13871,11 +13977,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@see: hub_score()\n"
   },
 
-  /* interface to igraph_betweenness[_estimate] */
+  /* interface to igraph_betweenness, igraph_betweenness_cutoff and igraph_betweenness_subset */
   {"betweenness", (PyCFunction) igraphmodule_Graph_betweenness,
    METH_VARARGS | METH_KEYWORDS,
-   "betweenness(vertices=None, directed=True, cutoff=None, weights=None)\n--\n\n"
+   "betweenness(vertices=None, directed=True, cutoff=None, weights=None, sources=None, targets=None)\n--\n\n"
    "Calculates or estimates the betweenness of vertices in a graph.\n\n"
+   "Also supports calculating betweenness with shortest path length cutoffs or\n"
+   "considering shortest paths only from certain source vertices or to certain\n"
+   "target vertices.\n\n"
    "Keyword arguments:\n"
    "@param vertices: the vertices for which the betweennesses must be returned.\n"
    "  If C{None}, assumes all of the vertices in the graph.\n"
@@ -13886,6 +13995,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  returned.\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name.\n"
+   "@param sources: the set of source vertices to consider when calculating\n"
+   "  shortest paths.\n"
+   "@param targets: the set of target vertices to consider when calculating\n"
+   "  shortest paths.\n"
    "@return: the (possibly cutoff-limited) betweenness of the given vertices in a list\n"},
 
   /* interface to biconnected_components */
@@ -14187,11 +14300,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: the calculated eccentricities in a list, or a single number if\n"
    "  a single vertex was supplied.\n"},
 
-  /* interface to igraph_edge_betweenness[_estimate] */
+  /* interface to igraph_edge_betweenness, igraph_edge_betweenness_cutoff and igraph_edge_betweenness_subset */
   {"edge_betweenness", (PyCFunction) igraphmodule_Graph_edge_betweenness,
    METH_VARARGS | METH_KEYWORDS,
-   "edge_betweenness(directed=True, cutoff=None, weights=None)\n--\n\n"
+   "edge_betweenness(directed=True, cutoff=None, weights=None, sources=None, targets=None)\n--\n\n"
    "Calculates or estimates the edge betweennesses in a graph.\n\n"
+   "Also supports calculating edge betweenness with shortest path length cutoffs or\n"
+   "considering shortest paths only from certain source vertices or to certain\n"
+   "target vertices.\n\n"
    "@param directed: whether to consider directed paths.\n"
    "@param cutoff: if it is an integer, only paths less than or equal to this\n"
    "  length are considered, effectively resulting in an estimation of the\n"
@@ -14199,6 +14315,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  returned.\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name.\n"
+   "@param sources: the set of source vertices to consider when calculating\n"
+   "  shortest paths.\n"
+   "@param targets: the set of target vertices to consider when calculating\n"
+   "  shortest paths.\n"
    "@return: a list with the (exact or estimated) edge betweennesses of all\n"
    "  edges.\n"},
 
