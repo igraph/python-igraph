@@ -271,9 +271,9 @@ class CentralityTests(unittest.TestCase):
 
         g = Graph.Lattice([3, 3], circular=False)
         observed = g.edge_betweenness(sources=[0, 8], targets=[0, 8])
-        self.assertEquals(len(observed), g.ecount())
+        self.assertEqual(len(observed), g.ecount())
         for x, y in zip(observed, [1 / 2, 1 / 2, 1 / 6, 1 / 3, 1 / 6, 1 / 3, 1 / 6, 1 / 3, 1 / 3, 1 / 2, 1 / 6, 1 / 2]):
-            self.assertAlmostEquals(x, y)
+            self.assertAlmostEqual(x, y)
         self.assertRaises(ValueError, g.edge_betweenness, cutoff=2, sources=[0, 8], targets=[0, 8])
 
     def testClosenessCentrality(self):
