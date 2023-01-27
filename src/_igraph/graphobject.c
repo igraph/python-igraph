@@ -11646,7 +11646,7 @@ PyObject *igraphmodule_Graph_vertex_coloring_greedy(
 ) {
   static char *kwlist[] = { "method", NULL };
   igraph_vector_int_t result;
-  igraph_coloring_greedy_t heuristics;
+  igraph_coloring_greedy_t heuristics = IGRAPH_COLORING_GREEDY_COLORED_NEIGHBORS;
   PyObject *heuristics_o = Py_None;
   PyObject *result_o;
 
