@@ -4,6 +4,9 @@
 
 ### Added
 
+- Added `Graph.vertex_coloring_greedy()` to calculate a greedy vertex coloring
+  for the graph.
+
 - Betweenness and edge betweenness scores can now be calculated for a subset of
   the shortest paths originating from or terminating in a certain set of
   vertices only.

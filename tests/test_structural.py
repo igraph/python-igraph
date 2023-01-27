@@ -249,9 +249,9 @@ class CentralityTests(unittest.TestCase):
         )
 
         observed = g.betweenness(sources=[0, 8], targets=[0, 8])
-        self.assertEquals(len(observed), g.vcount())
+        self.assertEqual(len(observed), g.vcount())
         for x, y in zip(observed, [0, 1 / 2, 1 / 6, 1 / 2, 2 / 3, 1 / 2, 1 / 6, 1 / 2, 0]):
-            self.assertAlmostEquals(x, y)
+            self.assertAlmostEqual(x, y)
         self.assertRaises(ValueError, g.betweenness, cutoff=2, sources=[0, 8], targets=[0, 8])
 
     def testEdgeBetweennessCentrality(self):

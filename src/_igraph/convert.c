@@ -515,6 +515,19 @@ int igraphmodule_PyObject_to_bliss_sh_t(PyObject *o,
 
 /**
  * \ingroup python_interface_conversion
+ * \brief Converts a Python object to an igraph \c igraph_coloring_greedy_t
+ */
+int igraphmodule_PyObject_to_coloring_greedy_t(PyObject *o, igraph_coloring_greedy_t *result) {
+  static igraphmodule_enum_translation_table_entry_t coloring_greedy_tt[] = {
+        {"colored_neighbors", IGRAPH_COLORING_GREEDY_COLORED_NEIGHBORS},
+        {"dsatur", IGRAPH_COLORING_GREEDY_DSATUR},
+        {0,0}
+    };
+  TRANSLATE_ENUM_WITH(coloring_greedy_tt);
+}
+
+/**
+ * \ingroup python_interface_conversion
  * \brief Converts a Python object to an igraph \c igraph_community_comparison_t
  */
 int igraphmodule_PyObject_to_community_comparison_t(PyObject *o,

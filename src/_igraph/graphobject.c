@@ -11638,6 +11638,43 @@ PyObject *igraphmodule_Graph_cohesive_blocks(igraphmodule_GraphObject *self, PyO
 }
 
 /**********************************************************************
+ * Coloring                                                           *
+ **********************************************************************/
+
+PyObject *igraphmodule_Graph_vertex_coloring_greedy(
+  igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds
+) {
+  static char *kwlist[] = { "method", NULL };
+  igraph_vector_int_t result;
+  igraph_coloring_greedy_t heuristics;
+  PyObject *heuristics_o = Py_None;
+  PyObject *result_o;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &heuristics_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_coloring_greedy_t(heuristics_o, &heuristics)) {
+    return NULL;
+  }
+
+  if (igraph_vector_int_init(&result, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_vertex_coloring_greedy(&self->g, &result, heuristics)) {
+    igraph_vector_int_destroy(&result);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  result_o = igraphmodule_vector_int_t_to_PyList(&result);
+  igraph_vector_int_destroy(&result);
+
+  return result_o;
+}
+
+/**********************************************************************
  * Cliques and independent sets                                       *
  **********************************************************************/
 
@@ -16816,6 +16853,20 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Attention: this function has a more convenient interface in class\n"
    "L{Graph}, which wraps the result in a L{CohesiveBlocks} object.\n"
    "It is advised to use that.\n"
+  },
+
+  /************/
+  /* COLORING */
+  /************/
+  {"vertex_coloring_greedy", (PyCFunction) igraphmodule_Graph_vertex_coloring_greedy,
+   METH_VARARGS | METH_KEYWORDS,
+   "vertex_coloring_greedy(method=\"colored_neighbors\")\n--\n\n"
+   "Calculates a greedy vertex coloring for the graph based on some heuristics.\n\n"
+   "@param method: the heuristics to use. C{colored_neighbors} always picks the\n"
+   "  vertex with the largest number of colored neighbors as the next vertex to\n"
+   "  pick a color for. C{dsatur} picks the vertex with the largest number of\n"
+   "  I{unique} colors in its neighborhood; this is also known as the DSatur\n"
+   "  heuristics (hence the name).\n"
   },
 
   /********************************/
