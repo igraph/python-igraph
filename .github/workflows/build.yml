@@ -51,6 +51,7 @@ jobs:
   build_wheel_linux_aarch64_manylinux:
     name: Build wheels on Linux (aarch64/manylinux)
     runs-on: ubuntu-20.04
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v3
         with:
@@ -75,6 +76,7 @@ jobs:
   build_wheel_linux_aarch64_musllinux:
     name: Build wheels on Linux (aarch64/musllinux)
     runs-on: ubuntu-20.04
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v3
         with:
