@@ -42,7 +42,7 @@ def get_igraphdir():
 
 def get_igraph_version():
     '''Get igraph version'''
-    if rtd_version != '':
+    if rtd_version and rtd_version not in ('latest', 'stable'):
         return rtd_version
 
     version_file = get_igraphdir() / 'version.py'
