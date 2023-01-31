@@ -22,6 +22,7 @@ from pathlib import Path
 # Check if we are inside readthedocs, the conf is quite different there
 is_inside_rtd = os.getenv("READTHEDOCS", "") == "True"
 rtd_version = os.getenv("READTHEDOCS_VERSION", "")
+rtd_version_type = os.getenv("READTHEDOCS_VERSION_TYPE", "unknown")
 
 if not is_inside_rtd:
     import sphinxbootstrap4theme
@@ -42,7 +43,7 @@ def get_igraphdir():
 
 def get_igraph_version():
     '''Get igraph version'''
-    if rtd_version and rtd_version not in ('latest', 'stable'):
+    if rtd_version and rtd_version_type == "tag":
         return rtd_version
 
     version_file = get_igraphdir() / 'version.py'
