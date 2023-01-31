@@ -59,9 +59,9 @@ def building_on_windows_msvc() -> bool:
     return platform.system() == "Windows" and sysconfig.get_platform() != "mingw"
 
 
-def building_to_wasm() -> bool:
-    """Returns True when building to WebAssembly"""
-    return "PYODIDE" in os.environ
+def building_with_emscripten() -> bool:
+    """Returns True when building with Emscripten to WebAssembly"""
+    return (sysconfig.get_config_var("HOST_GNU_TYPE") or "").endswith("emscripten")
 
 
 def exclude_from_list(items: Iterable[T], items_to_exclude: Iterable[T]) -> List[T]:
@@ -249,7 +249,7 @@ class IgraphCCoreCMakeBuilder:
         args = [cmake]
 
         # Build to wasm requires invocation of the Emscripten SDK
-        if building_to_wasm():
+        if building_with_emscripten():
             emcmake = which("emcmake")
             if not emcmake:
                 print(
