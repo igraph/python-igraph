@@ -48,8 +48,8 @@ jobs:
         with:
           path: ./wheelhouse/*.whl
 
-  build_wheel_linux_aarch64:
-    name: Build wheels on Linux (aarch64)
+  build_wheel_linux_aarch64_manylinux:
+    name: Build wheels on Linux (aarch64/manylinux)
     runs-on: ubuntu-20.04
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     steps:
@@ -68,6 +68,24 @@ jobs:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse/*.whl
+
+  build_wheel_linux_aarch64_musllinux:
+    name: Build wheels on Linux (aarch64/musllinux)
+    runs-on: ubuntu-20.04
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v2
 
       - name: Build wheels (musllinux)
         uses: pypa/cibuildwheel@v2.12.0

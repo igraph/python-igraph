@@ -925,7 +925,7 @@ options = dict(
     author_email="ntamas@gmail.com",
     project_urls={
         "Bug Tracker": "https://github.com/igraph/python-igraph/issues",
-        "Changelog": "https://github.com/igraph/python-igraph/blob/master/CHANGELOG.md",
+        "Changelog": "https://github.com/igraph/python-igraph/blob/main/CHANGELOG.md",
         "CI": "https://github.com/igraph/python-igraph/actions",
         "Documentation": "https://igraph.readthedocs.io",
         "Source Code": "https://github.com/igraph/python-igraph",

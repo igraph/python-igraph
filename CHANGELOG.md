@@ -1,11 +1,21 @@
 # igraph Python interface changelog
 
-## [Unreleased]
+## [0.10.4] - 2022-01-27
+
+### Added
+
+- Added `Graph.vertex_coloring_greedy()` to calculate a greedy vertex coloring
+  for the graph.
+
+- Betweenness and edge betweenness scores can now be calculated for a subset of
+  the shortest paths originating from or terminating in a certain set of
+  vertices only.
 
 ### Fixed
 
 - Fixed the drawing of `VertexDendrogram` instances, both in the Cairo and the
   Matplotlib backends.
+- The `cutoff` and `normalized` arguments of `Graph.closeness()` did not function correctly.
 
 ## [0.10.3] - 2022-12-31
 
@@ -448,7 +458,8 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[Unreleased]: https://github.com/igraph/python-igraph/compare/0.10.3...master
+[Unreleased]: https://github.com/igraph/python-igraph/compare/0.10.4...main
+[0.10.4]: https://github.com/igraph/python-igraph/compare/0.10.3...0.10.4
 [0.10.3]: https://github.com/igraph/python-igraph/compare/0.10.2...0.10.3
 [0.10.2]: https://github.com/igraph/python-igraph/compare/0.10.1...0.10.2
 [0.10.1]: https://github.com/igraph/python-igraph/compare/0.10.0...0.10.1

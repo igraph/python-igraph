@@ -237,27 +237,44 @@ class CentralityTests(unittest.TestCase):
     def testBetweennessCentrality(self):
         g = Graph.Star(5)
         self.assertTrue(g.betweenness() == [6.0, 0.0, 0.0, 0.0, 0.0])
+
         g = Graph(5, [(0, 1), (0, 2), (0, 3), (1, 4)])
         self.assertTrue(g.betweenness() == [5.0, 3.0, 0.0, 0.0, 0.0])
         self.assertTrue(g.betweenness(cutoff=2) == [3.0, 1.0, 0.0, 0.0, 0.0])
         self.assertTrue(g.betweenness(cutoff=1) == [0.0, 0.0, 0.0, 0.0, 0.0])
+
         g = Graph.Lattice([3, 3], circular=False)
         self.assertTrue(
             g.betweenness(cutoff=2) == [0.5, 2.0, 0.5, 2.0, 4.0, 2.0, 0.5, 2.0, 0.5]
         )
 
+        observed = g.betweenness(sources=[0, 8], targets=[0, 8])
+        self.assertEqual(len(observed), g.vcount())
+        for x, y in zip(observed, [0, 1 / 2, 1 / 6, 1 / 2, 2 / 3, 1 / 2, 1 / 6, 1 / 2, 0]):
+            self.assertAlmostEqual(x, y)
+        self.assertRaises(ValueError, g.betweenness, cutoff=2, sources=[0, 8], targets=[0, 8])
+
     def testEdgeBetweennessCentrality(self):
         g = Graph.Star(5)
         self.assertTrue(g.edge_betweenness() == [4.0, 4.0, 4.0, 4.0])
+
         g = Graph(5, [(0, 1), (0, 2), (0, 3), (1, 4)])
         self.assertTrue(g.edge_betweenness() == [6.0, 4.0, 4.0, 4.0])
         self.assertTrue(g.edge_betweenness(cutoff=2) == [4.0, 3.0, 3.0, 2.0])
         self.assertTrue(g.edge_betweenness(cutoff=1) == [1.0, 1.0, 1.0, 1.0])
+
         g = Graph.Ring(5)
         self.assertTrue(g.edge_betweenness() == [3.0, 3.0, 3.0, 3.0, 3.0])
         self.assertTrue(
             g.edge_betweenness(weights=[4, 1, 1, 1, 1]) == [0.5, 3.5, 5.5, 5.5, 3.5]
         )
+
+        g = Graph.Lattice([3, 3], circular=False)
+        observed = g.edge_betweenness(sources=[0, 8], targets=[0, 8])
+        self.assertEqual(len(observed), g.ecount())
+        for x, y in zip(observed, [1 / 2, 1 / 2, 1 / 6, 1 / 3, 1 / 6, 1 / 3, 1 / 6, 1 / 3, 1 / 3, 1 / 2, 1 / 6, 1 / 2]):
+            self.assertAlmostEqual(x, y)
+        self.assertRaises(ValueError, g.edge_betweenness, cutoff=2, sources=[0, 8], targets=[0, 8])
 
     def testClosenessCentrality(self):
         g = Graph.Star(5)
