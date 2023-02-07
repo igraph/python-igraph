@@ -1,5 +1,14 @@
 # igraph Python interface changelog
 
+## [Unreleased]
+
+### Removed
+
+- Removed defunct `Graph.community_leading_eigenvector_naive()` method. Not a
+  breaking change because it was already removed from the C core a long time
+  ago so the function in the Python interface did not do anything useful
+  either.
+
 ## [0.10.4] - 2022-01-27
 
 ### Added

@@ -64,40 +64,6 @@ def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10)
     )
 
 
-def _community_leading_eigenvector_naive(graph, clusters=None, return_merges=False):
-    """Naive implementation of Newman's eigenvector community structure detection.
-
-    This function splits the network into two components
-    according to the leading eigenvector of the modularity matrix and
-    then recursively takes the given number of steps by splitting the
-    communities as individual networks. This is not the correct way,
-    however, see the reference for explanation. Consider using the
-    correct L{Graph.community_leading_eigenvector} method instead.
-
-    @param clusters: the desired number of communities. If C{None}, the
-      algorithm tries to do as many splits as possible. Note that the
-      algorithm won't split a community further if the signs of the leading
-      eigenvector are all the same, so the actual number of discovered
-      communities can be less than the desired one.
-    @param return_merges: whether the returned object should be a
-      dendrogram instead of a single clustering.
-    @return: an appropriate L{VertexClustering} or L{VertexDendrogram}
-      object.
-
-    @newfield ref: Reference
-    @ref: MEJ Newman: Finding community structure in networks using the
-    eigenvectors of matrices, arXiv:physics/0605087"""
-    if clusters is None:
-        clusters = -1
-    cl, merges, q = GraphBase.community_leading_eigenvector_naive(
-        graph, clusters, return_merges
-    )
-    if merges is None:
-        return VertexClustering(graph, cl, modularity=q)
-    else:
-        return VertexDendrogram(graph, merges, safemax(cl) + 1)
-
-
 def _community_leading_eigenvector(
     graph, clusters=None, weights=None, arpack_options=None
 ):
