@@ -12784,7 +12784,7 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
     free(membership);
   }
 
-  return error ? NULL : res;
+  return error ? NULL : Py_BuildValue("Nd", res, (double) quality);
 }
 
 /**********************************************************************

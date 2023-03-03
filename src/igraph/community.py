@@ -420,7 +420,9 @@ def _community_leiden(
       If this is not provided, it will be automatically determined on the
       basis of whether you want to use CPM or modularity. If you do provide
       this, please make sure that you understand what you are doing.
-    @return: an appropriate L{VertexClustering} object.
+    @return: an appropriate L{VertexClustering} object with an extra attribute
+      called C{quality} that stores the value of the internal quality function
+      optimized by the algorithm.
 
     @newfield ref: Reference
     @ref: Traag, V. A., Waltman, L., & van Eck, N. J. (2019). From Louvain
@@ -440,7 +442,7 @@ def _community_leiden(
     if kwds:
         raise TypeError('unexpected keyword argument')
 
-    membership = GraphBase.community_leiden(
+    membership, quality = GraphBase.community_leiden(
         graph,
         edge_weights=weights,
         node_weights=node_weights,
@@ -451,11 +453,15 @@ def _community_leiden(
         n_iterations=n_iterations,
     )
 
+    params = {"quality": quality}
+
     modularity_params = {"resolution": resolution}
     if weights is not None:
         modularity_params["weights"] = weights
 
-    return VertexClustering(graph, membership, modularity_params=modularity_params)
+    return VertexClustering(
+        graph, membership, params=params, modularity_params=modularity_params
+    )
 
 
 def _modularity(self, membership, weights=None, resolution=1, directed=True):
