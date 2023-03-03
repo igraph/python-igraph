@@ -62,7 +62,8 @@ class Clustering:
         @param membership: the membership list -- that is, the cluster
           index in which each element of the set belongs to.
         @param params: additional parameters to be stored in this
-          object's dictionary."""
+          object's dictionary.
+        """
         self._membership = list(membership)
         if len(self._membership) > 0:
             self._len = max(m for m in self._membership if m is not None) + 1
@@ -788,7 +789,7 @@ class VertexDendrogram(Dendrogram):
     vertex set of a graph."""
 
     def __init__(
-        self, graph, merges, optimal_count=None, params=None, modularity_params=None
+        self, graph, merges, optimal_count=None, modularity_params=None
     ):
         """Creates a dendrogram object for a given graph.
 
@@ -799,7 +800,6 @@ class VertexDendrogram(Dendrogram):
           clustering algorithm that produces the dendrogram. C{None} means
           that such a hint is not available; the optimal count will then be
           selected based on the modularity in such a case.
-        @param params: additional parameters to be stored in this object.
         @param modularity_params: arguments that should be passed to
           L{Graph.modularity} when the modularity is (re)calculated. If the
           original graph was weighted, you should pass a dictionary
