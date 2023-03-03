@@ -403,7 +403,7 @@ def _community_leiden(
       Model (CPM) or modularity. Must be either C{"CPM"} or C{"modularity"}.
     @param weights: edge weights to be used. Can be a sequence or
       iterable or even an edge attribute name.
-    @param resolution: the resolution parameter to use. Higher resolutions 
+    @param resolution: the resolution parameter to use. Higher resolutions
       lead to more smaller communities, while lower resolutions lead to fewer
       larger communities.
     @param beta: parameter affecting the randomness in the Leiden
@@ -431,7 +431,10 @@ def _community_leiden(
         raise ValueError('objective_function must be "CPM" or "modularity".')
 
     if "resolution_parameter" in kwds:
-        deprecated("resolution_parameter keyword argument is deprecated, use resolution=... instead")
+        deprecated(
+            "resolution_parameter keyword argument is deprecated, use "
+            "resolution=... instead"
+        )
         resolution = kwds.pop("resolution_parameter")
 
     if kwds:
@@ -448,10 +451,10 @@ def _community_leiden(
         n_iterations=n_iterations,
     )
 
+    modularity_params = {"resolution": resolution}
     if weights is not None:
-        modularity_params = dict(weights=weights)
-    else:
-        modularity_params = {}
+        modularity_params["weights"] = weights
+
     return VertexClustering(graph, membership, modularity_params=modularity_params)
 
 
@@ -494,9 +497,11 @@ def _modularity(self, membership, weights=None, resolution=1, directed=True):
     if isinstance(membership, VertexClustering):
         if membership.graph != self:
             raise ValueError("clustering object belongs to another graph")
-        return GraphBase.modularity(self, membership.membership, weights)
+        return GraphBase.modularity(
+            self, membership.membership, weights, resolution, directed
+        )
     else:
-        return GraphBase.modularity(self, membership, weights)
+        return GraphBase.modularity(self, membership, weights, resolution, directed)
 
 
 def _optimal_cluster_count_from_merges_and_modularity(
