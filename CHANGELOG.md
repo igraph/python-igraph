@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Added
+
+- The `VertexClustering` object returned from `Graph.community_leiden()` now
+  contains an extra property named `quality` that stores the value of the
+  internal quality function optimized by the algorithm.
+
+### Fixed
+
+- `resolution` parameter is now correctly taken into account when calling
+  `Graph.modularity()`
+
 ### Removed
 
 - Removed defunct `Graph.community_leading_eigenvector_naive()` method. Not a
