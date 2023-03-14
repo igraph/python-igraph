@@ -427,8 +427,11 @@ class VertexClustering(Clustering):
         @return: a copy of the largest cluster.
         """
         ss = self.sizes()
-        max_size = max(ss)
-        return self.subgraph(ss.index(max_size))
+        if ss:
+            max_size = max(ss)
+            return self.subgraph(ss.index(max_size))
+        else:
+            return self._graph.copy()
 
     def __plot__(self, backend, context, *args, **kwds):
         """Plots the clustering to the given Cairo context or matplotlib Axes.

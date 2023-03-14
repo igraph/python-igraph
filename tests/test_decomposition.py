@@ -167,6 +167,13 @@ class VertexClusteringTests(unittest.TestCase):
         cl = VertexClustering(self.graph, [0, 0, 0, None, 1, 1, 2, None, 2, None])
         self.assertTrue(cl.sizes() == [3, 2, 2])
 
+    def testClusteringOfNullGraph(self):
+        null_graph = Graph()
+        cl = VertexClustering(null_graph, [])
+        self.assertTrue(cl.sizes() == [])
+        self.assertTrue(cl.giant().vcount() == 0)
+        self.assertTrue(cl.giant().ecount() == 0)
+
 
 class CoverTests(unittest.TestCase):
     def setUp(self):
