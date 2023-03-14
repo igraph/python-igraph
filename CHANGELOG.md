@@ -13,6 +13,9 @@
 - `resolution` parameter is now correctly taken into account when calling
   `Graph.modularity()`
 
+- `VertexClustering.giant()` now accepts the null graph. The giant component of
+  a null graph is the null graph according to our conventions.
+
 ### Removed
 
 - Removed defunct `Graph.community_leading_eigenvector_naive()` method. Not a
