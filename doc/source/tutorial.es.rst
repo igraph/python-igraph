@@ -4,9 +4,9 @@
 
 .. currentmodule:: igraph
 
-========
-Tutorial
-========
+==================
+Tutorial (Español)
+==================
 
 Esta página es un tutorial detallado de las capacidades de |igraph| para Python. Para obtener una impresión rápida de lo que |igraph| puede hacer, consulte el :doc:`tutorials/quickstart`. Si aún no ha instalado |igraph|, siga las instrucciones de :doc:`install`.
 
