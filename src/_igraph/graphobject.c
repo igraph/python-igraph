@@ -14676,7 +14676,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "The line graph of a directed graph is slightly different: two vertices\n"
    "are connected by a directed edge iff the target of the first vertex's\n"
    "corresponding edge is the same as the source of the second vertex's\n"
-   "corresponding edge.\n"
+   "corresponding edge.\n\n"
+   "Edge M{i} in the original graph will map to vertex M{i} of the line graph.\n"
   },
 
   /* interface to igraph_maxdegree */
