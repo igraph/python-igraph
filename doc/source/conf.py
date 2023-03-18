@@ -262,18 +262,19 @@ pydoctor_args = [
     '--html-output=' + get_pydoctor_html_outputdir(pydoctor_url_path),
     #'--html-viewsource-base=https://github.com/igraph/python-igraph/tree/default',
     '--project-base-dir=' + _igraph_dir,
-    ]
+    '--template-dir=' + get_root_dir() + '/doc/source/_pydoctor_templates'
+]
 
 # Using --no-sidebar option to skip the sidebar because the pydoctor output is
 # integrated in a smaller div with a custom CSS.
 if not is_inside_rtd:
     pydoctor_args.extend([
         '--no-sidebar',
-        ])
+    ])
 else:
     pydoctor_args.extend([
         '--theme=readthedocs',
-        ])
+    ])
 pydoctor_args.append(_igraph_dir)
 
 # RTD needs no postprocessing for pydoctor, while Jekyll does
