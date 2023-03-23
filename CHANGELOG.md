@@ -11,6 +11,11 @@
   contains an extra property named `quality` that stores the value of the
   internal quality function optimized by the algorithm.
 
+- `Graph.Adjacency()` and `Graph.Weighted_Adjacency()` now supports
+  `loops="once"`, `loops="twice"` and `loops="ignore"` to control how loop
+  edges are handled in a more granular way. `loops=True` and `loops=False`
+  keep on working as in earlier versions.
+
 ### Fixed
 
 - `resolution` parameter is now correctly taken into account when calling
