@@ -4,6 +4,9 @@
 
 ### Added
 
+- The `plot()` function now takes a `backend` keyword argument that can be used
+  to specify the plotting backend explicitly.
+
 - The `VertexClustering` object returned from `Graph.community_leiden()` now
   contains an extra property named `quality` that stores the value of the
   internal quality function optimized by the algorithm.

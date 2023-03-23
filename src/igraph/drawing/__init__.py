@@ -192,6 +192,10 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
       argument has an effect only if igraph is run inside IPython and C{target}
       is C{None}.
 
+    @keyword backend: the plotting backend to use; one of C{"cairo"},
+      C{"matplotlib"} or C{"plotly"}. C{None} means to try to decide the backend
+      from the plotting target and the default igraph configuration object.
+
     @return: an appropriate L{CairoPlot} object for the Cairo backend, the
       Matplotlib C{Axes} object for the Matplotlib backend, and the C{Figure}
       object for the plotly backend.
@@ -205,8 +209,13 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
     cairo = find_cairo()
     plotly = find_plotly()
 
-    # Switch backend based on target (first) and config (second)
-    if hasattr(plt, "Axes") and isinstance(target, plt.Axes):
+    backend = kwds.pop("backend", None)
+
+    # Switch backend based on target (first) and config (second) if it was not
+    # selected explicitly
+    if backend is not None:
+        pass
+    elif hasattr(plt, "Axes") and isinstance(target, plt.Axes):
         backend = "matplotlib"
     elif hasattr(plotly, "graph_objects") and isinstance(
         target, plotly.graph_objects.Figure
@@ -218,7 +227,7 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
         backend = Configuration.instance()["plotting.backend"]
 
     if backend not in VALID_BACKENDS:
-        raise ValueError("unknown plotting backend: {0!r}".format(backend))
+        raise ValueError(f"unknown plotting backend: {backend!r}")
 
     if backend in ("matplotlib", "plotly"):
         # Choose palette
