@@ -1,9 +1,7 @@
-import os
 import random
 import unittest
 
-
-from igraph import Graph, InternalError, plot, VertexClustering
+from igraph import Graph, plot, VertexClustering
 from igraph.drawing import find_cairo
 
 # FIXME: find a better way to do this that works for both direct call and module
@@ -26,6 +24,9 @@ class GraphTestRunner(unittest.TestCase):
         if not has_cairo:
             raise unittest.SkipTest("cairo not found, skipping tests")
         result_image_folder.mkdir(parents=True, exist_ok=True)
+
+    def setUp(self) -> None:
+        random.seed(42)
 
     @image_comparison(baseline_images=["graph_basic"])
     def test_basic(self):
@@ -65,6 +66,9 @@ class ClusteringTestRunner(unittest.TestCase):
         if not has_cairo:
             raise unittest.SkipTest("cairo not found, skipping tests")
         result_image_folder.mkdir(parents=True, exist_ok=True)
+
+    def setUp(self) -> None:
+        random.seed(42)
 
     @image_comparison(baseline_images=["clustering_directed"])
     def test_clustering_directed_small(self):
