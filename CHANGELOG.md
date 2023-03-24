@@ -16,6 +16,9 @@
   edges are handled in a more granular way. `loops=True` and `loops=False`
   keep on working as in earlier versions.
 
+- Added `Graph.get_shortest_path()` as a convenience function for cases when
+  only one shortest path is needed between a given source and target vertices.
+
 ### Fixed
 
 - `resolution` parameter is now correctly taken into account when calling

@@ -787,6 +787,14 @@ class PathTests(unittest.TestCase):
             == [row[2:4] for row in expected]
         )
 
+    def testGetShortestPath(self):
+        g = Graph(4, [(0, 1), (0, 2), (1, 3), (3, 2), (2, 1)], directed=True)
+        self.assertEqual([0, 1, 3], g.get_shortest_path(0, 3))
+        self.assertEqual([0, 1, 3], g.get_shortest_path(0, 3, output="vpath"))
+        self.assertEqual([0, 2], g.get_shortest_path(0, 3, output="epath"))
+        self.assertRaises(ValueError, g.get_shortest_path, 0, 3, output="x")
+        self.assertRaises(TypeError, g.get_shortest_path, 0)
+
     def testGetShortestPaths(self):
         g = Graph(4, [(0, 1), (0, 2), (1, 3), (3, 2), (2, 1)], directed=True)
         sps = g.get_shortest_paths(0)

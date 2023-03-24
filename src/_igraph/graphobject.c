@@ -5119,6 +5119,67 @@ PyObject *igraphmodule_Graph_feedback_arc_set(
 
 
 /** \ingroup python_interface_graph
+ * \brief Calculates a single shortest path between a source and a target vertex
+ * \return a list containing a single shortest path from the source to the target
+ * \sa igraph_get_shortest_path
+ */
+PyObject *igraphmodule_Graph_get_shortest_path(
+  igraphmodule_GraphObject *self, PyObject *args, PyObject * kwds
+) {
+  static char *kwlist[] = { "v", "to", "weights", "mode", "output", NULL };
+  igraph_vector_t *weights=0;
+  igraph_neimode_t mode = IGRAPH_OUT;
+  igraph_integer_t from, to;
+  PyObject *list, *mode_o=Py_None, *weights_o=Py_None,
+           *output_o=Py_None, *from_o = Py_None, *to_o=Py_None;
+  igraph_vector_int_t vec;
+  igraph_bool_t use_edges = false;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|OOO!", kwlist, &from_o,
+        &to_o, &weights_o, &mode_o, &PyUnicode_Type, &output_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vid(to_o, &to, &self->g))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+    return NULL;
+
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
+      ATTRIBUTE_TYPE_EDGE)) return NULL;
+
+  if (igraph_vector_int_init(&vec, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  /* Call the C function */
+  if (igraph_get_shortest_path_dijkstra(&self->g, use_edges ? 0 : &vec,
+        use_edges ? &vec : 0, from, to, weights, mode)) {
+    igraph_vector_int_destroy(&vec);
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  /* We don't need these anymore, the result is in vec */
+  if (weights) { igraph_vector_destroy(weights); free(weights); }
+
+  /* Convert to Python list of paths */
+  list = igraphmodule_vector_int_t_to_PyList(&vec);
+  igraph_vector_int_destroy(&vec);
+
+  return list ? list : NULL;
+}
+
+
+/** \ingroup python_interface_graph
  * \brief Calculates the shortest paths from/to a given node in the graph
  * \return a list containing shortest paths from/to the given node
  * \sa igraph_get_shortest_paths
@@ -5194,8 +5255,6 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
   list = igraphmodule_vector_int_list_t_to_PyList(&veclist);
   igraph_vector_int_list_destroy(&veclist);
   return list ? list : NULL;
-
-  return list;
 }
 
 /** \ingroup python_interface_graph
@@ -14453,7 +14512,27 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  feedback arc set problem. In: Proc Inf Process Lett 319-323, 1993.\n"
   },
 
-  // interface to igraph_get_shortest_paths
+  /* interface to igraph_get_shortest_path */
+  {"get_shortest_path", (PyCFunction) igraphmodule_Graph_get_shortest_path,
+   METH_VARARGS | METH_KEYWORDS,
+   "get_shortest_path(v, to, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
+   "Calculates the shortest path from a source vertex to a target vertex in a graph.\n\n"
+   "@param v: the source vertex of the path\n"
+   "@param to: the target vertex of the path\n"
+   "@param weights: edge weights in a list or the name of an edge attribute\n"
+   "  holding edge weights. If C{None}, all edges are assumed to have\n"
+   "  equal weight.\n"
+   "@param mode: the directionality of the paths. C{\"out\"} means to\n"
+   "  calculate paths from source to target, following edges according to\n"
+   "  their natural direction. C{\"in\"} means to calculate paths from target\n"
+   "  to source, flipping the direction of each edge on-the-fly. C{\"all\"}\n"
+   "  means to ignore edge directions.\n"
+   "@param output: determines what should be returned. If this is\n"
+   "  C{\"vpath\"}, a list of vertex IDs will be returned. If this is\n"
+   "  C{\"epath\"}, edge IDs are returned instead of vertex IDs.\n"
+   "@return: see the documentation of the C{output} parameter.\n"},
+
+  /* interface to igraph_get_shortest_paths */
   {"get_shortest_paths", (PyCFunction) igraphmodule_Graph_get_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
    "get_shortest_paths(v, to=None, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
