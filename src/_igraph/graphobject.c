@@ -5178,6 +5178,118 @@ PyObject *igraphmodule_Graph_get_shortest_path(
   return list ? list : NULL;
 }
 
+typedef struct {
+  PyObject* func;
+  PyObject* graph;
+} igraphmodule_i_Graph_get_shortest_path_astar_callback_data_t;
+
+igraph_error_t igraphmodule_i_Graph_get_shortest_path_astar_callback(
+  igraph_real_t *result, igraph_integer_t from, igraph_integer_t to,
+  void *extra
+) {
+  igraphmodule_i_Graph_get_shortest_path_astar_callback_data_t* data =
+    (igraphmodule_i_Graph_get_shortest_path_astar_callback_data_t*)extra;
+  PyObject* from_o;
+  PyObject* to_o;
+  PyObject* result_o;
+
+  from_o = igraphmodule_integer_t_to_PyObject(from);
+  if (from_o == NULL) {
+    /* Error in conversion, return 1 */
+    return IGRAPH_FAILURE;
+  }
+
+  to_o = igraphmodule_integer_t_to_PyObject(to);
+  if (to_o == NULL) {
+    /* Error in conversion, return 1 */
+    return IGRAPH_FAILURE;
+  }
+
+  result_o = PyObject_CallFunction(data->func, "OOO", data->graph, from_o, to_o);
+  Py_DECREF(from_o);
+  Py_DECREF(to_o);
+
+  if (result_o == NULL) {
+    /* Error in callback, return 1 */
+    return IGRAPH_FAILURE;
+  }
+
+  if (igraphmodule_PyObject_to_real_t(result_o, result)) {
+    /* Error in conversion, return 1 */
+    return IGRAPH_FAILURE;
+  }
+
+  return IGRAPH_SUCCESS;
+}
+
+/** \ingroup python_interface_graph
+ * \brief Calculates a single shortest path between a source and a target vertex using the A-star algorithm
+ * \return a list containing a single shortest path from the source to the target
+ * \sa igraph_get_shortest_path_astar
+ */
+PyObject *igraphmodule_Graph_get_shortest_path_astar(
+  igraphmodule_GraphObject *self, PyObject *args, PyObject * kwds
+) {
+  static char *kwlist[] = { "v", "to", "heuristics", "weights", "mode", "output", NULL };
+  igraph_vector_t *weights=0;
+  igraph_neimode_t mode = IGRAPH_OUT;
+  igraph_integer_t from, to;
+  PyObject *list, *mode_o=Py_None, *weights_o=Py_None,
+           *output_o=Py_None, *from_o = Py_None, *to_o=Py_None,
+           *heuristics_o;
+  igraph_vector_int_t vec;
+  igraph_bool_t use_edges = false;
+  igraphmodule_i_Graph_get_shortest_path_astar_callback_data_t extra;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOO|OOO!", kwlist, &from_o,
+        &to_o, &heuristics_o, &weights_o, &mode_o, &PyUnicode_Type, &output_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vid(to_o, &to, &self->g))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+    return NULL;
+
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
+      ATTRIBUTE_TYPE_EDGE)) return NULL;
+
+  if (igraph_vector_int_init(&vec, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  extra.func = heuristics_o;
+  extra.graph = (PyObject*) self;
+
+  /* Call the C function */
+  if (igraph_get_shortest_path_astar(&self->g, use_edges ? 0 : &vec,
+        use_edges ? &vec : 0, from, to, weights, mode,
+        igraphmodule_i_Graph_get_shortest_path_astar_callback,
+        &extra
+  )) {
+    igraph_vector_int_destroy(&vec);
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  /* We don't need these anymore, the result is in vec */
+  if (weights) { igraph_vector_destroy(weights); free(weights); }
+
+  /* Convert to Python list of paths */
+  list = igraphmodule_vector_int_t_to_PyList(&vec);
+  igraph_vector_int_destroy(&vec);
+
+  return list ? list : NULL;
+}
+
 
 /** \ingroup python_interface_graph
  * \brief Calculates the shortest paths from/to a given node in the graph
@@ -14602,6 +14714,33 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  in a list of vertex or edge IDs (depending on the value of the C{output}\n"
    "  argument). Note that in case of mode=C{\"in\"},\n"
    "  the vertices in a path are returned in reversed order!"},
+
+  /* interface to igraph_get_shortest_path_astar */
+  {"get_shortest_path_astar", (PyCFunction) igraphmodule_Graph_get_shortest_path_astar,
+   METH_VARARGS | METH_KEYWORDS,
+   "get_shortest_path(v, to, heuristics, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
+   "Calculates the shortest path from a source vertex to a target vertex in a\n"
+   "graph using the A-Star algorithm and a heuristic function.\n\n"
+   "@param v: the source vertex of the path\n"
+   "@param to: the target vertex of the path\n"
+   "@param heuristics: a function that will be called with the graph and two\n"
+   "  vertices, and must return an estimate of the cost of the path from the\n"
+   "  first vertex to the second vertex. The A-Star algorithm is guaranteed to\n"
+   "  return an optimal solution if the heuristic is I{admissible}, i.e. if it\n"
+   "  does never overestimate the cost of the shortest path from the given\n"
+   "  source vertex to the given target vertex.\n"
+   "@param weights: edge weights in a list or the name of an edge attribute\n"
+   "  holding edge weights. If C{None}, all edges are assumed to have\n"
+   "  equal weight.\n"
+   "@param mode: the directionality of the paths. C{\"out\"} means to\n"
+   "  calculate paths from source to target, following edges according to\n"
+   "  their natural direction. C{\"in\"} means to calculate paths from target\n"
+   "  to source, flipping the direction of each edge on-the-fly. C{\"all\"}\n"
+   "  means to ignore edge directions.\n"
+   "@param output: determines what should be returned. If this is\n"
+   "  C{\"vpath\"}, a list of vertex IDs will be returned. If this is\n"
+   "  C{\"epath\"}, edge IDs are returned instead of vertex IDs.\n"
+   "@return: see the documentation of the C{output} parameter.\n"},
 
   /* interface to igraph_get_all_simple_paths */
   {"_get_all_simple_paths",
