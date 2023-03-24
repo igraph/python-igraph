@@ -19,6 +19,10 @@
 - Added `Graph.get_shortest_path()` as a convenience function for cases when
   only one shortest path is needed between a given source and target vertices.
 
+- Added `Graph.get_shortest_path_astar()` to calculate the shortest path
+  between two vertices using the A-star algorithm and an appropriate
+  heuristic function.
+
 ### Fixed
 
 - `resolution` parameter is now correctly taken into account when calling
