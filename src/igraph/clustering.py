@@ -1089,6 +1089,8 @@ class VertexCover(Cover):
         if clusters is None:
             clusters = [range(graph.vcount())]
 
+        self._resolve_names_in_clusters(graph, clusters)
+
         super().__init__(clusters, n=graph.vcount())
         if self._n > graph.vcount():
             raise ValueError(
@@ -1215,6 +1217,24 @@ class VertexCover(Cover):
         else:
             for cluster in self:
                 yield ", ".join(str(member) for member in cluster)
+
+    @staticmethod
+    def _resolve_names_in_clusters(graph, clusters):
+        if not graph.is_named():
+            return
+
+        names = graph.vs["name"]
+        name_to_index = dict((k, v) for v, k in enumerate(names))
+
+        for idx, cluster in enumerate(clusters):
+            if any(isinstance(item, str) for item in cluster):
+                new_cluster = []
+                for item in cluster:
+                    if isinstance(item, str):
+                        new_cluster.append(name_to_index.get(item, item))
+                    else:
+                        new_cluster.append(item)
+                clusters[idx] = new_cluster
 
 
 class CohesiveBlocks(VertexCover):

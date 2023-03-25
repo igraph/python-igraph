@@ -23,6 +23,9 @@
   between two vertices using the A-star algorithm and an appropriate
   heuristic function.
 
+- The `VertexCover` constructor now allows referring to vertices by names
+  instead of IDs.
+
 ### Fixed
 
 - `resolution` parameter is now correctly taken into account when calling
