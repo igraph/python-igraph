@@ -24,11 +24,169 @@ from .polygon import MatplotlibPolygonDrawer
 from .utils import find_matplotlib
 from .vertex import MatplotlibVertexDrawer
 
-__all__ = ("MatplotlibGraphDrawer",)
+__all__ = (
+    "MatplotlibGraphDrawer",
+    "GraphArtist",
+    )
 
-_, plt = find_matplotlib()
+mpl, plt = find_matplotlib()
 
 #####################################################################
+
+
+# NOTE: https://github.com/networkx/grave/blob/main/grave/grave.py
+class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
+    """Artist for an igraph.Graph object.
+
+    Arguments:
+        graph: An igraph.Graph object to plot
+        layout: A layout object or matrix of coordinates to use for plotting.
+            Each element or row should describes the coordinates for a vertex.
+        vertex_style: A dictionary specifying style options for vertices.
+        edge_style: A dictionary specifying style options for edges.
+    """
+    def __init__(
+        self,
+        graph,
+        layout=None,
+        vertex_style=None,
+        edge_style=None,
+        vertex_label_style=None,
+        edge_label_style=None,
+        **kwargs,
+    ):
+
+        super().__init__()
+        self.graph = graph
+        self.layout = self.ensure_layout(layout)
+        self.vertex_style = vertex_style
+        self.edge_style = edge_style
+        self.vertex_label_style = vertex_label_style
+        self.edge_label_style = edge_label_style
+
+        self._clear_state()
+
+    def _clear_state(self):
+        self._vertex_artist = None
+        self._vertex_indx = None
+        self._edge_artist = None
+        self._edge_indx = None
+        self._vertex_labels = None
+        self._edge_labels = None
+
+    def get_children(self):
+        artists = [self._vertex_artist, self._edge_artist]
+        if self._vertex_labels is not None:
+            artists.extend(self._vertex_labels)
+        if self._edge_labels is not None:
+            artists.extend(self._edge_labels)
+        return tuple(a for a in artists if a is not None)
+
+    def get_datalim(self):
+        import numpy as np
+
+        mins = np.min(self.layout, axis=0)
+        maxs = np.max(self.layout, axis=0)
+
+        return (mins, maxs)
+
+    def _reprocess(self, *):
+        """Process the actual drawing."""
+        # nuke old state and mark as stale
+        self._clear_state()
+        self.stale = True
+
+        # get local refs to everything (just for less typing)
+        graph = self.graph
+        edge_style = self.edge_style
+        vertex_style = self.vertex_style
+        edge_label_style = self.edge_label_style
+        vertex_label_style = self.vertex_label_style
+
+        # get the layout
+        pos = self.layout.coords
+
+        # handle the edges
+        edge_style_dict = generate_edge_styles(graph, edge_style)
+        self._edge_artist, self._edge_indx = (
+            _generate_straight_edges(graph.edges(), pos,
+                                     edge_style_dict, ax=self.axes))
+
+        # handle the nodes
+        vertex_style_dict = generate_node_styles(graph, node_style)
+        self._vertex_artist, self._vertex_indx = (
+            _generate_vertex_artist(pos, vertex_style_dict, ax=self.axes))
+
+        # TODO handle the text
+
+        # handle the node labels
+        if vertex_label_style is not None:
+            vlabel_style_dict = generate_vertex_label_styles(
+                    graph,
+                    vertex_label_style)
+            self._vertex_label_dict = (
+                _generate_vertex_labels(pos, vlabel_style_dict, ax=self.axes))
+
+        # handle the edge labels
+        if edge_label_style is not None:
+            elabel_style_dict = generate_edge_label_styles(graph,
+                                                           edge_label_style)
+            self._edge_label_dict = (
+                _generate_edge_labels(pos, elabel_style_dict, ax=self.axes))
+
+        # TODO sort out all of the things that need to be forwarded
+        for child in self.get_children():
+            # set the figure / axes on child, this is needed
+            # by some internals
+            child.set_figure(self.figure)
+            child.axes = self.axes
+            # forward the clippath/box to the children need this logic
+            # because mpl exposes some fast-path logic
+            clip_path = self.get_clip_path()
+            if clip_path is None:
+                clip_box = self.get_clip_box()
+                child.set_clip_box(clip_box)
+            else:
+                child.set_clip_path(clip_path)
+
+    @_stale_wrapper
+    def draw(self, renderer, *args, **kwargs):
+        """Draw each of the children, with some buffering mechanism."""
+        if not self.get_visible():
+            return
+
+        if not self.get_children():
+            self._reprocess()
+
+        elif self.stale:
+            self._reprocess(reset_pos=False)
+
+        for art in self.get_children():
+            art.draw(renderer, *args, **kwargs)
+
+    def contains(self, mouseevent):
+        """Track 'contains' event for mouse interactions."""
+        props = {}
+        edge_hit, edge_props = self._edge_artist.contains(mouseevent)
+        vertex_hit, vertex_props = self._vertex_artist.contains(mouseevent)
+        props['vertices'] = [self._node_indx[j]
+                          for j in vertex_props.get('ind', [])]
+        props['edges'] = [self._edge_indx[j]
+                          for j in edge_props.get('ind', [])]
+
+        return edge_hit | node_hit, props
+
+    def pick(self, mouseevent):
+        """Track 'pick' event for mouse interactions."""
+        # Pick self
+        if self.pickable():
+            picker = self.get_picker()
+            if callable(picker):
+                inside, prop = picker(self, mouseevent)
+            else:
+                inside, prop = self.contains(mouseevent)
+            if inside:
+                self.figure.canvas.pick_event(mouseevent, self, **prop)
 
 
 class MatplotlibGraphDrawer(AbstractGraphDrawer):

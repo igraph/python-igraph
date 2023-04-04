@@ -41,7 +41,10 @@ from igraph.drawing.cairo.graph import CairoGraphDrawer
 from igraph.drawing.cairo.matrix import CairoMatrixDrawer
 from igraph.drawing.cairo.histogram import CairoHistogramDrawer
 from igraph.drawing.cairo.palette import CairoPaletteDrawer
-from igraph.drawing.matplotlib.graph import MatplotlibGraphDrawer
+from igraph.drawing.matplotlib.graph import (
+    MatplotlibGraphDrawer,
+    GraphArtist,
+)
 from igraph.drawing.matplotlib.matrix import MatplotlibMatrixDrawer
 from igraph.drawing.matplotlib.histogram import MatplotlibHistogramDrawer
 from igraph.drawing.matplotlib.palette import MatplotlibPaletteDrawer
@@ -54,6 +57,7 @@ __all__ = (
     "BoundingBox",
     "CairoGraphDrawer",
     "MatplotlibGraphDrawer",
+    "GraphArtist",
     "DefaultGraphDrawer",
     "Plot",
     "Point",
