@@ -53,7 +53,8 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         edge_style=None,
         vertex_label_style=None,
         edge_label_style=None,
-        **kwargs,
+        mark_groups=False,
+        **kwds,
     ):
 
         super().__init__()
@@ -63,8 +64,35 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         self.edge_style = edge_style
         self.vertex_label_style = vertex_label_style
         self.edge_label_style = edge_label_style
+        self.mark_groups = mark_groups
+        self.edge_curved = self._set_edge_curve(**kwds)
+        self.palette = kwds.pop("palette", None)
+        self.kwds = kwds
 
         self._clear_state()
+
+    def _set_edge_curve(self, **kwds):
+        # Decide whether we need to calculate the curvature of edges
+        # automatically -- and calculate them if needed.
+        autocurve = kwds.get("autocurve", None)
+        if autocurve or (
+            autocurve is None
+            and "edge_curved" not in kwds
+            and "curved" not in self.graph.edge_attributes()
+            and self.graph.ecount() < 10000
+        ):
+            from igraph import autocurve
+
+            default = kwds.get("edge_curved", 0)
+            if default is True:
+                default = 0.5
+            default = float(default)
+            return autocurve(
+                graph,
+                attribute=None,
+                default=default,
+            )
+        return None
 
     def _clear_state(self):
         self._vertex_artist = None
@@ -124,9 +152,19 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         vertex_style = self.vertex_style
         edge_label_style = self.edge_label_style
         vertex_label_style = self.vertex_label_style
+        layout = self.layout
+        kwds = self.kwds
 
-        # get the layout
-        pos = self.layout.coords
+        # Determine the order in which we will draw the vertices and edges
+        # These methods come from AbstractGraphDrawer
+        vertex_order = self._determine_vertex_order(graph, kwds)
+        edge_order = self._determine_edge_order(graph, kwds)
+
+        # FIXME FIXME
+        # vertices
+        vertex_style_dict = generate_node_styles(graph, node_style)
+        self._vertex_artist, self._vertex_indx = (
+            _generate_vertex_artist(pos, vertex_style_dict, ax=self.axes))
 
         # edges
         edge_style_dict = generate_edge_styles(graph, edge_style)
@@ -134,10 +172,6 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
             _generate_straight_edges(graph.edges(), pos,
                                      edge_style_dict, ax=self.axes))
 
-        # vertices
-        vertex_style_dict = generate_node_styles(graph, node_style)
-        self._vertex_artist, self._vertex_indx = (
-            _generate_vertex_artist(pos, vertex_style_dict, ax=self.axes))
 
         # TODO handle the text
 
@@ -172,7 +206,7 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
                 child.set_clip_path(clip_path)
 
     @_stale_wrapper
-    def draw(self, renderer, *args, **kwargs):
+    def draw(self, renderer, *args, **kwds):
         """Draw each of the children, with some buffering mechanism."""
         if not self.get_visible():
             return
@@ -184,7 +218,7 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
             self._reprocess(reset_pos=False)
 
         for art in self.get_children():
-            art.draw(renderer, *args, **kwargs)
+            art.draw(renderer, *args, **kwds)
 
     def contains(self, mouseevent):
         """Track 'contains' event for mouse interactions."""
@@ -262,32 +296,20 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         directed = graph.is_directed()
         ax = self.ax
 
-        # Palette
-        palette = kwds.pop("palette", None)
+        # Create artist
+        art = GraphArtist(
+            graph,
+            layout=kwds.get("layout", None),
+            vertex_style=None,
+            edge_style=None,
+            vertex_label_style=None,
+            edge_label_style=None,
+            mark_groups=False,
+            **kwds,
+        )
 
-        # Calculate/get the layout of the graph
-        layout = self.ensure_layout(kwds.get("layout", None), graph)
-
-        # Decide whether we need to calculate the curvature of edges
-        # automatically -- and calculate them if needed.
-        autocurve = kwds.get("autocurve", None)
-        if autocurve or (
-            autocurve is None
-            and "edge_curved" not in kwds
-            and "curved" not in graph.edge_attributes()
-            and graph.ecount() < 10000
-        ):
-            from igraph import autocurve
-
-            default = kwds.get("edge_curved", 0)
-            if default is True:
-                default = 0.5
-            default = float(default)
-            kwds["edge_curved"] = autocurve(
-                graph,
-                attribute=None,
-                default=default,
-            )
+        ax.add_artist(art)
+        art._reprocess()
 
         # Construct the vertex, edge and label drawers
         vertex_drawer = self.vertex_drawer_factory(ax, palette, layout)
@@ -392,9 +414,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                     legend_info["labels"],
                 )
 
-        # Determine the order in which we will draw the vertices and edges
-        vertex_order = self._determine_vertex_order(graph, kwds)
-        edge_order = self._determine_edge_order(graph, kwds)
 
         # Construct the iterator that we will use to draw the vertices
         vs = graph.vs
@@ -475,24 +494,24 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                     dest_vertex,
                 )
 
-                text_kwargs = {}
-                text_kwargs['ha'] = halign.value
-                text_kwargs['va'] = valign.value
+                text_kwds = {}
+                text_kwds['ha'] = halign.value
+                text_kwds['va'] = valign.value
 
                 if visual_edge.background is not None:
-                    text_kwargs['bbox'] = dict(
+                    text_kwds['bbox'] = dict(
                         facecolor=visual_edge.background,
                         edgecolor='none',
                     )
-                    text_kwargs['ha'] = 'center'
-                    text_kwargs['va'] = 'center'
+                    text_kwds['ha'] = 'center'
+                    text_kwds['va'] = 'center'
 
                 if visual_edge.align_label:
                     # Rotate the text to align with the edge
                     rotation = edge_drawer.get_label_rotation(
                         visual_edge, src_vertex, dest_vertex,
                     )
-                    text_kwargs['rotation'] = rotation
+                    text_kwds['rotation'] = rotation
 
                 ax.text(
                     x,
@@ -500,9 +519,12 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                     label,
                     fontsize=visual_edge.label_size,
                     color=visual_edge.label_color,
-                    **text_kwargs,
+                    **text_kwds,
                     # TODO: offset, etc.
                 )
+
+        # Set new data limits
+        ax.update_datalim(art.get_datalim())
 
         # Despine
         ax.spines["right"].set_visible(False)
