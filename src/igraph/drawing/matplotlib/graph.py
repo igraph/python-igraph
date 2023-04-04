@@ -73,6 +73,7 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         self._edge_indx = None
         self._vertex_labels = None
         self._edge_labels = None
+        self._group_artist = None
 
     def get_children(self):
         artists = [self._vertex_artist, self._edge_artist]
@@ -80,7 +81,24 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
             artists.extend(self._vertex_labels)
         if self._edge_labels is not None:
             artists.extend(self._edge_labels)
+        if self._group_artist is not None:
+            artists.extend(self._group_artist)
         return tuple(a for a in artists if a is not None)
+
+    def get_vertices(self):
+        return self._vertex_artist
+
+    def get_edges(seff):
+        return self._edge_artist
+
+    def get_groups(self):
+        return self._group_artist
+
+    def get_vertex_labels(self):
+        return self._vertex_labels
+
+    def get_edge_labels(self):
+        return self._edge_labels
 
     def get_datalim(self):
         import numpy as np
@@ -91,7 +109,11 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         return (mins, maxs)
 
     def _reprocess(self, *):
-        """Process the actual drawing."""
+        """Prepare artist and children for the actual drawing.
+
+        Children are not drawn here, but the dictionaries of properties are
+        marshalled to their specific artists.
+        """
         # nuke old state and mark as stale
         self._clear_state()
         self.stale = True
@@ -106,13 +128,13 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         # get the layout
         pos = self.layout.coords
 
-        # handle the edges
+        # edges
         edge_style_dict = generate_edge_styles(graph, edge_style)
         self._edge_artist, self._edge_indx = (
             _generate_straight_edges(graph.edges(), pos,
                                      edge_style_dict, ax=self.axes))
 
-        # handle the nodes
+        # vertices
         vertex_style_dict = generate_node_styles(graph, node_style)
         self._vertex_artist, self._vertex_indx = (
             _generate_vertex_artist(pos, vertex_style_dict, ax=self.axes))
