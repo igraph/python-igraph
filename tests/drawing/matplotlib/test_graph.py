@@ -78,7 +78,8 @@ class GraphTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         plot(g, target=ax, vertex_shape="o",
              layout=self.layout_small_ring)
-        dot = ax.get_children()[0]
+        graph_artist = ax.get_children()[0]
+        dot = graph_artist.get_vertices()[0]
         dot.set_facecolor("blue")
         dot.radius *= 0.5
 
