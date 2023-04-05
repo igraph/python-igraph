@@ -56,7 +56,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
         return VisualEdgeBuilder
 
     def draw_directed_edge(self, edge, src_vertex, dest_vertex):
-        if src_vertex == dest_vertex:  # TODO
+        if src_vertex == dest_vertex:
             return self.draw_loop_edge(edge, src_vertex)
 
         ax = self.context
@@ -220,7 +220,6 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             transform=ax.transData,
             clip_on=True,
         )
-        # FIXME: make a PathCollection??
         return [art]
 
     def draw_undirected_edge(self, edge, src_vertex, dest_vertex):
@@ -268,5 +267,4 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             transform=ax.transData,
             clip_on=True,
         )
-        # FIXME: make a PathCollection??
         return [art]

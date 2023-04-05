@@ -364,7 +364,6 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
                 ]
 
             # Draw the hull
-            # FIXME: defer this to the draw operation!
             facecolor = (color[0], color[1], color[2], 0.25 * color[3])
             drawer = MatplotlibPolygonDrawer(self.axes)
             art = drawer.draw(
