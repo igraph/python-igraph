@@ -125,14 +125,17 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
     def get_children(self):
         artists = sum(
             [
-                self._vertex_artists,
-                self._edge_artists,
-                self._vertex_labels,
-                self._edge_labels,
                 self._group_artists,
+                self._edge_artists,
+                self._vertex_artists,
+                self._edge_labels,
+                self._vertex_labels,
             ],
             [],
         )
+
+        # NOTE: looks like we have to manage the zorder ourselves
+        artists.sort(key=lambda x: x.zorder)
         return tuple(artists)
 
     def _set_edge_curve(self, **kwds):
