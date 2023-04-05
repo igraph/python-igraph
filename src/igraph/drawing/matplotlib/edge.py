@@ -171,6 +171,8 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             edgecolor=edge.color,
             facecolor="none",
             linewidth=edge.width,
+            transform=ax.transData,
+            clip_on=True,
         )
 
         # Draw the arrow head
@@ -183,6 +185,8 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             closed=True,
             facecolor=edge.color,
             edgecolor="none",
+            transform=ax.transData,
+            clip_on=True,
         )
         return [arrowshaft, arrowhead]
 
@@ -209,6 +213,8 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             linewidth=edge.width,
             facecolor="none",
             edgecolor=edge.color,
+            transform=ax.transData,
+            clip_on=True,
         )
         # FIXME: make a PathCollection??
         return [art]
@@ -254,6 +260,8 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             edgecolor=edge.color,
             facecolor="none",
             linewidth=edge.width,
+            transform=ax.transData,
+            clip_on=True,
         )
         # FIXME: make a PathCollection??
         return [art]

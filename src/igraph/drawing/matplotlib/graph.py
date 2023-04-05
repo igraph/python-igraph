@@ -25,9 +25,7 @@ from .polygon import MatplotlibPolygonDrawer
 from .utils import find_matplotlib
 from .vertex import MatplotlibVertexDrawer
 
-__all__ = (
-    "MatplotlibGraphDrawer",
-)
+__all__ = ("MatplotlibGraphDrawer",)
 
 mpl, plt = find_matplotlib()
 
@@ -37,6 +35,7 @@ mpl, plt = find_matplotlib()
 # NOTE: https://github.com/networkx/grave/blob/main/grave/grave.py
 def _stale_wrapper(func):
     """Decorator to manage artist state."""
+
     @wraps(func)
     def inner(self, *args, **kwargs):
         try:
@@ -64,15 +63,24 @@ def _forwarder(forwards, cls=None):
     for f in forwards:
         method = make_forward(f)
         method.__name__ = f
-        method.__doc__ = 'broadcasts {} to children'.format(f)
+        method.__doc__ = "broadcasts {} to children".format(f)
         setattr(cls, f, method)
 
     return cls
 
 
-@_forwarder(('set_clip_path', 'set_clip_box', 'set_transform',
-             'set_snap', 'set_sketch_params', 'set_figure',
-             'set_animated', 'set_picker'))
+@_forwarder(
+    (
+        "set_clip_path",
+        "set_clip_box",
+        "set_transform",
+        "set_snap",
+        "set_sketch_params",
+        "set_figure",
+        "set_animated",
+        "set_picker",
+    )
+)
 class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
     """Artist for an igraph.Graph object.
 
@@ -170,8 +178,20 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
     def get_datalim(self):
         import numpy as np
 
+        vertex_builder = self.vertex_builder
+
         mins = np.min(self.layout, axis=0)
         maxs = np.max(self.layout, axis=0)
+
+        # Pad by vertex size, to ensure they fit
+        if vertex_builder.size is not None:
+            mins -= vertex_builder.size * 1.1
+            maxs += vertex_builder.size * 1.1
+        else:
+            mins[0] -= vertex_builder.width * 0.55
+            mins[1] -= vertex_builder.height * 0.55
+            maxs[0] += vertex_builder.width * 0.55
+            maxs[1] += vertex_builder.height * 0.55
 
         return (mins, maxs)
 
@@ -424,7 +444,7 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         Children are not drawn here, but the dictionaries of properties are
         marshalled to their specific artists.
         """
-        # nuke old state and mark as stale
+        # clear state and mark as stale
         self._clear_state()
         self.stale = True
 
@@ -477,10 +497,7 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         if not self.get_visible():
             return
 
-        if not self.get_children():
-            self._reprocess()
-
-        elif self.stale:
+        if (not self.get_children()) or self.stale:
             self._reprocess()
 
         for art in self.get_children():
