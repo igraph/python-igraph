@@ -163,7 +163,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             path["codes"].append("LINETO")
 
         # Draw the edge
-        stroke = mpl.patches.PathPatch(
+        arrowshaft = mpl.patches.PathPatch(
             mpl.path.Path(
                 path["vertices"],
                 codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
@@ -172,7 +172,6 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             facecolor="none",
             linewidth=edge.width,
         )
-        ax.add_patch(stroke)
 
         # Draw the arrow head
         arrowhead = mpl.patches.Polygon(
@@ -185,7 +184,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             facecolor=edge.color,
             edgecolor="none",
         )
-        ax.add_patch(arrowhead)
+        return [arrowshaft, arrowhead]
 
     def draw_loop_edge(self, edge, vertex):
         """Draws a loop edge.
@@ -201,7 +200,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
         radius = vertex.size * 1.5
         center_x = vertex.position[0] + cos(pi / 4) * radius / 2.0
         center_y = vertex.position[1] - sin(pi / 4) * radius / 2.0
-        stroke = mpl.patches.Arc(
+        art = mpl.patches.Arc(
             (center_x, center_y),
             radius / 2.0,
             radius / 2.0,
@@ -212,7 +211,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             edgecolor=edge.color,
         )
         # FIXME: make a PathCollection??
-        ax.add_patch(stroke)
+        return [art]
 
     def draw_undirected_edge(self, edge, src_vertex, dest_vertex):
         """Draws an undirected edge.
@@ -247,7 +246,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             path["vertices"].append(dest_vertex.position)
             path["codes"].append("LINETO")
 
-        stroke = mpl.patches.PathPatch(
+        art = mpl.patches.PathPatch(
             mpl.path.Path(
                 path["vertices"],
                 codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
@@ -257,4 +256,4 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             linewidth=edge.width,
         )
         # FIXME: make a PathCollection??
-        ax.add_artist(stroke)
+        return [art]

@@ -14,6 +14,7 @@ network from Cytoscape and convert it to igraph format.
 """
 
 from warnings import warn
+from functools import wraps
 
 from igraph._igraph import convex_hull, VertexSeq
 from igraph.drawing.baseclasses import AbstractGraphDrawer
@@ -27,7 +28,7 @@ from .vertex import MatplotlibVertexDrawer
 __all__ = (
     "MatplotlibGraphDrawer",
     "GraphArtist",
-    )
+)
 
 mpl, plt = find_matplotlib()
 
@@ -35,6 +36,17 @@ mpl, plt = find_matplotlib()
 
 
 # NOTE: https://github.com/networkx/grave/blob/main/grave/grave.py
+def _stale_wrapper(func):
+    @wraps(func)
+    def inner(self, *args, **kwargs):
+        try:
+            func(self, *args, **kwargs)
+        finally:
+            self.stale = False
+
+    return inner
+
+
 class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
     """Artist for an igraph.Graph object.
 
@@ -45,33 +57,53 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         vertex_style: A dictionary specifying style options for vertices.
         edge_style: A dictionary specifying style options for edges.
     """
+
     def __init__(
         self,
         graph,
+        vertex_drawer_factory=MatplotlibVertexDrawer,
+        edge_drawer_factory=MatplotlibEdgeDrawer,
         layout=None,
-        vertex_style=None,
-        edge_style=None,
-        vertex_label_style=None,
-        edge_label_style=None,
         mark_groups=False,
+        palette=None,
         **kwds,
     ):
-
         super().__init__()
         self.graph = graph
-        self.layout = self.ensure_layout(layout)
-        self.vertex_style = vertex_style
-        self.edge_style = edge_style
-        self.vertex_label_style = vertex_label_style
-        self.edge_label_style = edge_label_style
+        self.layout = self.ensure_layout(layout, graph)
+        self.vertex_drawer_factory = vertex_drawer_factory
+        self.edge_drawer_factory = edge_drawer_factory
         self.mark_groups = mark_groups
         self.edge_curved = self._set_edge_curve(**kwds)
-        self.palette = kwds.pop("palette", None)
+        self.palette = palette
         self.kwds = kwds
 
         self._clear_state()
 
+    def _clear_state(self):
+        self._vertex_artists = []
+        self._edge_artists = []
+        self._vertex_labels = []
+        self._edge_labels = []
+        self._group_artists = []
+        self._legend_info = {}
+
+    def get_children(self):
+        artists = sum(
+            [
+                self._vertex_artists,
+                self._edge_artists,
+                self._vertex_labels,
+                self._edge_labels,
+                self._group_artists,
+            ],
+            [],
+        )
+        return tuple(artists)
+
     def _set_edge_curve(self, **kwds):
+        graph = self.graph
+
         # Decide whether we need to calculate the curvature of edges
         # automatically -- and calculate them if needed.
         autocurve = kwds.get("autocurve", None)
@@ -94,33 +126,14 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
             )
         return None
 
-    def _clear_state(self):
-        self._vertex_artist = None
-        self._vertex_indx = None
-        self._edge_artist = None
-        self._edge_indx = None
-        self._vertex_labels = None
-        self._edge_labels = None
-        self._group_artist = None
-
-    def get_children(self):
-        artists = [self._vertex_artist, self._edge_artist]
-        if self._vertex_labels is not None:
-            artists.extend(self._vertex_labels)
-        if self._edge_labels is not None:
-            artists.extend(self._edge_labels)
-        if self._group_artist is not None:
-            artists.extend(self._group_artist)
-        return tuple(a for a in artists if a is not None)
-
     def get_vertices(self):
-        return self._vertex_artist
+        return self._vertex_artists
 
-    def get_edges(seff):
-        return self._edge_artist
+    def get_edges(self):
+        return self._edge_artists
 
     def get_groups(self):
-        return self._group_artist
+        return self._group_artists
 
     def get_vertex_labels(self):
         return self._vertex_labels
@@ -136,7 +149,250 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
 
         return (mins, maxs)
 
-    def _reprocess(self, *):
+    def _draw_vertex_labels(self):
+        kwds = self.kwds
+        layout = self.layout
+        vertex_builder = self.vertex_builder
+        vertex_order = self.vertex_order
+
+        # Construct the iterator that we will use to draw the vertex labels
+        if vertex_order is None:
+            # Default vertex order
+            vertex_coord_iter = zip(vertex_builder, layout)
+        else:
+            # Specified vertex order
+            vertex_coord_iter = ((vertex_builder[i], layout[i]) for i in vertex_order)
+
+        # Draw the vertex labels
+        for vertex, coords in vertex_coord_iter:
+            if vertex.label is None:
+                continue
+
+            label_size = kwds.get(
+                "vertex_label_size",
+                vertex.label_size,
+            )
+
+            art = mpl.text.Text(
+                *coords,
+                vertex.label,
+                fontsize=label_size,
+                ha="center",
+                va="center",
+                transform=self.axes.transData,
+                clip_on=True,
+                # TODO: overlap, offset, etc.
+            )
+            self._vertex_labels.append(art)
+
+    def _draw_edge_labels(self):
+        graph = self.graph
+        kwds = self.kwds
+        vertex_builder = self.vertex_builder
+        edge_builder = self.edge_builder
+        edge_drawer = self.edge_drawer
+        edge_order = self.edge_order
+
+        labels = kwds.get("edge_label", None)
+        if labels is None:
+            return
+
+        edge_label_iter = (
+            (labels[i], edge_builder[i], graph.es[i]) for i in range(edge_order)
+        )
+        for label, visual_edge, edge in edge_label_iter:
+            # Ask the edge drawer to propose an anchor point for the label
+            src, dest = edge.tuple
+            src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
+            (x, y), (halign, valign) = edge_drawer.get_label_position(
+                visual_edge,
+                src_vertex,
+                dest_vertex,
+            )
+
+            text_kwds = {}
+            text_kwds["ha"] = halign.value
+            text_kwds["va"] = valign.value
+
+            if visual_edge.background is not None:
+                text_kwds["bbox"] = dict(
+                    facecolor=visual_edge.background,
+                    edgecolor="none",
+                )
+                text_kwds["ha"] = "center"
+                text_kwds["va"] = "center"
+
+            if visual_edge.align_label:
+                # Rotate the text to align with the edge
+                rotation = edge_drawer.get_label_rotation(
+                    visual_edge,
+                    src_vertex,
+                    dest_vertex,
+                )
+                text_kwds["rotation"] = rotation
+
+            art = mpl.text.Text(
+                x,
+                y,
+                label,
+                fontsize=visual_edge.label_size,
+                color=visual_edge.label_color,
+                transform=self.axes.transData,
+                clip_on=True,
+                **text_kwds,
+                # TODO: offset, etc.
+            )
+            self._vertex_labels.append(art)
+
+    def _draw_groups(self):
+        """Draw the highlighted vertex groups, if requested"""
+        # Deferred import to avoid a cycle in the import graph
+        from igraph.clustering import VertexClustering, VertexCover
+
+        kwds = self.kwds
+        palette = self.palette
+        layout = self.layout
+        vertex_builder = self.vertex_builder
+
+        if not kwds.get("mark_groups", False):
+            return
+
+        # Figure out what to do with mark_groups in order to be able to
+        # iterate over it and get memberlist-color pairs
+        mark_groups = kwds["mark_groups"]
+        if isinstance(mark_groups, dict):
+            # Dictionary mapping vertex indices or tuples of vertex
+            # indices to colors
+            group_iter = iter(mark_groups.items())
+        elif isinstance(mark_groups, (VertexClustering, VertexCover)):
+            # Vertex clustering
+            group_iter = ((group, color) for color, group in enumerate(mark_groups))
+        elif hasattr(mark_groups, "__iter__"):
+            # Lists, tuples, iterators etc
+            group_iter = iter(mark_groups)
+        else:
+            # False
+            group_iter = iter({}.items())
+
+        if kwds.get("legend", False):
+            legend_info = {
+                "handles": [],
+                "labels": [],
+            }
+
+        # Iterate over color-memberlist pairs
+        for group, color_id in group_iter:
+            if not group or color_id is None:
+                continue
+
+            color = palette.get(color_id)
+
+            if isinstance(group, VertexSeq):
+                group = [vertex.index for vertex in group]
+            if not hasattr(group, "__iter__"):
+                raise TypeError("group membership list must be iterable")
+
+            # Get the vertex indices that constitute the convex hull
+            hull = [group[i] for i in convex_hull([layout[idx] for idx in group])]
+
+            # Calculate the preferred rounding radius for the corners
+            corner_radius = 1.25 * max(vertex_builder[idx].size for idx in hull)
+
+            # Construct the polygon
+            polygon = [layout[idx] for idx in hull]
+
+            if len(polygon) == 2:
+                # Expand the polygon (which is a flat line otherwise)
+                a, b = Point(*polygon[0]), Point(*polygon[1])
+                c = corner_radius * (a - b).normalized()
+                n = Point(-c[1], c[0])
+                polygon = [a + n, b + n, b - c, b - n, a - n, a + c]
+            else:
+                # Expand the polygon around its center of mass
+                center = Point(
+                    *[sum(coords) / float(len(coords)) for coords in zip(*polygon)]
+                )
+                polygon = [
+                    Point(*point).towards(center, -corner_radius) for point in polygon
+                ]
+
+            # Draw the hull
+            # FIXME: defer this to the draw operation!
+            facecolor = (color[0], color[1], color[2], 0.25 * color[3])
+            drawer = MatplotlibPolygonDrawer(self.axes)
+            drawer.draw(
+                polygon,
+                corner_radius=corner_radius,
+                facecolor=facecolor,
+                edgecolor=color,
+            )
+
+            if kwds.get("legend", False):
+                legend_info["handles"].append(
+                    plt.Rectangle(
+                        (0, 0),
+                        0,
+                        0,
+                        facecolor=facecolor,
+                        edgecolor=color,
+                    )
+                )
+                legend_info["labels"].append(str(color_id))
+
+        if kwds.get("legend", False):
+            self.legend_info = legend_info
+
+    def _draw_vertices(self):
+        """Draw the vertices"""
+        graph = self.graph
+        layout = self.layout
+        vertex_drawer = self.vertex_drawer
+        vertex_builder = self.vertex_builder
+        vertex_order = self.vertex_order
+
+        vs = graph.vs
+        if vertex_order is None:
+            # Default vertex order
+            vertex_coord_iter = zip(vs, vertex_builder, layout)
+        else:
+            # Specified vertex order
+            vertex_coord_iter = (
+                (vs[i], vertex_builder[i], layout[i]) for i in vertex_order
+            )
+        for vertex, visual_vertex, coords in vertex_coord_iter:
+            art = vertex_drawer.draw(visual_vertex, vertex, coords)
+            self._vertex_artists.append(art)
+
+    def _draw_edges(self):
+        """Draw the edges"""
+        graph = self.graph
+        vertex_builder = self.vertex_builder
+        edge_drawer = self.edge_drawer
+        edge_builder = self.edge_builder
+        edge_order = self.edge_order
+
+        es = graph.es
+        if edge_order is None:
+            # Default edge order
+            edge_coord_iter = zip(es, edge_builder)
+        else:
+            # Specified edge order
+            edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
+
+        directed = graph.is_directed()
+        if directed:
+            # Arrows and the likes
+            drawer_method = edge_drawer.draw_directed_edge
+        else:
+            # Lines
+            drawer_method = edge_drawer.draw_undirected_edge
+        for edge, visual_edge in edge_coord_iter:
+            src, dest = edge.tuple
+            src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
+            arts = drawer_method(visual_edge, src_vertex, dest_vertex)
+            self._edge_artists.extend(arts)
+
+    def _reprocess(self):
         """Prepare artist and children for the actual drawing.
 
         Children are not drawn here, but the dictionaries of properties are
@@ -148,54 +404,38 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
 
         # get local refs to everything (just for less typing)
         graph = self.graph
-        edge_style = self.edge_style
-        vertex_style = self.vertex_style
-        edge_label_style = self.edge_label_style
-        vertex_label_style = self.vertex_label_style
+        palette = self.palette
         layout = self.layout
         kwds = self.kwds
 
+        # Construct the vertex, edge and label drawers
+        self.vertex_drawer = self.vertex_drawer_factory(self.axes, palette, layout)
+        self.edge_drawer = self.edge_drawer_factory(self.axes, palette)
+
+        # Construct the visual vertex/edge builders based on the specifications
+        # provided by the vertex_drawer and the edge_drawer
+        self.vertex_builder = self.vertex_drawer.VisualVertexBuilder(graph.vs, kwds)
+        self.edge_builder = self.edge_drawer.VisualEdgeBuilder(graph.es, kwds)
+
         # Determine the order in which we will draw the vertices and edges
         # These methods come from AbstractGraphDrawer
-        vertex_order = self._determine_vertex_order(graph, kwds)
-        edge_order = self._determine_edge_order(graph, kwds)
+        self.vertex_order = self._determine_vertex_order(graph, kwds)
+        self.edge_order = self._determine_edge_order(graph, kwds)
 
-        # FIXME FIXME
-        # vertices
-        vertex_style_dict = generate_node_styles(graph, node_style)
-        self._vertex_artist, self._vertex_indx = (
-            _generate_vertex_artist(pos, vertex_style_dict, ax=self.axes))
+        self._draw_groups()
+        self._draw_vertices()
+        self._draw_edges()
+        self._draw_vertex_labels()
+        self._draw_edge_labels()
 
-        # edges
-        edge_style_dict = generate_edge_styles(graph, edge_style)
-        self._edge_artist, self._edge_indx = (
-            _generate_straight_edges(graph.edges(), pos,
-                                     edge_style_dict, ax=self.axes))
-
-
-        # TODO handle the text
-
-        # handle the node labels
-        if vertex_label_style is not None:
-            vlabel_style_dict = generate_vertex_label_styles(
-                    graph,
-                    vertex_label_style)
-            self._vertex_label_dict = (
-                _generate_vertex_labels(pos, vlabel_style_dict, ax=self.axes))
-
-        # handle the edge labels
-        if edge_label_style is not None:
-            elabel_style_dict = generate_edge_label_styles(graph,
-                                                           edge_label_style)
-            self._edge_label_dict = (
-                _generate_edge_labels(pos, elabel_style_dict, ax=self.axes))
-
+        # Forward mpl properties to children
         # TODO sort out all of the things that need to be forwarded
         for child in self.get_children():
-            # set the figure / axes on child, this is needed
-            # by some internals
+            # set the figure / axes on child, this ensures each primitive
+            # knows where to draw
             child.set_figure(self.figure)
             child.axes = self.axes
+
             # forward the clippath/box to the children need this logic
             # because mpl exposes some fast-path logic
             clip_path = self.get_clip_path()
@@ -215,7 +455,7 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
             self._reprocess()
 
         elif self.stale:
-            self._reprocess(reset_pos=False)
+            self._reprocess()
 
         for art in self.get_children():
             art.draw(renderer, *args, **kwds)
@@ -225,12 +465,10 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         props = {}
         edge_hit, edge_props = self._edge_artist.contains(mouseevent)
         vertex_hit, vertex_props = self._vertex_artist.contains(mouseevent)
-        props['vertices'] = [self._node_indx[j]
-                          for j in vertex_props.get('ind', [])]
-        props['edges'] = [self._edge_indx[j]
-                          for j in edge_props.get('ind', [])]
+        props["vertices"] = [self._node_indx[j] for j in vertex_props.get("ind", [])]
+        props["edges"] = [self._edge_indx[j] for j in edge_props.get("ind", [])]
 
-        return edge_hit | node_hit, props
+        return edge_hit | vertex_hit, props
 
     def pick(self, mouseevent):
         """Track 'pick' event for mouse interactions."""
@@ -293,235 +531,29 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
             )
 
         # Some abbreviations for sake of simplicity
-        directed = graph.is_directed()
         ax = self.ax
 
         # Create artist
         art = GraphArtist(
             graph,
-            layout=kwds.get("layout", None),
-            vertex_style=None,
-            edge_style=None,
-            vertex_label_style=None,
-            edge_label_style=None,
-            mark_groups=False,
+            vertex_drawer_factory=self.vertex_drawer_factory,
+            edge_drawer_factory=self.edge_drawer_factory,
+            *args,
             **kwds,
         )
 
+        # Bind artist to axes
         ax.add_artist(art)
+
+        # Create children artists (this also binds them to the axes)
         art._reprocess()
 
-        # Construct the vertex, edge and label drawers
-        vertex_drawer = self.vertex_drawer_factory(ax, palette, layout)
-        edge_drawer = self.edge_drawer_factory(ax, palette)
-
-        # Construct the visual vertex/edge builders based on the specifications
-        # provided by the vertex_drawer and the edge_drawer
-        vertex_builder = vertex_drawer.VisualVertexBuilder(graph.vs, kwds)
-        edge_builder = edge_drawer.VisualEdgeBuilder(graph.es, kwds)
-
-        # Draw the highlighted groups (if any)
-        if "mark_groups" in kwds:
-            mark_groups = kwds["mark_groups"]
-
-            # Deferred import to avoid a cycle in the import graph
-            from igraph.clustering import VertexClustering, VertexCover
-
-            # Figure out what to do with mark_groups in order to be able to
-            # iterate over it and get memberlist-color pairs
-            if isinstance(mark_groups, dict):
-                # Dictionary mapping vertex indices or tuples of vertex
-                # indices to colors
-                group_iter = iter(mark_groups.items())
-            elif isinstance(mark_groups, (VertexClustering, VertexCover)):
-                # Vertex clustering
-                group_iter = ((group, color) for color, group in enumerate(mark_groups))
-            elif hasattr(mark_groups, "__iter__"):
-                # Lists, tuples, iterators etc
-                group_iter = iter(mark_groups)
-            else:
-                # False
-                group_iter = iter({}.items())
-
-            if kwds.get("legend", False):
-                legend_info = {
-                    "handles": [],
-                    "labels": [],
-                }
-
-            # Iterate over color-memberlist pairs
-            for group, color_id in group_iter:
-                if not group or color_id is None:
-                    continue
-
-                color = palette.get(color_id)
-
-                if isinstance(group, VertexSeq):
-                    group = [vertex.index for vertex in group]
-                if not hasattr(group, "__iter__"):
-                    raise TypeError("group membership list must be iterable")
-
-                # Get the vertex indices that constitute the convex hull
-                hull = [group[i] for i in convex_hull([layout[idx] for idx in group])]
-
-                # Calculate the preferred rounding radius for the corners
-                corner_radius = 1.25 * max(vertex_builder[idx].size for idx in hull)
-
-                # Construct the polygon
-                polygon = [layout[idx] for idx in hull]
-
-                if len(polygon) == 2:
-                    # Expand the polygon (which is a flat line otherwise)
-                    a, b = Point(*polygon[0]), Point(*polygon[1])
-                    c = corner_radius * (a - b).normalized()
-                    n = Point(-c[1], c[0])
-                    polygon = [a + n, b + n, b - c, b - n, a - n, a + c]
-                else:
-                    # Expand the polygon around its center of mass
-                    center = Point(
-                        *[sum(coords) / float(len(coords)) for coords in zip(*polygon)]
-                    )
-                    polygon = [
-                        Point(*point).towards(center, -corner_radius)
-                        for point in polygon
-                    ]
-
-                # Draw the hull
-                facecolor = (color[0], color[1], color[2], 0.25 * color[3])
-                drawer = MatplotlibPolygonDrawer(ax)
-                drawer.draw(
-                    polygon,
-                    corner_radius=corner_radius,
-                    facecolor=facecolor,
-                    edgecolor=color,
-                )
-
-                if kwds.get("legend", False):
-                    legend_info["handles"].append(
-                        plt.Rectangle(
-                            (0, 0),
-                            0,
-                            0,
-                            facecolor=facecolor,
-                            edgecolor=color,
-                        )
-                    )
-                    legend_info["labels"].append(str(color_id))
-
-            if kwds.get("legend", False):
-                ax.legend(
-                    legend_info["handles"],
-                    legend_info["labels"],
-                )
-
-
-        # Construct the iterator that we will use to draw the vertices
-        vs = graph.vs
-        if vertex_order is None:
-            # Default vertex order
-            vertex_coord_iter = zip(vs, vertex_builder, layout)
-        else:
-            # Specified vertex order
-            vertex_coord_iter = (
-                (vs[i], vertex_builder[i], layout[i]) for i in vertex_order
+        # Legend for groups
+        if ("mark_groups" in kwds) and kwds.get("legend", False):
+            ax.legend(
+                art._legend_info["handles"],
+                art._legend_info["labels"],
             )
-
-        # Draw the vertices
-        drawer_method = vertex_drawer.draw
-        for vertex, visual_vertex, coords in vertex_coord_iter:
-            drawer_method(visual_vertex, vertex, coords)
-
-        # Construct the iterator that we will use to draw the vertex labels
-        vs = graph.vs
-        if vertex_order is None:
-            # Default vertex order
-            vertex_coord_iter = zip(vertex_builder, layout)
-        else:
-            # Specified vertex order
-            vertex_coord_iter = ((vertex_builder[i], layout[i]) for i in vertex_order)
-
-        # Draw the vertex labels
-        for vertex, coords in vertex_coord_iter:
-            if vertex.label is None:
-                continue
-
-            label_size = kwds.get(
-                "vertex_label_size",
-                vertex.label_size,
-            )
-
-            ax.text(
-                *coords,
-                vertex.label,
-                fontsize=label_size,
-                ha='center',
-                va='center',
-                # TODO: overlap, offset, etc.
-            )
-
-        # Construct the iterator that we will use to draw the edges
-        es = graph.es
-        if edge_order is None:
-            # Default edge order
-            edge_coord_iter = zip(es, edge_builder)
-        else:
-            # Specified edge order
-            edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
-
-        # Draw the edges
-        if directed:
-            drawer_method = edge_drawer.draw_directed_edge
-        else:
-            drawer_method = edge_drawer.draw_undirected_edge
-        for edge, visual_edge in edge_coord_iter:
-            src, dest = edge.tuple
-            src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
-            drawer_method(visual_edge, src_vertex, dest_vertex)
-
-        # Draw the edge labels
-        labels = kwds.get("edge_label", None)
-        if labels is not None:
-            edge_label_iter = (
-                (labels[i], edge_builder[i], graph.es[i]) for i in range(graph.ecount())
-            )
-            for label, visual_edge, edge in edge_label_iter:
-                # Ask the edge drawer to propose an anchor point for the label
-                src, dest = edge.tuple
-                src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
-                (x, y), (halign, valign) = edge_drawer.get_label_position(
-                    visual_edge,
-                    src_vertex,
-                    dest_vertex,
-                )
-
-                text_kwds = {}
-                text_kwds['ha'] = halign.value
-                text_kwds['va'] = valign.value
-
-                if visual_edge.background is not None:
-                    text_kwds['bbox'] = dict(
-                        facecolor=visual_edge.background,
-                        edgecolor='none',
-                    )
-                    text_kwds['ha'] = 'center'
-                    text_kwds['va'] = 'center'
-
-                if visual_edge.align_label:
-                    # Rotate the text to align with the edge
-                    rotation = edge_drawer.get_label_rotation(
-                        visual_edge, src_vertex, dest_vertex,
-                    )
-                    text_kwds['rotation'] = rotation
-
-                ax.text(
-                    x,
-                    y,
-                    label,
-                    fontsize=visual_edge.label_size,
-                    color=visual_edge.label_color,
-                    **text_kwds,
-                    # TODO: offset, etc.
-                )
 
         # Set new data limits
         ax.update_datalim(art.get_datalim())
