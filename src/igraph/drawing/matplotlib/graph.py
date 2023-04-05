@@ -237,14 +237,14 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         vertex_builder = self.vertex_builder
         edge_builder = self.edge_builder
         edge_drawer = self.edge_drawer
-        edge_order = self.edge_order
+        edge_order = self.edge_order or range(self.graph.ecount())
 
         labels = kwds.get("edge_label", None)
         if labels is None:
             return
 
         edge_label_iter = (
-            (labels[i], edge_builder[i], graph.es[i]) for i in range(edge_order)
+            (labels[i], edge_builder[i], graph.es[i]) for i in edge_order
         )
         for label, visual_edge, edge in edge_label_iter:
             # Ask the edge drawer to propose an anchor point for the label
@@ -469,8 +469,8 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         self.edge_order = self._determine_edge_order(graph, kwds)
 
         self._draw_groups()
-        self._draw_vertices()
         self._draw_edges()
+        self._draw_vertices()
         self._draw_vertex_labels()
         self._draw_edge_labels()
 

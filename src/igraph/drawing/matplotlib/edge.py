@@ -51,6 +51,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             width = 2.0
             background = None
             align_label = False
+            zorder = 1
 
         return VisualEdgeBuilder
 
@@ -171,6 +172,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             edgecolor=edge.color,
             facecolor="none",
             linewidth=edge.width,
+            zorder=edge.zorder,
             transform=ax.transData,
             clip_on=True,
         )
@@ -185,6 +187,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             closed=True,
             facecolor=edge.color,
             edgecolor="none",
+            zorder=edge.zorder,
             transform=ax.transData,
             clip_on=True,
         )
@@ -213,6 +216,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             linewidth=edge.width,
             facecolor="none",
             edgecolor=edge.color,
+            zorder=edge.zorder,
             transform=ax.transData,
             clip_on=True,
         )
@@ -260,6 +264,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             edgecolor=edge.color,
             facecolor="none",
             linewidth=edge.width,
+            zorder=edge.zorder,
             transform=ax.transData,
             clip_on=True,
         )
