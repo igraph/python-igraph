@@ -133,7 +133,6 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
             ],
             [],
         )
-
         return tuple(artists)
 
     def _set_edge_curve(self, **kwds):
@@ -162,21 +161,35 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         return None
 
     def get_vertices(self):
+        """Get vertex artists."""
         return self._vertex_artists
 
     def get_edges(self):
+        """Get edge artists.
+
+        Note that for directed edges, an edge might have more than one
+        artist, e.g. arrow shaft and arrowhead.
+        """
         return self._edge_artists
 
     def get_groups(self):
+        """Get group/cluster/cover artists."""
         return self._group_artists
 
     def get_vertex_labels(self):
+        """Get vertex label artists."""
         return self._vertex_labels
 
     def get_edge_labels(self):
+        """Get edge label artists."""
         return self._edge_labels
 
     def get_datalim(self):
+        """Get limits on x/y axes based on the graph layout data.
+
+        There is a small padding based on the size of the vertex marker to
+        ensure it fits into the canvas.
+        """
         import numpy as np
 
         vertex_builder = self.vertex_builder
@@ -228,6 +241,7 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
                 va="center",
                 transform=self.axes.transData,
                 clip_on=True,
+                zorder=3,
                 # TODO: overlap, offset, etc.
             )
             self._vertex_labels.append(art)
@@ -286,6 +300,7 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
                 color=visual_edge.label_color,
                 transform=self.axes.transData,
                 clip_on=True,
+                zorder=3,
                 **text_kwds,
                 # TODO: offset, etc.
             )
@@ -299,14 +314,14 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         kwds = self.kwds
         palette = self.palette
         layout = self.layout
+        mark_groups = self.mark_groups
         vertex_builder = self.vertex_builder
 
-        if not kwds.get("mark_groups", False):
+        if not mark_groups:
             return
 
         # Figure out what to do with mark_groups in order to be able to
         # iterate over it and get memberlist-color pairs
-        mark_groups = kwds["mark_groups"]
         if isinstance(mark_groups, dict):
             # Dictionary mapping vertex indices or tuples of vertex
             # indices to colors
@@ -315,6 +330,10 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
             # Vertex clustering
             group_iter = ((group, color) for color, group in enumerate(mark_groups))
         elif hasattr(mark_groups, "__iter__"):
+            # One-off generators: we need to store the actual list for future
+            # calls (e.g. resizing, recoloring, etc.). If we don't do this,
+            # the generator is exhausted: we cannot rewind it.
+            self.mark_groups = mark_groups = list(mark_groups)
             # Lists, tuples, iterators etc
             group_iter = iter(mark_groups)
         else:
@@ -571,10 +590,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         self.edge_drawer_factory = edge_drawer_factory
 
     def draw(self, graph, *args, **kwds):
-        # Deferred import to avoid a cycle in the import graph
-        from igraph.clustering import VertexClustering, VertexCover
-
-        # Positional arguments are not used
         if args:
             warn(
                 "Positional arguments to plot functions are ignored "

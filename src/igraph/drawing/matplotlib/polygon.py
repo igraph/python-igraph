@@ -84,6 +84,7 @@ class MatplotlibPolygonDrawer:
             mpl.path.Path(path, codes=codes, closed=True),
             transform=ax.transData,
             clip_on=True,
+            zorder=4,
             **kwds,
         )
         return art
