@@ -27,7 +27,6 @@ from .vertex import MatplotlibVertexDrawer
 
 __all__ = (
     "MatplotlibGraphDrawer",
-    "GraphArtist",
 )
 
 mpl, plt = find_matplotlib()
