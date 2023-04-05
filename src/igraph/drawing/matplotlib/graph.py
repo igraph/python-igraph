@@ -14,7 +14,7 @@ network from Cytoscape and convert it to igraph format.
 """
 
 from warnings import warn
-from functools import wraps
+from functools import wraps, partial
 
 from igraph._igraph import convex_hull, VertexSeq
 from igraph.drawing.baseclasses import AbstractGraphDrawer
@@ -37,6 +37,7 @@ mpl, plt = find_matplotlib()
 
 # NOTE: https://github.com/networkx/grave/blob/main/grave/grave.py
 def _stale_wrapper(func):
+    """Decorator to manage artist state."""
     @wraps(func)
     def inner(self, *args, **kwargs):
         try:
@@ -47,6 +48,32 @@ def _stale_wrapper(func):
     return inner
 
 
+def _forwarder(forwards, cls=None):
+    """Decorator to forward specific methods to Artist children."""
+    if cls is None:
+        return partial(_forwarder, forwards)
+
+    def make_forward(name):
+        def method(self, *args, **kwargs):
+            ret = getattr(cls.mro()[1], name)(self, *args, **kwargs)
+            for c in self.get_children():
+                getattr(c, name)(*args, **kwargs)
+            return ret
+
+        return method
+
+    for f in forwards:
+        method = make_forward(f)
+        method.__name__ = f
+        method.__doc__ = 'broadcasts {} to children'.format(f)
+        setattr(cls, f, method)
+
+    return cls
+
+
+@_forwarder(('set_clip_path', 'set_clip_box', 'set_transform',
+             'set_snap', 'set_sketch_params', 'set_figure',
+             'set_animated', 'set_picker'))
 class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
     """Artist for an igraph.Graph object.
 
