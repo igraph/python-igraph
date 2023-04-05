@@ -80,8 +80,10 @@ class MatplotlibPolygonDrawer:
             codes.extend([mpl.path.Path.CURVE4] * 3)
             u = v
 
-        stroke = mpl.patches.PathPatch(
+        art = mpl.patches.PathPatch(
             mpl.path.Path(path, codes=codes, closed=True),
+            transform=ax.transData,
+            clip_on=True,
             **kwds,
         )
-        ax.add_patch(stroke)
+        return art

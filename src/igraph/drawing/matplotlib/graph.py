@@ -367,12 +367,13 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
             # FIXME: defer this to the draw operation!
             facecolor = (color[0], color[1], color[2], 0.25 * color[3])
             drawer = MatplotlibPolygonDrawer(self.axes)
-            drawer.draw(
+            art = drawer.draw(
                 polygon,
                 corner_radius=corner_radius,
                 facecolor=facecolor,
                 edgecolor=color,
             )
+            self._group_artists.append(art)
 
             if kwds.get("legend", False):
                 legend_info["handles"].append(
@@ -502,7 +503,9 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
             self._reprocess()
 
         # NOTE: looks like we have to manage the zorder ourselves
-        for art in sorted(self.get_children(), key=lambda x: x.zorder):
+        children = list(self.get_children())
+        children.sort(key=lambda x: x.zorder)
+        for art in children:
             art.draw(renderer, *args, **kwds)
 
     def contains(self, mouseevent):
