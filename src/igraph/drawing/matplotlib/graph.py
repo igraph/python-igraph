@@ -509,17 +509,22 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
 
     def contains(self, mouseevent):
         """Track 'contains' event for mouse interactions."""
-        props = {}
-        edge_hit, edge_props = self._edge_artist.contains(mouseevent)
-        vertex_hit, vertex_props = self._vertex_artist.contains(mouseevent)
-        props["vertices"] = [self._node_indx[j] for j in vertex_props.get("ind", [])]
-        props["edges"] = [self._edge_indx[j] for j in edge_props.get("ind", [])]
+        props = {"vertices": [], "edges": []}
+        hit = False
+        for i, art in enumerate(self._edge_artists):
+            edge_hit = art.contains(mouseevent)[0]
+            hit |= edge_hit
+            props["edges"].append(i)
 
-        return edge_hit | vertex_hit, props
+        for i, art in enumerate(self._vertex_artists):
+            vertex_hit = art.contains(mouseevent)[0]
+            hit |= vertex_hit
+            props["vertices"].append(i)
+
+        return hit, props
 
     def pick(self, mouseevent):
         """Track 'pick' event for mouse interactions."""
-        # Pick self
         if self.pickable():
             picker = self.get_picker()
             if callable(picker):
