@@ -134,8 +134,6 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
             [],
         )
 
-        # NOTE: looks like we have to manage the zorder ourselves
-        artists.sort(key=lambda x: x.zorder)
         return tuple(artists)
 
     def _set_edge_curve(self, **kwds):
@@ -503,7 +501,8 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         if (not self.get_children()) or self.stale:
             self._reprocess()
 
-        for art in self.get_children():
+        # NOTE: looks like we have to manage the zorder ourselves
+        for art in sorted(self.get_children(), key=lambda x: x.zorder):
             art.draw(renderer, *args, **kwds)
 
     def contains(self, mouseevent):
