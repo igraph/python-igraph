@@ -84,14 +84,14 @@ class Palette(metaclass=ABCMeta):
             return self._cache[v]
         except KeyError:
             pass
-        if isinstance(v, int):
+        if isinstance(v, str):
+            result = color_name_to_rgba(v)
+        else:
             if v < 0:
                 raise IndexError("color index must be non-negative")
             if v >= self._length:
                 raise IndexError("color index too large")
             result = self._get(v)
-        else:
-            result = color_name_to_rgba(v)
         self._cache[v] = result
         return result
 
@@ -466,7 +466,7 @@ def color_name_to_rgba(color, palette=None):
             try:
                 components = palette.get(color)
             except AttributeError:
-                raise ValueError("palette index used when no palette was given")
+                raise ValueError("palette index used when no palette was given") from None
         if len(components) < 4:
             components += [1.0] * (4 - len(components))
     else:
