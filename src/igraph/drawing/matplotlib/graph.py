@@ -535,7 +535,7 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         if not self.get_visible():
             return
 
-        if (not self.get_children()) or self.stale:
+        if not self.get_children():
             self._reprocess()
 
         # NOTE: looks like we have to manage the zorder ourselves
