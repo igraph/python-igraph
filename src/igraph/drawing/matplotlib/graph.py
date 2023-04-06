@@ -28,9 +28,9 @@ from .vertex import MatplotlibVertexDrawer
 __all__ = ("MatplotlibGraphDrawer",)
 
 mpl, plt = find_matplotlib()
-if mpl is not None:
+try:
     Artist = mpl.artist.Artist
-else:
+except AttributeError:
     Artist = object
 
 #####################################################################
