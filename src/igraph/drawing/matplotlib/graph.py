@@ -18,7 +18,7 @@ from functools import wraps, partial
 
 from igraph._igraph import convex_hull, VertexSeq
 from igraph.drawing.baseclasses import AbstractGraphDrawer
-from igraph.drawing.utils import Point
+from igraph.drawing.utils import Point, FakeModule
 
 from .edge import MatplotlibEdgeDrawer
 from .polygon import MatplotlibPolygonDrawer
@@ -31,7 +31,7 @@ mpl, plt = find_matplotlib()
 try:
     Artist = mpl.artist.Artist
 except AttributeError:
-    Artist = object
+    Artist = FakeModule
 
 #####################################################################
 
