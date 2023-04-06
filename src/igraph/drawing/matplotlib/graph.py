@@ -28,6 +28,10 @@ from .vertex import MatplotlibVertexDrawer
 __all__ = ("MatplotlibGraphDrawer",)
 
 mpl, plt = find_matplotlib()
+if mpl is not None:
+    Artist = mpl.artist.Artist
+else:
+    Artist = object
 
 #####################################################################
 
@@ -81,7 +85,7 @@ def _forwarder(forwards, cls=None):
         "set_picker",
     )
 )
-class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
+class Graph(Artist, AbstractGraphDrawer):
     """Artist for an igraph.Graph object.
 
     Arguments:
@@ -250,7 +254,7 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
             xtext = coords[0] + dist * vertex_width * np.cos(angle)
             ytext = coords[1] + dist * vertex_height * np.sin(angle)
             xytext = (xtext, ytext)
-            textcoords = 'data'
+            textcoords = "data"
 
             art = mpl.text.Annotation(
                 vertex.label,
@@ -619,7 +623,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         ax = self.ax
 
         # Create artist
-        art = GraphArtist(
+        art = Graph(
             graph,
             vertex_drawer_factory=self.vertex_drawer_factory,
             edge_drawer_factory=self.edge_drawer_factory,
