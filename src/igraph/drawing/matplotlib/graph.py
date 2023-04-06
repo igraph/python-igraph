@@ -210,6 +210,8 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
         return (mins, maxs)
 
     def _draw_vertex_labels(self):
+        import numpy as np
+
         kwds = self.kwds
         layout = self.layout
         vertex_builder = self.vertex_builder
@@ -233,16 +235,34 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
                 vertex.label_size,
             )
 
-            art = mpl.text.Text(
-                *coords,
+            # Locate text relative to vertex in data units. This is consistent
+            # with the vertex size being in data units, but might be not fully
+            # satisfactory when zooming in/out. In that case, revisit this
+            # section
+            dist = vertex.label_dist
+            angle = vertex.label_angle
+            if vertex.size is not None:
+                vertex_width = vertex.size
+                vertex_height = vertex.size
+            else:
+                vertex_width = vertex.width
+                vertex_height = vertex.height
+            xtext = coords[0] + dist * vertex_width * np.cos(angle)
+            ytext = coords[1] + dist * vertex_height * np.sin(angle)
+            xytext = (xtext, ytext)
+            textcoords = 'data'
+
+            art = mpl.text.Annotation(
                 vertex.label,
+                coords,
+                xytext=xytext,
+                textcoords=textcoords,
                 fontsize=label_size,
                 ha="center",
                 va="center",
                 transform=self.axes.transData,
                 clip_on=True,
                 zorder=3,
-                # TODO: overlap, offset, etc.
             )
             self._vertex_labels.append(art)
 
@@ -292,17 +312,15 @@ class GraphArtist(mpl.artist.Artist, AbstractGraphDrawer):
                 )
                 text_kwds["rotation"] = rotation
 
-            art = mpl.text.Text(
-                x,
-                y,
+            art = mpl.text.Annotation(
                 label,
+                (x, y),
                 fontsize=visual_edge.label_size,
                 color=visual_edge.label_color,
                 transform=self.axes.transData,
                 clip_on=True,
                 zorder=3,
                 **text_kwds,
-                # TODO: offset, etc.
             )
             self._vertex_labels.append(art)
 
