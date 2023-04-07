@@ -36,6 +36,14 @@ except AttributeError:
 #####################################################################
 
 
+class _Unset:
+    def __repr__(self):
+        return "<UNSET>"
+
+
+_UNSET = _Unset()
+
+
 # NOTE: https://github.com/networkx/grave/blob/main/grave/grave.py
 def _stale_wrapper(func):
     """Decorator to manage artist state."""
@@ -101,26 +109,31 @@ class Graph(Artist, AbstractGraphDrawer):
         graph,
         vertex_drawer_factory=MatplotlibVertexDrawer,
         edge_drawer_factory=MatplotlibEdgeDrawer,
+        mark_groups=None,
         layout=None,
-        mark_groups=False,
         palette=None,
         **kwds,
     ):
         super().__init__()
         self.graph = graph
-        self.layout = self.ensure_layout(layout, graph)
         self.vertex_drawer_factory = vertex_drawer_factory
         self.edge_drawer_factory = edge_drawer_factory
-        self.mark_groups = mark_groups
-        self.edge_curved = self._set_edge_curve(**kwds)
-        self.palette = palette
         self.kwds = kwds
+        self.kwds["mark_groups"] = mark_groups
+        self.kwds["palette"] = palette
+        self.kwds["layout"] = layout
 
+        self._kwds_post_update()
+
+    def _kwds_post_update(self):
+        self.kwds["layout"] = self.ensure_layout(self.kwds["layout"], self.graph)
+        self.edge_curved = self._set_edge_curve(**self.kwds)
         self._clear_state()
+        self.stale = True
 
     def _clear_state(self):
-        self._vertex_artists = []
-        self._edge_artists = []
+        self._vertices = []
+        self._edges = []
         self._vertex_labels = []
         self._edge_labels = []
         self._group_artists = []
@@ -130,8 +143,8 @@ class Graph(Artist, AbstractGraphDrawer):
         artists = sum(
             [
                 self._group_artists,
-                self._edge_artists,
-                self._vertex_artists,
+                self._edges,
+                self._vertices,
                 self._edge_labels,
                 self._vertex_labels,
             ],
@@ -166,7 +179,7 @@ class Graph(Artist, AbstractGraphDrawer):
 
     def get_vertices(self):
         """Get vertex artists."""
-        return self._vertex_artists
+        return self._vertices
 
     def get_edges(self):
         """Get edge artists.
@@ -174,7 +187,7 @@ class Graph(Artist, AbstractGraphDrawer):
         Note that for directed edges, an edge might have more than one
         artist, e.g. arrow shaft and arrowhead.
         """
-        return self._edge_artists
+        return self._edges
 
     def get_groups(self):
         """Get group/cluster/cover artists."""
@@ -197,9 +210,10 @@ class Graph(Artist, AbstractGraphDrawer):
         import numpy as np
 
         vertex_builder = self.vertex_builder
+        layout = self.kwds["layout"]
 
-        mins = np.min(self.layout, axis=0)
-        maxs = np.max(self.layout, axis=0)
+        mins = np.min(layout, axis=0)
+        maxs = np.max(layout, axis=0)
 
         # Pad by vertex size, to ensure they fit
         if vertex_builder.size is not None:
@@ -217,7 +231,7 @@ class Graph(Artist, AbstractGraphDrawer):
         import numpy as np
 
         kwds = self.kwds
-        layout = self.layout
+        layout = self.kwds["layout"]
         vertex_builder = self.vertex_builder
         vertex_order = self.vertex_order
 
@@ -334,9 +348,9 @@ class Graph(Artist, AbstractGraphDrawer):
         from igraph.clustering import VertexClustering, VertexCover
 
         kwds = self.kwds
-        palette = self.palette
-        layout = self.layout
-        mark_groups = self.mark_groups
+        palette = self.kwds["palette"]
+        layout = self.kwds["layout"]
+        mark_groups = self.kwds["mark_groups"]
         vertex_builder = self.vertex_builder
 
         if not mark_groups:
@@ -433,7 +447,7 @@ class Graph(Artist, AbstractGraphDrawer):
     def _draw_vertices(self):
         """Draw the vertices"""
         graph = self.graph
-        layout = self.layout
+        layout = self.kwds["layout"]
         vertex_drawer = self.vertex_drawer
         vertex_builder = self.vertex_builder
         vertex_order = self.vertex_order
@@ -449,7 +463,7 @@ class Graph(Artist, AbstractGraphDrawer):
             )
         for vertex, visual_vertex, coords in vertex_coord_iter:
             art = vertex_drawer.draw(visual_vertex, vertex, coords)
-            self._vertex_artists.append(art)
+            self._vertices.append(art)
 
     def _draw_edges(self):
         """Draw the edges"""
@@ -478,7 +492,7 @@ class Graph(Artist, AbstractGraphDrawer):
             src, dest = edge.tuple
             src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
             arts = drawer_method(visual_edge, src_vertex, dest_vertex)
-            self._edge_artists.extend(arts)
+            self._edges.extend(arts)
 
     def _reprocess(self):
         """Prepare artist and children for the actual drawing.
@@ -487,13 +501,15 @@ class Graph(Artist, AbstractGraphDrawer):
         marshalled to their specific artists.
         """
         # clear state and mark as stale
+        # since all children artists are part of the state, clearing it
+        # will trigger a deletion by the backend at the next draw cycle
         self._clear_state()
         self.stale = True
 
         # get local refs to everything (just for less typing)
         graph = self.graph
-        palette = self.palette
-        layout = self.layout
+        palette = self.kwds["palette"]
+        layout = self.kwds["layout"]
         kwds = self.kwds
 
         # Construct the vertex, edge and label drawers
@@ -548,16 +564,31 @@ class Graph(Artist, AbstractGraphDrawer):
         for art in children:
             art.draw(renderer, *args, **kwds)
 
+    def set(
+        self,
+        **kwds,
+    ):
+        """Set multiple parameters at once.
+
+        The same options can be used as in the igraph.plot function.
+        """
+        if len(kwds) == 0:
+            return
+
+        self.kwds.update(kwds)
+        # NOTE: this also clears the state and sets the stale property
+        self._kwds_post_update()
+
     def contains(self, mouseevent):
         """Track 'contains' event for mouse interactions."""
         props = {"vertices": [], "edges": []}
         hit = False
-        for i, art in enumerate(self._edge_artists):
+        for i, art in enumerate(self._edges):
             edge_hit = art.contains(mouseevent)[0]
             hit |= edge_hit
             props["edges"].append(i)
 
-        for i, art in enumerate(self._vertex_artists):
+        for i, art in enumerate(self._vertices):
             vertex_hit = art.contains(mouseevent)[0]
             hit |= vertex_hit
             props["vertices"].append(i)
