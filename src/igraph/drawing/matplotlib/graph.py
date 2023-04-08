@@ -81,6 +81,52 @@ def _forwarder(forwards, cls=None):
     return cls
 
 
+def _additional_set_methods(attributes, cls=None):
+    """Decorator to add specific set methods for children properties."""
+    if cls is None:
+        return partial(_additional_set_methods, attributes)
+
+    def make_setter(name):
+        def method(self, value):
+            self.set(**{name: value})
+        return method
+
+    for attr in attributes:
+        desc = attr.replace('_', ' ')
+        method = make_setter(attr)
+        method.__name__ = f"set_{attr}"
+        method.__doc__ = f"Set {desc}."
+        setattr(cls, f"set_{attr}", method)
+
+    return cls
+
+
+@_additional_set_methods(
+    (
+        "vertex_color",
+        "vertex_size",
+        "vertex_font",
+        "vertex_label",
+        "vertex_label_angle",
+        "vertex_label_color",
+        "vertex_label_dist",
+        "vertex_label_size",
+        "vertex_order",
+        "vertex_shape",
+        "vertex_size",
+        "edge_color",
+        "edge_curved",
+        "edge_font",
+        "edge_arrow_size",
+        "edge_arrow_width",
+        "edge_width",
+        "edge_label",
+        "edge_background",
+        "edge_align_label",
+        "autocurve",
+        "layout",
+    )
+)
 @_forwarder(
     (
         "set_clip_path",
@@ -576,7 +622,6 @@ class Graph(Artist, AbstractGraphDrawer):
             return
 
         self.kwds.update(kwds)
-        # NOTE: this also clears the state and sets the stale property
         self._kwds_post_update()
 
     def contains(self, mouseevent):
@@ -693,3 +738,5 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
 
         # Autoscale for x/y axis limits
         ax.autoscale_view()
+
+        return art
