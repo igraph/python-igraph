@@ -14634,7 +14634,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
 
   {"eigen_adjacency", (PyCFunction) igraphmodule_Graph_eigen_adjacency,
    METH_VARARGS | METH_KEYWORDS,
-   "" },
+   "eigen_adjacency(algorithm=None, which=None, arpack_options=None)\n--\n\n" },
 
   /* interface to igraph_[st_]edge_connectivity */
   {"edge_connectivity", (PyCFunction) igraphmodule_Graph_edge_connectivity,
@@ -14820,7 +14820,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_get_shortest_path_astar */
   {"get_shortest_path_astar", (PyCFunction) igraphmodule_Graph_get_shortest_path_astar,
    METH_VARARGS | METH_KEYWORDS,
-   "get_shortest_path(v, to, heuristics, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
+   "get_shortest_path_astar(v, to, heuristics, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
    "Calculates the shortest path from a source vertex to a target vertex in a\n"
    "graph using the A-Star algorithm and a heuristic function.\n\n"
    "@param v: the source vertex of the path\n"
@@ -16128,6 +16128,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"_layout_sugiyama",
    (PyCFunction) igraphmodule_Graph_layout_sugiyama,
    METH_VARARGS | METH_KEYWORDS,
+   "_layout_sugiyama()\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.layout_sugiyama()\n\n"},
 

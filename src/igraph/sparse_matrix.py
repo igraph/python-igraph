@@ -49,7 +49,7 @@ def _convert_mode_argument(mode):
 
 def _maybe_halve_diagonal(m, condition):
     """Halves all items in the diagonal of the given SciPy sparse matrix in
-    coo mode _if_ and _only if_ the given condition is True.
+    coo mode *if* and *only if* the given condition is True.
 
     Returns the row, column and data arrays.
     """

@@ -1,6 +1,6 @@
 .. include:: include/global.rst
 
-.. _tutorial:
+.. _tutorial_es:
 
 .. currentmodule:: igraph
 
