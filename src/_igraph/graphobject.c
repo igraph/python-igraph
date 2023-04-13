@@ -2584,6 +2584,47 @@ PyObject *igraphmodule_Graph_Growing_Random(PyTypeObject * type,
 }
 
 /** \ingroup python_interface_graph
+ * \brief Generates a regular hexagonal lattice
+ * \return a reference to the newly generated Python igraph object
+ * \sa igraph_hexagonal_lattice
+ */
+PyObject *igraphmodule_Graph_Hexagonal_Lattice(PyTypeObject * type,
+                                     PyObject * args, PyObject * kwds)
+{
+  igraph_vector_int_t dimvector;
+  igraph_bool_t directed;
+  igraph_bool_t mutual;
+  PyObject *o_directed = Py_False, *o_mutual = Py_True;
+  PyObject *o_dimvector = Py_None;
+  igraphmodule_GraphObject *self;
+  igraph_t g;
+
+  static char *kwlist[] = { "dim", "directed", "mutual", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist,
+                                   &o_dimvector, &o_directed, &o_mutual))
+    return NULL;
+
+  directed = PyObject_IsTrue(o_directed);
+  mutual = PyObject_IsTrue(o_mutual);
+
+  if (igraphmodule_PyObject_to_vector_int_t(o_dimvector, &dimvector))
+    return NULL;
+
+  if (igraph_hexagonal_lattice(&g, &dimvector, directed, mutual)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_int_destroy(&dimvector);
+    return NULL;
+  }
+
+  igraph_vector_int_destroy(&dimvector);
+
+  CREATE_GRAPH_FROM_TYPE(self, g, type);
+
+  return (PyObject *) self;
+}
+
+/** \ingroup python_interface_graph
  * \brief Generates a bipartite graph from an incidence matrix
  * \return a reference to the newly generated Python igraph object
  * \sa igraph_incidence
@@ -2730,9 +2771,9 @@ PyObject *igraphmodule_Graph_K_Regular(PyTypeObject * type,
 }
 
 /** \ingroup python_interface_graph
- * \brief Generates a regular lattice
+ * \brief Generates a regular square lattice
  * \return a reference to the newly generated Python igraph object
- * \sa igraph_lattice
+ * \sa igraph_square_lattice
  */
 PyObject *igraphmodule_Graph_Lattice(PyTypeObject * type,
                                      PyObject * args, PyObject * kwds)
@@ -3541,6 +3582,47 @@ PyObject *igraphmodule_Graph_Tree_Game(PyTypeObject * type,
       igraphmodule_handle_igraph_error();
       return NULL;
   }
+
+  CREATE_GRAPH_FROM_TYPE(self, g, type);
+
+  return (PyObject *) self;
+}
+
+/** \ingroup python_interface_graph
+ * \brief Generates a regular triangular lattice
+ * \return a reference to the newly generated Python igraph object
+ * \sa igraph_triangular_lattice
+ */
+PyObject *igraphmodule_Graph_Triangular_Lattice(PyTypeObject * type,
+                                     PyObject * args, PyObject * kwds)
+{
+  igraph_vector_int_t dimvector;
+  igraph_bool_t directed;
+  igraph_bool_t mutual;
+  PyObject *o_directed = Py_False, *o_mutual = Py_True;
+  PyObject *o_dimvector = Py_None;
+  igraphmodule_GraphObject *self;
+  igraph_t g;
+
+  static char *kwlist[] = { "dim", "directed", "mutual", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist,
+                                   &o_dimvector, &o_directed, &o_mutual))
+    return NULL;
+
+  directed = PyObject_IsTrue(o_directed);
+  mutual = PyObject_IsTrue(o_mutual);
+
+  if (igraphmodule_PyObject_to_vector_int_t(o_dimvector, &dimvector))
+    return NULL;
+
+  if (igraph_triangular_lattice(&g, &dimvector, directed, mutual)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_int_destroy(&dimvector);
+    return NULL;
+  }
+
+  igraph_vector_int_destroy(&dimvector);
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
 
@@ -13663,6 +13745,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param citation: whether the new edges should originate from the most\n"
    "   recently added vertex.\n"},
 
+  /* interface to igraph_hexagonal_lattice */
+  {"Hexagonal_Lattice", (PyCFunction) igraphmodule_Graph_Hexagonal_Lattice,
+   METH_VARARGS | METH_CLASS | METH_KEYWORDS,
+   "Hexagonal_Lattice(dim, directed=False, mutual=True)\n--\n\n"
+   "Generates a regular hexagonal lattice.\n\n"
+   "@param dim: list with the dimensions of the lattice\n"
+   "@param directed: whether to create a directed graph.\n"
+   "@param mutual: whether to create all connections as mutual\n"
+   "    in case of a directed graph.\n"},
+
   /* interface to igraph_incidence */
   {"_Incidence", (PyCFunction) igraphmodule_Graph_Incidence,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
@@ -13777,11 +13869,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  either \"in\", \"out\", \"mutual\" or \"undirected\"\n"
    "@param center: Vertex ID for the central vertex in the star.\n"},
 
-  // interface to igraph_lattice
+  // interface to igraph_square_lattice
   {"Lattice", (PyCFunction) igraphmodule_Graph_Lattice,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Lattice(dim, nei=1, directed=False, mutual=True, circular=True)\n--\n\n"
-   "Generates a regular lattice.\n\n"
+   "Generates a regular square lattice.\n\n"
    "@param dim: list with the dimensions of the lattice\n"
    "@param nei: value giving the distance (number of steps) within which\n"
    "   two vertices will be connected.\n"
@@ -14012,6 +14104,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "      This is the default choice as it supports both directed and\n"
    "      undirected graphs.\n"
   },
+
+  /* interface to igraph_triangular_lattice */
+  {"Triangular_Lattice", (PyCFunction) igraphmodule_Graph_Triangular_Lattice,
+   METH_VARARGS | METH_CLASS | METH_KEYWORDS,
+   "Triangular_Lattice(dim, directed=False, mutual=True)\n--\n\n"
+   "Generates a regular triangular lattice.\n\n"
+   "@param dim: list with the dimensions of the lattice\n"
+   "@param directed: whether to create a directed graph.\n"
+   "@param mutual: whether to create all connections as mutual\n"
+   "    in case of a directed graph.\n"},
 
   /* interface to igraph_watts_strogatz_game */
   {"Watts_Strogatz", (PyCFunction) igraphmodule_Graph_Watts_Strogatz,
