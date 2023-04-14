@@ -86,6 +86,8 @@ class Palette(metaclass=ABCMeta):
             pass
         if isinstance(v, str):
             result = color_name_to_rgba(v)
+        elif hasattr(v, "__iter__"):    # lists, tuples etc
+            return result   # no need to cache
         else:
             if v < 0:
                 raise IndexError("color index must be non-negative")
