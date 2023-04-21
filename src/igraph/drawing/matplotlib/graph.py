@@ -36,14 +36,6 @@ except AttributeError:
 #####################################################################
 
 
-class _Unset:
-    def __repr__(self):
-        return "<UNSET>"
-
-
-_UNSET = _Unset()
-
-
 # NOTE: https://github.com/networkx/grave/blob/main/grave/grave.py
 def _stale_wrapper(func):
     """Decorator to manage artist state."""
