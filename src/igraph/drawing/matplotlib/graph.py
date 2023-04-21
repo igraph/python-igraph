@@ -131,7 +131,7 @@ def _additional_set_methods(attributes, cls=None):
         "set_picker",
     )
 )
-class Graph(Artist, AbstractGraphDrawer):
+class GraphArtist(Artist, AbstractGraphDrawer):
     """Artist for an igraph.Graph object.
 
     Arguments:
@@ -691,7 +691,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         ax = self.ax
 
         # Create artist
-        art = Graph(
+        art = GraphArtist(
             graph,
             vertex_drawer_factory=self.vertex_drawer_factory,
             edge_drawer_factory=self.edge_drawer_factory,

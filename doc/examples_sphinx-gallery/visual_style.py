@@ -50,7 +50,7 @@ plt.show()
 
 # %%
 # In the matplotlib backend, igraph creates a special container
-# :class:`igraph.drawing.matplotlib.graph.Graph` which is a matplotlib Artist
+# :class:`igraph.drawing.matplotlib.graph.GraphArtist` which is a matplotlib Artist
 # and the first child of the target Axes. That object can be used to customize
 # the plot appearance after the initial drawing, e.g.:
 g = ig.Graph.Barabasi(n=30, m=1)
