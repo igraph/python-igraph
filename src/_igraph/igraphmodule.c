@@ -826,7 +826,7 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"umap_compute_weights", (PyCFunction)igraphmodule_umap_compute_weights,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_umap_compute_weights(graph, dist)\n"
+   "umap_compute_weights(graph, dist)\n"
    "--\n\n"
    "@param graph: directed graph to compute weights for.\n"
    "@param dist: distances associated with the graph edges.\n"
@@ -850,7 +850,7 @@ static PyMethodDef igraphmodule_methods[] =
    "to zero whenever edges in opposite directions are found in the input\n"
    "distance graph. You can pipe the output of this function directly into\n"
    "Graph.layout_umap() as follows:\n"
-   "C{weights = igraph.layout_umap_compute_weights(graph, dist)}\n"
+   "C{weights = igraph.umap_compute_weights(graph, dist)}\n"
    "C{layout = graph.layout_umap(weights=weights)}\n\n"
    "@see: Graph.layout_umap()\n"
   },
