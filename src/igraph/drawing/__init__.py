@@ -264,13 +264,16 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
             warn("%s does not support plotting" % (obj,))
             return
         else:
-            plotter(
+            result = plotter(
                 backend,
                 target,
                 palette=palette,
                 *args,
                 **kwds,
             )
+            # NOTE: for matplotlib, result is the container Artist. It would be
+            # good to return this instead of target, like we do for Cairo.
+            # However, that breaks API so let's wait for a major release
 
             if save_path is not None:
                 if backend == "matplotlib":

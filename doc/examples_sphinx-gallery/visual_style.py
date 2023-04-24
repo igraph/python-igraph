@@ -47,3 +47,25 @@ plt.show()
 #    default, you can use igraph's `configuration instance
 #    :class:`igraph.configuration.Configuration`. A quick example on how to use
 #    it can be found here: :ref:`tutorials-configuration`.
+
+# %%
+# In the matplotlib backend, igraph creates a special container
+# :class:`igraph.drawing.matplotlib.graph.GraphArtist` which is a matplotlib Artist
+# and the first child of the target Axes. That object can be used to customize
+# the plot appearance after the initial drawing, e.g.:
+g = ig.Graph.Barabasi(n=30, m=1)
+fig, ax = plt.subplots()
+ig.plot(g, target=ax)
+artist = ax.get_children()[0]
+# Option 1:
+artist.set(vertex_color="blue")
+# Option 2:
+artist.set_vertex_color("blue")
+plt.show()
+
+# %%
+# .. note::
+#    The ``artist.set`` method can be used to change multiple properties at
+#    once and is generally more efficient than multiple calls to specific
+#    ``artist.set_...` methods.
+
