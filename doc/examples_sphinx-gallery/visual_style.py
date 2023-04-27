@@ -65,7 +65,6 @@ plt.show()
 
 # %%
 # .. note::
-#    The ``artist.set`` method can be used to change multiple properties at
-#    once and is generally more efficient than multiple calls to specific
-#    ``artist.set_...` methods.
-
+#    The :meth:`igraph.drawing.matplotlib.graph.GraphArtist.set` method can
+#    be used to change multiple properties at once and is generally more
+#    efficient than multiple calls to specific ``artist.set_...`` methods.
