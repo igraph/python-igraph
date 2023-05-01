@@ -81,10 +81,11 @@ def _additional_set_methods(attributes, cls=None):
     def make_setter(name):
         def method(self, value):
             self.set(**{name: value})
+
         return method
 
     for attr in attributes:
-        desc = attr.replace('_', ' ')
+        desc = attr.replace("_", " ")
         method = make_setter(attr)
         method.__name__ = f"set_{attr}"
         method.__doc__ = f"Set {desc}."
@@ -134,12 +135,11 @@ def _additional_set_methods(attributes, cls=None):
 class GraphArtist(Artist, AbstractGraphDrawer):
     """Artist for an igraph.Graph object.
 
-    Arguments:
-        graph: An igraph.Graph object to plot
-        layout: A layout object or matrix of coordinates to use for plotting.
-            Each element or row should describes the coordinates for a vertex.
-        vertex_style: A dictionary specifying style options for vertices.
-        edge_style: A dictionary specifying style options for edges.
+    @param graph: An igraph.Graph object to plot
+    @param layout: A layout object or matrix of coordinates to use for plotting.
+        Each element or row should describes the coordinates for a vertex.
+    @param vertex_style: A dictionary specifying style options for vertices.
+    @param edge_style: A dictionary specifying style options for edges.
     """
 
     def __init__(
@@ -247,21 +247,25 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         """
         import numpy as np
 
-        vertex_builder = self.vertex_builder
         layout = self.kwds["layout"]
 
-        mins = np.min(layout, axis=0)
-        maxs = np.max(layout, axis=0)
-
-        # Pad by vertex size, to ensure they fit
-        if vertex_builder.size is not None:
-            mins -= vertex_builder.size * 1.1
-            maxs += vertex_builder.size * 1.1
+        if len(layout) == 0:
+            mins = np.array([0, 0])
+            maxs = np.array([1, 1])
         else:
-            mins[0] -= vertex_builder.width * 0.55
-            mins[1] -= vertex_builder.height * 0.55
-            maxs[0] += vertex_builder.width * 0.55
-            maxs[1] += vertex_builder.height * 0.55
+            mins = np.min(layout, axis=0)
+            maxs = np.max(layout, axis=0)
+
+            # Pad by vertex size, to ensure they fit
+            vertex_builder = self.vertex_builder
+            if vertex_builder.size is not None:
+                mins -= vertex_builder.size * 1.1
+                maxs += vertex_builder.size * 1.1
+            else:
+                mins[0] -= vertex_builder.width * 0.55
+                mins[1] -= vertex_builder.height * 0.55
+                maxs[0] += vertex_builder.width * 0.55
+                maxs[1] += vertex_builder.height * 0.55
 
         return (mins, maxs)
 
@@ -465,7 +469,8 @@ class GraphArtist(Artist, AbstractGraphDrawer):
                 facecolor=facecolor,
                 edgecolor=color,
             )
-            self._group_artists.append(art)
+            if art is not None:
+                self._group_artists.append(art)
 
             if kwds.get("legend", False):
                 legend_info["handles"].append(
@@ -575,7 +580,8 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         for child in self.get_children():
             # set the figure / axes on child, this ensures each primitive
             # knows where to draw
-            child.set_figure(self.figure)
+            if hasattr(child, "set_figure"):
+                child.set_figure(self.figure)
             child.axes = self.axes
 
             # forward the clippath/box to the children need this logic

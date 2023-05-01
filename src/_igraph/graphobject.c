@@ -16148,7 +16148,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param weights: precomputed edge weights if you have them, as an alternative\n"
    "  to setting the C{dist} argument. Zero weights will be ignored if this\n"
    "  argument is set, e.g. if you computed the weights via\n"
-   "  igraph.layout_umap_compute_weights().\n"
+   "  igraph.umap_compute_weights().\n"
    "@param dim: the desired number of dimensions for the layout. dim=2\n"
    "  means a 2D layout, dim=3 means a 3D layout.\n"
    "@param seed: if C{None}, uses a random starting layout for the\n"
@@ -16166,13 +16166,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "if weights are precomputed, the graph will be treated as undirected. A special\n"
    "case is when the graph is directed but the precomputed weights are symmetrized\n"
    "in a way only one of each pair of opposite edges has nonzero weight, e.g. as\n"
-   "computed by igraph.layout_umap_compute_weights(). For example:\n"
-   "C{weights = igraph.layout_umap_compute_weights(graph, dist)}\n"
+   "computed by igraph.umap_compute_weights(). For example:\n"
+   "C{weights = igraph.umap_compute_weights(graph, dist)}\n"
    "C{layout = graph.layout_umap(weights=weights)}\n\n"
    "@newfield ref: Reference\n"
    "@ref: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation\n"
    "  and Projection for Dimension Reduction. arXiv:1802.03426.\n"
-   "@see: igraph.layout_umap_compute_weights()\n\n"},
+   "@see: igraph.umap_compute_weights()\n\n"},
 
   ////////////////////////////
   // VISITOR-LIKE FUNCTIONS //
