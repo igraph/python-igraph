@@ -266,9 +266,13 @@ class AbstractGraphDrawer(AbstractDrawer):
             C{layout} method of the given I{graph} if I{graph} is
             not C{None}.
 
-          - If I{layout} is C{None}, the C{layout} method of
-            I{graph} will be invoked with no parameters, which
-            will call the default layout algorithm.
+          - f I{layout} is C{None} and I{graph} has a "layout"
+            attribute, call this same function with the value of that
+            attribute.
+
+          - If I{layout} is C{None} and I{graph} does not have a "layout"
+            attribute, the C{layout} method of I{graph} will be invoked
+            with no parameters, which will call the default layout algorithm.
 
           - Otherwise, I{layout} will be passed on to the constructor
             of L{Layout}. This handles lists of lists, lists of tuples
@@ -284,7 +288,12 @@ class AbstractGraphDrawer(AbstractDrawer):
 
         if isinstance(layout, Layout):
             layout = Layout(layout.coords)
-        elif isinstance(layout, str) or layout is None:
+        elif isinstance(layout, str):
+            layout = graph.layout(layout)
+        elif (layout is None) and hasattr(graph, "attributes") and \
+                ('layout' in graph.attributes()):
+            layout = AbstractGraphDrawer.ensure_layout(graph['layout'], graph=graph)
+        elif layout is None:
             layout = graph.layout(layout)
         else:
             layout = Layout(layout)
