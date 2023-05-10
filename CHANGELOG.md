@@ -34,6 +34,9 @@
 - `VertexClustering.giant()` now accepts the null graph. The giant component of
   a null graph is the null graph according to our conventions.
 
+- `Graph.layout_reingold_tilford()` now accepts vertex names in the `roots=...`
+  keyword argument.
+
 ### Removed
 
 - Removed defunct `Graph.community_leading_eigenvector_naive()` method. Not a

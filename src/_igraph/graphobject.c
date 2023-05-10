@@ -8220,8 +8220,11 @@ PyObject *igraphmodule_Graph_layout_reingold_tilford(igraphmodule_GraphObject
 
   if (roots_o != Py_None) {
     roots_p = &roots;
-    if (igraphmodule_PyObject_to_vector_int_t(roots_o, roots_p)) return 0;
+    if (igraphmodule_PyObject_to_vid_list(roots_o, roots_p, &self->g)) {
+      return 0;
+    }
   }
+
   if (rootlevels_o != Py_None) {
     rootlevels_p = &rootlevels;
     if (igraphmodule_PyObject_to_vector_int_t(rootlevels_o, rootlevels_p)) {
@@ -9607,17 +9610,16 @@ PyObject *igraphmodule_Graph_isoclass(igraphmodule_GraphObject * self,
 
   if (vids) {
     igraph_vector_int_t vidsvec;
-    if (igraphmodule_PyObject_to_vector_int_t(vids, &vidsvec)) {
-      PyErr_SetString(PyExc_ValueError,
-                      "Error while converting PyList to igraph_vector_int_t");
+    if (igraphmodule_PyObject_to_vid_list(vids, &vidsvec, &self->g)) {
       return NULL;
     }
     if (igraph_isoclass_subgraph(&self->g, &vidsvec, &isoclass)) {
+      igraph_vector_int_destroy(&vidsvec);
       igraphmodule_handle_igraph_error();
       return NULL;
     }
-  }
-  else {
+    igraph_vector_int_destroy(&vidsvec);
+  } else {
     if (igraph_isoclass(&self->g, &isoclass)) {
       igraphmodule_handle_igraph_error();
       return NULL;

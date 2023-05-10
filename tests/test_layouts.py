@@ -350,6 +350,12 @@ class LayoutAlgorithmTests(unittest.TestCase):
         lo = g.layout("rt", root=[0, 100], rootlevel=[2, 10])
         self.assertEqual(lo[100][1] - lo[0][1], 8)
 
+        # test named vertices
+        g.vs["name"] = [f"v{i}" for i in range(g.vcount())]
+        lo = g.layout("rt", root=["v0", "v100"])
+        self.assertEqual(lo[100][1] - lo[0][1], 0)
+
+
     def testBipartite(self):
         g = Graph.Full_Bipartite(3, 2)
 
