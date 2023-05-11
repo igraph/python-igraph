@@ -253,8 +253,8 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             mins = np.array([0, 0])
             maxs = np.array([1, 1])
         else:
-            mins = np.min(layout, axis=0)
-            maxs = np.max(layout, axis=0)
+            mins = np.min(layout, axis=0).astype(float)
+            maxs = np.max(layout, axis=0).astype(float)
 
             # Pad by vertex size, to ensure they fit
             vertex_builder = self.vertex_builder
