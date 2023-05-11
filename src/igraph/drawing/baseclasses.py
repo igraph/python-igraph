@@ -121,7 +121,7 @@ class AbstractEdgeDrawer(metaclass=ABCMeta):
         raise NotImplementedError
 
     def get_label_position(self, edge, src_vertex, dest_vertex):
-        """returns the position where the label of an edge should be drawn. the
+        """Returns the position where the label of an edge should be drawn. the
         default implementation returns the midpoint of the edge and an alignment
         that tries to avoid overlapping the label with the edge.
 
@@ -266,7 +266,7 @@ class AbstractGraphDrawer(AbstractDrawer):
             C{layout} method of the given I{graph} if I{graph} is
             not C{None}.
 
-          - f I{layout} is C{None} and I{graph} has a "layout"
+          - If I{layout} is C{None} and I{graph} has a "layout"
             attribute, call this same function with the value of that
             attribute.
 
