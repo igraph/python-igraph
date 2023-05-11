@@ -2,7 +2,7 @@ import random
 import unittest
 
 
-from igraph import Graph, InternalError, plot, VertexClustering, config
+from igraph import Graph, InternalError, plot, VertexClustering, config, Layout
 
 from ...utils import overridden_configuration
 
@@ -47,6 +47,14 @@ class GraphTestRunner(unittest.TestCase):
         g = Graph.Ring(5)
         fig, ax = plt.subplots()
         plot(g, target=ax, layout=self.layout_small_ring)
+
+    @image_comparison(baseline_images=["graph_layout_attribute"], remove_text=True)
+    def test_layout_attribute(self):
+        plt.close("all")
+        g = Graph.Ring(5)
+        g["layout"] = Layout([(x, x) for x in range(g.vcount())])
+        fig, ax = plt.subplots()
+        plot(g, target=ax)
 
     @image_comparison(baseline_images=["graph_directed"], remove_text=True)
     def test_directed(self):
