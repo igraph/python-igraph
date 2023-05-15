@@ -62,6 +62,8 @@ def _add_vertex(graph, name=None, **kwds):
     vertex = graph.vs[vid]
     for key, value in kwds.items():
         vertex[key] = value
+    if isinstance(name, int):
+        raise TypeError("cannot use integers as vertex names; use strings instead")
     if name is not None:
         vertex["name"] = name
     return vertex
