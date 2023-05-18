@@ -1,6 +1,7 @@
 """Drawers for various edge styles in Matplotlib graph plots."""
 
 from math import atan2, cos, pi, sin
+from copy import deepcopy
 
 from igraph.drawing.baseclasses import AbstractEdgeDrawer
 from igraph.drawing.metamagic import AttributeCollectorBase
@@ -78,9 +79,11 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
 
             # Determine where the edge intersects the circumference of the
             # vertex shape: Tip of the arrow
-            x2, y2 = intersect_bezier_curve_and_circle(
-                x_src, y_src, xc1, yc1, xc2, yc2, x_dest, y_dest, dest_vertex.size / 2.0
-            )
+            ## FIXME
+            #x2, y2 = intersect_bezier_curve_and_circle(
+            #    x_src, y_src, xc1, yc1, xc2, yc2, x_dest, y_dest, dest_vertex.size / 2.0
+            #)
+            x2, y2 = x_dest, y_dest
 
             # Calculate the arrow head coordinates
             angle = atan2(y_dest - y2, x_dest - x2)  # navid
@@ -136,12 +139,14 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
         else:
             # Determine where the edge intersects the circumference of the
             # vertex shape.
-            x2, y2 = dest_vertex.shape.intersection_point(
-                x2, y2, x1, y1, dest_vertex.size
-            )
+            # FIXME
+            #x2, y2 = dest_vertex.shape.intersection_point(
+            #    x2, y2, x1, y1, dest_vertex.size
+            #)
+            x2, y2 = x_dest, y_dest
 
             # Draw the arrowhead
-            angle = atan2(y_dest - y2, x_dest - x2)
+            angle = atan2(y_dest - y_src, x_dest - x_src)
             arrow_size = 15.0 * edge.arrow_size
             arrow_width = 10.0 / edge.arrow_width
             aux_points = [
@@ -268,3 +273,45 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             clip_on=True,
         )
         return [art]
+
+
+class EdgeCollection(mpl.collections.LineCollection):
+    def __init__(self, *args, **kwargs):
+        self._vertex_bboxes = kwargs.pop("vertex_bboxes")
+        ret = super().__init__(*args, **kwargs)
+        self._paths_original = deepcopy(self._paths)
+        return ret
+
+
+    def _update_path_from_vertices(self):
+        # Get actual coordinates of the vertex bbox edges
+        for p, p_orig, bboxes in zip(self._paths, self._paths_original, self._vertex_bboxes):
+            coords = p_orig.vertices
+
+            # Start vertex
+            if coords[0, 0] == coords[1, 0]:
+                bbox_offsetx = 0
+                bbox_offsety = bboxes[0].extents[1 + 2 * int(coords[1, 1] > coords[0, 1])]
+            else:
+                ratio = (coords[1, 1] - coords[0, 1]) / (coords[1, 0] - coords[0, 0])
+                bbox_offsetx = bboxes[0].extents[2 * int(coords[1, 0] > coords[0, 0])]
+                bbox_offsety = bboxes[1].extents[1 + 2 * int(coords[1, 1] > coords[0, 1])] * abs(ratio)
+            voff = np.array([bbox_offsetx, bbox_offsety])
+            start = ax.transData.inverted().transform(ax.transData.transform(coords[0]) + voff)
+            p.vertices[0] = start
+
+            # End vertex
+            if coords[-2, 0] == coords[-1, 0]:
+                bbox_offsetx = 0
+                bbox_offsety = bboxes[1].extents[1 + 2 * int(coords[-2, 1] > coords[-1, 1])]
+            else:
+                ratio = (coords[-1, 1] - coords[-2, 1]) / (coords[-1, 0] - coords[-2, 0])
+                bbox_offsetx = bboxes[0].extents[2 * int(coords[-2, 0] > coords[-1, 0])]
+                bbox_offsety = bboxes[1].extents[1 + 2 * int(coords[-2, 1] > coords[-1, 1])] * abs(ratio)
+            voff = np.array([bbox_offsetx, bbox_offsety])
+            end = ax.transData.inverted().transform(ax.transData.transform(coords[-1]) + voff)
+            p.vertices[-1] = end
+            
+    def draw(self, renderer):
+        self._update_path_from_vertices()
+        return super().draw(renderer)

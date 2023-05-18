@@ -7,6 +7,15 @@ from math import pi
 from igraph.drawing.baseclasses import AbstractVertexDrawer
 from igraph.drawing.metamagic import AttributeCollectorBase
 from igraph.drawing.shapes import ShapeDrawerDirectory
+from igraph.drawing.matplotlib.utils import find_matplotlib
+from igraph.drawing.utils import FakeModule
+
+mpl, _ = find_matplotlib()
+try:
+    IdentityTransform = mpl.transforms.IdentityTransform
+except AttributeError:
+    IdentityTransform = FakeModule
+
 
 __all__ = ("MatplotlibVertexDrawer",)
 
@@ -36,7 +45,7 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
             # FIXME? mpl.rcParams["font.size"])
             position = dict(func=self.layout.__getitem__)
             shape = ("circle", ShapeDrawerDirectory.resolve_default)
-            size = 0.2
+            size = 30
             width = None
             height = None
             zorder = 2
@@ -60,13 +69,14 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
 
         art = visual_vertex.shape.draw_path(
             ax,
-            coords[0],
-            coords[1],
+            0, #coords[0], # FIXME
+            0, #coords[1],
             width,
             height,
             facecolor=visual_vertex.color,
             edgecolor=visual_vertex.frame_color,
             linewidth=visual_vertex.frame_width,
             zorder=visual_vertex.zorder,
+            transform=IdentityTransform(),
         )
         return art

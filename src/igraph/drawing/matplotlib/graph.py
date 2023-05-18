@@ -30,8 +30,12 @@ __all__ = ("MatplotlibGraphDrawer",)
 mpl, plt = find_matplotlib()
 try:
     Artist = mpl.artist.Artist
+    PatchCollection = mpl.collections.PatchCollection
+    IdentityTransform = mpl.transforms.IdentityTransform
 except AttributeError:
     Artist = FakeModule
+    PatchCollection = FakeModule
+    IdentityTransform = FakeModule
 
 #####################################################################
 
@@ -256,16 +260,21 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             mins = np.min(layout, axis=0).astype(float)
             maxs = np.max(layout, axis=0).astype(float)
 
-            # Pad by vertex size, to ensure they fit
-            vertex_builder = self.vertex_builder
-            if vertex_builder.size is not None:
-                mins -= vertex_builder.size * 1.1
-                maxs += vertex_builder.size * 1.1
-            else:
-                mins[0] -= vertex_builder.width * 0.55
-                mins[1] -= vertex_builder.height * 0.55
-                maxs[0] += vertex_builder.width * 0.55
-                maxs[1] += vertex_builder.height * 0.55
+            # 5% padding, on each side
+            pad = (maxs - mins) * 0.05
+            mins -= pad
+            maxs += pad
+
+            ## Pad by vertex size, to ensure they fit
+            #vertex_builder = self.vertex_builder
+            #if vertex_builder.size is not None:
+            #    mins -= vertex_builder.size * 1.1
+            #    maxs += vertex_builder.size * 1.1
+            #else:
+            #    mins[0] -= vertex_builder.width * 0.55
+            #    mins[1] -= vertex_builder.height * 0.55
+            #    maxs[0] += vertex_builder.width * 0.55
+            #    maxs[1] += vertex_builder.height * 0.55
 
         return (mins, maxs)
 
@@ -504,9 +513,19 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             vertex_coord_iter = (
                 (vs[i], vertex_builder[i], layout[i]) for i in vertex_order
             )
+        offsets = []
+        patches = []
         for vertex, visual_vertex, coords in vertex_coord_iter:
             art = vertex_drawer.draw(visual_vertex, vertex, coords)
-            self._vertices.append(art)
+            patches.append(art)
+            offsets.append(list(coords))
+        art = PatchCollection(
+            patches,
+            offsets=offsets,
+            offset_transform=self.axes.transData,
+        )
+        art.set_transform(IdentityTransform())
+        self._vertices.append(art)
 
     def _draw_edges(self):
         """Draw the edges"""
@@ -732,7 +751,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         ax.set_yticks([])
 
         # Set equal aspect to get actual circles
-        ax.set_aspect(1)
+        #ax.set_aspect(1)
 
         # Autoscale for x/y axis limits
         ax.autoscale_view()
