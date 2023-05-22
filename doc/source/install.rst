@@ -62,8 +62,14 @@ Compiling |igraph| from source
 You might want to compile |igraph| to test a recently added feature ahead of release or
 to install |igraph| on architectures not covered by our continuous development pipeline.
 
-.. note:: In all cases, the Python interface needs to be compiled against a **matching** version of
-  the |igraph| core C library.
+.. note:: In all cases, the Python interface needs to be compiled against
+   a **matching** version of the |igraph| core C library. If you used ``git``
+   to check out the source tree, ``git`` was probably smart enough to check out
+   the matching version of igraph's C core as a submodule into
+   ``vendor/source/igraph``. You can use ``git submodule update --init
+   --recursive`` to check out the submodule manually, or you can run ``git
+   submodule status`` to print the exact revision of igraph's C core that
+   should be used with the Python interface.
 
 Compiling using pip
 -------------------

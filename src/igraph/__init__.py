@@ -103,7 +103,6 @@ from igraph.bipartite import (
 from igraph.community import (
     _community_fastgreedy,
     _community_infomap,
-    _community_leading_eigenvector_naive,
     _community_leading_eigenvector,
     _community_label_propagation,
     _community_multilevel,
@@ -653,7 +652,6 @@ class Graph(GraphBase):
     # Community detection/clustering
     community_fastgreedy = _community_fastgreedy
     community_infomap = _community_infomap
-    community_leading_eigenvector_naive = _community_leading_eigenvector_naive
     community_leading_eigenvector = _community_leading_eigenvector
     community_label_propagation = _community_label_propagation
     community_multilevel = _community_multilevel
@@ -1071,7 +1069,6 @@ del (
     _export_graph_to_tuple_list,
     _community_fastgreedy,
     _community_infomap,
-    _community_leading_eigenvector_naive,
     _community_leading_eigenvector,
     _community_label_propagation,
     _community_multilevel,

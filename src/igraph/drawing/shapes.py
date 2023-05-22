@@ -96,7 +96,12 @@ class RectangleDrawer(ShapeDrawer):
         height = height or width
         if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             return mpl.patches.Rectangle(
-                (center_x - width / 2, center_y - height / 2), width, height, **kwargs
+                (center_x - width / 2, center_y - height / 2),
+                width,
+                height,
+                transform=ctx.transData,
+                clip_on=True,
+                **kwargs,
             )
         else:
             ctx.rectangle(center_x - width / 2, center_y - height / 2, width, height)
@@ -163,7 +168,13 @@ class CircleDrawer(ShapeDrawer):
 
         @see: ShapeDrawer.draw_path"""
         if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
-            return mpl.patches.Circle((center_x, center_y), width / 2, **kwargs)
+            return mpl.patches.Circle(
+                (center_x, center_y),
+                width / 2,
+                transform=ctx.transData,
+                clip_on=True,
+                **kwargs,
+            )
         else:
             ctx.arc(center_x, center_y, width / 2, 0, 2 * pi)
 
@@ -197,7 +208,13 @@ class UpTriangleDrawer(ShapeDrawer):
                 [center_x + 0.5 * width, center_y - 0.333 * height],
                 [center_x, center_x + 0.667 * height],
             ]
-            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
+            return mpl.patches.Polygon(
+                vertices,
+                closed=True,
+                transform=ctx.transData,
+                clip_on=True,
+                **kwargs,
+            )
         else:
             ctx.move_to(center_x - width / 2, center_y + height / 2)
             ctx.line_to(center_x, center_y - height / 2)
@@ -234,7 +251,13 @@ class DownTriangleDrawer(ShapeDrawer):
                 [center_x + 0.5 * width, center_y + 0.333 * height],
                 [center_x, center_y - 0.667 * height],
             ]
-            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
+            return mpl.patches.Polygon(
+                vertices,
+                closed=True,
+                transform=ctx.transData,
+                clip_on=True,
+                **kwargs,
+            )
 
         else:
             ctx.move_to(center_x - width / 2, center_y - height / 2)
@@ -273,7 +296,13 @@ class DiamondDrawer(ShapeDrawer):
                 [center_x + 0.5 * width, center_y],
                 [center_x, center_y + 0.5 * height],
             ]
-            return mpl.patches.Polygon(vertices, closed=True, **kwargs)
+            return mpl.patches.Polygon(
+                vertices,
+                closed=True,
+                transform=ctx.transData,
+                clip_on=True,
+                **kwargs,
+            )
         else:
             ctx.move_to(center_x - width / 2, center_y)
             ctx.line_to(center_x, center_y + height / 2)

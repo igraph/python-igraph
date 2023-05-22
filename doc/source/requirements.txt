@@ -6,7 +6,7 @@ sphinxbootstrap4theme
 sphinx-gallery
 sphinx-rtd-theme
 sphinxcontrib-jquery
-pydoctor
+pydoctor>=23.4.0
 
 numpy
 scipy

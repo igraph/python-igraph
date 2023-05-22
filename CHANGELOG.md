@@ -1,5 +1,49 @@
 # igraph Python interface changelog
 
+## [Unreleased]
+
+### Added
+
+- The `plot()` function now takes a `backend` keyword argument that can be used
+  to specify the plotting backend explicitly.
+
+- The `VertexClustering` object returned from `Graph.community_leiden()` now
+  contains an extra property named `quality` that stores the value of the
+  internal quality function optimized by the algorithm.
+
+- `Graph.Adjacency()` and `Graph.Weighted_Adjacency()` now supports
+  `loops="once"`, `loops="twice"` and `loops="ignore"` to control how loop
+  edges are handled in a more granular way. `loops=True` and `loops=False`
+  keep on working as in earlier versions.
+
+- Added `Graph.get_shortest_path()` as a convenience function for cases when
+  only one shortest path is needed between a given source and target vertices.
+
+- Added `Graph.get_shortest_path_astar()` to calculate the shortest path
+  between two vertices using the A-star algorithm and an appropriate
+  heuristic function.
+
+- The `VertexCover` constructor now allows referring to vertices by names
+  instead of IDs.
+
+### Fixed
+
+- `resolution` parameter is now correctly taken into account when calling
+  `Graph.modularity()`
+
+- `VertexClustering.giant()` now accepts the null graph. The giant component of
+  a null graph is the null graph according to our conventions.
+
+- `Graph.layout_reingold_tilford()` now accepts vertex names in the `roots=...`
+  keyword argument.
+
+### Removed
+
+- Removed defunct `Graph.community_leading_eigenvector_naive()` method. Not a
+  breaking change because it was already removed from the C core a long time
+  ago so the function in the Python interface did not do anything useful
+  either.
+
 ## [0.10.4] - 2022-01-27
 
 ### Added

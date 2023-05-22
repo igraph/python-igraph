@@ -62,7 +62,8 @@ class Clustering:
         @param membership: the membership list -- that is, the cluster
           index in which each element of the set belongs to.
         @param params: additional parameters to be stored in this
-          object's dictionary."""
+          object's dictionary.
+        """
         self._membership = list(membership)
         if len(self._membership) > 0:
             self._len = max(m for m in self._membership if m is not None) + 1
@@ -426,8 +427,11 @@ class VertexClustering(Clustering):
         @return: a copy of the largest cluster.
         """
         ss = self.sizes()
-        max_size = max(ss)
-        return self.subgraph(ss.index(max_size))
+        if ss:
+            max_size = max(ss)
+            return self.subgraph(ss.index(max_size))
+        else:
+            return self._graph.copy()
 
     def __plot__(self, backend, context, *args, **kwds):
         """Plots the clustering to the given Cairo context or matplotlib Axes.
@@ -788,7 +792,7 @@ class VertexDendrogram(Dendrogram):
     vertex set of a graph."""
 
     def __init__(
-        self, graph, merges, optimal_count=None, params=None, modularity_params=None
+        self, graph, merges, optimal_count=None, modularity_params=None
     ):
         """Creates a dendrogram object for a given graph.
 
@@ -799,7 +803,6 @@ class VertexDendrogram(Dendrogram):
           clustering algorithm that produces the dendrogram. C{None} means
           that such a hint is not available; the optimal count will then be
           selected based on the modularity in such a case.
-        @param params: additional parameters to be stored in this object.
         @param modularity_params: arguments that should be passed to
           L{Graph.modularity} when the modularity is (re)calculated. If the
           original graph was weighted, you should pass a dictionary
@@ -1086,6 +1089,8 @@ class VertexCover(Cover):
         if clusters is None:
             clusters = [range(graph.vcount())]
 
+        self._resolve_names_in_clusters(graph, clusters)
+
         super().__init__(clusters, n=graph.vcount())
         if self._n > graph.vcount():
             raise ValueError(
@@ -1212,6 +1217,24 @@ class VertexCover(Cover):
         else:
             for cluster in self:
                 yield ", ".join(str(member) for member in cluster)
+
+    @staticmethod
+    def _resolve_names_in_clusters(graph, clusters):
+        if not graph.is_named():
+            return
+
+        names = graph.vs["name"]
+        name_to_index = dict((k, v) for v, k in enumerate(names))
+
+        for idx, cluster in enumerate(clusters):
+            if any(isinstance(item, str) for item in cluster):
+                new_cluster = []
+                for item in cluster:
+                    if isinstance(item, str):
+                        new_cluster.append(name_to_index.get(item, item))
+                    else:
+                        new_cluster.append(item)
+                clusters[idx] = new_cluster
 
 
 class CohesiveBlocks(VertexCover):

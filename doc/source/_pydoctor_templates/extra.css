@@ -1,0 +1,7 @@
+/* increase spacing between parameters in a parameter list, and make sure
+ * that parameter names are aligned to the top */
+.fieldTable tr td {
+  padding: 3px 4px 10px 10px !important;
+  vertical-align: top;
+}
+

@@ -555,4 +555,4 @@ def __plot__(self, backend, context, *args, **kwds):
         "drawer_factory",
         DrawerDirectory.resolve(self, backend)(context),
     )
-    drawer.draw(self, *args, **kwds)
+    return drawer.draw(self, *args, **kwds)

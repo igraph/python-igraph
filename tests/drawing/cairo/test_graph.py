@@ -1,9 +1,7 @@
-import os
 import random
 import unittest
 
-
-from igraph import Graph, InternalError, plot, VertexClustering
+from igraph import Graph, plot, VertexClustering
 from igraph.drawing import find_cairo
 
 # FIXME: find a better way to do this that works for both direct call and module
@@ -15,44 +13,48 @@ except ImportError:
 
 
 cairo = find_cairo()
-has_cairo = hasattr(cairo, 'version')
+has_cairo = hasattr(cairo, "version")
 
 image_comparison = find_image_comparison()
 
 
 class GraphTestRunner(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         if not has_cairo:
             raise unittest.SkipTest("cairo not found, skipping tests")
         result_image_folder.mkdir(parents=True, exist_ok=True)
 
+    def setUp(self) -> None:
+        random.seed(42)
+
     @image_comparison(baseline_images=["graph_basic"])
     def test_basic(self):
         g = Graph.Ring(5)
-        plot(g, target=result_image_folder / 'graph_basic.png')
+        plot(g, target=result_image_folder / "graph_basic.png", backend="cairo")
 
     @image_comparison(baseline_images=["graph_directed"])
     def test_directed(self):
         g = Graph.Ring(5, directed=True)
-        plot(g, target=result_image_folder / 'graph_directed.png')
+        plot(g, target=result_image_folder / "graph_directed.png", backend="cairo")
 
     @image_comparison(baseline_images=["graph_mark_groups_directed"])
     def test_mark_groups(self):
         g = Graph.Ring(5, directed=True)
         plot(
             g,
-            target=result_image_folder / 'graph_mark_groups_directed.png',
-            mark_groups=True)
+            target=result_image_folder / "graph_mark_groups_directed.png",
+            backend="cairo",
+            mark_groups=True,
+        )
 
-    @image_comparison(
-        baseline_images=["graph_mark_groups_squares_directed"]
-    )
+    @image_comparison(baseline_images=["graph_mark_groups_squares_directed"])
     def test_mark_groups_squares(self):
         g = Graph.Ring(5, directed=True)
         plot(
             g,
-            target=result_image_folder / 'graph_mark_groups_squares_directed.png',
+            target=result_image_folder / "graph_mark_groups_squares_directed.png",
+            backend="cairo",
             mark_groups=True,
             vertex_shape="square",
         )
@@ -60,10 +62,13 @@ class GraphTestRunner(unittest.TestCase):
 
 class ClusteringTestRunner(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         if not has_cairo:
             raise unittest.SkipTest("cairo not found, skipping tests")
         result_image_folder.mkdir(parents=True, exist_ok=True)
+
+    def setUp(self) -> None:
+        random.seed(42)
 
     @image_comparison(baseline_images=["clustering_directed"])
     def test_clustering_directed_small(self):
@@ -71,7 +76,8 @@ class ClusteringTestRunner(unittest.TestCase):
         clu = VertexClustering(g, [0] * 5)
         plot(
             clu,
-            target=result_image_folder / 'clustering_directed.png',
+            backend="cairo",
+            target=result_image_folder / "clustering_directed.png",
             mark_groups=True,
         )
 
@@ -79,11 +85,12 @@ class ClusteringTestRunner(unittest.TestCase):
     def test_clustering_directed_large(self):
         g = Graph.Ring(50, directed=True)
         clu = VertexClustering(g, [0] * 3 + [1] * 17 + [2] * 30)
-        layout = [(x*2.5, y*2.5) for x, y in g.layout("circle")]
+        layout = [(x * 2.5, y * 2.5) for x, y in g.layout("circle")]
         plot(
             clu,
+            backend="cairo",
             layout=layout,
-            target=result_image_folder / 'clustering_directed_large.png',
+            target=result_image_folder / "clustering_directed_large.png",
             mark_groups=True,
         )
 
@@ -91,10 +98,7 @@ class ClusteringTestRunner(unittest.TestCase):
 def suite():
     graph = unittest.defaultTestLoader.loadTestsFromTestCase(GraphTestRunner)
     clustering = unittest.defaultTestLoader.loadTestsFromTestCase(ClusteringTestRunner)
-    return unittest.TestSuite([
-        graph,
-        clustering,
-    ])
+    return unittest.TestSuite([graph, clustering])
 
 
 def test():

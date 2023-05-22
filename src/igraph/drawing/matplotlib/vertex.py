@@ -44,6 +44,7 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
         return VisualVertexBuilder
 
     def draw(self, visual_vertex, vertex, coords):
+        """Build the Artist for a vertex and return it."""
         ax = self.context
 
         width = (
@@ -57,7 +58,7 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
             else visual_vertex.size
         )
 
-        stroke = visual_vertex.shape.draw_path(
+        art = visual_vertex.shape.draw_path(
             ax,
             coords[0],
             coords[1],
@@ -68,4 +69,4 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
             linewidth=visual_vertex.frame_width,
             zorder=visual_vertex.zorder,
         )
-        ax.add_patch(stroke)
+        return art

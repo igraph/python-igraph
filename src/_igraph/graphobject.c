@@ -2584,6 +2584,47 @@ PyObject *igraphmodule_Graph_Growing_Random(PyTypeObject * type,
 }
 
 /** \ingroup python_interface_graph
+ * \brief Generates a regular hexagonal lattice
+ * \return a reference to the newly generated Python igraph object
+ * \sa igraph_hexagonal_lattice
+ */
+PyObject *igraphmodule_Graph_Hexagonal_Lattice(PyTypeObject * type,
+                                     PyObject * args, PyObject * kwds)
+{
+  igraph_vector_int_t dimvector;
+  igraph_bool_t directed;
+  igraph_bool_t mutual;
+  PyObject *o_directed = Py_False, *o_mutual = Py_True;
+  PyObject *o_dimvector = Py_None;
+  igraphmodule_GraphObject *self;
+  igraph_t g;
+
+  static char *kwlist[] = { "dim", "directed", "mutual", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist,
+                                   &o_dimvector, &o_directed, &o_mutual))
+    return NULL;
+
+  directed = PyObject_IsTrue(o_directed);
+  mutual = PyObject_IsTrue(o_mutual);
+
+  if (igraphmodule_PyObject_to_vector_int_t(o_dimvector, &dimvector))
+    return NULL;
+
+  if (igraph_hexagonal_lattice(&g, &dimvector, directed, mutual)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_int_destroy(&dimvector);
+    return NULL;
+  }
+
+  igraph_vector_int_destroy(&dimvector);
+
+  CREATE_GRAPH_FROM_TYPE(self, g, type);
+
+  return (PyObject *) self;
+}
+
+/** \ingroup python_interface_graph
  * \brief Generates a bipartite graph from an incidence matrix
  * \return a reference to the newly generated Python igraph object
  * \sa igraph_incidence
@@ -2730,9 +2771,9 @@ PyObject *igraphmodule_Graph_K_Regular(PyTypeObject * type,
 }
 
 /** \ingroup python_interface_graph
- * \brief Generates a regular lattice
+ * \brief Generates a regular square lattice
  * \return a reference to the newly generated Python igraph object
- * \sa igraph_lattice
+ * \sa igraph_square_lattice
  */
 PyObject *igraphmodule_Graph_Lattice(PyTypeObject * type,
                                      PyObject * args, PyObject * kwds)
@@ -3541,6 +3582,47 @@ PyObject *igraphmodule_Graph_Tree_Game(PyTypeObject * type,
       igraphmodule_handle_igraph_error();
       return NULL;
   }
+
+  CREATE_GRAPH_FROM_TYPE(self, g, type);
+
+  return (PyObject *) self;
+}
+
+/** \ingroup python_interface_graph
+ * \brief Generates a regular triangular lattice
+ * \return a reference to the newly generated Python igraph object
+ * \sa igraph_triangular_lattice
+ */
+PyObject *igraphmodule_Graph_Triangular_Lattice(PyTypeObject * type,
+                                     PyObject * args, PyObject * kwds)
+{
+  igraph_vector_int_t dimvector;
+  igraph_bool_t directed;
+  igraph_bool_t mutual;
+  PyObject *o_directed = Py_False, *o_mutual = Py_True;
+  PyObject *o_dimvector = Py_None;
+  igraphmodule_GraphObject *self;
+  igraph_t g;
+
+  static char *kwlist[] = { "dim", "directed", "mutual", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist,
+                                   &o_dimvector, &o_directed, &o_mutual))
+    return NULL;
+
+  directed = PyObject_IsTrue(o_directed);
+  mutual = PyObject_IsTrue(o_mutual);
+
+  if (igraphmodule_PyObject_to_vector_int_t(o_dimvector, &dimvector))
+    return NULL;
+
+  if (igraph_triangular_lattice(&g, &dimvector, directed, mutual)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_int_destroy(&dimvector);
+    return NULL;
+  }
+
+  igraph_vector_int_destroy(&dimvector);
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
 
@@ -5119,6 +5201,179 @@ PyObject *igraphmodule_Graph_feedback_arc_set(
 
 
 /** \ingroup python_interface_graph
+ * \brief Calculates a single shortest path between a source and a target vertex
+ * \return a list containing a single shortest path from the source to the target
+ * \sa igraph_get_shortest_path
+ */
+PyObject *igraphmodule_Graph_get_shortest_path(
+  igraphmodule_GraphObject *self, PyObject *args, PyObject * kwds
+) {
+  static char *kwlist[] = { "v", "to", "weights", "mode", "output", NULL };
+  igraph_vector_t *weights=0;
+  igraph_neimode_t mode = IGRAPH_OUT;
+  igraph_integer_t from, to;
+  PyObject *list, *mode_o=Py_None, *weights_o=Py_None,
+           *output_o=Py_None, *from_o = Py_None, *to_o=Py_None;
+  igraph_vector_int_t vec;
+  igraph_bool_t use_edges = false;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|OOO!", kwlist, &from_o,
+        &to_o, &weights_o, &mode_o, &PyUnicode_Type, &output_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vid(to_o, &to, &self->g))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+    return NULL;
+
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
+      ATTRIBUTE_TYPE_EDGE)) return NULL;
+
+  if (igraph_vector_int_init(&vec, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  /* Call the C function */
+  if (igraph_get_shortest_path_dijkstra(&self->g, use_edges ? 0 : &vec,
+        use_edges ? &vec : 0, from, to, weights, mode)) {
+    igraph_vector_int_destroy(&vec);
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  /* We don't need these anymore, the result is in vec */
+  if (weights) { igraph_vector_destroy(weights); free(weights); }
+
+  /* Convert to Python list of paths */
+  list = igraphmodule_vector_int_t_to_PyList(&vec);
+  igraph_vector_int_destroy(&vec);
+
+  return list ? list : NULL;
+}
+
+typedef struct {
+  PyObject* func;
+  PyObject* graph;
+} igraphmodule_i_Graph_get_shortest_path_astar_callback_data_t;
+
+igraph_error_t igraphmodule_i_Graph_get_shortest_path_astar_callback(
+  igraph_real_t *result, igraph_integer_t from, igraph_integer_t to,
+  void *extra
+) {
+  igraphmodule_i_Graph_get_shortest_path_astar_callback_data_t* data =
+    (igraphmodule_i_Graph_get_shortest_path_astar_callback_data_t*)extra;
+  PyObject* from_o;
+  PyObject* to_o;
+  PyObject* result_o;
+
+  from_o = igraphmodule_integer_t_to_PyObject(from);
+  if (from_o == NULL) {
+    /* Error in conversion, return 1 */
+    return IGRAPH_FAILURE;
+  }
+
+  to_o = igraphmodule_integer_t_to_PyObject(to);
+  if (to_o == NULL) {
+    /* Error in conversion, return 1 */
+    return IGRAPH_FAILURE;
+  }
+
+  result_o = PyObject_CallFunction(data->func, "OOO", data->graph, from_o, to_o);
+  Py_DECREF(from_o);
+  Py_DECREF(to_o);
+
+  if (result_o == NULL) {
+    /* Error in callback, return 1 */
+    return IGRAPH_FAILURE;
+  }
+
+  if (igraphmodule_PyObject_to_real_t(result_o, result)) {
+    /* Error in conversion, return 1 */
+    return IGRAPH_FAILURE;
+  }
+
+  return IGRAPH_SUCCESS;
+}
+
+/** \ingroup python_interface_graph
+ * \brief Calculates a single shortest path between a source and a target vertex using the A-star algorithm
+ * \return a list containing a single shortest path from the source to the target
+ * \sa igraph_get_shortest_path_astar
+ */
+PyObject *igraphmodule_Graph_get_shortest_path_astar(
+  igraphmodule_GraphObject *self, PyObject *args, PyObject * kwds
+) {
+  static char *kwlist[] = { "v", "to", "heuristics", "weights", "mode", "output", NULL };
+  igraph_vector_t *weights=0;
+  igraph_neimode_t mode = IGRAPH_OUT;
+  igraph_integer_t from, to;
+  PyObject *list, *mode_o=Py_None, *weights_o=Py_None,
+           *output_o=Py_None, *from_o = Py_None, *to_o=Py_None,
+           *heuristics_o;
+  igraph_vector_int_t vec;
+  igraph_bool_t use_edges = false;
+  igraphmodule_i_Graph_get_shortest_path_astar_callback_data_t extra;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOO|OOO!", kwlist, &from_o,
+        &to_o, &heuristics_o, &weights_o, &mode_o, &PyUnicode_Type, &output_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vid(from_o, &from, &self->g))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vid(to_o, &to, &self->g))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+    return NULL;
+
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
+      ATTRIBUTE_TYPE_EDGE)) return NULL;
+
+  if (igraph_vector_int_init(&vec, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  extra.func = heuristics_o;
+  extra.graph = (PyObject*) self;
+
+  /* Call the C function */
+  if (igraph_get_shortest_path_astar(&self->g, use_edges ? 0 : &vec,
+        use_edges ? &vec : 0, from, to, weights, mode,
+        igraphmodule_i_Graph_get_shortest_path_astar_callback,
+        &extra
+  )) {
+    igraph_vector_int_destroy(&vec);
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  /* We don't need these anymore, the result is in vec */
+  if (weights) { igraph_vector_destroy(weights); free(weights); }
+
+  /* Convert to Python list of paths */
+  list = igraphmodule_vector_int_t_to_PyList(&vec);
+  igraph_vector_int_destroy(&vec);
+
+  return list ? list : NULL;
+}
+
+
+/** \ingroup python_interface_graph
  * \brief Calculates the shortest paths from/to a given node in the graph
  * \return a list containing shortest paths from/to the given node
  * \sa igraph_get_shortest_paths
@@ -5194,8 +5449,6 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
   list = igraphmodule_vector_int_list_t_to_PyList(&veclist);
   igraph_vector_int_list_destroy(&veclist);
   return list ? list : NULL;
-
-  return list;
 }
 
 /** \ingroup python_interface_graph
@@ -7967,8 +8220,11 @@ PyObject *igraphmodule_Graph_layout_reingold_tilford(igraphmodule_GraphObject
 
   if (roots_o != Py_None) {
     roots_p = &roots;
-    if (igraphmodule_PyObject_to_vector_int_t(roots_o, roots_p)) return 0;
+    if (igraphmodule_PyObject_to_vid_list(roots_o, roots_p, &self->g)) {
+      return 0;
+    }
   }
+
   if (rootlevels_o != Py_None) {
     rootlevels_p = &rootlevels;
     if (igraphmodule_PyObject_to_vector_int_t(rootlevels_o, rootlevels_p)) {
@@ -9354,17 +9610,16 @@ PyObject *igraphmodule_Graph_isoclass(igraphmodule_GraphObject * self,
 
   if (vids) {
     igraph_vector_int_t vidsvec;
-    if (igraphmodule_PyObject_to_vector_int_t(vids, &vidsvec)) {
-      PyErr_SetString(PyExc_ValueError,
-                      "Error while converting PyList to igraph_vector_int_t");
+    if (igraphmodule_PyObject_to_vid_list(vids, &vidsvec, &self->g)) {
       return NULL;
     }
     if (igraph_isoclass_subgraph(&self->g, &vidsvec, &isoclass)) {
+      igraph_vector_int_destroy(&vidsvec);
       igraphmodule_handle_igraph_error();
       return NULL;
     }
-  }
-  else {
+    igraph_vector_int_destroy(&vidsvec);
+  } else {
     if (igraph_isoclass(&self->g, &isoclass)) {
       igraphmodule_handle_igraph_error();
       return NULL;
@@ -12784,7 +13039,7 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
     free(membership);
   }
 
-  return error ? NULL : res;
+  return error ? NULL : Py_BuildValue("Nd", res, (double) quality);
 }
 
 /**********************************************************************
@@ -13492,6 +13747,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param citation: whether the new edges should originate from the most\n"
    "   recently added vertex.\n"},
 
+  /* interface to igraph_hexagonal_lattice */
+  {"Hexagonal_Lattice", (PyCFunction) igraphmodule_Graph_Hexagonal_Lattice,
+   METH_VARARGS | METH_CLASS | METH_KEYWORDS,
+   "Hexagonal_Lattice(dim, directed=False, mutual=True)\n--\n\n"
+   "Generates a regular hexagonal lattice.\n\n"
+   "@param dim: list with the dimensions of the lattice\n"
+   "@param directed: whether to create a directed graph.\n"
+   "@param mutual: whether to create all connections as mutual\n"
+   "    in case of a directed graph.\n"},
+
   /* interface to igraph_incidence */
   {"_Incidence", (PyCFunction) igraphmodule_Graph_Incidence,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
@@ -13606,11 +13871,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  either \"in\", \"out\", \"mutual\" or \"undirected\"\n"
    "@param center: Vertex ID for the central vertex in the star.\n"},
 
-  // interface to igraph_lattice
+  // interface to igraph_square_lattice
   {"Lattice", (PyCFunction) igraphmodule_Graph_Lattice,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Lattice(dim, nei=1, directed=False, mutual=True, circular=True)\n--\n\n"
-   "Generates a regular lattice.\n\n"
+   "Generates a regular square lattice.\n\n"
    "@param dim: list with the dimensions of the lattice\n"
    "@param nei: value giving the distance (number of steps) within which\n"
    "   two vertices will be connected.\n"
@@ -13841,6 +14106,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "      This is the default choice as it supports both directed and\n"
    "      undirected graphs.\n"
   },
+
+  /* interface to igraph_triangular_lattice */
+  {"Triangular_Lattice", (PyCFunction) igraphmodule_Graph_Triangular_Lattice,
+   METH_VARARGS | METH_CLASS | METH_KEYWORDS,
+   "Triangular_Lattice(dim, directed=False, mutual=True)\n--\n\n"
+   "Generates a regular triangular lattice.\n\n"
+   "@param dim: list with the dimensions of the lattice\n"
+   "@param directed: whether to create a directed graph.\n"
+   "@param mutual: whether to create all connections as mutual\n"
+   "    in case of a directed graph.\n"},
 
   /* interface to igraph_watts_strogatz_game */
   {"Watts_Strogatz", (PyCFunction) igraphmodule_Graph_Watts_Strogatz,
@@ -14361,7 +14636,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
 
   {"eigen_adjacency", (PyCFunction) igraphmodule_Graph_eigen_adjacency,
    METH_VARARGS | METH_KEYWORDS,
-   "" },
+   "eigen_adjacency(algorithm=None, which=None, arpack_options=None)\n--\n\n" },
 
   /* interface to igraph_[st_]edge_connectivity */
   {"edge_connectivity", (PyCFunction) igraphmodule_Graph_edge_connectivity,
@@ -14453,7 +14728,27 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  feedback arc set problem. In: Proc Inf Process Lett 319-323, 1993.\n"
   },
 
-  // interface to igraph_get_shortest_paths
+  /* interface to igraph_get_shortest_path */
+  {"get_shortest_path", (PyCFunction) igraphmodule_Graph_get_shortest_path,
+   METH_VARARGS | METH_KEYWORDS,
+   "get_shortest_path(v, to, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
+   "Calculates the shortest path from a source vertex to a target vertex in a graph.\n\n"
+   "@param v: the source vertex of the path\n"
+   "@param to: the target vertex of the path\n"
+   "@param weights: edge weights in a list or the name of an edge attribute\n"
+   "  holding edge weights. If C{None}, all edges are assumed to have\n"
+   "  equal weight.\n"
+   "@param mode: the directionality of the paths. C{\"out\"} means to\n"
+   "  calculate paths from source to target, following edges according to\n"
+   "  their natural direction. C{\"in\"} means to calculate paths from target\n"
+   "  to source, flipping the direction of each edge on-the-fly. C{\"all\"}\n"
+   "  means to ignore edge directions.\n"
+   "@param output: determines what should be returned. If this is\n"
+   "  C{\"vpath\"}, a list of vertex IDs will be returned. If this is\n"
+   "  C{\"epath\"}, edge IDs are returned instead of vertex IDs.\n"
+   "@return: see the documentation of the C{output} parameter.\n"},
+
+  /* interface to igraph_get_shortest_paths */
   {"get_shortest_paths", (PyCFunction) igraphmodule_Graph_get_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
    "get_shortest_paths(v, to=None, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
@@ -14523,6 +14818,33 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  in a list of vertex or edge IDs (depending on the value of the C{output}\n"
    "  argument). Note that in case of mode=C{\"in\"},\n"
    "  the vertices in a path are returned in reversed order!"},
+
+  /* interface to igraph_get_shortest_path_astar */
+  {"get_shortest_path_astar", (PyCFunction) igraphmodule_Graph_get_shortest_path_astar,
+   METH_VARARGS | METH_KEYWORDS,
+   "get_shortest_path_astar(v, to, heuristics, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
+   "Calculates the shortest path from a source vertex to a target vertex in a\n"
+   "graph using the A-Star algorithm and a heuristic function.\n\n"
+   "@param v: the source vertex of the path\n"
+   "@param to: the target vertex of the path\n"
+   "@param heuristics: a function that will be called with the graph and two\n"
+   "  vertices, and must return an estimate of the cost of the path from the\n"
+   "  first vertex to the second vertex. The A-Star algorithm is guaranteed to\n"
+   "  return an optimal solution if the heuristic is I{admissible}, i.e. if it\n"
+   "  does never overestimate the cost of the shortest path from the given\n"
+   "  source vertex to the given target vertex.\n"
+   "@param weights: edge weights in a list or the name of an edge attribute\n"
+   "  holding edge weights. If C{None}, all edges are assumed to have\n"
+   "  equal weight.\n"
+   "@param mode: the directionality of the paths. C{\"out\"} means to\n"
+   "  calculate paths from source to target, following edges according to\n"
+   "  their natural direction. C{\"in\"} means to calculate paths from target\n"
+   "  to source, flipping the direction of each edge on-the-fly. C{\"all\"}\n"
+   "  means to ignore edge directions.\n"
+   "@param output: determines what should be returned. If this is\n"
+   "  C{\"vpath\"}, a list of vertex IDs will be returned. If this is\n"
+   "  C{\"epath\"}, edge IDs are returned instead of vertex IDs.\n"
+   "@return: see the documentation of the C{output} parameter.\n"},
 
   /* interface to igraph_get_all_simple_paths */
   {"_get_all_simple_paths",
@@ -14676,7 +14998,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "The line graph of a directed graph is slightly different: two vertices\n"
    "are connected by a directed edge iff the target of the first vertex's\n"
    "corresponding edge is the same as the source of the second vertex's\n"
-   "corresponding edge.\n"
+   "corresponding edge.\n\n"
+   "Edge M{i} in the original graph will map to vertex M{i} of the line graph.\n"
   },
 
   /* interface to igraph_maxdegree */
@@ -15807,6 +16130,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"_layout_sugiyama",
    (PyCFunction) igraphmodule_Graph_layout_sugiyama,
    METH_VARARGS | METH_KEYWORDS,
+   "_layout_sugiyama()\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.layout_sugiyama()\n\n"},
 
@@ -15826,7 +16150,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param weights: precomputed edge weights if you have them, as an alternative\n"
    "  to setting the C{dist} argument. Zero weights will be ignored if this\n"
    "  argument is set, e.g. if you computed the weights via\n"
-   "  igraph.layout_umap_compute_weights().\n"
+   "  igraph.umap_compute_weights().\n"
    "@param dim: the desired number of dimensions for the layout. dim=2\n"
    "  means a 2D layout, dim=3 means a 3D layout.\n"
    "@param seed: if C{None}, uses a random starting layout for the\n"
@@ -15844,13 +16168,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "if weights are precomputed, the graph will be treated as undirected. A special\n"
    "case is when the graph is directed but the precomputed weights are symmetrized\n"
    "in a way only one of each pair of opposite edges has nonzero weight, e.g. as\n"
-   "computed by igraph.layout_umap_compute_weights(). For example:\n"
-   "C{weights = igraph.layout_umap_compute_weights(graph, dist)}\n"
+   "computed by igraph.umap_compute_weights(). For example:\n"
+   "C{weights = igraph.umap_compute_weights(graph, dist)}\n"
    "C{layout = graph.layout_umap(weights=weights)}\n\n"
    "@newfield ref: Reference\n"
    "@ref: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation\n"
    "  and Projection for Dimension Reduction. arXiv:1802.03426.\n"
-   "@see: igraph.layout_umap_compute_weights()\n\n"},
+   "@see: igraph.umap_compute_weights()\n\n"},
 
   ////////////////////////////
   // VISITOR-LIKE FUNCTIONS //

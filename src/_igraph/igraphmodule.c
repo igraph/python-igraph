@@ -826,16 +826,10 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"umap_compute_weights", (PyCFunction)igraphmodule_umap_compute_weights,
    METH_VARARGS | METH_KEYWORDS,
-   "layout_umap_compute_weights(graph, dist)\n"
-   "--\n\n"
-   "@param graph: directed graph to compute weights for.\n"
-   "@param dist: distances associated with the graph edges.\n"
-   "@return: Symmetrized weights associated with each edge. If the distance\n"
-   "  graph has both directed edges between a pair of vertices, one of the\n"
-   "  returned weights will be set to zero.\n\n"
-   "Compute undirected UMAP weights from directed distance graph.\n\n"
+   "umap_compute_weights(graph, dist)\n--\n\n"
+   "Compute undirected UMAP weights from directed distance graph.\n"
    "UMAP is a layout algorithm that usually takes as input a directed\n"
-   "distance graph, e.g. a k nearest neighbor graph based on Euclidean\n"
+   "distance graph, for instance a k nearest neighbor graph based on Euclidean\n"
    "distance between points in a vector space. The graph is directed\n"
    "because vertex v1 might consider vertex v2 a close neighbor, but v2\n"
    "itself might have many neighbors that are closer than v1.\n"
@@ -850,8 +844,13 @@ static PyMethodDef igraphmodule_methods[] =
    "to zero whenever edges in opposite directions are found in the input\n"
    "distance graph. You can pipe the output of this function directly into\n"
    "Graph.layout_umap() as follows:\n"
-   "C{weights = igraph.layout_umap_compute_weights(graph, dist)}\n"
+   "C{weights = igraph.umap_compute_weights(graph, dist)}\n"
    "C{layout = graph.layout_umap(weights=weights)}\n\n"
+   "@param graph: directed graph to compute weights for.\n"
+   "@param dist: distances associated with the graph edges.\n"
+   "@return: Symmetrized weights associated with each edge. If the distance\n"
+   "  graph has both directed edges between a pair of vertices, one of the\n"
+   "  returned weights will be set to zero.\n\n"
    "@see: Graph.layout_umap()\n"
   },
   {"set_progress_handler", igraphmodule_set_progress_handler, METH_O,

@@ -2,7 +2,7 @@ import random
 import unittest
 
 
-from igraph import Graph, InternalError, plot, VertexClustering, config
+from igraph import Graph, InternalError, plot, VertexClustering, config, Layout
 
 from ...utils import overridden_configuration
 
@@ -15,6 +15,7 @@ except ImportError:
 
 try:
     import matplotlib as mpl
+
     mpl.use("agg")
     import matplotlib.pyplot as plt
 except ImportError:
@@ -47,6 +48,14 @@ class GraphTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         plot(g, target=ax, layout=self.layout_small_ring)
 
+    @image_comparison(baseline_images=["graph_layout_attribute"], remove_text=True)
+    def test_layout_attribute(self):
+        plt.close("all")
+        g = Graph.Ring(5)
+        g["layout"] = Layout([(x, x) for x in range(g.vcount())])
+        fig, ax = plt.subplots()
+        plot(g, target=ax)
+
     @image_comparison(baseline_images=["graph_directed"], remove_text=True)
     def test_directed(self):
         plt.close("all")
@@ -68,17 +77,22 @@ class GraphTestRunner(unittest.TestCase):
         plt.close("all")
         g = Graph.Ring(5, directed=True)
         fig, ax = plt.subplots()
-        plot(g, target=ax, mark_groups=True, vertex_shape="s",
-             layout=self.layout_small_ring)
+        plot(
+            g,
+            target=ax,
+            mark_groups=True,
+            vertex_shape="s",
+            layout=self.layout_small_ring,
+        )
 
     @image_comparison(baseline_images=["graph_edit_children"], remove_text=True)
     def test_mark_groups_squares(self):
         plt.close("all")
         g = Graph.Ring(5)
         fig, ax = plt.subplots()
-        plot(g, target=ax, vertex_shape="o",
-             layout=self.layout_small_ring)
-        dot = ax.get_children()[0]
+        plot(g, target=ax, vertex_shape="o", layout=self.layout_small_ring)
+        graph_artist = ax.get_children()[0]
+        dot = graph_artist.get_vertices()[0]
         dot.set_facecolor("blue")
         dot.radius *= 0.5
 
@@ -86,7 +100,7 @@ class GraphTestRunner(unittest.TestCase):
     def test_gh_587(self):
         plt.close("all")
         g = Graph.Ring(5)
-        with overridden_configuration('plotting.backend', 'matplotlib'):
+        with overridden_configuration("plotting.backend", "matplotlib"):
             plot(g, target="graph_basic.png", layout=self.layout_small_ring)
 
 
@@ -168,8 +182,7 @@ class ClusteringTestRunner(unittest.TestCase):
         g = Graph.Ring(5, directed=True)
         clu = VertexClustering(g, [0] * 5)
         fig, ax = plt.subplots()
-        plot(clu, target=ax, mark_groups=True,
-             layout=self.layout_small_ring)
+        plot(clu, target=ax, mark_groups=True, layout=self.layout_small_ring)
 
     @image_comparison(baseline_images=["clustering_directed_large"], remove_text=True)
     def test_clustering_directed_large(self):

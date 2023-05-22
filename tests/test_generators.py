@@ -129,6 +129,24 @@ class GeneratorTests(unittest.TestCase):
 
         self.assertRaises(ValueError, Graph.Full_Citation, -2)
 
+    def testHexagonalLattice(self):
+        el = [
+            (0, 1), (0, 6), (1, 2), (2, 3), (2, 8), (3, 4), (4, 10),
+            (5, 6), (5, 11), (6, 7), (7, 8), (7, 13), (8, 9), (9, 10),
+            (9, 15), (11, 12), (12, 13), (13, 14), (14, 15)
+        ]
+        g = Graph.Hexagonal_Lattice([2, 2])
+        self.assertEqual(sorted(g.get_edgelist()), el)
+
+        g = Graph.Hexagonal_Lattice([2, 2], directed=True, mutual=False)
+        self.assertEqual(sorted(g.get_edgelist()), el)
+
+        g = Graph.Hexagonal_Lattice([2, 2], directed=True, mutual=True)
+        self.assertEqual(
+            sorted(g.get_edgelist()),
+            sorted(el + [(y, x) for x, y in el])
+        )
+
     def testLCF(self):
         g1 = Graph.LCF(12, (5, -5), 6)
         g2 = Graph.Famous("Franklin")
@@ -346,6 +364,23 @@ class GeneratorTests(unittest.TestCase):
         pref_matrix[0][1] = 0.7
         self.assertRaises(InternalError, Graph.SBM, 60, pref_matrix, types)
 
+    def testTriangularLattice(self):
+        g = Graph.Triangular_Lattice([2, 2])
+        self.assertEqual(
+            sorted(g.get_edgelist()), [(0, 1), (0, 2), (0, 3), (1, 3), (2, 3)]
+        )
+
+        g = Graph.Triangular_Lattice([2, 2], directed=True, mutual=False)
+        self.assertEqual(
+            sorted(g.get_edgelist()), [(0, 1), (0, 2), (0, 3), (1, 3), (2, 3)]
+        )
+
+        g = Graph.Triangular_Lattice([2, 2], directed=True, mutual=True)
+        self.assertEqual(
+            sorted(g.get_edgelist()),
+            [(0, 1), (0, 2), (0, 3), (1, 0), (1, 3), (2, 0), (2, 3), (3, 0), (3, 1), (3, 2)]
+        )
+
     @unittest.skipIf(np is None, "test case depends on NumPy")
     def testAdjacencyNumPy(self):
         mat = np.array(
@@ -362,10 +397,94 @@ class GeneratorTests(unittest.TestCase):
         el = g.get_edgelist()
         self.assertTrue(el == [(0, 1), (2, 2), (2, 2)])
 
+        # ADJ MAX
+        g = Graph.Adjacency(mat, mode="max")
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 3), (2, 2), (2, 2)])
+
         # ADJ LOWER
         g = Graph.Adjacency(mat, mode="lower")
         el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
         self.assertTrue(el == [(0, 1), (2, 2), (2, 2), (1, 3)])
+
+        # ADJ UPPER
+        g = Graph.Adjacency(mat, mode="upper")
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2), (2, 2), (2, 2)])
+
+    @unittest.skipIf(np is None, "test case depends on NumPy")
+    def testAdjacencyNumPyLoopHandling(self):
+        mat = np.array(
+            [[0, 1, 1, 0], [1, 0, 0, 0], [0, 0, 2, 0], [0, 1, 0, 0]],
+        )
+
+        # ADJ_DIRECTED (default)
+        g = Graph.Adjacency(mat)
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (2, 2), (2, 2), (3, 1)])
+
+        # ADJ MIN
+        g = Graph.Adjacency(mat, mode="min", loops="twice")
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (2, 2)])
+
+        # ADJ MAX
+        g = Graph.Adjacency(mat, mode="max", loops="twice")
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 3), (2, 2)])
+
+        # ADJ LOWER
+        g = Graph.Adjacency(mat, mode="lower", loops="twice")
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (2, 2), (1, 3)])
+
+        # ADJ UPPER
+        g = Graph.Adjacency(mat, mode="upper", loops="twice")
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2), (2, 2)])
+
+        # ADJ_DIRECTED (default)
+        g = Graph.Adjacency(mat, loops=False)
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (3, 1)])
+
+        # ADJ MIN
+        g = Graph.Adjacency(mat, mode="min", loops=False)
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1)])
+
+        # ADJ MAX
+        g = Graph.Adjacency(mat, mode="max", loops=False)
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 3)])
+
+        # ADJ LOWER
+        g = Graph.Adjacency(mat, mode="lower", loops=False)
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (1, 3)])
+
+        # ADJ UPPER
+        g = Graph.Adjacency(mat, mode="upper", loops=False)
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2)])
 
     @unittest.skipIf(
         (sparse is None) or (np is None), "test case depends on NumPy/SciPy"
@@ -389,12 +508,90 @@ class GeneratorTests(unittest.TestCase):
         self.assertEqual(4, g.vcount())
         self.assertTrue(el == [(0, 1), (2, 2), (2, 2)])
 
+        # ADJ MAX
+        g = Graph.Adjacency(mat, mode="max")
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2), (2, 2), (2, 2), (1, 3)])
+
         # ADJ LOWER
         g = Graph.Adjacency(mat, mode="lower")
         el = g.get_edgelist()
         self.assertFalse(g.is_directed())
         self.assertEqual(4, g.vcount())
         self.assertTrue(el == [(0, 1), (2, 2), (2, 2), (1, 3)])
+
+        # ADJ UPPER
+        g = Graph.Adjacency(mat, mode="upper")
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2), (2, 2), (2, 2)])
+
+    @unittest.skipIf(
+        (sparse is None) or (np is None), "test case depends on NumPy/SciPy"
+    )
+    def testSparseAdjacencyLoopHandling(self):
+        mat = sparse.coo_matrix(
+            [[0, 1, 1, 0], [1, 0, 0, 0], [0, 0, 2, 0], [0, 1, 0, 0]],
+        )
+
+        # ADJ_DIRECTED (default)
+        g = Graph.Adjacency(mat, loops=False)
+        el = g.get_edgelist()
+        self.assertTrue(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (3, 1)])
+
+        # ADJ MIN
+        g = Graph.Adjacency(mat, mode="min", loops=False)
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1)])
+
+        # ADJ LOWER
+        g = Graph.Adjacency(mat, mode="lower", loops=False)
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (1, 3)])
+
+        # ADJ_DIRECTED (default)
+        g = Graph.Adjacency(mat, loops="twice")
+        el = g.get_edgelist()
+        self.assertTrue(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (2, 2), (3, 1)])
+
+        # ADJ MAX
+        g = Graph.Adjacency(mat, mode="max", loops="twice")
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2), (2, 2), (1, 3)])
+
+        # ADJ MIN
+        g = Graph.Adjacency(mat, mode="min", loops="twice")
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (2, 2)])
+
+        # ADJ LOWER
+        g = Graph.Adjacency(mat, mode="lower", loops="twice")
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (2, 2), (1, 3)])
+
+        # ADJ UPPER
+        g = Graph.Adjacency(mat, mode="upper", loops="twice")
+        el = g.get_edgelist()
+        self.assertFalse(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2), (2, 2)])
 
     def testWeightedAdjacency(self):
         mat = [[0, 1, 2, 0], [2, 0, 0, 0], [0, 0, 2.5, 0], [0, 1, 0, 0]]
@@ -413,6 +610,11 @@ class GeneratorTests(unittest.TestCase):
         el = g.get_edgelist()
         self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (3, 1)])
         self.assertTrue(g.es["w0"] == [1, 2, 2, 1])
+
+        g = Graph.Weighted_Adjacency(mat, attr="w0", loops="twice")
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (2, 2), (3, 1)])
+        self.assertTrue(g.es["w0"] == [1, 2, 2, 1.25, 1])
 
     @unittest.skipIf(np is None, "test case depends on NumPy")
     def testWeightedAdjacencyNumPy(self):
@@ -435,10 +637,15 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (3, 1)])
         self.assertTrue(g.es["w0"] == [1, 2, 2, 1])
 
+        g = Graph.Weighted_Adjacency(mat, attr="w0", loops="twice")
+        el = g.get_edgelist()
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (2, 2), (3, 1)])
+        self.assertTrue(g.es["w0"] == [1, 2, 2, 1.25, 1])
+
     @unittest.skipIf(
         (sparse is None) or (np is None), "test case depends on NumPy/SciPy"
     )
-    def testSparseWeighedAdjacency(self):
+    def testSparseWeightedAdjacency(self):
         mat = sparse.coo_matrix(
             [[0, 1, 2, 0], [2, 0, 0, 0], [0, 0, 2.5, 0], [0, 1, 0, 0]]
         )
@@ -470,6 +677,13 @@ class GeneratorTests(unittest.TestCase):
         self.assertEqual(4, g.vcount())
         self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (3, 1)])
         self.assertTrue(g.es["w0"] == [1, 2, 2, 1])
+
+        g = Graph.Weighted_Adjacency(mat, attr="w0", loops="twice")
+        el = g.get_edgelist()
+        self.assertTrue(g.is_directed())
+        self.assertEqual(4, g.vcount())
+        self.assertTrue(el == [(0, 1), (0, 2), (1, 0), (2, 2), (3, 1)])
+        self.assertTrue(g.es["w0"] == [1, 2, 2, 1.25, 1])
 
     @unittest.skipIf((np is None) or (pd is None), "test case depends on NumPy/Pandas")
     def testDataFrame(self):

@@ -22,6 +22,7 @@ from pathlib import Path
 # Check if we are inside readthedocs, the conf is quite different there
 is_inside_rtd = os.getenv("READTHEDOCS", "") == "True"
 rtd_version = os.getenv("READTHEDOCS_VERSION", "")
+rtd_version_type = os.getenv("READTHEDOCS_VERSION_TYPE", "unknown")
 
 if not is_inside_rtd:
     import sphinxbootstrap4theme
@@ -42,7 +43,7 @@ def get_igraphdir():
 
 def get_igraph_version():
     '''Get igraph version'''
-    if rtd_version != '':
+    if rtd_version and rtd_version_type == "tag":
         return rtd_version
 
     version_file = get_igraphdir() / 'version.py'
@@ -261,18 +262,19 @@ pydoctor_args = [
     '--html-output=' + get_pydoctor_html_outputdir(pydoctor_url_path),
     #'--html-viewsource-base=https://github.com/igraph/python-igraph/tree/default',
     '--project-base-dir=' + _igraph_dir,
-    ]
+    '--template-dir=' + get_root_dir() + '/doc/source/_pydoctor_templates'
+]
 
 # Using --no-sidebar option to skip the sidebar because the pydoctor output is
 # integrated in a smaller div with a custom CSS.
 if not is_inside_rtd:
     pydoctor_args.extend([
         '--no-sidebar',
-        ])
+    ])
 else:
     pydoctor_args.extend([
         '--theme=readthedocs',
-        ])
+    ])
 pydoctor_args.append(_igraph_dir)
 
 # RTD needs no postprocessing for pydoctor, while Jekyll does

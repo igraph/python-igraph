@@ -64,40 +64,6 @@ def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10)
     )
 
 
-def _community_leading_eigenvector_naive(graph, clusters=None, return_merges=False):
-    """Naive implementation of Newman's eigenvector community structure detection.
-
-    This function splits the network into two components
-    according to the leading eigenvector of the modularity matrix and
-    then recursively takes the given number of steps by splitting the
-    communities as individual networks. This is not the correct way,
-    however, see the reference for explanation. Consider using the
-    correct L{Graph.community_leading_eigenvector} method instead.
-
-    @param clusters: the desired number of communities. If C{None}, the
-      algorithm tries to do as many splits as possible. Note that the
-      algorithm won't split a community further if the signs of the leading
-      eigenvector are all the same, so the actual number of discovered
-      communities can be less than the desired one.
-    @param return_merges: whether the returned object should be a
-      dendrogram instead of a single clustering.
-    @return: an appropriate L{VertexClustering} or L{VertexDendrogram}
-      object.
-
-    @newfield ref: Reference
-    @ref: MEJ Newman: Finding community structure in networks using the
-    eigenvectors of matrices, arXiv:physics/0605087"""
-    if clusters is None:
-        clusters = -1
-    cl, merges, q = GraphBase.community_leading_eigenvector_naive(
-        graph, clusters, return_merges
-    )
-    if merges is None:
-        return VertexClustering(graph, cl, modularity=q)
-    else:
-        return VertexDendrogram(graph, merges, safemax(cl) + 1)
-
-
 def _community_leading_eigenvector(
     graph, clusters=None, weights=None, arpack_options=None
 ):
@@ -437,7 +403,7 @@ def _community_leiden(
       Model (CPM) or modularity. Must be either C{"CPM"} or C{"modularity"}.
     @param weights: edge weights to be used. Can be a sequence or
       iterable or even an edge attribute name.
-    @param resolution: the resolution parameter to use. Higher resolutions 
+    @param resolution: the resolution parameter to use. Higher resolutions
       lead to more smaller communities, while lower resolutions lead to fewer
       larger communities.
     @param beta: parameter affecting the randomness in the Leiden
@@ -454,7 +420,9 @@ def _community_leiden(
       If this is not provided, it will be automatically determined on the
       basis of whether you want to use CPM or modularity. If you do provide
       this, please make sure that you understand what you are doing.
-    @return: an appropriate L{VertexClustering} object.
+    @return: an appropriate L{VertexClustering} object with an extra attribute
+      called C{quality} that stores the value of the internal quality function
+      optimized by the algorithm.
 
     @newfield ref: Reference
     @ref: Traag, V. A., Waltman, L., & van Eck, N. J. (2019). From Louvain
@@ -465,13 +433,16 @@ def _community_leiden(
         raise ValueError('objective_function must be "CPM" or "modularity".')
 
     if "resolution_parameter" in kwds:
-        deprecated("resolution_parameter keyword argument is deprecated, use resolution=... instead")
+        deprecated(
+            "resolution_parameter keyword argument is deprecated, use "
+            "resolution=... instead"
+        )
         resolution = kwds.pop("resolution_parameter")
 
     if kwds:
         raise TypeError('unexpected keyword argument')
 
-    membership = GraphBase.community_leiden(
+    membership, quality = GraphBase.community_leiden(
         graph,
         edge_weights=weights,
         node_weights=node_weights,
@@ -482,11 +453,15 @@ def _community_leiden(
         n_iterations=n_iterations,
     )
 
+    params = {"quality": quality}
+
+    modularity_params = {"resolution": resolution}
     if weights is not None:
-        modularity_params = dict(weights=weights)
-    else:
-        modularity_params = {}
-    return VertexClustering(graph, membership, modularity_params=modularity_params)
+        modularity_params["weights"] = weights
+
+    return VertexClustering(
+        graph, membership, params=params, modularity_params=modularity_params
+    )
 
 
 def _modularity(self, membership, weights=None, resolution=1, directed=True):
@@ -528,9 +503,11 @@ def _modularity(self, membership, weights=None, resolution=1, directed=True):
     if isinstance(membership, VertexClustering):
         if membership.graph != self:
             raise ValueError("clustering object belongs to another graph")
-        return GraphBase.modularity(self, membership.membership, weights)
+        return GraphBase.modularity(
+            self, membership.membership, weights, resolution, directed
+        )
     else:
-        return GraphBase.modularity(self, membership, weights)
+        return GraphBase.modularity(self, membership, weights, resolution, directed)
 
 
 def _optimal_cluster_count_from_merges_and_modularity(

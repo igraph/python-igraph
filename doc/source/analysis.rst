@@ -348,7 +348,6 @@ Clustering
 - :meth:`Graph.community_infomap`
 - :meth:`Graph.community_label_propagation`
 - :meth:`Graph.community_leading_eigenvector`
-- :meth:`Graph.community_leading_eigenvector_naive`
 - :meth:`Graph.community_leiden`
 - :meth:`Graph.community_multilevel` (a version of Louvain)
 - :meth:`Graph.community_optimal_modularity` (exact solution, < 100 vertices)

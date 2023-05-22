@@ -3264,6 +3264,68 @@ int igraphmodule_PyObject_to_optional_vid(PyObject *o, igraph_integer_t *vid, ig
 
 /**
  * \ingroup python_interface_conversion
+ * \brief Tries to interpret a Python object as a list of vertex IDs.
+ *
+ * \param o      the Python object
+ * \param result the vertex IDs will be stored here
+ * \param graph  the graph that will be used to interpret vertex names
+ *               if a string was given in o. It may also be a null pointer
+ *               if we don't need name lookups.
+ * \return 0 if everything was OK, 1 otherwise
+ */
+int igraphmodule_PyObject_to_vid_list(PyObject* o, igraph_vector_int_t* result, igraph_t* graph) {
+    PyObject *iterator;
+    PyObject *item;
+    igraph_integer_t vid;
+
+    if (PyBaseString_Check(o)) {
+      /* exclude strings; they are iterable but cannot yield meaningful vertex IDs */
+      PyErr_SetString(PyExc_TypeError, "cannot convert string to a list of vertex IDs");
+      return 1;
+    }
+
+    iterator = PyObject_GetIter(o);
+    if (iterator == NULL) {
+      PyErr_SetString(PyExc_TypeError, "conversion to vertex sequence failed");
+      return 1;
+    }
+
+    if (igraph_vector_int_init(result, 0)) {
+      Py_DECREF(iterator);
+      igraphmodule_handle_igraph_error();
+      return 1;
+    }
+
+    while ((item = PyIter_Next(iterator))) {
+      vid = -1;
+
+      if (igraphmodule_PyObject_to_vid(item, &vid, graph)) {
+        Py_DECREF(item);
+        break;
+      }
+
+      Py_DECREF(item);
+
+      if (igraph_vector_int_push_back(result, vid)) {
+        igraphmodule_handle_igraph_error();
+        /* no need to destroy 'result' here; will be done outside the loop due
+         * to PyErr_Occurred */
+        break;
+      }
+    }
+
+    Py_DECREF(iterator);
+
+    if (PyErr_Occurred()) {
+      igraph_vector_int_destroy(result);
+      return 1;
+    }
+
+    return 0;
+}
+
+/**
+ * \ingroup python_interface_conversion
  * \brief Tries to interpret a Python object as a vertex selector
  *
  * \param o      the Python object
@@ -3346,9 +3408,6 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
     /* Object cannot be converted to a single vertex ID,
      * assume it is a sequence or iterable */
 
-    PyObject *iterator;
-    PyObject *item;
-
     if (PyBaseString_Check(o)) {
       /* Special case: strings and unicode objects are sequences, but they
        * will not yield valid vertex IDs */
@@ -3358,40 +3417,7 @@ int igraphmodule_PyObject_to_vs_t(PyObject *o, igraph_vs_t *vs,
     /* Clear the exception set by igraphmodule_PyObject_to_vid */
     PyErr_Clear();
 
-    iterator = PyObject_GetIter(o);
-    if (iterator == NULL) {
-      PyErr_SetString(PyExc_TypeError, "conversion to vertex sequence failed");
-      return 1;
-    }
-
-    if (igraph_vector_int_init(&vector, 0)) {
-      Py_DECREF(iterator);
-      igraphmodule_handle_igraph_error();
-      return 1;
-    }
-
-    while ((item = PyIter_Next(iterator))) {
-      vid = -1;
-
-      if (igraphmodule_PyObject_to_vid(item, &vid, graph)) {
-        Py_DECREF(item);
-        break;
-      }
-
-      Py_DECREF(item);
-
-      if (igraph_vector_int_push_back(&vector, vid)) {
-        igraphmodule_handle_igraph_error();
-        /* no need to destroy 'vector' here; will be done outside the loop due
-         * to PyErr_Occurred */
-        break;
-      }
-    }
-
-    Py_DECREF(iterator);
-
-    if (PyErr_Occurred()) {
-      igraph_vector_int_destroy(&vector);
+    if (igraphmodule_PyObject_to_vid_list(o, &vector, graph)) {
       return 1;
     }
 
@@ -3521,7 +3547,6 @@ int igraphmodule_PyObject_to_eid(PyObject *o, igraph_integer_t *eid, igraph_t *g
 
   return 0;
 }
-
 
 /**
  * \ingroup python_interface_conversion

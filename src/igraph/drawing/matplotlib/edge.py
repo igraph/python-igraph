@@ -51,11 +51,12 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             width = 2.0
             background = None
             align_label = False
+            zorder = 1
 
         return VisualEdgeBuilder
 
     def draw_directed_edge(self, edge, src_vertex, dest_vertex):
-        if src_vertex == dest_vertex:  # TODO
+        if src_vertex == dest_vertex:
             return self.draw_loop_edge(edge, src_vertex)
 
         ax = self.context
@@ -163,7 +164,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             path["codes"].append("LINETO")
 
         # Draw the edge
-        stroke = mpl.patches.PathPatch(
+        arrowshaft = mpl.patches.PathPatch(
             mpl.path.Path(
                 path["vertices"],
                 codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
@@ -171,8 +172,10 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             edgecolor=edge.color,
             facecolor="none",
             linewidth=edge.width,
+            zorder=edge.zorder,
+            transform=ax.transData,
+            clip_on=True,
         )
-        ax.add_patch(stroke)
 
         # Draw the arrow head
         arrowhead = mpl.patches.Polygon(
@@ -184,8 +187,11 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             closed=True,
             facecolor=edge.color,
             edgecolor="none",
+            zorder=edge.zorder,
+            transform=ax.transData,
+            clip_on=True,
         )
-        ax.add_patch(arrowhead)
+        return [arrowshaft, arrowhead]
 
     def draw_loop_edge(self, edge, vertex):
         """Draws a loop edge.
@@ -201,7 +207,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
         radius = vertex.size * 1.5
         center_x = vertex.position[0] + cos(pi / 4) * radius / 2.0
         center_y = vertex.position[1] - sin(pi / 4) * radius / 2.0
-        stroke = mpl.patches.Arc(
+        art = mpl.patches.Arc(
             (center_x, center_y),
             radius / 2.0,
             radius / 2.0,
@@ -210,9 +216,11 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             linewidth=edge.width,
             facecolor="none",
             edgecolor=edge.color,
+            zorder=edge.zorder,
+            transform=ax.transData,
+            clip_on=True,
         )
-        # FIXME: make a PathCollection??
-        ax.add_patch(stroke)
+        return [art]
 
     def draw_undirected_edge(self, edge, src_vertex, dest_vertex):
         """Draws an undirected edge.
@@ -247,7 +255,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             path["vertices"].append(dest_vertex.position)
             path["codes"].append("LINETO")
 
-        stroke = mpl.patches.PathPatch(
+        art = mpl.patches.PathPatch(
             mpl.path.Path(
                 path["vertices"],
                 codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
@@ -255,6 +263,8 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             edgecolor=edge.color,
             facecolor="none",
             linewidth=edge.width,
+            zorder=edge.zorder,
+            transform=ax.transData,
+            clip_on=True,
         )
-        # FIXME: make a PathCollection??
-        ax.add_artist(stroke)
+        return [art]
