@@ -166,6 +166,34 @@ jobs:
         with:
           path: ./wheelhouse/*.whl
 
+  build_wheel_wasm:
+    name: Build wheels for WebAssembly
+    runs-on: ubuntu-20.04
+    
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.10.2'
+
+      - uses: mymindstorm/setup-emsdk@v11
+        with:
+          version: '3.1.14'
+
+      - name: Build wheel
+        run: |
+          pip install pyodide-build==0.21.0
+          pyodide build
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./dist/*.whl
+
   build_wheel_win:
     name: Build wheels on Windows (${{ matrix.cmake_arch }})
     runs-on: windows-2019
