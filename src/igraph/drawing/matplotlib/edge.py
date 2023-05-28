@@ -1,6 +1,6 @@
 """Drawers for various edge styles in Matplotlib graph plots."""
 
-from math import atan2, cos, pi, sin
+from math import atan2, cos, pi, sin, sqrt
 from copy import deepcopy
 
 from igraph.drawing.baseclasses import AbstractEdgeDrawer
@@ -10,11 +10,16 @@ from igraph.drawing.utils import (
     euclidean_distance,
     get_bezier_control_points_for_curved_edge,
     intersect_bezier_curve_and_circle,
+    FakeModule,
 )
 
 __all__ = ("MatplotlibEdgeDrawer",)
 
 mpl, plt = find_matplotlib()
+try:
+    PatchCollection = mpl.collections.PatchCollection
+except AttributeError:
+    PatchCollection = FakeModule
 
 
 class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
@@ -168,8 +173,16 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             path["vertices"].append([x_arrow_mid, y_arrow_mid])
             path["codes"].append("LINETO")
 
+        # Add arrowhead in the path, the exact positions are recomputed within
+        # EdgeCollection before each draw so they don't matter here. The
+        # path for an arrowhead is: headbase (current), headleft, tip,
+        # headright, headbase, so we need to add 4 (degenerate) vertices.
+        # Assuming the arrowhead uses straight lines, they are all LINETO
+        path["vertices"].extend([path["vertices"][-1] for x in range(4)])
+        path["codes"].extend(["LINETO" for x in range(4)])
+
         # Draw the edge
-        arrowshaft = mpl.patches.PathPatch(
+        arrowpatch = mpl.patches.PathPatch(
             mpl.path.Path(
                 path["vertices"],
                 codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
@@ -182,21 +195,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             clip_on=True,
         )
 
-        # Draw the arrow head
-        arrowhead = mpl.patches.Polygon(
-            [
-                [x2, y2],
-                aux_points[0],
-                aux_points[1],
-            ],
-            closed=True,
-            facecolor=edge.color,
-            edgecolor="none",
-            zorder=edge.zorder,
-            transform=ax.transData,
-            clip_on=True,
-        )
-        return [arrowshaft, arrowhead]
+        return arrowpatch
 
     def draw_loop_edge(self, edge, vertex):
         """Draws a loop edge.
@@ -225,7 +224,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             transform=ax.transData,
             clip_on=True,
         )
-        return [art]
+        return art
 
     def draw_undirected_edge(self, edge, src_vertex, dest_vertex):
         """Draws an undirected edge.
@@ -272,46 +271,81 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             transform=ax.transData,
             clip_on=True,
         )
-        return [art]
+        return art
 
 
-class EdgeCollection(mpl.collections.LineCollection):
+class EdgeCollection(PatchCollection):
     def __init__(self, *args, **kwargs):
-        self._vertex_bboxes = kwargs.pop("vertex_bboxes")
-        ret = super().__init__(*args, **kwargs)
+        kwargs["match_original"] = True
+        self._vertex_sizes = kwargs.pop("vertex_sizes", None)
+        self._directed = kwargs.pop("directed", False)
+        self._arrow_size = kwargs.pop("arrow_sizes", 0)
+        self._arrow_width = kwargs.pop("arrow_widths", 0)
+        super().__init__(*args, **kwargs)
         self._paths_original = deepcopy(self._paths)
-        return ret
-
 
     def _update_path_from_vertices(self):
-        # Get actual coordinates of the vertex bbox edges
-        for p, p_orig, bboxes in zip(self._paths, self._paths_original, self._vertex_bboxes):
-            coords = p_orig.vertices
+        if self._vertex_sizes is None:
+            return
 
-            # Start vertex
-            if coords[0, 0] == coords[1, 0]:
-                bbox_offsetx = 0
-                bbox_offsety = bboxes[0].extents[1 + 2 * int(coords[1, 1] > coords[0, 1])]
-            else:
-                ratio = (coords[1, 1] - coords[0, 1]) / (coords[1, 0] - coords[0, 0])
-                bbox_offsetx = bboxes[0].extents[2 * int(coords[1, 0] > coords[0, 0])]
-                bbox_offsety = bboxes[1].extents[1 + 2 * int(coords[1, 1] > coords[0, 1])] * abs(ratio)
-            voff = np.array([bbox_offsetx, bbox_offsety])
-            start = ax.transData.inverted().transform(ax.transData.transform(coords[0]) + voff)
-            p.vertices[0] = start
+        paths_original = self._paths_original
+        vertex_sizes = self._vertex_sizes
+        trans = self.axes.transData.transform
+        trans_inv = ax.transData.inverted().transform
 
-            # End vertex
-            if coords[-2, 0] == coords[-1, 0]:
-                bbox_offsetx = 0
-                bbox_offsety = bboxes[1].extents[1 + 2 * int(coords[-2, 1] > coords[-1, 1])]
+        # Get actual coordinates of the vertex border (rough)
+        for i, (path_orig, sizes) in enumerate(zip(paths_original, vertex_sizes)):
+            self._paths[i] = path = deepcopy(path_orig)
+            coords = path_orig.vertices
+            coordst = trans(coords)
+            self._update_path_edge_start(path, coords, coordst, sizes[0], trans, trans_inv)
+            if self._directed:
+                self._update_path_edge_end_directed(
+                        path, coords, coordst, sizes[1], trans, trans_inv,
+                        self._arrow_sizes[i], self._arrow_widths[i],
+                        )
             else:
-                ratio = (coords[-1, 1] - coords[-2, 1]) / (coords[-1, 0] - coords[-2, 0])
-                bbox_offsetx = bboxes[0].extents[2 * int(coords[-2, 0] > coords[-1, 0])]
-                bbox_offsety = bboxes[1].extents[1 + 2 * int(coords[-2, 1] > coords[-1, 1])] * abs(ratio)
-            voff = np.array([bbox_offsetx, bbox_offsety])
-            end = ax.transData.inverted().transform(ax.transData.transform(coords[-1]) + voff)
-            p.vertices[-1] = end
-            
+                self._update_path_edge_end_undirected(path, coords, coordst, sizes[1], trans, trans_inv)
+
+    def _update_path_edge_start(self, path, coords, coordst, size, trans, trans_inv):
+        theta = atan2(*((coordst[1] - coordst[0])[::-1]))
+        voff = 0 * coordst[0]
+        voff[:] = [cos(theta), sin(theta)]
+        voff *= size
+        start = trans_inv(trans(coords[0]) + voff)
+        path.vertices[0] = start
+
+    def _update_path_edge_end_undirected(
+            elf, path, coords, coordst, size, trans, trans_inv,
+            ):
+        theta = atan2(*((coordst[-2] - coordst[-1])[::-1]))
+        voff = 0 * coordst[0]
+        voff[:] = [cos(theta), sin(theta)]
+        voff *= size
+        end = trans_inv(trans(coords[-1]) + voff)
+        path.vertices[-1] = end
+
+    def _update_path_edge_end_directed(
+            self, path, coords, coordst, size, trans, trans_inv,
+            arrow_size, arrow_width):
+
+        def dist(a, b):
+            return sqrt(((a - b)**2).sum())
+
+        # The path for arrows is start-headmid-headleft-tip-headright-headmid
+        # So, tip is the 3rd-to-last and headmid the last
+        theta = atan2(*((coordst[-6] - coordst[-3])[::-1]))
+        voff_unity = 0 * coordst[0]
+        voff_unity[:] = [cos(theta), sin(theta)]
+        voff = voff_unity * size
+        voff_unity_90 = voff_unity @ [[0, 1], [-1, 0]]
+
+        tip = trans_inv(trans(coords[-3]) + voff)
+        headbase = trans_inv(trans(tip) + arrow_size * voff_unity)
+        headleft = trans_inv(trans(headbase) + 0.5 * arrow_width * voff_unity_90)
+        headright = trans_inv(trans(headbase) - 0.5 * arrow_width * voff_unity_90)
+        path.vertices[-5:] = [headbase, headleft, tip, headright, headbase]
+
     def draw(self, renderer):
         self._update_path_from_vertices()
         return super().draw(renderer)

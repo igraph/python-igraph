@@ -20,7 +20,7 @@ from igraph._igraph import convex_hull, VertexSeq
 from igraph.drawing.baseclasses import AbstractGraphDrawer
 from igraph.drawing.utils import Point, FakeModule
 
-from .edge import MatplotlibEdgeDrawer
+from .edge import MatplotlibEdgeDrawer, EdgeCollection
 from .polygon import MatplotlibPolygonDrawer
 from .utils import find_matplotlib
 from .vertex import MatplotlibVertexDrawer
@@ -550,11 +550,34 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         else:
             # Lines
             drawer_method = edge_drawer.draw_undirected_edge
+
+        vertex_sizes = []
+        edgepatches = []
+        arrow_sizes = []
+        arrow_widths = []
         for edge, visual_edge in edge_coord_iter:
-            src, dest = edge.tuple
-            src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
-            arts = drawer_method(visual_edge, src_vertex, dest_vertex)
-            self._edges.extend(arts)
+            edge_vertices = [vertex_builder[v] for v in edge.tuple]
+            edge_vertex_sizes = []
+            for visual_vertex in edge_vertices:
+                if visual_vertex.size is not None:
+                    edge_vertex_sizes.append(visual_vertex.size)
+                else:
+                    edge_vertex_sizes.append(
+                            max(visual_vertex.width, visual_vertex.height))
+            art = drawer_method(visual_edge, *edge_vertices)
+            edgepatches.append(art)
+            vertex_sizes.append(edge_vertex_sizes)
+            arrow_sizes.append(visual_edge.arrow_size)
+            arrow_widths.append(visual_edge.arrow_width)
+
+        edgecoll = EdgeCollection(
+            edgepatches,
+            vertex_sizes=vertex_sizes,
+            directed=directed,
+            arrow_sizes=arrow_sizes,
+            arrow_widths=arrow_widths,
+        )
+        self._edges.append(edgecoll)
 
     def _reprocess(self):
         """Prepare artist and children for the actual drawing.
