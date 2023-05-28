@@ -523,6 +523,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             patches,
             offsets=offsets,
             offset_transform=self.axes.transData,
+            match_original=True,
         )
         art.set_transform(IdentityTransform())
         self._vertices.append(art)
@@ -775,7 +776,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         ax.set_yticks([])
 
         # Set equal aspect to get actual circles
-        #ax.set_aspect(1)
+        ax.set_aspect(1)
 
         # Autoscale for x/y axis limits
         ax.autoscale_view()

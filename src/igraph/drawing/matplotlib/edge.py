@@ -46,8 +46,8 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             drawing"""
 
             _kwds_prefix = "edge_"
-            arrow_size = 10
-            arrow_width = 10
+            arrow_size = 15
+            arrow_width = 15
             color = ("#444", self.palette.get)
             curved = (0.0, self._curvature_to_float)
             label = None
@@ -142,35 +142,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             path["codes"].extend(["CURVE4"] * 3)
 
         else:
-            # Determine where the edge intersects the circumference of the
-            # vertex shape.
-            # FIXME
-            #x2, y2 = dest_vertex.shape.intersection_point(
-            #    x2, y2, x1, y1, dest_vertex.size
-            #)
-            x2, y2 = x_dest, y_dest
-
-            # Draw the arrowhead
-            angle = atan2(y_dest - y_src, x_dest - x_src)
-            arrow_size = 15.0 * edge.arrow_size
-            arrow_width = 10.0 / edge.arrow_width
-            aux_points = [
-                (
-                    x2 - arrow_size * cos(angle - pi / arrow_width),
-                    y2 - arrow_size * sin(angle - pi / arrow_width),
-                ),
-                (
-                    x2 - arrow_size * cos(angle + pi / arrow_width),
-                    y2 - arrow_size * sin(angle + pi / arrow_width),
-                ),
-            ]
-
-            # Midpoint of the base of the arrow triangle
-            x_arrow_mid, y_arrow_mid = (aux_points[0][0] + aux_points[1][0]) / 2.0, (
-                aux_points[0][1] + aux_points[1][1]
-            ) / 2.0
-            # Draw the line
-            path["vertices"].append([x_arrow_mid, y_arrow_mid])
+            path["vertices"].append(dest_vertex.position)
             path["codes"].append("LINETO")
 
         # Add arrowhead in the path, the exact positions are recomputed within
@@ -188,10 +160,9 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
                 codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
             ),
             edgecolor=edge.color,
-            facecolor="none",
+            facecolor=edge.color,
             linewidth=edge.width,
             zorder=edge.zorder,
-            transform=ax.transData,
             clip_on=True,
         )
 
@@ -221,7 +192,6 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             facecolor="none",
             edgecolor=edge.color,
             zorder=edge.zorder,
-            transform=ax.transData,
             clip_on=True,
         )
         return art
@@ -268,7 +238,6 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             facecolor="none",
             linewidth=edge.width,
             zorder=edge.zorder,
-            #transform=ax.transData,
             clip_on=True,
         )
         return art
@@ -313,7 +282,7 @@ class EdgeCollection(PatchCollection):
         theta = atan2(*((coordst[1] - coordst[0])[::-1]))
         voff = 0 * coordst[0]
         voff[:] = [cos(theta), sin(theta)]
-        voff *= size
+        voff *= size / 2
         start = trans_inv(trans(coords[0]) + voff)
         path.vertices[0] = start
 
@@ -323,7 +292,7 @@ class EdgeCollection(PatchCollection):
         theta = atan2(*((coordst[-2] - coordst[-1])[::-1]))
         voff = 0 * coordst[0]
         voff[:] = [cos(theta), sin(theta)]
-        voff *= size
+        voff *= size / 2
         end = trans_inv(trans(coords[-1]) + voff)
         path.vertices[-1] = end
 
@@ -335,7 +304,7 @@ class EdgeCollection(PatchCollection):
         theta = atan2(*((coordst[-6] - coordst[-3])[::-1]))
         voff_unity = 0 * coordst[0]
         voff_unity[:] = [cos(theta), sin(theta)]
-        voff = voff_unity * size
+        voff = voff_unity * size / 2
         voff_unity_90 = voff_unity @ [[0, 1], [-1, 0]]
 
         tip = trans_inv(trans(coords[-3]) + voff)
