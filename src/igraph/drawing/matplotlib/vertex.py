@@ -69,8 +69,8 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
 
         art = visual_vertex.shape.draw_path(
             ax,
-            0, #coords[0], # FIXME
-            0, #coords[1],
+            0,
+            0,
             width,
             height,
             facecolor=visual_vertex.color,

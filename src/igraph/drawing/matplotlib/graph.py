@@ -570,14 +570,15 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             arrow_sizes.append(visual_edge.arrow_size)
             arrow_widths.append(visual_edge.arrow_width)
 
-        edgecoll = EdgeCollection(
+        art = EdgeCollection(
             edgepatches,
             vertex_sizes=vertex_sizes,
             directed=directed,
             arrow_sizes=arrow_sizes,
             arrow_widths=arrow_widths,
+            transform=self.axes.transData,
         )
-        self._edges.append(edgecoll)
+        self._edges.append(art)
 
     def _reprocess(self):
         """Prepare artist and children for the actual drawing.
@@ -612,8 +613,8 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         self.edge_order = self._determine_edge_order(graph, kwds)
 
         self._draw_groups()
-        self._draw_edges()
         self._draw_vertices()
+        self._draw_edges()
         self._draw_vertex_labels()
         self._draw_edge_labels()
 

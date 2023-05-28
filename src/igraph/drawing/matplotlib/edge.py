@@ -46,8 +46,8 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             drawing"""
 
             _kwds_prefix = "edge_"
-            arrow_size = 0.007
-            arrow_width = 1.4
+            arrow_size = 10
+            arrow_width = 10
             color = ("#444", self.palette.get)
             curved = (0.0, self._curvature_to_float)
             label = None
@@ -268,7 +268,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             facecolor="none",
             linewidth=edge.width,
             zorder=edge.zorder,
-            transform=ax.transData,
+            #transform=ax.transData,
             clip_on=True,
         )
         return art
@@ -279,8 +279,8 @@ class EdgeCollection(PatchCollection):
         kwargs["match_original"] = True
         self._vertex_sizes = kwargs.pop("vertex_sizes", None)
         self._directed = kwargs.pop("directed", False)
-        self._arrow_size = kwargs.pop("arrow_sizes", 0)
-        self._arrow_width = kwargs.pop("arrow_widths", 0)
+        self._arrow_sizes = kwargs.pop("arrow_sizes", 0)
+        self._arrow_widths = kwargs.pop("arrow_widths", 0)
         super().__init__(*args, **kwargs)
         self._paths_original = deepcopy(self._paths)
 
@@ -291,7 +291,7 @@ class EdgeCollection(PatchCollection):
         paths_original = self._paths_original
         vertex_sizes = self._vertex_sizes
         trans = self.axes.transData.transform
-        trans_inv = ax.transData.inverted().transform
+        trans_inv = self.axes.transData.inverted().transform
 
         # Get actual coordinates of the vertex border (rough)
         for i, (path_orig, sizes) in enumerate(zip(paths_original, vertex_sizes)):
@@ -301,11 +301,13 @@ class EdgeCollection(PatchCollection):
             self._update_path_edge_start(path, coords, coordst, sizes[0], trans, trans_inv)
             if self._directed:
                 self._update_path_edge_end_directed(
-                        path, coords, coordst, sizes[1], trans, trans_inv,
-                        self._arrow_sizes[i], self._arrow_widths[i],
-                        )
+                    path, coords, coordst, sizes[1], trans, trans_inv,
+                    self._arrow_sizes[i], self._arrow_widths[i],
+                )
             else:
-                self._update_path_edge_end_undirected(path, coords, coordst, sizes[1], trans, trans_inv)
+                self._update_path_edge_end_undirected(
+                    path, coords, coordst, sizes[1], trans, trans_inv,
+                )
 
     def _update_path_edge_start(self, path, coords, coordst, size, trans, trans_inv):
         theta = atan2(*((coordst[1] - coordst[0])[::-1]))
@@ -317,7 +319,7 @@ class EdgeCollection(PatchCollection):
 
     def _update_path_edge_end_undirected(
             elf, path, coords, coordst, size, trans, trans_inv,
-            ):
+    ):
         theta = atan2(*((coordst[-2] - coordst[-1])[::-1]))
         voff = 0 * coordst[0]
         voff[:] = [cos(theta), sin(theta)]
@@ -328,10 +330,6 @@ class EdgeCollection(PatchCollection):
     def _update_path_edge_end_directed(
             self, path, coords, coordst, size, trans, trans_inv,
             arrow_size, arrow_width):
-
-        def dist(a, b):
-            return sqrt(((a - b)**2).sum())
-
         # The path for arrows is start-headmid-headleft-tip-headright-headmid
         # So, tip is the 3rd-to-last and headmid the last
         theta = atan2(*((coordst[-6] - coordst[-3])[::-1]))
