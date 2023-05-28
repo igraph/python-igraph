@@ -316,20 +316,18 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             else:
                 vertex_width = vertex.width
                 vertex_height = vertex.height
-            xtext = coords[0] + dist * vertex_width * np.cos(angle)
-            ytext = coords[1] + dist * vertex_height * np.sin(angle)
+            xtext = dist * 0.5 * vertex_width * np.cos(angle)
+            ytext = dist * 0.5 * vertex_height * np.sin(angle)
             xytext = (xtext, ytext)
-            textcoords = "data"
 
             art = mpl.text.Annotation(
                 vertex.label,
                 coords,
                 xytext=xytext,
-                textcoords=textcoords,
+                textcoords='offset points',
                 fontsize=label_size,
                 ha="center",
                 va="center",
-                transform=self.axes.transData,
                 clip_on=True,
                 zorder=3,
             )
