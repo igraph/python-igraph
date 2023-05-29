@@ -760,9 +760,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         ax.set_xticks([])
         ax.set_yticks([])
 
-        # Set equal aspect to get actual circles
-        ax.set_aspect(1)
-
         # Autoscale for x/y axis limits
         ax.autoscale_view()
 
