@@ -94,7 +94,6 @@ class GraphTestRunner(unittest.TestCase):
         graph_artist = ax.get_children()[0]
         dots = graph_artist.get_vertices()
         dots.set_facecolor("blue")
-        dots.radius *= 0.5
 
     @image_comparison(baseline_images=["graph_basic"], remove_text=True)
     def test_gh_587(self):

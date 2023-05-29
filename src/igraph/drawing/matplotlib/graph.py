@@ -258,15 +258,36 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             maxs = np.array([1, 1])
             return (mins, maxs)
 
-        # NOTE: Better than this would be to compute bounding boxes explicitely,
-        # e.g. for vertex labels. However, that needs to be done very carefully
-        # (e.g. see the note for mpl.artist.Artist.get_window_extent). We
-        # currently lack the knowledge to ensure that would work well, but
-        # that might change in the future.
+        # Use the layout as a base, and expand using bboxes from other artists
         mins = np.min(layout, axis=0).astype(float)
         maxs = np.max(layout, axis=0).astype(float)
-        # 8% padding, on each side
-        pad = (maxs - mins) * 0.08
+
+        # NOTE: unlike other Collections, the vertices are a vanilla class:
+        # PatchCollection with an offset transform using transData. Therefore,
+        # care should be taken if one wants to include it here
+        if self._vertices is not None:
+            trans = self.axes.transData.transform
+            trans_inv = self.axes.transData.inverted().transform
+            verts = self._vertices
+            for path, offset in zip(verts.get_paths(), verts._offsets):
+                bbox = path.get_extents()
+                mins = np.minimum(mins, trans_inv(bbox.min + trans(offset)))
+                maxs = np.maximum(maxs, trans_inv(bbox.max + trans(offset)))
+
+        if self._edges is not None:
+            for path in self._edges.get_paths():
+                bbox = path.get_extents()
+                mins = np.minimum(mins, bbox.min)
+                maxs = np.maximum(maxs, bbox.max)
+
+        if self._groups is not None:
+            for path in self._groups.get_paths():
+                bbox = path.get_extents()
+                mins = np.minimum(mins, bbox.min)
+                maxs = np.maximum(maxs, bbox.max)
+
+        # 5% padding, on each side
+        pad = (maxs - mins) * 0.05
         mins -= pad
         maxs += pad
 
