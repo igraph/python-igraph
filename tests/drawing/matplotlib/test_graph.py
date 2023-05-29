@@ -86,15 +86,15 @@ class GraphTestRunner(unittest.TestCase):
         )
 
     @image_comparison(baseline_images=["graph_edit_children"], remove_text=True)
-    def test_mark_groups_squares(self):
+    def test_edit_children(self):
         plt.close("all")
         g = Graph.Ring(5)
         fig, ax = plt.subplots()
         plot(g, target=ax, vertex_shape="o", layout=self.layout_small_ring)
         graph_artist = ax.get_children()[0]
-        dot = graph_artist.get_vertices()[0]
-        dot.set_facecolor("blue")
-        dot.radius *= 0.5
+        dots = graph_artist.get_vertices()
+        dots.set_facecolor("blue")
+        dots.radius *= 0.5
 
     @image_comparison(baseline_images=["graph_basic"], remove_text=True)
     def test_gh_587(self):
@@ -190,7 +190,15 @@ class ClusteringTestRunner(unittest.TestCase):
         g = Graph.Ring(50, directed=True)
         clu = VertexClustering(g, [0] * 3 + [1] * 17 + [2] * 30)
         fig, ax = plt.subplots()
-        plot(clu, layout=self.layout_large_ring, target=ax, mark_groups=True)
+        plot(
+            clu,
+            vertex_size=17,
+            edge_arrow_size=5,
+            edge_arrow_width=5,
+            layout=self.layout_large_ring,
+            target=ax,
+            mark_groups=True,
+        )
 
 
 def suite():

@@ -18,10 +18,10 @@ from functools import wraps, partial
 
 from igraph._igraph import convex_hull, VertexSeq
 from igraph.drawing.baseclasses import AbstractGraphDrawer
-from igraph.drawing.utils import Point, FakeModule
+from igraph.drawing.utils import FakeModule
 
 from .edge import MatplotlibEdgeDrawer, EdgeCollection
-from .polygon import MatplotlibPolygonDrawer
+from .polygon import HullCollection
 from .utils import find_matplotlib
 from .vertex import MatplotlibVertexDrawer
 
@@ -174,24 +174,24 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         self.stale = True
 
     def _clear_state(self):
-        self._vertices = []
-        self._edges = []
+        self._vertices = None
+        self._edges = None
         self._vertex_labels = []
         self._edge_labels = []
-        self._group_artists = []
+        self._groups = None
         self._legend_info = {}
 
     def get_children(self):
-        artists = sum(
-            [
-                self._group_artists,
-                self._edges,
-                self._vertices,
-                self._edge_labels,
-                self._vertex_labels,
-            ],
-            [],
-        )
+        artists = []
+        if self._groups is not None:
+            artists.append(self._groups)
+        # This way vertices are on top of edges, since they are drawn later
+        if self._edges is not None:
+            artists.append(self._edges)
+        if self._vertices is not None:
+            artists.append(self._vertices)
+        artists.extend(self._edge_labels)
+        artists.extend(self._vertex_labels)
         return tuple(artists)
 
     def _set_edge_curve(self, **kwds):
@@ -233,7 +233,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
 
     def get_groups(self):
         """Get group/cluster/cover artists."""
-        return self._group_artists
+        return self._groups
 
     def get_vertex_labels(self):
         """Get vertex label artists."""
@@ -256,25 +256,19 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         if len(layout) == 0:
             mins = np.array([0, 0])
             maxs = np.array([1, 1])
-        else:
-            mins = np.min(layout, axis=0).astype(float)
-            maxs = np.max(layout, axis=0).astype(float)
+            return (mins, maxs)
 
-            # 5% padding, on each side
-            pad = (maxs - mins) * 0.05
-            mins -= pad
-            maxs += pad
-
-            ## Pad by vertex size, to ensure they fit
-            #vertex_builder = self.vertex_builder
-            #if vertex_builder.size is not None:
-            #    mins -= vertex_builder.size * 1.1
-            #    maxs += vertex_builder.size * 1.1
-            #else:
-            #    mins[0] -= vertex_builder.width * 0.55
-            #    mins[1] -= vertex_builder.height * 0.55
-            #    maxs[0] += vertex_builder.width * 0.55
-            #    maxs[1] += vertex_builder.height * 0.55
+        # NOTE: Better than this would be to compute bounding boxes explicitely,
+        # e.g. for vertex labels. However, that needs to be done very carefully
+        # (e.g. see the note for mpl.artist.Artist.get_window_extent). We
+        # currently lack the knowledge to ensure that would work well, but
+        # that might change in the future.
+        mins = np.min(layout, axis=0).astype(float)
+        maxs = np.max(layout, axis=0).astype(float)
+        # 8% padding, on each side
+        pad = (maxs - mins) * 0.08
+        mins -= pad
+        maxs += pad
 
         return (mins, maxs)
 
@@ -396,14 +390,14 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         # Deferred import to avoid a cycle in the import graph
         from igraph.clustering import VertexClustering, VertexCover
 
+        mark_groups = self.kwds["mark_groups"]
+        if not mark_groups:
+            return
+
         kwds = self.kwds
         palette = self.kwds["palette"]
         layout = self.kwds["layout"]
-        mark_groups = self.kwds["mark_groups"]
         vertex_builder = self.vertex_builder
-
-        if not mark_groups:
-            return
 
         # Figure out what to do with mark_groups in order to be able to
         # iterate over it and get memberlist-color pairs
@@ -432,6 +426,10 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             }
 
         # Iterate over color-memberlist pairs
+        polygons = []
+        corner_radii = []
+        facecolors = []
+        edgecolors = []
         for group, color_id in group_iter:
             if not group or color_id is None:
                 continue
@@ -446,38 +444,12 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             # Get the vertex indices that constitute the convex hull
             hull = [group[i] for i in convex_hull([layout[idx] for idx in group])]
 
-            # Calculate the preferred rounding radius for the corners
-            corner_radius = 1.25 * max(vertex_builder[idx].size for idx in hull)
-
-            # Construct the polygon
+            # Construct the hull polygon
             polygon = [layout[idx] for idx in hull]
 
-            if len(polygon) == 2:
-                # Expand the polygon (which is a flat line otherwise)
-                a, b = Point(*polygon[0]), Point(*polygon[1])
-                c = corner_radius * (a - b).normalized()
-                n = Point(-c[1], c[0])
-                polygon = [a + n, b + n, b - c, b - n, a - n, a + c]
-            else:
-                # Expand the polygon around its center of mass
-                center = Point(
-                    *[sum(coords) / float(len(coords)) for coords in zip(*polygon)]
-                )
-                polygon = [
-                    Point(*point).towards(center, -corner_radius) for point in polygon
-                ]
-
-            # Draw the hull
+            # Calculate rounding radius and facecolor
+            corner_radius = 1.25 * max(vertex_builder[idx].size for idx in hull)
             facecolor = (color[0], color[1], color[2], 0.25 * color[3])
-            drawer = MatplotlibPolygonDrawer(self.axes)
-            art = drawer.draw(
-                polygon,
-                corner_radius=corner_radius,
-                facecolor=facecolor,
-                edgecolor=color,
-            )
-            if art is not None:
-                self._group_artists.append(art)
 
             if kwds.get("legend", False):
                 legend_info["handles"].append(
@@ -490,6 +462,21 @@ class GraphArtist(Artist, AbstractGraphDrawer):
                     )
                 )
                 legend_info["labels"].append(str(color_id))
+
+            if len(polygon) >= 1:
+                polygons.append(mpl.path.Path(polygon))
+                corner_radii.append(corner_radius)
+                facecolors.append(facecolor)
+                edgecolors.append(color)
+
+        art = HullCollection(
+            polygons,
+            corner_radius=corner_radii,
+            facecolor=facecolors,
+            edgecolor=edgecolors,
+            transform=self.axes.transData,
+        )
+        self._groups = art
 
         if kwds.get("legend", False):
             self.legend_info = legend_info
@@ -524,7 +511,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             match_original=True,
         )
         art.set_transform(IdentityTransform())
-        self._vertices.append(art)
+        self._vertices = art
 
     def _draw_edges(self):
         """Draw the edges"""
@@ -577,7 +564,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             arrow_widths=arrow_widths,
             transform=self.axes.transData,
         )
-        self._edges.append(art)
+        self._edges = art
 
     def _reprocess(self):
         """Prepare artist and children for the actual drawing.

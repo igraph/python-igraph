@@ -253,10 +253,7 @@ class EdgeCollection(PatchCollection):
         super().__init__(*args, **kwargs)
         self._paths_original = deepcopy(self._paths)
 
-    def _update_path_from_vertices(self):
-        if self._vertex_sizes is None:
-            return
-
+    def _update_paths(self):
         paths_original = self._paths_original
         vertex_sizes = self._vertex_sizes
         trans = self.axes.transData.transform
@@ -314,5 +311,6 @@ class EdgeCollection(PatchCollection):
         path.vertices[-5:] = [headbase, headleft, tip, headright, headbase]
 
     def draw(self, renderer):
-        self._update_path_from_vertices()
+        if self._vertex_sizes is not None:
+            self._update_paths()
         return super().draw(renderer)

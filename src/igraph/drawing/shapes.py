@@ -96,7 +96,7 @@ class RectangleDrawer(ShapeDrawer):
         height = height or width
         if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             return mpl.patches.Rectangle(
-                - width / 2, - height / 2,
+                (- width / 2, - height / 2),
                 width,
                 height,
                 clip_on=True,
