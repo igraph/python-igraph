@@ -12,7 +12,7 @@ mpl, plt = find_matplotlib()
 try:
     PathCollection = mpl.collections.PathCollection
 except AttributeError:
-    PatchCollection = FakeModule
+    PathCollection = FakeModule
 
 
 class HullCollection(PathCollection):

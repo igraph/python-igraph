@@ -13,7 +13,7 @@ from igraph.drawing.utils import (
     FakeModule,
 )
 
-__all__ = ("MatplotlibEdgeDrawer",)
+__all__ = ("MatplotlibEdgeDrawer", "EdgeCollection")
 
 mpl, plt = find_matplotlib()
 try:

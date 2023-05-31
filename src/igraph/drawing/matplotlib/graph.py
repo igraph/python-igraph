@@ -23,18 +23,16 @@ from igraph.drawing.utils import FakeModule
 from .edge import MatplotlibEdgeDrawer, EdgeCollection
 from .polygon import HullCollection
 from .utils import find_matplotlib
-from .vertex import MatplotlibVertexDrawer
+from .vertex import MatplotlibVertexDrawer, VertexCollection
 
 __all__ = ("MatplotlibGraphDrawer",)
 
 mpl, plt = find_matplotlib()
 try:
     Artist = mpl.artist.Artist
-    PatchCollection = mpl.collections.PatchCollection
     IdentityTransform = mpl.transforms.IdentityTransform
 except AttributeError:
     Artist = FakeModule
-    PatchCollection = FakeModule
     IdentityTransform = FakeModule
 
 #####################################################################
@@ -158,8 +156,8 @@ class GraphArtist(Artist, AbstractGraphDrawer):
     ):
         super().__init__()
         self.graph = graph
-        self.vertex_drawer_factory = vertex_drawer_factory
-        self.edge_drawer_factory = edge_drawer_factory
+        self._vertex_drawer_factory = vertex_drawer_factory
+        self._edge_drawer_factory = edge_drawer_factory
         self.kwds = kwds
         self.kwds["mark_groups"] = mark_groups
         self.kwds["palette"] = palette
@@ -262,7 +260,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         mins = np.min(layout, axis=0).astype(float)
         maxs = np.max(layout, axis=0).astype(float)
 
-        # NOTE: unlike other Collections, the vertices are a vanilla class:
+        # NOTE: unlike other Collections, the vertices are basically a
         # PatchCollection with an offset transform using transData. Therefore,
         # care should be taken if one wants to include it here
         if self._vertices is not None:
@@ -298,8 +296,10 @@ class GraphArtist(Artist, AbstractGraphDrawer):
 
         kwds = self.kwds
         layout = self.kwds["layout"]
-        vertex_builder = self.vertex_builder
-        vertex_order = self.vertex_order
+        vertex_builder = self._vertex_builder
+        vertex_order = self._vertex_order
+
+        self._vertex_labels = []
 
         # Construct the iterator that we will use to draw the vertex labels
         if vertex_order is None:
@@ -351,10 +351,12 @@ class GraphArtist(Artist, AbstractGraphDrawer):
     def _draw_edge_labels(self):
         graph = self.graph
         kwds = self.kwds
-        vertex_builder = self.vertex_builder
-        edge_builder = self.edge_builder
-        edge_drawer = self.edge_drawer
-        edge_order = self.edge_order or range(self.graph.ecount())
+        vertex_builder = self._vertex_builder
+        edge_builder = self._edge_builder
+        edge_drawer = self._edge_drawer
+        edge_order = self._edge_order or range(self.graph.ecount())
+
+        self._edge_labels = []
 
         labels = kwds.get("edge_label", None)
         if labels is None:
@@ -404,7 +406,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
                 zorder=3,
                 **text_kwds,
             )
-            self._vertex_labels.append(art)
+            self._edge_labels.append(art)
 
     def _draw_groups(self):
         """Draw the highlighted vertex groups, if requested"""
@@ -418,7 +420,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         kwds = self.kwds
         palette = self.kwds["palette"]
         layout = self.kwds["layout"]
-        vertex_builder = self.vertex_builder
+        vertex_builder = self._vertex_builder
 
         # Figure out what to do with mark_groups in order to be able to
         # iterate over it and get memberlist-color pairs
@@ -506,9 +508,9 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         """Draw the vertices"""
         graph = self.graph
         layout = self.kwds["layout"]
-        vertex_drawer = self.vertex_drawer
-        vertex_builder = self.vertex_builder
-        vertex_order = self.vertex_order
+        vertex_drawer = self._vertex_drawer
+        vertex_builder = self._vertex_builder
+        vertex_order = self._vertex_order
 
         vs = graph.vs
         if vertex_order is None:
@@ -525,7 +527,8 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             art = vertex_drawer.draw(visual_vertex, vertex, coords)
             patches.append(art)
             offsets.append(list(coords))
-        art = PatchCollection(
+
+        art = VertexCollection(
             patches,
             offsets=offsets,
             offset_transform=self.axes.transData,
@@ -537,10 +540,10 @@ class GraphArtist(Artist, AbstractGraphDrawer):
     def _draw_edges(self):
         """Draw the edges"""
         graph = self.graph
-        vertex_builder = self.vertex_builder
-        edge_drawer = self.edge_drawer
-        edge_builder = self.edge_builder
-        edge_order = self.edge_order
+        vertex_builder = self._vertex_builder
+        edge_drawer = self._edge_drawer
+        edge_builder = self._edge_builder
+        edge_order = self._edge_order
 
         es = graph.es
         if edge_order is None:
@@ -606,24 +609,71 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         kwds = self.kwds
 
         # Construct the vertex, edge and label drawers
-        self.vertex_drawer = self.vertex_drawer_factory(self.axes, palette, layout)
-        self.edge_drawer = self.edge_drawer_factory(self.axes, palette)
+        if not hasattr(self, "_vertex_drawer"):
+            self._vertex_drawer = self._vertex_drawer_factory(self.axes, palette, layout)
+        if not hasattr(self, "_edge_drawer"):
+            self._edge_drawer = self._edge_drawer_factory(self.axes, palette)
 
         # Construct the visual vertex/edge builders based on the specifications
         # provided by the vertex_drawer and the edge_drawer
-        self.vertex_builder = self.vertex_drawer.VisualVertexBuilder(graph.vs, kwds)
-        self.edge_builder = self.edge_drawer.VisualEdgeBuilder(graph.es, kwds)
+        if not hasattr(self, "_vertex_builder"):
+            self._vertex_builder = self._vertex_drawer.VisualVertexBuilder(
+                graph.vs, kwds)
+        if not hasattr(self, "_edge_builder"):
+            self._edge_builder = self._edge_drawer.VisualEdgeBuilder(
+                graph.es, kwds)
 
         # Determine the order in which we will draw the vertices and edges
         # These methods come from AbstractGraphDrawer
-        self.vertex_order = self._determine_vertex_order(graph, kwds)
-        self.edge_order = self._determine_edge_order(graph, kwds)
+        self._vertex_order = self._determine_vertex_order(graph, kwds)
+        self._edge_order = self._determine_edge_order(graph, kwds)
 
         self._draw_groups()
         self._draw_vertices()
         self._draw_edges()
         self._draw_vertex_labels()
         self._draw_edge_labels()
+
+        # When the vertices change size, one has to redraw the edges to match
+        # the boundary of the marker. Unless one has granular control over exactly
+        # what edges to redraw, it's simpler to just redraw the whole thing. That
+        # requires adapting the vertex_builder (already done in VertexCollection)
+        # and then redrawing the container artist.
+        def vertex_size_callback(artist):
+            sizes = artist.get_sizes()
+            for size, vb in zip(sizes, self._vertex_builder):
+                vb.size = size
+            self._reprocess()
+
+        # Callbacks for other vertex properties, to ensure they are in sync
+        # with vertex_builder.
+        # NOTE: no need to reprocess here because it does not affect other
+        # parts of the container artist (e.g. edges)
+        def stale_callback(artist):
+            # If the stale state emerges from other properties, we can salvage
+            # the other artists but we have to update the vertex builder anyway
+            # in case a _reprocess is triggered by something else.
+            prop_pairs = (
+                ("edgecolor", "frame_color"),
+                ("facecolor", "color"),
+                ("linewidth", "frame_width"),
+                ("zorder", "zorder"),
+                ("sizes", "size"),
+            )
+            for mpl_prop, ig_prop in prop_pairs:
+                values = getattr(artist, "get_" + mpl_prop)()
+                try:
+                    iter(values)
+                except TypeError:
+                    values = [values] * len(artist.get_paths())
+                for value, visual_vertex in zip(values, self._vertex_builder):
+                    setattr(visual_vertex, ig_prop, value)
+
+            # If the size is stale, one needs to redraw everything
+            if artist._stale_size:
+                self._reprocess()
+
+        self._vertices._stale_callback_post = stale_callback
 
         # Forward mpl properties to children
         # TODO sort out all of the things that need to be forwarded
