@@ -40,7 +40,7 @@ colors = [int(i * 200 / max(betweenness)) for i in betweenness]
 # %%
 # Finally, we can plot the graph. You will notice that even though we did not
 # create a dedicated figure and axes, matplotlib is now used by default:
-ig.plot(g, vertex_color=colors, vertex_size=1, edge_width=0.3)
+ig.plot(g, vertex_color=colors, vertex_size=15, edge_width=0.3)
 plt.show()
 
 # %%

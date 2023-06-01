@@ -28,6 +28,7 @@ for clique, ax in zip(cliques, axs):
     ig.plot(
         ig.VertexCover(g, [clique]),
         mark_groups=True, palette=ig.RainbowPalette(),
+        vetex_size=5,
         edge_width=0.5,
         target=ax,
     )
@@ -59,6 +60,7 @@ for clique, ax in zip(cliques, axs):
         ig.VertexCover(g, [clique]),
         mark_groups=True,
         palette=ig.RainbowPalette(),
+        vetex_size=5,
         target=ax,
     )
 plt.axis('off')

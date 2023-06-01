@@ -40,7 +40,7 @@ ig.plot(
     palette=palette,
     edge_width=1,
     target=ax,
-    vertex_size=0.3,
+    vertex_size=20,
 )
 
 # Create a custom color legend

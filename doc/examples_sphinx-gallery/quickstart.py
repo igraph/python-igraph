@@ -40,7 +40,7 @@ ig.plot(
     g,
     target=ax,
     layout="circle", # print nodes in a circular layout
-    vertex_size=0.1,
+    vertex_size=30,
     vertex_color=["steelblue" if gender == "M" else "salmon" for gender in g.vs["gender"]],
     vertex_frame_width=4.0,
     vertex_frame_color="white",

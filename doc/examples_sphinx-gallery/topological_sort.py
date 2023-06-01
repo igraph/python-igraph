@@ -52,7 +52,7 @@ with plt.xkcd():
             g,
             target=ax,
             layout='kk',
-            vertex_size=0.3,
+            vertex_size=25,
             edge_width=4,
             vertex_label=range(g.vcount()),
             vertex_color="white",

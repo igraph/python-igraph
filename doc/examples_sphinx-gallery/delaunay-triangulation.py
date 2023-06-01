@@ -56,7 +56,7 @@ ig.plot(
     g,
     layout=layout,
     target=ax,
-    vertex_size=0.04,
+    vertex_size=4,
     vertex_color="lightblue",
     edge_width=0.8
 )
@@ -90,7 +90,7 @@ ig.plot(
     g,
     layout=layout,
     target=ax,
-    vertex_size=0.0,
+    vertex_size=0,
     edge_width=0.2,
     edge_color="white",
 )

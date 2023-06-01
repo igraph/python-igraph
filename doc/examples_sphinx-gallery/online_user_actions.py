@@ -70,7 +70,7 @@ layout = g.layout('circle')
 # %%
 # Then we can prepare vertex sizes based on their closeness to other vertices
 vertex_size = g.closeness()
-vertex_size = [0.5 * v**2 if not np.isnan(v) else 0.05 for v in vertex_size]
+vertex_size = [10 * v**2 if not np.isnan(v) else 10 for v in vertex_size]
 
 # %%
 # Finally, we can plot the graph:

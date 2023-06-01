@@ -250,6 +250,7 @@ class EdgeCollection(PatchCollection):
         self._directed = kwargs.pop("directed", False)
         self._arrow_sizes = kwargs.pop("arrow_sizes", 0)
         self._arrow_widths = kwargs.pop("arrow_widths", 0)
+        self._curved = kwargs.pop("curved", None)
         super().__init__(*args, **kwargs)
         self._paths_original = deepcopy(self._paths)
 

@@ -15,7 +15,7 @@ import random
 # various setting we want to customize:
 visual_style = {
     "edge_width": 0.3,
-    "vertex_size": 1.5,
+    "vertex_size": 15,
     "palette": "heat",
     "layout": "fruchterman_reingold"
 }

@@ -27,7 +27,7 @@ fig, ax = plt.subplots()
 ig.plot(
     g, 
     target=ax, 
-    vertex_size=0.3,
+    vertex_size=30,
     vertex_color="lightblue",
     vertex_label=range(g.vcount()),
     vertex_frame_color = ["red" if v in articulation_points else "black" for v in g.vs],

@@ -30,10 +30,10 @@ __all__ = ("MatplotlibGraphDrawer",)
 mpl, plt = find_matplotlib()
 try:
     Artist = mpl.artist.Artist
-    IdentityTransform = mpl.transforms.IdentityTransform
+    Affine2D = mpl.transforms.Affine2D
 except AttributeError:
     Artist = FakeModule
-    IdentityTransform = FakeModule
+    Affine2D = FakeModule
 
 #####################################################################
 
@@ -533,8 +533,8 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             offsets=offsets,
             offset_transform=self.axes.transData,
             match_original=True,
+            transform=Affine2D(),
         )
-        art.set_transform(IdentityTransform())
         self._vertices = art
 
     def _draw_edges(self):
@@ -565,6 +565,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         edgepatches = []
         arrow_sizes = []
         arrow_widths = []
+        curved = []
         for edge, visual_edge in edge_coord_iter:
             edge_vertices = [vertex_builder[v] for v in edge.tuple]
             edge_vertex_sizes = []
@@ -579,6 +580,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             vertex_sizes.append(edge_vertex_sizes)
             arrow_sizes.append(visual_edge.arrow_size)
             arrow_widths.append(visual_edge.arrow_width)
+            curved.append(visual_edge.curved)
 
         art = EdgeCollection(
             edgepatches,
@@ -586,6 +588,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             directed=directed,
             arrow_sizes=arrow_sizes,
             arrow_widths=arrow_widths,
+            curved=curved,
             transform=self.axes.transData,
         )
         self._edges = art
