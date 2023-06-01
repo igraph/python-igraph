@@ -218,27 +218,23 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         return None
 
     def get_vertices(self):
-        """Get vertex artists."""
+        """Get VertexCollection artist."""
         return self._vertices
 
     def get_edges(self):
-        """Get edge artists.
-
-        Note that for directed edges, an edge might have more than one
-        artist, e.g. arrow shaft and arrowhead.
-        """
+        """Get EdgeCollection artist."""
         return self._edges
 
     def get_groups(self):
-        """Get group/cluster/cover artists."""
+        """Get HullCollection group/cluster/cover artists."""
         return self._groups
 
     def get_vertex_labels(self):
-        """Get vertex label artists."""
+        """Get list of vertex label artists."""
         return self._vertex_labels
 
     def get_edge_labels(self):
-        """Get edge label artists."""
+        """Get list of edge label artists."""
         return self._edge_labels
 
     def get_datalim(self):
