@@ -554,37 +554,24 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
 
         directed = graph.is_directed()
-        if directed:
-            # Arrows and the likes
-            drawer_method = edge_drawer.draw_directed_edge
-        else:
-            # Lines
-            drawer_method = edge_drawer.draw_undirected_edge
 
-        vertex_sizes = []
+        visual_vertices = []
         edgepatches = []
         arrow_sizes = []
         arrow_widths = []
         curved = []
         for edge, visual_edge in edge_coord_iter:
             edge_vertices = [vertex_builder[v] for v in edge.tuple]
-            edge_vertex_sizes = []
-            for visual_vertex in edge_vertices:
-                if visual_vertex.size is not None:
-                    edge_vertex_sizes.append(visual_vertex.size)
-                else:
-                    edge_vertex_sizes.append(
-                            max(visual_vertex.width, visual_vertex.height))
-            art = drawer_method(visual_edge, *edge_vertices)
+            art = edge_drawer.build_patch(visual_edge, *edge_vertices)
             edgepatches.append(art)
-            vertex_sizes.append(edge_vertex_sizes)
+            visual_vertices.append(edge_vertices)
             arrow_sizes.append(visual_edge.arrow_size)
             arrow_widths.append(visual_edge.arrow_width)
             curved.append(visual_edge.curved)
 
         art = EdgeCollection(
             edgepatches,
-            vertex_sizes=vertex_sizes,
+            visual_vertices=visual_vertices,
             directed=directed,
             arrow_sizes=arrow_sizes,
             arrow_widths=arrow_widths,

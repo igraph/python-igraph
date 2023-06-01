@@ -63,6 +63,17 @@ class GraphTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         plot(g, target=ax, layout=self.layout_small_ring)
 
+    @image_comparison(baseline_images=["graph_directed_curved_loops"], remove_text=True)
+    def test_directed_curved_loops(self):
+        plt.close("all")
+        g = Graph.Ring(5, directed=True)
+        g.add_edge(0, 0)
+        fig, ax = plt.subplots()
+        plot(
+            g, target=ax, layout=self.layout_small_ring,
+            edge_curved=[0] * 4 + [0.3],
+        )
+
     @image_comparison(baseline_images=["graph_mark_groups_directed"], remove_text=True)
     def test_mark_groups(self):
         plt.close("all")

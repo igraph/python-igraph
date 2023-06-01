@@ -61,257 +61,249 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
 
         return VisualEdgeBuilder
 
-    def draw_directed_edge(self, edge, src_vertex, dest_vertex):
-        if src_vertex == dest_vertex:
-            return self.draw_loop_edge(edge, src_vertex)
-
-        ax = self.context
-        (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
-        (x_src, y_src), (x_dest, y_dest) = src_vertex.position, dest_vertex.position
-
-        # Draw the edge
-        path = {"vertices": [], "codes": []}
-        path["vertices"].append([x1, y1])
-        path["codes"].append("MOVETO")
-
-        if edge.curved:
-            # Calculate the curve
-            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge.curved)
-
-            # Coordinates of the control points of the Bezier curve
-            xc1, yc1 = aux1
-            xc2, yc2 = aux2
-
-            # Determine where the edge intersects the circumference of the
-            # vertex shape: Tip of the arrow
-            ## FIXME
-            #x2, y2 = intersect_bezier_curve_and_circle(
-            #    x_src, y_src, xc1, yc1, xc2, yc2, x_dest, y_dest, dest_vertex.size / 2.0
-            #)
-            x2, y2 = x_dest, y_dest
-
-            # Calculate the arrow head coordinates
-            angle = atan2(y_dest - y2, x_dest - x2)  # navid
-            arrow_size = 15.0 * edge.arrow_size
-            arrow_width = 10.0 / edge.arrow_width
-            aux_points = [
-                (
-                    x2 - arrow_size * cos(angle - pi / arrow_width),
-                    y2 - arrow_size * sin(angle - pi / arrow_width),
-                ),
-                (
-                    x2 - arrow_size * cos(angle + pi / arrow_width),
-                    y2 - arrow_size * sin(angle + pi / arrow_width),
-                ),
-            ]
-
-            # Midpoint of the base of the arrow triangle
-            x_arrow_mid, y_arrow_mid = (aux_points[0][0] + aux_points[1][0]) / 2.0, (
-                aux_points[0][1] + aux_points[1][1]
-            ) / 2.0
-
-            # Vector representing the base of the arrow triangle
-            x_arrow_base_vec, y_arrow_base_vec = (
-                aux_points[0][0] - aux_points[1][0]
-            ), (aux_points[0][1] - aux_points[1][1])
-
-            # Recalculate the curve such that it lands on the base of the arrow triangle
-            aux1, aux2 = get_bezier_control_points_for_curved_edge(x_src, y_src, x_arrow_mid, y_arrow_mid, edge.curved)
-
-            # Offset the second control point (aux2) such that it falls precisely
-            # on the normal to the arrow base vector. Strictly speaking,
-            # offset_length is the offset length divided by the length of the
-            # arrow base vector.
-            offset_length = (x_arrow_mid - aux2[0]) * x_arrow_base_vec + (
-                y_arrow_mid - aux2[1]
-            ) * y_arrow_base_vec
-            offset_length /= (
-                euclidean_distance(0, 0, x_arrow_base_vec, y_arrow_base_vec) ** 2
-            )
-
-            aux2 = (
-                aux2[0] + x_arrow_base_vec * offset_length,
-                aux2[1] + y_arrow_base_vec * offset_length,
-            )
-
-            # Draw the curve from the first vertex to the midpoint of the base
-            # of the arrow head
-            path["vertices"].append(aux1)
-            path["vertices"].append(aux2)
-            path["vertices"].append([x_arrow_mid, y_arrow_mid])
-            path["codes"].extend(["CURVE4"] * 3)
-
-        else:
-            path["vertices"].append(dest_vertex.position)
-            path["codes"].append("LINETO")
-
-        # Add arrowhead in the path, the exact positions are recomputed within
-        # EdgeCollection before each draw so they don't matter here. The
-        # path for an arrowhead is: headbase (current), headleft, tip,
-        # headright, headbase, so we need to add 4 (degenerate) vertices.
-        # Assuming the arrowhead uses straight lines, they are all LINETO
-        path["vertices"].extend([path["vertices"][-1] for x in range(4)])
-        path["codes"].extend(["LINETO" for x in range(4)])
-
-        # Draw the edge
-        arrowpatch = mpl.patches.PathPatch(
-            mpl.path.Path(
-                path["vertices"],
-                codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
-            ),
+    def build_patch(self, edge, src_vertex, dest_vertex):
+        art = mpl.patches.PathPatch(
+            mpl.path.Path([[0, 0]]),
             edgecolor=edge.color,
-            facecolor=edge.color,
+            facecolor=edge.color if src_vertex != dest_vertex else "none",
             linewidth=edge.width,
-            zorder=edge.zorder,
-            clip_on=True,
-        )
-
-        return arrowpatch
-
-    def draw_loop_edge(self, edge, vertex):
-        """Draws a loop edge.
-
-        The default implementation draws a small circle.
-
-        @param edge: the edge to be drawn. Visual properties of the edge
-          are defined by the attributes of this object.
-        @param vertex: the vertex to which the edge is attached. Visual
-          properties are given again as attributes.
-        """
-        ax = self.context
-        radius = vertex.size * 1.5
-        center_x = vertex.position[0] + cos(pi / 4) * radius / 2.0
-        center_y = vertex.position[1] - sin(pi / 4) * radius / 2.0
-        art = mpl.patches.Arc(
-            (center_x, center_y),
-            radius / 2.0,
-            radius / 2.0,
-            theta1=0,
-            theta2=360.0,
-            linewidth=edge.width,
-            facecolor="none",
-            edgecolor=edge.color,
             zorder=edge.zorder,
             clip_on=True,
         )
         return art
+
+    # The following two methods are replaced by dummy functions, the rest is
+    # taken care of in EdgeCollection for efficiency
+    def draw_directed_edge(self, edge, src_vertex, dest_vertex):
+        return self.build_patch(edge)
 
     def draw_undirected_edge(self, edge, src_vertex, dest_vertex):
-        """Draws an undirected edge.
-
-        The default implementation of this method draws undirected edges
-        as straight lines. Loop edges are drawn as small circles.
-
-        @param edge: the edge to be drawn. Visual properties of the edge
-          are defined by the attributes of this object.
-        @param src_vertex: the source vertex. Visual properties are given
-          again as attributes.
-        @param dest_vertex: the target vertex. Visual properties are given
-          again as attributes.
-        """
-        if src_vertex == dest_vertex:
-            return self.draw_loop_edge(edge, src_vertex)
-
-        ax = self.context
-
-        path = {"vertices": [], "codes": []}
-        path["vertices"].append(src_vertex.position)
-        path["codes"].append("MOVETO")
-
-        if edge.curved:
-            (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
-            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge.curved)
-            path["vertices"].append(aux1)
-            path["vertices"].append(aux2)
-            path["vertices"].append(dest_vertex.position)
-            path["codes"].extend(["CURVE4"] * 3)
-        else:
-            path["vertices"].append(dest_vertex.position)
-            path["codes"].append("LINETO")
-
-        art = mpl.patches.PathPatch(
-            mpl.path.Path(
-                path["vertices"],
-                codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
-            ),
-            edgecolor=edge.color,
-            facecolor="none",
-            linewidth=edge.width,
-            zorder=edge.zorder,
-            clip_on=True,
-        )
-        return art
+        return self.build_patch(edge)
 
 
 class EdgeCollection(PatchCollection):
     def __init__(self, *args, **kwargs):
         kwargs["match_original"] = True
-        self._vertex_sizes = kwargs.pop("vertex_sizes", None)
+        self._visual_vertices = kwargs.pop("visual_vertices", None)
         self._directed = kwargs.pop("directed", False)
         self._arrow_sizes = kwargs.pop("arrow_sizes", 0)
         self._arrow_widths = kwargs.pop("arrow_widths", 0)
         self._curved = kwargs.pop("curved", None)
         super().__init__(*args, **kwargs)
-        self._paths_original = deepcopy(self._paths)
 
-    def _update_paths(self):
-        paths_original = self._paths_original
-        vertex_sizes = self._vertex_sizes
-        trans = self.axes.transData.transform
-        trans_inv = self.axes.transData.inverted().transform
+    @staticmethod
+    def _get_edge_vertex_sizes(edge_vertices):
+        sizes = []
+        for visual_vertex in edge_vertices:
+            if visual_vertex.size is not None:
+                sizes.append(visual_vertex.size)
+            else:
+                sizes.append(max(visual_vertex.width, visual_vertex.height))
+        return sizes
+
+    def _compute_paths(self, transform=None):
+        import numpy as np
+
+        visual_vertices = self._visual_vertices
+        if transform is None:
+            transform = self.get_transform()
+        trans = transform.transform
+        trans_inv = transform.inverted().transform
 
         # Get actual coordinates of the vertex border (rough)
-        for i, (path_orig, sizes) in enumerate(zip(paths_original, vertex_sizes)):
-            self._paths[i] = path = deepcopy(path_orig)
-            coords = path_orig.vertices
+        paths = []
+        for i, edge_vertices in enumerate(visual_vertices):
+            coords = np.vstack(
+                [
+                    edge_vertices[0].position,
+                    edge_vertices[1].position,
+                ]
+            )
             coordst = trans(coords)
-            self._update_path_edge_start(path, coords, coordst, sizes[0], trans, trans_inv)
-            if self._directed:
-                self._update_path_edge_end_directed(
-                    path, coords, coordst, sizes[1], trans, trans_inv,
-                    self._arrow_sizes[i], self._arrow_widths[i],
+            sizes = self._get_edge_vertex_sizes(edge_vertices)
+            if self._curved is not None:
+                curved = self._curved[i]
+            else:
+                curved = False
+
+            # Loops require special attention, discard any previous calculations
+            if edge_vertices[0] == edge_vertices[1]:
+                path = self._compute_path_loop(
+                    coordst[0],
+                    sizes[0],
+                    trans_inv,
+                )
+
+            elif self._directed:
+                path = self._compute_path_directed(
+                    coordst,
+                    sizes,
+                    trans_inv,
+                    curved,
+                    self._arrow_sizes[i],
+                    self._arrow_widths[i],
                 )
             else:
-                self._update_path_edge_end_undirected(
-                    path, coords, coordst, sizes[1], trans, trans_inv,
+                path = self._compute_path_undirected(
+                    coordst,
+                    sizes,
+                    trans_inv,
+                    curved,
                 )
 
-    def _update_path_edge_start(self, path, coords, coordst, size, trans, trans_inv):
-        theta = atan2(*((coordst[1] - coordst[0])[::-1]))
-        voff = 0 * coordst[0]
-        voff[:] = [cos(theta), sin(theta)]
-        voff *= size / 2
-        start = trans_inv(trans(coords[0]) + voff)
-        path.vertices[0] = start
+            paths.append(path)
+        return paths
 
-    def _update_path_edge_end_undirected(
-            elf, path, coords, coordst, size, trans, trans_inv,
+    def _compute_path_loop(self, coordt, size, trans_inv):
+        # Make arc (class method)
+        path = mpl.path.Path.arc(-90, 180)
+        vertices = path.vertices.copy()
+        codes = path.codes
+
+        # Rescale to be as large as the vertex
+        vertices *= size / 2
+        # Center top right
+        vertices += size / 2
+        # Offset to place and transform to data coordinates
+        vertices = trans_inv(coordt + vertices)
+
+        path = mpl.path.Path(
+            vertices, codes=codes,
+        )
+        return path
+
+    def _compute_path_undirected(self, coordst, sizes, trans_inv, curved):
+        path = {"vertices": [], "codes": []}
+        path["codes"].append("MOVETO")
+        if not curved:
+            path["codes"].append("LINETO")
+
+            # Start
+            theta = atan2(*((coordst[1] - coordst[0])[::-1]))
+            voff = 0 * coordst[0]
+            voff[:] = [cos(theta), sin(theta)]
+            voff *= sizes[0] / 2
+            path["vertices"].append(coordst[0] + voff)
+
+            # End
+            voff[:] = [cos(theta), sin(theta)]
+            voff *= sizes[1] / 2
+            path["vertices"].append(coordst[1] - voff)
+        else:
+            path["codes"].extend(["CURVE4"] * 3)
+
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(
+                *coordst.ravel(),
+                curved,
+            )
+
+            # Start
+            theta = atan2(*((aux1 - coordst[0])[::-1]))
+            voff = 0 * coordst[0]
+            voff[:] = [cos(theta), sin(theta)]
+            voff *= sizes[0] / 2
+            path["vertices"].append(coordst[0] + voff)
+
+            # Bezier
+            path["vertices"].append(aux1)
+            path["vertices"].append(aux2)
+
+            # End
+            theta = atan2(*((coordst[1] - aux2)[::-1]))
+            voff = 0 * coordst[0]
+            voff[:] = [cos(theta), sin(theta)]
+            voff *= sizes[1] / 2
+            path["vertices"].append(coordst[1] - voff)
+
+        path = mpl.path.Path(
+            path["vertices"],
+            codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
+        )
+        path.vertices = trans_inv(path.vertices)
+        return path
+
+    def _compute_path_directed(
+        self, coordst, sizes, trans_inv, curved, arrow_size, arrow_width
     ):
-        theta = atan2(*((coordst[-2] - coordst[-1])[::-1]))
-        voff = 0 * coordst[0]
-        voff[:] = [cos(theta), sin(theta)]
-        voff *= size / 2
-        end = trans_inv(trans(coords[-1]) + voff)
-        path.vertices[-1] = end
+        path = {"vertices": [], "codes": []}
+        path["codes"].append("MOVETO")
+        if not curved:
+            path["codes"].extend(["LINETO"] * 5)
 
-    def _update_path_edge_end_directed(
-            self, path, coords, coordst, size, trans, trans_inv,
-            arrow_size, arrow_width):
-        # The path for arrows is start-headmid-headleft-tip-headright-headmid
-        # So, tip is the 3rd-to-last and headmid the last
-        theta = atan2(*((coordst[-6] - coordst[-3])[::-1]))
-        voff_unity = 0 * coordst[0]
-        voff_unity[:] = [cos(theta), sin(theta)]
-        voff = voff_unity * size / 2
-        voff_unity_90 = voff_unity @ [[0, 1], [-1, 0]]
+            # Start
+            theta = atan2(*((coordst[1] - coordst[0])[::-1]))
+            voff = 0 * coordst[0]
+            voff[:] = [cos(theta), sin(theta)]
+            voff *= sizes[0] / 2
+            path["vertices"].append(coordst[0] + voff)
 
-        tip = trans_inv(trans(coords[-3]) + voff)
-        headbase = trans_inv(trans(tip) + arrow_size * voff_unity)
-        headleft = trans_inv(trans(headbase) + 0.5 * arrow_width * voff_unity_90)
-        headright = trans_inv(trans(headbase) - 0.5 * arrow_width * voff_unity_90)
-        path.vertices[-5:] = [headbase, headleft, tip, headright, headbase]
+            # End with arrow (base-left-top-right-base)
+            theta = atan2(*((coordst[1] - coordst[0])[::-1]))
+            voff_unity = 0 * coordst[0]
+            voff_unity[:] = [cos(theta), sin(theta)]
+            voff = voff_unity * sizes[1] / 2
+            tip = coordst[1] - voff
+
+            voff_unity_90 = voff_unity @ [[0, 1], [-1, 0]]
+            headbase = tip - arrow_size * voff_unity
+            headleft = headbase + 0.5 * arrow_width * voff_unity_90
+            headright = headbase - 0.5 * arrow_width * voff_unity_90
+            path["vertices"].extend(
+                [
+                    headbase,
+                    headleft,
+                    tip,
+                    headright,
+                    headbase,
+                ]
+            )
+        else:
+            # Bezier
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(
+                *coordst.ravel(),
+                curved,
+            )
+
+            # Start
+            theta = atan2(*((aux1 - coordst[0])[::-1]))
+            voff = 0 * coordst[0]
+            voff[:] = [cos(theta), sin(theta)]
+            voff *= sizes[0] / 2
+            start = coordst[0] + voff
+
+            # End with arrow (base-left-top-right-base)
+            theta = atan2(*((coordst[1] - aux2)[::-1]))
+            voff_unity = 0 * coordst[0]
+            voff_unity[:] = [cos(theta), sin(theta)]
+            voff = voff_unity * sizes[1] / 2
+            tip = coordst[1] - voff
+
+            voff_unity_90 = voff_unity @ [[0, 1], [-1, 0]]
+            headbase = tip - arrow_size * voff_unity
+            headleft = headbase + 0.5 * arrow_width * voff_unity_90
+            headright = headbase - 0.5 * arrow_width * voff_unity_90
+
+            # This is a dirty trick to make the facecolor work
+            # without making a separate Patch, which would be a little messy
+            path["codes"].extend(["CURVE4"] * 6 + ["LINETO"] * 4)
+            path["vertices"].extend([
+                headbase, aux2, aux1,
+                start, aux1, aux2,
+                headbase,
+                headleft,
+                tip,
+                headright,
+                headbase,
+            ])
+
+        path = mpl.path.Path(
+            path["vertices"],
+            codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
+        )
+        path.vertices = trans_inv(path.vertices)
+        return path
 
     def draw(self, renderer):
-        if self._vertex_sizes is not None:
-            self._update_paths()
+        if self._visual_vertices is not None:
+            self._paths = self._compute_paths()
         return super().draw(renderer)
