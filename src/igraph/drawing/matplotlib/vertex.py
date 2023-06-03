@@ -107,7 +107,7 @@ class VertexCollection(PatchCollection):
 
         If width and height are unequal, get the largest of the two.
 
-        @return: A list of vertex sizes.
+        @return: An array of vertex sizes.
         """
         import numpy as np
 
@@ -120,7 +120,7 @@ class VertexCollection(PatchCollection):
             sizes.append(size)
         return np.array(sizes)
 
-    def set_sizes(self, sizes):
+    def set_size(self, sizes):
         """Set vertex sizes.
 
         This rescales the current vertex symbol/path linearly, using this
@@ -146,12 +146,9 @@ class VertexCollection(PatchCollection):
         self._stale_size = True
         self.stale = True
 
-    def set_size(self, size):
-        """Set vertex size, the same for all vertices.
-
-        @param size: A single vertex size.
-        """
-        self.set_sizes([size] * len(self.get_paths()))
+    def set_sizes(self, sizes):
+        """Same as set_size."""
+        self.set_size(sizes)
 
     @property
     def stale(self):
@@ -160,5 +157,5 @@ class VertexCollection(PatchCollection):
     @stale.setter
     def stale(self, val):
         PatchCollection.stale.fset(self, val)
-        if val and hasattr(self, "_stale_callback_post"):
-            self._stale_callback_post(self)
+        if val and hasattr(self, "stale_callback_post"):
+            self.stale_callback_post(self)

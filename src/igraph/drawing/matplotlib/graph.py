@@ -620,22 +620,11 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         self._draw_vertex_labels()
         self._draw_edge_labels()
 
-        # When the vertices change size, one has to redraw the edges to match
-        # the boundary of the marker. Unless one has granular control over exactly
-        # what edges to redraw, it's simpler to just redraw the whole thing. That
-        # requires adapting the vertex_builder (already done in VertexCollection)
-        # and then redrawing the container artist.
-        def vertex_size_callback(artist):
-            sizes = artist.get_sizes()
-            for size, vb in zip(sizes, self._vertex_builder):
-                vb.size = size
-            self._reprocess()
-
         # Callbacks for other vertex properties, to ensure they are in sync
         # with vertex_builder.
         # NOTE: no need to reprocess here because it does not affect other
         # parts of the container artist (e.g. edges)
-        def stale_callback(artist):
+        def vertex_stale_callback(artist):
             # If the stale state emerges from other properties, we can salvage
             # the other artists but we have to update the vertex builder anyway
             # in case a _reprocess is triggered by something else.
@@ -659,7 +648,30 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             if artist._stale_size:
                 self._reprocess()
 
-        self._vertices._stale_callback_post = stale_callback
+        # Edge callback, keeps the edge builder in sync with the actual state
+        # of the artist
+        def edge_stale_callback(artist):
+            prop_pairs = (
+                ("edgecolor", "color"),
+                ("linewidth", "width"),
+                ("zorder", "zorder"),
+                ("arrow_size", "arrow_size"),
+                ("arrow_width", "arrow_width"),
+            )
+            for mpl_prop, ig_prop in prop_pairs:
+                values = getattr(artist, "get_" + mpl_prop)()
+                try:
+                    iter(values)
+                except TypeError:
+                    values = [values] * len(artist.get_paths())
+                for value, visual_edge in zip(values, self._edge_builder):
+                    setattr(visual_edge, ig_prop, value)
+
+                # Sync facecolor from edgecolor
+                if mpl_prop == "edgecolor":
+                    artist._facecolors = artist._edgecolors
+        self._vertices.stale_callback_post = vertex_stale_callback
+        self._edges.stale_callback_post = edge_stale_callback
 
         # Forward mpl properties to children
         # TODO sort out all of the things that need to be forwarded

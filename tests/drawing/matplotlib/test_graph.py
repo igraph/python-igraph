@@ -103,9 +103,13 @@ class GraphTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         plot(g, target=ax, vertex_shape="o", layout=self.layout_small_ring)
         graph_artist = ax.get_children()[0]
+
         dots = graph_artist.get_vertices()
         dots.set_facecolors(["blue"] + list(dots.get_facecolors()[1:]))
         dots.set_sizes([20] + list(dots.get_sizes()[1:]))
+
+        lines = graph_artist.get_edges()
+        lines.set_edgecolor("green")
 
     @image_comparison(baseline_images=["graph_basic"], remove_text=True)
     def test_gh_587(self):

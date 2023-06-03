@@ -86,8 +86,8 @@ class EdgeCollection(PatchCollection):
         kwargs["match_original"] = True
         self._visual_vertices = kwargs.pop("visual_vertices", None)
         self._directed = kwargs.pop("directed", False)
-        self._arrow_sizes = kwargs.pop("arrow_sizes", 0)
-        self._arrow_widths = kwargs.pop("arrow_widths", 0)
+        self._arrow_sizes = kwargs.pop("arrow_sizes", None)
+        self._arrow_widths = kwargs.pop("arrow_widths", None)
         self._curved = kwargs.pop("curved", None)
         super().__init__(*args, **kwargs)
 
@@ -135,13 +135,19 @@ class EdgeCollection(PatchCollection):
                 )
 
             elif self._directed:
+                if (self._arrow_sizes is None) or (self._arrow_widths is None):
+                    arrow_size = 0
+                    arrow_width = 0
+                else:
+                    arrow_size = self._arrow_sizes[i]
+                    arrow_width = self._arrow_widths[i]
                 path = self._compute_path_directed(
                     coordst,
                     sizes,
                     trans_inv,
                     curved,
-                    self._arrow_sizes[i],
-                    self._arrow_widths[i],
+                    arrow_size,
+                    arrow_width,
                 )
             else:
                 path = self._compute_path_undirected(
@@ -155,6 +161,8 @@ class EdgeCollection(PatchCollection):
         return paths
 
     def _compute_path_loop(self, coordt, size, trans_inv):
+        import numpy as np
+
         # Make arc (class method)
         path = mpl.path.Path.arc(-90, 180)
         vertices = path.vertices.copy()
@@ -166,6 +174,16 @@ class EdgeCollection(PatchCollection):
         vertices += size / 2
         # Offset to place and transform to data coordinates
         vertices = trans_inv(coordt + vertices)
+
+        # Hack used for any curved lines to deal with facecolor
+        vertices = np.vstack([
+            vertices,
+            vertices[:-1][::-1],
+        ])
+        codes = np.concatenate([
+            codes,
+            codes[1:],
+        ])
 
         path = mpl.path.Path(
             vertices, codes=codes,
@@ -307,3 +325,79 @@ class EdgeCollection(PatchCollection):
         if self._visual_vertices is not None:
             self._paths = self._compute_paths()
         return super().draw(renderer)
+
+    def get_arrow_sizes(self):
+        """Same as get_arrow_size."""
+        return self.get_arrow_size()
+
+    def get_arrow_size(self):
+        """Get arrow sizes for the edges (directed only).
+
+        @return: An array of arrow sizes.
+        """
+        import numpy as np
+
+        if self._arrow_sizes is None:
+            arrow_sizes = [0 for x in self.get_paths()]
+        else:
+            arrow_sizes = self._arrow_sizes
+        return np.array(arrow_sizes)
+
+    def set_arrow_size(self, sizes):
+        """Set arrow sizes.
+
+        @param sizes: A sequence of arrow sizes or a single size.
+        """
+        try:
+            iter(sizes)
+        except TypeError:
+            sizes = [sizes] * len(self._paths)
+        self._arrow_sizes = sizes
+        self.stale = True
+
+    def set_arrow_sizes(self, sizes):
+        """Same as set_arrow_size"""
+        return self.set_arrow_size(sizes)
+
+    def get_arrow_widths(self):
+        """Same as get_arrow_width."""
+        return self.get_arrow_width()
+
+    def get_arrow_width(self):
+        """Get arrow widths for the edges (directed only).
+
+        @return: An array of arrow widths.
+        """
+        import numpy as np
+
+        if self._arrow_widths is None:
+            arrow_widths = [0 for x in self.get_paths()]
+        else:
+            arrow_widths = self._arrow_widths
+        return np.array(arrow_widths)
+
+    def set_arrow_width(self, widths):
+        """Set arrow widths.
+
+        @param widths: A sequence of arrow widths or a single width.
+        """
+        try:
+            iter(widths)
+        except TypeError:
+            widths = [widths] * len(self._paths)
+        self._arrow_widths = widths
+        self.stale = True
+
+    def set_arrow_widths(self, widths):
+        """Same as set_arrow_width"""
+        return self.set_arrow_width(widths)
+
+    @property
+    def stale(self):
+        return super().stale
+
+    @stale.setter
+    def stale(self, val):
+        PatchCollection.stale.fset(self, val)
+        if val and hasattr(self, "stale_callback_post"):
+            self.stale_callback_post(self)
