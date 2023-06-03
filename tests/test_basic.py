@@ -120,17 +120,20 @@ class BasicTests(unittest.TestCase):
         self.assertTrue("name" in g.vertex_attributes())
         self.assertEqual(g.vs["name"], [None, "foo"])
 
-        vertex = g.add_vertex(3)
+        self.assertRaises(TypeError, g.add_vertex, 3)
+
+        vertex = g.add_vertex("3")
+        print(g.vcount(), g.ecount())
         self.assertTrue(g.vcount() == 3 and g.ecount() == 0)
         self.assertEqual(2, vertex.index)
         self.assertTrue("name" in g.vertex_attributes())
-        self.assertEqual(g.vs["name"], [None, "foo", 3])
+        self.assertEqual(g.vs["name"], [None, "foo", "3"])
 
         vertex = g.add_vertex(name="bar")
         self.assertTrue(g.vcount() == 4 and g.ecount() == 0)
         self.assertEqual(3, vertex.index)
         self.assertTrue("name" in g.vertex_attributes())
-        self.assertEqual(g.vs["name"], [None, "foo", 3, "bar"])
+        self.assertEqual(g.vs["name"], [None, "foo", "3", "bar"])
 
         vertex = g.add_vertex(name="frob", spam="cheese", ham=42)
         self.assertTrue(g.vcount() == 5 and g.ecount() == 0)

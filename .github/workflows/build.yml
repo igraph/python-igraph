@@ -29,7 +29,7 @@ jobs:
           python-version: '3.8'
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v2.12.3
+        uses: pypa/cibuildwheel@v2.13.0
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
@@ -38,7 +38,7 @@ jobs:
           CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-manylinux_i686"
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v2.12.3
+        uses: pypa/cibuildwheel@v2.13.0
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
@@ -63,7 +63,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v2.12.3
+        uses: pypa/cibuildwheel@v2.13.0
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -88,7 +88,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v2.12.3
+        uses: pypa/cibuildwheel@v2.13.0
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -155,7 +155,7 @@ jobs:
           cmake --install .
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.12.3
+        uses: pypa/cibuildwheel@v2.13.0
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
@@ -165,6 +165,34 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
+
+  build_wheel_wasm:
+    name: Build wheels for WebAssembly
+    runs-on: ubuntu-20.04
+    
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.10.2'
+
+      - uses: mymindstorm/setup-emsdk@v12
+        with:
+          version: '3.1.14'
+
+      - name: Build wheel
+        run: |
+          pip install pyodide-build==0.21.0
+          pyodide build
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./dist/*.whl
 
   build_wheel_win:
     name: Build wheels on Windows (${{ matrix.cmake_arch }})
@@ -214,7 +242,7 @@ jobs:
         shell: cmd
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.12.3
+        uses: pypa/cibuildwheel@v2.13.0
         env:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"

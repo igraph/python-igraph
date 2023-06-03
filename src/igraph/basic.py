@@ -57,13 +57,19 @@ def _add_vertex(graph, name=None, **kwds):
         C{add_vertices(1)} if you don't need the L{Vertex} object and want
         to avoid the overhead of creating t.
     """
+    if isinstance(name, int):
+        raise TypeError("cannot use integers as vertex names; use strings instead")
+
     vid = graph.vcount()
     graph.add_vertices(1)
     vertex = graph.vs[vid]
+
     for key, value in kwds.items():
         vertex[key] = value
+
     if name is not None:
         vertex["name"] = name
+
     return vertex
 
 

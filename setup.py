@@ -59,6 +59,11 @@ def building_on_windows_msvc() -> bool:
     return platform.system() == "Windows" and sysconfig.get_platform() != "mingw"
 
 
+def building_with_emscripten() -> bool:
+    """Returns True when building with Emscripten to WebAssembly"""
+    return (sysconfig.get_config_var("HOST_GNU_TYPE") or "").endswith("emscripten")
+
+
 def exclude_from_list(items: Iterable[T], items_to_exclude: Iterable[T]) -> List[T]:
     """Excludes certain items from a list, keeping the original order of
     the remaining items."""
@@ -242,6 +247,18 @@ class IgraphCCoreCMakeBuilder:
 
         print("Configuring build...")
         args = [cmake]
+
+        # Build to wasm requires invocation of the Emscripten SDK
+        if building_with_emscripten():
+            emcmake = which("emcmake")
+            if not emcmake:
+                print(
+                    "You need to install emcmake from the Emscripten SDK before "
+                    "compiling igraph."
+                )
+                return False
+            args.insert(0, emcmake)
+            args.append("-DIGRAPH_WARNINGS_AS_ERRORS:BOOL=OFF")
 
         # Build the Python interface with vendored libraries
         for deps in "ARPACK BLAS GLPK GMP LAPACK".split():
