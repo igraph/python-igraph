@@ -39,7 +39,7 @@ def find_open_image_png_function():
     except ImportError:
         pass
 
-    raise ImportError('PIL or OpenCV required to run Cairo tests')
+    raise ImportError('PIL+NumPy or OpenCV required to run Cairo tests')
 
 
 def find_image_comparison():
