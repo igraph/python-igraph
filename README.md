@@ -59,7 +59,8 @@ Python 3.7 and later. Make sure that you have Microsoft Visual Studio 2015 or
 later installed, and of course Python 3.7 or later. First extract the source to
 a suitable directory. If you launch the Developer command prompt and navigate to
 the directory where you extracted the source code, you should be able to build
-and install igraph using `python setup.py install`
+and install igraph using `pip install .`, assuming that you have `pip`
+installed in your Python environment.
 
 You may need to set the architecture that you are building on explicitly by setting the environment variable
 
@@ -105,17 +106,17 @@ set IGRAPH_EXTRA_LIBRARIES=libxml2,lzma,zlib,iconv,charset
 set IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
 ```
 
-You can now build and install `igraph` again by simply running `python
-setup.py build`. Please make sure to use a clean source tree, if you built
-previously without GraphML, it will not update the build.
+You can now build and install `igraph` again by simply running `pip install .`.
+Please make sure to use a clean source tree, if you built previously without
+GraphML, it will not update the build.
 
 ### Linking to an existing igraph installation
 
 The source code of the Python package includes the source code of the matching
 igraph version that the Python interface should compile against. However, if
 you want to link the Python interface to a custom installation of the C core
-that has already been compiled and installed on your system, you can ask
-`setup.py` to use the pre-compiled version. This option requires that your
+that has already been compiled and installed on your system, you can ask our
+build system to use the pre-compiled version. This option requires that your
 custom installation of igraph is discoverable with `pkg-config`. First, check
 whether `pkg-config` can tell you the required compiler and linker flags for
 igraph:
@@ -135,15 +136,14 @@ IGRAPH_USE_PKG_CONFIG=1 pip install igraph
 ```
 
 Alternatively, if you have already downloaded and extracted the source code
-of igraph, you can run `setup.py` directly:
+of igraph, you can run `pip install` on the source tree directly:
 
 ```bash
-IGRAPH_USE_PKG_CONFIG=1 python setup.py build
-IGRAPH_USE_PKG_CONFIG=1 python setup.py install
+IGRAPH_USE_PKG_CONFIG=1 pip install .
 ```
 
 (Note that you need the `IGRAPH_USE_PKG_CONFIG=1` environment variable
-for both invocations, otherwise the call to `setup.py install` would still
+for both invocations, otherwise the call to `pip install` would still
 build the vendored C core instead of linking to an existing installation).
 
 This option is primarily intended for package maintainers in Linux
@@ -200,7 +200,6 @@ additional dependencies, read further below for details.
 For more information about installing directly from `git` using `pip` see 
 https://pip.pypa.io/en/stable/topics/vcs-support/#git.
 
-
 Alternatively, you can clone this repository locally. This repository contains a
 matching version of the C core of `igraph` as a git submodule. In order to
 install the development version from source, you need to instruct git to check
@@ -220,17 +219,20 @@ sudo apt install bison flex
 On macOS you can install these from Homebrew or MacPorts. On Windows you can
 install `winflexbison3` from Chocolatey.
 
-Then, running the setup script should work if you have a C compiler and the
-necessary build dependencies (see also the previous section):
+Then you can install the package directly with `pip` (see also the previous section):
 
 ```bash
-python setup.py build
+pip install .
 ```
 
-You can install it using
+If you would like to create a source distribution or a Python wheel instead of
+installing the module directly in your Python environment, use a standard build
+frontend like [build](https://pypa-build.readthedocs.io/en/stable/). If you
+use [pipx](https://pypa.github.io/pipx/) to isolate command-line Python tools
+in their own separate virtualenvs, you can simply run:
 
 ```bash
-python setup.py install
+pipx run build
 ```
 
 ### Running unit tests
@@ -240,6 +242,17 @@ with the built-in `unittest` module:
 
 ```bash
 python -m unittest
+```
+
+Note that unit tests have additional dependencies like NumPy, PIL or
+`matplotlib`. The unit test suite will try to do its best to skip tests
+requiring external dependencies, but if you want to make sure that all the unit
+tests are executed, either use `tox` (which will take care of installing the
+test dependencies in a virtualenv), or install the module with the `test`
+extras:
+
+```bash
+pip install '.[test]'
 ```
 
 ## Contributing
@@ -252,16 +265,17 @@ that you would like to see included in the main tree, open a PR on this repo.
 
 To start developing `igraph`, follow the steps above about installing the development version. Make sure that you do so by cloning the repository locally so that you are able to make changes.
 
-For easier development, you can install `igraph` in development mode so your changes in the Python source
-code are picked up automatically by Python:
+For easier development, you can install `igraph` in "editable" (i.e.
+development) mode so your changes in the Python source code are picked up
+automatically by Python:
 
 ```bash
-python setup.py develop
+pip install -e .
 ```
 
 Changes that you make to the Python code do not need any extra action. However,
 if you adjust the source code of the C extension, you need to rebuild it by running
-`python setup.py develop` again. Compilation of the C core of `igraph` is
+`pip install -e .` again. Compilation of the C core of `igraph` is
 cached in ``vendor/build`` and ``vendor/install`` so subsequent builds are much
 faster than the first one as the C core does not need to be recompiled.
 
