@@ -190,7 +190,7 @@ jobs:
           pip install pyodide-build==0.21.0
           pyodide build
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: ./dist/*.whl
 
