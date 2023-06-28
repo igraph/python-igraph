@@ -406,14 +406,25 @@ class PermutationTests(unittest.TestCase):
         self.assertTrue(set(g3.get_edgelist()) == set(g1.get_edgelist()))
 
 
+class AutomorphismTests(unittest.TestCase):
+    def testCountAutomorphisms(self):
+        g = Graph.Famous("petersen")
+        self.assertEqual(120, g.count_automorphisms())
+
+        g = Graph.Lattice([16, 16])
+        self.assertEqual(2048, g.count_automorphisms())
+
+
 def suite():
     isomorphism_suite = unittest.defaultTestLoader.loadTestsFromTestCase(IsomorphismTests)
     subisomorphism_suite = unittest.defaultTestLoader.loadTestsFromTestCase(SubisomorphismTests)
     permutation_suite = unittest.defaultTestLoader.loadTestsFromTestCase(PermutationTests)
+    automorphism_suite = unittest.defaultTestLoader.loadTestsFromTestCase(AutomorphismTests)
     return unittest.TestSuite([
         isomorphism_suite,
         subisomorphism_suite,
         permutation_suite,
+        automorphism_suite,
     ])
 
 

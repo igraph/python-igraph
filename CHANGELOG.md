@@ -23,6 +23,9 @@
   between two vertices using the A-star algorithm and an appropriate
   heuristic function.
 
+- Added `Graph.count_automorphisms()` to count the number of automorphisms
+  of a graph.
+
 - The `VertexCover` constructor now allows referring to vertices by names
   instead of IDs.
 

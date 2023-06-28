@@ -9593,6 +9593,50 @@ PyObject *igraphmodule_Graph_canonical_permutation(
   return list;
 }
 
+/**
+ * \ingroup python_interface_graph
+ * \brief Calculates the number of automorphisms of a graph using BLISS
+ * \sa igraph_count_automorphisms
+ */
+PyObject *igraphmodule_Graph_count_automorphisms(
+    igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = { "sh", "color", NULL };
+  PyObject *sh_o = Py_None;
+  PyObject *color_o = Py_None;
+  PyObject *result;
+  igraph_bliss_sh_t sh = IGRAPH_BLISS_FL;
+  igraph_vector_int_t *color = 0;
+  igraph_error_t retval;
+  igraph_bliss_info_t info;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &sh_o, &color_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_bliss_sh_t(sh_o, &sh))
+    return NULL;
+
+  if (igraphmodule_attrib_to_vector_int_t(color_o, self, &color,
+      ATTRIBUTE_TYPE_VERTEX)) return NULL;
+
+  retval = igraph_count_automorphisms(&self->g, color, sh, &info);
+
+  if (color) { igraph_vector_int_destroy(color); free(color); }
+
+  if (retval) {
+    igraphmodule_handle_igraph_error();
+    igraph_free(info.group_size);
+    return NULL;
+  }
+
+  result = PyLong_FromString(info.group_size, NULL, 10);
+  igraph_free(info.group_size);
+  if (!result) {
+    return NULL;
+  }
+
+  return result;
+}
+
 /** \ingroup python_interface_graph
  * \brief Calculates the isomorphism class of a graph or its subgraph
  * \sa igraph_isoclass, igraph_isoclass_subgraph
@@ -16554,11 +16598,35 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "    - C{\"fsm\"}: smallest maximally non-trivially connected\n"
    "      non-singleton cell\n\n"
    "@param color: optional vector storing a coloring of the vertices\n "
-   "with respect to which the isomorphism is computed."
-   "If C{None}, all vertices have the same color.\n"
+   "  with respect to which the isomorphism is computed."
+   "  If C{None}, all vertices have the same color.\n"
    "@return: a permutation vector containing vertex IDs. Vertex 0 in the original\n"
    "  graph will be mapped to an ID contained in the first element of this\n"
    "  vector; vertex 1 will be mapped to the second and so on.\n"
+  },
+  {"count_automorphisms",
+   (PyCFunction) igraphmodule_Graph_count_automorphisms,
+   METH_VARARGS | METH_KEYWORDS,
+   "count_automorphisms(sh=\"fl\", color=None)\n--\n\n"
+   "Calculates the number of automorphisms of a graph using the BLISS isomorphism\n"
+   "algorithm.\n\n"
+   "See U{http://www.tcs.hut.fi/Software/bliss/index.html} for more information\n"
+   "about the BLISS algorithm and canonical permutations.\n\n"
+   "@param sh: splitting heuristics for graph as a case-insensitive string,\n"
+   "  with the following possible values:\n\n"
+   "    - C{\"f\"}: first non-singleton cell\n\n"
+   "    - C{\"fl\"}: first largest non-singleton cell\n\n"
+   "    - C{\"fs\"}: first smallest non-singleton cell\n\n"
+   "    - C{\"fm\"}: first maximally non-trivially connected non-singleton\n"
+   "      cell\n\n"
+   "    - C{\"flm\"}: largest maximally non-trivially connected\n"
+   "      non-singleton cell\n\n"
+   "    - C{\"fsm\"}: smallest maximally non-trivially connected\n"
+   "      non-singleton cell\n\n"
+   "@param color: optional vector storing a coloring of the vertices\n "
+   "  with respect to which the isomorphism is computed."
+   "  If C{None}, all vertices have the same color.\n"
+   "@return: the number of automorphisms of the graph.\n"
   },
   {"isoclass", (PyCFunction) igraphmodule_Graph_isoclass,
    METH_VARARGS | METH_KEYWORDS,
