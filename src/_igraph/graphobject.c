@@ -9549,6 +9549,53 @@ PyObject *igraphmodule_Graph_write_leda(igraphmodule_GraphObject * self,
 
 /**
  * \ingroup python_interface_graph
+ * \brief Calculates the automorphism group generators of a graph using BLISS
+ * \sa igraph_automorphism_group
+ */
+PyObject *igraphmodule_Graph_automorphism_group(
+    igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = { "sh", "color", NULL };
+  PyObject *sh_o = Py_None;
+  PyObject *color_o = Py_None;
+  PyObject *list;
+  igraph_bliss_sh_t sh = IGRAPH_BLISS_FL;
+  igraph_vector_int_list_t generators;
+  igraph_vector_int_t *color = 0;
+  igraph_error_t retval;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &sh_o, &color_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_bliss_sh_t(sh_o, &sh))
+    return NULL;
+
+  if (igraph_vector_int_list_init(&generators, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraphmodule_attrib_to_vector_int_t(color_o, self, &color,
+      ATTRIBUTE_TYPE_VERTEX)) return NULL;
+
+  retval = igraph_automorphism_group(&self->g, color, &generators, sh, 0);
+
+  if (color) { igraph_vector_int_destroy(color); free(color); }
+
+  if (retval) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_int_list_destroy(&generators);
+    return NULL;
+  }
+
+  list = igraphmodule_vector_int_list_t_to_PyList(&generators);
+
+  igraph_vector_int_list_destroy(&generators);
+
+  return list;
+}
+
+/**
+ * \ingroup python_interface_graph
  * \brief Calculates the canonical permutation of a graph using BLISS
  * \sa igraph_canonical_permutation
  */
@@ -16576,6 +16623,32 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* ISOMORPHISM */
   /***************/
 
+  {"automorphism_group",
+   (PyCFunction) igraphmodule_Graph_automorphism_group,
+   METH_VARARGS | METH_KEYWORDS,
+   "automorphism_group(sh=\"fl\", color=None)\n--\n\n"
+   "Calculates the generators of the automorphism group of a graph using the\n"
+   "BLISS isomorphism algorithm.\n\n"
+   "The generator set may not be minimal and may depend on the splitting\n"
+   "heuristics. The generators are permutations represented using zero-based\n"
+   "indexing.\n\n"
+   "@param sh: splitting heuristics for graph as a case-insensitive string,\n"
+   "  with the following possible values:\n\n"
+   "    - C{\"f\"}: first non-singleton cell\n\n"
+   "    - C{\"fl\"}: first largest non-singleton cell\n\n"
+   "    - C{\"fs\"}: first smallest non-singleton cell\n\n"
+   "    - C{\"fm\"}: first maximally non-trivially connected non-singleton\n"
+   "      cell\n\n"
+   "    - C{\"flm\"}: largest maximally non-trivially connected\n"
+   "      non-singleton cell\n\n"
+   "    - C{\"fsm\"}: smallest maximally non-trivially connected\n"
+   "      non-singleton cell\n\n"
+   "@param color: optional vector storing a coloring of the vertices\n "
+   "  with respect to which the isomorphism is computed."
+   "  If C{None}, all vertices have the same color.\n"
+   "@return: a list of integer vectors, each vector representing an automorphism\n"
+   "  group of the graph.\n"
+  },
   {"canonical_permutation",
    (PyCFunction) igraphmodule_Graph_canonical_permutation,
    METH_VARARGS | METH_KEYWORDS,

@@ -24,7 +24,8 @@
   heuristic function.
 
 - Added `Graph.count_automorphisms()` to count the number of automorphisms
-  of a graph.
+  of a graph and `Graph.automorphism_group()` to calculate the generators of
+  the automorphism group of a graph.
 
 - The `VertexCover` constructor now allows referring to vertices by names
   instead of IDs.
