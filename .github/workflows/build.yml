@@ -31,7 +31,7 @@ jobs:
       - name: Build wheels (manylinux)
         uses: pypa/cibuildwheel@v2.13.1
         env:
-          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
           # Skip tests for Python 3.10 and 3.11 because SciPy does not have
           # 32-bit wheels for Linux
@@ -40,7 +40,7 @@ jobs:
       - name: Build wheels (musllinux)
         uses: pypa/cibuildwheel@v2.13.1
         env:
-          CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
           CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
 
@@ -65,7 +65,7 @@ jobs:
       - name: Build wheels (manylinux)
         uses: pypa/cibuildwheel@v2.13.1
         env:
-          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
 
@@ -90,7 +90,7 @@ jobs:
       - name: Build wheels (musllinux)
         uses: pypa/cibuildwheel@v2.13.1
         env:
-          CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-musllinux_aarch64"
           CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
