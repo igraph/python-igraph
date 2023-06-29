@@ -31,18 +31,22 @@ class GraphTestRunner(unittest.TestCase):
     @image_comparison(baseline_images=["graph_basic"])
     def test_basic(self):
         g = Graph.Ring(5)
-        plot(g, target=result_image_folder / "graph_basic.png", backend="cairo")
+        lo = g.layout("auto")
+        plot(g, layout=lo, target=result_image_folder / "graph_basic.png", backend="cairo")
 
     @image_comparison(baseline_images=["graph_directed"])
     def test_directed(self):
         g = Graph.Ring(5, directed=True)
-        plot(g, target=result_image_folder / "graph_directed.png", backend="cairo")
+        lo = g.layout("auto")
+        plot(g, layout=lo, target=result_image_folder / "graph_directed.png", backend="cairo")
 
     @image_comparison(baseline_images=["graph_mark_groups_directed"])
     def test_mark_groups(self):
         g = Graph.Ring(5, directed=True)
+        lo = g.layout("auto")
         plot(
             g,
+            layout=lo,
             target=result_image_folder / "graph_mark_groups_directed.png",
             backend="cairo",
             mark_groups=True,
@@ -51,8 +55,10 @@ class GraphTestRunner(unittest.TestCase):
     @image_comparison(baseline_images=["graph_mark_groups_squares_directed"])
     def test_mark_groups_squares(self):
         g = Graph.Ring(5, directed=True)
+        lo = g.layout("auto")
         plot(
             g,
+            layout=lo,
             target=result_image_folder / "graph_mark_groups_squares_directed.png",
             backend="cairo",
             mark_groups=True,
