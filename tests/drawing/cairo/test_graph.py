@@ -80,8 +80,10 @@ class ClusteringTestRunner(unittest.TestCase):
     def test_clustering_directed_small(self):
         g = Graph.Ring(5, directed=True)
         clu = VertexClustering(g, [0] * 5)
+        lo = g.layout("auto")
         plot(
             clu,
+            layout=lo,
             backend="cairo",
             target=result_image_folder / "clustering_directed.png",
             mark_groups=True,
