@@ -978,6 +978,7 @@ options = dict(
         # pure Python or have musllinux wheels as we don't want to compile wheels
         # in CI
         "test-musl": [
+            "cairocffi>=1.2.0",
             "networkx>=2.5",
             "pytest>=7.0.1",
             "pytest-timeout>=2.1.0",

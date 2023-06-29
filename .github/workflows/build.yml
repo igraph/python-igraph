@@ -295,7 +295,7 @@ jobs:
 
       - name: Test
         run: |
-          pip install --prefer-binary numpy scipy pandas networkx pytest pytest-timeout
+          pip install --prefer-binary cairocffi numpy scipy pandas networkx pytest pytest-timeout
           python -m pytest -v tests
 
       - uses: actions/upload-artifact@v3
