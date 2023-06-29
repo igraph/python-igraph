@@ -51,6 +51,18 @@ def find_image_comparison():
     return image_comparison
 
 
+def are_tests_supported():
+    if cairo is None:
+        return False, "cairo not found"
+
+    try:
+        find_open_image_png_function()
+    except ImportError:
+        return False, "PIL+NumPy or OpenCV not found"
+
+    return True, ""
+
+
 def _load_image(filename, fmt):
     if fmt == 'png':
         return find_open_image_png_function()(filename)

@@ -2,18 +2,14 @@ import random
 import unittest
 
 from igraph import Graph, plot, VertexClustering
-from igraph.drawing import find_cairo
 
 # FIXME: find a better way to do this that works for both direct call and module
 # import e.g. tox
 try:
-    from .utils import find_image_comparison, result_image_folder
+    from .utils import are_tests_supported, find_image_comparison, result_image_folder
 except ImportError:
-    from utils import find_image_comparison, result_image_folder
+    from utils import are_tests_supported, find_image_comparison, result_image_folder
 
-
-cairo = find_cairo()
-has_cairo = hasattr(cairo, "version")
 
 image_comparison = find_image_comparison()
 
@@ -21,8 +17,9 @@ image_comparison = find_image_comparison()
 class GraphTestRunner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        if not has_cairo:
-            raise unittest.SkipTest("cairo not found, skipping tests")
+        supported, msg = are_tests_supported()
+        if not supported:
+            raise unittest.SkipTest(f"{msg}, skipping tests")
         result_image_folder.mkdir(parents=True, exist_ok=True)
 
     def setUp(self) -> None:
@@ -69,8 +66,9 @@ class GraphTestRunner(unittest.TestCase):
 class ClusteringTestRunner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        if not has_cairo:
-            raise unittest.SkipTest("cairo not found, skipping tests")
+        supported, msg = are_tests_supported()
+        if not supported:
+            raise unittest.SkipTest(f"{msg}, skipping tests")
         result_image_folder.mkdir(parents=True, exist_ok=True)
 
     def setUp(self) -> None:
