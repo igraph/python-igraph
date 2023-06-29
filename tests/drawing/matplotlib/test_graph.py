@@ -1,3 +1,4 @@
+import os
 import random
 import unittest
 
@@ -102,6 +103,7 @@ class GraphTestRunner(unittest.TestCase):
         g = Graph.Ring(5)
         with overridden_configuration("plotting.backend", "matplotlib"):
             plot(g, target="graph_basic.png", layout=self.layout_small_ring)
+            os.unlink("graph_basic.png")
 
 
 class ClusteringTestRunner(unittest.TestCase):
