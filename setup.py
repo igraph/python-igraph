@@ -960,6 +960,7 @@ options = dict(
 
         # Dependencies needed for testing only
         "test": [
+            "cairocffi>=1.2.0",
             "networkx>=2.5",
             "pytest>=7.0.1",
             "pytest-timeout>=2.1.0",
