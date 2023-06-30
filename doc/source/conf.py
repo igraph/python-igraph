@@ -253,7 +253,7 @@ def get_pydoctor_html_outputdir(pydoctor_url_path):
 pydoctor_url_path = 'api/'
 
 pydoctor_args = [
-    '--project-name="igraph"',
+    '--project-name=igraph',
     '--project-version=' + version,
     '--project-url=https://igraph.readthedocs.io',
     '--introspect-c-modules',
