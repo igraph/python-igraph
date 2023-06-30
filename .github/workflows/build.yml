@@ -238,7 +238,7 @@ jobs:
       - name: Install VCPKG libraries
         run: |
           %VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
-          %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:${{ matrix.vcpkg_arch }}-windows-static-md cairo:${{ matrix.vcpkg_arch }}-windows
+          %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libxml2:${{ matrix.vcpkg_arch }}-windows-static-md
         shell: cmd
 
       - name: Build wheels

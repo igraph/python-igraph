@@ -18,4 +18,8 @@ def find_cairo() -> Any:
             break
         except ImportError:
             pass
+        except OSError:
+            # cairocffi throws an OSError if it is installed but libcairo-2 is
+            # not present on the system
+            pass
     return module
