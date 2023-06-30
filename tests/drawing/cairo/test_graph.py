@@ -29,13 +29,23 @@ class GraphTestRunner(unittest.TestCase):
     def test_basic(self):
         g = Graph.Ring(5)
         lo = g.layout("auto")
-        plot(g, layout=lo, target=result_image_folder / "graph_basic.png", backend="cairo")
+        plot(
+            g,
+            layout=lo,
+            target=result_image_folder / "graph_basic.png",
+            backend="cairo",
+        )
 
     @image_comparison(baseline_images=["graph_directed"])
     def test_directed(self):
         g = Graph.Ring(5, directed=True)
         lo = g.layout("auto")
-        plot(g, layout=lo, target=result_image_folder / "graph_directed.png", backend="cairo")
+        plot(
+            g,
+            layout=lo,
+            target=result_image_folder / "graph_directed.png",
+            backend="cairo",
+        )
 
     @image_comparison(baseline_images=["graph_mark_groups_directed"])
     def test_mark_groups(self):
@@ -60,6 +70,19 @@ class GraphTestRunner(unittest.TestCase):
             backend="cairo",
             mark_groups=True,
             vertex_shape="square",
+        )
+
+    @image_comparison(baseline_images=["graph_with_curved_edges"])
+    def test_graph_with_curved_edges(self):
+        g = Graph.Ring(24, directed=True, mutual=True)
+        lo = g.layout("circle")
+        plot(
+            g,
+            layout=lo,
+            target=result_image_folder / "graph_with_curved_edges.png",
+            bbox=(800, 800),
+            edge_curved=0.25,
+            backend="cairo",
         )
 
 

@@ -581,14 +581,14 @@ def get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, curvature):
     """Helper function that calculates the Bezier control points for a
     curved edge that goes from (x1, y1) to (x2, y2).
     """
-    aux1 = (2 * x1 + x2) / 3.0 - curvature * 0.5 * (y2 - y1), (
-        2 * y1 + y2
-    ) / 3.0 + curvature * 0.5 * (x2 - x1)
-   
-    aux2 = (x1 + 2 * x2) / 3.0 - curvature * 0.5 * (y2 - y1), (
-        y1 + 2 * y2
-    ) / 3.0 + curvature * 0.5 * (x2 - x1)
-   
+    aux1 = (
+        (2 * x1 + x2) / 3.0 - curvature * 0.5 * (y2 - y1),
+        (2 * y1 + y2) / 3.0 + curvature * 0.5 * (x2 - x1)
+    )
+    aux2 = (
+        (x1 + 2 * x2) / 3.0 - curvature * 0.5 * (y2 - y1),
+        (y1 + 2 * y2) / 3.0 + curvature * 0.5 * (x2 - x1)
+    )
     return aux1, aux2
 
 
