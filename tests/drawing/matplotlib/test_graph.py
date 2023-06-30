@@ -105,6 +105,15 @@ class GraphTestRunner(unittest.TestCase):
             plot(g, target="graph_basic.png", layout=self.layout_small_ring)
             os.unlink("graph_basic.png")
 
+    @image_comparison(baseline_images=["graph_with_curved_edges"])
+    def test_graph_with_curved_edges(self):
+        plt.close("all")
+        g = Graph.Ring(24, directed=True, mutual=True)
+        fig, ax = plt.subplots()
+        lo = g.layout("circle")
+        lo.scale(3)
+        plot(g, target=ax, layout=lo)
+
 
 class ClusteringTestRunner(unittest.TestCase):
     def setUp(self):

@@ -165,7 +165,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
 
     def _kwds_post_update(self):
         self.kwds["layout"] = self.ensure_layout(self.kwds["layout"], self.graph)
-        self.edge_curved = self._set_edge_curve(**self.kwds)
+        self.kwds["edge_curved"] = self._set_edge_curve(**self.kwds)
         self._clear_state()
         self.stale = True
 
