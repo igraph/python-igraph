@@ -1,6 +1,6 @@
 # igraph Python interface changelog
 
-## [Unreleased]
+## [0.10.5] - 2023-06-30
 
 ### Added
 
@@ -55,7 +55,7 @@
   ago so the function in the Python interface did not do anything useful
   either.
 
-## [0.10.4] - 2022-01-27
+## [0.10.4] - 2023-01-27
 
 ### Added
 
@@ -513,7 +513,8 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[Unreleased]: https://github.com/igraph/python-igraph/compare/0.10.4...main
+[Unreleased]: https://github.com/igraph/python-igraph/compare/0.10.5...main
+[0.10.5]: https://github.com/igraph/python-igraph/compare/0.10.4...0.10.5
 [0.10.4]: https://github.com/igraph/python-igraph/compare/0.10.3...0.10.4
 [0.10.3]: https://github.com/igraph/python-igraph/compare/0.10.2...0.10.3
 [0.10.2]: https://github.com/igraph/python-igraph/compare/0.10.1...0.10.2
