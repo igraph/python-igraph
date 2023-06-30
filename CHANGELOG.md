@@ -41,6 +41,13 @@
 - `Graph.layout_reingold_tilford()` now accepts vertex names in the `roots=...`
   keyword argument.
 
+- The plotting of curved directed edges with the Cairo backend is now fixed;
+  arrowheads were placed at the wrong position before this fix.
+
+### Changed
+
+- The C core of igraph was updated to version 0.10.5.
+
 ### Removed
 
 - Removed defunct `Graph.community_leading_eigenvector_naive()` method. Not a
