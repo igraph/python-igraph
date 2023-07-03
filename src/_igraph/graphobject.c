@@ -3881,7 +3881,7 @@ PyObject *igraphmodule_Graph_authority_score(
       ATTRIBUTE_TYPE_EDGE)) return NULL;
 
   arpack_options = (igraphmodule_ARPACKOptionsObject*)arpack_options_o;
-  if (igraph_authority_score(&self->g, &res, &value, PyObject_IsTrue(scale_o),
+  if (igraph_hub_and_authority_scores(&self->g, NULL, &res, &value, PyObject_IsTrue(scale_o),
       weights, igraphmodule_ARPACKOptions_get(arpack_options))) {
     igraphmodule_handle_igraph_error();
     if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -5669,7 +5669,7 @@ PyObject *igraphmodule_Graph_hub_score(
     ATTRIBUTE_TYPE_EDGE)) return NULL;
 
   arpack_options = (igraphmodule_ARPACKOptionsObject*)arpack_options_o;
-  if (igraph_hub_score(&self->g, &res, &value, PyObject_IsTrue(scale_o),
+  if (igraph_hub_and_authority_scores(&self->g, &res, NULL, &value, PyObject_IsTrue(scale_o),
       weights, igraphmodule_ARPACKOptions_get(arpack_options))) {
     igraphmodule_handle_igraph_error();
     if (weights) { igraph_vector_destroy(weights); free(weights); }
