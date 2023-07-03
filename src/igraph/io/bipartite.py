@@ -1,4 +1,4 @@
-def _construct_incidence_bipartite_graph(
+def _construct_bipartite_graph_from_adjacency(
     cls,
     matrix,
     directed=False,
@@ -8,13 +8,13 @@ def _construct_incidence_bipartite_graph(
     *args,
     **kwds
 ):
-    """Creates a bipartite graph from an incidence matrix.
+    """Creates a bipartite graph from a bipartite adjacency matrix.
 
     Example:
 
-    >>> g = Graph.Incidence([[0, 1, 1], [1, 1, 0]])
+    >>> g = Graph.Biadjacency([[0, 1, 1], [1, 1, 0]])
 
-    @param matrix: the incidence matrix.
+    @param matrix: the bipartite adjacency matrix.
     @param directed: whether to create a directed graph.
     @param mode: defines the direction of edges in the graph. If
       C{"out"}, then edges go from vertices of the first kind
@@ -28,12 +28,12 @@ def _construct_incidence_bipartite_graph(
       the nearest integer and this will be the number of multiple edges
       created.
     @param weighted: defines whether to create a weighted graph from the
-      incidence matrix. If it is c{None} then an unweighted graph is created
+      adjacency matrix. If it is c{None} then an unweighted graph is created
       and the multiple argument is used to determine the edges of the graph.
       If it is a string then for every non-zero matrix entry, an edge is created
       and the value of the entry is added as an edge attribute named by the
       weighted argument. If it is C{True} then a weighted graph is created and
-      the name of the edge attribute will be ‘weight’.
+      the name of the edge attribute will be C{"weight"}.
 
     @raise ValueError: if the weighted and multiple are passed together.
 
@@ -43,11 +43,11 @@ def _construct_incidence_bipartite_graph(
     is_weighted = True if weighted or weighted == "" else False
     if is_weighted and multiple:
         raise ValueError("arguments weighted and multiple can not co-exist")
-    result, types = cls._Incidence(matrix, directed, mode, multiple, *args, **kwds)
+    result, types = cls._Biadjacency(matrix, directed, mode, multiple, *args, **kwds)
     result.vs["type"] = types
     if is_weighted:
         weight_attr = "weight" if weighted is True else weighted
-        _, rows, _ = result.get_incidence()
+        _, rows, _ = result.get_biadjacency()
         num_vertices_of_first_kind = len(rows)
         for edge in result.es:
             source, target = edge.tuple

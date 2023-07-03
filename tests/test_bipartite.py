@@ -45,31 +45,31 @@ class BipartiteTests(unittest.TestCase):
         self.assertTrue(sorted(g.get_edgelist()) == expected)
         self.assertTrue(g.vs["type"] == [False] * 10 + [True] * 5)
 
-    def testIncidence(self):
-        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]])
+    def testBiadjacency(self):
+        g = Graph.Biadjacency([[0, 1, 1], [1, 2, 0]])
         self.assertTrue(all((g.vcount() == 5, g.ecount() == 4, not g.is_directed())))
         self.assertListEqual(g.vs["type"], [False] * 2 + [True] * 3)
         self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2), (1, 3)])
 
-        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], multiple=True)
+        g = Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], multiple=True)
         self.assertTrue(all((g.vcount() == 5, g.ecount() == 5, not g.is_directed())))
         self.assertListEqual(g.vs["type"], [False] * 2 + [True] * 3)
         self.assertListEqual(
             sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2), (1, 3), (1, 3)]
         )
 
-        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], directed=True)
+        g = Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], directed=True)
         self.assertTrue(all((g.vcount() == 5, g.ecount() == 4, g.is_directed())))
         self.assertListEqual(g.vs["type"], [False] * 2 + [True] * 3)
         self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2), (1, 3)])
 
-        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], directed=True, mode="in")
+        g = Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], directed=True, mode="in")
         self.assertTrue(all((g.vcount() == 5, g.ecount() == 4, g.is_directed())))
         self.assertListEqual(g.vs["type"], [False] * 2 + [True] * 3)
         self.assertListEqual(sorted(g.get_edgelist()), [(2, 1), (3, 0), (3, 1), (4, 0)])
 
         # Create a weighted Graph
-        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], weighted=True)
+        g = Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], weighted=True)
         self.assertTrue(
             all(
                 (g.vcount() == 5, g.ecount() == 4, not g.is_directed(), g.is_weighted())
@@ -80,7 +80,7 @@ class BipartiteTests(unittest.TestCase):
         self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2), (1, 3)])
 
         # Graph is not weighted when weighted=`str`
-        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], weighted="some_attr_name")
+        g = Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], weighted="some_attr_name")
         self.assertTrue(
             all(
                 (
@@ -96,7 +96,7 @@ class BipartiteTests(unittest.TestCase):
         self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2), (1, 3)])
 
         # Graph is not weighted when weighted=""
-        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], weighted="")
+        g = Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], weighted="")
         self.assertTrue(
             all(
                 (
@@ -112,7 +112,7 @@ class BipartiteTests(unittest.TestCase):
         self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2), (1, 3)])
 
         # Should work when directed=True and mode=out with weighted
-        g = Graph.Incidence([[0, 1, 1], [1, 2, 0]], directed=True, weighted=True)
+        g = Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], directed=True, weighted=True)
         self.assertTrue(
             all((g.vcount() == 5, g.ecount() == 4, g.is_directed(), g.is_weighted()))
         )
@@ -121,7 +121,7 @@ class BipartiteTests(unittest.TestCase):
         self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2), (1, 3)])
 
         # Should work when directed=True and mode=in with weighted
-        g = Graph.Incidence(
+        g = Graph.Biadjacency(
             [[0, 1, 1], [1, 2, 0]], directed=True, mode="in", weighted=True
         )
         self.assertTrue(
@@ -132,7 +132,7 @@ class BipartiteTests(unittest.TestCase):
         self.assertListEqual(sorted(g.get_edgelist()), [(2, 1), (3, 0), (3, 1), (4, 0)])
 
         # Should work when directed=True and mode=all with weighted
-        g = Graph.Incidence(
+        g = Graph.Biadjacency(
             [[0, 1, 1], [1, 2, 0]], directed=True, mode="all", weighted=True
         )
         self.assertTrue(
@@ -145,28 +145,28 @@ class BipartiteTests(unittest.TestCase):
             [(0, 3), (0, 4), (1, 2), (1, 3), (2, 1), (3, 0), (3, 1), (4, 0)],
         )
 
-    def testIncidenceError(self):
+    def testBiadjacencyError(self):
         msg = "arguments weighted and multiple can not co-exist"
         with self.assertRaises(ValueError) as e:
-            Graph.Incidence([[0, 1, 1], [1, 2, 0]], multiple=True, weighted=True)
+            Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], multiple=True, weighted=True)
         self.assertIn(msg, e.exception.args)
 
         with self.assertRaises(ValueError) as e:
-            Graph.Incidence([[0, 1, 1], [1, 2, 0]], multiple=True, weighted="string")
+            Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], multiple=True, weighted="string")
         self.assertIn(msg, e.exception.args)
 
         with self.assertRaises(ValueError) as e:
-            Graph.Incidence([[0, 1, 1], [1, 2, 0]], multiple=True, weighted="")
+            Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], multiple=True, weighted="")
         self.assertIn(msg, e.exception.args)
 
-    def testGetIncidence(self):
+    def testGetBiadjacency(self):
         mat = [[0, 1, 1], [1, 1, 0]]
         v1, v2 = [0, 1], [2, 3, 4]
-        g = Graph.Incidence(mat)
-        self.assertTrue(g.get_incidence() == (mat, v1, v2))
+        g = Graph.Biadjacency(mat)
+        self.assertTrue(g.get_biadjacency() == (mat, v1, v2))
         g.vs["type2"] = g.vs["type"]
-        self.assertTrue(g.get_incidence("type2") == (mat, v1, v2))
-        self.assertTrue(g.get_incidence(g.vs["type2"]) == (mat, v1, v2))
+        self.assertTrue(g.get_biadjacency("type2") == (mat, v1, v2))
+        self.assertTrue(g.get_biadjacency(g.vs["type2"]) == (mat, v1, v2))
 
     def testBipartiteProjection(self):
         g = Graph.Full_Bipartite(10, 5)

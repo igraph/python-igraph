@@ -75,7 +75,7 @@ The :meth:`Graph.incident` function fulfills the same purpose with a slightly di
 
     >>> edges = g.incident(0)
 
-To get the full adjacency/incidence list representation of the graph, use :meth:`Graph.get_adjlist`, :meth:`Graph.g.get_inclist()` or, for a bipartite graph, :meth:`Graph.get_incidence`.
+To get the full adjacency/incidence list representation of the graph, use :meth:`Graph.get_adjlist`, :meth:`Graph.g.get_inclist()` or, for a bipartite graph, :meth:`Graph.get_biadjacency`.
 
 Neighborhood
 ++++++++++++

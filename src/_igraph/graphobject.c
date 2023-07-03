@@ -2206,8 +2206,8 @@ PyObject *igraphmodule_Graph_Erdos_Renyi(PyTypeObject * type,
   igraph_t g;
   Py_ssize_t n, m = -1;
   double p = -1.0;
-  igraph_erdos_renyi_t t;
   PyObject *loops = Py_False, *directed = Py_False;
+  int retval;
 
   static char *kwlist[] = { "n", "p", "m", "directed", "loops", NULL };
 
@@ -2231,11 +2231,15 @@ PyObject *igraphmodule_Graph_Erdos_Renyi(PyTypeObject * type,
     return NULL;
   }
 
-  t = (m == -1) ? IGRAPH_ERDOS_RENYI_GNP : IGRAPH_ERDOS_RENYI_GNM;
+  if (m == -1) {
+    /* GNP model */
+    retval = igraph_erdos_renyi_game_gnp(&g, n, p, PyObject_IsTrue(directed), PyObject_IsTrue(loops));
+  } else {
+    /* GNM model */
+    retval = igraph_erdos_renyi_game_gnm(&g, n, m, PyObject_IsTrue(directed), PyObject_IsTrue(loops));
+  }
 
-  if (igraph_erdos_renyi_game(&g, t, n, (m == -1 ? p : m),
-                              PyObject_IsTrue(directed),
-                              PyObject_IsTrue(loops))) {
+  if (retval) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -2625,12 +2629,12 @@ PyObject *igraphmodule_Graph_Hexagonal_Lattice(PyTypeObject * type,
 }
 
 /** \ingroup python_interface_graph
- * \brief Generates a bipartite graph from an incidence matrix
+ * \brief Generates a bipartite graph from a bipartite adjacency matrix
  * \return a reference to the newly generated Python igraph object
- * \sa igraph_incidence
+ * \sa igraph_biadjacency
  */
-PyObject *igraphmodule_Graph_Incidence(PyTypeObject * type,
-                                       PyObject * args, PyObject * kwds) {
+PyObject *igraphmodule_Graph_Biadjacency(PyTypeObject * type,
+                                         PyObject * args, PyObject * kwds) {
   igraphmodule_GraphObject *self;
   igraph_matrix_t matrix;
   igraph_vector_bool_t vertex_types;
@@ -2657,7 +2661,7 @@ PyObject *igraphmodule_Graph_Incidence(PyTypeObject * type,
     return NULL;
   }
 
-  if (igraph_incidence(&g, &vertex_types, &matrix,
+  if (igraph_biadjacency(&g, &vertex_types, &matrix,
               PyObject_IsTrue(directed), mode, PyObject_IsTrue(multiple))) {
     igraphmodule_handle_igraph_error();
     igraph_matrix_destroy(&matrix);
@@ -8625,12 +8629,12 @@ PyObject *igraphmodule_Graph_get_adjacency(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
- * \brief Returns the incidence matrix of a bipartite graph.
- * \return the incidence matrix as a Python list of lists
- * \sa igraph_get_incidence
+ * \brief Returns the bipartite adjacency matrix of a bipartite graph.
+ * \return the bipartite adjacency matrix as a Python list of lists
+ * \sa igraph_get_biadjacency
  */
-PyObject *igraphmodule_Graph_get_incidence(igraphmodule_GraphObject * self,
-                                           PyObject * args, PyObject * kwds)
+PyObject *igraphmodule_Graph_get_biadjacency(igraphmodule_GraphObject * self,
+                                             PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] = { "types", NULL };
   igraph_matrix_t matrix;
@@ -8663,7 +8667,7 @@ PyObject *igraphmodule_Graph_get_incidence(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  if (igraph_get_incidence(&self->g, types, &matrix, &row_ids, &col_ids)) {
+  if (igraph_get_biadjacency(&self->g, types, &matrix, &row_ids, &col_ids)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_int_destroy(&row_ids);
     igraph_vector_int_destroy(&col_ids);
@@ -13848,12 +13852,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param mutual: whether to create all connections as mutual\n"
    "    in case of a directed graph.\n"},
 
-  /* interface to igraph_incidence */
-  {"_Incidence", (PyCFunction) igraphmodule_Graph_Incidence,
+  /* interface to igraph_biadjacency */
+  {"_Biadjacency", (PyCFunction) igraphmodule_Graph_Biadjacency,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "_Incidence(matrix, directed=False, mode=\"all\", multiple=False)\n--\n\n"
+   "_Biadjacency(matrix, directed=False, mode=\"all\", multiple=False)\n--\n\n"
    "Internal function, undocumented.\n\n"
-   "@see: Graph.Incidence()\n\n"},
+   "@see: Graph.Biadjacency()\n\n"},
 
   /* interface to igraph_kautz */
   {"Kautz", (PyCFunction) igraphmodule_Graph_Kautz,
@@ -16322,17 +16326,17 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  the I{endpoints} of the loop edges, not the edges themselves).\n"
    "@return: the adjacency matrix.\n"},
 
-  // interface to igraph_get_edgelist
+  /* interface to igraph_get_biadjacency */
+  {"get_biadjacency", (PyCFunction) igraphmodule_Graph_get_biadjacency,
+   METH_VARARGS | METH_KEYWORDS,
+   "get_biadjacency(types)\n--\n\n"
+   "Internal function, undocumented.\n\n"
+   "@see: Graph.get_biadjacency()\n\n"},
+
+  /* interface to igraph_get_edgelist */
   {"get_edgelist", (PyCFunction) igraphmodule_Graph_get_edgelist,
    METH_NOARGS,
    "get_edgelist()\n--\n\n" "Returns the edge list of a graph."},
-
-  /* interface to igraph_get_incidence */
-  {"get_incidence", (PyCFunction) igraphmodule_Graph_get_incidence,
-   METH_VARARGS | METH_KEYWORDS,
-   "get_incidence(types)\n--\n\n"
-   "Internal function, undocumented.\n\n"
-   "@see: Graph.get_incidence()\n\n"},
 
   /* interface to igraph_to_directed */
   {"to_directed", (PyCFunction) igraphmodule_Graph_to_directed,

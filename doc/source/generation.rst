@@ -66,9 +66,9 @@ To create a graph from an adjacency matrix, use :meth:`Graph.Adjacency` or, for 
 
 This graph is directed and has edges `[0, 1]`, `[0, 2]` and `[2, 2]` (a self-loop).
 
-To create a bipartite graph from an incidence matrix, use :meth:`Graph.Incidence`::
+To create a bipartite graph from a bipartite adjacency matrix, use :meth:`Graph.Biadjacency`::
 
-    >>> g = Graph.Incidence([[0, 1, 1], [1, 1, 0]])
+    >>> g = Graph.Biadjacency([[0, 1, 1], [1, 1, 0]])
 
 From files
 ++++++++++
