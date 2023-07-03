@@ -36,7 +36,7 @@ class PlotlyVerticesDrawer(AbstractVertexDrawer):
             # FIXME? mpl.rcParams["font.size"])
             position = dict(func=self.layout.__getitem__)
             shape = "circle"
-            size = 0.2
+            size = 20.0
             width = None
             height = None
             zorder = 2

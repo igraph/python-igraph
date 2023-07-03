@@ -1,5 +1,12 @@
 # igraph Python interface changelog
 
+## [Unreleased]
+
+### Fixed
+
+- The default vertex size of the Plotly backend was fixed so the vertices are
+  now visible by default without specifying an explicit size for them.
+
 ## [0.10.5] - 2023-06-30
 
 ### Added
