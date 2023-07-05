@@ -282,7 +282,7 @@ class IgraphCCoreCMakeBuilder:
 
         # Add any extra CMake args from environment variables
         if "IGRAPH_CMAKE_EXTRA_ARGS" in os.environ:
-            args.extend(shlex.split(os.environ["IGRAPH_CMAKE_EXTRA_ARGS"]))
+            args.extend(shlex.split(os.environ["IGRAPH_CMAKE_EXTRA_ARGS"], posix=not building_on_windows_msvc()))
 
         # Finally, add the source folder path
         args.append(str(build_to_source_folder))
