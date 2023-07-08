@@ -117,21 +117,21 @@ PyObject* igraphmodule_PyList_Zeroes(Py_ssize_t len) {
  * It is the responsibility of the caller to release the C string.
  */
 char* igraphmodule_PyObject_ConvertToCString(PyObject* string) {
-  char* result;
+  char* result = NULL;
 
-  if (string == 0)
-    return 0;
-
-  if (!PyBaseString_Check(string)) {
-    string = PyObject_Str(string);
-    if (string == 0)
-      return 0;
+  if (string == NULL) {
+    /* Nothing to do */
+  } else if (PyBaseString_Check(string)) {
+    result = PyUnicode_CopyAsString(string);
   } else {
-    Py_INCREF(string);
-  }
+    string = PyObject_Str(string);
+    if (string == NULL) {
+      return NULL;
+    }
 
-  result = PyUnicode_CopyAsString(string);
-  Py_DECREF(string);
+    result = PyUnicode_CopyAsString(string);
+    Py_DECREF(string);
+  }
 
   return result;
 }
@@ -177,19 +177,19 @@ char* PyUnicode_CopyAsString(PyObject* string) {
     bytes = PyUnicode_AsUTF8String(string);
   }
 
-  if (bytes == 0) {
-    return 0;
+  if (bytes == NULL) {
+    return NULL;
   }
 
   result = PyBytes_AsString(bytes);
-  if (result == 0) {
+  if (result == NULL) {
     Py_DECREF(bytes);
-    return 0;
+    return NULL;
   }
-  Py_DECREF(bytes);
 
   result = strdup(result);
-  if (result == 0) {
+  Py_DECREF(bytes);
+  if (result == NULL) {
     PyErr_NoMemory();
   }
 
