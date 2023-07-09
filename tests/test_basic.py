@@ -123,7 +123,6 @@ class BasicTests(unittest.TestCase):
         self.assertRaises(TypeError, g.add_vertex, 3)
 
         vertex = g.add_vertex("3")
-        print(g.vcount(), g.ecount())
         self.assertTrue(g.vcount() == 3 and g.ecount() == 0)
         self.assertEqual(2, vertex.index)
         self.assertTrue("name" in g.vertex_attributes())

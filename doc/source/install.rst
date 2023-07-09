@@ -94,7 +94,11 @@ Compiling step by step
 ----------------------
 
 This section should be rarely used in practice but explains how to compile and
-install |igraph| step by step without ``pip``.
+install |igraph| step by step from a local checkout, i.e. _not_ relying on
+``pip`` to fetch the sources. (You would still need ``pip`` to install from
+source, or a PEP 517-compliant build frontend like
+`build <https://pypa-build.readthedocs.io/en/stable/>`_ to build an installable
+Python wheel.
 
 First, obtain the bleeding-edge source code from Github::
 
@@ -122,26 +126,28 @@ Third, if you cloned the source from Github, initialize the ``git`` submodule fo
    of the C core that is bundled with it (or with the revision that the ``git``
    submodule points to).
 
-Fourth, call the standard Python ``setup.py`` script, e.g. for compiling::
+Fourth, call ``pip`` to compile and install the package from source::
 
-  $ python setup.py build
+  $ pip install .
 
-(press Enter when prompted). That will compile the Python interface in a subfolder called
-``build/lib.<your system-your Python version>``, e.g. `build/lib.linux-x86_64-3.8`. You can add
-that folder to your ``PYTHONPATH`` if you want to import directly from it, or you can call the ``setup.py``
-script to install it from there::
+Alternatively, you can call ``build`` or another PEP 517-compliant build frontend
+to build an installable Python wheel. Here we use `pipx <https://pypa.github.io/pipx/>`_
+to invoke ``build`` in a separate virtualenv::
 
-  $ python setup.py install
-
-.. note:: The ``setup.py`` script takes a number of options to customize the install location.
+  $ pipx run build
 
 Testing your installation
 -------------------------
 
-The unit tests are implemented with the standard ``unittest`` module so you can
-run them like this from your the source folder::
+Use ``tox`` or another standard test runner tool to run all the unit tests.
+Here we use `pipx <https://pypa.github.io/pipx/>`_` to invoke ``tox``::
 
-  $ python -m unittest discover
+  $ pipx run tox
+
+You can also call ``tox`` directly from the root folder of the igraph source
+tree if you already installed ``tox`` system-wide::
+
+  $ tox
 
 Troubleshooting
 ===============

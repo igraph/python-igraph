@@ -78,7 +78,7 @@ from igraph.adjacency import (
     _get_adjacency,
     _get_adjacency_sparse,
     _get_adjlist,
-    _get_incidence,
+    _get_biadjacency,
     _get_inclist,
 )
 from igraph.automorphisms import (
@@ -217,7 +217,7 @@ from igraph.io.random import (
 )
 from igraph.io.bipartite import (
     _construct_bipartite_graph,
-    _construct_incidence_bipartite_graph,
+    _construct_bipartite_graph_from_adjacency,
     _construct_full_bipartite_graph,
     _construct_random_bipartite_graph,
 )
@@ -512,7 +512,7 @@ class Graph(GraphBase):
 
     # Bipartite graphs
     Bipartite = classmethod(_construct_bipartite_graph)
-    Incidence = classmethod(_construct_incidence_bipartite_graph)
+    Biadjacency = classmethod(_construct_bipartite_graph_from_adjacency)
     Full_Bipartite = classmethod(_construct_full_bipartite_graph)
     Random_Bipartite = classmethod(_construct_random_bipartite_graph)
 
@@ -620,7 +620,7 @@ class Graph(GraphBase):
     get_adjacency = _get_adjacency
     get_adjacency_sparse = _get_adjacency_sparse
     get_adjlist = _get_adjlist
-    get_incidence = _get_incidence
+    get_biadjacency = _get_biadjacency
     get_inclist = _get_inclist
 
     #############################################
@@ -937,6 +937,23 @@ class Graph(GraphBase):
     __iter__ = None  # needed for PyPy
     __hash__ = None  # needed for PyPy
 
+    ###########################
+    # Deprecated functions
+
+    @classmethod
+    def Incidence(cls, *args, **kwds):
+        """Deprecated alias to L{Graph.Biadjacency()}."""
+        deprecated("Graph.Incidence() is deprecated; use Graph.Biadjacency() instead")
+        return cls.Biadjacency(*args, **kwds)
+
+    def get_incidence(self, *args, **kwds):
+        """Deprecated alias to L{Graph.get_biadjacency()}."""
+        deprecated(
+            "Graph.get_incidence() is deprecated; use Graph.get_biadjacency() "
+            "instead"
+        )
+        return self.get_biadjacency(*args, **kwds)
+    
 
 ##############################################################
 # I/O format mapping
@@ -1056,7 +1073,7 @@ del (
     _construct_graph_from_dataframe,
     _construct_random_geometric_graph,
     _construct_bipartite_graph,
-    _construct_incidence_bipartite_graph,
+    _construct_bipartite_graph_from_adjacency,
     _construct_full_bipartite_graph,
     _construct_random_bipartite_graph,
     _construct_graph_from_networkx,

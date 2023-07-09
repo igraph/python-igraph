@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### Changed
+
+- `Graph.Incidence()` is now deprecated in favour of `Graph.Biadjacency()` as it constructs a bipartite graph from a _bipartite adjacency_ matrix. (The previous name was a mistake). Future versions might re-introduce `Graph.Incidence()` to construct a graph from its incidence matrix.
+
+- `Graph.get_incidence()` is now deprecated in favour of `Graph.get_biadjacency()` as it returns the _bipartite adjacency_ matrix of a graph and not its incidence matrix. (The previous name was a mistake). Future versions might re-introduce `Graph.get_incidence()` to return the incidence matrix of a graph.
+
+### Fixed
+
+- The default vertex size of the Plotly backend was fixed so the vertices are
+  now visible by default without specifying an explicit size for them.
+
+## [0.10.5] - 2023-06-30
+
 ### Added
 
 - The `plot()` function now takes a `backend` keyword argument that can be used
@@ -23,6 +36,10 @@
   between two vertices using the A-star algorithm and an appropriate
   heuristic function.
 
+- Added `Graph.count_automorphisms()` to count the number of automorphisms
+  of a graph and `Graph.automorphism_group()` to calculate the generators of
+  the automorphism group of a graph.
+
 - The `VertexCover` constructor now allows referring to vertices by names
   instead of IDs.
 
@@ -37,6 +54,13 @@
 - `Graph.layout_reingold_tilford()` now accepts vertex names in the `roots=...`
   keyword argument.
 
+- The plotting of curved directed edges with the Cairo backend is now fixed;
+  arrowheads were placed at the wrong position before this fix.
+
+### Changed
+
+- The C core of igraph was updated to version 0.10.5.
+
 ### Removed
 
 - Removed defunct `Graph.community_leading_eigenvector_naive()` method. Not a
@@ -44,7 +68,7 @@
   ago so the function in the Python interface did not do anything useful
   either.
 
-## [0.10.4] - 2022-01-27
+## [0.10.4] - 2023-01-27
 
 ### Added
 
@@ -502,7 +526,8 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[Unreleased]: https://github.com/igraph/python-igraph/compare/0.10.4...main
+[Unreleased]: https://github.com/igraph/python-igraph/compare/0.10.5...main
+[0.10.5]: https://github.com/igraph/python-igraph/compare/0.10.4...0.10.5
 [0.10.4]: https://github.com/igraph/python-igraph/compare/0.10.3...0.10.4
 [0.10.3]: https://github.com/igraph/python-igraph/compare/0.10.2...0.10.3
 [0.10.2]: https://github.com/igraph/python-igraph/compare/0.10.1...0.10.2

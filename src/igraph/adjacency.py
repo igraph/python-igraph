@@ -11,7 +11,7 @@ __all__ = (
     "_get_adjacency",
     "_get_adjacency_sparse",
     "_get_adjlist",
-    "_get_incidence",
+    "_get_biadjacency",
     "_get_inclist",
 )
 
@@ -133,23 +133,22 @@ def _get_adjlist(self, mode="out"):
     return [self.neighbors(idx, mode) for idx in range(self.vcount())]
 
 
-def _get_incidence(graph, types="type", *args, **kwds):
-    """Returns the incidence matrix of a bipartite graph. The incidence matrix
-    is an M{n} times M{m} matrix, where M{n} and M{m} are the number of
-    vertices in the two vertex classes.
+def _get_biadjacency(graph, types="type", *args, **kwds):
+    """Returns the bipartite adjacency matrix of a bipartite graph. The
+    bipartite adjacency matrix is an M{n} times M{m} matrix, where M{n} and
+    M{m} are the number of vertices in the two vertex classes.
 
     @param types: an igraph vector containing the vertex types, or an
       attribute name. Anything that evalulates to C{False} corresponds to
       vertices of the first kind, everything else to the second kind.
-    @return: the incidence matrix and two lists in a triplet. The first
-      list defines the mapping between row indices of the matrix and the
-      original vertex IDs. The second list is the same for the column
-      indices.
+    @return: the bipartite adjacency matrix and two lists in a triplet. The
+      first list defines the mapping between row indices of the matrix and the
+      original vertex IDs. The second list is the same for the column indices.
     """
     # Deferred import to avoid cycles
     from igraph import Graph
 
-    return super(Graph, graph).get_incidence(types, *args, **kwds)
+    return super(Graph, graph).get_biadjacency(types, *args, **kwds)
 
 
 def _get_inclist(graph, mode="out"):

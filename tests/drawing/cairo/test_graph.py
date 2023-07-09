@@ -2,18 +2,14 @@ import random
 import unittest
 
 from igraph import Graph, plot, VertexClustering
-from igraph.drawing import find_cairo
 
 # FIXME: find a better way to do this that works for both direct call and module
 # import e.g. tox
 try:
-    from .utils import find_image_comparison, result_image_folder
+    from .utils import are_tests_supported, find_image_comparison, result_image_folder
 except ImportError:
-    from utils import find_image_comparison, result_image_folder
+    from utils import are_tests_supported, find_image_comparison, result_image_folder
 
-
-cairo = find_cairo()
-has_cairo = hasattr(cairo, "version")
 
 image_comparison = find_image_comparison()
 
@@ -21,8 +17,9 @@ image_comparison = find_image_comparison()
 class GraphTestRunner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        if not has_cairo:
-            raise unittest.SkipTest("cairo not found, skipping tests")
+        supported, msg = are_tests_supported()
+        if not supported:
+            raise unittest.SkipTest(f"{msg}, skipping tests")
         result_image_folder.mkdir(parents=True, exist_ok=True)
 
     def setUp(self) -> None:
@@ -31,18 +28,32 @@ class GraphTestRunner(unittest.TestCase):
     @image_comparison(baseline_images=["graph_basic"])
     def test_basic(self):
         g = Graph.Ring(5)
-        plot(g, target=result_image_folder / "graph_basic.png", backend="cairo")
+        lo = g.layout("auto")
+        plot(
+            g,
+            layout=lo,
+            target=result_image_folder / "graph_basic.png",
+            backend="cairo",
+        )
 
     @image_comparison(baseline_images=["graph_directed"])
     def test_directed(self):
         g = Graph.Ring(5, directed=True)
-        plot(g, target=result_image_folder / "graph_directed.png", backend="cairo")
+        lo = g.layout("auto")
+        plot(
+            g,
+            layout=lo,
+            target=result_image_folder / "graph_directed.png",
+            backend="cairo",
+        )
 
     @image_comparison(baseline_images=["graph_mark_groups_directed"])
     def test_mark_groups(self):
         g = Graph.Ring(5, directed=True)
+        lo = g.layout("auto")
         plot(
             g,
+            layout=lo,
             target=result_image_folder / "graph_mark_groups_directed.png",
             backend="cairo",
             mark_groups=True,
@@ -51,20 +62,36 @@ class GraphTestRunner(unittest.TestCase):
     @image_comparison(baseline_images=["graph_mark_groups_squares_directed"])
     def test_mark_groups_squares(self):
         g = Graph.Ring(5, directed=True)
+        lo = g.layout("auto")
         plot(
             g,
+            layout=lo,
             target=result_image_folder / "graph_mark_groups_squares_directed.png",
             backend="cairo",
             mark_groups=True,
             vertex_shape="square",
         )
 
+    @image_comparison(baseline_images=["graph_with_curved_edges"])
+    def test_graph_with_curved_edges(self):
+        g = Graph.Ring(24, directed=True, mutual=True)
+        lo = g.layout("circle")
+        plot(
+            g,
+            layout=lo,
+            target=result_image_folder / "graph_with_curved_edges.png",
+            bbox=(800, 800),
+            edge_curved=0.25,
+            backend="cairo",
+        )
+
 
 class ClusteringTestRunner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        if not has_cairo:
-            raise unittest.SkipTest("cairo not found, skipping tests")
+        supported, msg = are_tests_supported()
+        if not supported:
+            raise unittest.SkipTest(f"{msg}, skipping tests")
         result_image_folder.mkdir(parents=True, exist_ok=True)
 
     def setUp(self) -> None:
@@ -74,8 +101,10 @@ class ClusteringTestRunner(unittest.TestCase):
     def test_clustering_directed_small(self):
         g = Graph.Ring(5, directed=True)
         clu = VertexClustering(g, [0] * 5)
+        lo = g.layout("auto")
         plot(
             clu,
+            layout=lo,
             backend="cairo",
             target=result_image_folder / "clustering_directed.png",
             mark_groups=True,

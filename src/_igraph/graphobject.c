@@ -2206,8 +2206,8 @@ PyObject *igraphmodule_Graph_Erdos_Renyi(PyTypeObject * type,
   igraph_t g;
   Py_ssize_t n, m = -1;
   double p = -1.0;
-  igraph_erdos_renyi_t t;
   PyObject *loops = Py_False, *directed = Py_False;
+  int retval;
 
   static char *kwlist[] = { "n", "p", "m", "directed", "loops", NULL };
 
@@ -2231,11 +2231,15 @@ PyObject *igraphmodule_Graph_Erdos_Renyi(PyTypeObject * type,
     return NULL;
   }
 
-  t = (m == -1) ? IGRAPH_ERDOS_RENYI_GNP : IGRAPH_ERDOS_RENYI_GNM;
+  if (m == -1) {
+    /* GNP model */
+    retval = igraph_erdos_renyi_game_gnp(&g, n, p, PyObject_IsTrue(directed), PyObject_IsTrue(loops));
+  } else {
+    /* GNM model */
+    retval = igraph_erdos_renyi_game_gnm(&g, n, m, PyObject_IsTrue(directed), PyObject_IsTrue(loops));
+  }
 
-  if (igraph_erdos_renyi_game(&g, t, n, (m == -1 ? p : m),
-                              PyObject_IsTrue(directed),
-                              PyObject_IsTrue(loops))) {
+  if (retval) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -2625,12 +2629,12 @@ PyObject *igraphmodule_Graph_Hexagonal_Lattice(PyTypeObject * type,
 }
 
 /** \ingroup python_interface_graph
- * \brief Generates a bipartite graph from an incidence matrix
+ * \brief Generates a bipartite graph from a bipartite adjacency matrix
  * \return a reference to the newly generated Python igraph object
- * \sa igraph_incidence
+ * \sa igraph_biadjacency
  */
-PyObject *igraphmodule_Graph_Incidence(PyTypeObject * type,
-                                       PyObject * args, PyObject * kwds) {
+PyObject *igraphmodule_Graph_Biadjacency(PyTypeObject * type,
+                                         PyObject * args, PyObject * kwds) {
   igraphmodule_GraphObject *self;
   igraph_matrix_t matrix;
   igraph_vector_bool_t vertex_types;
@@ -2657,7 +2661,7 @@ PyObject *igraphmodule_Graph_Incidence(PyTypeObject * type,
     return NULL;
   }
 
-  if (igraph_incidence(&g, &vertex_types, &matrix,
+  if (igraph_biadjacency(&g, &vertex_types, &matrix,
               PyObject_IsTrue(directed), mode, PyObject_IsTrue(multiple))) {
     igraphmodule_handle_igraph_error();
     igraph_matrix_destroy(&matrix);
@@ -3877,7 +3881,7 @@ PyObject *igraphmodule_Graph_authority_score(
       ATTRIBUTE_TYPE_EDGE)) return NULL;
 
   arpack_options = (igraphmodule_ARPACKOptionsObject*)arpack_options_o;
-  if (igraph_authority_score(&self->g, &res, &value, PyObject_IsTrue(scale_o),
+  if (igraph_hub_and_authority_scores(&self->g, NULL, &res, &value, PyObject_IsTrue(scale_o),
       weights, igraphmodule_ARPACKOptions_get(arpack_options))) {
     igraphmodule_handle_igraph_error();
     if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -5665,7 +5669,7 @@ PyObject *igraphmodule_Graph_hub_score(
     ATTRIBUTE_TYPE_EDGE)) return NULL;
 
   arpack_options = (igraphmodule_ARPACKOptionsObject*)arpack_options_o;
-  if (igraph_hub_score(&self->g, &res, &value, PyObject_IsTrue(scale_o),
+  if (igraph_hub_and_authority_scores(&self->g, &res, NULL, &value, PyObject_IsTrue(scale_o),
       weights, igraphmodule_ARPACKOptions_get(arpack_options))) {
     igraphmodule_handle_igraph_error();
     if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -8625,12 +8629,12 @@ PyObject *igraphmodule_Graph_get_adjacency(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
- * \brief Returns the incidence matrix of a bipartite graph.
- * \return the incidence matrix as a Python list of lists
- * \sa igraph_get_incidence
+ * \brief Returns the bipartite adjacency matrix of a bipartite graph.
+ * \return the bipartite adjacency matrix as a Python list of lists
+ * \sa igraph_get_biadjacency
  */
-PyObject *igraphmodule_Graph_get_incidence(igraphmodule_GraphObject * self,
-                                           PyObject * args, PyObject * kwds)
+PyObject *igraphmodule_Graph_get_biadjacency(igraphmodule_GraphObject * self,
+                                             PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] = { "types", NULL };
   igraph_matrix_t matrix;
@@ -8663,7 +8667,7 @@ PyObject *igraphmodule_Graph_get_incidence(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  if (igraph_get_incidence(&self->g, types, &matrix, &row_ids, &col_ids)) {
+  if (igraph_get_biadjacency(&self->g, types, &matrix, &row_ids, &col_ids)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_int_destroy(&row_ids);
     igraph_vector_int_destroy(&col_ids);
@@ -9549,6 +9553,53 @@ PyObject *igraphmodule_Graph_write_leda(igraphmodule_GraphObject * self,
 
 /**
  * \ingroup python_interface_graph
+ * \brief Calculates the automorphism group generators of a graph using BLISS
+ * \sa igraph_automorphism_group
+ */
+PyObject *igraphmodule_Graph_automorphism_group(
+    igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = { "sh", "color", NULL };
+  PyObject *sh_o = Py_None;
+  PyObject *color_o = Py_None;
+  PyObject *list;
+  igraph_bliss_sh_t sh = IGRAPH_BLISS_FL;
+  igraph_vector_int_list_t generators;
+  igraph_vector_int_t *color = 0;
+  igraph_error_t retval;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &sh_o, &color_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_bliss_sh_t(sh_o, &sh))
+    return NULL;
+
+  if (igraph_vector_int_list_init(&generators, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraphmodule_attrib_to_vector_int_t(color_o, self, &color,
+      ATTRIBUTE_TYPE_VERTEX)) return NULL;
+
+  retval = igraph_automorphism_group(&self->g, color, &generators, sh, 0);
+
+  if (color) { igraph_vector_int_destroy(color); free(color); }
+
+  if (retval) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_int_list_destroy(&generators);
+    return NULL;
+  }
+
+  list = igraphmodule_vector_int_list_t_to_PyList(&generators);
+
+  igraph_vector_int_list_destroy(&generators);
+
+  return list;
+}
+
+/**
+ * \ingroup python_interface_graph
  * \brief Calculates the canonical permutation of a graph using BLISS
  * \sa igraph_canonical_permutation
  */
@@ -9591,6 +9642,50 @@ PyObject *igraphmodule_Graph_canonical_permutation(
   igraph_vector_int_destroy(&labeling);
 
   return list;
+}
+
+/**
+ * \ingroup python_interface_graph
+ * \brief Calculates the number of automorphisms of a graph using BLISS
+ * \sa igraph_count_automorphisms
+ */
+PyObject *igraphmodule_Graph_count_automorphisms(
+    igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = { "sh", "color", NULL };
+  PyObject *sh_o = Py_None;
+  PyObject *color_o = Py_None;
+  PyObject *result;
+  igraph_bliss_sh_t sh = IGRAPH_BLISS_FL;
+  igraph_vector_int_t *color = 0;
+  igraph_error_t retval;
+  igraph_bliss_info_t info;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &sh_o, &color_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_bliss_sh_t(sh_o, &sh))
+    return NULL;
+
+  if (igraphmodule_attrib_to_vector_int_t(color_o, self, &color,
+      ATTRIBUTE_TYPE_VERTEX)) return NULL;
+
+  retval = igraph_count_automorphisms(&self->g, color, sh, &info);
+
+  if (color) { igraph_vector_int_destroy(color); free(color); }
+
+  if (retval) {
+    igraphmodule_handle_igraph_error();
+    igraph_free(info.group_size);
+    return NULL;
+  }
+
+  result = PyLong_FromString(info.group_size, NULL, 10);
+  igraph_free(info.group_size);
+  if (!result) {
+    return NULL;
+  }
+
+  return result;
 }
 
 /** \ingroup python_interface_graph
@@ -13757,12 +13852,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param mutual: whether to create all connections as mutual\n"
    "    in case of a directed graph.\n"},
 
-  /* interface to igraph_incidence */
-  {"_Incidence", (PyCFunction) igraphmodule_Graph_Incidence,
+  /* interface to igraph_biadjacency */
+  {"_Biadjacency", (PyCFunction) igraphmodule_Graph_Biadjacency,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "_Incidence(matrix, directed=False, mode=\"all\", multiple=False)\n--\n\n"
+   "_Biadjacency(matrix, directed=False, mode=\"all\", multiple=False)\n--\n\n"
    "Internal function, undocumented.\n\n"
-   "@see: Graph.Incidence()\n\n"},
+   "@see: Graph.Biadjacency()\n\n"},
 
   /* interface to igraph_kautz */
   {"Kautz", (PyCFunction) igraphmodule_Graph_Kautz,
@@ -16231,17 +16326,17 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  the I{endpoints} of the loop edges, not the edges themselves).\n"
    "@return: the adjacency matrix.\n"},
 
-  // interface to igraph_get_edgelist
+  /* interface to igraph_get_biadjacency */
+  {"get_biadjacency", (PyCFunction) igraphmodule_Graph_get_biadjacency,
+   METH_VARARGS | METH_KEYWORDS,
+   "get_biadjacency(types)\n--\n\n"
+   "Internal function, undocumented.\n\n"
+   "@see: Graph.get_biadjacency()\n\n"},
+
+  /* interface to igraph_get_edgelist */
   {"get_edgelist", (PyCFunction) igraphmodule_Graph_get_edgelist,
    METH_NOARGS,
    "get_edgelist()\n--\n\n" "Returns the edge list of a graph."},
-
-  /* interface to igraph_get_incidence */
-  {"get_incidence", (PyCFunction) igraphmodule_Graph_get_incidence,
-   METH_VARARGS | METH_KEYWORDS,
-   "get_incidence(types)\n--\n\n"
-   "Internal function, undocumented.\n\n"
-   "@see: Graph.get_incidence()\n\n"},
 
   /* interface to igraph_to_directed */
   {"to_directed", (PyCFunction) igraphmodule_Graph_to_directed,
@@ -16532,6 +16627,32 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* ISOMORPHISM */
   /***************/
 
+  {"automorphism_group",
+   (PyCFunction) igraphmodule_Graph_automorphism_group,
+   METH_VARARGS | METH_KEYWORDS,
+   "automorphism_group(sh=\"fl\", color=None)\n--\n\n"
+   "Calculates the generators of the automorphism group of a graph using the\n"
+   "BLISS isomorphism algorithm.\n\n"
+   "The generator set may not be minimal and may depend on the splitting\n"
+   "heuristics. The generators are permutations represented using zero-based\n"
+   "indexing.\n\n"
+   "@param sh: splitting heuristics for graph as a case-insensitive string,\n"
+   "  with the following possible values:\n\n"
+   "    - C{\"f\"}: first non-singleton cell\n\n"
+   "    - C{\"fl\"}: first largest non-singleton cell\n\n"
+   "    - C{\"fs\"}: first smallest non-singleton cell\n\n"
+   "    - C{\"fm\"}: first maximally non-trivially connected non-singleton\n"
+   "      cell\n\n"
+   "    - C{\"flm\"}: largest maximally non-trivially connected\n"
+   "      non-singleton cell\n\n"
+   "    - C{\"fsm\"}: smallest maximally non-trivially connected\n"
+   "      non-singleton cell\n\n"
+   "@param color: optional vector storing a coloring of the vertices\n "
+   "  with respect to which the isomorphism is computed."
+   "  If C{None}, all vertices have the same color.\n"
+   "@return: a list of integer vectors, each vector representing an automorphism\n"
+   "  group of the graph.\n"
+  },
   {"canonical_permutation",
    (PyCFunction) igraphmodule_Graph_canonical_permutation,
    METH_VARARGS | METH_KEYWORDS,
@@ -16554,11 +16675,35 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "    - C{\"fsm\"}: smallest maximally non-trivially connected\n"
    "      non-singleton cell\n\n"
    "@param color: optional vector storing a coloring of the vertices\n "
-   "with respect to which the isomorphism is computed."
-   "If C{None}, all vertices have the same color.\n"
+   "  with respect to which the isomorphism is computed."
+   "  If C{None}, all vertices have the same color.\n"
    "@return: a permutation vector containing vertex IDs. Vertex 0 in the original\n"
    "  graph will be mapped to an ID contained in the first element of this\n"
    "  vector; vertex 1 will be mapped to the second and so on.\n"
+  },
+  {"count_automorphisms",
+   (PyCFunction) igraphmodule_Graph_count_automorphisms,
+   METH_VARARGS | METH_KEYWORDS,
+   "count_automorphisms(sh=\"fl\", color=None)\n--\n\n"
+   "Calculates the number of automorphisms of a graph using the BLISS isomorphism\n"
+   "algorithm.\n\n"
+   "See U{http://www.tcs.hut.fi/Software/bliss/index.html} for more information\n"
+   "about the BLISS algorithm and canonical permutations.\n\n"
+   "@param sh: splitting heuristics for graph as a case-insensitive string,\n"
+   "  with the following possible values:\n\n"
+   "    - C{\"f\"}: first non-singleton cell\n\n"
+   "    - C{\"fl\"}: first largest non-singleton cell\n\n"
+   "    - C{\"fs\"}: first smallest non-singleton cell\n\n"
+   "    - C{\"fm\"}: first maximally non-trivially connected non-singleton\n"
+   "      cell\n\n"
+   "    - C{\"flm\"}: largest maximally non-trivially connected\n"
+   "      non-singleton cell\n\n"
+   "    - C{\"fsm\"}: smallest maximally non-trivially connected\n"
+   "      non-singleton cell\n\n"
+   "@param color: optional vector storing a coloring of the vertices\n "
+   "  with respect to which the isomorphism is computed."
+   "  If C{None}, all vertices have the same color.\n"
+   "@return: the number of automorphisms of the graph.\n"
   },
   {"isoclass", (PyCFunction) igraphmodule_Graph_isoclass,
    METH_VARARGS | METH_KEYWORDS,

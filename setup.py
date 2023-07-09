@@ -282,7 +282,7 @@ class IgraphCCoreCMakeBuilder:
 
         # Add any extra CMake args from environment variables
         if "IGRAPH_CMAKE_EXTRA_ARGS" in os.environ:
-            args.extend(shlex.split(os.environ["IGRAPH_CMAKE_EXTRA_ARGS"]))
+            args.extend(shlex.split(os.environ["IGRAPH_CMAKE_EXTRA_ARGS"], posix=not building_on_windows_msvc()))
 
         # Finally, add the source folder path
         args.append(str(build_to_source_folder))
@@ -960,6 +960,7 @@ options = dict(
 
         # Dependencies needed for testing only
         "test": [
+            "cairocffi>=1.2.0",
             "networkx>=2.5",
             "pytest>=7.0.1",
             "pytest-timeout>=2.1.0",
@@ -977,6 +978,7 @@ options = dict(
         # pure Python or have musllinux wheels as we don't want to compile wheels
         # in CI
         "test-musl": [
+            "cairocffi>=1.2.0",
             "networkx>=2.5",
             "pytest>=7.0.1",
             "pytest-timeout>=2.1.0",
