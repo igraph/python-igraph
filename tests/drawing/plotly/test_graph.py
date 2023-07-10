@@ -1,8 +1,7 @@
-import random
 import unittest
 
 
-from igraph import Graph, InternalError, plot, VertexClustering
+from igraph import Graph, plot, VertexClustering
 
 # FIXME: find a better way to do this that works for both direct call and module
 # import e.g. tox
@@ -75,7 +74,7 @@ class GraphTestRunner(unittest.TestCase):
         return fig
 
     @image_comparison(baseline_images=["graph_edit_children"])
-    def test_mark_groups_squares(self):
+    def test_graph_edit_children(self):
         g = Graph.Ring(5)
         fig = go.Figure()
         plot(g, target=fig, vertex_shape="circle",

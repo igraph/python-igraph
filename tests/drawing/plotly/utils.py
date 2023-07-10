@@ -1,7 +1,7 @@
 # Functions adapted from matplotlib.testing. Credit for the original functions
 # goes to the amazing folks over at matplotlib.
 from pathlib import Path
-import os
+
 import sys
 import inspect
 import functools
