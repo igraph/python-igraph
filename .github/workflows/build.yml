@@ -322,7 +322,7 @@ jobs:
           path: |
             vendor/build
             vendor/install
-          key: C-core-build-sanitizer-v0-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
+          key: C-core-build-sanitizer-v1-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
