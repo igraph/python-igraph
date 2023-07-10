@@ -61,7 +61,7 @@ if [ "x$USE_SANITIZERS" = x1 ]; then
   # the sanitizer output
   IGRAPH_USE_SANITIZERS=1 $VENV_DIR/bin/pip install -v .[test]
   LD_PRELOAD=$(gcc -print-file-name=libasan.so) \
-  LSAN_OPTIONS=suppressions=etc/lsan-suppr.txt \
+  LSAN_OPTIONS=suppressions=etc/lsan-suppr.txt:print_suppressions=false \
   ASAN_OPTIONS=detect_stack_use_after_return=1 \
   $VENV_DIR/bin/pytest tests ${PYTEST_ARGS}
 else
