@@ -1,0 +1,12 @@
+leak:_PyObject_Malloc
+leak:_PyObject_Realloc
+leak:newlockobject
+leak:initumath
+leak:uint_arrtype_new
+leak:ufunc_generic_fastcall
+leak:ffi_call_int
+leak:array_empty
+leak:array_copy
+leak:array_cumsum
+
+

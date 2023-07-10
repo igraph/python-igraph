@@ -54,6 +54,14 @@ SKIP_HEADER_INSTALL = (
 T = TypeVar("T")
 
 
+def is_envvar_on(name: str) -> bool:
+    """Returns whether the given environment variable is set to a truthy value
+    such as '1', 'on' or 'true'.
+    """
+    value = os.environ.get(name, "")
+    return value and str(value).lower() in ("1", "on", "true")
+
+
 def building_on_windows_msvc() -> bool:
     """Returns True when using the non-MinGW CPython interpreter on Windows"""
     return platform.system() == "Windows" and sysconfig.get_platform() != "mingw"
@@ -62,6 +70,15 @@ def building_on_windows_msvc() -> bool:
 def building_with_emscripten() -> bool:
     """Returns True when building with Emscripten to WebAssembly"""
     return (sysconfig.get_config_var("HOST_GNU_TYPE") or "").endswith("emscripten")
+
+
+def building_with_sanitizers() -> bool:
+    """Returns True when the IGRAPH_USE_SANITIZERS envvar is set, indicating that
+    we want to build the Python interface with AddressSanitizer and LeakSanitizer
+    enabled. Currently works on Linux only and the primary use-case is to be able
+    to test igraph with sanitizers in CI.
+    """
+    return platform.system() == "Linux" and is_envvar_on("IGRAPH_USE_SANITIZERS")
 
 
 def exclude_from_list(items: Iterable[T], items_to_exclude: Iterable[T]) -> List[T]:
@@ -280,6 +297,10 @@ class IgraphCCoreCMakeBuilder:
         # to avoid having the architecture name in the LIBPATH (e.g. lib/x86_64-linux-gnu)
         args.append("-DCMAKE_INSTALL_PREFIX=" + str(install_folder))
 
+        # Compile the C core with sanitizers if needed
+        if building_with_sanitizers():
+            args.append("-DUSE_SANITIZER=Address;Undefined")
+
         # Add any extra CMake args from environment variables
         if "IGRAPH_CMAKE_EXTRA_ARGS" in os.environ:
             args.extend(shlex.split(os.environ["IGRAPH_CMAKE_EXTRA_ARGS"], posix=not building_on_windows_msvc()))
@@ -365,6 +386,7 @@ class BuildConfiguration:
         self.extra_objects = []
         self.static_extension = False
         self.use_pkgconfig = False
+        self.use_sanitizers = False
         self.c_core_built = False
         self.allow_educated_guess = True
         self._has_pkgconfig = None
@@ -463,16 +485,9 @@ class BuildConfiguration:
                     extra_libraries = os.environ["IGRAPH_EXTRA_LIBRARIES"].split(",")
                     buildcfg.libraries.extend(extra_libraries)
 
-                # Override static specification based on environment variable
-                if "IGRAPH_STATIC_EXTENSION" in os.environ:
-                    if os.environ["IGRAPH_STATIC_EXTENSION"].lower() in [
-                        "true",
-                        "1",
-                        "on",
-                    ]:
-                        buildcfg.static_extension = True
-                    else:
-                        buildcfg.static_extension = False
+                # Override build configuration based on environment variables
+                buildcfg.static_extension = is_envvar_on("IGRAPH_STATIC_EXTENSION")
+                buildcfg.use_sanitizers = building_with_sanitizers()
 
                 # Replaces library names with full paths to static libraries
                 # where possible. libm.a is excluded because it caused problems
@@ -483,6 +498,11 @@ class BuildConfiguration:
                         buildcfg.replace_static_libraries(only=["igraph"])
                     else:
                         buildcfg.replace_static_libraries(exclusions=["m"])
+
+                # Add sanitizer flags
+                if buildcfg.use_sanitizers:
+                    buildcfg.extra_link_args += ["-fsanitize=address", "-fsanitize=undefined"]
+                    buildcfg.extra_compile_args += ["-fno-omit-frame-pointer"]
 
                 # Add extra libraries that may have been specified
                 if "IGRAPH_EXTRA_DYNAMIC_LIBRARIES" in os.environ:
@@ -768,6 +788,7 @@ class BuildConfiguration:
         process_envvar("no_pkg_config", "use_pkgconfig", False)
         process_envvar("no_wait", "wait", False)
         process_envvar("use_pkg_config", "use_pkgconfig", True)
+        process_envvar("use_sanitizers", "use_sanitizers", False)
 
     def replace_static_libraries(self, only=None, exclusions=None):
         """Replaces references to libraries with full paths to their static
