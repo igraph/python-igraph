@@ -264,6 +264,7 @@ class IgraphCCoreCMakeBuilder:
 
         print("Configuring build...")
         args = [cmake]
+        cmake_build_mode = "Release"
 
         # Build to wasm requires invocation of the Emscripten SDK
         if building_with_emscripten():
@@ -300,6 +301,8 @@ class IgraphCCoreCMakeBuilder:
         # Compile the C core with sanitizers if needed
         if building_with_sanitizers():
             args.append("-DUSE_SANITIZER=Address;Undefined")
+            args.append("-DFLEX_KEEP_LINE_NUMBERS=ON")
+            cmake_build_mode = "Debug"
 
         # Add any extra CMake args from environment variables
         if "IGRAPH_CMAKE_EXTRA_ARGS" in os.environ:
@@ -314,7 +317,7 @@ class IgraphCCoreCMakeBuilder:
 
         print("Running build...")
         # We are _not_ using a parallel build; this is intentional, see igraph/igraph#1755
-        retcode = subprocess.call([cmake, "--build", ".", "--config", "Release"])
+        retcode = subprocess.call([cmake, "--build", ".", "--config", cmake_build_mode])
         if retcode:
             return False
 
@@ -502,7 +505,7 @@ class BuildConfiguration:
                 # Add sanitizer flags
                 if buildcfg.use_sanitizers:
                     buildcfg.extra_link_args += ["-fsanitize=address", "-fsanitize=undefined"]
-                    buildcfg.extra_compile_args += ["-fno-omit-frame-pointer"]
+                    buildcfg.extra_compile_args += ["-g", "-Og", "-fno-omit-frame-pointer", "-fdiagnostics-color"]
 
                 # Add extra libraries that may have been specified
                 if "IGRAPH_EXTRA_DYNAMIC_LIBRARIES" in os.environ:

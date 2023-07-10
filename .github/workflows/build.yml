@@ -304,19 +304,11 @@ jobs:
 
   # When updating 'runs-on', the ASan/UBSan library paths/versions must also be updated for LD_PRELOAD
   # for the "Test" step below.
-  #
-  # The C core is temporarily compiled with -DCMAKE_C_FLAGS="-DNDEBUG" because the Python test suite
-  # triggers a bug/assertion in RNG_INTEGER(): https://github.com/igraph/igraph/issues/2031
-  # When this bug is fixed, remove NDEBUG and increment the cache version to v1.
   build_with_sanitizer:
     name: Build with sanitizers for debugging purposes
     runs-on: ubuntu-20.04
     env:
-      CC: "gcc -fsanitize=address -fsanitize=undefined"
-      CXX: "g++ -fsanitize=address -fsanitize=undefined"
-      CFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
-      CXXFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
-      IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address;Undefined" -DCMAKE_BUILD_TYPE=Debug -DFLEX_KEEP_LINE_NUMBERS=ON -DFORCE_COLORED_OUTPUT=ON -DCMAKE_C_FLAGS="-DNDEBUG"
+      IGRAPH_CMAKE_EXTRA_ARGS: -DFORCE_COLORED_OUTPUT=ON
     steps:
       - uses: actions/checkout@v3
         with:
@@ -343,10 +335,14 @@ jobs:
           python-version: '3.11'
 
       - name: Build C core
+        env:
+          IGRAPH_USE_SANITIZERS: 1
         run: |
           python setup.py build_c_core
 
       - name: Build and install Python extension
+        env:
+          IGRAPH_USE_SANITIZERS: 1
         run: |
           # NOTE: install calls "build" first
           python setup.py install
@@ -361,6 +357,7 @@ jobs:
       - name: Test
         env:
           LD_PRELOAD: "/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.1"
-          ASAN_OPTIONS: "detect_leaks=0"
+          ASAN_OPTIONS: "detect_stack_use_after_return=1"
+          LSAN_OPTIONS: "suppressions=etc/lsan-suppr.txt:print_suppressions=false"
         run: |
           python -m pytest --capture=sys tests
