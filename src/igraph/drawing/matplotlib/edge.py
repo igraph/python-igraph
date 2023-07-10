@@ -163,6 +163,9 @@ class EdgeCollection(PatchCollection):
     def _compute_path_loop(self, coordt, size, trans_inv):
         import numpy as np
 
+        # TODO: check out non-loop edges for this vertex and try
+        # fit the loops in the largest wedge.
+
         # Make arc (class method)
         path = mpl.path.Path.arc(-90, 180)
         vertices = path.vertices.copy()

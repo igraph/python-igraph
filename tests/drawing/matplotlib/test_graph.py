@@ -127,7 +127,13 @@ class GraphTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         lo = g.layout("circle")
         lo.scale(3)
-        plot(g, target=ax, layout=lo)
+        plot(
+            g, target=ax, layout=lo,
+            vertex_size=15,
+            edge_arrow_size=5,
+            edge_arrow_width=5,
+        )
+        ax.set_aspect(1.0)
 
 
 class ClusteringTestRunner(unittest.TestCase):

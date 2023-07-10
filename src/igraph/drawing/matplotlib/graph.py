@@ -167,7 +167,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
 
     def _kwds_post_update(self):
         self.kwds["layout"] = self.ensure_layout(self.kwds["layout"], self.graph)
-        self.kwds["edge_curved"] = self._set_edge_curve(**self.kwds)
+        self._set_edge_curve()
         self._clear_state()
         self.stale = True
 
@@ -192,8 +192,9 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         artists.extend(self._vertex_labels)
         return tuple(artists)
 
-    def _set_edge_curve(self, **kwds):
+    def _set_edge_curve(self):
         graph = self.graph
+        kwds = self.kwds
 
         # Decide whether we need to calculate the curvature of edges
         # automatically -- and calculate them if needed.
@@ -210,12 +211,11 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             if default is True:
                 default = 0.5
             default = float(default)
-            return autocurve(
+            self.kwds["edge_curved"] = autocurve(
                 graph,
                 attribute=None,
                 default=default,
             )
-        return None
 
     def get_vertices(self):
         """Get VertexCollection artist."""
@@ -557,6 +557,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         arrow_widths = []
         curved = []
         for edge, visual_edge in edge_coord_iter:
+            print(visual_edge)
             edge_vertices = [vertex_builder[v] for v in edge.tuple]
             art = edge_drawer.build_patch(visual_edge, *edge_vertices)
             edgepatches.append(art)
