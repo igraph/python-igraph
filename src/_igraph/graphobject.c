@@ -4831,15 +4831,16 @@ PyObject *igraphmodule_Graph_decompose(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  /* We have to create a Python igraph object for every graph returned */
-  /* Pointers to each graph are freed, but the graphs themselves are not
-   * destroyed because the Python class takes over ownership of them,
-   * in particular of edges and vertices */
+  /* We have to create a Python igraph object for every graph returned. During
+   * the conversion, the graph list will be emptied as the Python list we return
+   * from the conversion function takes ownership of all the graphs */
   list = igraphmodule_graph_list_t_to_PyList(&components, Py_TYPE(self));
   if (!list) {
       igraph_graph_list_destroy(&components);
       return 0;
   }
+
+  igraph_graph_list_destroy(&components);
 
   return list;
 }

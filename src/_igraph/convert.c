@@ -2516,11 +2516,9 @@ PyObject* igraphmodule_vector_int_list_t_to_PyList_of_tuples(const igraph_vector
  * \ingroup python_interface_conversion
  * \brief Converts an \c igraph_graph_list_t into a Python list of graphs
  *
- * This function transfers ownership of the graphs to Python and frees the pointers
- * to them. If it fails, you can call \c igraph_graph_list_destroy if you have to.
- * If successful, do nothing and especially do *not* destroy the list, because that
- * will destroy each graph inside, which in turns destroys the vertices and edges
- * data structures that are now supposedly managed by Python.
+ * This function transfers ownership of the graphs to Python and empties the
+ * graph list in parallel. You can (and should) call \c igraph_graph_list_destroy
+ * regularly after the conversion is done.
  *
  * \param v the \c igraph_graph_list_t containing the list to be converted; the
  *     list will become empty after executing this function

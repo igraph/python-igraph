@@ -10,6 +10,8 @@
 
 ### Fixed
 
+- Fixed a minor memory leak in `Graph.decompose()`.
+
 - The default vertex size of the Plotly backend was fixed so the vertices are
   now visible by default without specifying an explicit size for them.
 
