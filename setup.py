@@ -489,7 +489,8 @@ class BuildConfiguration:
                     buildcfg.libraries.extend(extra_libraries)
 
                 # Override build configuration based on environment variables
-                buildcfg.static_extension = is_envvar_on("IGRAPH_STATIC_EXTENSION")
+                if "IGRAPH_STATIC_EXTENSION" in os.environ:
+                    buildcfg.static_extension = is_envvar_on("IGRAPH_STATIC_EXTENSION")
                 buildcfg.use_sanitizers = building_with_sanitizers()
 
                 # Replaces library names with full paths to static libraries
