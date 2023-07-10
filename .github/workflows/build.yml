@@ -353,11 +353,11 @@ jobs:
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.
-      # Leak detection is disabled because of many false (?) positives in Python itself.
+      # LD_PRELOAD needs to be specified in the "run" section to ensure that we
+      # do not pick up memory leaks in the wrapper shell (e.g., /bin/bash)
       - name: Test
         env:
-          LD_PRELOAD: "/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.1"
           ASAN_OPTIONS: "detect_stack_use_after_return=1"
           LSAN_OPTIONS: "suppressions=etc/lsan-suppr.txt:print_suppressions=false"
         run: |
-          python -m pytest --capture=sys tests
+          LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.1 python -m pytest --capture=sys tests
