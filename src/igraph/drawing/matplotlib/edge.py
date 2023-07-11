@@ -101,6 +101,36 @@ class EdgeCollection(PatchCollection):
                 sizes.append(max(visual_vertex.width, visual_vertex.height))
         return sizes
 
+    @staticmethod
+    def _compute_edge_angles(path, trans, directed, curved):
+        """Compute edge angles for both starting and ending vertices.
+
+        NOTE: The domain of atan2 is (-pi, pi].
+        """
+        positions = trans(path.vertices)
+
+        # first angle
+        if (not directed):
+            x1, y1 = positions[0]
+            x2, y2 = positions[1]
+        elif not curved:
+            x1, y1 = positions[1]
+            x2, y2 = positions[0]
+        else:
+            x1, y1 = positions[3]
+            x2, y2 = positions[2]
+        angle1 = atan2(y2 - y1, x2 - x1)
+
+        # second angle
+        if not directed:
+            x1, y1 = positions[-1]
+            x2, y2 = positions[-2]
+        else:
+            x1, y1 = positions[-3]
+            x2, y2 = positions[-1]
+        angle2 = atan2(y2 - y1, x2 - x1)
+        return (angle1, angle2)
+
     def _compute_paths(self, transform=None):
         import numpy as np
 
@@ -110,9 +140,31 @@ class EdgeCollection(PatchCollection):
         trans = transform.transform
         trans_inv = transform.inverted().transform
 
+        # Loops split the largest wedge left open by other
+        # edges of that vertex. The algo is:
+        # (i) Find what vertices each loop belongs to
+        # (ii) While going through the edges, record the angles
+        #      for vertices with loops
+        # (iii) Plot each loop based on the recorded angles
+        loop_vertex_dict = {
+        }
+        for i, edge_vertices in enumerate(visual_vertices):
+            if edge_vertices[0] == edge_vertices[1]:
+                if edge_vertices[0] not in loop_vertex_dict:
+                    loop_vertex_dict[edge_vertices[0]] = {
+                        'loops': [],
+                        'angles': [],
+                    }
+                loop_vertex_dict[edge_vertices[0]]['loops'].append(i)
+
         # Get actual coordinates of the vertex border (rough)
         paths = []
         for i, edge_vertices in enumerate(visual_vertices):
+            # Loops are positioned post-facto in the space left by the othter edges
+            if edge_vertices[0] == edge_vertices[1]:
+                paths.append(None)
+                continue
+
             coords = np.vstack(
                 [
                     edge_vertices[0].position,
@@ -126,15 +178,7 @@ class EdgeCollection(PatchCollection):
             else:
                 curved = False
 
-            # Loops require special attention, discard any previous calculations
-            if edge_vertices[0] == edge_vertices[1]:
-                path = self._compute_path_loop(
-                    coordst[0],
-                    sizes[0],
-                    trans_inv,
-                )
-
-            elif self._directed:
+            if self._directed:
                 if (self._arrow_sizes is None) or (self._arrow_widths is None):
                     arrow_size = 0
                     arrow_width = 0
@@ -157,36 +201,106 @@ class EdgeCollection(PatchCollection):
                     curved,
                 )
 
+            # Collect angles for this vertex, to be used for loops plotting below
+            angles = self._compute_edge_angles(path, trans, self._directed, curved)
+            if edge_vertices[0] in loop_vertex_dict:
+                loop_vertex_dict[edge_vertices[0]]['angles'].append(angles[0])
+            if edge_vertices[1] in loop_vertex_dict:
+                loop_vertex_dict[edge_vertices[1]]['angles'].append(angles[1])
+
+            # Add the path for this non-loop edge
             paths.append(path)
+
+        # Deal with loops at the end
+        for visual_vertex, loops_angles in loop_vertex_dict.items():
+            coords = np.vstack([visual_vertex.position] * 2)
+            coordst = trans(coords)
+            sizes = self._get_edge_vertex_sizes(edge_vertices)
+
+            edge_angles = loops_angles['angles']
+            if edge_angles:
+                edge_angles.sort()
+                # Circle around
+                edge_angles.append(edge_angles[0] + 2 * pi)
+                wedges = [(a2 - a1) for a1, a2 in zip(edge_angles[:-1], edge_angles[1:])]
+                # Argsort
+                imax = max(range(len(wedges)), key=lambda i: wedges[i])
+                angle1, angle2 = edge_angles[imax], edge_angles[imax + 1]
+            else:
+                angle1, angle2 = -pi, pi
+
+            nloops = len(loops_angles['loops'])
+            for ii, ipath in enumerate(loops_angles['loops']):
+                angle1i = angle1 + (angle2 - angle1) * ii / nloops
+                angle2i = angle1 + (angle2 - angle1) * (ii + 1) / nloops
+                path = self._compute_path_loop(
+                    coordst[0],
+                    sizes[0],
+                    angle1i, angle2i,
+                    trans_inv,
+                    angle_padding_fraction=0.1,
+                )
+                paths[ipath] = path
+
+
         return paths
 
-    def _compute_path_loop(self, coordt, size, trans_inv):
+    def _compute_path_loop(self, coordt, size, angle1, angle2, trans_inv,
+                           angle_padding_fraction=0.1):
         import numpy as np
 
-        # TODO: check out non-loop edges for this vertex and try
-        # fit the loops in the largest wedge.
+        # Pad angles to make a little space for tight arrowheads
+        angle1, angle2 = (
+            angle1 * (1 - angle_padding_fraction) + angle2 * angle_padding_fraction,
+            angle1 * angle_padding_fraction + angle2 * (1 - angle_padding_fraction),
+        )
 
-        # Make arc (class method)
-        path = mpl.path.Path.arc(-90, 180)
-        vertices = path.vertices.copy()
-        codes = path.codes
+        # Too large wedges, just use a quarter
+        if angle2 - angle1 > pi / 2:
+            angle1 = (angle2 + angle1) * 0.5 - pi / 4
+            angle1_deg = 180 * angle1 / pi
 
-        # Rescale to be as large as the vertex
-        vertices *= size / 2
-        # Center top right
-        vertices += size / 2
-        # Offset to place and transform to data coordinates
-        vertices = trans_inv(coordt + vertices)
+            # Make arc (class method)
+            path = mpl.path.Path.arc(angle1_deg - 90, angle1_deg + 180)
+            vertices = path.vertices.copy()
+            codes = path.codes
 
-        # Hack used for any curved lines to deal with facecolor
-        vertices = np.vstack([
-            vertices,
-            vertices[:-1][::-1],
-        ])
-        codes = np.concatenate([
-            codes,
-            codes[1:],
-        ])
+            # Rescale to be as large as the vertex
+            vertices *= size / 2
+            # Center top right for 0 angle_deg, otherwise in the right place (sqrt2 away from center)
+            angle_center = pi / 4 + angle1
+            xcenter = size / 2 / sqrt(2) * cos(angle_center)
+            ycenter = size / 2 / sqrt(2) * sin(angle_center)
+            vertices += [xcenter, ycenter]
+            # Offset to place and transform to data coordinates
+            vertices = trans_inv(coordt + vertices)
+
+            # Hack used for any curved lines to deal with facecolor
+            vertices = np.vstack([
+                vertices,
+                vertices[:-1][::-1],
+            ])
+            codes = np.concatenate([
+                codes,
+                codes[1:],
+            ])
+
+        # Smaller than 90 deg wedges, make a Bezier
+        else:
+            start = size / 2 * np.array([cos(angle1), sin(angle1)])
+            end = size / 2 * np.array([cos(angle2), sin(angle2)])
+            amix = 0.2
+            aux1 = 1.2 * size * np.array([cos(angle1 * (1 - amix) + angle2 * amix), sin(angle1 * (1 - amix) + angle2 * amix)])
+            aux2 = 1.2 * size * np.array([cos(angle1 * amix + angle2 * (1 - amix)), sin(angle1 * amix + angle2 * (1 - amix))])
+            vertices = np.vstack([
+                start, aux1, aux2, end,
+                aux2, aux1, start,
+            ])
+            # Offset to place and transform to data coordinates
+            vertices = trans_inv(coordt + vertices)
+
+            codes = ["MOVETO"] + ["CURVE4"] * 6
+            codes=[getattr(mpl.path.Path, x) for x in codes]
 
         path = mpl.path.Path(
             vertices, codes=codes,
@@ -249,14 +363,14 @@ class EdgeCollection(PatchCollection):
         path = {"vertices": [], "codes": []}
         path["codes"].append("MOVETO")
         if not curved:
-            path["codes"].extend(["LINETO"] * 5)
+            path["codes"].extend(["LINETO"] * 6)
 
             # Start
             theta = atan2(*((coordst[1] - coordst[0])[::-1]))
             voff = 0 * coordst[0]
             voff[:] = [cos(theta), sin(theta)]
             voff *= sizes[0] / 2
-            path["vertices"].append(coordst[0] + voff)
+            start = coordst[0] + voff
 
             # End with arrow (base-left-top-right-base)
             theta = atan2(*((coordst[1] - coordst[0])[::-1]))
@@ -269,8 +383,12 @@ class EdgeCollection(PatchCollection):
             headbase = tip - arrow_size * voff_unity
             headleft = headbase + 0.5 * arrow_width * voff_unity_90
             headright = headbase - 0.5 * arrow_width * voff_unity_90
+            # This is a dirty trick to make the facecolor work
+            # without making a separate Patch, which would be a little messy
             path["vertices"].extend(
                 [
+                    headbase,
+                    start,
                     headbase,
                     headleft,
                     tip,
@@ -308,8 +426,12 @@ class EdgeCollection(PatchCollection):
             # without making a separate Patch, which would be a little messy
             path["codes"].extend(["CURVE4"] * 6 + ["LINETO"] * 4)
             path["vertices"].extend([
-                headbase, aux2, aux1,
-                start, aux1, aux2,
+                headbase,
+                aux2,
+                aux1,
+                start,
+                aux1,
+                aux2,
                 headbase,
                 headleft,
                 tip,

@@ -557,7 +557,6 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         arrow_widths = []
         curved = []
         for edge, visual_edge in edge_coord_iter:
-            print(visual_edge)
             edge_vertices = [vertex_builder[v] for v in edge.tuple]
             art = edge_drawer.build_patch(visual_edge, *edge_vertices)
             edgepatches.append(art)
