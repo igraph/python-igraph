@@ -824,7 +824,12 @@ Attribute name  Keyword argument       Purpose
 ``arrow_width`` ``edge_arrow_width``   Width of the arrowhead on the edge if the
                                        graph is directed, relative to 10 pixels.
 --------------- ---------------------- ------------------------------------------
-``width``       ``edge_width``         Width of the edge in pixels
+``loop_size``   ``edge_loop_size``     Size of self-loops. This attribute is
+                                       ignored by edges that are not loops.
+                                       This argument is available only in the
+                                       matplotlib backend.
+--------------- ---------------------- ------------------------------------------
+``width``       ``edge_width``         Width of the edge in pixels.
 --------------- ---------------------- ------------------------------------------
 ``label``       ``edge_label``         If specified, it adds a label to the edge.
 --------------- ---------------------- ------------------------------------------

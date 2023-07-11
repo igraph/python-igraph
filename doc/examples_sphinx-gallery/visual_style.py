@@ -68,3 +68,23 @@ plt.show()
 #    The :meth:`igraph.drawing.matplotlib.graph.GraphArtist.set` method can
 #    be used to change multiple properties at once and is generally more
 #    efficient than multiple calls to specific ``artist.set_...`` methods.
+
+# %%
+# In the matplotlib backend, you can also specify the size of self-loops,
+# either as a number or a sequence of numbers, e.g.:
+g = ig.Graph(n=5)
+g.add_edge(2, 3)
+g.add_edge(0, 0)
+g.add_edge(1, 1)
+fig, ax = plt.subplots()
+ig.plot(
+    g,
+    target=ax,
+    vertex_size=20,
+    edge_loop_size=[
+        0,  # ignored, the first edge is not a loop
+        30,  # loop for vertex 0
+        80,  # loop for vertex 1
+    ],
+)
+plt.show()

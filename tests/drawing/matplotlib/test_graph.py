@@ -69,10 +69,13 @@ class GraphTestRunner(unittest.TestCase):
         plt.close("all")
         g = Graph.Ring(5, directed=True)
         g.add_edge(0, 0)
+        g.add_edge(0, 0)
+        g.add_edge(2, 2)
         fig, ax = plt.subplots()
         plot(
             g, target=ax, layout=self.layout_small_ring,
             edge_curved=[0] * 4 + [0.3],
+            edge_loop_size=[0] * 5 + [30, 50, 40],
         )
 
     @image_comparison(baseline_images=["graph_mark_groups_directed"], remove_text=True)
