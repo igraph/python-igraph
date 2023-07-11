@@ -277,6 +277,7 @@ class IgraphCCoreCMakeBuilder:
                 return False
             args.insert(0, emcmake)
             args.append("-DIGRAPH_WARNINGS_AS_ERRORS:BOOL=OFF")
+            args.append("-DIGRAPH_GRAPHML_SUPPORT:BOOL=OFF")
 
         # Build the Python interface with vendored libraries
         for deps in "ARPACK BLAS GLPK GMP LAPACK".split():
