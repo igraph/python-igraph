@@ -58,6 +58,7 @@ class MatplotlibEdgeDrawer(AbstractEdgeDrawer):
             background = None
             align_label = False
             zorder = 1
+            loop_size = 30
 
         return VisualEdgeBuilder
 
@@ -88,6 +89,7 @@ class EdgeCollection(PatchCollection):
         self._directed = kwargs.pop("directed", False)
         self._arrow_sizes = kwargs.pop("arrow_sizes", None)
         self._arrow_widths = kwargs.pop("arrow_widths", None)
+        self._loop_sizes = kwargs.pop("loop_sizes", None)
         self._curved = kwargs.pop("curved", None)
         super().__init__(*args, **kwargs)
 
@@ -152,10 +154,11 @@ class EdgeCollection(PatchCollection):
             if edge_vertices[0] == edge_vertices[1]:
                 if edge_vertices[0] not in loop_vertex_dict:
                     loop_vertex_dict[edge_vertices[0]] = {
-                        'loops': [],
-                        'angles': [],
+                        'indices': [],
+                        'sizes': [],
+                        'edge_angles': [],
                     }
-                loop_vertex_dict[edge_vertices[0]]['loops'].append(i)
+                loop_vertex_dict[edge_vertices[0]]['indices'].append(i)
 
         # Get actual coordinates of the vertex border (rough)
         paths = []
@@ -163,6 +166,9 @@ class EdgeCollection(PatchCollection):
             # Loops are positioned post-facto in the space left by the othter edges
             if edge_vertices[0] == edge_vertices[1]:
                 paths.append(None)
+                loop_vertex_dict[edge_vertices[0]]['sizes'].append(
+                    self._loop_sizes[i],
+                )
                 continue
 
             coords = np.vstack(
@@ -204,20 +210,20 @@ class EdgeCollection(PatchCollection):
             # Collect angles for this vertex, to be used for loops plotting below
             angles = self._compute_edge_angles(path, trans, self._directed, curved)
             if edge_vertices[0] in loop_vertex_dict:
-                loop_vertex_dict[edge_vertices[0]]['angles'].append(angles[0])
+                loop_vertex_dict[edge_vertices[0]]['edge_angles'].append(angles[0])
             if edge_vertices[1] in loop_vertex_dict:
-                loop_vertex_dict[edge_vertices[1]]['angles'].append(angles[1])
+                loop_vertex_dict[edge_vertices[1]]['edge_angles'].append(angles[1])
 
             # Add the path for this non-loop edge
             paths.append(path)
 
         # Deal with loops at the end
-        for visual_vertex, loops_angles in loop_vertex_dict.items():
+        for visual_vertex, ldict in loop_vertex_dict.items():
             coords = np.vstack([visual_vertex.position] * 2)
             coordst = trans(coords)
-            sizes = self._get_edge_vertex_sizes(edge_vertices)
+            vertex_size = self._get_edge_vertex_sizes([visual_vertex])[0]
 
-            edge_angles = loops_angles['angles']
+            edge_angles = ldict['edge_angles']
             if edge_angles:
                 edge_angles.sort()
                 # Circle around
@@ -227,15 +233,17 @@ class EdgeCollection(PatchCollection):
                 imax = max(range(len(wedges)), key=lambda i: wedges[i])
                 angle1, angle2 = edge_angles[imax], edge_angles[imax + 1]
             else:
+                # Isolated vertices with loops
                 angle1, angle2 = -pi, pi
 
-            nloops = len(loops_angles['loops'])
-            for ii, ipath in enumerate(loops_angles['loops']):
+            nloops = len(ldict['indices'])
+            for ii, (ipath, loop_size) in enumerate(zip(ldict['indices'], ldict['sizes'])):
                 angle1i = angle1 + (angle2 - angle1) * ii / nloops
                 angle2i = angle1 + (angle2 - angle1) * (ii + 1) / nloops
                 path = self._compute_path_loop(
                     coordst[0],
-                    sizes[0],
+                    vertex_size,
+                    loop_size,
                     angle1i, angle2i,
                     trans_inv,
                     angle_padding_fraction=0.1,
@@ -245,7 +253,7 @@ class EdgeCollection(PatchCollection):
 
         return paths
 
-    def _compute_path_loop(self, coordt, size, angle1, angle2, trans_inv,
+    def _compute_path_loop(self, coordt, vertex_size, loop_size, angle1, angle2, trans_inv,
                            angle_padding_fraction=0.1):
         import numpy as np
 
@@ -258,49 +266,22 @@ class EdgeCollection(PatchCollection):
         # Too large wedges, just use a quarter
         if angle2 - angle1 > pi / 2:
             angle1 = (angle2 + angle1) * 0.5 - pi / 4
-            angle1_deg = 180 * angle1 / pi
+            angle2 = angle1 + pi / 2
 
-            # Make arc (class method)
-            path = mpl.path.Path.arc(angle1_deg - 90, angle1_deg + 180)
-            vertices = path.vertices.copy()
-            codes = path.codes
+        start = vertex_size / 2 * np.array([cos(angle1), sin(angle1)])
+        end = vertex_size / 2 * np.array([cos(angle2), sin(angle2)])
+        amix = 0.15
+        aux1 = loop_size * np.array([cos(angle1 * (1 - amix) + angle2 * amix), sin(angle1 * (1 - amix) + angle2 * amix)])
+        aux2 = loop_size * np.array([cos(angle1 * amix + angle2 * (1 - amix)), sin(angle1 * amix + angle2 * (1 - amix))])
+        vertices = np.vstack([
+            start, aux1, aux2, end,
+            aux2, aux1, start,
+        ])
+        # Offset to place and transform to data coordinates
+        vertices = trans_inv(coordt + vertices)
 
-            # Rescale to be as large as the vertex
-            vertices *= size / 2
-            # Center top right for 0 angle_deg, otherwise in the right place (sqrt2 away from center)
-            angle_center = pi / 4 + angle1
-            xcenter = size / 2 / sqrt(2) * cos(angle_center)
-            ycenter = size / 2 / sqrt(2) * sin(angle_center)
-            vertices += [xcenter, ycenter]
-            # Offset to place and transform to data coordinates
-            vertices = trans_inv(coordt + vertices)
-
-            # Hack used for any curved lines to deal with facecolor
-            vertices = np.vstack([
-                vertices,
-                vertices[:-1][::-1],
-            ])
-            codes = np.concatenate([
-                codes,
-                codes[1:],
-            ])
-
-        # Smaller than 90 deg wedges, make a Bezier
-        else:
-            start = size / 2 * np.array([cos(angle1), sin(angle1)])
-            end = size / 2 * np.array([cos(angle2), sin(angle2)])
-            amix = 0.2
-            aux1 = 1.2 * size * np.array([cos(angle1 * (1 - amix) + angle2 * amix), sin(angle1 * (1 - amix) + angle2 * amix)])
-            aux2 = 1.2 * size * np.array([cos(angle1 * amix + angle2 * (1 - amix)), sin(angle1 * amix + angle2 * (1 - amix))])
-            vertices = np.vstack([
-                start, aux1, aux2, end,
-                aux2, aux1, start,
-            ])
-            # Offset to place and transform to data coordinates
-            vertices = trans_inv(coordt + vertices)
-
-            codes = ["MOVETO"] + ["CURVE4"] * 6
-            codes=[getattr(mpl.path.Path, x) for x in codes]
+        codes = ["MOVETO"] + ["CURVE4"] * 6
+        codes=[getattr(mpl.path.Path, x) for x in codes]
 
         path = mpl.path.Path(
             vertices, codes=codes,

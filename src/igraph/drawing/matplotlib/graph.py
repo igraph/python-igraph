@@ -555,6 +555,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         edgepatches = []
         arrow_sizes = []
         arrow_widths = []
+        loop_sizes = []
         curved = []
         for edge, visual_edge in edge_coord_iter:
             edge_vertices = [vertex_builder[v] for v in edge.tuple]
@@ -563,6 +564,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             visual_vertices.append(edge_vertices)
             arrow_sizes.append(visual_edge.arrow_size)
             arrow_widths.append(visual_edge.arrow_width)
+            loop_sizes.append(visual_edge.loop_size)
             curved.append(visual_edge.curved)
 
         art = EdgeCollection(
@@ -571,6 +573,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             directed=directed,
             arrow_sizes=arrow_sizes,
             arrow_widths=arrow_widths,
+            loop_sizes=loop_sizes,
             curved=curved,
             transform=self.axes.transData,
         )
