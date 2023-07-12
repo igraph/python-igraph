@@ -647,7 +647,9 @@ Attribute name  Keyword argument       Purpose
 ``arrow_width`` ``edge_arrow_width``   El ancho de las flechas. Relativo a 10
                                        pixels.
 --------------- ---------------------- ------------------------------------------
-``loop_size``   ``edge_loop_size``     Tamaño de los bucles. Este atributo no
+``loop_size``   ``edge_loop_size``     Tamaño de los bucles. Puede ser negativo
+                                       para escalar con el tamaño del vertice
+                                       correspondiente. Este atributo no
                                        es utilizado para otras aristas. Este
                                        atributo sólo existe en el backend
                                        matplotlib.
