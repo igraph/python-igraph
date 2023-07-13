@@ -1,5 +1,6 @@
 from igraph._igraph import GraphBase
 from igraph.seq import EdgeSeq
+from igraph.utils import deprecated
 
 
 def _add_edge(graph, source, target, **kwds):
@@ -58,7 +59,14 @@ def _add_vertex(graph, name=None, **kwds):
         to avoid the overhead of creating t.
     """
     if isinstance(name, int):
-        raise TypeError("cannot use integers as vertex names; use strings instead")
+        # raise TypeError("cannot use integers as vertex names; use strings instead")
+        deprecated(
+            "You are using integers as vertex names. This is discouraged because "
+            "most igraph functions interpret integers as vertex _IDs_ and strings "
+            "as vertex names. For sake of consistency, convert your vertex "
+            "names to strings before assigning them. Future versions from igraph "
+            "0.11.0 will disallow integers as vertex names."
+        )
 
     vid = graph.vcount()
     graph.add_vertices(1)

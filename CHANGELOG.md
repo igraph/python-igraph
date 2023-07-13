@@ -8,6 +8,8 @@
 
 - `Graph.get_incidence()` is now deprecated in favour of `Graph.get_biadjacency()` as it returns the _bipartite adjacency_ matrix of a graph and not its incidence matrix. (The previous name was a mistake). Future versions might re-introduce `Graph.get_incidence()` to return the incidence matrix of a graph.
 
+- Reverted the change in 0.10.5 that prevented adding vertices with integers as vertex names. Now we show a deprecation warning instead, and the addition of vertices with integer names will be prevented from version 0.11.0 only.
+
 ### Fixed
 
 - Fixed a minor memory leak in `Graph.decompose()`.

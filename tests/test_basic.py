@@ -120,8 +120,6 @@ class BasicTests(unittest.TestCase):
         self.assertTrue("name" in g.vertex_attributes())
         self.assertEqual(g.vs["name"], [None, "foo"])
 
-        self.assertRaises(TypeError, g.add_vertex, 3)
-
         vertex = g.add_vertex("3")
         self.assertTrue(g.vcount() == 3 and g.ecount() == 0)
         self.assertEqual(2, vertex.index)
@@ -140,6 +138,9 @@ class BasicTests(unittest.TestCase):
         self.assertEqual(sorted(g.vertex_attributes()), ["ham", "name", "spam"])
         self.assertEqual(g.vs["spam"], [None] * 4 + ["cheese"])
         self.assertEqual(g.vs["ham"], [None] * 4 + [42])
+
+        with self.assertWarns(DeprecationWarning, msg="integers as vertex names"):
+            g.add_vertex(42)
 
     def testAddVertices(self):
         g = Graph()
