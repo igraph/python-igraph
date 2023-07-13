@@ -125,3 +125,10 @@ Indices and tables
 .. _Cairo: https://www.cairographics.org
 .. _matplotlib: https://matplotlib.org
 .. _plotly: https://plotly.com/python/
+
+Citation
+========
+
+If you use igraph in your research, please cite
+
+    Csardi, G., & Nepusz, T. (2006). The igraph software package for complex network research. InterJournal, Complex Systems, 1695.
