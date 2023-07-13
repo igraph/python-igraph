@@ -4,6 +4,8 @@
 
 ### Changed
 
+- The C core of igraph was updated to version 0.10.6.
+
 - `Graph.Incidence()` is now deprecated in favour of `Graph.Biadjacency()` as it constructs a bipartite graph from a _bipartite adjacency_ matrix. (The previous name was a mistake). Future versions might re-introduce `Graph.Incidence()` to construct a graph from its incidence matrix.
 
 - `Graph.get_incidence()` is now deprecated in favour of `Graph.get_biadjacency()` as it returns the _bipartite adjacency_ matrix of a graph and not its incidence matrix. (The previous name was a mistake). Future versions might re-introduce `Graph.get_incidence()` to return the incidence matrix of a graph.
