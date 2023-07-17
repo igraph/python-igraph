@@ -20,7 +20,7 @@
 
 */
 
-/************************ Miscellaneous functions *************************/
+/************************ Conversion functions *************************/
 
 #include <limits.h>
 #include "attributes.h"
@@ -713,6 +713,20 @@ int igraphmodule_PyObject_to_rewiring_t(PyObject *o, igraph_rewiring_t *result) 
     {0,0}
   };
   TRANSLATE_ENUM_WITH(rewiring_tt);
+}
+
+/**
+ * \brief Converts a Python object to an igraph \c igraphmodule_shortest_path_algorithm_t
+ */
+int igraphmodule_PyObject_to_shortest_path_algorithm_t(PyObject *o, igraphmodule_shortest_path_algorithm_t *result) {
+  static igraphmodule_enum_translation_table_entry_t shortest_path_algorithm_tt[] = {
+    {"auto", IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO},
+    {"dijkstra", IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA},
+    {"bellman_ford", IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_BELLMAN_FORD},
+    {"johnson", IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_JOHNSON},
+    {0,0}
+  };
+  TRANSLATE_ENUM_WITH(shortest_path_algorithm_tt);
 }
 
 /**

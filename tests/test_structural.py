@@ -786,6 +786,18 @@ class PathTests(unittest.TestCase):
             g.distances(weights="weight", target=[2, 3])
             == [row[2:4] for row in expected]
         )
+        self.assertTrue(
+            g.distances(weights="weight", target=[2, 3], algorithm="bellman_ford")
+            == [row[2:4] for row in expected]
+        )
+        self.assertTrue(
+            g.distances(weights="weight", target=[2, 3], algorithm="johnson")
+            == [row[2:4] for row in expected]
+        )
+        self.assertRaises(
+            ValueError, g.distances,
+            weights="weight", target=[2, 3], algorithm="johnson", mode="in"
+        )
 
     def testGetShortestPath(self):
         g = Graph(4, [(0, 1), (0, 2), (1, 3), (3, 2), (2, 1)], directed=True)
@@ -794,6 +806,14 @@ class PathTests(unittest.TestCase):
         self.assertEqual([0, 2], g.get_shortest_path(0, 3, output="epath"))
         self.assertRaises(ValueError, g.get_shortest_path, 0, 3, output="x")
         self.assertRaises(TypeError, g.get_shortest_path, 0)
+
+    def testGetShortestPathManualAlgorithmSelection(self):
+        g = Graph(4, [(0, 1), (0, 2), (1, 3), (3, 2), (2, 1)], directed=True)
+        g.es["weight"] = [1] * g.ecount()
+
+        self.assertEqual([0, 1, 3], g.get_shortest_path(0, 3, algorithm="bellman_ford"))
+        self.assertRaises(ValueError, g.get_shortest_path, 0, 3, algorithm="johnson")
+        self.assertRaises(ValueError, g.get_shortest_path, 0, 3, algorithm="johnson", mode="in")
 
     def testGetShortestPaths(self):
         g = Graph(4, [(0, 1), (0, 2), (1, 3), (3, 2), (2, 1)], directed=True)

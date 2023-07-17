@@ -2,6 +2,10 @@
 
 ## [master]
 
+### Added
+
+- `Graph.distances()`, `Graph.get_shortest_path()` and `Graph.get_shortest_paths()` now allow the user to select the algorithm to be used explicitly.
+
 ### Changed
 
 - `Graph.distances()` now uses Dijkstra's algorithm when there are zero weights but no negative weights. Earlier versions switched to Bellman-Ford or Johnson in the presence of zero weights unnecessarily.
