@@ -21,8 +21,8 @@
 
 */
 
-#ifndef PYTHON_INDEXING_H
-#define PYTHON_INDEXING_H
+#ifndef IGRAPHMODULE_INDEXING_H
+#define IGRAPHMODULE_INDEXING_H
 
 #include "preamble.h"
 

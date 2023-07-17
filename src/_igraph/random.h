@@ -20,8 +20,8 @@
 
 */
 
-#ifndef PYTHON_RANDOM_H
-#define PYTHON_RANDOM_H
+#ifndef IGRAPHMODULE_RANDOM_H
+#define IGRAPHMODULE_RANDOM_H
 
 #include "preamble.h"
 

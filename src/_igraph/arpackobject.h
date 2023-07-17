@@ -20,8 +20,8 @@
 
 */
 
-#ifndef PYTHON_ARPACKOBJECT_H
-#define PYTHON_ARPACKOBJECT_H
+#ifndef IGRAPHMODULE_ARPACKOBJECT_H
+#define IGRAPHMODULE_ARPACKOBJECT_H
 
 #include "preamble.h"
 

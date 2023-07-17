@@ -20,8 +20,8 @@
 
 */
 
-#ifndef PYTHON_BFSITER_H
-#define PYTHON_BFSITER_H
+#ifndef IGRAPHMODULE_BFSITER_H
+#define IGRAPHMODULE_BFSITER_H
 
 #include "preamble.h"
 

@@ -20,8 +20,8 @@
 
 */
 
-#ifndef PYTHON_ERROR_H
-#define PYTHON_ERROR_H
+#ifndef IGRAPHMODULE_ERROR_H
+#define IGRAPHMODULE_ERROR_H
 
 #include "preamble.h"
 

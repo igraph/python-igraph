@@ -20,8 +20,8 @@
 
 */
 
-#ifndef PYTHON_EDGEOBJECT_H
-#define PYTHON_EDGEOBJECT_H
+#ifndef IGRAPHMODULE_EDGEOBJECT_H
+#define IGRAPHMODULE_EDGEOBJECT_H
 
 #include "preamble.h"
 

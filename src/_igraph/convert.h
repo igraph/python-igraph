@@ -25,8 +25,8 @@
 /** \defgroup python_interface_conversion Converting between Python and igraph data types
  * \ingroup python_interface */
 
-#ifndef PYTHON_CONVERT_H
-#define PYTHON_CONVERT_H
+#ifndef IGRAPHMODULE_CONVERT_H
+#define IGRAPHMODULE_CONVERT_H
 
 #include "preamble.h"
 

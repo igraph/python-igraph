@@ -21,8 +21,8 @@
 
 */
 
-#ifndef PYTHON_HELPERS_H
-#define PYTHON_HELPERS_H
+#ifndef IGRAPHMODULE_HELPERS_H
+#define IGRAPHMODULE_HELPERS_H
 
 #include "preamble.h"
 

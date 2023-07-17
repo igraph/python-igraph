@@ -22,8 +22,8 @@
 
 */
 
-#ifndef PYTHON_PLATFORM_H
-#define PYTHON_PLATFORM_H
+#ifndef IGRAPHMODULE_PLATFORM_H
+#define IGRAPHMODULE_PLATFORM_H
 
 #ifdef _MSC_VER
 #  define INLINE __forceinline

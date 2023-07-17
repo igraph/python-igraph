@@ -20,8 +20,8 @@
 
 */
 
-#ifndef PYTHON_FILEHANDLE_H
-#define PYTHON_FILEHANDLE_H
+#ifndef IGRAPHMODULE_FILEHANDLE_H
+#define IGRAPHMODULE_FILEHANDLE_H
 
 #include "preamble.h"
 

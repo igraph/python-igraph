@@ -20,8 +20,8 @@
 
 */
 
-#ifndef PYTHON_GRAPHOBJECT_H
-#define PYTHON_GRAPHOBJECT_H
+#ifndef IGRAPHMODULE_GRAPHOBJECT_H
+#define IGRAPHMODULE_GRAPHOBJECT_H
 
 #include "preamble.h"
 

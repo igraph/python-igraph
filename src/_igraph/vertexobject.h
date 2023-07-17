@@ -20,8 +20,8 @@
 
 */
 
-#ifndef PYTHON_VERTEXOBJECT_H
-#define PYTHON_VERTEXOBJECT_H
+#ifndef IGRAPHMODULE_VERTEXOBJECT_H
+#define IGRAPHMODULE_VERTEXOBJECT_H
 
 #include "preamble.h"
 

@@ -20,8 +20,8 @@
 
 */
 
-#ifndef PYTHON_OPERATORS_H
-#define PYTHON_OPERATORS_H
+#ifndef IGRAPHMODULE_OPERATORS_H
+#define IGRAPHMODULE_OPERATORS_H
 
 #include "preamble.h"
 
