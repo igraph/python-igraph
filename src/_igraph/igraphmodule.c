@@ -1,7 +1,7 @@
 /* vim:set ts=2 sw=2 sts=2 et: */
 /* 
    IGraph library.
-   Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
+   Copyright (C) 2006-2023  Tamas Nepusz <ntamas@gmail.com>
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
