@@ -1,5 +1,11 @@
 # igraph Python interface changelog
 
+## [master]
+
+### Changed
+
+- `Graph.distances()` now uses Dijkstra's algorithm when there are zero weights but no negative weights. Earlier versions switched to Bellman-Ford or Johnson in the presence of zero weights unnecessarily.
+
 ## [0.10.6] - 2023-07-13
 
 ### Changed

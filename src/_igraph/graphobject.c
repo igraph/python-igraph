@@ -6221,7 +6221,7 @@ PyObject *igraphmodule_Graph_distances(
 
   /* Select the most suitable algorithm */
   if (weights && igraph_vector_size(weights) > 0) {
-    if (igraph_vector_min(weights) > 0) {
+    if (igraph_vector_min(weights) >= 0) {
       /* Only positive weights, use Dijkstra's algorithm */
       e = igraph_distances_dijkstra(&self->g, &res, from_vs, to_vs, weights, mode);
     } else {
@@ -15330,8 +15330,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Calculates shortest path lengths for given vertices in a graph.\n\n"
    "The algorithm used for the calculations is selected automatically:\n"
    "a simple BFS is used for unweighted graphs, Dijkstra's algorithm is\n"
-   "used when all the weights are positive. Otherwise, the Bellman-Ford\n"
-   "algorithm is used if the number of requested source vertices is larger\n"
+   "used when all the weights are non-negative. Otherwise, the Bellman-Ford\n"
+   "algorithm is used if the number of requested source vertices is smaller\n"
    "than 100 and Johnson's algorithm is used otherwise.\n\n"
    "@param source: a list containing the source vertex IDs which should be\n"
    "  included in the result. If C{None}, all vertices will be considered.\n"
