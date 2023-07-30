@@ -72,6 +72,8 @@ class GraphTestRunner(unittest.TestCase):
         g.add_edge(0, 0)
         g.add_edge(2, 2)
         fig, ax = plt.subplots()
+        ax.set_xlim(-1.2, 1.2)
+        ax.set_ylim(-1.2, 1.2)
         plot(
             g, target=ax, layout=self.layout_small_ring,
             edge_curved=[0] * 4 + [0.3],
