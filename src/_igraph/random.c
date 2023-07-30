@@ -2,7 +2,7 @@
 /* vim:set ts=2 sw=2 sts=2 et: */
 /* 
    IGraph library.
-   Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
+   Copyright (C) 2006-2023  Tamas Nepusz <ntamas@gmail.com>
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,12 @@ typedef struct {
 } igraph_i_rng_Python_state_t;
 
 #define RNG_BITS 32
-#define RNG_MAX ((((size_t) 1) << RNG_BITS) - 1)
+#ifdef __wasm32__
+  /* size_t is 32-bit on wasm32 so we cannot use the shift trick */
+  #define RNG_MAX 0xFFFFFFFF
+#else
+  #define RNG_MAX ((((size_t) 1) << RNG_BITS) - 1)
+#endif
 
 static igraph_i_rng_Python_state_t igraph_rng_Python_state = {0};
 static igraph_rng_t igraph_rng_Python = {

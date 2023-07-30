@@ -1,7 +1,7 @@
 /* -*- mode: C -*-  */
 /* 
    IGraph library.
-   Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
+   Copyright (C) 2006-2023  Tamas Nepusz <ntamas@gmail.com>
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
 
 */
 
-#ifndef PYTHON_EDGEOBJECT_H
-#define PYTHON_EDGEOBJECT_H
+#ifndef IGRAPHMODULE_EDGEOBJECT_H
+#define IGRAPHMODULE_EDGEOBJECT_H
 
 #include "preamble.h"
 

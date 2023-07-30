@@ -3,7 +3,7 @@
 
 /* 
    IGraph library.
-   Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
+   Copyright (C) 2006-2023  Tamas Nepusz <ntamas@gmail.com>
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
 
 */
 
-#ifndef PYTHON_PLATFORM_H
-#define PYTHON_PLATFORM_H
+#ifndef IGRAPHMODULE_PLATFORM_H
+#define IGRAPHMODULE_PLATFORM_H
 
 #ifdef _MSC_VER
 #  define INLINE __forceinline

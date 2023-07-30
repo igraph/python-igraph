@@ -250,7 +250,7 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                 "text": [],
                 "x": [],
                 "y": [],
-                "color": [],
+                # "textfont_color": [],
                 # FIXME: horizontal/vertical alignment, offset, etc?
             }
             for label, visual_edge, edge in edge_label_iter:
@@ -258,7 +258,7 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                 src, dest = edge.tuple
                 src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
                 (x, y), (halign, valign) = edge_drawer.get_label_position(
-                    edge,
+                    visual_edge,
                     src_vertex,
                     dest_vertex,
                 )
@@ -268,7 +268,9 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                 lab_args["text"].append(label)
                 lab_args["x"].append(x)
                 lab_args["y"].append(y)
-                lab_args["color"].append(visual_edge.label_color)
+                # FIXME: colors do not work yet; apparently we need to convert
+                # visual_edge.label_color to Plotly's format
+                # lab_args["textfont_color"].append(visual_edge.label_color)
             stroke = plotly.graph_objects.Scatter(
                 mode="text",
                 **lab_args,

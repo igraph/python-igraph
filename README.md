@@ -4,8 +4,7 @@
 [![PyPI wheels](https://img.shields.io/pypi/wheel/igraph.svg)](https://pypi.python.org/pypi/igraph)
 [![Documentation Status](https://readthedocs.org/projects/igraph/badge/?version=latest)](https://igraph.readthedocs.io/)
 
-Python interface for the igraph library
----------------------------------------
+# Python interface for the igraph library
 
 igraph is a library for creating and manipulating graphs.
 It is intended to be as powerful (ie. fast) as possible to enable the
@@ -21,7 +20,13 @@ on [our old website](https://igraph.org/python/versions/0.10.1/).
 igraph is a collaborative work of many people from all around the world —
 see the [list of contributors here](./CONTRIBUTORS.md).
 
-## Installation from PyPI
+## Citation
+
+If you use igraph in your research, please cite
+
+> Csardi, G., & Nepusz, T. (2006). The igraph software package for complex network research. InterJournal, Complex Systems, 1695.
+
+# Installation
 
 We aim to provide wheels on PyPI for most of the stock Python versions;
 typically at least the three most recent minor releases from Python 3.x.
@@ -34,7 +39,7 @@ pip install igraph
 
 See details in [Installing Python Modules](https://docs.python.org/3/installing/).
 
-### Installation from source with pip on Debian / Ubuntu and derivatives
+## Installation from source with pip on Debian / Ubuntu and derivatives
 
 If you need to compile igraph from source for some reason, you need to
 install some dependencies first:
@@ -52,7 +57,7 @@ pip install igraph
 This should compile the C core of igraph as well as the Python extension
 automatically.
 
-### Installation from source on Windows
+## Installation from source on Windows
 
 It is now also possible to compile `igraph` from source under Windows for
 Python 3.7 and later. Make sure that you have Microsoft Visual Studio 2015 or
@@ -73,7 +78,7 @@ Also, when building in MSYS2, you need to set the `SETUPTOOLS_USE_DISTUTILS`
 environment variable to `stdlib`; this is because MSYS2 uses a patched version
 of `distutils` that conflicts with `setuptools >= 60.0`.
 
-#### Enabling GraphML
+### Enabling GraphML
 
 By default, GraphML is disabled, because `libxml2` is not available on Windows in
 the standard installation. You can install `libxml2` on Windows using
@@ -110,7 +115,7 @@ You can now build and install `igraph` again by simply running `pip install .`.
 Please make sure to use a clean source tree, if you built previously without
 GraphML, it will not update the build.
 
-### Linking to an existing igraph installation
+## Linking to an existing igraph installation
 
 The source code of the Python package includes the source code of the matching
 igraph version that the Python interface should compile against. However, if
@@ -255,7 +260,7 @@ extras:
 pip install '.[test]'
 ```
 
-## Contributing
+# Contributing
 
 Contributions to `igraph` are welcome!
 
@@ -279,9 +284,9 @@ if you adjust the source code of the C extension, you need to rebuild it by runn
 cached in ``vendor/build`` and ``vendor/install`` so subsequent builds are much
 faster than the first one as the C core does not need to be recompiled.
 
-## Notes
+# Notes
 
-### Supported Python versions
+## Supported Python versions
 
 We aim to keep up with the development cycle of Python and support all official
 Python versions that have not reached their end of life yet. Currently this
@@ -293,7 +298,7 @@ of the non-EOL Python versions.
 Continuous integration tests are regularly executed on all non-EOL Python
 branches.
 
-### PyPy
+## PyPy
 
 This version of igraph is compatible with [PyPy](http://pypy.org/) and
 is regularly tested on [PyPy](http://pypy.org/) with ``tox``. However, the

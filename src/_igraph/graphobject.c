@@ -1,7 +1,7 @@
 /* vim:set ts=4 sw=2 sts=2 et:  */
 /*
    IGraph library.
-   Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
+   Copyright (C) 2006-2023  Tamas Nepusz <ntamas@gmail.com>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include "indexing.h"
 #include "memory.h"
 #include "pyhelpers.h"
+#include "utils.h"
 #include "vertexseqobject.h"
 #include <float.h>
 
@@ -4831,15 +4832,16 @@ PyObject *igraphmodule_Graph_decompose(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  /* We have to create a Python igraph object for every graph returned */
-  /* Pointers to each graph are freed, but the graphs themselves are not
-   * destroyed because the Python class takes over ownership of them,
-   * in particular of edges and vertices */
+  /* We have to create a Python igraph object for every graph returned. During
+   * the conversion, the graph list will be emptied as the Python list we return
+   * from the conversion function takes ownership of all the graphs */
   list = igraphmodule_graph_list_t_to_PyList(&components, Py_TYPE(self));
   if (!list) {
       igraph_graph_list_destroy(&components);
       return 0;
   }
+
+  igraph_graph_list_destroy(&components);
 
   return list;
 }
@@ -5212,17 +5214,20 @@ PyObject *igraphmodule_Graph_feedback_arc_set(
 PyObject *igraphmodule_Graph_get_shortest_path(
   igraphmodule_GraphObject *self, PyObject *args, PyObject * kwds
 ) {
-  static char *kwlist[] = { "v", "to", "weights", "mode", "output", NULL };
+  static char *kwlist[] = { "v", "to", "weights", "mode", "output", "algorithm", NULL };
   igraph_vector_t *weights=0;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_integer_t from, to;
   PyObject *list, *mode_o=Py_None, *weights_o=Py_None,
-           *output_o=Py_None, *from_o = Py_None, *to_o=Py_None;
+           *output_o=Py_None, *from_o = Py_None, *to_o=Py_None,
+           *algorithm_o=Py_None;
   igraph_vector_int_t vec;
   igraph_bool_t use_edges = false;
+  igraph_error_t retval;
+  igraphmodule_shortest_path_algorithm_t algorithm = IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|OOO!", kwlist, &from_o,
-        &to_o, &weights_o, &mode_o, &PyUnicode_Type, &output_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|OOO!O", kwlist, &from_o,
+        &to_o, &weights_o, &mode_o, &PyUnicode_Type, &output_o, &algorithm_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
@@ -5237,6 +5242,9 @@ PyObject *igraphmodule_Graph_get_shortest_path(
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
     return NULL;
 
+  if (igraphmodule_PyObject_to_shortest_path_algorithm_t(algorithm_o, &algorithm))
+    return NULL;
+  
   if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
       ATTRIBUTE_TYPE_EDGE)) return NULL;
 
@@ -5245,9 +5253,32 @@ PyObject *igraphmodule_Graph_get_shortest_path(
     return NULL;
   }
 
+  if (algorithm == IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO) {
+    algorithm = igraphmodule_select_shortest_path_algorithm(
+      &self->g, weights, NULL, mode, /* allow_johnson = */ false
+    );
+  }
+  
   /* Call the C function */
-  if (igraph_get_shortest_path_dijkstra(&self->g, use_edges ? 0 : &vec,
-        use_edges ? &vec : 0, from, to, weights, mode)) {
+  switch (algorithm) {
+    case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA:
+      retval = igraph_get_shortest_path_dijkstra(
+        &self->g, use_edges ? NULL : &vec, use_edges ? &vec : NULL, from, to, weights, mode
+      );
+      break;
+
+    case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_BELLMAN_FORD:
+      retval = igraph_get_shortest_path_bellman_ford(
+        &self->g, use_edges ? NULL : &vec, use_edges ? &vec : NULL, from, to, weights, mode
+      );
+      break;
+
+    default:
+      retval = IGRAPH_UNIMPLEMENTED;
+      PyErr_SetString(PyExc_ValueError, "Algorithm not supported");
+  }
+  
+  if (retval) {
     igraph_vector_int_destroy(&vec);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraphmodule_handle_igraph_error();
@@ -5386,18 +5417,21 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
                                                 self, PyObject * args,
                                                 PyObject * kwds)
 {
-  static char *kwlist[] = { "v", "to", "weights", "mode", "output", NULL };
-  igraph_vector_t *weights=0;
+  static char *kwlist[] = { "v", "to", "weights", "mode", "output", "algorithm", NULL };
+  igraph_vector_t *weights = NULL;
   igraph_neimode_t mode = IGRAPH_OUT;
+  igraphmodule_shortest_path_algorithm_t algorithm = IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO;
   igraph_integer_t from, no_of_target_nodes;
   igraph_vs_t to;
   PyObject *list, *mode_o=Py_None, *weights_o=Py_None,
-           *output_o=Py_None, *from_o = Py_None, *to_o=Py_None;
+           *output_o=Py_None, *from_o = Py_None, *to_o=Py_None,
+           *algorithm_o=Py_None;
   igraph_vector_int_list_t veclist;
   igraph_bool_t use_edges = false;
+  igraph_error_t retval;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOOO!", kwlist, &from_o,
-        &to_o, &weights_o, &mode_o, &PyUnicode_Type, &output_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOOO!O", kwlist, &from_o,
+        &to_o, &weights_o, &mode_o, &PyUnicode_Type, &output_o, &algorithm_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
@@ -5407,6 +5441,9 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
     return NULL;
 
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_shortest_path_algorithm_t(algorithm_o, &algorithm))
     return NULL;
 
   if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
@@ -5435,9 +5472,34 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
     return NULL;
   }
 
+  if (algorithm == IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO) {
+    algorithm = igraphmodule_select_shortest_path_algorithm(
+      &self->g, weights, NULL, mode, /* allow_johnson = */ false
+    );
+  }
+  
   /* Call the C function */
-  if (igraph_get_shortest_paths_dijkstra(&self->g, use_edges ? 0 : &veclist,
-        use_edges ? &veclist : 0, from, to, weights, mode, 0, 0)) {
+  switch (algorithm) {
+    case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA:
+      retval = igraph_get_shortest_paths_dijkstra(
+        &self->g, use_edges ? NULL : &veclist, use_edges ? &veclist : NULL,
+        from, to, weights, mode, NULL, NULL
+      );
+      break;
+
+    case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_BELLMAN_FORD:
+      retval = igraph_get_shortest_paths_bellman_ford(
+        &self->g, use_edges ? NULL : &veclist, use_edges ? &veclist : NULL,
+        from, to, weights, mode, NULL, NULL
+      );
+      break;
+
+    default:
+      retval = IGRAPH_UNIMPLEMENTED;
+      PyErr_SetString(PyExc_ValueError, "Algorithm not supported");
+  }
+  
+  if (retval) {
     igraph_vector_int_list_destroy(&veclist);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraph_vs_destroy(&to);
@@ -6180,21 +6242,28 @@ PyObject *igraphmodule_Graph_distances(
   igraphmodule_GraphObject * self,
   PyObject * args, PyObject * kwds
 ) {
-  static char *kwlist[] = { "source", "target", "weights", "mode", NULL };
+  static char *kwlist[] = { "source", "target", "weights", "mode", "algorithm", NULL };
   PyObject *from_o = NULL, *to_o = NULL, *mode_o = NULL, *weights_o = Py_None;
+  PyObject *algorithm_o = NULL;
   PyObject *list = NULL;
   igraph_matrix_t res;
-  igraph_vector_t *weights=0;
+  igraph_vector_t *weights = NULL;
   igraph_neimode_t mode = IGRAPH_OUT;
-  igraph_bool_t return_single_from = false, return_single_to = 0;
-  igraph_error_t e = 0;
+  igraphmodule_shortest_path_algorithm_t algorithm = IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO;
+  igraph_bool_t return_single_from = false, return_single_to = false;
+  igraph_error_t retval = IGRAPH_SUCCESS;
   igraph_vs_t from_vs, to_vs;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
-        &from_o, &to_o, &weights_o, &mode_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOOO", kwlist,
+        &from_o, &to_o, &weights_o, &mode_o, &algorithm_o))
     return NULL;
 
-  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) return 0;
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_shortest_path_algorithm_t(algorithm_o, &algorithm))
+    return NULL;
+
   if (igraphmodule_PyObject_to_vs_t(from_o, &from_vs, &self->g, &return_single_from, 0)) {
     igraphmodule_handle_igraph_error();
     return NULL;
@@ -6218,30 +6287,37 @@ PyObject *igraphmodule_Graph_distances(
     return igraphmodule_handle_igraph_error();
   }
 
-  /* Select the most suitable algorithm */
-  if (weights && igraph_vector_size(weights) > 0) {
-    if (igraph_vector_min(weights) > 0) {
-      /* Only positive weights, use Dijkstra's algorithm */
-      e = igraph_distances_dijkstra(&self->g, &res, from_vs, to_vs, weights, mode);
-    } else {
-      /* There are negative weights. For a small number of sources, use Bellman-Ford.
-       * Otherwise, use Johnson's algorithm */
-      igraph_integer_t vs_size;
-      e = igraph_vs_size(&self->g, &from_vs, &vs_size);
-      if (!e) {
-        if (vs_size <= 100 || mode != IGRAPH_OUT) {
-          e = igraph_distances_bellman_ford(&self->g, &res, from_vs, to_vs, weights, mode);
-        } else {
-          e = igraph_distances_johnson(&self->g, &res, from_vs, to_vs, weights);
-        }
-      }
-    }
-  } else {
-    /* No weights or empty weight vector, use a simple BFS */
-    e = igraph_distances(&self->g, &res, from_vs, to_vs, mode);
+  if (algorithm == IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO) {
+    algorithm = igraphmodule_select_shortest_path_algorithm(
+      &self->g, weights, &from_vs, mode, /* allow_johnson = */ true
+    );
+  }
+  
+  if (algorithm == IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_JOHNSON && mode != IGRAPH_OUT) {
+    PyErr_SetString(PyExc_ValueError, "Johnson's algorithm is supported for mode=\"out\" only");
+    return NULL;
   }
 
-  if (e) {
+  /* Call the C function */
+  switch (algorithm) {
+    case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA:
+      retval = igraph_distances_dijkstra(&self->g, &res, from_vs, to_vs, weights, mode);
+      break;
+
+    case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_BELLMAN_FORD:
+      retval = igraph_distances_bellman_ford(&self->g, &res, from_vs, to_vs, weights, mode);
+      break;
+
+    case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_JOHNSON:
+      retval = igraph_distances_johnson(&self->g, &res, from_vs, to_vs, weights);
+      break;
+
+    default:
+      retval = IGRAPH_UNIMPLEMENTED;
+      PyErr_SetString(PyExc_ValueError, "Algorithm not supported");
+  }
+
+  if (retval) {
     if (weights) igraph_vector_destroy(weights);
     igraph_matrix_destroy(&res);
     igraph_vs_destroy(&from_vs);
@@ -14826,7 +14902,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_get_shortest_path */
   {"get_shortest_path", (PyCFunction) igraphmodule_Graph_get_shortest_path,
    METH_VARARGS | METH_KEYWORDS,
-   "get_shortest_path(v, to, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
+   "get_shortest_path(v, to, weights=None, mode=\"out\", output=\"vpath\", algorithm=\"auto\")\n--\n\n"
    "Calculates the shortest path from a source vertex to a target vertex in a graph.\n\n"
    "@param v: the source vertex of the path\n"
    "@param to: the target vertex of the path\n"
@@ -14841,12 +14917,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param output: determines what should be returned. If this is\n"
    "  C{\"vpath\"}, a list of vertex IDs will be returned. If this is\n"
    "  C{\"epath\"}, edge IDs are returned instead of vertex IDs.\n"
+   "@param algorithm: the shortest path algorithm to use. C{\"auto\"} selects an\n"
+   "  algorithm automatically based on whether the graph has negative weights\n"
+   "  or not. C{\"dijkstra\"} uses Dijkstra's algorithm. C{\"bellman_ford\"}\n"
+   "  uses the Bellman-Ford algorithm. Ignored for unweighted graphs.\n"
    "@return: see the documentation of the C{output} parameter.\n"},
 
   /* interface to igraph_get_shortest_paths */
   {"get_shortest_paths", (PyCFunction) igraphmodule_Graph_get_shortest_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "get_shortest_paths(v, to=None, weights=None, mode=\"out\", output=\"vpath\")\n--\n\n"
+   "get_shortest_paths(v, to=None, weights=None, mode=\"out\", output=\"vpath\", algorithm=\"auto\")\n--\n\n"
    "Calculates the shortest paths from/to a given node in a graph.\n\n"
    "@param v: the source/destination for the calculated paths\n"
    "@param to: a vertex selector describing the destination/source for\n"
@@ -14865,6 +14945,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  elements may be empty. Note that in case of mode=C{\"in\"}, the vertices\n"
    "  in a path are returned in reversed order. If C{output=\"epath\"},\n"
    "  edge IDs are returned instead of vertex IDs.\n"
+   "@param algorithm: the shortest path algorithm to use. C{\"auto\"} selects an\n"
+   "  algorithm automatically based on whether the graph has negative weights\n"
+   "  or not. C{\"dijkstra\"} uses Dijkstra's algorithm. C{\"bellman_ford\"}\n"
+   "  uses the Bellman-Ford algorithm. Ignored for unweighted graphs.\n"
    "@return: see the documentation of the C{output} parameter.\n"},
 
   /* interface to igraph_get_all_shortest_paths */
@@ -15325,12 +15409,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_distances */
   {"distances", (PyCFunction) igraphmodule_Graph_distances,
    METH_VARARGS | METH_KEYWORDS,
-   "distances(source=None, target=None, weights=None, mode=\"out\")\n--\n\n"
+   "distances(source=None, target=None, weights=None, mode=\"out\", algorithm=\"auto\")\n--\n\n"
    "Calculates shortest path lengths for given vertices in a graph.\n\n"
    "The algorithm used for the calculations is selected automatically:\n"
    "a simple BFS is used for unweighted graphs, Dijkstra's algorithm is\n"
-   "used when all the weights are positive. Otherwise, the Bellman-Ford\n"
-   "algorithm is used if the number of requested source vertices is larger\n"
+   "used when all the weights are non-negative. Otherwise, the Bellman-Ford\n"
+   "algorithm is used if the number of requested source vertices is smaller\n"
    "than 100 and Johnson's algorithm is used otherwise.\n\n"
    "@param source: a list containing the source vertex IDs which should be\n"
    "  included in the result. If C{None}, all vertices will be considered.\n"
@@ -15343,6 +15427,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  calculation in directed graphs. C{\"out\"} means only outgoing,\n"
    "  C{\"in\"} means only incoming paths. C{\"all\"} means to consider\n"
    "  the directed graph as an undirected one.\n"
+   "@param algorithm: the shortest path algorithm to use. C{\"auto\"} selects an\n"
+   "  algorithm automatically based on whether the graph has negative weights\n"
+   "  or not. C{\"dijkstra\"} uses Dijkstra's algorithm. C{\"bellman_ford\"}\n"
+   "  uses the Bellman-Ford algorithm. C{\"johnson\"} uses Johnson's\n"
+   "  algorithm. Ignored for unweighted graphs.\n"
    "@return: the shortest path lengths for given vertices in a matrix\n"},
 
   /* interface to igraph_simplify */

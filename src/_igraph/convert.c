@@ -1,7 +1,7 @@
 /* vim:set ts=2 sw=2 sts=2 et: */
 /*
    IGraph library.
-   Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
+   Copyright (C) 2006-2023  Tamas Nepusz <ntamas@gmail.com>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 */
 
-/************************ Miscellaneous functions *************************/
+/************************ Conversion functions *************************/
 
 #include <limits.h>
 #include "attributes.h"
@@ -713,6 +713,20 @@ int igraphmodule_PyObject_to_rewiring_t(PyObject *o, igraph_rewiring_t *result) 
     {0,0}
   };
   TRANSLATE_ENUM_WITH(rewiring_tt);
+}
+
+/**
+ * \brief Converts a Python object to an igraph \c igraphmodule_shortest_path_algorithm_t
+ */
+int igraphmodule_PyObject_to_shortest_path_algorithm_t(PyObject *o, igraphmodule_shortest_path_algorithm_t *result) {
+  static igraphmodule_enum_translation_table_entry_t shortest_path_algorithm_tt[] = {
+    {"auto", IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO},
+    {"dijkstra", IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA},
+    {"bellman_ford", IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_BELLMAN_FORD},
+    {"johnson", IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_JOHNSON},
+    {0,0}
+  };
+  TRANSLATE_ENUM_WITH(shortest_path_algorithm_tt);
 }
 
 /**
@@ -2516,11 +2530,9 @@ PyObject* igraphmodule_vector_int_list_t_to_PyList_of_tuples(const igraph_vector
  * \ingroup python_interface_conversion
  * \brief Converts an \c igraph_graph_list_t into a Python list of graphs
  *
- * This function transfers ownership of the graphs to Python and frees the pointers
- * to them. If it fails, you can call \c igraph_graph_list_destroy if you have to.
- * If successful, do nothing and especially do *not* destroy the list, because that
- * will destroy each graph inside, which in turns destroys the vertices and edges
- * data structures that are now supposedly managed by Python.
+ * This function transfers ownership of the graphs to Python and empties the
+ * graph list in parallel. You can (and should) call \c igraph_graph_list_destroy
+ * regularly after the conversion is done.
  *
  * \param v the \c igraph_graph_list_t containing the list to be converted; the
  *     list will become empty after executing this function

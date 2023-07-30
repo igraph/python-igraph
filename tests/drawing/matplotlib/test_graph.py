@@ -3,7 +3,7 @@ import random
 import unittest
 
 
-from igraph import Graph, InternalError, plot, VertexClustering, config, Layout
+from igraph import Graph, plot, VertexClustering, Layout
 
 from ...utils import overridden_configuration
 

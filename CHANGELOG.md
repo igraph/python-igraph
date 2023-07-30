@@ -1,14 +1,30 @@
 # igraph Python interface changelog
 
-## [Unreleased]
+## [master]
+
+### Added
+
+- `Graph.distances()`, `Graph.get_shortest_path()` and `Graph.get_shortest_paths()` now allow the user to select the algorithm to be used explicitly.
 
 ### Changed
+
+- `Graph.distances()` now uses Dijkstra's algorithm when there are zero weights but no negative weights. Earlier versions switched to Bellman-Ford or Johnson in the presence of zero weights unnecessarily.
+
+## [0.10.6] - 2023-07-13
+
+### Changed
+
+- The C core of igraph was updated to version 0.10.6.
 
 - `Graph.Incidence()` is now deprecated in favour of `Graph.Biadjacency()` as it constructs a bipartite graph from a _bipartite adjacency_ matrix. (The previous name was a mistake). Future versions might re-introduce `Graph.Incidence()` to construct a graph from its incidence matrix.
 
 - `Graph.get_incidence()` is now deprecated in favour of `Graph.get_biadjacency()` as it returns the _bipartite adjacency_ matrix of a graph and not its incidence matrix. (The previous name was a mistake). Future versions might re-introduce `Graph.get_incidence()` to return the incidence matrix of a graph.
 
+- Reverted the change in 0.10.5 that prevented adding vertices with integers as vertex names. Now we show a deprecation warning instead, and the addition of vertices with integer names will be prevented from version 0.11.0 only.
+
 ### Fixed
+
+- Fixed a minor memory leak in `Graph.decompose()`.
 
 - The default vertex size of the Plotly backend was fixed so the vertices are
   now visible by default without specifying an explicit size for them.

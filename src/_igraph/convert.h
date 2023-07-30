@@ -1,7 +1,7 @@
 /* -*- mode: C -*-  */
 /*
    IGraph library.
-   Copyright (C) 2006-2012  Tamas Nepusz <ntamas@gmail.com>
+   Copyright (C) 2006-2023  Tamas Nepusz <ntamas@gmail.com>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,13 +20,13 @@
 
 */
 
-/************************ Miscellaneous functions *************************/
+/************************ Conversion functions *************************/
 
 /** \defgroup python_interface_conversion Converting between Python and igraph data types
  * \ingroup python_interface */
 
-#ifndef PYTHON_CONVERT_H
-#define PYTHON_CONVERT_H
+#ifndef IGRAPHMODULE_CONVERT_H
+#define IGRAPHMODULE_CONVERT_H
 
 #include "preamble.h"
 
@@ -44,6 +44,13 @@ typedef struct {
   const char* name;
   int value;
 } igraphmodule_enum_translation_table_entry_t;
+
+typedef enum {
+  IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO = 0,
+  IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA = 1,
+  IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_BELLMAN_FORD = 2,
+  IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_JOHNSON = 3,
+} igraphmodule_shortest_path_algorithm_t;
 
 /* Conversion from PyObject to enum types */
 
@@ -76,6 +83,7 @@ int igraphmodule_PyObject_to_random_tree_t(PyObject *o, igraph_random_tree_t *re
 int igraphmodule_PyObject_to_random_walk_stuck_t(PyObject *o, igraph_random_walk_stuck_t *result);
 int igraphmodule_PyObject_to_reciprocity_t(PyObject *o, igraph_reciprocity_t *result);
 int igraphmodule_PyObject_to_rewiring_t(PyObject *o, igraph_rewiring_t *result);
+int igraphmodule_PyObject_to_shortest_path_algorithm_t(PyObject *o, igraphmodule_shortest_path_algorithm_t *result);
 int igraphmodule_PyObject_to_spinglass_implementation_t(PyObject *o, igraph_spinglass_implementation_t *result);
 int igraphmodule_PyObject_to_spincomm_update_t(PyObject *o, igraph_spincomm_update_t *result);
 int igraphmodule_PyObject_to_star_mode_t(PyObject *o, igraph_star_mode_t *result);

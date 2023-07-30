@@ -20,13 +20,21 @@
 
 */
 
-#ifndef IGRAPHMODULE_OPERATORS_H
-#define IGRAPHMODULE_OPERATORS_H
+#ifndef IGRAPHMODULE_UTILS_H
+#define IGRAPHMODULE_UTILS_H
 
 #include "preamble.h"
 
-PyObject* igraphmodule__disjoint_union(PyObject* self, PyObject* args, PyObject* kwds);
-PyObject* igraphmodule__union(PyObject* self, PyObject* args, PyObject* kwds);
-PyObject* igraphmodule__intersection(PyObject* self, PyObject* args, PyObject* kwds);
+#include <igraph_constants.h>
+#include <igraph_types.h>
+#include "convert.h"
+#include "graphobject.h"
+
+/************************ Miscellaneous functions *************************/
+
+igraphmodule_shortest_path_algorithm_t igraphmodule_select_shortest_path_algorithm(
+  const igraph_t* graph, const igraph_vector_t* weights, const igraph_vs_t* from_vs,
+  igraph_neimode_t mode, igraph_bool_t allow_johnson
+);
 
 #endif

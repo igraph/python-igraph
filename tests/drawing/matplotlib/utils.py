@@ -1,6 +1,5 @@
 # Functions adapted from matplotlib.testing. Credit for the original functions
 # goes to the amazing folks over at matplotlib.
-from pathlib import Path
 import sys
 import inspect
 import functools
@@ -8,8 +7,6 @@ import functools
 try:
     import matplotlib
     from matplotlib.testing.decorators import _collect_new_figures, _ImageComparisonBase
-    from matplotlib.testing.compare import comparable_formats
-    import matplotlib.pyplot as plt
 except ImportError:
     matplotlib = None
 

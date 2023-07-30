@@ -29,7 +29,7 @@ jobs:
           python-version: '3.8'
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v2.13.1
+        uses: pypa/cibuildwheel@v2.14.1
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
@@ -38,7 +38,7 @@ jobs:
           CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-manylinux_i686"
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v2.13.1
+        uses: pypa/cibuildwheel@v2.14.1
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
@@ -63,7 +63,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v2.13.1
+        uses: pypa/cibuildwheel@v2.14.1
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -88,7 +88,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v2.13.1
+        uses: pypa/cibuildwheel@v2.14.1
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -155,7 +155,7 @@ jobs:
           cmake --install .
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.13.1
+        uses: pypa/cibuildwheel@v2.14.1
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
@@ -179,15 +179,16 @@ jobs:
       - uses: actions/setup-python@v4
         name: Install Python
         with:
-          python-version: '3.10.2'
+          python-version: '3.11.2'
 
       - uses: mymindstorm/setup-emsdk@v12
         with:
-          version: '3.1.14'
+          version: '3.1.32'
+          actions-cache-folder: 'emsdk-cache'
 
       - name: Build wheel
         run: |
-          pip install pyodide-build==0.21.0
+          pip install pyodide-build==0.23.4
           pyodide build
 
       - uses: actions/upload-artifact@v3
@@ -242,7 +243,7 @@ jobs:
         shell: cmd
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.13.1
+        uses: pypa/cibuildwheel@v2.14.1
         env:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
@@ -304,19 +305,11 @@ jobs:
 
   # When updating 'runs-on', the ASan/UBSan library paths/versions must also be updated for LD_PRELOAD
   # for the "Test" step below.
-  #
-  # The C core is temporarily compiled with -DCMAKE_C_FLAGS="-DNDEBUG" because the Python test suite
-  # triggers a bug/assertion in RNG_INTEGER(): https://github.com/igraph/igraph/issues/2031
-  # When this bug is fixed, remove NDEBUG and increment the cache version to v1.
   build_with_sanitizer:
     name: Build with sanitizers for debugging purposes
     runs-on: ubuntu-20.04
     env:
-      CC: "gcc -fsanitize=address -fsanitize=undefined"
-      CXX: "g++ -fsanitize=address -fsanitize=undefined"
-      CFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
-      CXXFLAGS: "-g -Og -fno-omit-frame-pointer -fdiagnostics-color"
-      IGRAPH_CMAKE_EXTRA_ARGS: -DUSE_SANITIZER="Address;Undefined" -DCMAKE_BUILD_TYPE=Debug -DFLEX_KEEP_LINE_NUMBERS=ON -DFORCE_COLORED_OUTPUT=ON -DCMAKE_C_FLAGS="-DNDEBUG"
+      IGRAPH_CMAKE_EXTRA_ARGS: -DFORCE_COLORED_OUTPUT=ON
     steps:
       - uses: actions/checkout@v3
         with:
@@ -330,7 +323,7 @@ jobs:
           path: |
             vendor/build
             vendor/install
-          key: C-core-build-sanitizer-v0-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
+          key: C-core-build-sanitizer-v1-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
@@ -343,10 +336,14 @@ jobs:
           python-version: '3.11'
 
       - name: Build C core
+        env:
+          IGRAPH_USE_SANITIZERS: 1
         run: |
           python setup.py build_c_core
 
       - name: Build and install Python extension
+        env:
+          IGRAPH_USE_SANITIZERS: 1
         run: |
           # NOTE: install calls "build" first
           python setup.py install
@@ -357,10 +354,11 @@ jobs:
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.
-      # Leak detection is disabled because of many false (?) positives in Python itself.
+      # LD_PRELOAD needs to be specified in the "run" section to ensure that we
+      # do not pick up memory leaks in the wrapper shell (e.g., /bin/bash)
       - name: Test
         env:
-          LD_PRELOAD: "/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.1"
-          ASAN_OPTIONS: "detect_leaks=0"
+          ASAN_OPTIONS: "detect_stack_use_after_return=1"
+          LSAN_OPTIONS: "suppressions=etc/lsan-suppr.txt:print_suppressions=false"
         run: |
-          python -m pytest --capture=sys tests
+          LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.1 python -m pytest --capture=sys tests

@@ -20,8 +20,8 @@
 
 */
 
-#ifndef PYTHON_DFSITER_H
-#define PYTHON_DFSITER_H
+#ifndef IGRAPHMODULE_DFSITER_H
+#define IGRAPHMODULE_DFSITER_H
 
 #include "preamble.h"
 
