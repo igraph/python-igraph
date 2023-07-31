@@ -628,17 +628,17 @@ Atributos de las aristas que controlan los gráficos
 =============== ====================== ==========================================
 Attribute name  Keyword argument       Purpose
 =============== ====================== ==========================================
-``color``       ``edge_color``         Color de la arista
+``color``       ``edge_color``         Color de la arista.
 --------------- ---------------------- ------------------------------------------
-``curved``      ``edge_curved``        la curvatura de la arista. Valores positivos
-                                       corresponden  a aristas curvadas en sentido 
+``curved``      ``edge_curved``        La curvatura de la arista. Valores positivos
+                                       corresponden a aristas curvadas en sentido 
                                        contrario a las manecillas del reloj, valores 
                                        negativos lo contrario. Una curvatura cero 
                                        representa aristas rectas. ``True`` significa 
                                        una curvatura de 0.5, ``False`` es una
                                        curvatura de cero.
 --------------- ---------------------- ------------------------------------------
-``font``        ``edge_font``          Familia tipográfica del arista
+``font``        ``edge_font``          Familia tipográfica del arista.
 --------------- ---------------------- ------------------------------------------
 ``arrow_size``  ``edge_arrow_size``    Tamaño (longitud)  de la punta de flecha del 
                                        arista si el grafo es dirigido, relativo a 
@@ -647,13 +647,20 @@ Attribute name  Keyword argument       Purpose
 ``arrow_width`` ``edge_arrow_width``   El ancho de las flechas. Relativo a 10
                                        pixels.
 --------------- ---------------------- ------------------------------------------
-``width``       ``edge_width``         Anchura del borde en píxeles
+``loop_size``   ``edge_loop_size``     Tamaño de los bucles. Puede ser negativo
+                                       para escalar con el tamaño del vertice
+                                       correspondiente. Este atributo no
+                                       es utilizado para otras aristas. Este
+                                       atributo sólo existe en el backend
+                                       matplotlib.
+--------------- ---------------------- ------------------------------------------
+``width``       ``edge_width``         Anchura del borde en píxeles.
 --------------- ---------------------- ------------------------------------------
 ``label``       ``edge_label``         Si se especifica, añade una etiqueta al borde.
 --------------- ---------------------- ------------------------------------------
 ``background``  ``edge_background``    Si se especifica, añade una caja rectangular 
-                                       alrededor de la etiqueta de borde (solo en )
-                                       matplotlib)
+                                       alrededor de la etiqueta de borde (solo en
+                                       matplotlib).
 --------------- ---------------------- ------------------------------------------
 ``align_label`` ``edge_align_label``   Si es verdadero, gira la etiqueta de la 
                                        arista de forma que se alinee con la 

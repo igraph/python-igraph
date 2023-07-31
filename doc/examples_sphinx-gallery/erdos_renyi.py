@@ -67,14 +67,14 @@ ig.plot(
     target=axs[1, 0],
     layout="circle",
     vertex_color="lightblue",
-    vertex_size=0.15
+    vertex_size=15
 )
 ig.plot(
     g4,
     target=axs[1, 1],
     layout="circle",
     vertex_color="lightblue",
-    vertex_size=0.15
+    vertex_size=15
 )
 axs[1, 0].set_ylabel('N. edges')
 plt.show()

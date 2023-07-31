@@ -252,8 +252,8 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
 
         if target is None:
             if backend == "matplotlib":
-                # Create a new axes if needed
-                _, target = plt.subplots()
+                # Use get current axes, customary in these cases
+                target = plt.gca()
             elif backend == "plotly":
                 # Create a new figure if needed
                 target = plotly.graph_objects.Figure()
@@ -271,15 +271,18 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
                 *args,
                 **kwds,
             )
-            # NOTE: for matplotlib, result is the container Artist. It would be
-            # good to return this instead of target, like we do for Cairo.
-            # However, that breaks API so let's wait for a major release
 
             if save_path is not None:
                 if backend == "matplotlib":
                     target.figure.savefig(save_path)
                 elif backend == "plotly":
                     target.write_image(save_path)
+
+            # For matplotlib, return the container artist, which makes it easier
+            # to manipulate post-facto. The user can always get the artist with
+            # plt.gca() - as we do, in fact.
+            if backend == "matplotlib":
+                return result
 
             return target
 

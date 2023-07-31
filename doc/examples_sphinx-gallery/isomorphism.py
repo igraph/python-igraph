@@ -44,7 +44,7 @@ print(g2.isomorphic(g3))
 visual_style = {
     "vertex_color": "lightblue",
     "vertex_label": [0, 1, 2, 3, 4],
-    "vertex_size": 0.4,
+    "vertex_size": 25,
 }
 
 fig, axs = plt.subplots(1, 3)

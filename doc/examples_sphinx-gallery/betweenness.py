@@ -45,7 +45,7 @@ def plot_betweenness(g, vertex_betweenness, edge_betweenness, ax, cax1, cax2):
 
     # Plot graph
     g.vs["color"] = [cmap1(betweenness) for betweenness in scaled_vertex_betweenness]
-    g.vs["size"]  = ig.rescale(vertex_betweenness, (0.1, 0.5))
+    g.vs["size"]  = ig.rescale(vertex_betweenness, (10, 50))
     g.es["color"] = [cmap2(betweenness) for betweenness in scaled_edge_betweenness]
     g.es["width"] = ig.rescale(edge_betweenness, (0.5, 1.0))
     ig.plot(

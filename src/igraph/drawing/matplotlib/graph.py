@@ -18,20 +18,22 @@ from functools import wraps, partial
 
 from igraph._igraph import convex_hull, VertexSeq
 from igraph.drawing.baseclasses import AbstractGraphDrawer
-from igraph.drawing.utils import Point, FakeModule
+from igraph.drawing.utils import FakeModule
 
-from .edge import MatplotlibEdgeDrawer
-from .polygon import MatplotlibPolygonDrawer
+from .edge import MatplotlibEdgeDrawer, EdgeCollection
+from .polygon import HullCollection
 from .utils import find_matplotlib
-from .vertex import MatplotlibVertexDrawer
+from .vertex import MatplotlibVertexDrawer, VertexCollection
 
 __all__ = ("MatplotlibGraphDrawer",)
 
 mpl, plt = find_matplotlib()
 try:
     Artist = mpl.artist.Artist
+    Affine2D = mpl.transforms.Affine2D
 except AttributeError:
     Artist = FakeModule
+    Affine2D = FakeModule
 
 #####################################################################
 
@@ -154,8 +156,8 @@ class GraphArtist(Artist, AbstractGraphDrawer):
     ):
         super().__init__()
         self.graph = graph
-        self.vertex_drawer_factory = vertex_drawer_factory
-        self.edge_drawer_factory = edge_drawer_factory
+        self._vertex_drawer_factory = vertex_drawer_factory
+        self._edge_drawer_factory = edge_drawer_factory
         self.kwds = kwds
         self.kwds["mark_groups"] = mark_groups
         self.kwds["palette"] = palette
@@ -165,33 +167,34 @@ class GraphArtist(Artist, AbstractGraphDrawer):
 
     def _kwds_post_update(self):
         self.kwds["layout"] = self.ensure_layout(self.kwds["layout"], self.graph)
-        self.kwds["edge_curved"] = self._set_edge_curve(**self.kwds)
+        self._set_edge_curve()
         self._clear_state()
         self.stale = True
 
     def _clear_state(self):
-        self._vertices = []
-        self._edges = []
+        self._vertices = None
+        self._edges = None
         self._vertex_labels = []
         self._edge_labels = []
-        self._group_artists = []
+        self._groups = None
         self._legend_info = {}
 
     def get_children(self):
-        artists = sum(
-            [
-                self._group_artists,
-                self._edges,
-                self._vertices,
-                self._edge_labels,
-                self._vertex_labels,
-            ],
-            [],
-        )
+        artists = []
+        if self._groups is not None:
+            artists.append(self._groups)
+        # This way vertices are on top of edges, since they are drawn later
+        if self._edges is not None:
+            artists.append(self._edges)
+        if self._vertices is not None:
+            artists.append(self._vertices)
+        artists.extend(self._edge_labels)
+        artists.extend(self._vertex_labels)
         return tuple(artists)
 
-    def _set_edge_curve(self, **kwds):
+    def _set_edge_curve(self):
         graph = self.graph
+        kwds = self.kwds
 
         # Decide whether we need to calculate the curvature of edges
         # automatically -- and calculate them if needed.
@@ -208,35 +211,30 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             if default is True:
                 default = 0.5
             default = float(default)
-            return autocurve(
+            self.kwds["edge_curved"] = autocurve(
                 graph,
                 attribute=None,
                 default=default,
             )
-        return None
 
     def get_vertices(self):
-        """Get vertex artists."""
+        """Get VertexCollection artist."""
         return self._vertices
 
     def get_edges(self):
-        """Get edge artists.
-
-        Note that for directed edges, an edge might have more than one
-        artist, e.g. arrow shaft and arrowhead.
-        """
+        """Get EdgeCollection artist."""
         return self._edges
 
     def get_groups(self):
-        """Get group/cluster/cover artists."""
-        return self._group_artists
+        """Get HullCollection group/cluster/cover artists."""
+        return self._groups
 
     def get_vertex_labels(self):
-        """Get vertex label artists."""
+        """Get list of vertex label artists."""
         return self._vertex_labels
 
     def get_edge_labels(self):
-        """Get edge label artists."""
+        """Get list of edge label artists."""
         return self._edge_labels
 
     def get_datalim(self):
@@ -252,20 +250,40 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         if len(layout) == 0:
             mins = np.array([0, 0])
             maxs = np.array([1, 1])
-        else:
-            mins = np.min(layout, axis=0).astype(float)
-            maxs = np.max(layout, axis=0).astype(float)
+            return (mins, maxs)
 
-            # Pad by vertex size, to ensure they fit
-            vertex_builder = self.vertex_builder
-            if vertex_builder.size is not None:
-                mins -= vertex_builder.size * 1.1
-                maxs += vertex_builder.size * 1.1
-            else:
-                mins[0] -= vertex_builder.width * 0.55
-                mins[1] -= vertex_builder.height * 0.55
-                maxs[0] += vertex_builder.width * 0.55
-                maxs[1] += vertex_builder.height * 0.55
+        # Use the layout as a base, and expand using bboxes from other artists
+        mins = np.min(layout, axis=0).astype(float)
+        maxs = np.max(layout, axis=0).astype(float)
+
+        # NOTE: unlike other Collections, the vertices are basically a
+        # PatchCollection with an offset transform using transData. Therefore,
+        # care should be taken if one wants to include it here
+        if self._vertices is not None:
+            trans = self.axes.transData.transform
+            trans_inv = self.axes.transData.inverted().transform
+            verts = self._vertices
+            for path, offset in zip(verts.get_paths(), verts._offsets):
+                bbox = path.get_extents()
+                mins = np.minimum(mins, trans_inv(bbox.min + trans(offset)))
+                maxs = np.maximum(maxs, trans_inv(bbox.max + trans(offset)))
+
+        if self._edges is not None:
+            for path in self._edges.get_paths():
+                bbox = path.get_extents()
+                mins = np.minimum(mins, bbox.min)
+                maxs = np.maximum(maxs, bbox.max)
+
+        if self._groups is not None:
+            for path in self._groups.get_paths():
+                bbox = path.get_extents()
+                mins = np.minimum(mins, bbox.min)
+                maxs = np.maximum(maxs, bbox.max)
+
+        # 5% padding, on each side
+        pad = (maxs - mins) * 0.05
+        mins -= pad
+        maxs += pad
 
         return (mins, maxs)
 
@@ -274,8 +292,10 @@ class GraphArtist(Artist, AbstractGraphDrawer):
 
         kwds = self.kwds
         layout = self.kwds["layout"]
-        vertex_builder = self.vertex_builder
-        vertex_order = self.vertex_order
+        vertex_builder = self._vertex_builder
+        vertex_order = self._vertex_order
+
+        self._vertex_labels = []
 
         # Construct the iterator that we will use to draw the vertex labels
         if vertex_order is None:
@@ -307,20 +327,18 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             else:
                 vertex_width = vertex.width
                 vertex_height = vertex.height
-            xtext = coords[0] + dist * vertex_width * np.cos(angle)
-            ytext = coords[1] + dist * vertex_height * np.sin(angle)
+            xtext = dist * 0.5 * vertex_width * np.cos(angle)
+            ytext = dist * 0.5 * vertex_height * np.sin(angle)
             xytext = (xtext, ytext)
-            textcoords = "data"
 
             art = mpl.text.Annotation(
                 vertex.label,
                 coords,
                 xytext=xytext,
-                textcoords=textcoords,
+                textcoords='offset points',
                 fontsize=label_size,
                 ha="center",
                 va="center",
-                transform=self.axes.transData,
                 clip_on=True,
                 zorder=3,
             )
@@ -329,10 +347,12 @@ class GraphArtist(Artist, AbstractGraphDrawer):
     def _draw_edge_labels(self):
         graph = self.graph
         kwds = self.kwds
-        vertex_builder = self.vertex_builder
-        edge_builder = self.edge_builder
-        edge_drawer = self.edge_drawer
-        edge_order = self.edge_order or range(self.graph.ecount())
+        vertex_builder = self._vertex_builder
+        edge_builder = self._edge_builder
+        edge_drawer = self._edge_drawer
+        edge_order = self._edge_order or range(self.graph.ecount())
+
+        self._edge_labels = []
 
         labels = kwds.get("edge_label", None)
         if labels is None:
@@ -382,21 +402,21 @@ class GraphArtist(Artist, AbstractGraphDrawer):
                 zorder=3,
                 **text_kwds,
             )
-            self._vertex_labels.append(art)
+            self._edge_labels.append(art)
 
     def _draw_groups(self):
         """Draw the highlighted vertex groups, if requested"""
         # Deferred import to avoid a cycle in the import graph
         from igraph.clustering import VertexClustering, VertexCover
 
+        mark_groups = self.kwds["mark_groups"]
+        if not mark_groups:
+            return
+
         kwds = self.kwds
         palette = self.kwds["palette"]
         layout = self.kwds["layout"]
-        mark_groups = self.kwds["mark_groups"]
-        vertex_builder = self.vertex_builder
-
-        if not mark_groups:
-            return
+        vertex_builder = self._vertex_builder
 
         # Figure out what to do with mark_groups in order to be able to
         # iterate over it and get memberlist-color pairs
@@ -425,6 +445,10 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             }
 
         # Iterate over color-memberlist pairs
+        polygons = []
+        corner_radii = []
+        facecolors = []
+        edgecolors = []
         for group, color_id in group_iter:
             if not group or color_id is None:
                 continue
@@ -439,38 +463,12 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             # Get the vertex indices that constitute the convex hull
             hull = [group[i] for i in convex_hull([layout[idx] for idx in group])]
 
-            # Calculate the preferred rounding radius for the corners
-            corner_radius = 1.25 * max(vertex_builder[idx].size for idx in hull)
-
-            # Construct the polygon
+            # Construct the hull polygon
             polygon = [layout[idx] for idx in hull]
 
-            if len(polygon) == 2:
-                # Expand the polygon (which is a flat line otherwise)
-                a, b = Point(*polygon[0]), Point(*polygon[1])
-                c = corner_radius * (a - b).normalized()
-                n = Point(-c[1], c[0])
-                polygon = [a + n, b + n, b - c, b - n, a - n, a + c]
-            else:
-                # Expand the polygon around its center of mass
-                center = Point(
-                    *[sum(coords) / float(len(coords)) for coords in zip(*polygon)]
-                )
-                polygon = [
-                    Point(*point).towards(center, -corner_radius) for point in polygon
-                ]
-
-            # Draw the hull
+            # Calculate rounding radius and facecolor
+            corner_radius = 1.25 * max(vertex_builder[idx].size for idx in hull)
             facecolor = (color[0], color[1], color[2], 0.25 * color[3])
-            drawer = MatplotlibPolygonDrawer(self.axes)
-            art = drawer.draw(
-                polygon,
-                corner_radius=corner_radius,
-                facecolor=facecolor,
-                edgecolor=color,
-            )
-            if art is not None:
-                self._group_artists.append(art)
 
             if kwds.get("legend", False):
                 legend_info["handles"].append(
@@ -484,6 +482,21 @@ class GraphArtist(Artist, AbstractGraphDrawer):
                 )
                 legend_info["labels"].append(str(color_id))
 
+            if len(polygon) >= 1:
+                polygons.append(mpl.path.Path(polygon))
+                corner_radii.append(corner_radius)
+                facecolors.append(facecolor)
+                edgecolors.append(color)
+
+        art = HullCollection(
+            polygons,
+            corner_radius=corner_radii,
+            facecolor=facecolors,
+            edgecolor=edgecolors,
+            transform=self.axes.transData,
+        )
+        self._groups = art
+
         if kwds.get("legend", False):
             self.legend_info = legend_info
 
@@ -491,9 +504,9 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         """Draw the vertices"""
         graph = self.graph
         layout = self.kwds["layout"]
-        vertex_drawer = self.vertex_drawer
-        vertex_builder = self.vertex_builder
-        vertex_order = self.vertex_order
+        vertex_drawer = self._vertex_drawer
+        vertex_builder = self._vertex_builder
+        vertex_order = self._vertex_order
 
         vs = graph.vs
         if vertex_order is None:
@@ -504,17 +517,29 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             vertex_coord_iter = (
                 (vs[i], vertex_builder[i], layout[i]) for i in vertex_order
             )
+        offsets = []
+        patches = []
         for vertex, visual_vertex, coords in vertex_coord_iter:
             art = vertex_drawer.draw(visual_vertex, vertex, coords)
-            self._vertices.append(art)
+            patches.append(art)
+            offsets.append(list(coords))
+
+        art = VertexCollection(
+            patches,
+            offsets=offsets,
+            offset_transform=self.axes.transData,
+            match_original=True,
+            transform=Affine2D(),
+        )
+        self._vertices = art
 
     def _draw_edges(self):
         """Draw the edges"""
         graph = self.graph
-        vertex_builder = self.vertex_builder
-        edge_drawer = self.edge_drawer
-        edge_builder = self.edge_builder
-        edge_order = self.edge_order
+        vertex_builder = self._vertex_builder
+        edge_drawer = self._edge_drawer
+        edge_builder = self._edge_builder
+        edge_order = self._edge_order
 
         es = graph.es
         if edge_order is None:
@@ -525,17 +550,34 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
 
         directed = graph.is_directed()
-        if directed:
-            # Arrows and the likes
-            drawer_method = edge_drawer.draw_directed_edge
-        else:
-            # Lines
-            drawer_method = edge_drawer.draw_undirected_edge
+
+        visual_vertices = []
+        edgepatches = []
+        arrow_sizes = []
+        arrow_widths = []
+        loop_sizes = []
+        curved = []
         for edge, visual_edge in edge_coord_iter:
-            src, dest = edge.tuple
-            src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
-            arts = drawer_method(visual_edge, src_vertex, dest_vertex)
-            self._edges.extend(arts)
+            edge_vertices = [vertex_builder[v] for v in edge.tuple]
+            art = edge_drawer.build_patch(visual_edge, *edge_vertices)
+            edgepatches.append(art)
+            visual_vertices.append(edge_vertices)
+            arrow_sizes.append(visual_edge.arrow_size)
+            arrow_widths.append(visual_edge.arrow_width)
+            loop_sizes.append(visual_edge.loop_size)
+            curved.append(visual_edge.curved)
+
+        art = EdgeCollection(
+            edgepatches,
+            visual_vertices=visual_vertices,
+            directed=directed,
+            arrow_sizes=arrow_sizes,
+            arrow_widths=arrow_widths,
+            loop_sizes=loop_sizes,
+            curved=curved,
+            transform=self.axes.transData,
+        )
+        self._edges = art
 
     def _reprocess(self):
         """Prepare artist and children for the actual drawing.
@@ -556,24 +598,83 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         kwds = self.kwds
 
         # Construct the vertex, edge and label drawers
-        self.vertex_drawer = self.vertex_drawer_factory(self.axes, palette, layout)
-        self.edge_drawer = self.edge_drawer_factory(self.axes, palette)
+        if not hasattr(self, "_vertex_drawer"):
+            self._vertex_drawer = self._vertex_drawer_factory(self.axes, palette, layout)
+        if not hasattr(self, "_edge_drawer"):
+            self._edge_drawer = self._edge_drawer_factory(self.axes, palette)
 
         # Construct the visual vertex/edge builders based on the specifications
         # provided by the vertex_drawer and the edge_drawer
-        self.vertex_builder = self.vertex_drawer.VisualVertexBuilder(graph.vs, kwds)
-        self.edge_builder = self.edge_drawer.VisualEdgeBuilder(graph.es, kwds)
+        if not hasattr(self, "_vertex_builder"):
+            self._vertex_builder = self._vertex_drawer.VisualVertexBuilder(
+                graph.vs, kwds)
+        if not hasattr(self, "_edge_builder"):
+            self._edge_builder = self._edge_drawer.VisualEdgeBuilder(
+                graph.es, kwds)
 
         # Determine the order in which we will draw the vertices and edges
         # These methods come from AbstractGraphDrawer
-        self.vertex_order = self._determine_vertex_order(graph, kwds)
-        self.edge_order = self._determine_edge_order(graph, kwds)
+        self._vertex_order = self._determine_vertex_order(graph, kwds)
+        self._edge_order = self._determine_edge_order(graph, kwds)
 
         self._draw_groups()
-        self._draw_edges()
         self._draw_vertices()
+        self._draw_edges()
         self._draw_vertex_labels()
         self._draw_edge_labels()
+
+        # Callbacks for other vertex properties, to ensure they are in sync
+        # with vertex_builder.
+        # NOTE: no need to reprocess here because it does not affect other
+        # parts of the container artist (e.g. edges)
+        def vertex_stale_callback(artist):
+            # If the stale state emerges from other properties, we can salvage
+            # the other artists but we have to update the vertex builder anyway
+            # in case a _reprocess is triggered by something else.
+            prop_pairs = (
+                ("edgecolor", "frame_color"),
+                ("facecolor", "color"),
+                ("linewidth", "frame_width"),
+                ("zorder", "zorder"),
+                ("sizes", "size"),
+            )
+            for mpl_prop, ig_prop in prop_pairs:
+                values = getattr(artist, "get_" + mpl_prop)()
+                try:
+                    iter(values)
+                except TypeError:
+                    values = [values] * len(artist.get_paths())
+                for value, visual_vertex in zip(values, self._vertex_builder):
+                    setattr(visual_vertex, ig_prop, value)
+
+            # If the size is stale, one needs to redraw everything
+            if artist._stale_size:
+                self._reprocess()
+
+        # Edge callback, keeps the edge builder in sync with the actual state
+        # of the artist
+        def edge_stale_callback(artist):
+            prop_pairs = (
+                ("edgecolor", "color"),
+                ("linewidth", "width"),
+                ("zorder", "zorder"),
+                ("arrow_size", "arrow_size"),
+                ("arrow_width", "arrow_width"),
+            )
+            for mpl_prop, ig_prop in prop_pairs:
+                values = getattr(artist, "get_" + mpl_prop)()
+                try:
+                    iter(values)
+                except TypeError:
+                    values = [values] * len(artist.get_paths())
+                for value, visual_edge in zip(values, self._edge_builder):
+                    setattr(visual_edge, ig_prop, value)
+
+                # Sync facecolor from edgecolor
+                if mpl_prop == "edgecolor":
+                    artist._facecolors = artist._edgecolors
+        self._vertices.stale_callback_post = vertex_stale_callback
+        self._edges.stale_callback_post = edge_stale_callback
 
         # Forward mpl properties to children
         # TODO sort out all of the things that need to be forwarded
@@ -730,9 +831,6 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
         # Remove axis ticks
         ax.set_xticks([])
         ax.set_yticks([])
-
-        # Set equal aspect to get actual circles
-        ax.set_aspect(1)
 
         # Autoscale for x/y axis limits
         ax.autoscale_view()

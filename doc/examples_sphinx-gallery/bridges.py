@@ -35,7 +35,7 @@ fig, ax = plt.subplots()
 ig.plot(
     g, 
     target=ax, 
-    vertex_size=0.3,
+    vertex_size=30,
     vertex_color="lightblue",
     vertex_label=range(g.vcount())
 )
@@ -69,7 +69,7 @@ fig, ax = plt.subplots()
 ig.plot(
     g, 
     target=ax, 
-    vertex_size=0.3,
+    vertex_size=30,
     vertex_color="lightblue",
     vertex_label=range(g.vcount()),
     edge_background="#FFF0",    # transparent background color
