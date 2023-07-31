@@ -6295,7 +6295,7 @@ PyObject *igraphmodule_Graph_distances(
   
   if (algorithm == IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_JOHNSON && mode != IGRAPH_OUT) {
     PyErr_SetString(PyExc_ValueError, "Johnson's algorithm is supported for mode=\"out\" only");
-    return NULL;
+    goto cleanup;
   }
 
   /* Call the C function */
@@ -6318,21 +6318,17 @@ PyObject *igraphmodule_Graph_distances(
   }
 
   if (retval) {
-    if (weights) igraph_vector_destroy(weights);
-    igraph_matrix_destroy(&res);
-    igraph_vs_destroy(&from_vs);
-    igraph_vs_destroy(&to_vs);
     igraphmodule_handle_igraph_error();
-    return NULL;
+    goto cleanup;
   }
 
   if (weights) {
-    igraph_vector_destroy(weights);
     list = igraphmodule_matrix_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT);
   } else {
     list = igraphmodule_matrix_t_to_PyList(&res, IGRAPHMODULE_TYPE_INT);
   }
 
+cleanup:
   if (weights) { igraph_vector_destroy(weights); free(weights); }
 
   igraph_matrix_destroy(&res);
