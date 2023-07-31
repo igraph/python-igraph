@@ -8,6 +8,11 @@
 
 ### Changed
 
+- The `matplotlib` plotting infrastructure underwent major surgery and is now able to show consistent vertex and edge drawings at any level of zoom, including with animations, and for any aspect ratio.
+- As a consequence of the restructuring at the previous point, vertex sizes are now specified in figure points and are not affected by axis limits or zoom. With the current conventions, `vertex_size=25` is a reasonable size for `igraph.plot`.
+- As another consequence of the above, vertex labels now support offsets from the vertex center, in figure point units.
+- As another consequence of the above, self loops are now looking better and their size can be controlled using the `edge_loop_size` argument in `igraph.plot`.
+- As another consequence of the above, if using the `matplotlib` backend when plotting a graph, `igraph.plot` now does not return the `Axes` anymore. Instead, it returns a container artist called `GraphArtist`, which contains as children the elements of the graph plot: a `VertexCollection` for the vertices, and `EdgeCollection` for the edges, and so on. These objects can be used to modify the plot after the initial rendering, e.g. inside a Jupyter notebook, to fine tune the appearance of the plot. While documentation on specific graphic elements is still scant, more descriptive examples will follow in the future.
 - `Graph.distances()` now uses Dijkstra's algorithm when there are zero weights but no negative weights. Earlier versions switched to Bellman-Ford or Johnson in the presence of zero weights unnecessarily.
 
 ## [0.10.6] - 2023-07-13
