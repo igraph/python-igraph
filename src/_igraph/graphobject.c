@@ -14288,6 +14288,18 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"Watts_Strogatz", (PyCFunction) igraphmodule_Graph_Watts_Strogatz,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Watts_Strogatz(dim, size, nei, p, loops=False, multiple=False)\n--\n\n"
+   "This function generates networks with the small-world property based on a\n"
+   "variant of the Watts-Strogatz model. The network is obtained by first creating\n"
+   "a periodic undirected lattice, then rewiring both endpoints of each edge with\n"
+   "probability I{p}, while avoiding the creation of multi-edges.\n\n"
+   "This process differs from the original model of Watts and Strogatz (see\n"
+   "reference) in that it rewires I{both} endpoints of edges. Thus in the limit\n"
+   "of C{p=1}, we obtain a G(n,m) random graph with the same number of vertices\n"
+   "and edges as the original lattice. In comparison, the original Watts-Strogatz\n"
+   "model only rewires a single endpoint of each edge, thus the network does not\n"
+   "become fully random even for <code>p=1</code>.\n\n"
+   "For appropriate choices of I{p}, both models exhibit the property of\n"
+   "simultaneously having short path lengths and high clustering.\n\n"
    "@param dim: the dimension of the lattice\n"
    "@param size: the size of the lattice along all dimensions\n"
    "@param nei: value giving the distance (number of steps) within which\n"
