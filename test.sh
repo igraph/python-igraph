@@ -53,8 +53,6 @@ if [ x$CLEAN = x1 ]; then
     rm -rf vendor/build vendor/install
 fi
 
-export MACOSX_DEPLOYMENT_TARGET=12.0
-
 # pip install is called in verbose mode so we can see the compiler warnings
 if [ "x$USE_SANITIZERS" = x1 ]; then
   # Do not run plotting tests -- they tend to have lots of false positives in
