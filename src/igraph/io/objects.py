@@ -418,8 +418,8 @@ def _construct_graph_from_dataframe(
 
     if use_vids:
         if (
-            str(edges.dtypes[0]).startswith(("int", "Int"))
-            and str(edges.dtypes[1]).startswith(("int", "Int"))
+            str(edges.dtypes.iloc[0]).startswith(("int", "Int"))
+            and str(edges.dtypes.iloc[1]).startswith(("int", "Int"))
         ):
             # Check pandas nullable integer data type:
             # https://pandas.pydata.org/docs/user_guide/integer_na.html
