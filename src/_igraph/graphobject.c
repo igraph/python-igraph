@@ -3153,11 +3153,11 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
   igraph_t g;
   Py_ssize_t n1, n2, m = -1;
   double p = -1.0;
-  igraph_erdos_renyi_t t;
   igraph_neimode_t neimode = IGRAPH_ALL;
   PyObject *directed_o = Py_False, *neimode_o = NULL;
   igraph_vector_bool_t vertex_types;
   PyObject *vertex_types_o;
+  igraph_error_t retval;
 
   static char *kwlist[] = { "n1", "n2", "p", "m", "directed", "neimode", NULL };
 
@@ -3179,8 +3179,6 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
     return NULL;
   }
 
-  t = (m == -1) ? IGRAPH_ERDOS_RENYI_GNP : IGRAPH_ERDOS_RENYI_GNM;
-
   if (igraphmodule_PyObject_to_neimode_t(neimode_o, &neimode))
     return NULL;
 
@@ -3189,10 +3187,16 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
     return NULL;
   }
 
-  if (igraph_bipartite_game(&g, &vertex_types, t, n1, n2, p, m, PyObject_IsTrue(directed_o), neimode)) {
-    igraph_vector_bool_destroy(&vertex_types);
-    igraphmodule_handle_igraph_error();
-    return NULL;
+  if (m == -1) {
+    /* GNP model */
+    retval = igraph_bipartite_game_gnp(
+      &g, &vertex_types, n1, n2, p, PyObject_IsTrue(directed_o), neimode
+    );
+  } else {
+    /* GNM model */
+    retval = igraph_bipartite_game_gnm(
+      &g, &vertex_types, n1, n2, m, PyObject_IsTrue(directed_o), neimode
+    );
   }
 
   CREATE_GRAPH_FROM_TYPE(self, g, type);
