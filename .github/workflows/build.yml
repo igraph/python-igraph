@@ -29,16 +29,17 @@ jobs:
           python-version: '3.8'
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v2.14.1
+        uses: pypa/cibuildwheel@v2.15.0
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
-          # Skip tests for Python 3.10 and 3.11 because SciPy does not have
-          # 32-bit wheels for Linux
-          CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-manylinux_i686"
+          # Skip tests for Python 3.10 onwards because SciPy does not have
+          # 32-bit wheels for Linux. Also skip tests for Python 3.12 until
+          # NumPy 1.26 is out (with Python 3.12 wheels)
+          CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-manylinux_i686 cp312-manylinux_i686 cp312-*"
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v2.14.1
+        uses: pypa/cibuildwheel@v2.15.0
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
@@ -68,6 +69,9 @@ jobs:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
+          # Skip tests for Python 3.12 until NumPy 1.26 is out (with Python
+          # 3.12 wheels)
+          CIBW_TEST_SKIP: "cp312-*"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -94,6 +98,9 @@ jobs:
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-musllinux_aarch64"
           CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
+          # Skip tests for Python 3.12 until NumPy 1.26 is out (with Python
+          # 3.12 wheels)
+          CIBW_TEST_SKIP: "cp312-*"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -161,6 +168,9 @@ jobs:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
+          # Skip tests for Python 3.12 until NumPy 1.26 is out (with Python
+          # 3.12 wheels)
+          CIBW_TEST_SKIP: "cp312-*"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -248,9 +258,10 @@ jobs:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
           CIBW_TEST_COMMAND: "cd /d {project} && pip install --prefer-binary \".[test]\" && python -m pytest tests"
-          # Skip tests for Python 3.10 and 3.11 because SciPy does not have
-          # 32-bit wheels for Windows
-          CIBW_TEST_SKIP: "cp310-win32 cp311-win32"
+          # Skip tests for Python 3.10 onwards because SciPy does not have
+          # 32-bit wheels for Windows. Also skip tests for Python 3.12 until
+          # NumPy 1.26 is out (with Python 3.12 wheels)
+          CIBW_TEST_SKIP: "cp310-win32 cp311-win32 cp312-win32 cp312-*"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
           IGRAPH_STATIC_EXTENSION: True
