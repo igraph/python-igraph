@@ -3199,6 +3199,11 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
     );
   }
 
+  if (retval) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
   CREATE_GRAPH_FROM_TYPE(self, g, type);
   if (self == NULL) {
     return NULL;
