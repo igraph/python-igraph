@@ -1869,22 +1869,35 @@ PyObject *igraphmodule_Graph_knn(igraphmodule_GraphObject *self,
 PyObject *igraphmodule_Graph_radius(igraphmodule_GraphObject * self,
                                       PyObject * args, PyObject * kwds)
 {
-  PyObject *mode_o = Py_None;
+  PyObject *mode_o = Py_None, *weights_o = Py_None;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_real_t radius;
+  igraph_vector_t *weights;
 
-  static char *kwlist[] = { "mode", NULL };
+  static char *kwlist[] = { "mode", "weights", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist,
-                                   &mode_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &mode_o, &weights_o)) {
     return NULL;
+  }
 
-  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) {
     return NULL;
+  }
 
-  if (igraph_radius(&self->g, &radius, mode)) {
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights, ATTRIBUTE_TYPE_EDGE)) {
+    return NULL;
+  }
+
+  if (igraph_radius_dijkstra(&self->g, weights, &radius, mode)) {
+    if (weights) {
+      igraph_vector_destroy(weights); free(weights);
+    }
     igraphmodule_handle_igraph_error();
     return NULL;
+  }
+
+  if (weights) {
+    igraph_vector_destroy(weights); free(weights);
   }
 
   return igraphmodule_real_t_to_PyObject(radius, IGRAPHMODULE_TYPE_FLOAT_IF_FRACTIONAL_ELSE_INT);
@@ -4862,18 +4875,21 @@ PyObject *igraphmodule_Graph_decompose(igraphmodule_GraphObject * self,
  */
 PyObject *igraphmodule_Graph_eccentricity(igraphmodule_GraphObject* self,
                                           PyObject* args, PyObject* kwds) {
-  static char *kwlist[] = { "vertices", "mode", NULL };
-  PyObject *vobj = Py_None, *list = NULL, *mode_o = Py_None;
+  static char *kwlist[] = { "vertices", "mode", "weights", NULL };
+  PyObject *vobj = Py_None, *list = NULL, *mode_o = Py_None, *weights_o = Py_None;
   igraph_vector_t res;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_bool_t return_single = false;
   igraph_vs_t vs;
+  igraph_vector_t* weights;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &vobj, &mode_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist, &vobj, &mode_o, &weights_o)) {
     return NULL;
+  }
 
-  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) {
     return NULL;
+  }
 
   if (igraphmodule_PyObject_to_vs_t(vobj, &vs, &self->g, &return_single, 0)) {
     igraphmodule_handle_igraph_error();
@@ -4885,17 +4901,31 @@ PyObject *igraphmodule_Graph_eccentricity(igraphmodule_GraphObject* self,
     return igraphmodule_handle_igraph_error();
   }
 
-  if (igraph_eccentricity(&self->g, &res, vs, mode)) {
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights, ATTRIBUTE_TYPE_EDGE)) {
+    igraph_vs_destroy(&vs);
+    igraph_vector_destroy(&res);
+    return NULL;
+  }
+
+  if (igraph_eccentricity_dijkstra(&self->g, weights, &res, vs, mode)) {
+    if (weights) {
+      igraph_vector_destroy(weights); free(weights);
+    }
     igraph_vs_destroy(&vs);
     igraph_vector_destroy(&res);
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
-  if (!return_single)
+  if (weights) {
+    igraph_vector_destroy(weights); free(weights);
+  }
+
+  if (!return_single) {
     list = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT);
-  else
+  } else {
     list = PyFloat_FromDouble(VECTOR(res)[0]);
+  }
 
   igraph_vector_destroy(&res);
   igraph_vs_destroy(&vs);
@@ -14786,7 +14816,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_eccentricity */
   {"eccentricity", (PyCFunction) igraphmodule_Graph_eccentricity,
    METH_VARARGS | METH_KEYWORDS,
-   "eccentricity(vertices=None, mode=\"all\")\n--\n\n"
+   "eccentricity(vertices=None, mode=\"all\", weights=None)\n--\n\n"
    "Calculates the eccentricities of given vertices in a graph.\n\n"
    "The eccentricity of a vertex is calculated by measuring the\n"
    "shortest distance from (or to) the vertex, to (or from) all other\n"
@@ -14797,6 +14827,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  that edge directions are followed; C{\"out\"} means that edge directions\n"
    "  are followed the opposite direction; C{\"all\"} means that directions are\n"
    "  ignored. The argument has no effect for undirected graphs.\n"
+   "@param weights: a list containing the edge weights. It can also be\n"
+   "  an attribute name (edge weights are retrieved from the given\n"
+   "  attribute) or C{None} (all edges have equal weight).\n"
    "@return: the calculated eccentricities in a list, or a single number if\n"
    "  a single vertex was supplied.\n"},
 
@@ -15358,7 +15391,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interfaces to igraph_radius */
   {"radius", (PyCFunction) igraphmodule_Graph_radius,
    METH_VARARGS | METH_KEYWORDS,
-   "radius(mode=\"out\")\n--\n\n"
+   "radius(mode=\"out\", weights=None)\n--\n\n"
    "Calculates the radius of the graph.\n\n"
    "The radius of a graph is defined as the minimum eccentricity of\n"
    "its vertices (see L{eccentricity()}).\n"
@@ -15367,6 +15400,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  edge directions, C{IN} considers paths that follow the opposite\n"
    "  edge directions, C{ALL} ignores edge directions. The argument is\n"
    "  ignored for undirected graphs.\n"
+   "@param weights: a list containing the edge weights. It can also be\n"
+   "  an attribute name (edge weights are retrieved from the given\n"
+   "  attribute) or C{None} (all edges have equal weight).\n"
    "@return: the radius\n"
    "@see: L{eccentricity()}"
   },

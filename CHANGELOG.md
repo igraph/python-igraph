@@ -6,6 +6,8 @@
 
 - Added `is_bigraphical()` to test whether a pair of integer sequences can be the degree sequence of some bipartite graph.
 
+- Added `weights=...` keyword argument to `Graph.radius()` and `Graph.eccentricity()`.
+
 ## [0.10.7] - 2023-09-04
 
 ### Added

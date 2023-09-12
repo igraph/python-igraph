@@ -56,12 +56,33 @@ class SimplePropertiesTests(unittest.TestCase):
         )
         self.assertEqual(Graph().eccentricity(), [])
 
+    def testWeightedEccentricity(self):
+        self.assertEqual(
+            self.gfull.eccentricity(weights=[2] * self.gfull.ecount()),
+            [2] * self.gfull.vcount()
+        )
+        self.assertEqual(
+            self.gempty.eccentricity(weights=[]),
+            [0] * self.gempty.vcount()
+        )
+        self.assertEqual(
+            self.g.eccentricity(weights=range(1, self.g.ecount() + 1)),
+            [4, 5, 6, 6]
+        )
+        self.assertEqual(Graph().eccentricity(), [])
+
     def testRadius(self):
         self.assertEqual(self.gfull.radius(), 1)
         self.assertEqual(self.gempty.radius(), 0)
         self.assertEqual(self.g.radius(), 1)
         self.assertEqual(self.gdir.radius(), 1)
         self.assertEqual(self.tree.radius(), 3)
+        self.assertTrue(isnan(Graph().radius()))
+
+    def testWeightedRadius(self):
+        self.assertEqual(self.gfull.radius(weights=[2] * self.gfull.ecount()), 2)
+        self.assertEqual(self.gempty.radius(weights=[]), 0)
+        self.assertEqual(self.g.radius(weights=range(1, self.g.ecount() + 1)), 4)
         self.assertTrue(isnan(Graph().radius()))
 
     def testTransitivity(self):
