@@ -299,6 +299,11 @@ class IgraphCCoreCMakeBuilder:
         # to avoid having the architecture name in the LIBPATH (e.g. lib/x86_64-linux-gnu)
         args.append("-DCMAKE_INSTALL_PREFIX=" + str(install_folder))
 
+        # On macOS, compile the C core with the same macOS deployment target as
+        # the one that was used to compile Python itself
+        if sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET"):
+            args.append("-DCMAKE_OSX_DEPLOYMENT_TARGET=" + sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET"))
+
         # Compile the C core with sanitizers if needed
         if building_with_sanitizers():
             args.append("-DUSE_SANITIZER=Address;Undefined")

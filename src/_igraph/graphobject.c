@@ -1869,22 +1869,35 @@ PyObject *igraphmodule_Graph_knn(igraphmodule_GraphObject *self,
 PyObject *igraphmodule_Graph_radius(igraphmodule_GraphObject * self,
                                       PyObject * args, PyObject * kwds)
 {
-  PyObject *mode_o = Py_None;
+  PyObject *mode_o = Py_None, *weights_o = Py_None;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_real_t radius;
+  igraph_vector_t *weights;
 
-  static char *kwlist[] = { "mode", NULL };
+  static char *kwlist[] = { "mode", "weights", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist,
-                                   &mode_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &mode_o, &weights_o)) {
     return NULL;
+  }
 
-  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) {
     return NULL;
+  }
 
-  if (igraph_radius(&self->g, &radius, mode)) {
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights, ATTRIBUTE_TYPE_EDGE)) {
+    return NULL;
+  }
+
+  if (igraph_radius_dijkstra(&self->g, weights, &radius, mode)) {
+    if (weights) {
+      igraph_vector_destroy(weights); free(weights);
+    }
     igraphmodule_handle_igraph_error();
     return NULL;
+  }
+
+  if (weights) {
+    igraph_vector_destroy(weights); free(weights);
   }
 
   return igraphmodule_real_t_to_PyObject(radius, IGRAPHMODULE_TYPE_FLOAT_IF_FRACTIONAL_ELSE_INT);
@@ -3153,11 +3166,11 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
   igraph_t g;
   Py_ssize_t n1, n2, m = -1;
   double p = -1.0;
-  igraph_erdos_renyi_t t;
   igraph_neimode_t neimode = IGRAPH_ALL;
   PyObject *directed_o = Py_False, *neimode_o = NULL;
   igraph_vector_bool_t vertex_types;
   PyObject *vertex_types_o;
+  igraph_error_t retval;
 
   static char *kwlist[] = { "n1", "n2", "p", "m", "directed", "neimode", NULL };
 
@@ -3179,8 +3192,6 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
     return NULL;
   }
 
-  t = (m == -1) ? IGRAPH_ERDOS_RENYI_GNP : IGRAPH_ERDOS_RENYI_GNM;
-
   if (igraphmodule_PyObject_to_neimode_t(neimode_o, &neimode))
     return NULL;
 
@@ -3189,8 +3200,19 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
     return NULL;
   }
 
-  if (igraph_bipartite_game(&g, &vertex_types, t, n1, n2, p, m, PyObject_IsTrue(directed_o), neimode)) {
-    igraph_vector_bool_destroy(&vertex_types);
+  if (m == -1) {
+    /* GNP model */
+    retval = igraph_bipartite_game_gnp(
+      &g, &vertex_types, n1, n2, p, PyObject_IsTrue(directed_o), neimode
+    );
+  } else {
+    /* GNM model */
+    retval = igraph_bipartite_game_gnm(
+      &g, &vertex_types, n1, n2, m, PyObject_IsTrue(directed_o), neimode
+    );
+  }
+
+  if (retval) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -4853,18 +4875,21 @@ PyObject *igraphmodule_Graph_decompose(igraphmodule_GraphObject * self,
  */
 PyObject *igraphmodule_Graph_eccentricity(igraphmodule_GraphObject* self,
                                           PyObject* args, PyObject* kwds) {
-  static char *kwlist[] = { "vertices", "mode", NULL };
-  PyObject *vobj = Py_None, *list = NULL, *mode_o = Py_None;
+  static char *kwlist[] = { "vertices", "mode", "weights", NULL };
+  PyObject *vobj = Py_None, *list = NULL, *mode_o = Py_None, *weights_o = Py_None;
   igraph_vector_t res;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_bool_t return_single = false;
   igraph_vs_t vs;
+  igraph_vector_t* weights;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &vobj, &mode_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist, &vobj, &mode_o, &weights_o)) {
     return NULL;
+  }
 
-  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) {
     return NULL;
+  }
 
   if (igraphmodule_PyObject_to_vs_t(vobj, &vs, &self->g, &return_single, 0)) {
     igraphmodule_handle_igraph_error();
@@ -4876,17 +4901,31 @@ PyObject *igraphmodule_Graph_eccentricity(igraphmodule_GraphObject* self,
     return igraphmodule_handle_igraph_error();
   }
 
-  if (igraph_eccentricity(&self->g, &res, vs, mode)) {
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights, ATTRIBUTE_TYPE_EDGE)) {
+    igraph_vs_destroy(&vs);
+    igraph_vector_destroy(&res);
+    return NULL;
+  }
+
+  if (igraph_eccentricity_dijkstra(&self->g, weights, &res, vs, mode)) {
+    if (weights) {
+      igraph_vector_destroy(weights); free(weights);
+    }
     igraph_vs_destroy(&vs);
     igraph_vector_destroy(&res);
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
-  if (!return_single)
+  if (weights) {
+    igraph_vector_destroy(weights); free(weights);
+  }
+
+  if (!return_single) {
     list = igraphmodule_vector_t_to_PyList(&res, IGRAPHMODULE_TYPE_FLOAT);
-  else
+  } else {
     list = PyFloat_FromDouble(VECTOR(res)[0]);
+  }
 
   igraph_vector_destroy(&res);
   igraph_vs_destroy(&vs);
@@ -14288,6 +14327,18 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"Watts_Strogatz", (PyCFunction) igraphmodule_Graph_Watts_Strogatz,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Watts_Strogatz(dim, size, nei, p, loops=False, multiple=False)\n--\n\n"
+   "This function generates networks with the small-world property based on a\n"
+   "variant of the Watts-Strogatz model. The network is obtained by first creating\n"
+   "a periodic undirected lattice, then rewiring both endpoints of each edge with\n"
+   "probability I{p}, while avoiding the creation of multi-edges.\n\n"
+   "This process differs from the original model of Watts and Strogatz (see\n"
+   "reference) in that it rewires I{both} endpoints of edges. Thus in the limit\n"
+   "of C{p=1}, we obtain a G(n,m) random graph with the same number of vertices\n"
+   "and edges as the original lattice. In comparison, the original Watts-Strogatz\n"
+   "model only rewires a single endpoint of each edge, thus the network does not\n"
+   "become fully random even for <code>p=1</code>.\n\n"
+   "For appropriate choices of I{p}, both models exhibit the property of\n"
+   "simultaneously having short path lengths and high clustering.\n\n"
    "@param dim: the dimension of the lattice\n"
    "@param size: the size of the lattice along all dimensions\n"
    "@param nei: value giving the distance (number of steps) within which\n"
@@ -14765,7 +14816,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_eccentricity */
   {"eccentricity", (PyCFunction) igraphmodule_Graph_eccentricity,
    METH_VARARGS | METH_KEYWORDS,
-   "eccentricity(vertices=None, mode=\"all\")\n--\n\n"
+   "eccentricity(vertices=None, mode=\"all\", weights=None)\n--\n\n"
    "Calculates the eccentricities of given vertices in a graph.\n\n"
    "The eccentricity of a vertex is calculated by measuring the\n"
    "shortest distance from (or to) the vertex, to (or from) all other\n"
@@ -14776,6 +14827,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  that edge directions are followed; C{\"out\"} means that edge directions\n"
    "  are followed the opposite direction; C{\"all\"} means that directions are\n"
    "  ignored. The argument has no effect for undirected graphs.\n"
+   "@param weights: a list containing the edge weights. It can also be\n"
+   "  an attribute name (edge weights are retrieved from the given\n"
+   "  attribute) or C{None} (all edges have equal weight).\n"
    "@return: the calculated eccentricities in a list, or a single number if\n"
    "  a single vertex was supplied.\n"},
 
@@ -15337,7 +15391,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interfaces to igraph_radius */
   {"radius", (PyCFunction) igraphmodule_Graph_radius,
    METH_VARARGS | METH_KEYWORDS,
-   "radius(mode=\"out\")\n--\n\n"
+   "radius(mode=\"out\", weights=None)\n--\n\n"
    "Calculates the radius of the graph.\n\n"
    "The radius of a graph is defined as the minimum eccentricity of\n"
    "its vertices (see L{eccentricity()}).\n"
@@ -15346,6 +15400,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  edge directions, C{IN} considers paths that follow the opposite\n"
    "  edge directions, C{ALL} ignores edge directions. The argument is\n"
    "  ignored for undirected graphs.\n"
+   "@param weights: a list containing the edge weights. It can also be\n"
+   "  an attribute name (edge weights are retrieved from the given\n"
+   "  attribute) or C{None} (all edges have equal weight).\n"
    "@return: the radius\n"
    "@see: L{eccentricity()}"
   },

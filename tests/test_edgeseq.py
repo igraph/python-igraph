@@ -85,7 +85,10 @@ class EdgeTests(unittest.TestCase):
         self.assertRaises(ValueError, getattr, e, "tuple")
         self.assertRaises(ValueError, getattr, e, "vertex_tuple")
 
-    @unittest.skipIf(is_pypy, "skipped on PyPy because we do not have access to docstrings")
+    @unittest.skipIf(
+        is_pypy,
+        "skipped on PyPy because we do not have access to docstrings"
+    )
     def testProxyMethods(self):
         g = Graph.GRG(10, 0.5)
         e = g.es[0]
@@ -150,6 +153,8 @@ class EdgeSeqTests(unittest.TestCase):
 
     @unittest.skipIf(np is None, "test case depends on NumPy")
     def testNumPyIndexing(self):
+        assert np is not None
+
         n = self.g.ecount()
         for i in range(n):
             arr = np.array([i])
@@ -333,6 +338,16 @@ class EdgeSeqTests(unittest.TestCase):
         self.assertEqual(6, len(es_filtered))
         self.assertTrue(all((e.source in vs3 or e.target in vs3) for e in es_filtered))
         self.assert_edges_unique_in(es_filtered)
+
+    def testIncidentFilteringDirected(self):
+        # Test case from https://igraph.discourse.group/t/edge-select-using-incident-on-directed-graphs/1645
+        g = Graph([(0, 1), (1, 2), (2, 3)], directed=True)
+
+        vs = (1, )
+        es = g.es.select(_incident=vs)
+        self.assertEqual(2, len(es))
+        self.assertTrue(all((e.source in vs or e.target in vs) for e in es))
+        self.assert_edges_unique_in(es)
 
     def testIncidentFilteringByNames(self):
         g = Graph.Lattice([10, 10], circular=False)

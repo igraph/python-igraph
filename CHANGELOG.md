@@ -1,6 +1,14 @@
 # igraph Python interface changelog
 
-## [master]
+## [0.10.8] - 2023-09-12
+
+### Added 
+
+- Added `is_bigraphical()` to test whether a pair of integer sequences can be the degree sequence of some bipartite graph.
+
+- Added `weights=...` keyword argument to `Graph.radius()` and `Graph.eccentricity()`.
+
+## [0.10.7] - 2023-09-04
 
 ### Added
 
@@ -13,7 +21,15 @@
 - As another consequence of the above, vertex labels now support offsets from the vertex center, in figure point units.
 - As another consequence of the above, self loops are now looking better and their size can be controlled using the `edge_loop_size` argument in `igraph.plot`.
 - As another consequence of the above, if using the `matplotlib` backend when plotting a graph, `igraph.plot` now does not return the `Axes` anymore. Instead, it returns a container artist called `GraphArtist`, which contains as children the elements of the graph plot: a `VertexCollection` for the vertices, and `EdgeCollection` for the edges, and so on. These objects can be used to modify the plot after the initial rendering, e.g. inside a Jupyter notebook, to fine tune the appearance of the plot. While documentation on specific graphic elements is still scant, more descriptive examples will follow in the future.
+- The C core of igraph was updated to version 0.10.7.
+
 - `Graph.distances()` now uses Dijkstra's algorithm when there are zero weights but no negative weights. Earlier versions switched to Bellman-Ford or Johnson in the presence of zero weights unnecessarily.
+
+### Fixed
+
+- Fixed a bug in `EdgeSeq.select(_incident=...)` for undirected graphs.
+
+- Fixed a memory leak in `Graph.distances()` when attempting to use Johnson's algorithm with `mode != "out"`
 
 ## [0.10.6] - 2023-07-13
 
@@ -547,7 +563,10 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[Unreleased]: https://github.com/igraph/python-igraph/compare/0.10.5...main
+[main]: https://github.com/igraph/python-igraph/compare/0.10.8...main
+[0.10.8]: https://github.com/igraph/python-igraph/compare/0.10.7...0.10.8
+[0.10.7]: https://github.com/igraph/python-igraph/compare/0.10.6...0.10.7
+[0.10.6]: https://github.com/igraph/python-igraph/compare/0.10.5...0.10.6
 [0.10.5]: https://github.com/igraph/python-igraph/compare/0.10.4...0.10.5
 [0.10.4]: https://github.com/igraph/python-igraph/compare/0.10.3...0.10.4
 [0.10.3]: https://github.com/igraph/python-igraph/compare/0.10.2...0.10.3
