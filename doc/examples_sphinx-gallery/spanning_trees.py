@@ -55,3 +55,8 @@ ig.plot(
     edge_width=g.es["width"]
 )
 plt.show()
+
+# %%
+# .. note::
+#   To invert the y axis such that the root of the tree is on top of the plot,
+#   you can call `ax.invert_yaxis()` before `plt.show()`.

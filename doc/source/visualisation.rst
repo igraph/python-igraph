@@ -129,6 +129,11 @@ You can then further manipulate the axes and figure however you like via the `ax
 called them). This variant does not use `Cairo`_ directly and might be lacking some features that are available in the
 `Cairo`_ backend: please open an issue on Github to request specific features.
 
+.. note::
+   When plotting rooted trees, Cairo automatically puts the root on top of the image and
+   the leaves at the bottom. For `matplotlib`_, the root is usually at the bottom instead.
+   You can easily place the root on top by calling `ax.invert_yaxis()`.
+
 Plotting via `matplotlib`_ makes it easy to combine igraph with other plots. For instance, if you want to have a figure
 with two panels showing different aspects of some data set, say a graph and a bar plot, you can easily do that::
 
