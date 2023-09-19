@@ -691,6 +691,11 @@ If you prefer to use `matplotlib`_ as a plotting engine, create an axes and use 
    :alt: The visual representation of our social network (matplotlib backend)
    :align: center
 
+.. note::
+   When plotting rooted trees, Cairo automatically puts the root on top of the image and
+   the leaves at the bottom. For `matplotlib`_, the root is usually at the bottom instead.
+   You can easily place the root on top by calling `ax.invert_yaxis()`.
+
 Hmm, this is not too pretty so far. A trivial addition would be to use the names as the
 vertex labels and to color the vertices according to the gender. Vertex labels are taken
 from the ``label`` attribute by default and vertex colors are determined by the

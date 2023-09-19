@@ -601,7 +601,7 @@ class EdgeSeq(_EdgeSeq):
                     # the vertices specified
                     candidates = set()
                     for v in value:
-                        candidates.update(es.graph.incident(v))
+                        candidates.update(es.graph.incident(v, mode="all"))
 
                     if not es.is_all():
                         # Find those that are in the current edge sequence
