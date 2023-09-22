@@ -974,8 +974,10 @@ options = dict(
         "": "src"
     },
     packages=find_packages(where="src"),
-    scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
+    entry_points={
+        "console_scripts": ["igraph=igraph.app.shell:main"]
+    },
     extras_require={
         # Dependencies needed for plotting with Cairo
         "cairo": ["cairocffi>=1.2.0"],
