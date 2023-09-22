@@ -1,7 +1,18 @@
+prune docker
+prune .git
+prune .github
+
 include src/_igraph/*.h
 include MANIFEST.in
-include scripts/mkdoc.sh
+include scripts/*.sh
+include scripts/*.py
 include tests/*.py
 
 graft vendor/source/igraph
+
+graft doc
+prune doc/html
+prune doc/source/tutorials
+
+global-exclude .dockerignore .DS_Store .gitattributes .gitignore .gitmodules
 
