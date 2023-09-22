@@ -33,7 +33,7 @@ for i, community in enumerate(communities):
 # %%
 # Last, we plot the graph. We use a fancy technique called proxy artists to
 # make a legend. You can find more about that in matplotlib's
-# :doc:`matplotlib:tutorials/intermediate/legend_guide`:
+# :doc:`matplotlib:users/explain/axes/legend_guide`:
 fig, ax = plt.subplots()
 ig.plot(
     communities,
