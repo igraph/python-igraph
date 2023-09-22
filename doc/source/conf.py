@@ -20,12 +20,8 @@ from pathlib import Path
 
 
 # Check if we are inside readthedocs, the conf is quite different there
-is_inside_rtd = os.getenv("READTHEDOCS", "") == "True"
 rtd_version = os.getenv("READTHEDOCS_VERSION", "")
 rtd_version_type = os.getenv("READTHEDOCS_VERSION_TYPE", "unknown")
-
-if not is_inside_rtd:
-    import sphinxbootstrap4theme
 
 # Utility functions
 # NOTE: these could be improved, esp by importing igraph, but that
@@ -68,9 +64,7 @@ _igraph_version = get_igraph_version()
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-sys.path.insert(0, os.path.abspath('sphinxext'))
 extensions = [
-    'sphinxcontrib.jquery',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.intersphinx',
@@ -143,50 +137,10 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ---------------------------------------------------
 
-# The theme to use for HTML and HTML Help pages. RTD overloads this with their
-# standard theme if the variable 'html_theme' is not set
-if not is_inside_rtd:
-    html_theme = 'sphinxbootstrap4theme'
-
-    # Add any paths that contain templates here, relative to this directory.
-    templates_path = [
-            '_templates',
-    ]
-
-    # Theme options are theme-specific and customize the look and feel of a theme
-    # further.  For a list of options available for each theme, see the
-    # documentation.
-    html_theme_options = {
-            "navbar_style": "full",
-            "navbar_color_class": "dark",
-    }
-
-    # Add any paths that contain custom themes here, relative to this directory.
-    html_theme_path = [sphinxbootstrap4theme.get_path()]
-
-    # Add any paths that contain custom static files (such as style sheets) here,
-    # relative to this directory. They are copied after the builtin static files,
-    # so a file named "default.css" will overwrite the builtin "default.css".
-    html_static_path = ['_static']
-
-    # If false, no module index is generated.
-    html_domain_indices = False
-
-    # If false, no index is generated.
-    html_use_index = False
-
-    # If true, the index is split into individual pages for each letter.
-    #html_split_index = False
-
-    # If true, links to the reST sources are added to the pages.
-    html_show_sourcelink = False
-
-else:
-
-    # Inspired by pydoctor's RTD page itself
-    # https://github.com/twisted/pydoctor/blob/master/docs/source/conf.py
-    html_theme = "sphinx_rtd_theme"
-    html_static_path = []
+# Inspired by pydoctor's RTD page itself
+# https://github.com/twisted/pydoctor/blob/master/docs/source/conf.py
+html_theme = "sphinx_rtd_theme"
+html_static_path = []
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -255,31 +209,18 @@ pydoctor_url_path = 'api/'
 pydoctor_args = [
     '--project-name=igraph',
     '--project-version=' + version,
-    '--project-url=https://igraph.readthedocs.io',
+    '--project-url=https://python.igraph.org',
     '--introspect-c-modules',
     '--docformat=epytext',
-    #'--intersphinx='+get_root_dir()+'/doc/tutorial/objects.inv',
+    '--intersphinx=https://docs.python.org/3/objects.inv',
     '--html-output=' + get_pydoctor_html_outputdir(pydoctor_url_path),
-    #'--html-viewsource-base=https://github.com/igraph/python-igraph/tree/default',
+    '--html-viewsource-base=https://github.com/igraph/python-igraph/tree/main/src/igraph',
     '--project-base-dir=' + _igraph_dir,
-    '--template-dir=' + get_root_dir() + '/doc/source/_pydoctor_templates'
+    '--template-dir=' + get_root_dir() + '/doc/source/_pydoctor_templates',
+    '--theme=readthedocs',
+    _igraph_dir
 ]
-
-# Using --no-sidebar option to skip the sidebar because the pydoctor output is
-# integrated in a smaller div with a custom CSS.
-if not is_inside_rtd:
-    pydoctor_args.extend([
-        '--no-sidebar',
-    ])
-else:
-    pydoctor_args.extend([
-        '--theme=readthedocs',
-    ])
-pydoctor_args.append(_igraph_dir)
-
-# RTD needs no postprocessing for pydoctor, while Jekyll does
-if not is_inside_rtd:
-    extensions.append('postprocess_api')
+pydoctor_url_path = '/en/{rtd_version}/api'
 
 
 # -- Options for sphinx-gallery ------------------------------------------------

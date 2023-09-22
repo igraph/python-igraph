@@ -3,25 +3,16 @@
 # Creates the API documentation for igraph's Python interface
 #
 # Usage: ./mkdoc.sh (makes API and tutorial docs)
-#        ./mkdoc.sh -s (makes standalone docs that require no further processing)
-#        ./mkdoc.sh -sd (makes a Dash docset based on standalone docs, requires doc2dash)
+#        ./mkdoc.sh -d (makes a Dash docset based on standalone docs, requires doc2dash)
 
 # Make sure we bail out on build errors
 set -e
 
-STANDALONE=0
-SERVE=0
 DOC2DASH=0
 LINKCHECK=0
 
 while getopts ":sjdl" OPTION; do
   case $OPTION in
-    s)
-      STANDALONE=1
-      ;;
-    j)
-      SERVE=1
-      ;;
     d)
       DOC2DASH=1
       ;;
@@ -53,17 +44,14 @@ if [ ! -d ".venv" ]; then
 
   # Install sphinx, matplotlib, wheel and pydoctor into the venv.
   # doc2dash is optional; it will be installed when -d is given
-  .venv/bin/pip install -U pip sphinx sphinxbootstrap4theme matplotlib wheel pydoctor
+  .venv/bin/pip install -U pip sphinx matplotlib wheel pydoctor sphinx-rtd-theme
 fi
 
 # Make sure that Sphinx, PyDoctor (and maybe doc2dash) are up-to-date in the virtualenv
-.venv/bin/pip install -U sphinx pydoctor sphinxbootstrap4theme sphinx-gallery sphinxcontrib-jquery
+.venv/bin/pip install -U sphinx pydoctor sphinx-gallery sphinxcontrib-jquery sphinx-rtd-theme
 if [ x$DOC2DASH = x1 ]; then
     .venv/bin/pip install -U doc2dash
 fi
-
-#echo "Set PyDoctor theme"
-#$SCRIPTS_FOLDER/set-pydoctor-theme.sh ${ROOT_FOLDER} ${STANDALONE}
 
 echo "Removing existing igraph and python-igraph eggs from virtualenv..."
 SITE_PACKAGES_DIR=`.venv/bin/python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`
@@ -95,34 +83,8 @@ fi
 
 
 echo "Generating HTML documentation..."
-if [ "x$STANDALONE" = "x1" ]; then
-  echo "Build standalone docs"
-  .venv/bin/pip install -U sphinx-rtd-theme
-  READTHEDOCS="True" .venv/bin/python -m sphinx \
-   -T \
-   -b html \
-   ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
-else
-  echo "Build Jekyll-style docs"
-  .venv/bin/sphinx-build ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
-
-  if [ "x$SERVE" = "x1" ]; then
-    cd doc/html
-
-    # Copy jekyll build environment
-    cp -r ../jekyll_tools/* ./
-
-    # Install jekyll infra
-    bundle config set --local path 'vendor/bundle'
-    bundle install
-
-    # TODO: copy back?
-
-    # Build website via templates
-    bundle exec jekyll serve
-
-  fi
-fi
+.venv/bin/pip install -U sphinx-rtd-theme
+.venv/bin/python -m sphinx -T -b html ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
 
 echo "HTML documentation generated in ${DOC_HTML_FOLDER}"
 
