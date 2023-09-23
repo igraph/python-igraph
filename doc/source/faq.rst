@@ -16,7 +16,7 @@ help you!
 
 I've just installed |igraph|. What do I do now?
 -----------------------------------------------
-Take a peek at the :doc:`tutorials/quickstart`! You can then go through a few
+Take a peek at the :doc:`examples/quickstart`! You can then go through a few
 more examples in our :ref:`gallery <gallery-of-examples>`, read detailed instructions on graph :doc:`generation <generation>`, :doc:`analysis <analysis>` and :doc:`visualisation <visualisation>`, and check out the full :doc:`API documentation <api/index>`.
 
 

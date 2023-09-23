@@ -1,5 +1,5 @@
 """
-.. _tutorials-betweenness:
+.. _examples-betweenness:
 
 =======================
 Betweenness

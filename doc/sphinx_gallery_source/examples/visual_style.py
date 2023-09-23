@@ -1,5 +1,5 @@
 """
-.. _tutorials-visual-style:
+.. _examples-visual-style:
 
 Visual styling
 ===========================
@@ -46,7 +46,7 @@ plt.show()
 #    Matplotlib plotting backend, or using a particular color palette by
 #    default, you can use igraph's `configuration instance
 #    :class:`igraph.configuration.Configuration`. A quick example on how to use
-#    it can be found here: :ref:`tutorials-configuration`.
+#    it can be found here: :ref:`examples-configuration`.
 
 # %%
 # In the matplotlib backend, igraph creates a special container

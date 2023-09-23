@@ -1,5 +1,5 @@
 """
-.. _tutorials-bipartite-matching-maxflow:
+.. _examples-bipartite-matching-maxflow:
 
 ==========================================
 Maximum Bipartite Matching by Maximum Flow
@@ -7,7 +7,7 @@ Maximum Bipartite Matching by Maximum Flow
 
 This example presents how to visualise bipartite matching using maximum flow (see :meth:`igraph.Graph.maxflow`).
 
-.. note::  :meth:`igraph.Graph.maximum_bipartite_matching` is usually a better way to find the maximum bipartite matching. For a demonstration on how to use that method instead, check out :ref:`tutorials-bipartite-matching`.
+.. note::  :meth:`igraph.Graph.maximum_bipartite_matching` is usually a better way to find the maximum bipartite matching. For a demonstration on how to use that method instead, check out :ref:`examples-bipartite-matching`.
 """
 import igraph as ig
 import matplotlib.pyplot as plt

@@ -1,5 +1,5 @@
 """
-.. _tutorials-connected-components:
+.. _examples-connected-components:
 
 =====================
 Connected Components

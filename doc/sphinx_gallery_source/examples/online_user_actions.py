@@ -1,5 +1,5 @@
 """
-.. _tutorials-online-user-actions:
+.. _examples-online-user-actions:
 
 ===================
 Online user actions

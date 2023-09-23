@@ -1,5 +1,5 @@
 """
-.. _tutorials-cliques:
+.. _examples-cliques:
 
 ============
 Cliques

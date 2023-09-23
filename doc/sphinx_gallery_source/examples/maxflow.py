@@ -1,5 +1,5 @@
 """
-.. _tutorials-maxflow:
+.. _examples-maxflow:
 
 ============
 Maximum Flow

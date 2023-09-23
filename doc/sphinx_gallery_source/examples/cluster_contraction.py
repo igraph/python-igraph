@@ -1,5 +1,5 @@
 """
-.. _tutorials-cluster-graph:
+.. _examples-cluster-graph:
 
 ===========================
 Generating Cluster Graphs
@@ -19,7 +19,7 @@ g = ig.load("./lesmis/lesmis.gml")
 # Now that we have a graph in memory, we can generate communities using
 # :meth:`igraph.Graph.community_edge_betweenness` to separate out vertices into
 # clusters. (For a more focused tutorial on just visualising communities, check
-# out :ref:`tutorials-visualize-communities`).
+# out :ref:`examples-visualize-communities`).
 communities = g.community_edge_betweenness()
 
 # %%

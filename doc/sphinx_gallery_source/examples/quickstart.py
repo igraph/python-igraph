@@ -1,5 +1,5 @@
 """
-.. _tutorials-quickstart:
+.. _examples-quickstart:
 
 ===========
 Quick Start

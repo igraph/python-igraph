@@ -1,11 +1,11 @@
 """
-.. _tutorials-spanning-trees:
+.. _examples-spanning-trees:
 
 ==============
 Spanning Trees
 ==============
 
-This example shows how to generate a spanning tree from an input graph using :meth:`igraph.Graph.spanning_tree`. For the related idea of finding a *minimum spanning tree*, see :ref:`tutorials-minimum-spanning-trees`.
+This example shows how to generate a spanning tree from an input graph using :meth:`igraph.Graph.spanning_tree`. For the related idea of finding a *minimum spanning tree*, see :ref:`examples-minimum-spanning-trees`.
 """
 import igraph as ig
 import matplotlib.pyplot as plt

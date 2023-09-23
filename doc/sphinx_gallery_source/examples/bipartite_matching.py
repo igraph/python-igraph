@@ -1,5 +1,5 @@
 """
-.. _tutorials-bipartite-matching:
+.. _examples-bipartite-matching:
 
 ==========================
 Maximum Bipartite Matching

@@ -1,5 +1,5 @@
 """
-.. _tutorials-ring-animation:
+.. _examples-ring-animation:
 
 ====================
 Ring Graph Animation

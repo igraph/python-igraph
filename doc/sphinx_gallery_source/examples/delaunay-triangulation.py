@@ -1,5 +1,5 @@
 """
-.. _tutorials-delaunay-triangulation:
+.. _examples-delaunay-triangulation:
 
 ======================
 Delaunay Triangulation

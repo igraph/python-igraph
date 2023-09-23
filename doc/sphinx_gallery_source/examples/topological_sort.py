@@ -1,5 +1,5 @@
 """
-.. _tutorials-topological-sort:
+.. _examples-topological-sort:
 
 ===================
 Topological sorting

@@ -1,11 +1,11 @@
 """
-.. _tutorials-bridges:
+.. _examples-bridges:
 
 ========
 Bridges
 ========
 
-This example shows how to compute and visualize the `bridges <https://en.wikipedia.org/wiki/Bridge_(graph_theory)>`_ in a graph using :meth:`igraph.GraphBase.bridges`. For an example on articulation points instead, see :ref:`tutorials-articulation-points`.
+This example shows how to compute and visualize the `bridges <https://en.wikipedia.org/wiki/Bridge_(graph_theory)>`_ in a graph using :meth:`igraph.GraphBase.bridges`. For an example on articulation points instead, see :ref:`examples-articulation-points`.
 """
 import igraph as ig
 import matplotlib.pyplot as plt

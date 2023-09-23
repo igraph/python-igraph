@@ -226,11 +226,18 @@ pydoctor_url_path = '/en/{rtd_version}/api'
 # -- Options for sphinx-gallery ------------------------------------------------
 
 sphinx_gallery_conf = {
-     'examples_dirs': '../examples_sphinx-gallery',   # path to your example scripts
-     'gallery_dirs': 'tutorials',  # path to where to save gallery generated output
-     'filename_pattern': '/',
-     'matplotlib_animations': True,
-     'remove_config_comments': True,
+    'examples_dirs': [
+        '../sphinx_gallery_source/examples',
+        '../sphinx_gallery_source/tutorial',
+    ],
+    'gallery_dirs': [
+        'examples',
+        'tutorial',
+    ],
+    'filename_pattern': '/',
+    'matplotlib_animations': True,
+    'remove_config_comments': True,
+    'expected_failing_examples': ['../sphinx_gallery_source/tutorial/tutorial.py'],
 }
 
 # -- Options for LaTeX output --------------------------------------------------

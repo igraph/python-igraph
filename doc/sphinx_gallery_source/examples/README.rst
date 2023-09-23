@@ -5,6 +5,6 @@ Gallery of Examples
 
 Gallery of examples for `python-igraph` illustrating graph generation, analysis, and plotting.
 
-Impatient? Check out the :ref:`tutorials-quickstart`.
+Impatient? Check out the :ref:`examples-quickstart`.
 
-Too little detail? Read the :doc:`extended tutorial <../tutorial>`.
+Too little detail? Read the :doc:`extended tutorial <../tutorial/tutorial>`.

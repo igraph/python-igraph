@@ -1,5 +1,5 @@
 """
-.. _tutorials-random:
+.. _examples-random:
 
 =================
 Erdős-Rényi Graph

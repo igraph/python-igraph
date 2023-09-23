@@ -1,5 +1,5 @@
 """
-.. _tutorials-shortest-paths:
+.. _examples-shortest-paths:
 
 ==============
 Shortest Paths

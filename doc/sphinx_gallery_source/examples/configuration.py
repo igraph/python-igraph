@@ -1,5 +1,5 @@
 """
-.. _tutorials-configuration:
+.. _examples-configuration:
 
 ======================
 Configuration Instance
@@ -57,4 +57,4 @@ plt.show()
 # .. note::
 #
 #     To use a consistent style between individual plots (e.g. vertex sizes,
-#     colors, layout etc.) check out :ref:`tutorials-visual-style`.
+#     colors, layout etc.) check out :ref:`examples-visual-style`.

@@ -1,5 +1,5 @@
 """
-.. _tutorials-isomorphism:
+.. _examples-isomorphism:
 
 ===========
 Isomorphism

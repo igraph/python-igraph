@@ -1,5 +1,5 @@
 """
-.. _tutorials-visualize-communities:
+.. _examples-visualize-communities:
 
 =====================
 Communities
@@ -64,4 +64,4 @@ plt.show()
 
 # %%
 # For an example on how to generate the cluster graph from a vertex cluster,
-# check out :ref:`tutorials-cluster-graph`.
+# check out :ref:`examples-cluster-graph`.

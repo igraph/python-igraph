@@ -8,10 +8,10 @@
 Tutorial (Español)
 ==================
 
-Esta página es un tutorial detallado de las capacidades de |igraph| para Python. Para obtener una impresión rápida de lo que |igraph| puede hacer, consulte el :doc:`tutorials/quickstart`. Si aún no ha instalado |igraph|, siga las instrucciones de :doc:`install`.
+Esta página es un tutorial detallado de las capacidades de |igraph| para Python. Para obtener una impresión rápida de lo que |igraph| puede hacer, consulte el :doc:`examples/quickstart`. Si aún no ha instalado |igraph|, siga las instrucciones de :doc:`install`.
 
 .. note::
-   Para el lector impaciente, vea la página :doc:`tutorials/index` para ejemplos cortos y autocontenidos.
+   Para el lector impaciente, vea la página :doc:`examples/index` para ejemplos cortos y autocontenidos.
    
 Comenzar con |igraph|
 =====================

@@ -1,11 +1,11 @@
 """
-.. _tutorials-articulation-points:
+.. _examples-articulation-points:
 
 ===================
 Articulation Points
 ===================
 
-This example shows how to compute and visualize the `articulation points <https://en.wikipedia.org/wiki/Biconnected_component>`_ in a graph using :meth:`igraph.GraphBase.articulation_points`. For an example on bridges instead, see :ref:`tutorials-bridges`.
+This example shows how to compute and visualize the `articulation points <https://en.wikipedia.org/wiki/Biconnected_component>`_ in a graph using :meth:`igraph.GraphBase.articulation_points`. For an example on bridges instead, see :ref:`examples-bridges`.
 
 """
 import igraph as ig
