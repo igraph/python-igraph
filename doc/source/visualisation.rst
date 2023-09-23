@@ -12,7 +12,7 @@ In the following examples, we will assume |igraph| is imported as `ig` and a
    >>> g = ig.Graph(edges=[[0, 1], [2, 3]])
 
 Read the :doc:`api/index` for details on each function and class. See the :ref:`tutorial <tutorial-layouts-plotting>` and
-the :doc:`tutorials/index` for examples.
+the :doc:`examples/index` for examples.
 
 Graph layouts
 =============
