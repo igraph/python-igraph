@@ -69,7 +69,7 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
                 "Positional arguments to plot functions are ignored "
                 "and will be deprecated soon.",
                 DeprecationWarning,
-                stacklevel=1
+                stacklevel=1,
             )
 
         cy = self.service
@@ -82,7 +82,7 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
                 warn(
                     "CytoscapeRPC too old, cannot create network without view."
                     " Consider upgrading CytoscapeRPC to use this feature.",
-                    stacklevel=1
+                    stacklevel=1,
                 )
                 network_id = cy.createNetwork(name)
         else:
@@ -355,7 +355,7 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
                 "Positional arguments to plot functions are ignored "
                 "and will be deprecated soon.",
                 DeprecationWarning,
-                stacklevel=1
+                stacklevel=1,
             )
 
         self.streamer.post(graph, self.connection, encoder=kwds.get("encoder"))

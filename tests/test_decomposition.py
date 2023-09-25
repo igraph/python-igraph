@@ -493,7 +493,6 @@ class CommunityTests(unittest.TestCase):
         self.assertMembershipsEqual(cl, [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2])
 
     def testLeiden(self):
-
         # Example from paper (Fig. C.1)
         high_weight = 3.0
         low_weight = 3.0 / 2.0
@@ -664,12 +663,18 @@ class ComparisonTests(unittest.TestCase):
 
 
 def suite():
-    decomposition_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DecompositionTests)
+    decomposition_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        DecompositionTests
+    )
     clustering_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ClusteringTests)
-    vertex_clustering_suite = unittest.defaultTestLoader.loadTestsFromTestCase(VertexClusteringTests)
+    vertex_clustering_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        VertexClusteringTests
+    )
     cover_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CoverTests)
     community_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CommunityTests)
-    cohesive_blocks_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CohesiveBlocksTests)
+    cohesive_blocks_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        CohesiveBlocksTests
+    )
     comparison_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ComparisonTests)
     return unittest.TestSuite(
         [

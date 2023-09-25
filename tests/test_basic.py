@@ -18,7 +18,7 @@ from igraph import (
     is_graphical_degree_sequence,
     Matrix,
     Vertex,
-    VertexSeq
+    VertexSeq,
 )
 from igraph._igraph import EdgeSeq as _EdgeSeq, VertexSeq as _VertexSeq
 
@@ -663,7 +663,7 @@ class GraphDictDictTests(unittest.TestCase):
             "David": {"Alice": {}, "Bob": {}},
         }
         self.eids_with_props = {
-            0: {1: {"weight": 5.6, "additional": 'abc'}},
+            0: {1: {"weight": 5.6, "additional": "abc"}},
             2: {1: {"weight": 3.4}, 0: {"weight": 2}},
             3: {0: {"weight": 1}, 1: {"weight": 5.6}},
         }
@@ -948,13 +948,27 @@ class ReferenceCountTests(unittest.TestCase):
 def suite():
     basic_suite = unittest.defaultTestLoader.loadTestsFromTestCase(BasicTests)
     datatype_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DatatypeTests)
-    graph_dict_list_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphDictListTests)
-    graph_tuple_list_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphTupleListTests)
-    graph_list_dict_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphListDictTests)
-    graph_dict_dict_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphDictDictTests)
-    degree_sequence_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DegreeSequenceTests)
-    inheritance_suite = unittest.defaultTestLoader.loadTestsFromTestCase(InheritanceTests)
-    refcount_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ReferenceCountTests)
+    graph_dict_list_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        GraphDictListTests
+    )
+    graph_tuple_list_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        GraphTupleListTests
+    )
+    graph_list_dict_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        GraphListDictTests
+    )
+    graph_dict_dict_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        GraphDictDictTests
+    )
+    degree_sequence_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        DegreeSequenceTests
+    )
+    inheritance_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        InheritanceTests
+    )
+    refcount_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        ReferenceCountTests
+    )
     return unittest.TestSuite(
         [
             basic_suite,
@@ -965,7 +979,7 @@ def suite():
             graph_dict_dict_suite,
             degree_sequence_suite,
             inheritance_suite,
-            refcount_suite
+            refcount_suite,
         ]
     )
 

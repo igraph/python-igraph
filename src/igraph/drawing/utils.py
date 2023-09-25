@@ -498,7 +498,7 @@ class Point(NamedTuple("_Point", [("x", float), ("y", float)])):
     def length(self):
         """Returns the length of the vector pointing from the origin to this
         point."""
-        return (self.x ** 2 + self.y ** 2) ** 0.5
+        return (self.x**2 + self.y**2) ** 0.5
 
     def normalized(self):
         """Normalizes the coordinates of the point s.t. its length will be 1
@@ -511,7 +511,7 @@ class Point(NamedTuple("_Point", [("x", float), ("y", float)])):
     def sq_length(self):
         """Returns the squared length of the vector pointing from the origin
         to this point."""
-        return self.x ** 2 + self.y ** 2
+        return self.x**2 + self.y**2
 
     def towards(self, other, distance=0):
         """Returns the point that is at a given distance from this point
@@ -565,14 +565,14 @@ def evaluate_cubic_bezier(x0, y0, x1, y1, x2, y2, x3, y3, t):
     xt = (
         (1.0 - t) ** 3 * x0
         + 3.0 * t * (1.0 - t) ** 2 * x1
-        + 3.0 * t ** 2 * (1.0 - t) * x2
-        + t ** 3 * x3
+        + 3.0 * t**2 * (1.0 - t) * x2
+        + t**3 * x3
     )
     yt = (
         (1.0 - t) ** 3 * y0
         + 3.0 * t * (1.0 - t) ** 2 * y1
-        + 3.0 * t ** 2 * (1.0 - t) * y2
-        + t ** 3 * y3
+        + 3.0 * t**2 * (1.0 - t) * y2
+        + t**3 * y3
     )
     return xt, yt
 
@@ -583,11 +583,11 @@ def get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, curvature):
     """
     aux1 = (
         (2 * x1 + x2) / 3.0 - curvature * 0.5 * (y2 - y1),
-        (2 * y1 + y2) / 3.0 + curvature * 0.5 * (x2 - x1)
+        (2 * y1 + y2) / 3.0 + curvature * 0.5 * (x2 - x1),
     )
     aux2 = (
         (x1 + 2 * x2) / 3.0 - curvature * 0.5 * (y2 - y1),
-        (y1 + 2 * y2) / 3.0 + curvature * 0.5 * (x2 - x1)
+        (y1 + 2 * y2) / 3.0 + curvature * 0.5 * (x2 - x1),
     )
     return aux1, aux2
 

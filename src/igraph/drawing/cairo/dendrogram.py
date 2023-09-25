@@ -136,7 +136,8 @@ class CairoDendrogramDrawer(AbstractCairoDrawer):
         # Calculate space needed for individual items at the
         # bottom of the dendrogram
         item_boxes = [
-            self._item_box_size(dendro, context, horiz, idx) for idx in range(dendro._nitems)
+            self._item_box_size(dendro, context, horiz, idx)
+            for idx in range(dendro._nitems)
         ]
 
         # Small correction for cases when the right edge of the labels is

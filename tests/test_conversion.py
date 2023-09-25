@@ -65,8 +65,7 @@ class DirectedUndirectedTests(unittest.TestCase):
         self.assertTrue(graph.is_directed())
         self.assertTrue(graph.vcount() == 5)
         self.assertTrue(
-            sorted(graph.get_edgelist())
-            == [(0, 1), (0, 2), (0, 3), (0, 3), (2, 4)]
+            sorted(graph.get_edgelist()) == [(0, 1), (0, 2), (0, 3), (0, 3), (2, 4)]
         )
 
     def testToDirectedRandom(self):
@@ -174,8 +173,12 @@ class GraphRepresentationTests(unittest.TestCase):
 
 
 def suite():
-    direction_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DirectedUndirectedTests)
-    representation_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphRepresentationTests)
+    direction_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        DirectedUndirectedTests
+    )
+    representation_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        GraphRepresentationTests
+    )
     return unittest.TestSuite([direction_suite, representation_suite])
 
 

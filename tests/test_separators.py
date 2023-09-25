@@ -60,7 +60,9 @@ class IsSeparatorTests(unittest.TestCase):
 
 
 def suite():
-    is_separator_suite = unittest.defaultTestLoader.loadTestsFromTestCase(IsSeparatorTests)
+    is_separator_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        IsSeparatorTests
+    )
     return unittest.TestSuite([is_separator_suite])
 
 

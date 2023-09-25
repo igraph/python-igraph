@@ -7,7 +7,7 @@ import tempfile
 from contextlib import contextmanager
 from textwrap import dedent
 
-__all__ = ("temporary_file", )
+__all__ = ("temporary_file",)
 
 
 @contextmanager

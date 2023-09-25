@@ -99,7 +99,9 @@ class VertexTests(unittest.TestCase):
                     [edge.index for edge in vertex.neighbors(mode=mode)],
                 )
 
-    @unittest.skipIf(is_pypy, "skipped on PyPy because we do not have access to docstrings")
+    @unittest.skipIf(
+        is_pypy, "skipped on PyPy because we do not have access to docstrings"
+    )
     def testProxyMethods(self):
         # We only test with connected graphs because disconnected graphs might
         # print a warning when distances() is invoked on them and we want

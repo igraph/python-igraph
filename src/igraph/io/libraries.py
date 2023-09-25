@@ -1,5 +1,7 @@
 def _export_graph_to_networkx(
-    graph, create_using=None, vertex_attr_hashable: str = "_nx_name",
+    graph,
+    create_using=None,
+    vertex_attr_hashable: str = "_nx_name",
 ):
     """Converts the graph to networkx format.
 
@@ -68,7 +70,7 @@ def _export_graph_to_networkx(
     return g
 
 
-def _construct_graph_from_networkx(cls, g, vertex_attr_hashable : str = "_nx_name"):
+def _construct_graph_from_networkx(cls, g, vertex_attr_hashable: str = "_nx_name"):
     """Converts the graph from networkx
 
     Vertex names will be stored as a vertex_attr_hashable attribute (usually
@@ -131,14 +133,14 @@ def _construct_graph_from_networkx(cls, g, vertex_attr_hashable : str = "_nx_nam
     # Multigraphs need a hidden attribute for multiedges
     if isinstance(g, (nx.MultiGraph, nx.MultiDiGraph)):
         eattr["_nx_multiedge_key"] = []
-        for (u, v, edgekey, data) in g.edges.data(keys=True):
+        for u, v, edgekey, data in g.edges.data(keys=True):
             edges.append((vd[u], vd[v]))
             for name in eattr_names:
                 eattr[name].append(data.get(name))
             eattr["_nx_multiedge_key"].append(edgekey)
 
     else:
-        for (u, v, data) in g.edges.data():
+        for u, v, data in g.edges.data():
             edges.append((vd[u], vd[v]))
             for name in eattr_names:
                 eattr[name].append(data.get(name))

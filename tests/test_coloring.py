@@ -24,7 +24,9 @@ class VertexColoringTests(unittest.TestCase):
 
 
 def suite():
-    vertex_coloring_suite = unittest.defaultTestLoader.loadTestsFromTestCase(VertexColoringTests)
+    vertex_coloring_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        VertexColoringTests
+    )
     return unittest.TestSuite([vertex_coloring_suite])
 
 

@@ -267,13 +267,19 @@ class UnicodeAttributeTests(unittest.TestCase):
 
 def suite():
     attribute_suite = unittest.defaultTestLoader.loadTestsFromTestCase(AttributeTests)
-    attribute_combination_suite = unittest.defaultTestLoader.loadTestsFromTestCase(AttributeCombinationTests)
-    unicode_attributes_suite = unittest.defaultTestLoader.loadTestsFromTestCase(UnicodeAttributeTests)
-    return unittest.TestSuite([
-        attribute_suite,
-        attribute_combination_suite,
-        unicode_attributes_suite,
-    ])
+    attribute_combination_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        AttributeCombinationTests
+    )
+    unicode_attributes_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        UnicodeAttributeTests
+    )
+    return unittest.TestSuite(
+        [
+            attribute_suite,
+            attribute_combination_suite,
+            unicode_attributes_suite,
+        ]
+    )
 
 
 def test():

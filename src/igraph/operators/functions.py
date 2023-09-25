@@ -9,6 +9,7 @@ from igraph._igraph import GraphBase, _union, _intersection, _disjoint_union
 
 from warnings import warn
 
+
 def name_set(names):
     """Converts a list of names to a set of names while checking for duplicates.
 
@@ -22,7 +23,7 @@ def name_set(names):
         RuntimeError: if the input name list has duplicates
     """
     nameset = set(names)
-    if (len(nameset) != len(names)):
+    if len(nameset) != len(names):
         raise AttributeError("Graph contains duplicate vertex names")
     return nameset
 
@@ -151,7 +152,7 @@ def union(graphs, byname="auto"):
             warn(
                 f"Some, but not all graphs are named (got {n_named} named, "
                 f"{ngr-n_named} unnamed), not using vertex names",
-                stacklevel=1
+                stacklevel=1,
             )
     elif byname and (n_named != ngr):
         raise RuntimeError(
@@ -346,7 +347,7 @@ def intersection(graphs, byname="auto", keep_all_vertices=True):
             warn(
                 f"Some, but not all graphs are named (got {n_named} named, "
                 f"{ngr-n_named} unnamed), not using vertex names",
-                stacklevel=1
+                stacklevel=1,
             )
     elif byname and (n_named != ngr):
         raise RuntimeError(

@@ -96,7 +96,7 @@ class RectangleDrawer(ShapeDrawer):
         height = height or width
         if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             return mpl.patches.Rectangle(
-                (- width / 2, - height / 2),
+                (-width / 2, -height / 2),
                 width,
                 height,
                 clip_on=True,
@@ -244,7 +244,7 @@ class DownTriangleDrawer(ShapeDrawer):
         height = height or width
         if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             vertices = [
-                [- 0.5 * width, 0.333 * height],
+                [-0.5 * width, 0.333 * height],
                 [0.5 * width, 0.333 * height],
                 [0, -0.667 * height],
             ]

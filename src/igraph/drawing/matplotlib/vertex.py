@@ -94,6 +94,7 @@ class VertexCollection(PatchCollection):
     @param size_callback: A function to be triggered after vertex sizes are
         changed. Typically this redraws the edges.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._stale_size = False

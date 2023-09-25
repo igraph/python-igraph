@@ -108,7 +108,7 @@ def image_comparison(
     """
     if savefig_kwarg is None:
         savefig_kwarg = {}  # default no kwargs to savefig
-    if sys.maxsize <= 2 ** 32:
+    if sys.maxsize <= 2**32:
         tol += 0.06
     return _unittest_image_comparison(
         baseline_images=baseline_images,

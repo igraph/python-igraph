@@ -745,7 +745,6 @@ restricted to this sequence, and returns the result.
 
 
 def _add_proxy_methods():
-
     # Proxy methods for VertexSeq and EdgeSeq that forward their arguments to
     # the corresponding Graph method are constructed here. Proxy methods for
     # Vertex and Edge are added in the C source code. Make sure that you update
@@ -795,4 +794,6 @@ def _add_proxy_methods():
             new_method_name = rename_methods[cls].get(method, method)
             setattr(cls, new_method_name, _graphmethod(None, method))
 
-    EdgeSeq.edge_betweenness = _graphmethod(lambda self, result: [result[i] for i in self.indices], "edge_betweenness")
+    EdgeSeq.edge_betweenness = _graphmethod(
+        lambda self, result: [result[i] for i in self.indices], "edge_betweenness"
+    )

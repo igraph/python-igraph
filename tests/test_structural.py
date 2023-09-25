@@ -59,15 +59,13 @@ class SimplePropertiesTests(unittest.TestCase):
     def testWeightedEccentricity(self):
         self.assertEqual(
             self.gfull.eccentricity(weights=[2] * self.gfull.ecount()),
-            [2] * self.gfull.vcount()
+            [2] * self.gfull.vcount(),
         )
         self.assertEqual(
-            self.gempty.eccentricity(weights=[]),
-            [0] * self.gempty.vcount()
+            self.gempty.eccentricity(weights=[]), [0] * self.gempty.vcount()
         )
         self.assertEqual(
-            self.g.eccentricity(weights=range(1, self.g.ecount() + 1)),
-            [4, 5, 6, 6]
+            self.g.eccentricity(weights=range(1, self.g.ecount() + 1)), [4, 5, 6, 6]
         )
         self.assertEqual(Graph().eccentricity(), [])
 
@@ -271,9 +269,13 @@ class CentralityTests(unittest.TestCase):
 
         observed = g.betweenness(sources=[0, 8], targets=[0, 8])
         self.assertEqual(len(observed), g.vcount())
-        for x, y in zip(observed, [0, 1 / 2, 1 / 6, 1 / 2, 2 / 3, 1 / 2, 1 / 6, 1 / 2, 0]):
+        for x, y in zip(
+            observed, [0, 1 / 2, 1 / 6, 1 / 2, 2 / 3, 1 / 2, 1 / 6, 1 / 2, 0]
+        ):
             self.assertAlmostEqual(x, y)
-        self.assertRaises(ValueError, g.betweenness, cutoff=2, sources=[0, 8], targets=[0, 8])
+        self.assertRaises(
+            ValueError, g.betweenness, cutoff=2, sources=[0, 8], targets=[0, 8]
+        )
 
     def testEdgeBetweennessCentrality(self):
         g = Graph.Star(5)
@@ -293,9 +295,27 @@ class CentralityTests(unittest.TestCase):
         g = Graph.Lattice([3, 3], circular=False)
         observed = g.edge_betweenness(sources=[0, 8], targets=[0, 8])
         self.assertEqual(len(observed), g.ecount())
-        for x, y in zip(observed, [1 / 2, 1 / 2, 1 / 6, 1 / 3, 1 / 6, 1 / 3, 1 / 6, 1 / 3, 1 / 3, 1 / 2, 1 / 6, 1 / 2]):
+        for x, y in zip(
+            observed,
+            [
+                1 / 2,
+                1 / 2,
+                1 / 6,
+                1 / 3,
+                1 / 6,
+                1 / 3,
+                1 / 6,
+                1 / 3,
+                1 / 3,
+                1 / 2,
+                1 / 6,
+                1 / 2,
+            ],
+        ):
             self.assertAlmostEqual(x, y)
-        self.assertRaises(ValueError, g.edge_betweenness, cutoff=2, sources=[0, 8], targets=[0, 8])
+        self.assertRaises(
+            ValueError, g.edge_betweenness, cutoff=2, sources=[0, 8], targets=[0, 8]
+        )
 
     def testClosenessCentrality(self):
         g = Graph.Star(5)
@@ -624,7 +644,9 @@ class MiscTests(unittest.TestCase):
         self.assertTrue(g.is_tree())
 
         g = Graph(1, directed=True)
-        self.assertTrue(g.is_tree() and g.is_tree("out") and g.is_tree("in") and g.is_tree("all"))
+        self.assertTrue(
+            g.is_tree() and g.is_tree("out") and g.is_tree("in") and g.is_tree("all")
+        )
 
         g = Graph(5, [(0, 1), (1, 2), (1, 3), (3, 4)])
         self.assertTrue(g.is_tree())
@@ -649,8 +671,7 @@ class MiscTests(unittest.TestCase):
 
         g = Graph.Ring(10)
         self.assertFalse(
-            g.is_tree() or g.is_tree("in") or g.is_tree("out") or
-            g.is_tree("all")
+            g.is_tree() or g.is_tree("in") or g.is_tree("out") or g.is_tree("all")
         )
 
     def testIsChordal(self):
@@ -777,8 +798,12 @@ class PathTests(unittest.TestCase):
             == [row[2:4] for row in expected]
         )
         self.assertRaises(
-            ValueError, g.distances,
-            weights="weight", target=[2, 3], algorithm="johnson", mode="in"
+            ValueError,
+            g.distances,
+            weights="weight",
+            target=[2, 3],
+            algorithm="johnson",
+            mode="in",
         )
 
     def testGetShortestPath(self):
@@ -795,7 +820,9 @@ class PathTests(unittest.TestCase):
 
         self.assertEqual([0, 1, 3], g.get_shortest_path(0, 3, algorithm="bellman_ford"))
         self.assertRaises(ValueError, g.get_shortest_path, 0, 3, algorithm="johnson")
-        self.assertRaises(ValueError, g.get_shortest_path, 0, 3, algorithm="johnson", mode="in")
+        self.assertRaises(
+            ValueError, g.get_shortest_path, 0, 3, algorithm="johnson", mode="in"
+        )
 
     def testGetShortestPaths(self):
         g = Graph(4, [(0, 1), (0, 2), (1, 3), (3, 2), (2, 1)], directed=True)
@@ -979,8 +1006,7 @@ class PathTests(unittest.TestCase):
             return ((ux - vx) ** 2 + (uy - vy) ** 2) ** 0.5
 
         self.assertEqual(
-            [0, 1, 5, 6, 10, 11],
-            g.get_shortest_path_astar(0, 11, heuristics)
+            [0, 1, 5, 6, 10, 11], g.get_shortest_path_astar(0, 11, heuristics)
         )
 
 
@@ -1122,12 +1148,20 @@ class DominatorTests(unittest.TestCase):
 
 
 def suite():
-    simple_suite = unittest.defaultTestLoader.loadTestsFromTestCase(SimplePropertiesTests)
+    simple_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        SimplePropertiesTests
+    )
     degree_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DegreeTests)
-    local_transitivity_suite = unittest.defaultTestLoader.loadTestsFromTestCase(LocalTransitivityTests)
-    biconnected_suite = unittest.defaultTestLoader.loadTestsFromTestCase(BiconnectedComponentTests)
+    local_transitivity_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        LocalTransitivityTests
+    )
+    biconnected_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        BiconnectedComponentTests
+    )
     centrality_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CentralityTests)
-    neighborhood_suite = unittest.defaultTestLoader.loadTestsFromTestCase(NeighborhoodTests)
+    neighborhood_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        NeighborhoodTests
+    )
     path_suite = unittest.defaultTestLoader.loadTestsFromTestCase(PathTests)
     misc_suite = unittest.defaultTestLoader.loadTestsFromTestCase(MiscTests)
     dominator_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DominatorTests)

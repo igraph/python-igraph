@@ -791,9 +791,7 @@ class VertexDendrogram(Dendrogram):
     """The dendrogram resulting from the hierarchical clustering of the
     vertex set of a graph."""
 
-    def __init__(
-        self, graph, merges, optimal_count=None, modularity_params=None
-    ):
+    def __init__(self, graph, merges, optimal_count=None, modularity_params=None):
         """Creates a dendrogram object for a given graph.
 
         @param graph: the graph that will be associated to the clustering
@@ -1622,5 +1620,7 @@ def _connected_components(graph, mode="strong"):
 
 def _clusters(graph, mode="strong"):
     """Deprecated alias to L{Graph.connected_components()}."""
-    deprecated("Graph.clusters() is deprecated; use Graph.connected_components() instead")
+    deprecated(
+        "Graph.clusters() is deprecated; use Graph.connected_components() instead"
+    )
     return graph.connected_components(mode=mode)

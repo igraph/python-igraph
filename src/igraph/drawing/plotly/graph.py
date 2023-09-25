@@ -58,7 +58,7 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                 "Positional arguments to plot functions are ignored "
                 "and will be deprecated soon.",
                 DeprecationWarning,
-                stacklevel=1
+                stacklevel=1,
             )
 
         # Some abbreviations for sake of simplicity

@@ -86,8 +86,7 @@ class EdgeTests(unittest.TestCase):
         self.assertRaises(ValueError, getattr, e, "vertex_tuple")
 
     @unittest.skipIf(
-        is_pypy,
-        "skipped on PyPy because we do not have access to docstrings"
+        is_pypy, "skipped on PyPy because we do not have access to docstrings"
     )
     def testProxyMethods(self):
         g = Graph.GRG(10, 0.5)
@@ -343,7 +342,7 @@ class EdgeSeqTests(unittest.TestCase):
         # Test case from https://igraph.discourse.group/t/edge-select-using-incident-on-directed-graphs/1645
         g = Graph([(0, 1), (1, 2), (2, 3)], directed=True)
 
-        vs = (1, )
+        vs = (1,)
         es = g.es.select(_incident=vs)
         self.assertEqual(2, len(es))
         self.assertTrue(all((e.source in vs or e.target in vs) for e in es))

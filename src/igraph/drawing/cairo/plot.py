@@ -280,7 +280,14 @@ class CairoPlot:
                     ctx.push_group()
                 else:
                     ctx.save()
-                plotter("cairo", ctx, bbox=bbox, palette=palette, *args, **kwds)  # noqa: B026
+                plotter(
+                    "cairo",
+                    ctx,
+                    bbox=bbox,
+                    palette=palette,
+                    *args,  # noqa: B026
+                    **kwds
+                )
                 if opacity < 1.0:
                     ctx.pop_group_to_source()
                     ctx.paint_with_alpha(opacity)
@@ -312,7 +319,9 @@ class CairoPlot:
             return self._surface.write_to_png(str(fname))
 
         if fname is not None:
-            warn("filename is ignored for surfaces other than ImageSurface", stacklevel=1)
+            warn(
+                "filename is ignored for surfaces other than ImageSurface", stacklevel=1
+            )
 
         self._ctx.show_page()
         self._surface.finish()

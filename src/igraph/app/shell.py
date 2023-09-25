@@ -497,8 +497,8 @@ def main():
         shell_classes = []
         available_classes = {
             k: v
-                for k, v in globals().items()
-                if isinstance(v, type) and issubclass(v, Shell)
+            for k, v in globals().items()
+            if isinstance(v, type) and issubclass(v, Shell)
         }
         for part in parts:
             cls = available_classes.get(part, None)

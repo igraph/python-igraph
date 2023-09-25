@@ -405,7 +405,9 @@ def _construct_graph_from_dataframe(
     try:
         import pandas as pd
     except ImportError:
-        raise ImportError("You should install pandas in order to use this function") from None
+        raise ImportError(
+            "You should install pandas in order to use this function"
+        ) from None
 
     if edges.shape[1] < 2:
         raise ValueError("The 'edges' DataFrame must contain at least two columns")
@@ -413,17 +415,16 @@ def _construct_graph_from_dataframe(
         raise ValueError("The 'vertices' DataFrame must contain at least one column")
 
     if use_vids:
-        if (
-            str(edges.dtypes.iloc[0]).startswith(("int", "Int"))
-            and str(edges.dtypes.iloc[1]).startswith(("int", "Int"))
-        ):
+        if str(edges.dtypes.iloc[0]).startswith(("int", "Int")) and str(
+            edges.dtypes.iloc[1]
+        ).startswith(("int", "Int")):
             # Check pandas nullable integer data type:
             # https://pandas.pydata.org/docs/user_guide/integer_na.html
             if (edges.iloc[:, :2].isna()).any(axis=None):
-                 raise ValueError("Source and target IDs must not be null")
+                raise ValueError("Source and target IDs must not be null")
 
             if (edges.iloc[:, :2] < 0).any(axis=None):
-                 raise ValueError("Source and target IDs must not be negative")
+                raise ValueError("Source and target IDs must not be negative")
         else:
             raise TypeError(
                 f"Source and target IDs must be 0-based integers, found types {edges.dtypes.tolist()[:2]}"
@@ -449,7 +450,7 @@ def _construct_graph_from_dataframe(
         if edges.iloc[:, :2].isna().any(axis=None):
             warn(
                 "In the first two columns of 'edges' NA elements were replaced with string \"NA\"",
-                stacklevel=1
+                stacklevel=1,
             )
             edges = edges.copy()
             edges.iloc[:, :2].fillna("NA", inplace=True)
@@ -461,7 +462,7 @@ def _construct_graph_from_dataframe(
         if vertices.iloc[:, 0].isna().any():
             warn(
                 "In the first column of 'vertices' NA elements were replaced with string \"NA\"",
-                stacklevel=1
+                stacklevel=1,
             )
             vertices = vertices.copy()
             vertices.iloc[:, 0].fillna("NA", inplace=True)
@@ -791,7 +792,9 @@ def _export_vertex_dataframe(graph):
     try:
         import pandas as pd
     except ImportError:
-        raise ImportError("You should install pandas in order to use this function") from None
+        raise ImportError(
+            "You should install pandas in order to use this function"
+        ) from None
 
     df = pd.DataFrame(
         {attr: graph.vs[attr] for attr in graph.vertex_attributes()},
@@ -835,7 +838,9 @@ def _export_edge_dataframe(graph):
     try:
         import pandas as pd
     except ImportError:
-        raise ImportError("You should install pandas in order to use this function") from None
+        raise ImportError(
+            "You should install pandas in order to use this function"
+        ) from None
 
     df = pd.DataFrame(
         {attr: graph.es[attr] for attr in graph.edge_attributes()},

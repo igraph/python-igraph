@@ -73,7 +73,9 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
 
         if edge.curved:
             # Calculate the curve
-            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge.curved)
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(
+                x1, y1, x2, y2, edge.curved
+            )
 
             # Coordinates of the control points of the Bezier curve
             xc1, yc1 = aux1
@@ -111,7 +113,9 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
             ), (aux_points[0][1] - aux_points[1][1])
 
             # Recalculate the curve such that it lands on the base of the arrow triangle
-            aux1, aux2 = get_bezier_control_points_for_curved_edge(x_src, y_src, x_arrow_mid, y_arrow_mid, edge.curved)
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(
+                x_src, y_src, x_arrow_mid, y_arrow_mid, edge.curved
+            )
 
             # Offset the second control point (aux2) such that it falls precisely
             # on the normal to the arrow base vector. Strictly speaking,
@@ -238,7 +242,9 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
 
         if edge.curved:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
-            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge.curved)
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(
+                x1, y1, x2, y2, edge.curved
+            )
 
             path.append(
                 format_path_step(

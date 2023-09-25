@@ -111,9 +111,9 @@ class OperatorTests(unittest.TestCase):
 
     def testUnionWithConflict(self):
         g1 = Graph.Tree(7, 2)
-        g1['name'] = 'Tree'
+        g1["name"] = "Tree"
         g2 = Graph.Lattice([7])
-        g2['name'] = 'Lattice'
+        g2["name"] = "Lattice"
         g = union([g1, g2])  # Issue 422
         self.assertTrue(
             sorted(g.get_edgelist())
@@ -134,7 +134,7 @@ class OperatorTests(unittest.TestCase):
         )
         self.assertTrue(
             sorted(g.attributes()),
-            ['name_1', 'name_2'],
+            ["name_1", "name_2"],
         )
 
     def testUnionMethod(self):
@@ -274,7 +274,9 @@ class OperatorTests(unittest.TestCase):
         # Adding two edges
         g += [(3, 4), (2, 4), (4, 5)]
         self.assertTrue(
-            g.vcount() == 6 and g.ecount() == 7 and g.connected_components().membership == [0] * 6
+            g.vcount() == 6
+            and g.ecount() == 7
+            and g.connected_components().membership == [0] * 6
         )
 
         # Adding two more vertices
@@ -338,8 +340,9 @@ class OperatorTests(unittest.TestCase):
         # Adding two edges
         g = g0 + [(3, 4), (2, 4), (4, 5)]
         self.assertTrue(
-            g.vcount() == 6 and g.ecount() == 7 and
-            g.connected_components().membership == [0] * 6
+            g.vcount() == 6
+            and g.ecount() == 7
+            and g.connected_components().membership == [0] * 6
         )
         g0 = g
 
@@ -524,17 +527,7 @@ class OperatorTests(unittest.TestCase):
         g.reverse_edges([0, 1, 2])
         self.assertEqual(
             g.get_edgelist(),
-            [
-                (1, 0),
-                (2, 0),
-                (3, 0),
-                (1, 4),
-                (1, 5),
-                (1, 6),
-                (2, 7),
-                (2, 8),
-                (2, 9)
-            ]
+            [(1, 0), (2, 0), (3, 0), (1, 4), (1, 5), (1, 6), (2, 7), (2, 8), (2, 9)],
         )
 
         g = Graph.Tree(13, 3, mode="in")

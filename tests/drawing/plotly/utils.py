@@ -60,7 +60,7 @@ def _store_result_image_json(fig, result_fn):
 
 
 def _store_result_image(image, filename, fmt="json"):
-    result_folder = Path("result_images") / 'plotly'
+    result_folder = Path("result_images") / "plotly"
     result_fn = result_folder / (filename + f".{fmt}")
 
     if fmt == "json":
@@ -70,11 +70,12 @@ def _store_result_image(image, filename, fmt="json"):
 
 
 def _compare_image_json(baseline, fig, tol=0.001):
-    '''This function compares the two JSON dictionaries within some tolerance'''
+    """This function compares the two JSON dictionaries within some tolerance"""
+
     def is_coords(path_element):
-        if ',' not in path_element:
+        if "," not in path_element:
             return False
-        coords = path_element.split(',')
+        coords = path_element.split(",")
         for coord in coords:
             try:
                 float(coord)
@@ -83,8 +84,8 @@ def _compare_image_json(baseline, fig, tol=0.001):
         return True
 
     def same_coords(path_elem1, path_elem2, tol):
-        coords1 = [float(x) for x in path_elem1.split(',')]
-        coords2 = [float(x) for x in path_elem2.split(',')]
+        coords1 = [float(x) for x in path_elem1.split(",")]
+        coords2 = [float(x) for x in path_elem2.split(",")]
         for coord1, coord2 in zip(coords1, coords2):
             if abs(coord1 - coord2) > tol:
                 return False
@@ -93,11 +94,11 @@ def _compare_image_json(baseline, fig, tol=0.001):
     # Fig has two keys, 'data' and 'layout'
     figd = fig.to_dict()
     # 'data' has a list of dots and lines. The order is required to match
-    if len(baseline['data']) != len(figd['data']):
+    if len(baseline["data"]) != len(figd["data"]):
         return False
-    for stroke1, stroke2 in zip(baseline['data'], figd['data']):
+    for stroke1, stroke2 in zip(baseline["data"], figd["data"]):
         # Some properties are strings, no tolerance
-        for prop in ['fillcolor', 'mode', 'type']:
+        for prop in ["fillcolor", "mode", "type"]:
             if (prop in stroke1) != (prop in stroke2):
                 return False
             if prop not in stroke1:
@@ -106,7 +107,7 @@ def _compare_image_json(baseline, fig, tol=0.001):
                 return False
 
         # Other properties are numeric, recast as float and use tolerance
-        for prop in ['x', 'y']:
+        for prop in ["x", "y"]:
             if (prop in stroke1) != (prop in stroke2):
                 return False
             if prop not in stroke1:
@@ -118,34 +119,34 @@ def _compare_image_json(baseline, fig, tol=0.001):
                     return False
 
     # 'layout' has a dict of various things, some of which should be identical
-    if sorted(baseline['layout'].keys()) != sorted(figd['layout'].keys()):
+    if sorted(baseline["layout"].keys()) != sorted(figd["layout"].keys()):
         return False
-    if baseline['layout']['xaxis'] != baseline['layout']['xaxis']:
+    if baseline["layout"]["xaxis"] != baseline["layout"]["xaxis"]:
         return False
-    if baseline['layout']['yaxis'] != baseline['layout']['yaxis']:
+    if baseline["layout"]["yaxis"] != baseline["layout"]["yaxis"]:
         return False
     # 'shapes' is a list of shape, should be the same up to tolerance
-    if len(baseline['layout']['shapes']) != len(figd['layout']['shapes']):
+    if len(baseline["layout"]["shapes"]) != len(figd["layout"]["shapes"]):
         return False
-    for shape1, shape2 in zip(baseline['layout']['shapes'], figd['layout']['shapes']):
+    for shape1, shape2 in zip(baseline["layout"]["shapes"], figd["layout"]["shapes"]):
         if sorted(shape1.keys()) != sorted(shape2.keys()):
             return False
-        if shape1['type'] != shape2['type']:
+        if shape1["type"] != shape2["type"]:
             return False
-        if 'line' in shape1:
-            if shape1['line']['color'] != shape2['line']['color']:
+        if "line" in shape1:
+            if shape1["line"]["color"] != shape2["line"]["color"]:
                 return False
-            if ('width' in shape1['line']) != ('width' in shape2['line']):
+            if ("width" in shape1["line"]) != ("width" in shape2["line"]):
                 return False
-            if 'width' in shape1['line']:
-                w1 = float(shape1['line']['width'])
-                w2 = float(shape2['line']['width'])
+            if "width" in shape1["line"]:
+                w1 = float(shape1["line"]["width"])
+                w2 = float(shape2["line"]["width"])
                 if abs(w1 - w2) > tol:
                     return False
 
-        if 'path' in shape1:
+        if "path" in shape1:
             # SVG path
-            path1, path2 = shape1['path'].split(), shape2['path'].split()
+            path1, path2 = shape1["path"].split(), shape2["path"].split()
             if len(path1) != len(path2):
                 return False
             for path_elem1, path_elem2 in zip(path1, path2):
@@ -189,7 +190,6 @@ def _unittest_image_comparison(
         # probably redundant in this adaptation
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-
             # Three steps:
             # 1. run the function and store the results
             figs = func(*args, **kwargs)
@@ -262,7 +262,7 @@ def image_comparison(
         can also apply additional styles if desired. Defaults to ``["classic",
         "_classic_test_patch"]``.
     """
-    if sys.maxsize <= 2 ** 32:
+    if sys.maxsize <= 2**32:
         tol += 0.06
     return _unittest_image_comparison(
         baseline_images=baseline_images,

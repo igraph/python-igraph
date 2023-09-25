@@ -59,7 +59,7 @@ def _maybe_halve_diagonal(m, condition):
         # modifying the array in-place and the end user wouldn't like if we
         # messed with their matrix. So we make a copy.
         data_array = data_array.copy()
-        idxs, = (m.row == m.col).nonzero()
+        (idxs,) = (m.row == m.col).nonzero()
         for i in idxs:
             data_array[i] /= 2
 
@@ -94,7 +94,7 @@ def _graph_from_sparse_matrix(klass, matrix, mode="directed", loops="once"):
 
     mode = _convert_mode_argument(mode)
 
-    keep_loops = (loops == "twice" or loops == "once" or loops is True)
+    keep_loops = loops == "twice" or loops == "once" or loops is True
     m_row, m_col, m_data = _maybe_halve_diagonal(m, loops == "twice")
 
     if mode == "directed":
@@ -181,7 +181,7 @@ def _graph_from_weighted_sparse_matrix(
 
     mode = _convert_mode_argument(mode)
 
-    keep_loops = (loops == "twice" or loops == "once" or loops is True)
+    keep_loops = loops == "twice" or loops == "once" or loops is True
     m_row, m_col, m_data = _maybe_halve_diagonal(m, loops == "twice")
 
     if mode == "directed":
@@ -191,7 +191,7 @@ def _graph_from_weighted_sparse_matrix(
                 if i != j:
                     edges.append((i, j))
                     weights.append(n)
-        else:   # loops == "once" or True
+        else:  # loops == "once" or True
             edges = list(zip(m_row, m_col))
             weights = list(m_data)
 

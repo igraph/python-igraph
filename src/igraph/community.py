@@ -194,9 +194,7 @@ def _community_multilevel(graph, weights=None, return_levels=False, resolution=1
         result = []
         for level, q in zip(levels, qs):
             result.append(
-                VertexClustering(
-                    graph, level, q, modularity_params=modularity_params
-                )
+                VertexClustering(graph, level, q, modularity_params=modularity_params)
             )
     else:
         membership = GraphBase.community_multilevel(
@@ -257,7 +255,9 @@ def _community_edge_betweenness(graph, clusters=None, directed=True, weights=Non
     merges, qs = GraphBase.community_edge_betweenness(graph, directed, weights)
     if clusters is None:
         if qs is not None:
-            clusters = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
+            clusters = _optimal_cluster_count_from_merges_and_modularity(
+                graph, merges, qs
+            )
         else:
             clusters = 1
 
@@ -440,7 +440,7 @@ def _community_leiden(
         resolution = kwds.pop("resolution_parameter")
 
     if kwds:
-        raise TypeError('unexpected keyword argument')
+        raise TypeError("unexpected keyword argument")
 
     membership, quality = GraphBase.community_leiden(
         graph,
