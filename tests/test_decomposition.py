@@ -143,14 +143,14 @@ class VertexClusteringTests(unittest.TestCase):
     def testClusterGraph(self):
         cl = VertexClustering(self.graph, [0, 0, 0, 1, 1, 1, 2, 2, 2, 2])
         self.graph.delete_edges(self.graph.es.select(_between=([0, 1, 2], [3, 4, 5])))
-        clg = cl.cluster_graph(dict(string="concat", int=max))
+        clg = cl.cluster_graph({"string": "concat", "int": max})
 
         self.assertTrue(sorted(clg.get_edgelist()) == [(0, 2), (1, 2)])
         self.assertTrue(not clg.is_directed())
         self.assertTrue(clg.vs["string"] == ["aaa", "bbc", "ccab"])
         self.assertTrue(clg.vs["int"] == [41, 64, 47])
 
-        clg = cl.cluster_graph(dict(string="concat", int=max), False)
+        clg = cl.cluster_graph({"string": "concat", "int": max}, False)
         self.assertTrue(
             sorted(clg.get_edgelist())
             == [(0, 0)] * 3
@@ -461,7 +461,7 @@ class CommunityTests(unittest.TestCase):
 
         # Spinglass community detection is a bit unstable, so run it three times
         ok = False
-        for i in range(3):
+        for _i in range(3):
             cl = g.community_spinglass()
             if self.reindexMembership(cl) == [
                 0,
@@ -561,7 +561,7 @@ class CohesiveBlocksTests(unittest.TestCase):
         cbs = g.cohesive_blocks()
         self.genericTests(cbs)
         self.assertEqual(
-            sorted(list(cbs)),
+            sorted(cbs),
             [
                 list(range(0, 5)),
                 list(range(18)),

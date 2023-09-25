@@ -1224,7 +1224,7 @@ class VertexCover(Cover):
             return
 
         names = graph.vs["name"]
-        name_to_index = dict((k, v) for v, k in enumerate(names))
+        name_to_index = {k: v for v, k in enumerate(names)}
 
         for idx, cluster in enumerate(clusters):
             if any(isinstance(item, str) for item in cluster):

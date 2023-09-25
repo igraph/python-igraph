@@ -244,7 +244,7 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
             edge_attrs[attr_name] = attrs
 
         # Create a vertex name index
-        vertex_name_index = dict((v, k) for k, v in enumerate(vertices))
+        vertex_name_index = {v: k for k, v in enumerate(vertices)}
         del vertices
 
         # Remap the edges list to numeric IDs

@@ -667,8 +667,6 @@ def str_to_orientation(value, reversed_horizontal=False, reversed_vertical=False
         "bottom-top": "bt",
         "top-down": "tb",
         "bottom-up": "bt",
-        "top-bottom": "tb",
-        "bottom-top": "bt",
         "td": "tb",
         "bu": "bt",
     }

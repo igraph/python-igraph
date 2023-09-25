@@ -1030,7 +1030,7 @@ class DominatorTests(unittest.TestCase):
         """
         if len(alist) != len(blist):
             return False
-        for i, (a, b) in enumerate(zip(alist, blist)):
+        for _i, (a, b) in enumerate(zip(alist, blist)):
             if math.isnan(a) and math.isnan(b):
                 continue
             elif a == b:

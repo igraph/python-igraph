@@ -53,10 +53,10 @@ class VertexTests(unittest.TestCase):
         self.assertEqual(v["a"], 2)
 
         v.update_attributes([("a", 3), ("b", 4)], c=5, d=6)
-        self.assertEqual(v.attributes(), dict(a=3, b=4, c=5, d=6))
+        self.assertEqual(v.attributes(), {"a": 3, "b": 4, "c": 5, "d": 6})
 
-        v.update_attributes(dict(b=44, c=55))
-        self.assertEqual(v.attributes(), dict(a=3, b=44, c=55, d=6))
+        v.update_attributes({"b": 44, "c": 55})
+        self.assertEqual(v.attributes(), {"a": 3, "b": 44, "c": 55, "d": 6})
 
     def testPhantomVertex(self):
         v = self.g.vs[9]

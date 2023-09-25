@@ -16,11 +16,11 @@ class HomepageExampleTests(unittest.TestCase):
             g.vs[component]["color"] = color
 
         # No plotting here, but we calculate the FR layout
-        fr = g.layout("fr")
+        g.layout("fr")
 
     def testKautz(self):
         g = Graph.Kautz(m=3, n=2)
-        adj = g.get_adjacency()
+        g.get_adjacency()
         # Plotting omitted
 
     def testMSTofGRG(self):
@@ -33,7 +33,7 @@ class HomepageExampleTests(unittest.TestCase):
         weights = [distance(layout[edge.source], layout[edge.target]) for edge in g.es]
         max_weight = max(weights)
         g.es["width"] = [6 - 5 * weight / max_weight for weight in weights]
-        mst = g.spanning_tree(weights)
+        g.spanning_tree(weights)
         # Plotting omitted
 
 

@@ -376,10 +376,10 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             text_kwds["va"] = valign.value
 
             if visual_edge.background is not None:
-                text_kwds["bbox"] = dict(
-                    facecolor=visual_edge.background,
-                    edgecolor="none",
-                )
+                text_kwds["bbox"] = {
+                    "facecolor": visual_edge.background,
+                    "edgecolor": "none",
+                }
                 text_kwds["ha"] = "center"
                 text_kwds["va"] = "center"
 

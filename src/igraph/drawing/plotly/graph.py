@@ -5,7 +5,6 @@ This module contains routines to draw graphs on plotly surfaces.
 
 """
 
-from collections import defaultdict
 from warnings import warn
 
 from igraph._igraph import convex_hull, VertexSeq

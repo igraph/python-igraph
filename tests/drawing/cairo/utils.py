@@ -138,7 +138,7 @@ def _unittest_image_comparison(
             figs = _load_result_images(baseline_images)
 
             # 3. compare them one by one
-            for i, (baseline, fig) in enumerate(zip(baselines, figs)):
+            for _i, (baseline, fig) in enumerate(zip(baselines, figs)):
                 res = compare_image(baseline, fig, tol)
                 self.assertLessEqual(res, tol)
 

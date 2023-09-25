@@ -224,7 +224,7 @@ def union(graphs, byname="auto"):
     # Vertex attributes
     if byname:
         graph_union.vs["name"] = uninames
-    attrs = set.union(*(set(g.vertex_attributes()) for g in newgraphs)) - set(["name"])
+    attrs = set.union(*(set(g.vertex_attributes()) for g in newgraphs)) - {"name"}
     nve = graph_union.vcount()
     for a_name in attrs:
         # Check for conflicts at at least one vertex
@@ -426,7 +426,7 @@ def intersection(graphs, byname="auto", keep_all_vertices=True):
     # Vertex attributes
     if byname:
         graph_intsec.vs["name"] = uninames
-    attrs = set.union(*(set(g.vertex_attributes()) for g in newgraphs)) - set(["name"])
+    attrs = set.union(*(set(g.vertex_attributes()) for g in newgraphs)) - {"name"}
     nv = graph_intsec.vcount()
     for a_name in attrs:
         # Check for conflicts at at least one vertex

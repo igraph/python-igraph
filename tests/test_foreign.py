@@ -590,7 +590,7 @@ class ForeignTests(unittest.TestCase):
         self.assertEqual(df.shape, (5, 2))
         self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
         self.assertEqual(list(df["name"]), g.vs["name"])
-        self.assertEqual(set(df.columns), set(["name", "weight"]))
+        self.assertEqual(set(df.columns), {"name", "weight"})
         self.assertEqual(list(df["weight"]), g.vs["weight"])
 
         # No vertex names, with attributes (common case)
@@ -618,7 +618,7 @@ class ForeignTests(unittest.TestCase):
         self.assertEqual(df.shape, (5, 3))
         self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
         self.assertEqual(list(df["name"]), g.es["name"])
-        self.assertEqual(set(df.columns), set(["source", "target", "name"]))
+        self.assertEqual(set(df.columns), {"source", "target", "name"})
 
         # No edge names, with attributes
         g = Graph([(0, 1), (0, 2), (0, 3), (1, 2), (2, 4)])
@@ -626,7 +626,7 @@ class ForeignTests(unittest.TestCase):
         df = g.get_edge_dataframe()
         self.assertEqual(df.shape, (5, 3))
         self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
-        self.assertEqual(set(df.columns), set(["source", "target", "weight"]))
+        self.assertEqual(set(df.columns), {"source", "target", "weight"})
         self.assertEqual(list(df["weight"]), g.es["weight"])
 
         # Edge names, with weird attributes
@@ -637,7 +637,7 @@ class ForeignTests(unittest.TestCase):
         self.assertEqual(df.shape, (5, 5))
         self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
         self.assertEqual(
-            set(df.columns), set(["source", "target", "name", "source", "weight"])
+            set(df.columns), {"source", "target", "name", "source", "weight"}
         )
         self.assertEqual(list(df["name"]), g.es["name"])
         self.assertEqual(list(df["weight"]), g.es["weight"])

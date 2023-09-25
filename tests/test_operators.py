@@ -187,7 +187,7 @@ class OperatorTests(unittest.TestCase):
         g = union(gs)
         for e in g.es:
             vnames = [g.vs[e.source]["name"], g.vs[e.target]["name"]]
-            if set(vnames) == set(["A", "B"]):
+            if set(vnames) == {"A", "B"}:
                 self.assertTrue(e["attr"] == "set")
             else:
                 self.assertTrue(e["attr"] == "set_too")
@@ -230,7 +230,7 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(g.vs[names.index("six")]["attr"] == "set_too")
         self.assertTrue(g.ecount() == 1)
         self.assertTrue(
-            set(g.get_edgelist()[0]) == set([names.index("one"), names.index("two")]),
+            set(g.get_edgelist()[0]) == {names.index("one"), names.index("two")},
         )
 
     def testIntersectionManyEdgemap(self):

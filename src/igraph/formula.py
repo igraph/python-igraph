@@ -32,7 +32,7 @@ def generate_edges(formula):
         yield [], [""], [False, False]
         return
 
-    name_tokens = set([token.NAME, token.NUMBER, token.STRING])
+    name_tokens = {token.NAME, token.NUMBER, token.STRING}
     edge_chars = "<>-+"
     start_names, end_names, arrowheads = [], [], [False, False]
     parsing_vertices = True

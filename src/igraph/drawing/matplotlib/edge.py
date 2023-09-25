@@ -1,15 +1,12 @@
 """Drawers for various edge styles in Matplotlib graph plots."""
 
-from math import atan2, cos, pi, sin, sqrt
-from copy import deepcopy
+from math import atan2, cos, pi, sin
 
 from igraph.drawing.baseclasses import AbstractEdgeDrawer
 from igraph.drawing.metamagic import AttributeCollectorBase
 from igraph.drawing.matplotlib.utils import find_matplotlib
 from igraph.drawing.utils import (
-    euclidean_distance,
     get_bezier_control_points_for_curved_edge,
-    intersect_bezier_curve_and_circle,
     FakeModule,
 )
 

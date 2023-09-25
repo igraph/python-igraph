@@ -66,6 +66,6 @@ ig.plot(
     target=axs[2],
     **visual_style,
 )
-fig.text(0.38, 0.5, '$\simeq$' if g1.isomorphic(g2) else '$\\neq$', fontsize=15, ha='center', va='center')
-fig.text(0.65, 0.5, '$\simeq$' if g2.isomorphic(g3) else '$\\neq$', fontsize=15, ha='center', va='center')
+fig.text(0.38, 0.5, '$\\simeq$' if g1.isomorphic(g2) else '$\\neq$', fontsize=15, ha='center', va='center')
+fig.text(0.65, 0.5, '$\\simeq$' if g2.isomorphic(g3) else '$\\neq$', fontsize=15, ha='center', va='center')
 plt.show()

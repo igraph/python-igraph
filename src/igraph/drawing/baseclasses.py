@@ -325,7 +325,7 @@ class AbstractGraphDrawer(AbstractDrawer):
                 reverse = reverse.lower().startswith("desc")
         attrs = graph.es[edge_order_by]
         edge_order = sorted(
-            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
+            range(len(attrs)), key=attrs.__getitem__, reverse=bool(reverse)
         )
 
         return edge_order
@@ -355,7 +355,7 @@ class AbstractGraphDrawer(AbstractDrawer):
                 reverse = reverse.lower().startswith("desc")
         attrs = graph.vs[vertex_order_by]
         vertex_order = sorted(
-            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
+            range(len(attrs)), key=attrs.__getitem__, reverse=bool(reverse)
         )
 
         return vertex_order

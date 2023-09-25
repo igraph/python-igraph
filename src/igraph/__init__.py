@@ -535,13 +535,13 @@ class Graph(GraphBase):
         See the documentation of L{GraphSummary} for more details about the
         output.
         """
-        params = dict(
-            verbosity=1,
-            width=78,
-            print_graph_attributes=False,
-            print_vertex_attributes=False,
-            print_edge_attributes=False,
-        )
+        params = {
+            "verbosity": 1,
+            "width": 78,
+            "print_graph_attributes": False,
+            "print_vertex_attributes": False,
+            "print_edge_attributes": False,
+        }
         return self.summary(**params)
 
     def summary(self, verbosity=0, width=None, *args, **kwds):
@@ -1210,8 +1210,12 @@ __all__ = (
     'set_status_handler',
     'split_join_distance',
     'summary',
+    'umap_compute_weights',
     'union',
     'write',
+    '__igraph_version__',
+    '__version__',
+    '__version_info__',
 
     # enums and stuff
     'ADJ_DIRECTED',

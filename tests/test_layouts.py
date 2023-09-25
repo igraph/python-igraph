@@ -369,10 +369,10 @@ class LayoutAlgorithmTests(unittest.TestCase):
 
         lo = g.layout("bipartite", hgap=5)
         self.assertEqual(
-            set([0, 5, 10]), set(coord[0] for coord in lo if coord[1] == 1)
+            {0, 5, 10}, {coord[0] for coord in lo if coord[1] == 1}
         )
         self.assertEqual(
-            set([2.5, 7.5]), set(coord[0] for coord in lo if coord[1] == 0)
+            {2.5, 7.5}, {coord[0] for coord in lo if coord[1] == 0}
         )
 
     def testDRL(self):

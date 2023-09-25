@@ -33,7 +33,7 @@ class RandomWalkTests(unittest.TestCase):
 
     def testRandomWalkUndirected(self):
         g = Graph.GRG(100, 0.2)
-        for i in range(100):
+        for _i in range(100):
             start = random.randint(0, g.vcount() - 1)
             length = random.randint(0, 10)
             walk = g.random_walk(start, length)
@@ -42,7 +42,7 @@ class RandomWalkTests(unittest.TestCase):
     def testRandomWalkDirectedOut(self):
         g = Graph.Tree(121, 3, mode="out")
         mode = "out"
-        for i in range(100):
+        for _i in range(100):
             start = 0
             length = random.randint(0, 4)
             walk = g.random_walk(start, length, mode)
@@ -51,7 +51,7 @@ class RandomWalkTests(unittest.TestCase):
     def testRandomWalkDirectedIn(self):
         g = Graph.Tree(121, 3, mode="out")
         mode = "in"
-        for i in range(100):
+        for _i in range(100):
             start = random.randint(40, g.vcount() - 1)
             length = random.randint(0, 4)
             walk = g.random_walk(start, length, mode)
@@ -60,7 +60,7 @@ class RandomWalkTests(unittest.TestCase):
     def testRandomWalkDirectedAll(self):
         g = Graph.Tree(121, 3, mode="out")
         mode = "all"
-        for i in range(100):
+        for _i in range(100):
             start = random.randint(0, g.vcount() - 1)
             length = random.randint(0, 10)
             walk = g.random_walk(start, length, mode)
@@ -74,7 +74,7 @@ class RandomWalkTests(unittest.TestCase):
 
     def testRandomWalkUndirectedVertices(self):
         g = Graph.GRG(100, 0.2)
-        for i in range(10):
+        for _i in range(10):
             start = random.randint(0, g.vcount() - 1)
             length = random.randint(0, 10)
             walk = g.random_walk(start, length, return_type='vertices')
@@ -82,7 +82,7 @@ class RandomWalkTests(unittest.TestCase):
 
     def testRandomWalkUndirectedEdges(self):
         g = Graph.GRG(100, 0.2)
-        for i in range(10):
+        for _i in range(10):
             start = random.randint(0, g.vcount() - 1)
             length = random.randint(0, 10)
             walk = g.random_walk(start, length, return_type='edges')
@@ -90,7 +90,7 @@ class RandomWalkTests(unittest.TestCase):
 
     def testRandomWalkUndirectedBoth(self):
         g = Graph.GRG(100, 0.2)
-        for i in range(10):
+        for _i in range(10):
             start = random.randint(0, g.vcount() - 1)
             length = random.randint(0, 10)
             walk_dic = g.random_walk(start, length, return_type='both')
@@ -102,7 +102,7 @@ class RandomWalkTests(unittest.TestCase):
     def testRandomWalkUndirectedWeighted(self):
         g = Graph.GRG(100, 0.2)
         g.es['weight'] = [1.0 for i in range(g.ecount())]
-        for i in range(100):
+        for _i in range(100):
             start = random.randint(0, g.vcount() - 1)
             length = random.randint(0, 10)
             walk = g.random_walk(start, length, weights='weight')

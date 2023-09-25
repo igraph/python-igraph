@@ -170,7 +170,7 @@ class Layout:
         radian = angle * pi / 180.0
         cos_alpha, sin_alpha = cos(radian), sin(radian)
 
-        for idx, row in enumerate(self._coords):
+        for _idx, row in enumerate(self._coords):
             x, y = row[dim1] - origin[dim1], row[dim2] - origin[dim2]
             row[dim1] = cos_alpha * x - sin_alpha * y + origin[dim1]
             row[dim2] = sin_alpha * x + cos_alpha * y + origin[dim2]

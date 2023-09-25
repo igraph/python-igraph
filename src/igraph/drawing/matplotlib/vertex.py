@@ -45,7 +45,7 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
             font = "sans-serif"
             label_size = 12.0
             # FIXME? mpl.rcParams["font.size"])
-            position = dict(func=self.layout.__getitem__)
+            position = {"func": self.layout.__getitem__}
             shape = ("circle", ShapeDrawerDirectory.resolve_default)
             size = 30
             width = None

@@ -179,7 +179,6 @@ def _unittest_image_comparison(
     This function creates a decorator that wraps a figure-generating function
     with image comparison code.
     """
-    import unittest
 
     def decorator(func):
         old_sig = inspect.signature(func)

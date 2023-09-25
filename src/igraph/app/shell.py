@@ -498,13 +498,11 @@ def main():
     if "shells" in config:
         parts = [part.strip() for part in config["shells"].split(",")]
         shell_classes = []
-        available_classes = dict(
-            [
-                (k, v)
+        available_classes = {
+            k: v
                 for k, v in globals().items()
                 if isinstance(v, type) and issubclass(v, Shell)
-            ]
-        )
+        }
         for part in parts:
             cls = available_classes.get(part, None)
             if cls is None:

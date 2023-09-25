@@ -11,20 +11,20 @@ class DirectedUndirectedTests(unittest.TestCase):
         graph2 = graph.copy()
         graph2.to_undirected(mode=False)
         self.assertTrue(graph2.vcount() == graph.vcount())
-        self.assertTrue(graph2.is_directed() == False)
+        self.assertTrue(graph2.is_directed() is False)
         self.assertTrue(sorted(graph2.get_edgelist()) == [(0, 1), (0, 1), (0, 2)])
 
         graph2 = graph.copy()
         graph2.to_undirected()
         self.assertTrue(graph2.vcount() == graph.vcount())
-        self.assertTrue(graph2.is_directed() == False)
+        self.assertTrue(graph2.is_directed() is False)
         self.assertTrue(sorted(graph2.get_edgelist()) == [(0, 1), (0, 2)])
 
         graph2 = graph.copy()
         graph2.es["weight"] = [1, 2, 3]
         graph2.to_undirected(mode="collapse", combine_edges="sum")
         self.assertTrue(graph2.vcount() == graph.vcount())
-        self.assertTrue(graph2.is_directed() == False)
+        self.assertTrue(graph2.is_directed() is False)
         self.assertTrue(sorted(graph2.get_edgelist()) == [(0, 1), (0, 2)])
         self.assertTrue(graph2.es["weight"] == [4, 2])
 
@@ -33,7 +33,7 @@ class DirectedUndirectedTests(unittest.TestCase):
         graph2.es["weight"] = [1, 2, 3, 4, 5, 6]
         graph2.to_undirected(mode="mutual", combine_edges="sum")
         self.assertTrue(graph2.vcount() == graph.vcount())
-        self.assertTrue(graph2.is_directed() == False)
+        self.assertTrue(graph2.is_directed() is False)
         self.assertTrue(sorted(graph2.get_edgelist()) == [(0, 1), (0, 1), (1, 2)])
         self.assertTrue(
             graph2.es["weight"] == [7, 3, 11] or graph2.es["weight"] == [3, 7, 11]

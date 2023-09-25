@@ -63,10 +63,10 @@ class EdgeTests(unittest.TestCase):
         self.assertEqual(e["a"], 2)
 
         e.update_attributes([("a", 3), ("b", 4)], c=5, d=6)
-        self.assertEqual(e.attributes(), dict(a=3, b=4, c=5, d=6))
+        self.assertEqual(e.attributes(), {"a": 3, "b": 4, "c": 5, "d": 6})
 
-        e.update_attributes(dict(b=44, c=55))
-        self.assertEqual(e.attributes(), dict(a=3, b=44, c=55, d=6))
+        e.update_attributes({"b": 44, "c": 55})
+        self.assertEqual(e.attributes(), {"a": 3, "b": 44, "c": 55, "d": 6})
 
     def testPhantomEdge(self):
         e = self.g.es[self.g.ecount() - 1]
@@ -281,8 +281,8 @@ class EdgeSeqTests(unittest.TestCase):
 
     def testSourceTargetFiltering(self):
         g = Graph.Barabasi(1000, 2, directed=True)
-        es1 = set(e.source for e in g.es.select(_target_in=[2, 4]))
-        es2 = set(v1 for v1, v2 in g.get_edgelist() if v2 in [2, 4])
+        es1 = {e.source for e in g.es.select(_target_in=[2, 4])}
+        es2 = {v1 for v1, v2 in g.get_edgelist() if v2 in [2, 4]}
         self.assertTrue(es1 == es2)
 
     def testWithinFiltering(self):

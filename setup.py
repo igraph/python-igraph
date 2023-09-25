@@ -950,35 +950,35 @@ cmdclass = {
 if should_build_abi3_wheel:
     cmdclass["bdist_wheel"] = bdist_wheel_abi3
 
-options = dict(
-    name="igraph",
-    version=__version__,
-    url="https://igraph.org/python",
-    description="High performance graph data structures and algorithms",
-    long_description=description,
-    license="GNU General Public License (GPL)",
-    author="Tamas Nepusz",
-    author_email="ntamas@gmail.com",
-    project_urls={
+options = {
+    "name": "igraph",
+    "version": __version__,
+    "url": "https://igraph.org/python",
+    "description": "High performance graph data structures and algorithms",
+    "long_description": description,
+    "license": "GNU General Public License (GPL)",
+    "author": "Tamas Nepusz",
+    "author_email": "ntamas@gmail.com",
+    "project_urls": {
         "Bug Tracker": "https://github.com/igraph/python-igraph/issues",
         "Changelog": "https://github.com/igraph/python-igraph/blob/main/CHANGELOG.md",
         "CI": "https://github.com/igraph/python-igraph/actions",
         "Documentation": "https://igraph.readthedocs.io",
         "Source Code": "https://github.com/igraph/python-igraph",
     },
-    ext_modules=[igraph_extension],
-    package_dir={
+    "ext_modules": [igraph_extension],
+    "package_dir": {
         # make sure to use the next line and not the more logical and restrictive
         # "igraph": "src/igraph" because that one breaks 'setup.py develop'.
         # See: https://github.com/igraph/python-igraph/issues/464
         "": "src"
     },
-    packages=find_packages(where="src"),
-    install_requires=["texttable>=1.6.2"],
-    entry_points={
+    "packages": find_packages(where="src"),
+    "install_requires": ["texttable>=1.6.2"],
+    "entry_points": {
         "console_scripts": ["igraph=igraph.app.shell:main"]
     },
-    extras_require={
+    "extras_require": {
         # Dependencies needed for plotting with Cairo
         "cairo": ["cairocffi>=1.2.0"],
 
@@ -1025,10 +1025,10 @@ options = dict(
             "pydoctor>=23.4.0"
         ]
     },
-    python_requires=">=3.7",
-    headers=headers,
-    platforms="ALL",
-    keywords=[
+    "python_requires": ">=3.7",
+    "headers": headers,
+    "platforms": "ALL",
+    "keywords": [
         "graph",
         "network",
         "mathematics",
@@ -1036,7 +1036,7 @@ options = dict(
         "graph theory",
         "discrete mathematics",
     ],
-    classifiers=[
+    "classifiers": [
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
@@ -1056,7 +1056,7 @@ options = dict(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    cmdclass=cmdclass,
-)
+    "cmdclass": cmdclass,
+}
 
 setup(**options)

@@ -157,7 +157,7 @@ class GraphAtlasTests(unittest.TestCase, AtlasTestBase):
 
 
 # Skip some problematic graphs
-GraphAtlasTests.graphs = [g for idx, g in enumerate(GraphAtlasTests.graphs) if idx not in set([70, 180])]
+GraphAtlasTests.graphs = [g for idx, g in enumerate(GraphAtlasTests.graphs) if idx not in {70, 180}]
 
 
 class IsoclassTests(unittest.TestCase, AtlasTestBase):
@@ -169,7 +169,7 @@ class IsoclassTests(unittest.TestCase, AtlasTestBase):
 
 
 # Skip some problematic graphs
-IsoclassTests.graphs = [g for idx, g in enumerate(IsoclassTests.graphs) if idx not in set([136])]
+IsoclassTests.graphs = [g for idx, g in enumerate(IsoclassTests.graphs) if idx not in {136}]
 
 
 def suite():
