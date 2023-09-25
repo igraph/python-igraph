@@ -1,8 +1,18 @@
 # igraph Python interface changelog
 
+## [develop]
+
+### Changed
+
+- The `matplotlib` plotting infrastructure underwent major surgery and is now able to show consistent vertex and edge drawings at any level of zoom, including with animations, and for any aspect ratio.
+- As a consequence of the restructuring at the previous point, vertex sizes are now specified in figure points and are not affected by axis limits or zoom. With the current conventions, `vertex_size=25` is a reasonable size for `igraph.plot`.
+- As another consequence of the above, vertex labels now support offsets from the vertex center, in figure point units.
+- As another consequence of the above, self loops are now looking better and their size can be controlled using the `edge_loop_size` argument in `igraph.plot`.
+- As another consequence of the above, if using the `matplotlib` backend when plotting a graph, `igraph.plot` now does not return the `Axes` anymore. Instead, it returns a container artist called `GraphArtist`, which contains as children the elements of the graph plot: a `VertexCollection` for the vertices, and `EdgeCollection` for the edges, and so on. These objects can be used to modify the plot after the initial rendering, e.g. inside a Jupyter notebook, to fine tune the appearance of the plot. While documentation on specific graphic elements is still scant, more descriptive examples will follow in the future.
+
 ## [0.10.8] - 2023-09-12
 
-### Added 
+### Added
 
 - Added `is_bigraphical()` to test whether a pair of integer sequences can be the degree sequence of some bipartite graph.
 
@@ -16,11 +26,6 @@
 
 ### Changed
 
-- The `matplotlib` plotting infrastructure underwent major surgery and is now able to show consistent vertex and edge drawings at any level of zoom, including with animations, and for any aspect ratio.
-- As a consequence of the restructuring at the previous point, vertex sizes are now specified in figure points and are not affected by axis limits or zoom. With the current conventions, `vertex_size=25` is a reasonable size for `igraph.plot`.
-- As another consequence of the above, vertex labels now support offsets from the vertex center, in figure point units.
-- As another consequence of the above, self loops are now looking better and their size can be controlled using the `edge_loop_size` argument in `igraph.plot`.
-- As another consequence of the above, if using the `matplotlib` backend when plotting a graph, `igraph.plot` now does not return the `Axes` anymore. Instead, it returns a container artist called `GraphArtist`, which contains as children the elements of the graph plot: a `VertexCollection` for the vertices, and `EdgeCollection` for the edges, and so on. These objects can be used to modify the plot after the initial rendering, e.g. inside a Jupyter notebook, to fine tune the appearance of the plot. While documentation on specific graphic elements is still scant, more descriptive examples will follow in the future.
 - The C core of igraph was updated to version 0.10.7.
 
 - `Graph.distances()` now uses Dijkstra's algorithm when there are zero weights but no negative weights. Earlier versions switched to Bellman-Ford or Johnson in the presence of zero weights unnecessarily.
@@ -214,7 +219,7 @@
   plotting backends, controlled by a configuration option. See PR
   [#425](https://github.com/igraph/python-igraph/pull/425) for more details.
 
-- Added support for additional ways to construct a graph, such as from a 
+- Added support for additional ways to construct a graph, such as from a
   dictionary of dictionaries, and to export a graph object back to those
   data structures. See PR [#434](https://github.com/igraph/python-igraph/pull/434)
   for more details.
@@ -320,7 +325,7 @@
   [#503](https://github.com/igraph/python-igraph/issues/503) for details.
 
 - Fixed potential memory leaks in `Graph.maximum_cardinality_search()`,
-  `Graph.get_all_simple_paths()`, `Graph.get_subisomorphisms_lad()`, 
+  `Graph.get_all_simple_paths()`, `Graph.get_subisomorphisms_lad()`,
   `Graph.community_edge_betweenness()`, as well as the `union` and `intersection`
   operators.
 
@@ -563,7 +568,7 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[main]: https://github.com/igraph/python-igraph/compare/0.10.8...main
+[develop]: https://github.com/igraph/python-igraph/compare/0.10.8...develop
 [0.10.8]: https://github.com/igraph/python-igraph/compare/0.10.7...0.10.8
 [0.10.7]: https://github.com/igraph/python-igraph/compare/0.10.6...0.10.7
 [0.10.6]: https://github.com/igraph/python-igraph/compare/0.10.5...0.10.6
