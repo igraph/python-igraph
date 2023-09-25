@@ -637,7 +637,7 @@ class ForeignTests(unittest.TestCase):
         self.assertEqual(df.shape, (5, 5))
         self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
         self.assertEqual(
-            set(df.columns), {"source", "target", "name", "source", "weight"}
+            set(df.columns), {"source", "target", "name", "weight"}
         )
         self.assertEqual(list(df["name"]), g.es["name"])
         self.assertEqual(list(df["weight"]), g.es["weight"])

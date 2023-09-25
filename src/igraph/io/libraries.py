@@ -146,7 +146,7 @@ def _construct_graph_from_networkx(cls, g, vertex_attr_hashable : str = "_nx_nam
     # Sort edges if there is a trace of a previous igraph ordering
     if "_igraph_index" in eattr:
         # Poor man's argsort
-        sortd = [(i, x) for i, x in enumerate(eattr["_igraph_index"])]
+        sortd = list(enumerate(eattr["_igraph_index"]))
         sortd.sort(key=lambda x: x[1])
         idx = [i for i, x in sortd]
 
@@ -223,7 +223,7 @@ def _export_graph_to_graph_tool(
     for edge in graph.es:
         e = g.add_edge(edge.source, edge.target)
         if edge_attributes is not None:
-            for x, dtype in edge_attributes.items():
+            for x in edge_attributes.keys():
                 prop = edge.attributes().get(x, None)
                 g.edge_properties[x][e] = prop
 

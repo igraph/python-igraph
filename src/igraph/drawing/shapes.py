@@ -384,7 +384,7 @@ class ShapeDrawerDirectory:
         try:
             return cls.known_shapes[shape]
         except KeyError:
-            raise ValueError("unknown shape: %s" % shape)
+            raise ValueError("unknown shape: %s" % shape) from None
 
     @classmethod
     def resolve_default(cls, shape, default=NullDrawer):

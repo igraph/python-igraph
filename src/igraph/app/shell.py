@@ -186,7 +186,7 @@ class TerminalController:
         the corresponding terminal control string (if it's defined) or
         '' (if it's not).
         """
-        return re.sub("r\$\$|\${\w+}", self._render_sub, template)  # noqa: W605
+        return re.sub(r"r\$\$|\${\w+}", self._render_sub, template)  # noqa: W605
 
     def _render_sub(self, match):
         """Helper function for L{render}"""
@@ -287,9 +287,6 @@ class ProgressBar:
 class Shell(metaclass=ABCMeta):
     """Superclass of the embeddable shells supported by igraph"""
 
-    def __init__(self):
-        pass
-
     @abstractmethod
     def __call__(self):
         raise NotImplementedError
@@ -343,7 +340,7 @@ class IDLEShell(Shell):
         idlelib.PyShell.use_subprocess = True
 
         try:
-            sys.ps1
+            sys.ps1  # noqa: B018
         except AttributeError:
             sys.ps1 = ">>> "
 

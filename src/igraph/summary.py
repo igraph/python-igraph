@@ -35,7 +35,7 @@ def _get_wrapper_for_width(width, *args, **kwds):
     """
     if width is None:
         return FakeWrapper(*args, **kwds)
-    return TextWrapper(width=width, *args, **kwds)
+    return TextWrapper(width, *args, **kwds)
 
 
 class GraphSummary:

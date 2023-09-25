@@ -577,7 +577,7 @@ class Dendrogram:
         if n is None:
             n = len(merges) + 1
         tuple_repr = range(n)
-        idxs = range(n)
+        idxs = list(range(n))
         for rowidx, row in enumerate(merges):
             i, j = row
             try:
@@ -588,7 +588,7 @@ class Dendrogram:
                 raise ValueError(
                     "malformed matrix, subgroup referenced "
                     + "before being created in step %d" % rowidx
-                )
+                ) from None
             idxs.append(j)
         return [x for x in tuple_repr if x is not None]
 

@@ -54,7 +54,7 @@ class Rectangle:
         try:
             coords = tuple(float(coord) for coord in coords)
         except ValueError:
-            raise ValueError("invalid coordinate format, numbers expected")
+            raise ValueError("invalid coordinate format, numbers expected") from None
 
         self.coords = coords
 

@@ -676,7 +676,7 @@ class GraphDictDictTests(unittest.TestCase):
         g = Graph.DictDict(self.eids)
         self.checkIfOK(g, ())
 
-    def testGraphFromDictDict(self):
+    def testGraphFromDictDictWithProps(self):
         g = Graph.DictDict(self.eids_with_props)
         self.checkIfOK(g, (), edge_attrs=["additional", "weight"])
 

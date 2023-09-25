@@ -120,6 +120,7 @@ class CairoGraphDrawer(AbstractCairoGraphDrawer):
                 "Positional arguments to plot functions are ignored "
                 "and will be deprecated soon.",
                 DeprecationWarning,
+                stacklevel=1
             )
 
         bbox = kwds.pop("bbox", None)

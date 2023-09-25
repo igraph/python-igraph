@@ -107,7 +107,7 @@ class AttributeSpecification:
         self.func = func
         self.accessor = None
 
-        if self.transform and not hasattr(self.transform, "__call__"):
+        if self.transform and not callable(self.transform):
             raise TypeError("transform must be callable")
 
         if self.transform is None and self.default is not None:
@@ -152,7 +152,7 @@ class AttributeCollectorMeta(type):
     def __new__(mcs, name, bases, attrs):
         attr_specs = []
         for attr, value in attrs.items():
-            if attr.startswith("_") or hasattr(value, "__call__"):
+            if attr.startswith("_") or callable(value):
                 continue
             if isinstance(value, AttributeSpecification):
                 attr_spec = value
@@ -176,7 +176,7 @@ class AttributeCollectorMeta(type):
         return super().__new__(mcs, name, bases, attrs)
 
     @classmethod
-    def record_generator(mcs, name, slots):
+    def record_generator(cls, name, slots):
         """Generates a simple class that has the given slots and nothing else"""
 
         class Element:

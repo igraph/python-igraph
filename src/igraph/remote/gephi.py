@@ -84,7 +84,7 @@ class GephiGraphStreamingAPIFormat:
     Python objects corresponding to the events defined in the API.
     """
 
-    def get_add_node_event(self, identifier, attributes={}):
+    def get_add_node_event(self, identifier, attributes=None):
         """Generates a Python object corresponding to the event that adds a node
         with the given identifier and attributes in the Gephi graph streaming API.
 
@@ -96,14 +96,14 @@ class GephiGraphStreamingAPIFormat:
             >>> api.get_add_node_event("spam", dict(ham="eggs"))
             {'an': {'spam': {'ham': 'eggs'}}}
         """
-        return {"an": {identifier: attributes}}
+        return {"an": {identifier: attributes if attributes is not None else {}}}
 
-    def get_add_edge_event(self, identifier, source, target, directed, attributes={}):
+    def get_add_edge_event(self, identifier, source, target, directed, attributes=None):
         """Generates a Python object corresponding to the event that adds an edge
         with the given source, target, directednessr and attributes in the Gephi
         graph streaming API.
         """
-        result = dict(attributes)
+        result = dict(attributes if attributes is not None else {})
         result["source"] = source
         result["target"] = target
         result["directed"] = bool(directed)

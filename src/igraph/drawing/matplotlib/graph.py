@@ -792,6 +792,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 "Positional arguments to plot functions are ignored "
                 "and will be deprecated soon.",
                 DeprecationWarning,
+                stacklevel=1
             )
 
         # Some abbreviations for sake of simplicity
@@ -802,7 +803,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
             graph,
             vertex_drawer_factory=self.vertex_drawer_factory,
             edge_drawer_factory=self.edge_drawer_factory,
-            *args,
+            *args,  # noqa: B026
             **kwds,
         )
 

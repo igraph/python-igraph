@@ -150,7 +150,8 @@ def union(graphs, byname="auto"):
         if n_named not in (0, ngr):
             warn(
                 f"Some, but not all graphs are named (got {n_named} named, "
-                f"{ngr-n_named} unnamed), not using vertex names"
+                f"{ngr-n_named} unnamed), not using vertex names",
+                stacklevel=1
             )
     elif byname and (n_named != ngr):
         raise RuntimeError(
@@ -344,7 +345,8 @@ def intersection(graphs, byname="auto", keep_all_vertices=True):
         if n_named not in (0, ngr):
             warn(
                 f"Some, but not all graphs are named (got {n_named} named, "
-                f"{ngr-n_named} unnamed), not using vertex names"
+                f"{ngr-n_named} unnamed), not using vertex names",
+                stacklevel=1
             )
     elif byname and (n_named != ngr):
         raise RuntimeError(

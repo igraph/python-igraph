@@ -150,7 +150,7 @@ class CairoDendrogramDrawer(AbstractCairoDrawer):
         inorder = dendro._traverse_inorder()
         if not horiz:
             x, y = 0, 0
-            for idx, element in enumerate(inorder):
+            for element in inorder:
                 layout[element] = (x, 0)
                 x += max(font_height, item_boxes[element][0])
 
@@ -163,7 +163,7 @@ class CairoDendrogramDrawer(AbstractCairoDrawer):
                 layout.mirror(1)
         else:
             x, y = 0, 0
-            for idx, element in enumerate(inorder):
+            for element in inorder:
                 layout[element] = (0, y)
                 y += max(font_height, item_boxes[element][1])
 

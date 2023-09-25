@@ -718,7 +718,7 @@ def _graphmethod(func=None, name=None):
         name = func.__name__
     method = getattr(Graph, name)
 
-    if hasattr(func, "__call__"):
+    if callable(func):
 
         def decorated(*args, **kwds):
             self = args[0].graph

@@ -136,7 +136,7 @@ def _construct_graph_from_dict_list(
         if len(vertex_name_map) > n:
             diff = len(vertex_name_map) - n
             more = [None] * diff
-            for k, v in vertex_attrs.items():
+            for v in vertex_attrs.values():
                 v.extend(more)
             vertex_attrs[vertex_name_attr] = list(vertex_name_map.values())
             n = len(vertex_name_map)
@@ -405,11 +405,7 @@ def _construct_graph_from_dataframe(
     try:
         import pandas as pd
     except ImportError:
-        raise ImportError("You should install pandas in order to use this function")
-    try:
-        import numpy as np
-    except ImportError:
-        raise ImportError("You should install numpy in order to use this function")
+        raise ImportError("You should install pandas in order to use this function") from None
 
     if edges.shape[1] < 2:
         raise ValueError("The 'edges' DataFrame must contain at least two columns")
@@ -452,7 +448,8 @@ def _construct_graph_from_dataframe(
         # Handle if some source and target names in 'edges' are 'NA'
         if edges.iloc[:, :2].isna().any(axis=None):
             warn(
-                "In the first two columns of 'edges' NA elements were replaced with string \"NA\""
+                "In the first two columns of 'edges' NA elements were replaced with string \"NA\"",
+                stacklevel=1
             )
             edges = edges.copy()
             edges.iloc[:, :2].fillna("NA", inplace=True)
@@ -463,7 +460,8 @@ def _construct_graph_from_dataframe(
 
         if vertices.iloc[:, 0].isna().any():
             warn(
-                "In the first column of 'vertices' NA elements were replaced with string \"NA\""
+                "In the first column of 'vertices' NA elements were replaced with string \"NA\"",
+                stacklevel=1
             )
             vertices = vertices.copy()
             vertices.iloc[:, 0].fillna("NA", inplace=True)
@@ -793,7 +791,7 @@ def _export_vertex_dataframe(graph):
     try:
         import pandas as pd
     except ImportError:
-        raise ImportError("You should install pandas in order to use this function")
+        raise ImportError("You should install pandas in order to use this function") from None
 
     df = pd.DataFrame(
         {attr: graph.vs[attr] for attr in graph.vertex_attributes()},
@@ -837,7 +835,7 @@ def _export_edge_dataframe(graph):
     try:
         import pandas as pd
     except ImportError:
-        raise ImportError("You should install pandas in order to use this function")
+        raise ImportError("You should install pandas in order to use this function") from None
 
     df = pd.DataFrame(
         {attr: graph.es[attr] for attr in graph.edge_attributes()},

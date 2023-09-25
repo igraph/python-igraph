@@ -145,7 +145,7 @@ class GraphRepresentationTests(unittest.TestCase):
 
     def testGetSparseAdjacency(self):
         try:
-            from scipy import sparse
+            from scipy import sparse  # noqa: F401
             import numpy as np
         except ImportError:
             self.skipTest("Scipy and numpy are dependencies of this test.")
