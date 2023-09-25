@@ -19,4 +19,3 @@ Explain when and for what purpose the feature would be useful.
 
 **References**
 List any relevant references (papers or books describing relevant algorithms).
-

@@ -15,4 +15,3 @@ prune doc/html
 prune doc/source/tutorials
 
 global-exclude .dockerignore .DS_Store .gitattributes .gitignore .gitmodules
-

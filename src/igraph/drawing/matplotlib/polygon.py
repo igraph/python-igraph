@@ -126,4 +126,3 @@ class HullCollection(PathCollection):
         if self._corner_radii is not None:
             self._update_paths()
         return super().draw(renderer)
-

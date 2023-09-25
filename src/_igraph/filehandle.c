@@ -188,4 +188,3 @@ void igraphmodule_filehandle_destroy(igraphmodule_filehandle_t* handle) {
 FILE* igraphmodule_filehandle_get(const igraphmodule_filehandle_t* handle) {
     return handle->fp;
 }
-

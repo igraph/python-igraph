@@ -314,4 +314,3 @@ There are also some subtle differences between the CPython and PyPy versions:
 
 - ``GraphBase`` is hashable and iterable in PyPy but not in CPython. Since
   ``GraphBase`` is internal anyway, this is likely to stay this way.
-

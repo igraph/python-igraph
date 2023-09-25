@@ -631,7 +631,7 @@ Attribute name  Keyword argument       Purpose
 ``color``       ``edge_color``         Color de la arista.
 --------------- ---------------------- ------------------------------------------
 ``curved``      ``edge_curved``        La curvatura de la arista. Valores positivos
-                                       corresponden a aristas curvadas en sentido 
+                                       corresponden a aristas curvadas en sentido
                                        contrario a las manecillas del reloj, valores 
                                        negativos lo contrario. Una curvatura cero 
                                        representa aristas rectas. ``True`` significa 
@@ -808,15 +808,3 @@ Este tutorial sólo ha arañado la superficie de lo que |igraph| puede hacer. Lo
 .. _matplotlib: https://matplotlib.org/
 .. _IPython: https://ipython.readthedocs.io/en/stable/
 .. _Jupyter: https://jupyter.org/
-
-
-
-
-
-
-
-
-
-
-
-

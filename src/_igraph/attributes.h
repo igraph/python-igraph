@@ -95,4 +95,3 @@ igraph_bool_t igraphmodule_has_vertex_attribute(const igraph_t *graph, const cha
 igraph_bool_t igraphmodule_has_edge_attribute(const igraph_t *graph, const char* name);
 
 #endif
-

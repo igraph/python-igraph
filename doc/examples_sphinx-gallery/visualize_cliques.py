@@ -65,4 +65,3 @@ for clique, ax in zip(cliques, axs):
     )
 plt.axis('off')
 plt.show()
-

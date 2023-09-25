@@ -540,4 +540,3 @@ int igraphmodule_Graph_adjmatrix_set_index(igraph_t* graph,
 
   return ok ? 0 : -1;
 }
-

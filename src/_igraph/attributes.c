@@ -2152,4 +2152,3 @@ int igraphmodule_attribute_name_check(PyObject* obj) {
 
   return 0;
 }
-

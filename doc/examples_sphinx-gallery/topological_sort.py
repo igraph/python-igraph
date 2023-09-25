@@ -49,11 +49,11 @@ for i in range(g.vcount()):
 with plt.xkcd():
     fig, ax = plt.subplots(figsize=(5, 5))
     ig.plot(
-            g,
-            target=ax,
-            layout='kk',
-            vertex_size=25,
-            edge_width=4,
-            vertex_label=range(g.vcount()),
-            vertex_color="white",
-        )
+        g,
+        target=ax,
+        layout='kk',
+        vertex_size=25,
+        edge_width=4,
+        vertex_label=range(g.vcount()),
+        vertex_color="white",
+    )

@@ -5,4 +5,3 @@ LABEL Description="Simple Docker image that contains a pre-compiled version of i
 RUN pip3 install igraph cairocffi
 
 CMD /usr/local/bin/igraph
-

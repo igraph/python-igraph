@@ -78,4 +78,3 @@ ig.plot(
     edge_label_color="red"
 )
 plt.show()
-
