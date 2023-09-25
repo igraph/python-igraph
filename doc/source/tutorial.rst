@@ -117,7 +117,7 @@ If you try to add edges to vertices with invalid IDs (i.e., you try to add an ed
     File "/usr/lib/python3.10/site-packages/igraph/__init__.py", line 376, in add_edges
       res = GraphBase.add_edges(self, es)
   igraph._igraph.InternalError: Error at src/graph/type_indexededgelist.c:270: cannot add edges. -- Invalid vertex id
- 
+
 The message tries to explain what went wrong (``cannot add edges. -- Invalid
 vertex id``) along with the corresponding line in the source code where the error
 occurred.
@@ -554,7 +554,7 @@ you look them up by names, the other one will be available only by its index.
 Treating a graph as an adjacency matrix
 =======================================
 
-Adjacency matrix is another way to form a graph. In adjacency matrix, rows and columns are labeled by graph vertices: the elements of the matrix indicate whether the vertices *i* and *j* have a common edge (*i, j*). 
+Adjacency matrix is another way to form a graph. In adjacency matrix, rows and columns are labeled by graph vertices: the elements of the matrix indicate whether the vertices *i* and *j* have a common edge (*i, j*).
 The adjacency matrix for the example graph is
 
 ::

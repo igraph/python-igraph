@@ -289,12 +289,12 @@ class IgraphCCoreCMakeBuilder:
 
         # No need to build tests
         args.append("-DBUILD_TESTING=OFF")
-        
+
         # Do not treat compilation warnings as errors in case someone is trying
         # to "pip install" igraph in an environment for which we don't provide
         # wheels and the compiler complains about harmless things
         args.append("-DIGRAPH_WARNINGS_AS_ERRORS=OFF")
-        
+
         # Set install directory during config step instead of install step in order
         # to avoid having the architecture name in the LIBPATH (e.g. lib/x86_64-linux-gnu)
         args.append("-DCMAKE_INSTALL_PREFIX=" + str(install_folder))

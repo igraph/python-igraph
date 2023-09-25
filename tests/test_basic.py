@@ -930,13 +930,13 @@ class ReferenceCountTests(unittest.TestCase):
             g = InheritedGraph.Tree(3, 2)
             self.assertTrue(gc.is_tracked(g))
             del g
-    
+
     def testVertexReferenceCounting(self):
         with assert_reference_not_leaked(self, Vertex, VertexSeq, _VertexSeq):
             g = Graph.Tree(3, 2)
             vertex = g.vs[2]
             del vertex, g
-    
+
     def testVertexSeqReferenceCounting(self):
         with assert_reference_not_leaked(self, Vertex, VertexSeq, _VertexSeq):
             g = Graph.Tree(3, 2)

@@ -619,12 +619,12 @@ int igraphmodule_PyObject_to_laplacian_normalization_t(
     *result = IGRAPH_LAPLACIAN_SYMMETRIC;
     return 0;
   }
-  
+
   if (o == Py_False) {
     *result = IGRAPH_LAPLACIAN_UNNORMALIZED;
     return 0;
   }
-  
+
   TRANSLATE_ENUM_WITH(laplacian_normalization_tt);
 }
 
@@ -643,7 +643,7 @@ int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *re
     *result = IGRAPH_LAYOUT_GRID;
     return 0;
   }
-  
+
   if (o == Py_False) {
     *result = IGRAPH_LAYOUT_NOGRID;
     return 0;
@@ -667,7 +667,7 @@ int igraphmodule_PyObject_to_loops_t(PyObject *o, igraph_loops_t *result) {
     *result = IGRAPH_LOOPS_TWICE;
     return 0;
   }
-  
+
   if (o == Py_False) {
     *result = IGRAPH_NO_LOOPS;
     return 0;
@@ -804,7 +804,7 @@ int igraphmodule_PyObject_to_to_directed_t(PyObject *o,
     *result = IGRAPH_TO_DIRECTED_MUTUAL;
     return 0;
   }
-  
+
   if (o == Py_False) {
     *result = IGRAPH_TO_DIRECTED_ARBITRARY;
     return 0;
@@ -830,7 +830,7 @@ int igraphmodule_PyObject_to_to_undirected_t(PyObject *o,
     *result = IGRAPH_TO_UNDIRECTED_COLLAPSE;
     return 0;
   }
-  
+
   if (o == Py_False) {
     *result = IGRAPH_TO_UNDIRECTED_EACH;
     return 0;
@@ -1594,7 +1594,7 @@ PyObject* igraphmodule_vector_t_to_PyTuple(const igraph_vector_t *v, igraphmodul
   if (!tuple) {
     return NULL;
   }
-  
+
   for (i = 0; i < n; i++) {
     item = igraphmodule_real_t_to_PyObject(VECTOR(*v)[i], type);
     if (!item) {
@@ -2287,7 +2287,7 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
       Py_DECREF(list);
       return NULL;
     }
-  
+
     for (j = 0; j < nc; j++) {
       item = igraphmodule_real_t_to_PyObject(MATRIX(*m, i, j), type);
       if (!item) {
@@ -2299,7 +2299,7 @@ PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
       PyList_SetItem(row, j, item);  /* will not fail */
     }
 
-    PyList_SetItem(list, i, row);  /* will not fail */   
+    PyList_SetItem(list, i, row);  /* will not fail */
   }
 
   // return the list
@@ -2328,7 +2328,7 @@ PyObject* igraphmodule_matrix_int_t_to_PyList(const igraph_matrix_int_t *m) {
    if (!list) {
      return NULL;
    }
-  
+
    // populate the list with data
    for (i = 0; i < nr; i++) {
     row = PyList_New(nc);
@@ -2349,7 +2349,7 @@ PyObject* igraphmodule_matrix_int_t_to_PyList(const igraph_matrix_int_t *m) {
       PyList_SetItem(row, j, item);  /* will not fail */
     }
 
-    PyList_SetItem(list, i, row);  /* will not fail */   
+    PyList_SetItem(list, i, row);  /* will not fail */
   }
 
   // return the list
@@ -3700,7 +3700,7 @@ int igraphmodule_PyObject_to_attribute_values(PyObject *o,
   if (o == NULL) {
     return 1;
   }
-  
+
   if (o == Py_None) {
     if (type == ATTRHASH_IDX_VERTEX) {
       n = igraph_vcount(&g->g);

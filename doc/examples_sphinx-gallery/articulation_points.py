@@ -25,8 +25,8 @@ articulation_points = g.vs[g.articulation_points()]
 # Finally, we can plot the graph
 fig, ax = plt.subplots()
 ig.plot(
-    g, 
-    target=ax, 
+    g,
+    target=ax,
     vertex_size=30,
     vertex_color="lightblue",
     vertex_label=range(g.vcount()),

@@ -179,7 +179,7 @@ jobs:
   build_wheel_wasm:
     name: Build wheels for WebAssembly
     runs-on: ubuntu-20.04
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -326,7 +326,7 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
-          
+
       - name: Cache installed C core
         id: cache-c-core
         uses: actions/cache@v3

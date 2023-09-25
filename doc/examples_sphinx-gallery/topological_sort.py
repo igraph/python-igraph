@@ -21,7 +21,7 @@ g = ig.Graph(
 # %%
 # We can verify immediately that this is actually a DAG:
 assert g.is_dag
-    
+
 # %%
 # A topological sorting can be computed quite easily by calling
 # :meth:`igraph.GraphBase.topological_sorting`, which returns a list of vertex IDs.

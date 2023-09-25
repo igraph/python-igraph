@@ -1,21 +1,21 @@
 /* -*- mode: C -*-  */
-/* 
+/*
    IGraph library.
    Copyright (C) 2006-2023  Tamas Nepusz <ntamas@gmail.com>
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -33,12 +33,12 @@ PyObject* igraphmodule_InternalError;
 /**
  * \ingroup python_interface_errors
  * \brief Generic error handler for internal \c igraph errors.
- * 
+ *
  * Since now \c igraph supports error handler functions, a special
  * function called \c igraphmodule_igraph_error_hook is responsible
  * for providing a meaningful error message. If it fails (or it isn't
  * even called), this function will provide a default error message.
- * 
+ *
  * \return Always returns \c NULL, and all callers are advised to pass this
  * \c NULL value to their callers until it is propagated to the Python
  * interpreter.

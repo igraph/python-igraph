@@ -14,7 +14,7 @@
         padding-right: 0;
         display: flex;
     }
-    
+
     div.twocol > div {
         flex-grow: 1;
         padding: 0;
@@ -83,7 +83,7 @@ Documentation
     .. container::
 
        **Reference**
- 
+
        - :doc:`api/index`
        - `Source code <https://github.com/igraph/python-igraph>`_
 

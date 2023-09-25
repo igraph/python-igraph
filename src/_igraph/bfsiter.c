@@ -1,21 +1,21 @@
 /* -*- mode: C -*-  */
-/* 
+/*
    IGraph library.
    Copyright (C) 2006-2023  Tamas Nepusz <ntamas@gmail.com>
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -45,7 +45,7 @@ PyTypeObject* igraphmodule_BFSIterType;
 PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, igraph_neimode_t mode, igraph_bool_t advanced) {
   igraphmodule_BFSIterObject* self;
   igraph_integer_t no_of_nodes, r;
-  
+
   self = (igraphmodule_BFSIterObject*) PyType_GenericNew(igraphmodule_BFSIterType, 0, 0);
   if (!self) {
     return NULL;
@@ -54,19 +54,19 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
   Py_INCREF(g);
   self->gref = g;
   self->graph = &g->g;
-  
+
   if (!PyLong_Check(root) && !igraphmodule_Vertex_Check(root)) {
     PyErr_SetString(PyExc_TypeError, "root must be integer or igraph.Vertex");
     return NULL;
   }
-  
+
   no_of_nodes = igraph_vcount(&g->g);
   self->visited = (char*)calloc(no_of_nodes, sizeof(char));
   if (self->visited == 0) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
   }
-  
+
   if (igraph_dqueue_int_init(&self->queue, 100)) {
     PyErr_SetString(PyExc_MemoryError, "out of memory");
     return NULL;
@@ -77,7 +77,7 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
     igraph_dqueue_int_destroy(&self->queue);
     return NULL;
   }
-  
+
   if (PyLong_Check(root)) {
     if (igraphmodule_PyObject_to_integer_t(root, &r)) {
       igraph_dqueue_int_destroy(&self->queue);
@@ -97,23 +97,23 @@ PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, 
     return NULL;
   }
   self->visited[r] = 1;
-  
+
   if (!igraph_is_directed(&g->g)) {
     mode=IGRAPH_ALL;
   }
 
   self->mode = mode;
   self->advanced = advanced;
-  
+
   RC_ALLOC("BFSIter", self);
-  
+
   return (PyObject*)self;
 }
 
 /**
  * \ingroup python_interface_bfsiter
  * \brief Support for cyclic garbage collection in Python
- * 
+ *
  * This is necessary because the \c igraph.BFSIter object contains several
  * other \c PyObject pointers and they might point back to itself.
  */
@@ -135,14 +135,14 @@ static int igraphmodule_BFSIter_traverse(igraphmodule_BFSIterObject *self,
 int igraphmodule_BFSIter_clear(igraphmodule_BFSIterObject *self) {
   PyObject_GC_UnTrack(self);
 
-  Py_CLEAR(self->gref);  
+  Py_CLEAR(self->gref);
 
   igraph_dqueue_int_destroy(&self->queue);
   igraph_vector_int_destroy(&self->neis);
 
   free(self->visited);
   self->visited=0;
-  
+
   return 0;
 }
 
@@ -169,7 +169,7 @@ static PyObject* igraphmodule_BFSIter_iternext(igraphmodule_BFSIterObject* self)
     igraph_integer_t dist = igraph_dqueue_int_pop(&self->queue);
     igraph_integer_t parent = igraph_dqueue_int_pop(&self->queue);
     igraph_integer_t i, n;
-    
+
     if (igraph_neighbors(self->graph, &self->neis, vid, self->mode)) {
       igraphmodule_handle_igraph_error();
       return NULL;

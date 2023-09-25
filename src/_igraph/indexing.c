@@ -1,22 +1,22 @@
 /* vim:set ts=4 sw=2 sts=2 et:  */
-/* 
+/*
    IGraph library - Python interface.
    Copyright (C) 2006-2011  Tamas Nepusz <ntamas@gmail.com>
    5 Avenue Road, Staines, Middlesex, TW18 3AW, United Kingdom
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -52,7 +52,7 @@ static PyObject* igraphmodule_i_Graph_adjmatrix_indexing_get_value_for_vertex_pa
   }
 }
 
-static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph, 
+static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph,
     igraph_integer_t from, igraph_vs_t* to, igraph_neimode_t neimode,
     PyObject* values);
 
@@ -130,7 +130,7 @@ PyObject* igraphmodule_Graph_adjmatrix_get_index(igraph_t* graph,
     return result;
 }
 
-static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph, 
+static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph,
     igraph_integer_t from, igraph_vs_t* to, igraph_neimode_t neimode,
     PyObject* values) {
   igraph_vector_int_t eids;
@@ -143,7 +143,7 @@ static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph,
     IGRAPH_PYCHECK(igraph_vector_int_init(&eids, 0));
     IGRAPH_FINALLY(igraph_vector_int_destroy, &eids);
     IGRAPH_PYCHECK(igraph_incident(graph, &eids, from, neimode));
-    
+
     n = igraph_vector_int_size(&eids);
     result = igraphmodule_PyList_Zeroes(igraph_vcount(graph));
     if (result == 0) {
@@ -262,7 +262,7 @@ void igraphmodule_i_Graph_adjmatrix_set_index_data_destroy(
   Py_DECREF(data->to_add_values);
 }
 
-static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph, 
+static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
     igraph_integer_t from, igraph_vs_t* to, igraph_neimode_t neimode,
     PyObject* values, PyObject* new_value,
     igraphmodule_i_Graph_adjmatrix_set_index_data_t* data) {

@@ -5,7 +5,7 @@ SHELL ["/bin/bash", "-c"]
 COPY setup.py.diff.txt /setup.py.diff
 
 RUN set -ex \
-	&& echo "Installing flex and bison" \	
+	&& echo "Installing flex and bison" \
 	&& apt-get update \
 	&& apt-get -y install flex bison \
 	&& echo "Installing Emscripten" \

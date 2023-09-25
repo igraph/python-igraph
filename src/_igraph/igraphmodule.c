@@ -1,21 +1,21 @@
 /* vim:set ts=2 sw=2 sts=2 et: */
-/* 
+/*
    IGraph library.
    Copyright (C) 2006-2023  Tamas Nepusz <ntamas@gmail.com>
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -45,33 +45,33 @@
 /**
  * \defgroup python_interface Python module implementation
  * \brief Functions implementing a Python interface to \a igraph
- * 
+ *
  * These functions provide a way to access \a igraph functions from Python.
  * It should be of interest of \a igraph developers only. Classes, functions
  * and methods exposed to Python are still to be documented. Until it is done,
  * just type the following to get help about \a igraph functions in Python
  * (assuming you have \c igraph.so somewhere in your Python library path):
- * 
+ *
  * \verbatim
 import igraph
 help(igraph)
 help(igraph.Graph)
 \endverbatim
- * 
+ *
  * Most of the functions provided here share the same calling conventions
  * (which are determined by the Python/C API). Since the role of the
  * arguments are the same across many functions, I won't explain them
  * everywhere, just give a quick overview of the common argument names here.
- * 
+ *
  * \param self the Python igraph.Graph object the method is working on
  * \param args pointer to the Python tuple containing the arguments
  * \param kwds pointer to the Python hash containing the keyword parameters
  * \param type the type object of a Python igraph.Graph object. Used usually
  * in constructors and class methods.
- * 
+ *
  * Any arguments not documented here should be mentioned at the documentation
  * of the appropriate method.
- * 
+ *
  * The functions which implement a Python method always return a pointer to
  * a \c PyObject. According to Python conventions, this is \c NULL if and
  * only if an exception was thrown by the method (or any of the functions
@@ -80,7 +80,7 @@ help(igraph.Graph)
  * returning a \c NULL value, because this is the same for every such method.
  * The conclusion is that a method can return \c NULL even if I don't state
  * it explicitly.
- * 
+ *
  * Also please take into consideration that I'm documenting the C calls
  * with the abovementioned parameters here, and \em not the Python methods
  * which are presented to the user using the Python interface of \a igraph.
@@ -89,11 +89,11 @@ help(igraph.Graph)
  * or use \c pydoc to generate a formatted version.
  *
  * \section weakrefs The usage of weak references in the Python interface
- * 
+ *
  * Many classes implemented in the Python interface (e.g. VertexSeq, Vertex...)
  * use weak references to keep track of the graph they are referencing to.
  * The use of weak references is twofold:
- * 
+ *
  * -# If we assign a VertexSeq or a Vertex of a given graph to a local
  *    variable and then destroy the graph, real references keep the graph
  *    alive and do not return the memory back to Python.
@@ -165,7 +165,7 @@ igraph_error_t igraphmodule_igraph_progress_hook(const char* message, igraph_rea
       }
     }
   }
-  
+
   return IGRAPH_SUCCESS;
 }
 
@@ -182,7 +182,7 @@ igraph_error_t igraphmodule_igraph_status_hook(const char* message, void*data) {
         return IGRAPH_INTERRUPTED;
     }
   }
-  
+
   return IGRAPH_SUCCESS;
 }
 
@@ -238,10 +238,10 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
   igraph_vector_int_t result;
   igraph_matrix_t resmat;
   Py_ssize_t no_of_nodes, i;
-  
+
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O", kwlist, &PyList_Type, &vs, &coords))
     return NULL;
-  
+
   no_of_nodes = PyList_Size(vs);
   if (igraph_matrix_init(&mtrx, no_of_nodes, 2)) {
     igraphmodule_handle_igraph_error();
@@ -279,7 +279,7 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
       igraph_matrix_destroy(&mtrx);
       return NULL;
     }
-    
+
     if (!PyNumber_Check(o1) || !PyNumber_Check(o2)) {
       PyErr_SetString(PyExc_TypeError, "vertex coordinates must be numeric");
       Py_DECREF(o2);
@@ -322,7 +322,7 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
       igraph_matrix_destroy(&mtrx);
       igraph_vector_int_destroy(&result);
       return NULL;
-    }    
+    }
     o = igraphmodule_vector_int_t_to_PyList(&result);
     igraph_vector_int_destroy(&result);
   } else {
@@ -336,11 +336,11 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
       igraph_matrix_destroy(&mtrx);
       igraph_matrix_destroy(&resmat);
       return NULL;
-    }        
+    }
     o = igraphmodule_matrix_t_to_PyList(&resmat, IGRAPHMODULE_TYPE_FLOAT);
     igraph_matrix_destroy(&resmat);
   }
-  
+
   igraph_matrix_destroy(&mtrx);
 
   return o;
@@ -772,7 +772,7 @@ PyObject* igraphmodule__exit_safelocale(PyObject *self, PyObject *capsule) {
 /** \ingroup python_interface
  * \brief Method table for the igraph Python module
  */
-static PyMethodDef igraphmodule_methods[] = 
+static PyMethodDef igraphmodule_methods[] =
 {
   {"community_to_membership", (PyCFunction)igraphmodule_community_to_membership,
     METH_VARARGS | METH_KEYWORDS,
@@ -1076,7 +1076,7 @@ PyObject* PyInit__igraph(void)
   PyModule_AddObject(m, "EdgeSeq", (PyObject*)igraphmodule_EdgeSeqType);
   PyModule_AddObject(m, "Vertex", (PyObject*)igraphmodule_VertexType);
   PyModule_AddObject(m, "VertexSeq", (PyObject*)igraphmodule_VertexSeqType);
- 
+
   /* Internal error exception type */
   igraphmodule_InternalError =
     PyErr_NewException("igraph._igraph.InternalError", PyExc_Exception, NULL);
@@ -1151,7 +1151,7 @@ PyObject* PyInit__igraph(void)
   igraph_set_status_handler(igraphmodule_igraph_status_hook);
   igraph_set_warning_handler(igraphmodule_igraph_warning_hook);
   igraph_set_interruption_handler(igraphmodule_igraph_interrupt_hook);
-  
+
   /* initialize attribute handlers */
   igraphmodule_initialize_attribute_handler();
 

@@ -954,7 +954,7 @@ class Graph(GraphBase):
             "instead"
         )
         return self.get_biadjacency(*args, **kwds)
-    
+
 
 ##############################################################
 # I/O format mapping

@@ -1,22 +1,22 @@
 /* vim:set ts=4 sw=2 sts=2 et:  */
-/* 
+/*
    IGraph library - Python interface.
    Copyright (C) 2006-2011  Tamas Nepusz <ntamas@gmail.com>
    5 Avenue Road, Staines, Middlesex, TW18 3AW, United Kingdom
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -69,7 +69,7 @@ PyObject* igraphmodule_PyFile_FromObject(PyObject* filename, const char* mode) {
 
 /**
  * Creates a Python list and fills it with a pre-defined item.
- * 
+ *
  * \param  len   the length of the list to be created
  * \param  item  the item with which the list will be filled
  */
@@ -95,7 +95,7 @@ PyObject* igraphmodule_PyList_NewFill(Py_ssize_t len, PyObject* item) {
 
 /**
  * Creates a Python list and fills it with zeroes.
- * 
+ *
  * \param  len   the length of the list to be created
  */
 PyObject* igraphmodule_PyList_Zeroes(Py_ssize_t len) {
@@ -235,7 +235,7 @@ long igraphmodule_Py_HashPointer(void *p) {
 
 /**
  * @brief Initializer function that must be called from igraphmodule_init()
- * 
+ *
  * Initializes borrowed references to \c None, \c True and \c False to cope
  * with the fact that \c Py_None, \c Py_False and \c Py_True are not exposed
  * in PyPy as part of the limited API.
@@ -255,7 +255,7 @@ int igraphmodule_helpers_init() {
     goto cleanup;
   }
 #endif
-  
+
 #ifdef PY_IGRAPH_PROVIDES_BOOL_CONSTANTS
   Py_False = Py_True = NULL;
 

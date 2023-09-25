@@ -1,21 +1,21 @@
 /* vim:set ts=2 sw=2 sts=2 et: */
-/* 
+/*
    IGraph library.
    Copyright (C) 2006-2023  Tamas Nepusz <ntamas@gmail.com>
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -44,7 +44,7 @@ static INLINE void igraphmodule_i_attribute_struct_invalidate_vertex_name_index(
 
 int igraphmodule_i_attribute_struct_init(igraphmodule_i_attribute_struct *attrs) {
   int i, j;
-  
+
   for (i = 0; i < 3; i++) {
     attrs->attrs[i] = PyDict_New();
     if (PyErr_Occurred()) {
@@ -203,7 +203,7 @@ int igraphmodule_get_vertex_id_by_name(igraph_t *graph, PyObject* o, igraph_inte
     PyErr_SetString(PyExc_ValueError, "non-numeric vertex ID assigned to vertex name. This is most likely a bug.");
     return 1;
   }
-  
+
   if (igraphmodule_PyObject_to_integer_t(o_vid, vid)) {
     return 1;
   }
@@ -340,17 +340,17 @@ PyObject* igraphmodule_create_or_get_edge_attribute_values(const igraph_t* graph
   if (result != NULL) {
     return result;
   }
-  
+
   return igraphmodule_i_create_edge_attribute(graph, name);
 }
 
 /* Attribute handlers for the Python interface */
 
-/* Initialization */ 
+/* Initialization */
 static igraph_error_t igraphmodule_i_attribute_init(igraph_t *graph, igraph_vector_ptr_t *attr) {
   igraphmodule_i_attribute_struct* attrs;
   igraph_integer_t i, n;
-  
+
   attrs = (igraphmodule_i_attribute_struct*)calloc(1, sizeof(igraphmodule_i_attribute_struct));
   if (!attrs) {
     IGRAPH_ERROR("not enough memory to allocate attribute hashes", IGRAPH_ENOMEM);
@@ -367,7 +367,7 @@ static igraph_error_t igraphmodule_i_attribute_init(igraph_t *graph, igraph_vect
   if (attr) {
     PyObject *dict = attrs->attrs[0], *value;
     const char *s;
-  
+
     n = igraph_vector_ptr_size(attr);
     for (i = 0; i < n; i++) {
       igraph_attribute_record_t *attr_rec;
@@ -405,7 +405,7 @@ static igraph_error_t igraphmodule_i_attribute_init(igraph_t *graph, igraph_vect
           Py_DECREF(value);
         }
       }
-      
+
       if (!value) {
         /* there was an error above, bail out */
         IGRAPH_ERROR("failed to add attributes to graph attribute hash", IGRAPH_FAILURE);
@@ -422,7 +422,7 @@ static igraph_error_t igraphmodule_i_attribute_init(igraph_t *graph, igraph_vect
 /* Destruction */
 static void igraphmodule_i_attribute_destroy(igraph_t *graph) {
   igraphmodule_i_attribute_struct* attrs;
- 
+
   /* printf("Destroying attribute table\n"); */
   if (graph->attr) {
     attrs = (igraphmodule_i_attribute_struct*)graph->attr;
@@ -440,7 +440,7 @@ static igraph_error_t igraphmodule_i_attribute_copy(igraph_t *to, const igraph_t
   igraph_bool_t copy_attrs[3] = { ga, va, ea };
   int i;
   Py_ssize_t j, pos = 0, list_len;
- 
+
   if (from->attr) {
     fromattrs = ATTR_STRUCT(from);
 
@@ -655,7 +655,7 @@ static igraph_error_t igraphmodule_i_attribute_add_vertices(igraph_t *graph, igr
       }
 
       if (o) {
-        if (PyList_SetItem(value, i + j, o)) {  
+        if (PyList_SetItem(value, i + j, o)) {
           Py_DECREF(o); /* append failed */
           o = NULL; /* indicate error */
         } else {
@@ -690,7 +690,7 @@ static igraph_error_t igraphmodule_i_attribute_permute_vertices(const igraph_t *
   igraph_integer_t i, n;
   PyObject *key, *value, *dict, *newdict, *newlist, *o;
   Py_ssize_t pos = 0;
-  
+
   dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_VERTEX];
   if (!PyDict_Check(dict)) {
     IGRAPH_ERROR("vertex attribute hash type mismatch", IGRAPH_EINVAL);
@@ -828,7 +828,7 @@ static igraph_error_t igraphmodule_i_attribute_add_edges(igraph_t *graph, const 
       }
     }
   }
-  
+
   /* Okay, now we added the new attribute values for the already existing
    * attribute keys. Let's see if we have something left */
   j = igraph_ecount(graph) - ne;
@@ -872,7 +872,7 @@ static igraph_error_t igraphmodule_i_attribute_add_edges(igraph_t *graph, const 
       }
 
       if (o) {
-        if (PyList_SetItem(value, i + j, o)) {  
+        if (PyList_SetItem(value, i + j, o)) {
           Py_DECREF(o); /* append failed */
           o = NULL; /* indicate error */
         } else {
@@ -898,7 +898,7 @@ static igraph_error_t igraphmodule_i_attribute_add_edges(igraph_t *graph, const 
 
 /* Permuting edges */
 static igraph_error_t igraphmodule_i_attribute_permute_edges(const igraph_t *graph,
-    igraph_t *newgraph, const igraph_vector_int_t *idx) { 
+    igraph_t *newgraph, const igraph_vector_int_t *idx) {
   igraph_integer_t i, n;
   PyObject *key, *value, *dict, *newdict, *newlist, *o;
   Py_ssize_t pos=0;
@@ -960,7 +960,7 @@ static PyObject* igraphmodule_i_ac_func(PyObject* values,
   PyObject *res, *list, *item;
 
   res = PyList_New(len);
-  
+
   for (i = 0; i < len; i++) {
     igraph_vector_int_t *v = igraph_vector_int_list_get_ptr(merges, i);
     igraph_integer_t j, n = igraph_vector_int_size(v);
@@ -1139,7 +1139,7 @@ static PyObject* igraphmodule_i_ac_first(PyObject* values,
       Py_DECREF(res);
       return 0;
     }
-    
+
     Py_INCREF(item);
     if (PyList_SetItem(res, i, item)) {  /* reference to item stolen */
       Py_DECREF(item);
@@ -1271,7 +1271,7 @@ static PyObject* igraphmodule_i_ac_mean(PyObject* values,
         Py_DECREF(res);
         return 0;
       }
-      
+
       if (igraphmodule_PyObject_to_real_t(item, &num)) {
         PyErr_SetString(PyExc_TypeError, "mean can only be invoked on numeric attributes");
         Py_DECREF(res);
@@ -1409,7 +1409,7 @@ static igraph_error_t igraphmodule_i_attribute_combine_dicts(PyObject *dict,
   Py_ssize_t pos;
   igraph_attribute_combination_record_t* todo;
   Py_ssize_t i, n;
-  
+
   if (!PyDict_Check(dict) || !PyDict_Check(newdict)) {
     IGRAPH_ERROR("dict or newdict are corrupted", IGRAPH_FAILURE);
   }
@@ -1584,7 +1584,7 @@ static igraph_error_t igraphmodule_i_attribute_get_info(const igraph_t *graph,
   igraph_vector_int_t *types[3] = { gtypes, vtypes, etypes };
   int i, retval;
   Py_ssize_t j, k, l, m;
-  
+
   for (i = 0; i < 3; i++) {
     igraph_strvector_t *n = names[i];
     igraph_vector_int_t *t = types[i];
@@ -1651,10 +1651,10 @@ static igraph_error_t igraphmodule_i_attribute_get_info(const igraph_t *graph,
         }
       }
     }
-    
+
     Py_DECREF(keys);
   }
- 
+
   return IGRAPH_SUCCESS;
 }
 
@@ -1792,7 +1792,7 @@ igraph_error_t igraphmodule_i_get_numeric_graph_attr(const igraph_t *graph,
   if (result) {
     VECTOR(*value)[0] = PyFloat_AsDouble(o);
     Py_DECREF(result);
-  } else IGRAPH_ERROR("Internal error in PyFloat_AsDouble", IGRAPH_EINVAL); 
+  } else IGRAPH_ERROR("Internal error in PyFloat_AsDouble", IGRAPH_EINVAL);
 
   return IGRAPH_SUCCESS;
 }
@@ -1830,7 +1830,7 @@ igraph_error_t igraphmodule_i_get_string_graph_attr(const igraph_t *graph,
   if (str == 0) {
     IGRAPH_ERROR("Internal error in PyObject_Str", IGRAPH_EINVAL);
   }
-  
+
   c_str = PyBytes_AsString(str);
   if (c_str == 0) {
     IGRAPH_ERROR("Internal error in PyBytes_AsString", IGRAPH_EINVAL);

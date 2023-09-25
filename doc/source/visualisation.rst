@@ -42,7 +42,7 @@ Indexing and slicing can be performed and returns the coordinates of the request
 
 .. note:: The returned object is a list of lists with the coordinates, not an `igraph.layout.Layout`
    object. You can wrap the result into such an object easily:
-   
+
       >>> layout_subgraph = ig.Layout(coords=layout[:2])
 
 It is possible to perform linear transformations to the layout:
@@ -158,7 +158,7 @@ then customize the appearance of your graph via standard `matplotlib`_ tools.
 
 .. note:: The order of `artist.get_children()` is the following: (i) one artist for clustering hulls if requested;
    (ii) one artist for edges; (iii) one artist for vertices; (iv) one artist for **each** edge label; (v) one
-   artist for **each** vertex label. 
+   artist for **each** vertex label.
 
 To use `matplotlib_` as your default plotting backend, you can set:
 

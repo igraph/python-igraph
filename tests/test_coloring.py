@@ -15,10 +15,10 @@ class VertexColoringTests(unittest.TestCase):
 
         col = g.vertex_coloring_greedy()
         assert_valid_vertex_coloring(g, col)
-        
+
         col = g.vertex_coloring_greedy("colored_neighbors")
         assert_valid_vertex_coloring(g, col)
-        
+
         col = g.vertex_coloring_greedy("dsatur")
         assert_valid_vertex_coloring(g, col)
 

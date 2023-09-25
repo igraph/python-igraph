@@ -12,7 +12,7 @@ Esta página es un tutorial detallado de las capacidades de |igraph| para Python
 
 .. note::
    Para el lector impaciente, vea la página :doc:`tutorials/index` para ejemplos cortos y autocontenidos.
-   
+
 Comenzar con |igraph|
 =====================
 
@@ -23,7 +23,7 @@ La manera más común de usar |igraph| es como una importanción con nombre dent
   [Clang 12.0.5 (clang-1205.0.22.9)] on darwin
   Type "help", "copyright", "credits" or "license" for more information.
   >>> import igraph as ig
-  
+
 Para llamar a funciones, es necesario anteponerles el prefijo ``ig`` (o el nombre que hayas elegido)::
 
   >>> import igraph as ig
@@ -34,7 +34,7 @@ Para llamar a funciones, es necesario anteponerles el prefijo ``ig`` (o el nombr
    Es posible utilizar *importación con asterisco* para |igraph|::
 
     >>> from igraph import *
-    
+
    pero en general se desaconseja <https://stackoverflow.com/questions/2386714/why-is-import-bad>`_.
 
 Hay una segunda forma de iniciar |igraph|, que consiste en llamar al script :command:`igraph` desde tu terminal::
@@ -48,11 +48,11 @@ Hay una segunda forma de iniciar |igraph|, que consiste en llamar al script :com
 .. note::
    Para los usuarios de Windows encontrarán el script dentro del subdirectorio file:`scripts`
    de Python y puede que tengan que añadirlo manualmente a su ruta.
-   
+
 Este script inicia un intérprete de comandos apropiado (`IPython`_ o `IDLE <https://docs.python.org/3/library/idle.html>`_ si se encuentra, de lo contrario un intérprete de comandos Python puro) y utiliza *importación con asterisco* (véase más arriba). Esto es a veces conveniente para usar las funciones de |igraph|.
 
 .. note::
-   Puede especificar qué shell debe utilizar este script a través 
+   Puede especificar qué shell debe utilizar este script a través
    :doc:`configuration` de |igraph|.
 
 Este tutorial asumirá que has importado igraph usando el de nombres ``ig``.
@@ -63,27 +63,27 @@ Creando un grafo
 La forma más sencilla de crear un grafo es con el constructor :class:`Graph`. Para hacer un grafo vacío:
 
   >>> g = ig.Graph()
-  
+
 Para hacer un grafo con 10 nodos (numerados ``0`` to ``9``) y dos aristas que conecten los nodos ``0-1`` y ``0-5``::
 
   >>> g = ig.Graph(n=10, edges=[[0, 1], [0, 5]])
-  
+
 Podemos imprimir el grafo para obtener un resumen de sus nodos y aristas::
 
   >>> print(g)
   IGRAPH U--- 10 2 --
   + edges:
   0--1 0--5
-  
+
 Tenemos entonces: grafo no dirigido (**U**ndirected) con **10** vértices y **2** aristas, que se enlistan en la última parte. Si el grafo tiene un atributo "nombre", también se imprime.
 
 .. note::
    ``summary`` es similar a ``print`` pero no enlista las aristas, lo cual
    es conveniente para grafos grandes con millones de aristas::
-   
+
      >>> summary(g)
      IGRAPH U--- 10 2 --
-   
+
 Añadir y borrar vértices y aristas
 ==================================
 
@@ -91,13 +91,13 @@ Empecemos de nuevo con un grafo vacío. Para añadir vértices a un grafo existe
 
   >>> g = ig.Graph()
   >>> g.add_vertices(3)
-  
+
 En |igraph|, los vértices se numeran siempre a partir de cero El número de un vértice es el *ID del vértice*. Un vértice puede tener o no un nombre.
 
 Del mismo modo, para añadir aristas se utiliza :meth:`Graph.add_edges`::
 
   >>> g.add_edges([(0, 1), (1, 2)])
-  
+
 Las aristas se añaden especificando el vértice origen y el vértice destino de cada arista. Esta llamada añade dos aristas, una que conecta los vértices ``0`` y ``1``, y otra que conecta los vértices ``1`` y ``2``. Las aristas también se numeran a partir de cero (el *ID del arista*) y tienen un nombre opcional.
 
 .. warning::
@@ -112,7 +112,7 @@ Si intentas añadir aristas a vértices con IDs no válidos (por ejemplo, intent
     File "/usr/lib/python3.10/site-packages/igraph/__init__.py", line 376, in add_edges
       res = GraphBase.add_edges(self, es)
   igraph._igraph.InternalError: Error at src/graph/type_indexededgelist.c:270: cannot add edges. -- Invalid vertex id
-  
+
 El mensaje intenta explicar qué ha fallado (``cannot add edges. -- Invalid
 vertex id``) junto con la línea correspondiente del código fuente en la que se ha producido el error.
 
@@ -131,13 +131,13 @@ Añadamos más vértices y aristas a nuestro grafo::
   IGRAPH U---- 6 7 --
   + edges:
   0--1 1--2 0--2 2--3 3--4 4--5 3--5
-  
+
 Ahora tenemos un grafo no dirigido con 6 vértices y 7 aristas. Los IDs de los vértices y aristas son siempre *continuos*, por lo que si eliminas un vértice todos los vértices subsiguientes serán renumerados. Cuando se renumera un vértice, las aristas **no** se renumeran, pero sí sus vértices de origen y destino. Utilice :meth:`Graph.delete_vertices` y :meth:`Graph.delete_edges` para realizar estas operaciones. Por ejemplo, para eliminar la arista que conecta los vértices ``2-3``, obten sus IDs y luego eliminalos::
 
   >>> g.get_eid(2, 3)
   3
   >>> g.delete_edges(3)
-  
+
 Generar grafos
 ==============
 
@@ -146,27 +146,27 @@ Generar grafos
   >>> g = ig.Graph.Tree(127, 2)
   >>> summary(g)
   IGRAPH U--- 127 126 --
-  
+
 Utiliza :meth:`Graph.Tree` para generar un grafo regular en forma de árbol con 127 vértices, cada vértice con dos hijos (y un padre, por supuesto). No importa cuántas veces llames a :meth:`Graph.Tree`, el grafo generado será siempre el mismo si utilizas los mismos parámetros::
 
   >>> g2 = ig.Graph.Tree(127, 2)
   >>> g2.get_edgelist() == g.get_edgelist()
   True
-  
+
 El fragmento de código anterior también muestra el método :meth:`~Graph.get_edgelist()`, que devuelve una lista de vértices de origen y destino para todas las aristas, ordenados por el ID de la arista. Si imprimes los 10 primeros elementos, obtienes::
 
   >>> g2.get_edgelist()[:10]
   [(0, 1), (0, 2), (1, 3), (1, 4), (2, 5), (2, 6), (3, 7), (3, 8), (4, 9), (4, 10)]
-  
+
 Los generadores *estocásticos* producen un grafo diferente cada vez; por ejemplo, :meth:`Graph.GRG`::
 
   >>> g = ig.Graph.GRG(100, 0.2)
   >>> summary(g)
   IGRAPH U---- 100 516 --
   + attr: x (v), y (v)
-  
+
 .. note::
-   `+ attr`` muestra atributos para vértices (v) y aristas (e), en este caso dos atributos de   
+   `+ attr`` muestra atributos para vértices (v) y aristas (e), en este caso dos atributos de
    vértice y ningún atributo de arista.
 
 Esto genera un grafo geométrico aleatorio: Se eligen *n* puntos de forma aleatoria y uniforme dentro del cuadrado unitario y los pares de puntos más cercanos entre sí respecto a una distancia predefinida *d* se conectan mediante una arista. Si se generan GRGs con los mismos parámetros, serán diferentes::
@@ -174,12 +174,12 @@ Esto genera un grafo geométrico aleatorio: Se eligen *n* puntos de forma aleato
   >>> g2 = ig.Graph.GRG(100, 0.2)
   >>> g.get_edgelist() == g2.get_edgelist()
   False
-  
+
 Una forma un poco más relajada de comprobar si los grafos son equivalentes es mediante :meth:`~Graph.isomorphic()`::
 
   >>> g.isomorphic(g2)
   False
-  
+
 Comprobar por el isomorfismo puede llevar un tiempo en el caso de grafos grandes (en este caso, la respuesta puede darse rápidamente comprobando las distribuciones de grados de los dos grafos).
 
 Establecer y recuperar atributos
@@ -190,14 +190,14 @@ Como se ha mencionado anteriormente, en |igraph| cada vértice y cada arista tie
 Para demostrar el uso de los atributos, creemos una red social sencilla::
 
   >>> g = ig.Graph([(0,1), (0,2), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)])
-  
+
 Cada vértice representa una persona, por lo que queremos almacenar nombres, edades y géneros::
 
   >>> g.vs["name"] = ["Alice", "Bob", "Claire", "Dennis", "Esther", "Frank", "George"]
   >>> g.vs["age"] = [25, 31, 18, 47, 22, 23, 50]
   >>> g.vs["gender"] = ["f", "m", "f", "m", "f", "m", "m"]
   >>> g.es["is_formal"] = [False, False, True, True, True, False, True, False, False]
-  
+
 :attr:`Graph.vs` y :attr:`Graph.es` son la forma estándar de obtener una secuencia de todos los vértices y aristas respectivamente. El valor debe ser una lista con la misma longitud que los vértices (para :attr:`Graph.vs`) o aristas (para :attr:`Graph.es`). Esto asigna un atributo a *todos* los vértices/aristas a la vez.
 
 Para asignar o modificar un atributo para un solo vértice/borde, puedes hacer lo siguiente::
@@ -217,7 +217,7 @@ Además, cada :class:`Vertex` tiene una propiedad especial, :attr:`Vertex.index`
 Para asignar atributos a un subconjunto de vértices o aristas, puedes utilizar el corte::
 
   >>> g.es[:1]["is_formal"] = True
-  
+
 La salida de ``g.es[:1]`` es una instancia de :class:`~seq.EdgeSeq`, mientras que :class:`~seq.VertexSeq` es la clase equivalente que representa subconjuntos de vértices.
 
 Para eliminar atributos, puedes utilizar ``del``, por ejemplo::
@@ -230,16 +230,16 @@ Para eliminar atributos, puedes utilizar ``del``, por ejemplo::
   Traceback (most recent call last):
     File "<stdin>", line 25, in <module>
   KeyError: 'Attribute does not exist'
-  
+
 .. warning::
-   Los atributos pueden ser objetos arbitrarios de Python, pero si está guardando grafos en un 
-   archivo, sólo se conservarán los atributos de cadena ("string") y numéricos. Consulte el 
-   módulo :mod:`pickle` de la biblioteca estándar de Python si busca una forma de guardar otros 
-   tipos de atributos. Puede hacer un pickle de sus atributos individualmente, almacenarlos como 
-   cadenas y guardarlos, o puedes hacer un pickle de todo el :class:`Graph` si sabes que quieres 
+   Los atributos pueden ser objetos arbitrarios de Python, pero si está guardando grafos en un
+   archivo, sólo se conservarán los atributos de cadena ("string") y numéricos. Consulte el
+   módulo :mod:`pickle` de la biblioteca estándar de Python si busca una forma de guardar otros
+   tipos de atributos. Puede hacer un pickle de sus atributos individualmente, almacenarlos como
+   cadenas y guardarlos, o puedes hacer un pickle de todo el :class:`Graph` si sabes que quieres
    cargar el grafo en Python.
-   
-   
+
+
 Propiedades estructurales de los grafos
 =======================================
 
@@ -249,22 +249,22 @@ Probablemente, la propiedad más sencilla en la que se puede pensar es el "grado
 
   >>> g.degree()
   [3, 1, 4, 3, 2, 3, 2]
-  
+
 Si el grafo fuera dirigido, habríamos podido calcular los grados de entrada y salida por separado utilizando ``g.degree(mode="in")`` y ``g.degree(mode="out")``. También puedes usar un único ID de un vértice o una lista de ID de los vértices a :meth:`~Graph.degree` si quieres calcular los grados sólo para un subconjunto de vértices::
 
   >>> g.degree(6)
   2
   >>> g.degree([2,3,4])
   [4, 3, 2]
-  
+
 Este procedimiento se aplica a la mayoría de las propiedades estructurales que |igraph| puede calcular. Para las propiedades de los vértices, los métodos aceptan un ID o una lista de IDs de los vértices (y si se omiten, el valor predeterminado es el conjunto de todos los vértices). Para las propiedades de las aristas, los métodos también aceptan un único ID de o una lista de IDs de aristas. En lugar de una lista de IDs, también puedes proporcionar una instancia :class:`VertexSeq` o una instancia :class:`EdgeSeq` apropiadamente. Más adelante, en el próximo capítulo "consulta de vértices y aristas", aprenderás a restringirlos exactamente a los vértices o aristas que quieras.
 
 .. note::
 
-   Para algunos casos, no tiene sentido realizar el calculo sólo para unos pocos vértices o 
-   aristas en lugar de todo el grafo, ya que de todas formas se tardaría el mismo tiempo. En 
-   este caso, los métodos no aceptan IDs de vértices o aristas, pero se puede restringir la 
-   lista resultante más tarde usando operadores estándar de indexación y de corte. Un ejemplo de 
+   Para algunos casos, no tiene sentido realizar el calculo sólo para unos pocos vértices o
+   aristas en lugar de todo el grafo, ya que de todas formas se tardaría el mismo tiempo. En
+   este caso, los métodos no aceptan IDs de vértices o aristas, pero se puede restringir la
+   lista resultante más tarde usando operadores estándar de indexación y de corte. Un ejemplo de
    ello es la centralidad de los vectores propios (:meth:`Graph.evcent()`)
 
 Además de los grados, |igraph| incluye rutinas integradas para calcular muchas otras propiedades de centralidad, como la intermediación de vértices y aristas o el PageRank de Google (:meth:`Graph.pagerank`), por nombrar algunas. Aquí sólo ilustramos la interrelación de aristas::
@@ -279,7 +279,7 @@ con un poco de magia de Python::
   >>> max_eb = max(ebs)
   >>> [g.es[idx].tuple for idx, eb in enumerate(ebs) if eb == max_eb]
   [(0, 1), (0, 2)]
-  
+
 La mayoría de las propiedades estructurales también pueden ser obtenidas para un subconjunto de vértices o aristas o para un solo vértice o arista llamando al método apropiado de la clase :class:`VertexSeq` o :class:`EdgeSeq` de interés::
 
   >>> g.vs.degree()
@@ -288,7 +288,7 @@ La mayoría de las propiedades estructurales también pueden ser obtenidas para 
   [6.0, 6.0, 4.0, 2.0, 4.0, 3.0, 4.0, 3.0. 4.0]
   >>> g.vs[2].degree()
   4
-  
+
 Busqueda de vértices y aristas basada en atributos
 ==================================================
 
@@ -334,13 +334,13 @@ La sintaxis puede parecer un poco rara a primera vista, así que vamos a tratar 
     >>> seq = graph.vs.select(2, 3, 7)
     >>> len(seq)
     3
-    
+
 Los argumentos clave ("keyword argument") pueden utilizarse para filtrar los vértices en función de sus atributos o sus propiedades estructurales. El nombre de cada argumento clave consiste como máximo de dos partes: el nombre del atributo o propiedad estructural y el operador de filtrado. El operador puede omitirse; en ese caso, automáticamente se asume el operador de igualdad. Las posibilidades son las siguientes (donde *name* indica el nombre del atributo o propiedad):
 
 ================ ================================================================
 Keyword argument Significado
 ================ ================================================================
-``name_eq``      El valor del atributo/propiedad debe ser *igual* a 
+``name_eq``      El valor del atributo/propiedad debe ser *igual* a
 ---------------- ----------------------------------------------------------------
 ``name_ne``      El valor del atributo/propiedad debe *no ser igual* a
 ---------------- ----------------------------------------------------------------
@@ -350,7 +350,7 @@ Keyword argument Significado
 ---------------- ----------------------------------------------------------------
 ``name_gt``      El valor del atributo/propiedad debe ser *mayor que*
 ---------------- ----------------------------------------------------------------
-``name_ge``      El valor del atributo/propiedad debe ser *mayor o igual a* 
+``name_ge``      El valor del atributo/propiedad debe ser *mayor o igual a*
 ---------------- ----------------------------------------------------------------
 ``name_in``      El valor del atributo/propiedad debe estar *incluido en*, el cual tiene que ser
                  una secuencia en este caso
@@ -364,15 +364,15 @@ Por ejemplo, el siguiente comando te da las personas menores de 30 años en nues
   >>> g.vs.select(age_lt=30)
 
 .. note::
-   Debido a las restricciones sintácticas de Python, no se puede utilizar la sintaxis más 
-   sencilla de ``g.vs.select(edad < 30)``, ya que en Python sólo se permite que aparezca el 
+   Debido a las restricciones sintácticas de Python, no se puede utilizar la sintaxis más
+   sencilla de ``g.vs.select(edad < 30)``, ya que en Python sólo se permite que aparezca el
    operador de igualdad en una lista de argumentos.
-   
+
 Para ahorrarte algo de tecleo, puedes incluso omitir el método :meth:`~VertexSeq.select` si
 desea::
 
   >>> g.vs(age_lt=30)
-   
+
 También hay algunas propiedades estructurales especiales para seleccionar los aristas:
 
 - Utilizando ``_source`` or ``_from`` en función de los vértices de donde se originan las aristas. Por ejemplo, para seleccionar todas las aristas procedentes de Claire (que tiene el índice de vértice 2)::
@@ -401,7 +401,7 @@ En muchos casos buscamos un solo vértice o arista de un grafo con algunas propi
   igraph.Vertex
   >>> claire.index
   2
-  
+
 La búsqueda de un nombre desconocido dará lugar a una excepción::
 
   >>> g.vs.find(name="Joe")
@@ -421,10 +421,10 @@ o alternativamente::
 
   >>> g.vs.find("Dennis").degree()
   3
-  
+
 El mapeo entre los nombres de los vértices y los IDs es mantenido de forma transparente por |igraph| en segundo plano; cada vez que el grafo cambia, |igraph| también actualiza el mapeo interno. Sin embargo, la singularidad de los nombres de los vértices *no* se impone; puedes crear fácilmente un grafo en el que dos vértices tengan el mismo nombre, pero igraph sólo devolverá uno de ellos cuando los busques por nombres, el otro sólo estará disponible por su índice.
 
-Tratar un grafo como una matriz de adyacencia 
+Tratar un grafo como una matriz de adyacencia
 =============================================
 
 La matriz de adyacencia es otra forma de formar un grafo. En la matriz de adyacencia, las filas y columnas están etiquetadas por los vértices del grafo: los elementos de la matriz indican si los vértices *i* y *j* tienen una arista común (*i, j*). La matriz de adyacencia del grafo de nuestra red social imaginaria es::
@@ -439,7 +439,7 @@ La matriz de adyacencia es otra forma de formar un grafo. En la matriz de adyace
     [1, 0, 1, 0, 0, 0, 1],
     [0, 0, 0, 1, 0, 1, 0]
   ])
-  
+
 Por ejemplo, Claire (``[1, 0, 0, 1, 1, 1, 0]``) está directamente conectada con Alice (que tiene el índice 0), Dennis (índice 3), Esther (índice 4) y Frank (índice 5), pero no con Bob (índice 1) ni con George (índice 6).
 
 Diseños ("layouts") y graficar
@@ -449,7 +449,7 @@ Un grafo es un objeto matemático abstracto sin una representación específica 
 
 .. important::
 
-   Para seguir los ejemplos de esta sección, se requieren de la librería Cairo en Python o 
+   Para seguir los ejemplos de esta sección, se requieren de la librería Cairo en Python o
    matplotlib.
 
 Algoritmos de diseños ("layouts")
@@ -460,15 +460,15 @@ Los métodos de diseño en |igraph| se encuentran en el objeto :class:`Graph`, y
 ==================================== =============== =============================================
 Method name                          Short name      Algorithm description
 ==================================== =============== =============================================
-``layout_circle``                    ``circle``,     Disposición determinista que coloca los 
+``layout_circle``                    ``circle``,     Disposición determinista que coloca los
                                      ``circular``    vértices en un círculo
 ------------------------------------ --------------- ---------------------------------------------
-``layout_drl``                       ``drl``         El algoritmo [Distributed Recursive Layout] 
+``layout_drl``                       ``drl``         El algoritmo [Distributed Recursive Layout]
                                                      para grafos grandes
 ------------------------------------ --------------- ---------------------------------------------
-``layout_fruchterman_reingold``      ``fr``          El algoritmo dirigido Fruchterman-Reingold 
+``layout_fruchterman_reingold``      ``fr``          El algoritmo dirigido Fruchterman-Reingold
 ------------------------------------ --------------- ---------------------------------------------
-``layout_fruchterman_reingold_3d``   ``fr3d``,       El algoritmo dirigido Fruchterman-Reingold 
+``layout_fruchterman_reingold_3d``   ``fr3d``,       El algoritmo dirigido Fruchterman-Reingold
                                      ``fr_3d``       en tres dimensiones
 ------------------------------------ --------------- ---------------------------------------------
 ``layout_kamada_kawai``              ``kk``          El algoritmo dirigido Kamada-Kawai
@@ -476,7 +476,7 @@ Method name                          Short name      Algorithm description
 ``layout_kamada_kawai_3d``           ``kk3d``,       El algoritmo dirigido Kamada-Kawai
                                      ``kk_3d``       en tres dimensiones
 ------------------------------------ --------------- ---------------------------------------------
-``layout_lgl``                       ``large``,      El algoritmo [Large Graph Layout] para 
+``layout_lgl``                       ``large``,      El algoritmo [Large Graph Layout] para
                                      ``lgl``,        grafos grandes
                                      ``large_graph``
 ------------------------------------ --------------- ---------------------------------------------
@@ -484,15 +484,15 @@ Method name                          Short name      Algorithm description
 ------------------------------------ --------------- ---------------------------------------------
 ``layout_random_3d``                 ``random_3d``   Coloca los vértices de forma totalmente aleatoria en 3D
 ------------------------------------ --------------- ---------------------------------------------
-``layout_reingold_tilford``          ``rt``,         Diseño de árbol de Reingold-Tilford, útil 
+``layout_reingold_tilford``          ``rt``,         Diseño de árbol de Reingold-Tilford, útil
                                      ``tree``        para grafos (casi) arbóreos
 ------------------------------------ --------------- ---------------------------------------------
-``layout_reingold_tilford_circular`` ``rt_circular`` Diseño de árbol de Reingold-Tilford con una  
+``layout_reingold_tilford_circular`` ``rt_circular`` Diseño de árbol de Reingold-Tilford con una
                                                      post-transformación de coordenadas polares,
                                      ``tree``        útil para grafos (casi) arbóreos
 ------------------------------------ --------------- ---------------------------------------------
-``layout_sphere``                    ``sphere``,     Disposición determinista que coloca los vértices 
-                                     ``spherical``,  de manera uniforme en la superficie de una esfera 
+``layout_sphere``                    ``sphere``,     Disposición determinista que coloca los vértices
+                                     ``spherical``,  de manera uniforme en la superficie de una esfera
                                      ``circular_3d``
 ==================================== =============== =============================================
 
@@ -518,7 +518,7 @@ Por ejemplo, podemos trazar nuestra red social imaginaria con el algoritmo de di
 
   >>> layout = g.layout("kk")
   >>> ig.plot(g, layout=layout)
-  
+
 Esto debería abrir un visor de imágenes externo que muestre una representación visual de la red, algo parecido a lo que aparece en la siguiente figura (aunque la colocación exacta de los nodos puede ser diferente en su máquina, ya que la disposición no es determinista):
 
 .. figure:: figures/tutorial_social_network_1.png
@@ -563,7 +563,7 @@ En lugar de especificar las propiedades visuales como atributos de vértices y a
 
   >>> color_dict = {"m": "blue", "f": "pink"}
   >>> ig.plot(g, layout=layout, vertex_color=[color_dict[gender] for gender in g.vs["gender"]])
-  
+
 Este último enfoque es preferible si quiere mantener las propiedades de la representación visual de su gráfico separadas del propio gráfico. Puedes simplemente crear un diccionario de Python que contenga los argumentos que contenga las palabras clave que pasarias a la función :func:`~drawing.plot` y luego usar el doble asterisco (``**``) para pasar tus atributos de estilo específicos a :func:`~drawing.plot`::
 
   >>> visual_style = {}
@@ -598,20 +598,20 @@ Attribute name  Keyword argument       Purpose
 --------------- ---------------------- ------------------------------------------
 ``label``       ``vertex_label``       Etiqueta del vértice.
 --------------- ---------------------- ------------------------------------------
-``label_angle`` ``vertex_label_angle`` Define la posición de las etiquetas de los 
-                                       vértices, en relación con el centro de los 
-                                       mismos. Se interpreta como un ángulo en 
+``label_angle`` ``vertex_label_angle`` Define la posición de las etiquetas de los
+                                       vértices, en relación con el centro de los
+                                       mismos. Se interpreta como un ángulo en
                                        radianes, cero significa 'a la derecha'.
 --------------- ---------------------- ------------------------------------------
 ``label_color`` ``vertex_label_color`` Color de la etiqueta del vértice
 --------------- ---------------------- ------------------------------------------
-``label_dist``  ``vertex_label_dist``  Distancia de la etiqueta del vértice, 
-                                       en relación con el tamaño del vértice 
+``label_dist``  ``vertex_label_dist``  Distancia de la etiqueta del vértice,
+                                       en relación con el tamaño del vértice
 --------------- ---------------------- ------------------------------------------
 ``label_size``  ``vertex_label_size``  Tamaño de letra de la etiqueta de vértice
 --------------- ---------------------- ------------------------------------------
 ``order``       ``vertex_order``       Orden de dibujo de los vértices. Vértices
-                                       con un parámetro de orden menor se 
+                                       con un parámetro de orden menor se
                                        dibujarán primero.
 --------------- ---------------------- ------------------------------------------
 ``shape``       ``vertex_shape``       La forma del vértice,. Algunas formas:
@@ -632,16 +632,16 @@ Attribute name  Keyword argument       Purpose
 --------------- ---------------------- ------------------------------------------
 ``curved``      ``edge_curved``        La curvatura de la arista. Valores positivos
                                        corresponden a aristas curvadas en sentido
-                                       contrario a las manecillas del reloj, valores 
-                                       negativos lo contrario. Una curvatura cero 
-                                       representa aristas rectas. ``True`` significa 
+                                       contrario a las manecillas del reloj, valores
+                                       negativos lo contrario. Una curvatura cero
+                                       representa aristas rectas. ``True`` significa
                                        una curvatura de 0.5, ``False`` es una
                                        curvatura de cero.
 --------------- ---------------------- ------------------------------------------
 ``font``        ``edge_font``          Familia tipográfica del arista.
 --------------- ---------------------- ------------------------------------------
-``arrow_size``  ``edge_arrow_size``    Tamaño (longitud)  de la punta de flecha del 
-                                       arista si el grafo es dirigido, relativo a 
+``arrow_size``  ``edge_arrow_size``    Tamaño (longitud)  de la punta de flecha del
+                                       arista si el grafo es dirigido, relativo a
                                        15 pixels.
 --------------- ---------------------- ------------------------------------------
 ``arrow_width`` ``edge_arrow_width``   El ancho de las flechas. Relativo a 10
@@ -658,13 +658,13 @@ Attribute name  Keyword argument       Purpose
 --------------- ---------------------- ------------------------------------------
 ``label``       ``edge_label``         Si se especifica, añade una etiqueta al borde.
 --------------- ---------------------- ------------------------------------------
-``background``  ``edge_background``    Si se especifica, añade una caja rectangular 
+``background``  ``edge_background``    Si se especifica, añade una caja rectangular
                                        alrededor de la etiqueta de borde (solo en
                                        matplotlib).
 --------------- ---------------------- ------------------------------------------
-``align_label`` ``edge_align_label``   Si es verdadero, gira la etiqueta de la 
-                                       arista de forma que se alinee con la 
-                                       dirección de la arista. Las etiquetas que 
+``align_label`` ``edge_align_label``   Si es verdadero, gira la etiqueta de la
+                                       arista de forma que se alinee con la
+                                       dirección de la arista. Las etiquetas que
                                        estarían al revés se voltean (sólo matplotlib).
 =============== ====================== ==========================================
 
@@ -676,7 +676,7 @@ Estos ajustes se pueden especificar como argumentos de palabra clave a la funci�
 ================ ================================================================
 Keyword argument Purpose
 ================ ================================================================
-``autocurve``    Determinación automática de la curvatura de las aristas en grafos 
+``autocurve``    Determinación automática de la curvatura de las aristas en grafos
                  con múltiples aristas. El estandar es ``True`` para grafos
                  con menos de 10000 aristas y  ``False`` para el caso contrario.
 ---------------- ----------------------------------------------------------------
@@ -686,11 +686,11 @@ Keyword argument Purpose
 ---------------- ----------------------------------------------------------------
 ``layout``       El diseño que se va a utilizar. Puede ser una instancia de ``layout``
                  una lista de tuplas que contengan coordenadas X-Y, o el nombre
-                 un algoritmo de diseño. El valor por defecto es ``auto``, que 
+                 un algoritmo de diseño. El valor por defecto es ``auto``, que
                  selecciona un algoritmo de diseño automáticamente basado en el tamaño
                  y la conectividad del grafo.
 ---------------- ----------------------------------------------------------------
-``margin``       La cantidad de espacio vacío debajo, encima, a la izquierda y 
+``margin``       La cantidad de espacio vacío debajo, encima, a la izquierda y
                  a la derecha del gráfico.
 ================ ================================================================
 
@@ -726,7 +726,7 @@ Si estas usando matplotlib, puedes guardar el gŕafico como de costumbre::
 
 Muchos formatos de archivos son admitidos por matplotlib.
 
-|igraph| y el mundo exterior 
+|igraph| y el mundo exterior
 ============================
 
 Ningún módulo de grafos estaría completo sin algún tipo de funcionalidad de importación/exportación que permita al paquete comunicarse con programas y kits de herramientas externos. |igraph| no es una excepción: proporciona funciones para leer los formatos de grafos más comunes y para guardar objetos :class:`Graph` en archivos que obedezcan estas especificaciones de formato. La siguiente tabla resume los formatos que igraph puede leer o escribir:
@@ -781,17 +781,17 @@ Como ejercicio, descarga la representación gráfica del conocido `Estudio del c
 Si quieres convertir el mismo grafo a, digamos, el formato de Pajek, puedes hacerlo con el método de la tabla anterior::
 
   >>> karate.write_pajek("zachary.net")
-  
+
 .. note::
-   La mayoría de los formatos tienen sus propias limitaciones; por ejemplo, no todos pueden 
-   almacenar atributos. Tu mejor opción es probablemente GraphML o GML si quieres guardar los 
-   grafos de |igraph| en un formato que pueda ser leído desde un paquete externo y quieres 
-   preservar los atributos numéricos y de cadena. La lista de aristas y NCOL también están bien 
-   si no tienes atributos (aunque NCOL soporta nombres de vértices y pesos de aristas). Si no 
-   quieres utilizar grafos fuera de |igraph|, pero quieres almacenarlos para una sesión 
-   posterior, el formato de grafos ``pickled`` te garantza que obtendras exactamente el mismo 
-   grafo. El formato de grafos ``pickled`` usa el modulo ``pickle`` de Python para guardar y 
-   leer grafos. 
+   La mayoría de los formatos tienen sus propias limitaciones; por ejemplo, no todos pueden
+   almacenar atributos. Tu mejor opción es probablemente GraphML o GML si quieres guardar los
+   grafos de |igraph| en un formato que pueda ser leído desde un paquete externo y quieres
+   preservar los atributos numéricos y de cadena. La lista de aristas y NCOL también están bien
+   si no tienes atributos (aunque NCOL soporta nombres de vértices y pesos de aristas). Si no
+   quieres utilizar grafos fuera de |igraph|, pero quieres almacenarlos para una sesión
+   posterior, el formato de grafos ``pickled`` te garantza que obtendras exactamente el mismo
+   grafo. El formato de grafos ``pickled`` usa el modulo ``pickle`` de Python para guardar y
+   leer grafos.
 
 También existen dos métodos de ayuda: :func:`read` es un punto de entrada genérico para los métodos de lectura que intenta deducir el formato adecuado a partir de la extensión del archivo. :meth:`Graph.write` es lo contrario de :func:`read`: permite guardar un grafo en el que el formato preferido se deduce de nuevo de la extensión. La detección del formato de :func:`read` y :meth:`Graph.write` se puede anular mediante el argumento ``format`` de la palabra clave ("keyword"), la cual acepta los nombres cortos de los otros formatos de la tabla anterior::
 
