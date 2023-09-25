@@ -974,8 +974,10 @@ options = dict(
         "": "src"
     },
     packages=find_packages(where="src"),
-    scripts=["scripts/igraph"],
     install_requires=["texttable>=1.6.2"],
+    entry_points={
+        "console_scripts": ["igraph=igraph.app.shell:main"]
+    },
     extras_require={
         # Dependencies needed for plotting with Cairo
         "cairo": ["cairocffi>=1.2.0"],
@@ -1017,8 +1019,10 @@ options = dict(
 
         # Dependencies needed for building the documentation
         "doc": [
-            "Sphinx>=4.2.0",
-            "sphinxbootstrap4theme>=0.6.0"
+            "Sphinx>=7.0.0",
+            "sphinx-rtd-theme>=1.3.0",
+            "sphinx-gallery>=0.14.0",
+            "pydoctor>=23.4.0"
         ]
     },
     python_requires=">=3.7",
