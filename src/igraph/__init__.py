@@ -354,7 +354,7 @@ class Graph(GraphBase):
 
         @keyword n: the number of vertices. Can be omitted, the default is
           zero. Note that if the edge list contains vertices with indexes
-          larger than or equal to M{m}, then the number of vertices will
+          larger than or equal to M{n}, then the number of vertices will
           be adjusted accordingly.
         @keyword edges: the edge list where every list item is a pair of
           integers. If any of the integers is larger than M{n-1}, the number
