@@ -48,6 +48,18 @@ class GraphTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         plot(g, target=ax, layout=self.layout_small_ring)
 
+    @image_comparison(baseline_images=["graph_labels"], remove_text=True)
+    def test_labels(self):
+        plt.close("all")
+        g = Graph.Ring(5)
+        fig, ax = plt.subplots(figsize=(3, 3))
+        plot(
+            g, target=ax, layout=self.layout_small_ring,
+            vertex_label=['1', '2', '3', '4', '5'],
+            vertex_label_color='white',
+            vertex_label_size=16,
+        )
+
     @image_comparison(baseline_images=["graph_layout_attribute"], remove_text=True)
     def test_layout_attribute(self):
         plt.close("all")
