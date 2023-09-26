@@ -170,7 +170,7 @@ class Layout:
         radian = angle * pi / 180.0
         cos_alpha, sin_alpha = cos(radian), sin(radian)
 
-        for idx, row in enumerate(self._coords):
+        for _idx, row in enumerate(self._coords):
             x, y = row[dim1] - origin[dim1], row[dim2] - origin[dim2]
             row[dim1] = cos_alpha * x - sin_alpha * y + origin[dim1]
             row[dim2] = sin_alpha * x + cos_alpha * y + origin[dim2]
@@ -200,7 +200,7 @@ class Layout:
         if len(scaling) == 0:
             raise ValueError("scaling factor must be given")
         elif len(scaling) == 1:
-            if type(scaling[0]) == int or type(scaling[0]) == float:
+            if isinstance(scaling[0], (int, float)):
                 scaling *= self._dim
             else:
                 scaling = scaling[0]
@@ -226,7 +226,7 @@ class Layout:
         v = kwds.get("v") or args
         if len(v) == 0:
             raise ValueError("translation vector must be given")
-        elif len(v) == 1 and type(v[0]) != int and type(v[0]) != float:
+        elif len(v) == 1 and not isinstance(v[0], (int, float)):
             v = v[0]
         if len(v) != self._dim:
             raise ValueError("translation vector must have %d dimensions" % self._dim)
@@ -366,7 +366,7 @@ class Layout:
         center = kwds.get("p") or args
         if len(center) == 0:
             center = [0.0] * self._dim
-        elif len(center) == 1 and type(center[0]) != int and type(center[0]) != float:
+        elif len(center) == 1 and not isinstance(center[0], (int, float)):
             center = center[0]
         if len(center) != self._dim:
             raise ValueError("the given point must have %d dimensions" % self._dim)
@@ -515,7 +515,7 @@ def _layout(graph, layout=None, *args, **kwds):
 
     if layout is None:
         layout = config["plotting.layout"]
-    if hasattr(layout, "__call__"):
+    if callable(layout):
         method = layout
     else:
         layout = layout.lower()
@@ -526,7 +526,7 @@ def _layout(graph, layout=None, *args, **kwds):
             kwds["dim"] = 3
             layout = layout[:-2]
         method = getattr(graph.__class__, graph._layout_mapping[layout])
-    if not hasattr(method, "__call__"):
+    if not callable(method):
         raise ValueError("layout method must be callable")
     layout = method(graph, *args, **kwds)
     if not isinstance(layout, Layout):
@@ -579,7 +579,7 @@ def _layout_auto(graph, *args, **kwds):
         if isinstance(layout, (list, tuple)):
             # Lists/tuples are converted to layouts
             return Layout(layout)
-        if hasattr(layout, "__call__"):
+        if callable(layout):
             # Callables are called
             return Layout(layout(*args, **kwds))
         # Try Graph.layout()

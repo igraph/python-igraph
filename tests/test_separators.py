@@ -38,7 +38,7 @@ class IsSeparatorTests(unittest.TestCase):
 
     def testAllMinimalSTSeparators(self):
         g = Graph.Famous("petersen")
-        min_st_seps = set(tuple(x) for x in g.all_minimal_st_separators())
+        min_st_seps = {tuple(x) for x in g.all_minimal_st_separators()}
         for vs in powerset(list(range(g.vcount()))):
             if vs in min_st_seps:
                 self.assertTrue(g.is_minimal_separator(vs))
@@ -47,7 +47,7 @@ class IsSeparatorTests(unittest.TestCase):
 
     def testMinimumSizeSeparators(self):
         g = Graph.Famous("zachary")
-        min_st_seps = set(tuple(x) for x in g.all_minimal_st_separators())
+        min_st_seps = {tuple(x) for x in g.all_minimal_st_separators()}
         min_size_seps = [tuple(x) for x in g.minimum_size_separators()]
         self.assertTrue(set(min_size_seps).issubset(min_st_seps))
         self.assertTrue(len(set(min_size_seps)) == len(min_size_seps))
@@ -60,7 +60,9 @@ class IsSeparatorTests(unittest.TestCase):
 
 
 def suite():
-    is_separator_suite = unittest.defaultTestLoader.loadTestsFromTestCase(IsSeparatorTests)
+    is_separator_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        IsSeparatorTests
+    )
     return unittest.TestSuite([is_separator_suite])
 
 

@@ -1,6 +1,6 @@
 from igraph._igraph import GraphBase
 from igraph.clustering import VertexDendrogram, VertexClustering
-from igraph.utils import deprecated, safemax
+from igraph.utils import deprecated
 
 from typing import List, Sequence, Tuple
 
@@ -26,7 +26,7 @@ def _community_fastgreedy(graph, weights=None):
     merges, qs = GraphBase.community_fastgreedy(graph, weights)
     optimal_count = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
     return VertexDendrogram(
-        graph, merges, optimal_count, modularity_params=dict(weights=weights)
+        graph, merges, optimal_count, modularity_params={"weights": weights}
     )
 
 
@@ -91,7 +91,7 @@ def _community_leading_eigenvector(
     if clusters is None:
         clusters = -1
 
-    kwds = dict(weights=weights)
+    kwds = {"weights": weights}
     if arpack_options is not None:
         kwds["arpack_options"] = arpack_options
 
@@ -146,7 +146,7 @@ def _community_label_propagation(graph, weights=None, initial=None, fixed=None):
     if isinstance(fixed, str):
         fixed = [bool(o) for o in graph.vs[fixed]]
     cl = GraphBase.community_label_propagation(graph, weights, initial, fixed)
-    return VertexClustering(graph, cl, modularity_params=dict(weights=weights))
+    return VertexClustering(graph, cl, modularity_params={"weights": weights})
 
 
 def _community_multilevel(graph, weights=None, return_levels=False, resolution=1):
@@ -186,7 +186,7 @@ def _community_multilevel(graph, weights=None, return_levels=False, resolution=1
     if graph.is_directed():
         raise ValueError("input graph must be undirected")
 
-    modularity_params = dict(weights=weights, resolution=resolution)
+    modularity_params = {"weights": weights, "resolution": resolution}
     if return_levels:
         levels, qs = GraphBase.community_multilevel(
             graph, weights, return_levels=True, resolution=resolution
@@ -194,9 +194,7 @@ def _community_multilevel(graph, weights=None, return_levels=False, resolution=1
         result = []
         for level, q in zip(levels, qs):
             result.append(
-                VertexClustering(
-                    graph, level, q, modularity_params=modularity_params
-                )
+                VertexClustering(graph, level, q, modularity_params=modularity_params)
             )
     else:
         membership = GraphBase.community_multilevel(
@@ -257,12 +255,14 @@ def _community_edge_betweenness(graph, clusters=None, directed=True, weights=Non
     merges, qs = GraphBase.community_edge_betweenness(graph, directed, weights)
     if clusters is None:
         if qs is not None:
-            clusters = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
+            clusters = _optimal_cluster_count_from_merges_and_modularity(
+                graph, merges, qs
+            )
         else:
             clusters = 1
 
     return VertexDendrogram(
-        graph, merges, clusters, modularity_params=dict(weights=weights)
+        graph, merges, clusters, modularity_params={"weights": weights}
     )
 
 
@@ -315,7 +315,7 @@ def _community_spinglass(graph, *args, **kwds):
     """
     membership = GraphBase.community_spinglass(graph, *args, **kwds)
     if "weights" in kwds:
-        modularity_params = dict(weights=kwds["weights"])
+        modularity_params = {"weights": kwds["weights"]}
     else:
         modularity_params = {}
     return VertexClustering(graph, membership, modularity_params=modularity_params)
@@ -343,7 +343,7 @@ def _community_walktrap(graph, weights=None, steps=4):
     merges, qs = GraphBase.community_walktrap(graph, weights, steps)
     optimal_count = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
     return VertexDendrogram(
-        graph, merges, optimal_count, modularity_params=dict(weights=weights)
+        graph, merges, optimal_count, modularity_params={"weights": weights}
     )
 
 
@@ -440,7 +440,7 @@ def _community_leiden(
         resolution = kwds.pop("resolution_parameter")
 
     if kwds:
-        raise TypeError('unexpected keyword argument')
+        raise TypeError("unexpected keyword argument")
 
     membership, quality = GraphBase.community_leiden(
         graph,

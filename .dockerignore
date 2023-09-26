@@ -12,4 +12,3 @@ dist/*
 # also ignore build folder for vendored stuff
 vendor/build/*
 vendor/install/*
-

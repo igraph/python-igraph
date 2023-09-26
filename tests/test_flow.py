@@ -162,7 +162,7 @@ class CutTests(unittest.TestCase):
         g = self.constructLadderGraph(directed=True)
         cuts = g.all_st_cuts(0, 11)
         self.assertEqual(len(cuts), 36)
-        self.assertEqual(len(set(tuple(cut.membership) for cut in cuts)), 36)
+        self.assertEqual(len({tuple(cut.membership) for cut in cuts}), 36)
         for cut in cuts:
             g2 = g.copy()
             g2.delete_edges(cut.es)
@@ -177,7 +177,7 @@ class CutTests(unittest.TestCase):
         g.to_directed("mutual")
         cuts = g.all_st_mincuts(0, 11)
         self.assertEqual(len(cuts), 7)
-        self.assertEqual(len(set(tuple(cut.membership) for cut in cuts)), 7)
+        self.assertEqual(len({tuple(cut.membership) for cut in cuts}), 7)
         for cut in cuts:
             self.assertEqual(cut.value, 2)
             g2 = g.copy()

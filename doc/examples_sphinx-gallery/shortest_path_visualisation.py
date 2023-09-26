@@ -54,7 +54,7 @@ else:
 
 # %%
 # .. note::
-# 
+#
 #     - :meth:`igraph.GraphBase.get_shortest_paths` returns a list of lists becuase the `to` argument can also accept a list of vertex IDs. In that case, the shortest path to all each vertex is found and stored in the results array.
 #     - If you're interested in finding *all* shortest paths, take a look at :meth:`igraph.GraphBase.get_all_shortest_paths`.
 

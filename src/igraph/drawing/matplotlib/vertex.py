@@ -45,7 +45,7 @@ class MatplotlibVertexDrawer(AbstractVertexDrawer):
             font = "sans-serif"
             label_size = 12.0
             # FIXME? mpl.rcParams["font.size"])
-            position = dict(func=self.layout.__getitem__)
+            position = {"func": self.layout.__getitem__}
             shape = ("circle", ShapeDrawerDirectory.resolve_default)
             size = 30
             width = None
@@ -94,6 +94,7 @@ class VertexCollection(PatchCollection):
     @param size_callback: A function to be triggered after vertex sizes are
         changed. Typically this redraws the edges.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._stale_size = False

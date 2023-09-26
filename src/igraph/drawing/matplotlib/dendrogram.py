@@ -93,7 +93,7 @@ class MatplotlibDendrogramDrawer(AbstractDrawer):
         if not horiz:
             x, y = 0, 0
             # Leaves
-            for idx, element in enumerate(inorder):
+            for element in inorder:
                 layout[element] = (x, 0)
                 x += 1
 
@@ -111,7 +111,7 @@ class MatplotlibDendrogramDrawer(AbstractDrawer):
                 layout.mirror(1)
         else:
             x, y = 0, 0
-            for idx, element in enumerate(inorder):
+            for element in inorder:
                 layout[element] = (0, y)
                 y += 1
 

@@ -242,7 +242,7 @@ class CliqueBenchmark:
         print("Geometric random graphs")
         print("       n        d #cliques        t1        t2")
         for n in ns:
-            d = 2.0 / (n ** 0.5)
+            d = 2.0 / (n**0.5)
             g = Graph.GRG(n, d)
             result = self.timeit(g)
             print("%8d %8.3f %8d %8.4fs %8.4fs" % tuple([n, d] + list(result)))
@@ -250,7 +250,9 @@ class CliqueBenchmark:
 
 def suite():
     clique_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CliqueTests)
-    indvset_suite = unittest.defaultTestLoader.loadTestsFromTestCase(IndependentVertexSetTests)
+    indvset_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        IndependentVertexSetTests
+    )
     return unittest.TestSuite([clique_suite, indvset_suite])
 
 

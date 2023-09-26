@@ -34,7 +34,7 @@ class PlotlyVerticesDrawer(AbstractVertexDrawer):
             font = "sans-serif"
             label_size = 12.0
             # FIXME? mpl.rcParams["font.size"])
-            position = dict(func=self.layout.__getitem__)
+            position = {"func": self.layout.__getitem__}
             shape = "circle"
             size = 20.0
             width = None

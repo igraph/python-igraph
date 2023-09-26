@@ -41,7 +41,9 @@ class GraphAdjacencyMatrixLikeIndexingTests(unittest.TestCase):
 
 
 def suite():
-    adjacency_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphAdjacencyMatrixLikeIndexingTests)
+    adjacency_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        GraphAdjacencyMatrixLikeIndexingTests
+    )
     return unittest.TestSuite([adjacency_suite])
 
 

@@ -154,8 +154,12 @@ class AbstractEdgeDrawer(metaclass=ABCMeta):
         if edge.curved:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
             aux1, aux2 = get_bezier_control_points_for_curved_edge(
-                    x1, y1, x2, y2, edge.curved,
-                )
+                x1,
+                y1,
+                x2,
+                y2,
+                edge.curved,
+            )
             pos = evaluate_cubic_bezier(x1, y1, *aux1, *aux2, x2, y2, 0.5)
         else:
             pos = (
@@ -204,11 +208,12 @@ class AbstractEdgeDrawer(metaclass=ABCMeta):
         @return: a float with the desired angle, in degrees (out of 360).
         """
         (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
-        rotation = (360 + 180. / pi * atan2(y2 - y1, x2 - x1)) % 360
+        rotation = (360 + 180.0 / pi * atan2(y2 - y1, x2 - x1)) % 360
         # Try to keep text on its head
         if 90 < rotation <= 270:
             rotation = (180 + rotation) % 360
         return rotation
+
 
 #####################################################################
 
@@ -290,9 +295,12 @@ class AbstractGraphDrawer(AbstractDrawer):
             layout = Layout(layout.coords)
         elif isinstance(layout, str):
             layout = graph.layout(layout)
-        elif (layout is None) and hasattr(graph, "attributes") and \
-                ('layout' in graph.attributes()):
-            layout = AbstractGraphDrawer.ensure_layout(graph['layout'], graph=graph)
+        elif (
+            (layout is None)
+            and hasattr(graph, "attributes")
+            and ("layout" in graph.attributes())
+        ):
+            layout = AbstractGraphDrawer.ensure_layout(graph["layout"], graph=graph)
         elif layout is None:
             layout = graph.layout(layout)
         else:
@@ -325,7 +333,7 @@ class AbstractGraphDrawer(AbstractDrawer):
                 reverse = reverse.lower().startswith("desc")
         attrs = graph.es[edge_order_by]
         edge_order = sorted(
-            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
+            range(len(attrs)), key=attrs.__getitem__, reverse=bool(reverse)
         )
 
         return edge_order
@@ -355,7 +363,7 @@ class AbstractGraphDrawer(AbstractDrawer):
                 reverse = reverse.lower().startswith("desc")
         attrs = graph.vs[vertex_order_by]
         vertex_order = sorted(
-            list(range(len(attrs))), key=attrs.__getitem__, reverse=bool(reverse)
+            range(len(attrs)), key=attrs.__getitem__, reverse=bool(reverse)
         )
 
         return vertex_order

@@ -9,13 +9,13 @@ import functools
 from igraph.drawing import find_cairo
 
 cairo = find_cairo()
-if not hasattr(cairo, 'version'):
+if not hasattr(cairo, "version"):
     cairo = None
 
 __all__ = ("find_image_comparison", "result_image_folder")
 
 
-result_image_folder = Path('result_images') / 'cairo'
+result_image_folder = Path("result_images") / "cairo"
 
 
 def find_open_image_png_function():
@@ -24,6 +24,7 @@ def find_open_image_png_function():
 
         def fun(filename):
             return imread(str(filename))
+
         return fun
     except ImportError:
         pass
@@ -35,11 +36,12 @@ def find_open_image_png_function():
         def fun(filename):
             with Image.open(filename) as f:
                 return np.asarray(f)
+
         return fun
     except ImportError:
         pass
 
-    raise ImportError('PIL+NumPy or OpenCV required to run Cairo tests')
+    raise ImportError("PIL+NumPy or OpenCV required to run Cairo tests")
 
 
 def find_image_comparison():
@@ -64,28 +66,28 @@ def are_tests_supported():
 
 
 def _load_image(filename, fmt):
-    if fmt == 'png':
+    if fmt == "png":
         return find_open_image_png_function()(filename)
 
-    raise NotImplementedError(f'Image format {fmt} not implemented yet')
+    raise NotImplementedError(f"Image format {fmt} not implemented yet")
 
 
-def _load_baseline_images(filenames, fmt='png'):
-    baseline_folder = Path(__file__).parent / 'baseline_images'
+def _load_baseline_images(filenames, fmt="png"):
+    baseline_folder = Path(__file__).parent / "baseline_images"
 
     images = []
     for fn in filenames:
-        fn_abs = baseline_folder / f'{fn}.{fmt}'
+        fn_abs = baseline_folder / f"{fn}.{fmt}"
         image = _load_image(fn_abs, fmt)
         assert image is not None
         images.append(image)
     return images
 
 
-def _load_result_images(filenames, fmt='png'):
+def _load_result_images(filenames, fmt="png"):
     images = []
     for fn in filenames:
-        fn_abs = result_image_folder / f'{fn}.{fmt}'
+        fn_abs = result_image_folder / f"{fn}.{fmt}"
         image = _load_image(fn_abs, fmt)
         assert image is not None
         images.append(image)
@@ -102,21 +104,23 @@ def _compare_image_png(baseline, fig, tol=0):
         return diff
 
 
-def compare_image(baseline, fig, tol=0, fmt='png'):
-    if fmt == 'png':
+def compare_image(baseline, fig, tol=0, fmt="png"):
+    if fmt == "png":
         return _compare_image_png(baseline, fig, tol=tol)
 
-    raise NotImplementedError(f'Image format {fmt} not implemented yet')
+    raise NotImplementedError(f"Image format {fmt} not implemented yet")
 
 
 def _unittest_image_comparison(
-    baseline_images, tol,
+    baseline_images,
+    tol,
 ):
     """
     Decorate function with image comparison for unittest.
     This function creates a decorator that wraps a figure-generating function
     with image comparison code.
     """
+
     def decorator(func):
         old_sig = inspect.signature(func)
 
@@ -138,7 +142,7 @@ def _unittest_image_comparison(
             figs = _load_result_images(baseline_images)
 
             # 3. compare them one by one
-            for i, (baseline, fig) in enumerate(zip(baselines, figs)):
+            for _i, (baseline, fig) in enumerate(zip(baselines, figs)):
                 res = compare_image(baseline, fig, tol)
                 self.assertLessEqual(res, tol)
 
@@ -172,7 +176,7 @@ def image_comparison(
         Due to expected small differences in floating-point calculations, on
         32-bit systems an additional 0.06 is added to this threshold.
     """
-    if sys.maxsize <= 2 ** 32:
+    if sys.maxsize <= 2**32:
         tol += 0.06
     return _unittest_image_comparison(
         baseline_images=baseline_images,

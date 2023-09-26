@@ -335,7 +335,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
                 vertex.label,
                 coords,
                 xytext=xytext,
-                textcoords='offset points',
+                textcoords="offset points",
                 fontsize=label_size,
                 ha="center",
                 va="center",
@@ -376,10 +376,10 @@ class GraphArtist(Artist, AbstractGraphDrawer):
             text_kwds["va"] = valign.value
 
             if visual_edge.background is not None:
-                text_kwds["bbox"] = dict(
-                    facecolor=visual_edge.background,
-                    edgecolor="none",
-                )
+                text_kwds["bbox"] = {
+                    "facecolor": visual_edge.background,
+                    "edgecolor": "none",
+                }
                 text_kwds["ha"] = "center"
                 text_kwds["va"] = "center"
 
@@ -599,7 +599,9 @@ class GraphArtist(Artist, AbstractGraphDrawer):
 
         # Construct the vertex, edge and label drawers
         if not hasattr(self, "_vertex_drawer"):
-            self._vertex_drawer = self._vertex_drawer_factory(self.axes, palette, layout)
+            self._vertex_drawer = self._vertex_drawer_factory(
+                self.axes, palette, layout
+            )
         if not hasattr(self, "_edge_drawer"):
             self._edge_drawer = self._edge_drawer_factory(self.axes, palette)
 
@@ -607,10 +609,10 @@ class GraphArtist(Artist, AbstractGraphDrawer):
         # provided by the vertex_drawer and the edge_drawer
         if not hasattr(self, "_vertex_builder"):
             self._vertex_builder = self._vertex_drawer.VisualVertexBuilder(
-                graph.vs, kwds)
+                graph.vs, kwds
+            )
         if not hasattr(self, "_edge_builder"):
-            self._edge_builder = self._edge_drawer.VisualEdgeBuilder(
-                graph.es, kwds)
+            self._edge_builder = self._edge_drawer.VisualEdgeBuilder(graph.es, kwds)
 
         # Determine the order in which we will draw the vertices and edges
         # These methods come from AbstractGraphDrawer
@@ -673,6 +675,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
                 # Sync facecolor from edgecolor
                 if mpl_prop == "edgecolor":
                     artist._facecolors = artist._edgecolors
+
         self._vertices.stale_callback_post = vertex_stale_callback
         self._edges.stale_callback_post = edge_stale_callback
 
@@ -792,6 +795,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
                 "Positional arguments to plot functions are ignored "
                 "and will be deprecated soon.",
                 DeprecationWarning,
+                stacklevel=1,
             )
 
         # Some abbreviations for sake of simplicity
@@ -802,7 +806,7 @@ class MatplotlibGraphDrawer(AbstractGraphDrawer):
             graph,
             vertex_drawer_factory=self.vertex_drawer_factory,
             edge_drawer_factory=self.edge_drawer_factory,
-            *args,
+            *args,  # noqa: B026
             **kwds,
         )
 

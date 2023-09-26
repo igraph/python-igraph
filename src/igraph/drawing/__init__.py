@@ -118,7 +118,7 @@ class DrawerDirectory:
         except KeyError:
             raise ValueError(
                 f"unknown drawer for {object_name} and backend {backend}",
-            )
+            ) from None
 
 
 def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
@@ -261,14 +261,14 @@ def plot(obj, target=None, bbox=(0, 0, 600, 600), *args, **kwds):
         # Get the plotting function from the object
         plotter = getattr(obj, "__plot__", None)
         if plotter is None:
-            warn("%s does not support plotting" % (obj,))
+            warn("%s does not support plotting" % (obj,), stacklevel=1)
             return
         else:
             result = plotter(
                 backend,
                 target,
                 palette=palette,
-                *args,
+                *args,  # noqa: B026
                 **kwds,
             )
 

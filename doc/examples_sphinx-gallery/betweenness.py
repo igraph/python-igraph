@@ -83,7 +83,7 @@ edge_betweenness2 = g2.edge_betweenness()
 fig, axs = plt.subplots(
     3, 2,
     figsize=(7, 6),
-    gridspec_kw=dict(height_ratios=(20, 1, 1)),
+    gridspec_kw={"height_ratios": (20, 1, 1)},
 )
 plot_betweenness(g1, vertex_betweenness1, edge_betweenness1, *axs[:, 0])
 plot_betweenness(g2, vertex_betweenness2, edge_betweenness2, *axs[:, 1])

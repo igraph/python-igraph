@@ -577,7 +577,7 @@ class Dendrogram:
         if n is None:
             n = len(merges) + 1
         tuple_repr = range(n)
-        idxs = range(n)
+        idxs = list(range(n))
         for rowidx, row in enumerate(merges):
             i, j = row
             try:
@@ -588,7 +588,7 @@ class Dendrogram:
                 raise ValueError(
                     "malformed matrix, subgroup referenced "
                     + "before being created in step %d" % rowidx
-                )
+                ) from None
             idxs.append(j)
         return [x for x in tuple_repr if x is not None]
 
@@ -791,9 +791,7 @@ class VertexDendrogram(Dendrogram):
     """The dendrogram resulting from the hierarchical clustering of the
     vertex set of a graph."""
 
-    def __init__(
-        self, graph, merges, optimal_count=None, modularity_params=None
-    ):
+    def __init__(self, graph, merges, optimal_count=None, modularity_params=None):
         """Creates a dendrogram object for a given graph.
 
         @param graph: the graph that will be associated to the clustering
@@ -1224,7 +1222,7 @@ class VertexCover(Cover):
             return
 
         names = graph.vs["name"]
-        name_to_index = dict((k, v) for v, k in enumerate(names))
+        name_to_index = {k: v for v, k in enumerate(names)}
 
         for idx, cluster in enumerate(clusters):
             if any(isinstance(item, str) for item in cluster):
@@ -1622,5 +1620,7 @@ def _connected_components(graph, mode="strong"):
 
 def _clusters(graph, mode="strong"):
     """Deprecated alias to L{Graph.connected_components()}."""
-    deprecated("Graph.clusters() is deprecated; use Graph.connected_components() instead")
+    deprecated(
+        "Graph.clusters() is deprecated; use Graph.connected_components() instead"
+    )
     return graph.connected_components(mode=mode)

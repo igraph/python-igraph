@@ -51,7 +51,7 @@ adjacency_matrix = pd.DataFrame(
 
 # %%
 # Then, let's iterate over all projects one by one, and add all collaborations:
-for project, project_data in action_dataframe.groupby('project'):
+for _project, project_data in action_dataframe.groupby('project'):
     project_users = project_data['userid'].values
     for i1, user1 in enumerate(project_users):
         for user2 in project_users[:i1]:

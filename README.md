@@ -202,7 +202,7 @@ pip install git+https://github.com/igraph/python-igraph@develop
 In addition to `git`, the installation of the development version requires some
 additional dependencies, read further below for details.
 
-For more information about installing directly from `git` using `pip` see 
+For more information about installing directly from `git` using `pip` see
 https://pip.pypa.io/en/stable/topics/vcs-support/#git.
 
 Alternatively, you can clone this repository locally. This repository contains a
@@ -314,4 +314,3 @@ There are also some subtle differences between the CPython and PyPy versions:
 
 - ``GraphBase`` is hashable and iterable in PyPy but not in CPython. Since
   ``GraphBase`` is internal anyway, this is likely to stay this way.
-

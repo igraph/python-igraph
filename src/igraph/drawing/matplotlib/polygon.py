@@ -23,6 +23,7 @@ class HullCollection(PathCollection):
     vertices into round corners. This argument can be a float or a sequence
     of floats, one for each hull to be drawn.
     """
+
     def __init__(self, *args, **kwargs):
         self._corner_radii = kwargs.pop("corner_radius", None)
         super().__init__(*args, **kwargs)
@@ -40,7 +41,10 @@ class HullCollection(PathCollection):
 
         for i, (path_orig, radius) in enumerate(zip(paths_original, corner_radii)):
             self._paths[i] = self._compute_path_with_corner_radius(
-                path_orig, radius, trans, trans_inv,
+                path_orig,
+                radius,
+                trans,
+                trans_inv,
             )
 
     @staticmethod
@@ -104,13 +108,15 @@ class HullCollection(PathCollection):
             center = Point(
                 *[sum(coords) / float(len(coords)) for coords in zip(*coordst)]
             )
-            polygon = [
-                Point(*point).towards(center, -radius) for point in coordst
-            ]
+            polygon = [Point(*point).towards(center, -radius) for point in coordst]
         return polygon
 
     def _compute_path_with_corner_radius(
-            self, path_orig, radius, trans, trans_inv,
+        self,
+        path_orig,
+        radius,
+        trans,
+        trans_inv,
     ):
         # Move to point/canvas coordinates
         coordst = trans(path_orig.vertices)
@@ -126,4 +132,3 @@ class HullCollection(PathCollection):
         if self._corner_radii is not None:
             self._update_paths()
         return super().draw(renderer)
-

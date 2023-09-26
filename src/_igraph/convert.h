@@ -178,9 +178,9 @@ PyObject* igraphmodule_vector_int_t_to_PyList_with_nan(const igraph_vector_int_t
 PyObject* igraphmodule_vector_ptr_t_to_PyList(const igraph_vector_ptr_t *v,
         igraphmodule_conv_t type);
 PyObject* igraphmodule_vector_int_ptr_t_to_PyList(const igraph_vector_ptr_t *v);
-PyObject* igraphmodule_vector_list_t_to_PyList(const igraph_vector_list_t *v); 
-PyObject* igraphmodule_vector_int_list_t_to_PyList(const igraph_vector_int_list_t *v); 
-PyObject* igraphmodule_vector_int_list_t_to_PyList_of_tuples(const igraph_vector_int_list_t *v); 
+PyObject* igraphmodule_vector_list_t_to_PyList(const igraph_vector_list_t *v);
+PyObject* igraphmodule_vector_int_list_t_to_PyList(const igraph_vector_int_list_t *v);
+PyObject* igraphmodule_vector_int_list_t_to_PyList_of_tuples(const igraph_vector_int_list_t *v);
 PyObject* igraphmodule_graph_list_t_to_PyList(igraph_graph_list_t *v, PyTypeObject *type);
 PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v);
 PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,

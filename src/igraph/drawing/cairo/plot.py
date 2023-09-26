@@ -274,13 +274,20 @@ class CairoPlot:
                 palette = getattr(obj, "_default_palette", self._palette)
             plotter = getattr(obj, "__plot__", None)
             if plotter is None:
-                warn("%s does not support plotting" % (obj,))
+                warn("%s does not support plotting" % (obj,), stacklevel=1)
             else:
                 if opacity < 1.0:
                     ctx.push_group()
                 else:
                     ctx.save()
-                plotter("cairo", ctx, bbox=bbox, palette=palette, *args, **kwds)
+                plotter(
+                    "cairo",
+                    ctx,
+                    bbox=bbox,
+                    palette=palette,
+                    *args,  # noqa: B026
+                    **kwds
+                )
                 if opacity < 1.0:
                     ctx.pop_group_to_source()
                     ctx.paint_with_alpha(opacity)
@@ -312,7 +319,9 @@ class CairoPlot:
             return self._surface.write_to_png(str(fname))
 
         if fname is not None:
-            warn("filename is ignored for surfaces other than ImageSurface")
+            warn(
+                "filename is ignored for surfaces other than ImageSurface", stacklevel=1
+            )
 
         self._ctx.show_page()
         self._surface.finish()

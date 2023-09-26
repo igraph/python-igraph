@@ -5283,7 +5283,7 @@ PyObject *igraphmodule_Graph_get_shortest_path(
 
   if (igraphmodule_PyObject_to_shortest_path_algorithm_t(algorithm_o, &algorithm))
     return NULL;
-  
+
   if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
       ATTRIBUTE_TYPE_EDGE)) return NULL;
 
@@ -5297,7 +5297,7 @@ PyObject *igraphmodule_Graph_get_shortest_path(
       &self->g, weights, NULL, mode, /* allow_johnson = */ false
     );
   }
-  
+
   /* Call the C function */
   switch (algorithm) {
     case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA:
@@ -5316,7 +5316,7 @@ PyObject *igraphmodule_Graph_get_shortest_path(
       retval = IGRAPH_UNIMPLEMENTED;
       PyErr_SetString(PyExc_ValueError, "Algorithm not supported");
   }
-  
+
   if (retval) {
     igraph_vector_int_destroy(&vec);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -5516,7 +5516,7 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
       &self->g, weights, NULL, mode, /* allow_johnson = */ false
     );
   }
-  
+
   /* Call the C function */
   switch (algorithm) {
     case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA:
@@ -5537,7 +5537,7 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
       retval = IGRAPH_UNIMPLEMENTED;
       PyErr_SetString(PyExc_ValueError, "Algorithm not supported");
   }
-  
+
   if (retval) {
     igraph_vector_int_list_destroy(&veclist);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -6331,7 +6331,7 @@ PyObject *igraphmodule_Graph_distances(
       &self->g, weights, &from_vs, mode, /* allow_johnson = */ true
     );
   }
-  
+
   if (algorithm == IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_JOHNSON && mode != IGRAPH_OUT) {
     PyErr_SetString(PyExc_ValueError, "Johnson's algorithm is supported for mode=\"out\" only");
     goto cleanup;

@@ -405,7 +405,7 @@ class RunningMean:
     @property
     def var(self):
         """Returns the current variation"""
-        return self._sd ** 2
+        return self._sd**2
 
     def __repr__(self):
         return "%s(n=%r, mean=%r, sd=%r)" % (

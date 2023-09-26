@@ -54,7 +54,7 @@ class CairoVertexDrawer(AbstractCairoVertexDrawer):
             label_color = ("black", self.palette.get)
             font = "sans-serif"
             label_size = 14.0
-            position = dict(func=self.layout.__getitem__)
+            position = {"func": self.layout.__getitem__}
             shape = ("circle", ShapeDrawerDirectory.resolve_default)
             size = 20.0
             width = None

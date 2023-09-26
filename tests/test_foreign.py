@@ -68,6 +68,7 @@ GRAPHML_EXAMPLE_FILE = """\
 </graphml>
 """
 
+
 class ForeignTests(unittest.TestCase):
     def testDIMACS(self):
         with temporary_file(
@@ -251,7 +252,8 @@ class ForeignTests(unittest.TestCase):
     def testNCOLWithDataFrame(self):
         # Regression test for https://github.com/igraph/python-igraph/issues/446
         from pandas import DataFrame
-        df = DataFrame({'from': [1, 2], 'to': [2, 3]})
+
+        df = DataFrame({"from": [1, 2], "to": [2, 3]})
         self.assertRaises(TypeError, Graph.Read_Ncol, df)
 
     def testLGL(self):
@@ -360,7 +362,9 @@ class ForeignTests(unittest.TestCase):
             g.write_graphml(tmpfname)
 
     def testGraphMLz(self):
-        with temporary_file(gzip.compress(GRAPHML_EXAMPLE_FILE.encode("utf-8"))) as tmpfname:
+        with temporary_file(
+            gzip.compress(GRAPHML_EXAMPLE_FILE.encode("utf-8"))
+        ) as tmpfname:
             try:
                 g = Graph.Read_GraphMLz(tmpfname)
             except NotImplementedError as e:
@@ -590,7 +594,7 @@ class ForeignTests(unittest.TestCase):
         self.assertEqual(df.shape, (5, 2))
         self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
         self.assertEqual(list(df["name"]), g.vs["name"])
-        self.assertEqual(set(df.columns), set(["name", "weight"]))
+        self.assertEqual(set(df.columns), {"name", "weight"})
         self.assertEqual(list(df["weight"]), g.vs["weight"])
 
         # No vertex names, with attributes (common case)
@@ -618,7 +622,7 @@ class ForeignTests(unittest.TestCase):
         self.assertEqual(df.shape, (5, 3))
         self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
         self.assertEqual(list(df["name"]), g.es["name"])
-        self.assertEqual(set(df.columns), set(["source", "target", "name"]))
+        self.assertEqual(set(df.columns), {"source", "target", "name"})
 
         # No edge names, with attributes
         g = Graph([(0, 1), (0, 2), (0, 3), (1, 2), (2, 4)])
@@ -626,7 +630,7 @@ class ForeignTests(unittest.TestCase):
         df = g.get_edge_dataframe()
         self.assertEqual(df.shape, (5, 3))
         self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
-        self.assertEqual(set(df.columns), set(["source", "target", "weight"]))
+        self.assertEqual(set(df.columns), {"source", "target", "weight"})
         self.assertEqual(list(df["weight"]), g.es["weight"])
 
         # Edge names, with weird attributes
@@ -636,9 +640,7 @@ class ForeignTests(unittest.TestCase):
         df = g.get_edge_dataframe()
         self.assertEqual(df.shape, (5, 5))
         self.assertEqual(list(df.index), [0, 1, 2, 3, 4])
-        self.assertEqual(
-            set(df.columns), set(["source", "target", "name", "source", "weight"])
-        )
+        self.assertEqual(set(df.columns), {"source", "target", "name", "weight"})
         self.assertEqual(list(df["name"]), g.es["name"])
         self.assertEqual(list(df["weight"]), g.es["weight"])
 
@@ -694,10 +696,12 @@ class ForeignTests(unittest.TestCase):
         # In this case each node is a tuple of ints
         g_nx = nx.DiGraph()
         inf = float("inf")
-        g_nx.add_edges_from((
-            ((0, 0), (1, 1), {"weight": 3.0}),
-            ((0, 0), (1, 0), {"weight": inf}),
-        ))
+        g_nx.add_edges_from(
+            (
+                ((0, 0), (1, 1), {"weight": 3.0}),
+                ((0, 0), (1, 0), {"weight": inf}),
+            )
+        )
         g = Graph.from_networkx(g_nx)
         self.assertTrue(g.is_directed())
         self.assertEqual(g.vcount(), 3)

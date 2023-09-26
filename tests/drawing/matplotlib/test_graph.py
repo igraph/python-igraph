@@ -1,5 +1,4 @@
 import os
-import random
 import unittest
 
 
@@ -75,7 +74,9 @@ class GraphTestRunner(unittest.TestCase):
         ax.set_xlim(-1.2, 1.2)
         ax.set_ylim(-1.2, 1.2)
         plot(
-            g, target=ax, layout=self.layout_small_ring,
+            g,
+            target=ax,
+            layout=self.layout_small_ring,
             edge_curved=[0] * 4 + [0.3],
             edge_loop_size=[0] * 5 + [30, 50, 40],
         )
@@ -133,7 +134,9 @@ class GraphTestRunner(unittest.TestCase):
         lo = g.layout("circle")
         lo.scale(3)
         plot(
-            g, target=ax, layout=lo,
+            g,
+            target=ax,
+            layout=lo,
             vertex_size=15,
             edge_arrow_size=5,
             edge_arrow_width=5,

@@ -3,8 +3,8 @@ Drawing routines to draw graphs.
 
 This module contains routines to draw graphs on:
 
-  - Cairo surfaces (L{DefaultGraphDrawer})
-  - Matplotlib axes (L{MatplotlibGraphDrawer})
+    - Cairo surfaces (L{DefaultGraphDrawer})
+    - Matplotlib axes (L{MatplotlibGraphDrawer})
 
 It also contains routines to send an igraph graph directly to
 (U{Cytoscape<http://www.cytoscape.org>}) using the
@@ -69,6 +69,7 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
                 "Positional arguments to plot functions are ignored "
                 "and will be deprecated soon.",
                 DeprecationWarning,
+                stacklevel=1,
             )
 
         cy = self.service
@@ -80,7 +81,8 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
             except Fault:
                 warn(
                     "CytoscapeRPC too old, cannot create network without view."
-                    " Consider upgrading CytoscapeRPC to use this feature."
+                    " Consider upgrading CytoscapeRPC to use this feature.",
+                    stacklevel=1,
                 )
                 network_id = cy.createNetwork(name)
         else:
@@ -244,7 +246,7 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
             edge_attrs[attr_name] = attrs
 
         # Create a vertex name index
-        vertex_name_index = dict((v, k) for k, v in enumerate(vertices))
+        vertex_name_index = {v: k for k, v in enumerate(vertices)}
         del vertices
 
         # Remap the edges list to numeric IDs
@@ -353,6 +355,7 @@ class GephiGraphStreamingDrawer(AbstractGraphDrawer):
                 "Positional arguments to plot functions are ignored "
                 "and will be deprecated soon.",
                 DeprecationWarning,
+                stacklevel=1,
             )
 
         self.streamer.post(graph, self.connection, encoder=kwds.get("encoder"))

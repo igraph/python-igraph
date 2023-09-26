@@ -66,4 +66,3 @@ else
   $VENV_DIR/bin/pip install -v .[plotting,test]
   $VENV_DIR/bin/pytest tests ${PYTEST_ARGS}
 fi
-

@@ -1,4 +1,4 @@
-from igraph.drawing.utils import FakeModule, Point
+from igraph.drawing.utils import FakeModule
 from typing import Any
 
 __all__ = ("find_plotly",)

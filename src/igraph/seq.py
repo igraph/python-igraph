@@ -523,7 +523,7 @@ class EdgeSeq(_EdgeSeq):
 
         def _ensure_set(value):
             if isinstance(value, VertexSeq):
-                value = set(v.index for v in value)
+                value = {v.index for v in value}
             elif not isinstance(value, (set, frozenset)):
                 value = set(value)
             return value
@@ -567,7 +567,7 @@ class EdgeSeq(_EdgeSeq):
                         if hasattr(value, "__iter__") and not isinstance(value, str):
                             value = set(value)
                         else:
-                            value = set([value])
+                            value = {value}
 
                 if attr in ("_source", "_from"):
                     if es.is_all() and op == "eq":
@@ -718,7 +718,7 @@ def _graphmethod(func=None, name=None):
         name = func.__name__
     method = getattr(Graph, name)
 
-    if hasattr(func, "__call__"):
+    if callable(func):
 
         def decorated(*args, **kwds):
             self = args[0].graph
@@ -745,7 +745,6 @@ restricted to this sequence, and returns the result.
 
 
 def _add_proxy_methods():
-
     # Proxy methods for VertexSeq and EdgeSeq that forward their arguments to
     # the corresponding Graph method are constructed here. Proxy methods for
     # Vertex and Edge are added in the C source code. Make sure that you update
@@ -795,10 +794,6 @@ def _add_proxy_methods():
             new_method_name = rename_methods[cls].get(method, method)
             setattr(cls, new_method_name, _graphmethod(None, method))
 
-    setattr(
-        EdgeSeq,
-        "edge_betweenness",
-        _graphmethod(
-            lambda self, result: [result[i] for i in self.indices], "edge_betweenness"
-        ),
+    EdgeSeq.edge_betweenness = _graphmethod(
+        lambda self, result: [result[i] for i in self.indices], "edge_betweenness"
     )

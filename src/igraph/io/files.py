@@ -214,7 +214,7 @@ def _construct_graph_from_pickle_file(cls, fname=None):
                 raise IOError(
                     "Cannot load file. If fname is a file name, that "
                     "filename may be incorrect."
-                )
+                ) from None
         except IOError:
             try:
                 # No file with the given name, try unpickling directly.
@@ -223,7 +223,7 @@ def _construct_graph_from_pickle_file(cls, fname=None):
                 raise IOError(
                     "Cannot load file. If fname is a file name, that "
                     "filename may be incorrect."
-                )
+                ) from None
         else:
             result = pickle.load(fp)
             fp.close()
@@ -288,7 +288,7 @@ def _construct_graph_from_file(cls, f, format=None, *args, **kwds):
     try:
         reader = cls._format_mapping[format][0]
     except (KeyError, IndexError):
-        raise IOError("unknown file format: %s" % str(format))
+        raise IOError("unknown file format: %s" % str(format)) from None
     if reader is None:
         raise IOError("no reader method for file format: %s" % str(format))
     reader = getattr(cls, reader)
@@ -337,7 +337,7 @@ def _write_graph_to_dimacs_file(
             raise ValueError(
                 "source vertex must be provided in the 'source' graph "
                 "attribute or in the 'source' argument of write_dimacs()"
-            )
+            ) from None
 
     if target is None:
         try:
@@ -346,10 +346,10 @@ def _write_graph_to_dimacs_file(
             raise ValueError(
                 "target vertex must be provided in the 'target' graph "
                 "attribute or in the 'target' argument of write_dimacs()"
-            )
+            ) from None
 
     if isinstance(capacity, str) and capacity not in graph.edge_attributes():
-        warn("'%s' edge attribute does not exist" % capacity)
+        warn("'%s' edge attribute does not exist" % capacity, stacklevel=1)
         capacity = [1] * graph.ecount()
 
     return GraphBase.write_dimacs(graph, f, source, target, capacity)
@@ -487,7 +487,7 @@ def _write_graph_to_file(graph, f, format=None, *args, **kwds):
     try:
         writer = graph._format_mapping[format][1]
     except (KeyError, IndexError):
-        raise IOError("unknown file format: %s" % str(format))
+        raise IOError("unknown file format: %s" % str(format)) from None
     if writer is None:
         raise IOError("no writer method for file format: %s" % str(format))
     writer = getattr(graph, writer)

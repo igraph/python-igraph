@@ -99,7 +99,9 @@ def _get_adjacency_sparse(self, attribute=None):
     try:
         from scipy import sparse
     except ImportError:
-        raise ImportError("You should install scipy in order to use this function")
+        raise ImportError(
+            "You should install scipy in order to use this function"
+        ) from None
 
     edges = self.get_edgelist()
     if attribute is None:

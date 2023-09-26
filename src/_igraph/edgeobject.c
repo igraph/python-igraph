@@ -1,23 +1,23 @@
 /* -*- mode: C -*-  */
 /* vim: set ts=2 sw=2 sts=2 et: */
 
-/* 
+/*
    IGraph library.
    Copyright (C) 2006-2023  Tamas Nepusz <ntamas@gmail.com>
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -91,7 +91,7 @@ int igraphmodule_Edge_Validate(PyObject* obj) {
  * \brief Allocates a new Python edge object
  * \param gref weak reference of the \c igraph.Graph being referenced by the edge
  * \param idx the index of the edge
- * 
+ *
  * \warning \c igraph references its edges by indices, so if
  * you delete some edges from the graph, the edge indices will
  * change. Since the \c igraph.Edge objects do not follow these
@@ -144,7 +144,7 @@ static void igraphmodule_Edge_dealloc(igraphmodule_EdgeObject* self) {
 
 /** \ingroup python_interface_edge
  * \brief Formats an \c igraph.Edge object as a string
- * 
+ *
  * \return the formatted textual representation as a \c PyObject
  */
 static PyObject* igraphmodule_Edge_repr(igraphmodule_EdgeObject *self) {
@@ -245,7 +245,7 @@ static PyObject* igraphmodule_Edge_richcompare(igraphmodule_EdgeObject *a,
  */
 Py_ssize_t igraphmodule_Edge_attribute_count(igraphmodule_EdgeObject* self) {
   igraphmodule_GraphObject *o = self->gref;
-  
+
   if (!o || !((PyObject**)o->g.attr)[1]) {
     return 0;
   } else {
@@ -315,7 +315,7 @@ PyObject* igraphmodule_Edge_attributes(igraphmodule_EdgeObject* self, PyObject* 
 /**
  * \ingroup python_interface_edge
  * \brief Updates some attributes of an edge
- * 
+ *
  * \param self the edge object
  * \param args positional arguments
  * \param kwds keyword arguments
@@ -352,7 +352,7 @@ PyObject* igraphmodule_Edge_get_attribute(igraphmodule_EdgeObject* self,
     Py_INCREF(result);
     return result;
   }
-  
+
   /* result is NULL, check whether there was an error */
   if (!PyErr_Occurred())
     PyErr_SetString(PyExc_KeyError, "Attribute does not exist");
@@ -370,7 +370,7 @@ int igraphmodule_Edge_set_attribute(igraphmodule_EdgeObject* self, PyObject* k, 
   igraphmodule_GraphObject *o=self->gref;
   PyObject* result;
   int r;
-  
+
   if (!igraphmodule_Edge_Validate((PyObject*)self))
     return -1;
 
@@ -380,7 +380,7 @@ int igraphmodule_Edge_set_attribute(igraphmodule_EdgeObject* self, PyObject* k, 
   if (v==NULL)
     // we are deleting attribute
     return PyDict_DelItem(((PyObject**)o->g.attr)[2], k);
-  
+
   result=PyDict_GetItem(((PyObject**)o->g.attr)[2], k);
   if (result) {
     /* result is a list, so set the element with index self->idx */
@@ -396,7 +396,7 @@ int igraphmodule_Edge_set_attribute(igraphmodule_EdgeObject* self, PyObject* k, 
     if (r == -1) { Py_DECREF(v); }
     return r;
   }
-  
+
   /* result is NULL, check whether there was an error */
   if (!PyErr_Occurred()) {
     /* no, there wasn't, so we must simply add the attribute */
@@ -427,7 +427,7 @@ int igraphmodule_Edge_set_attribute(igraphmodule_EdgeObject* self, PyObject* k, 
     Py_DECREF(result); /* compensating for PyDict_SetItem */
     return 0;
   }
-  
+
   return -1;
 }
 
@@ -475,7 +475,7 @@ PyObject* igraphmodule_Edge_get_source_vertex(igraphmodule_EdgeObject* self, voi
 PyObject* igraphmodule_Edge_get_to(igraphmodule_EdgeObject* self, void* closure) {
   igraphmodule_GraphObject *o = self->gref;
   igraph_integer_t from, to;
-  
+
   if (!igraphmodule_Edge_Validate((PyObject*)self)) {
     return NULL;
   }
@@ -529,7 +529,7 @@ PyObject* igraphmodule_Edge_get_tuple(igraphmodule_EdgeObject* self, void* closu
   igraphmodule_GraphObject *o = self->gref;
   igraph_integer_t from, to;
   PyObject *from_o, *to_o, *result;
-  
+
   if (!igraphmodule_Edge_Validate((PyObject*)self)) {
     return NULL;
   }
@@ -740,7 +740,7 @@ int igraphmodule_Edge_register_type() {
     { Py_mp_length, igraphmodule_Edge_attribute_count },
     { Py_mp_subscript, igraphmodule_Edge_get_attribute },
     { Py_mp_ass_subscript, igraphmodule_Edge_set_attribute },
-  
+
     { 0 }
   };
 

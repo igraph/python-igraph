@@ -127,7 +127,9 @@ class CycleTests(unittest.TestCase):
         ]
         assert len(cycles) == len(expected)
         for expected_cycle, observed_cycle in zip(expected, cycles):
-            assert expected_cycle == observed_cycle or expected_cycle == (observed_cycle[0], ) + tuple(reversed(observed_cycle[1:]))
+            assert expected_cycle == observed_cycle or expected_cycle == (
+                observed_cycle[0],
+            ) + tuple(reversed(observed_cycle[1:]))
 
         g = Graph.Lattice((5, 6), circular=True)
         cycles = g.minimum_cycle_basis(cutoff=2, complete=False)
@@ -166,7 +168,9 @@ class CycleTests(unittest.TestCase):
         ]
         assert len(cycles) == len(expected) - 1
         for expected_cycle, observed_cycle in zip(expected[:-1], cycles):
-            assert expected_cycle == observed_cycle or expected_cycle == (observed_cycle[0], ) + tuple(reversed(observed_cycle[1:]))
+            assert expected_cycle == observed_cycle or expected_cycle == (
+                observed_cycle[0],
+            ) + tuple(reversed(observed_cycle[1:]))
 
 
 def suite():

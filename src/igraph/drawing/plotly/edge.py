@@ -73,7 +73,9 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
 
         if edge.curved:
             # Calculate the curve
-            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge.curved)
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(
+                x1, y1, x2, y2, edge.curved
+            )
 
             # Coordinates of the control points of the Bezier curve
             xc1, yc1 = aux1
@@ -111,7 +113,9 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
             ), (aux_points[0][1] - aux_points[1][1])
 
             # Recalculate the curve such that it lands on the base of the arrow triangle
-            aux1, aux2 = get_bezier_control_points_for_curved_edge(x_src, y_src, x_arrow_mid, y_arrow_mid, edge.curved)
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(
+                x_src, y_src, x_arrow_mid, y_arrow_mid, edge.curved
+            )
 
             # Offset the second control point (aux2) such that it falls precisely
             # on the normal to the arrow base vector. Strictly speaking,
@@ -171,12 +175,12 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
         path = " ".join(path)
 
         # Draw the edge
-        stroke = dict(
-            type="path",
-            path=path,
-            line_color=format_rgba(edge.color),
-            line_width=edge.width,
-        )
+        stroke = {
+            "type": "path",
+            "path": path,
+            "line_color": format_rgba(edge.color),
+            "line_width": edge.width,
+        }
         fig.add_shape(stroke)
 
         # Draw the arrow head
@@ -202,18 +206,18 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
         radius = vertex.size * 1.5
         center_x = vertex.position[0] + cos(pi / 4) * radius / 2.0
         center_y = vertex.position[1] - sin(pi / 4) * radius / 2.0
-        stroke = dict(
-            type="path",
-            path=format_arc(
+        stroke = {
+            "type": "path",
+            "path": format_arc(
                 (center_x, center_y),
                 radius / 2.0,
                 radius / 2.0,
                 theta1=0,
                 theta2=360.0,
             ),
-            line_color=edge.color,
-            line_width=edge.width,
-        )
+            "line_color": edge.color,
+            "line_width": edge.width,
+        }
         fig.add_shape(stroke)
 
     def draw_undirected_edge(self, edge, src_vertex, dest_vertex):
@@ -238,7 +242,9 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
 
         if edge.curved:
             (x1, y1), (x2, y2) = src_vertex.position, dest_vertex.position
-            aux1, aux2 = get_bezier_control_points_for_curved_edge(x1, y1, x2, y2, edge.curved)
+            aux1, aux2 = get_bezier_control_points_for_curved_edge(
+                x1, y1, x2, y2, edge.curved
+            )
 
             path.append(
                 format_path_step(
@@ -257,10 +263,10 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
 
         path = " ".join(path)
 
-        stroke = dict(
-            type="path",
-            path=path,
-            line_color=format_rgba(edge.color),
-            line_width=edge.width,
-        )
+        stroke = {
+            "type": "path",
+            "path": path,
+            "line_color": format_rgba(edge.color),
+            "line_width": edge.width,
+        }
         fig.add_shape(stroke)

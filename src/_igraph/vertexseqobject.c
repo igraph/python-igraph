@@ -440,7 +440,7 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
     if (PyList_SetItem(newList, 0, values)) {  /* reference stolen here */
       return -1;
     }
-    
+
     result = igraphmodule_VertexSeq_set_attribute_values_mapping(self, attrname, newList);
     Py_DECREF(newList);
 
@@ -1139,7 +1139,7 @@ int igraphmodule_VertexSeq_register_type() {
 
     { Py_mp_subscript, igraphmodule_VertexSeq_get_attribute_values_mapping },
     { Py_mp_ass_subscript, igraphmodule_VertexSeq_set_attribute_values_mapping },
-  
+
     { 0 }
   };
 

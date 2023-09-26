@@ -5,7 +5,6 @@ This module contains routines to draw graphs on plotly surfaces.
 
 """
 
-from collections import defaultdict
 from warnings import warn
 
 from igraph._igraph import convex_hull, VertexSeq
@@ -59,6 +58,7 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                 "Positional arguments to plot functions are ignored "
                 "and will be deprecated soon.",
                 DeprecationWarning,
+                stacklevel=1,
             )
 
         # Some abbreviations for sake of simplicity
@@ -104,9 +104,6 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
         # Draw the highlighted groups (if any)
         if "mark_groups" in kwds:
             mark_groups = kwds["mark_groups"]
-
-            # Deferred import to avoid a cycle in the import graph
-            from igraph.clustering import VertexClustering, VertexCover
 
             # Figure out what to do with mark_groups in order to be able to
             # iterate over it and get memberlist-color pairs

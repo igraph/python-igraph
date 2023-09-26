@@ -18,7 +18,7 @@ from igraph import (
     is_graphical_degree_sequence,
     Matrix,
     Vertex,
-    VertexSeq
+    VertexSeq,
 )
 from igraph._igraph import EdgeSeq as _EdgeSeq, VertexSeq as _VertexSeq
 
@@ -323,7 +323,7 @@ class BasicTests(unittest.TestCase):
     def testGraphGetEid(self):
         g = Graph.Famous("petersen")
         g.vs["name"] = list("ABCDEFGHIJ")
-        edges_to_ids = dict((v, k) for k, v in enumerate(g.get_edgelist()))
+        edges_to_ids = {v: k for k, v in enumerate(g.get_edgelist())}
         for (source, target), edge_id in edges_to_ids.items():
             source_name, target_name = g.vs[(source, target)]["name"]
             self.assertEqual(edge_id, g.get_eid(source, target))
@@ -663,7 +663,7 @@ class GraphDictDictTests(unittest.TestCase):
             "David": {"Alice": {}, "Bob": {}},
         }
         self.eids_with_props = {
-            0: {1: {"weight": 5.6, "additional": 'abc'}},
+            0: {1: {"weight": 5.6, "additional": "abc"}},
             2: {1: {"weight": 3.4}, 0: {"weight": 2}},
             3: {0: {"weight": 1}, 1: {"weight": 5.6}},
         }
@@ -676,7 +676,7 @@ class GraphDictDictTests(unittest.TestCase):
         g = Graph.DictDict(self.eids)
         self.checkIfOK(g, ())
 
-    def testGraphFromDictDict(self):
+    def testGraphFromDictDictWithProps(self):
         g = Graph.DictDict(self.eids_with_props)
         self.checkIfOK(g, (), edge_attrs=["additional", "weight"])
 
@@ -930,13 +930,13 @@ class ReferenceCountTests(unittest.TestCase):
             g = InheritedGraph.Tree(3, 2)
             self.assertTrue(gc.is_tracked(g))
             del g
-    
+
     def testVertexReferenceCounting(self):
         with assert_reference_not_leaked(self, Vertex, VertexSeq, _VertexSeq):
             g = Graph.Tree(3, 2)
             vertex = g.vs[2]
             del vertex, g
-    
+
     def testVertexSeqReferenceCounting(self):
         with assert_reference_not_leaked(self, Vertex, VertexSeq, _VertexSeq):
             g = Graph.Tree(3, 2)
@@ -948,13 +948,27 @@ class ReferenceCountTests(unittest.TestCase):
 def suite():
     basic_suite = unittest.defaultTestLoader.loadTestsFromTestCase(BasicTests)
     datatype_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DatatypeTests)
-    graph_dict_list_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphDictListTests)
-    graph_tuple_list_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphTupleListTests)
-    graph_list_dict_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphListDictTests)
-    graph_dict_dict_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GraphDictDictTests)
-    degree_sequence_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DegreeSequenceTests)
-    inheritance_suite = unittest.defaultTestLoader.loadTestsFromTestCase(InheritanceTests)
-    refcount_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ReferenceCountTests)
+    graph_dict_list_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        GraphDictListTests
+    )
+    graph_tuple_list_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        GraphTupleListTests
+    )
+    graph_list_dict_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        GraphListDictTests
+    )
+    graph_dict_dict_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        GraphDictDictTests
+    )
+    degree_sequence_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        DegreeSequenceTests
+    )
+    inheritance_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        InheritanceTests
+    )
+    refcount_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        ReferenceCountTests
+    )
     return unittest.TestSuite(
         [
             basic_suite,
@@ -965,7 +979,7 @@ def suite():
             graph_dict_dict_suite,
             degree_sequence_suite,
             inheritance_suite,
-            refcount_suite
+            refcount_suite,
         ]
     )
 

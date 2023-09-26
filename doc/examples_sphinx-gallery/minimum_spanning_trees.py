@@ -50,4 +50,3 @@ ig.plot(
     edge_background="white",
 )
 plt.show()
-
