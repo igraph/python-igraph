@@ -315,6 +315,11 @@ class GraphArtist(Artist, AbstractGraphDrawer):
                 vertex.label_size,
             )
 
+            label_color = kwds.get(
+                "vertex_label_color",
+                vertex.label_color,
+            )
+
             # Locate text relative to vertex in data units. This is consistent
             # with the vertex size being in data units, but might be not fully
             # satisfactory when zooming in/out. In that case, revisit this
@@ -337,6 +342,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
                 xytext=xytext,
                 textcoords="offset points",
                 fontsize=label_size,
+                color=label_color,
                 ha="center",
                 va="center",
                 clip_on=True,
