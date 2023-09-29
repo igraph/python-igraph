@@ -1459,6 +1459,24 @@ def _prepare_community_comparison(comm1, comm2, remove_none=False):
 def compare_communities(comm1, comm2, method="vi", remove_none=False):
     """Compares two community structures using various distance measures.
 
+    B{References}
+
+      - Meila M: Comparing clusterings by the variation of information. In:
+        Scholkopf B, Warmuth MK (eds). Learning Theory and Kernel Machines: 16th
+        Annual Conference on Computational Learning Theory and 7th Kernel
+        Workship, COLT/Kernel 2003, Washington, DC, USA. Lecture Notes in Computer
+        Science, vol. 2777, Springer, 2003. ISBN: 978-3-540-40720-1.
+      - Danon L, Diaz-Guilera A, Duch J, Arenas A: Comparing community structure
+        identification. I{J Stat Mech} P09008, 2005.
+      - van Dongen S: Performance criteria for graph clustering and Markov
+        cluster experiments. Technical Report INS-R0012, National Research
+        Institute for Mathematics and Computer Science in the Netherlands,
+        Amsterdam, May 2000.
+      - Rand WM: Objective criteria for the evaluation of clustering
+        methods. I{J Am Stat Assoc} 66(336):846-850, 1971.
+      - Hubert L and Arabie P: Comparing partitions. I{Journal of
+        Classification} 2:193-218, 1985.
+
     @param comm1: the first community structure as a membership list or
       as a L{Clustering} object.
     @param comm2: the second community structure as a membership list or
@@ -1478,23 +1496,6 @@ def compare_communities(comm1, comm2, method="vi", remove_none=False):
       are compared.
 
     @return: the calculated measure.
-    @newfield ref: Reference
-    @ref: Meila M: Comparing clusterings by the variation of information.
-          In: Scholkopf B, Warmuth MK (eds). Learning Theory and Kernel
-          Machines: 16th Annual Conference on Computational Learning Theory
-          and 7th Kernel Workship, COLT/Kernel 2003, Washington, DC, USA.
-          Lecture Notes in Computer Science, vol. 2777, Springer, 2003.
-          ISBN: 978-3-540-40720-1.
-    @ref: Danon L, Diaz-Guilera A, Duch J, Arenas A: Comparing community
-          structure identification. J Stat Mech P09008, 2005.
-    @ref: van Dongen D: Performance criteria for graph clustering and Markov
-          cluster experiments. Technical Report INS-R0012, National Research
-          Institute for Mathematics and Computer Science in the Netherlands,
-          Amsterdam, May 2000.
-    @ref: Rand WM: Objective criteria for the evaluation of clustering
-          methods. J Am Stat Assoc 66(336):846-850, 1971.
-    @ref: Hubert L and Arabie P: Comparing partitions. Journal of
-          Classification 2:193-218, 1985.
     """
     import igraph._igraph
 
@@ -1528,6 +1529,11 @@ def split_join_distance(comm1, comm2, remove_none=False):
     it is close to zero, then one of the partitions is close to being a
     subpartition of the other).
 
+    B{Reference}: van Dongen S: Performance criteria for graph clustering and
+    Markov cluster experiments. Technical Report INS-R0012, National Research
+    Institute for Mathematics and Computer Science in the Netherlands,
+    Amsterdam, May 2000.
+
     @param comm1: the first community structure as a membership list or
       as a L{Clustering} object.
     @param comm2: the second community structure as a membership list or
@@ -1542,11 +1548,6 @@ def split_join_distance(comm1, comm2, remove_none=False):
 
     @return: the projection distance of C{comm1} from C{comm2} and vice versa
       in a tuple. The split-join distance is the sum of the two.
-    @newfield ref: Reference
-    @ref: van Dongen D: Performance criteria for graph clustering and Markov
-          cluster experiments. Technical Report INS-R0012, National Research
-          Institute for Mathematics and Computer Science in the Netherlands,
-          Amsterdam, May 2000.
 
     @see: L{compare_communities()} with C{method = "split-join"} if you are
       not interested in the individual projection distances but only the

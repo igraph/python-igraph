@@ -785,6 +785,9 @@ class Graph(GraphBase):
     def spanning_tree(self, weights=None, return_tree=True):
         """Calculates a minimum spanning tree for a graph.
 
+        B{Reference}: Prim, R.C. Shortest connection networks and some
+        generalizations. I{Bell System Technical Journal} 36:1389-1401, 1957.
+
         @param weights: a vector containing weights for every edge in
           the graph. C{None} means that the graph is unweighted.
         @param return_tree: whether to return the minimum spanning tree (when
@@ -795,10 +798,6 @@ class Graph(GraphBase):
         @return: the spanning tree as a L{Graph} object if C{return_tree}
           is C{True} or the IDs of the edges that constitute the spanning
           tree if C{return_tree} is C{False}.
-
-        @newfield ref: Reference
-        @ref: Prim, R.C.: I{Shortest connection networks and some
-          generalizations}. Bell System Technical Journal 36:1389-1401, 1957.
         """
         result = GraphBase._spanning_tree(self, weights)
         if return_tree:
@@ -816,23 +815,23 @@ class Graph(GraphBase):
         from I{a} to I{b} or from I{b} to I{a} but not the other way round)
         and null (there is no connection between I{a} and I{b}).
 
+        B{Reference}: Holland, P.W. and Leinhardt, S. A Method for Detecting
+        Structure in Sociometric Data. I{American Journal of Sociology}, 70,
+        492-513, 1970.
+
         @return: a L{DyadCensus} object.
-        @newfield ref: Reference
-        @ref: Holland, P.W. and Leinhardt, S.  (1970).  A Method for Detecting
-          Structure in Sociometric Data.  American Journal of Sociology, 70,
-          492-513.
         """
         return DyadCensus(GraphBase.dyad_census(self, *args, **kwds))
 
     def triad_census(self, *args, **kwds):
         """Calculates the triad census of the graph.
 
+        B{Reference}: Davis, J.A. and Leinhardt, S. The Structure of
+        Positive Interpersonal Relations in Small Groups. In:
+        J. Berger (Ed.), Sociological Theories in Progress, Volume 2,
+        218-251. Boston: Houghton Mifflin (1972).
+
         @return: a L{TriadCensus} object.
-        @newfield ref: Reference
-        @ref: Davis, J.A. and Leinhardt, S.  (1972).  The Structure of
-          Positive Interpersonal Relations in Small Groups.  In:
-          J. Berger (Ed.), Sociological Theories in Progress, Volume 2,
-          218-251. Boston: Houghton Mifflin.
         """
         return TriadCensus(GraphBase.triad_census(self, *args, **kwds))
 
@@ -855,6 +854,14 @@ class Graph(GraphBase):
         measure (see L{transitivity_undirected()}) as it simply takes the
         average local transitivity across the whole network.
 
+        B{References}
+
+          - Watts DJ and Strogatz S: Collective dynamics of small-world
+            networks. I{Nature} 393(6884):440-442, 1998.
+          - Barrat A, Barthelemy M, Pastor-Satorras R and Vespignani A:
+            The architecture of complex weighted networks. I{PNAS} 101, 3747
+            (2004). U{http://arxiv.org/abs/cond-mat/0311416}.
+
         @param mode: defines how to treat vertices with degree less than two.
           If C{TRANSITIVITY_ZERO} or C{"zero"}, these vertices will have zero
           transitivity. If C{TRANSITIVITY_NAN} or C{"nan"}, these vertices
@@ -863,12 +870,6 @@ class Graph(GraphBase):
           or even an edge attribute name.
 
         @see: L{transitivity_undirected()}, L{transitivity_local_undirected()}
-        @newfield ref: Reference
-        @ref: Watts DJ and Strogatz S: I{Collective dynamics of small-world
-          networks}. Nature 393(6884):440-442, 1998.
-        @ref: Barrat A, Barthelemy M, Pastor-Satorras R and Vespignani A:
-          I{The architecture of complex weighted networks}. PNAS 101, 3747 (2004).
-          U{http://arxiv.org/abs/cond-mat/0311416}.
         """
         if weights is None:
             return GraphBase.transitivity_avglocal_undirected(self, mode)

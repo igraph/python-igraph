@@ -624,6 +624,15 @@ def _layout_sugiyama(
     returned layout therefore contains more rows than the number of nodes in
     the original graph; the extra rows correspond to the dummy vertices.
 
+    B{References}:
+
+      - K Sugiyama, S Tagawa, M Toda: Methods for visual understanding of
+        hierarchical system structures. I{IEEE Systems, Man and Cybernetics}
+        11(2):109-125, 1981.
+
+      - P Eades, X Lin and WF Smyth: A fast effective heuristic for the
+        feedback arc set problem. I{Information Processing Letters} 47:319-323, 1993.
+
     @param layers: a vector specifying a non-negative integer layer index for
       each vertex, or the name of a numeric vertex attribute that contains
       the layer indices. If C{None}, a layering will be determined
@@ -655,13 +664,6 @@ def _layout_sugiyama(
       than the number of vertices; the remaining rows correspond to the dummy
       nodes introduced in the layering step. When C{return_extended_graph} is
       C{True}, it will also contain the extended graph.
-
-    @newfield ref: Reference
-    @ref: K Sugiyama, S Tagawa, M Toda: Methods for visual understanding of
-      hierarchical system structures. IEEE Systems, Man and Cybernetics\
-      11(2):109-125, 1981.
-    @ref: P Eades, X Lin and WF Smyth: A fast effective heuristic for the
-      feedback arc set problem. Information Processing Letters 47:319-323, 1993.
     """
     if not return_extended_graph:
         return Layout(
