@@ -829,6 +829,7 @@ PyMethodDef igraphmodule_Vertex_methods[] = {
   GRAPH_PROXY_METHOD_SPEC(constraint, "constraint"),
   GRAPH_PROXY_METHOD_SPEC(degree, "degree"),
   GRAPH_PROXY_METHOD_SPEC_2(delete, "delete", "delete_vertices"),
+  GRAPH_PROXY_METHOD_SPEC(distances, "distances"),
   GRAPH_PROXY_METHOD_SPEC(diversity, "diversity"),
   GRAPH_PROXY_METHOD_SPEC(eccentricity, "eccentricity"),
   GRAPH_PROXY_METHOD_SPEC(get_shortest_paths, "get_shortest_paths"),
@@ -841,7 +842,6 @@ PyMethodDef igraphmodule_Vertex_methods[] = {
   GRAPH_PROXY_METHOD_SPEC_3(pagerank, "pagerank"),
   GRAPH_PROXY_METHOD_SPEC(predecessors, "predecessors"),
   GRAPH_PROXY_METHOD_SPEC(personalized_pagerank, "personalized_pagerank"),
-  GRAPH_PROXY_METHOD_SPEC(shortest_paths, "shortest_paths"),
   GRAPH_PROXY_METHOD_SPEC(strength, "strength"),
   GRAPH_PROXY_METHOD_SPEC(successors, "successors"),
   {NULL}

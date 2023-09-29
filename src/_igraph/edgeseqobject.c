@@ -1078,8 +1078,7 @@ PyMemberDef igraphmodule_EdgeSeq_members[] = {
 PyDoc_STRVAR(
   igraphmodule_EdgeSeq_doc,
   "Low-level representation of an edge sequence.\n\n" /* tp_doc */
-  "Don't use it directly, use L{igraph.EdgeSeq} instead.\n\n"
-  "@deffield ref: Reference"
+  "Don't use it directly, use L{igraph.EdgeSeq} instead.\n"
 );
 
 int igraphmodule_EdgeSeq_register_type() {
