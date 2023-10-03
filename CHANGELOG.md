@@ -2,6 +2,10 @@
 
 ## [develop]
 
+### Added
+
+- Added `weights=...` keyword argument to `Graph.layout_kamada_kawai()`.
+
 ### Changed
 
 - The `matplotlib` plotting infrastructure underwent major surgery and is now able to show consistent vertex and edge drawings at any level of zoom, including with animations, and for any aspect ratio.

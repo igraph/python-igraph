@@ -229,9 +229,23 @@ class LayoutAlgorithmTests(unittest.TestCase):
 
     def testKamadaKawai(self):
         g = Graph.Barabasi(100)
+
         lo = g.layout(
             "kk", miny=[2] * 100, maxy=[3] * 100, minx=[4] * 100, maxx=[6] * 100
         )
+
+        self.assertTrue(isinstance(lo, Layout))
+        bbox = lo.bounding_box()
+        self.assertTrue(bbox.top >= 2)
+        self.assertTrue(bbox.bottom <= 3)
+        self.assertTrue(bbox.left >= 4)
+        self.assertTrue(bbox.right <= 6)
+
+        lo = g.layout(
+            "kk", miny=[2] * 100, maxy=[3] * 100, minx=[4] * 100, maxx=[6] * 100,
+            weights=range(10, g.ecount() + 10)
+        )
+
         self.assertTrue(isinstance(lo, Layout))
         bbox = lo.bounding_box()
         self.assertTrue(bbox.top >= 2)
