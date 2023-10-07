@@ -51,21 +51,11 @@ char* PyUnicode_CopyAsString(PyObject* string);
 
 /* Calling Py_DECREF() on heap-allocated types in tp_dealloc was not needed
  * before Python 3.8 (see Python issue 35810) */
-#if PY_VERSION_HEX >= 0x03080000
-  #define PY_FREE_AND_DECREF_TYPE(obj, base_type) {    \
-    PyTypeObject* _tp = Py_TYPE(obj);       \
-    ((freefunc)PyType_GetSlot(_tp, Py_tp_free))(obj); \
-    Py_DECREF(_tp); \
-  }
-#else
-  #define PY_FREE_AND_DECREF_TYPE(obj, base_type) {    \
-    PyTypeObject* _tp = Py_TYPE(obj);       \
-    ((freefunc)PyType_GetSlot(_tp, Py_tp_free))(obj); \
-    if (_tp == base_type) { \
-      Py_DECREF(_tp); \
-    } \
-  }
-#endif
+#define PY_FREE_AND_DECREF_TYPE(obj, base_type) {    \
+  PyTypeObject* _tp = Py_TYPE(obj);       \
+  ((freefunc)PyType_GetSlot(_tp, Py_tp_free))(obj); \
+  Py_DECREF(_tp); \
+}
 
 #define CHECK_SSIZE_T_RANGE(value, message) {   \
   if ((value) < 0) {                             \

@@ -7,8 +7,8 @@ import sys
 ###########################################################################
 
 # Check Python's version info and exit early if it is too old
-if sys.version_info < (3, 7):
-    print("This module requires Python >= 3.7")
+if sys.version_info < (3, 8):
+    print("This module requires Python >= 3.8")
     sys.exit(0)
 
 ###########################################################################
@@ -913,9 +913,8 @@ else:
     bdist_wheel_abi3 = None
 
 # We are going to build an abi3 wheel if we are at least on CPython 3.9.
-# This is because the C code contains conditionals for CPython 3.7 and
-# 3.8 so we cannot use an abi3 wheel built with CPython 3.7 or 3.8 on
-# CPython 3.9
+# This is because the C code contains conditionals for CPython 3.8 so we cannot
+# use an abi3 wheel built with CPython 3.8 on CPython 3.9
 should_build_abi3_wheel = (
     bdist_wheel_abi3
     and platform.python_implementation() == "CPython"
@@ -1016,9 +1015,7 @@ options = {
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
-            # Matplotlib 3.6.0 does not support Python 3.7 any more, but we need
-            # it because Python 3.11 support came in Matplotlib 3.6.0 first
-            "matplotlib>=3.6.0; platform_python_implementation != 'PyPy' and python_version >= '3.8'",
+            "matplotlib>=3.6.0; platform_python_implementation != 'PyPy'",
             "plotly>=5.3.0",
             "Pillow>=9; platform_python_implementation != 'PyPy'",
         ],
@@ -1039,7 +1036,7 @@ options = {
             "pydoctor>=23.4.0",
         ],
     },
-    "python_requires": ">=3.7",
+    "python_requires": ">=3.8",
     "headers": headers,
     "platforms": "ALL",
     "keywords": [
@@ -1057,11 +1054,11 @@ options = {
         "Operating System :: OS Independent",
         "Programming Language :: C",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Information Analysis",
