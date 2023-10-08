@@ -335,6 +335,10 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install test dependencies
+        run: |
+          pip install --prefer-binary pytest pytest-timeout setuptools
+
       - name: Build C core
         env:
           IGRAPH_USE_SANITIZERS: 1
@@ -347,10 +351,6 @@ jobs:
         run: |
           # NOTE: install calls "build" first
           python setup.py install
-
-      - name: Install test dependencies
-        run: |
-          pip install --prefer-binary pytest pytest-timeout
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.
