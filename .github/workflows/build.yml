@@ -183,12 +183,12 @@ jobs:
 
       - uses: mymindstorm/setup-emsdk@v12
         with:
-          version: '3.1.32'
+          version: '3.1.45'
           actions-cache-folder: 'emsdk-cache'
 
       - name: Build wheel
         run: |
-          pip install pyodide-build==0.23.4
+          pip install pyodide-build==0.24.1
           pyodide build
 
       - uses: actions/upload-artifact@v3
