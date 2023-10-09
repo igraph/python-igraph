@@ -181,6 +181,10 @@ jobs:
         with:
           python-version: '3.11.2'
 
+      - name: Install OS dependencies
+        run:
+          sudo apt install ninja-build cmake flex bison
+
       - uses: mymindstorm/setup-emsdk@v12
         with:
           version: '3.1.45'
