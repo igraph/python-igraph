@@ -193,6 +193,7 @@ jobs:
       - name: Build wheel
         run: |
           pip install pyodide-build==0.24.1
+          python3 scripts/fix_pyodide_build.py
           pyodide build
 
       - name: Setup upterm session
