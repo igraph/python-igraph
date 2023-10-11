@@ -16,6 +16,10 @@
 - As another consequence of the above, self loops are now looking better and their size can be controlled using the `edge_loop_size` argument in `igraph.plot`.
 - As another consequence of the above, if using the `matplotlib` backend when plotting a graph, `igraph.plot` now does not return the `Axes` anymore. Instead, it returns a container artist called `GraphArtist`, which contains as children the elements of the graph plot: a `VertexCollection` for the vertices, and `EdgeCollection` for the edges, and so on. These objects can be used to modify the plot after the initial rendering, e.g. inside a Jupyter notebook, to fine tune the appearance of the plot. While documentation on specific graphic elements is still scant, more descriptive examples will follow in the future.
 
+### Fixed
+
+- Fixed drawing order of vertices in the Plotly backend (#691).
+
 ### Removed
 
 - Dropped support for Python 3.7 as it has reached its end of life.

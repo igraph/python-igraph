@@ -1,906 +1,6 @@
 {
   "data": [
     {
-      "marker": {
-        "color": "rgba(255,0,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        2.5
-      ],
-      "y": [
-        0.0
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(255,0,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        2.4802867532861947
-      ],
-      "y": [
-        0.31333308391076065
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(255,0,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        2.4214579028215777
-      ],
-      "y": [
-        0.621724717912137
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        2.324441214720628
-      ],
-      "y": [
-        0.9203113817116949
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        2.190766700109659
-      ],
-      "y": [
-        1.2043841852542883
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        2.0225424859373686
-      ],
-      "y": [
-        1.469463130731183
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        1.822421568553529
-      ],
-      "y": [
-        1.7113677648217218
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        1.5935599743717241
-      ],
-      "y": [
-        1.926283106939473
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        1.3395669874474914
-      ],
-      "y": [
-        2.110819813755038
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        1.0644482289126818
-      ],
-      "y": [
-        2.262067631165049
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        0.7725424859373686
-      ],
-      "y": [
-        2.3776412907378837
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        0.4684532864643113
-      ],
-      "y": [
-        2.4557181268217216
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        0.15697629882328326
-      ],
-      "y": [
-        2.495066821070679
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -0.1569762988232835
-      ],
-      "y": [
-        2.495066821070679
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -0.46845328646431206
-      ],
-      "y": [
-        2.4557181268217216
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -0.7725424859373689
-      ],
-      "y": [
-        2.3776412907378837
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -1.0644482289126818
-      ],
-      "y": [
-        2.2620676311650487
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -1.3395669874474923
-      ],
-      "y": [
-        2.1108198137550374
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -1.5935599743717244
-      ],
-      "y": [
-        1.926283106939473
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,255,0,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -1.8224215685535292
-      ],
-      "y": [
-        1.7113677648217211
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -2.022542485937368
-      ],
-      "y": [
-        1.4694631307311832
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -2.190766700109659
-      ],
-      "y": [
-        1.204384185254288
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -2.3244412147206286
-      ],
-      "y": [
-        0.9203113817116944
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -2.4214579028215777
-      ],
-      "y": [
-        0.621724717912137
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -2.4802867532861947
-      ],
-      "y": [
-        0.3133330839107602
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -2.5
-      ],
-      "y": [
-        -8.040613248383183e-16
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -2.4802867532861947
-      ],
-      "y": [
-        -0.3133330839107607
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -2.4214579028215777
-      ],
-      "y": [
-        -0.6217247179121376
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -2.324441214720628
-      ],
-      "y": [
-        -0.9203113817116958
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -2.1907667001096587
-      ],
-      "y": [
-        -1.2043841852542885
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -2.022542485937368
-      ],
-      "y": [
-        -1.4694631307311834
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -1.822421568553529
-      ],
-      "y": [
-        -1.7113677648217218
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -1.5935599743717237
-      ],
-      "y": [
-        -1.9262831069394735
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -1.339566987447491
-      ],
-      "y": [
-        -2.1108198137550382
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -1.0644482289126804
-      ],
-      "y": [
-        -2.2620676311650496
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -0.7725424859373689
-      ],
-      "y": [
-        -2.3776412907378837
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -0.46845328646431156
-      ],
-      "y": [
-        -2.4557181268217216
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        -0.156976298823283
-      ],
-      "y": [
-        -2.495066821070679
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        0.1569762988232843
-      ],
-      "y": [
-        -2.495066821070679
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        0.46845328646431283
-      ],
-      "y": [
-        -2.4557181268217216
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        0.7725424859373681
-      ],
-      "y": [
-        -2.377641290737884
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        1.0644482289126815
-      ],
-      "y": [
-        -2.262067631165049
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        1.3395669874474918
-      ],
-      "y": [
-        -2.1108198137550374
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        1.593559974371725
-      ],
-      "y": [
-        -1.9262831069394726
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        1.8224215685535297
-      ],
-      "y": [
-        -1.7113677648217207
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        2.0225424859373695
-      ],
-      "y": [
-        -1.4694631307311814
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        2.190766700109659
-      ],
-      "y": [
-        -1.2043841852542883
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        2.3244412147206286
-      ],
-      "y": [
-        -0.9203113817116947
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        2.421457902821578
-      ],
-      "y": [
-        -0.6217247179121362
-      ]
-    },
-    {
-      "marker": {
-        "color": "rgba(0,0,255,255)",
-        "line": {
-          "color": "rgba(0,0,0,255)"
-        },
-        "size": 20.0,
-        "symbol": "circle"
-      },
-      "mode": "markers",
-      "type": "scatter",
-      "x": [
-        2.4802867532861947
-      ],
-      "y": [
-        -0.3133330839107595
-      ]
-    },
-    {
       "fillcolor": "rgb(51,51,51)",
       "mode": "lines",
       "type": "scatter",
@@ -1748,6 +848,906 @@
         0.044706825614332625,
         -0.044706825614332625,
         0.0
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(255,0,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        2.5
+      ],
+      "y": [
+        0.0
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(255,0,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        2.4802867532861947
+      ],
+      "y": [
+        0.31333308391076065
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(255,0,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        2.4214579028215777
+      ],
+      "y": [
+        0.621724717912137
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        2.324441214720628
+      ],
+      "y": [
+        0.9203113817116949
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        2.190766700109659
+      ],
+      "y": [
+        1.2043841852542883
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        2.0225424859373686
+      ],
+      "y": [
+        1.469463130731183
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        1.822421568553529
+      ],
+      "y": [
+        1.7113677648217218
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        1.5935599743717241
+      ],
+      "y": [
+        1.926283106939473
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        1.3395669874474914
+      ],
+      "y": [
+        2.110819813755038
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        1.0644482289126818
+      ],
+      "y": [
+        2.262067631165049
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        0.7725424859373686
+      ],
+      "y": [
+        2.3776412907378837
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        0.4684532864643113
+      ],
+      "y": [
+        2.4557181268217216
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        0.15697629882328326
+      ],
+      "y": [
+        2.495066821070679
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -0.1569762988232835
+      ],
+      "y": [
+        2.495066821070679
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -0.46845328646431206
+      ],
+      "y": [
+        2.4557181268217216
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -0.7725424859373689
+      ],
+      "y": [
+        2.3776412907378837
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -1.0644482289126818
+      ],
+      "y": [
+        2.2620676311650487
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -1.3395669874474923
+      ],
+      "y": [
+        2.1108198137550374
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -1.5935599743717244
+      ],
+      "y": [
+        1.926283106939473
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,255,0,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -1.8224215685535292
+      ],
+      "y": [
+        1.7113677648217211
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -2.022542485937368
+      ],
+      "y": [
+        1.4694631307311832
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -2.190766700109659
+      ],
+      "y": [
+        1.204384185254288
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -2.3244412147206286
+      ],
+      "y": [
+        0.9203113817116944
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -2.4214579028215777
+      ],
+      "y": [
+        0.621724717912137
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -2.4802867532861947
+      ],
+      "y": [
+        0.3133330839107602
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -2.5
+      ],
+      "y": [
+        -8.040613248383183e-16
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -2.4802867532861947
+      ],
+      "y": [
+        -0.3133330839107607
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -2.4214579028215777
+      ],
+      "y": [
+        -0.6217247179121376
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -2.324441214720628
+      ],
+      "y": [
+        -0.9203113817116958
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -2.1907667001096587
+      ],
+      "y": [
+        -1.2043841852542885
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -2.022542485937368
+      ],
+      "y": [
+        -1.4694631307311834
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -1.822421568553529
+      ],
+      "y": [
+        -1.7113677648217218
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -1.5935599743717237
+      ],
+      "y": [
+        -1.9262831069394735
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -1.339566987447491
+      ],
+      "y": [
+        -2.1108198137550382
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -1.0644482289126804
+      ],
+      "y": [
+        -2.2620676311650496
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -0.7725424859373689
+      ],
+      "y": [
+        -2.3776412907378837
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -0.46845328646431156
+      ],
+      "y": [
+        -2.4557181268217216
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        -0.156976298823283
+      ],
+      "y": [
+        -2.495066821070679
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        0.1569762988232843
+      ],
+      "y": [
+        -2.495066821070679
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        0.46845328646431283
+      ],
+      "y": [
+        -2.4557181268217216
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        0.7725424859373681
+      ],
+      "y": [
+        -2.377641290737884
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        1.0644482289126815
+      ],
+      "y": [
+        -2.262067631165049
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        1.3395669874474918
+      ],
+      "y": [
+        -2.1108198137550374
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        1.593559974371725
+      ],
+      "y": [
+        -1.9262831069394726
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        1.8224215685535297
+      ],
+      "y": [
+        -1.7113677648217207
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        2.0225424859373695
+      ],
+      "y": [
+        -1.4694631307311814
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        2.190766700109659
+      ],
+      "y": [
+        -1.2043841852542883
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        2.3244412147206286
+      ],
+      "y": [
+        -0.9203113817116947
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        2.421457902821578
+      ],
+      "y": [
+        -0.6217247179121362
+      ]
+    },
+    {
+      "marker": {
+        "color": "rgba(0,0,255,255)",
+        "line": {
+          "color": "rgba(0,0,0,255)"
+        },
+        "size": 20.0,
+        "symbol": "circle"
+      },
+      "mode": "markers",
+      "type": "scatter",
+      "x": [
+        2.4802867532861947
+      ],
+      "y": [
+        -0.3133330839107595
       ]
     }
   ],

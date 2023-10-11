@@ -269,4 +269,4 @@ class PlotlyEdgeDrawer(AbstractEdgeDrawer):
             "line_color": format_rgba(edge.color),
             "line_width": edge.width,
         }
-        fig.add_shape(stroke)
+        fig.add_shape(stroke, layer="below")
