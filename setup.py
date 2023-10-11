@@ -342,7 +342,7 @@ class IgraphCCoreCMakeBuilder:
                 "--install",
                 ".",
                 "--config",
-                "Release",
+                cmake_build_mode,
             ]
         )
         if retcode:
