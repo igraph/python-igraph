@@ -231,7 +231,7 @@ class CairoMatrixDrawer(AbstractCairoDrawer):
             x, y = ox, oy
             context.set_source_rgb(0.0, 0.0, 0.0)
             for row in values.data:
-                if hasattr(value_format, "__call__"):
+                if callable(value_format):
                     values = [value_format(item) for item in row]
                 else:
                     values = [value_format % item for item in row]

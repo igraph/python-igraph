@@ -16,11 +16,7 @@ except ImportError:
     plotly = None
 
 if plotly is not None:
-    # FIXME: trying to debug this specific import on CI
-    try:
-        from plotly import graph_objects as go
-    except ImportError:
-        raise ImportError('Cannot import graph_objects, dir(plotly): '+str(dir(plotly)))
+    from plotly import graph_objects as go
 
 image_comparison = find_image_comparison()
 
@@ -59,30 +55,31 @@ class GraphTestRunner(unittest.TestCase):
     def test_mark_groups(self):
         g = Graph.Ring(5, directed=True)
         fig = go.Figure()
-        plot(g, target=fig, mark_groups=True,
-             layout=self.layout_small_ring)
+        plot(g, target=fig, mark_groups=True, layout=self.layout_small_ring)
         return fig
 
-    @image_comparison(
-        baseline_images=["graph_mark_groups_squares_directed"]
-    )
+    @image_comparison(baseline_images=["graph_mark_groups_squares_directed"])
     def test_mark_groups_squares(self):
         g = Graph.Ring(5, directed=True)
         fig = go.Figure()
-        plot(g, target=fig, mark_groups=True, vertex_shape="square",
-             layout=self.layout_small_ring)
+        plot(
+            g,
+            target=fig,
+            mark_groups=True,
+            vertex_shape="square",
+            layout=self.layout_small_ring,
+        )
         return fig
 
     @image_comparison(baseline_images=["graph_edit_children"])
     def test_graph_edit_children(self):
         g = Graph.Ring(5)
         fig = go.Figure()
-        plot(g, target=fig, vertex_shape="circle",
-             layout=self.layout_small_ring)
+        plot(g, target=fig, vertex_shape="circle", layout=self.layout_small_ring)
         # FIXME
-        #dot = ax.get_children()[0]
-        #dot.set_facecolor("blue")
-        #dot.radius *= 0.5
+        # dot = ax.get_children()[0]
+        # dot.set_facecolor("blue")
+        # dot.radius *= 0.5
         return fig
 
 
@@ -178,10 +175,12 @@ class ClusteringTestRunner(unittest.TestCase):
 def suite():
     graph = unittest.defaultTestLoader.loadTestsFromTestCase(GraphTestRunner)
     clustering = unittest.defaultTestLoader.loadTestsFromTestCase(ClusteringTestRunner)
-    return unittest.TestSuite([
-        graph,
-        clustering,
-    ])
+    return unittest.TestSuite(
+        [
+            graph,
+            clustering,
+        ]
+    )
 
 
 def test():

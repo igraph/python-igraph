@@ -43,7 +43,12 @@ class GameTests(unittest.TestCase):
         types = g.vs.get_attribute_values("type")
         types1 = [i[0] for i in types]
         types2 = [i[1] for i in types]
-        self.assertTrue(min(types1) == 0 and max(types1) == 1 and min(types2) == 0 and max(types2) == 1)
+        self.assertTrue(
+            min(types1) == 0
+            and max(types1) == 1
+            and min(types2) == 0
+            and max(types2) == 1
+        )
 
         g = Graph.Asymmetric_Preference(100, [[0, 1], [1, 0]], [[1, 0], [0, 1]])
         self.assertTrue(isinstance(g, Graph))

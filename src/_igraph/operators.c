@@ -337,5 +337,3 @@ PyObject *igraphmodule__intersection(PyObject *self,
 
   return result;
 }
-
-

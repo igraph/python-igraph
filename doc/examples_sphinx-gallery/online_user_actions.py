@@ -51,7 +51,7 @@ adjacency_matrix = pd.DataFrame(
 
 # %%
 # Then, let's iterate over all projects one by one, and add all collaborations:
-for project, project_data in action_dataframe.groupby('project'):
+for _project, project_data in action_dataframe.groupby('project'):
     project_users = project_data['userid'].values
     for i1, user1 in enumerate(project_users):
         for user2 in project_users[:i1]:
@@ -70,7 +70,7 @@ layout = g.layout('circle')
 # %%
 # Then we can prepare vertex sizes based on their closeness to other vertices
 vertex_size = g.closeness()
-vertex_size = [0.5 * v**2 if not np.isnan(v) else 0.05 for v in vertex_size]
+vertex_size = [10 * v**2 if not np.isnan(v) else 10 for v in vertex_size]
 
 # %%
 # Finally, we can plot the graph:

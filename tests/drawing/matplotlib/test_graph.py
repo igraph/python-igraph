@@ -1,5 +1,4 @@
 import os
-import random
 import unittest
 
 
@@ -49,6 +48,18 @@ class GraphTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         plot(g, target=ax, layout=self.layout_small_ring)
 
+    @image_comparison(baseline_images=["graph_labels"], remove_text=True)
+    def test_labels(self):
+        plt.close("all")
+        g = Graph.Ring(5)
+        fig, ax = plt.subplots(figsize=(3, 3))
+        plot(
+            g, target=ax, layout=self.layout_small_ring,
+            vertex_label=['1', '2', '3', '4', '5'],
+            vertex_label_color='white',
+            vertex_label_size=16,
+        )
+
     @image_comparison(baseline_images=["graph_layout_attribute"], remove_text=True)
     def test_layout_attribute(self):
         plt.close("all")
@@ -63,6 +74,24 @@ class GraphTestRunner(unittest.TestCase):
         g = Graph.Ring(5, directed=True)
         fig, ax = plt.subplots()
         plot(g, target=ax, layout=self.layout_small_ring)
+
+    @image_comparison(baseline_images=["graph_directed_curved_loops"], remove_text=True)
+    def test_directed_curved_loops(self):
+        plt.close("all")
+        g = Graph.Ring(5, directed=True)
+        g.add_edge(0, 0)
+        g.add_edge(0, 0)
+        g.add_edge(2, 2)
+        fig, ax = plt.subplots()
+        ax.set_xlim(-1.2, 1.2)
+        ax.set_ylim(-1.2, 1.2)
+        plot(
+            g,
+            target=ax,
+            layout=self.layout_small_ring,
+            edge_curved=[0] * 4 + [0.3],
+            edge_loop_size=[0] * 5 + [30, 50, 40],
+        )
 
     @image_comparison(baseline_images=["graph_mark_groups_directed"], remove_text=True)
     def test_mark_groups(self):
@@ -87,15 +116,19 @@ class GraphTestRunner(unittest.TestCase):
         )
 
     @image_comparison(baseline_images=["graph_edit_children"], remove_text=True)
-    def test_mark_groups_squares(self):
+    def test_edit_children(self):
         plt.close("all")
         g = Graph.Ring(5)
         fig, ax = plt.subplots()
         plot(g, target=ax, vertex_shape="o", layout=self.layout_small_ring)
         graph_artist = ax.get_children()[0]
-        dot = graph_artist.get_vertices()[0]
-        dot.set_facecolor("blue")
-        dot.radius *= 0.5
+
+        dots = graph_artist.get_vertices()
+        dots.set_facecolors(["blue"] + list(dots.get_facecolors()[1:]))
+        dots.set_sizes([20] + list(dots.get_sizes()[1:]))
+
+        lines = graph_artist.get_edges()
+        lines.set_edgecolor("green")
 
     @image_comparison(baseline_images=["graph_basic"], remove_text=True)
     def test_gh_587(self):
@@ -112,7 +145,15 @@ class GraphTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         lo = g.layout("circle")
         lo.scale(3)
-        plot(g, target=ax, layout=lo)
+        plot(
+            g,
+            target=ax,
+            layout=lo,
+            vertex_size=15,
+            edge_arrow_size=5,
+            edge_arrow_width=5,
+        )
+        ax.set_aspect(1.0)
 
 
 class ClusteringTestRunner(unittest.TestCase):
@@ -201,7 +242,15 @@ class ClusteringTestRunner(unittest.TestCase):
         g = Graph.Ring(50, directed=True)
         clu = VertexClustering(g, [0] * 3 + [1] * 17 + [2] * 30)
         fig, ax = plt.subplots()
-        plot(clu, layout=self.layout_large_ring, target=ax, mark_groups=True)
+        plot(
+            clu,
+            vertex_size=17,
+            edge_arrow_size=5,
+            edge_arrow_width=5,
+            layout=self.layout_large_ring,
+            target=ax,
+            mark_groups=True,
+        )
 
 
 def suite():

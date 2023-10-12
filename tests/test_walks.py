@@ -26,14 +26,16 @@ class RandomWalkTests(unittest.TestCase):
         for edgeid in walk:
             vertices = g.es[edgeid].tuple
             if prev_vertices is not None:
-                self.assertTrue(vertices[0] in prev_vertices or vertices[1] in prev_vertices)
+                self.assertTrue(
+                    vertices[0] in prev_vertices or vertices[1] in prev_vertices
+                )
             else:
                 self.assertTrue(start in vertices)
             prev_vertices = vertices
 
     def testRandomWalkUndirected(self):
         g = Graph.GRG(100, 0.2)
-        for i in range(100):
+        for _i in range(100):
             start = random.randint(0, g.vcount() - 1)
             length = random.randint(0, 10)
             walk = g.random_walk(start, length)
@@ -42,7 +44,7 @@ class RandomWalkTests(unittest.TestCase):
     def testRandomWalkDirectedOut(self):
         g = Graph.Tree(121, 3, mode="out")
         mode = "out"
-        for i in range(100):
+        for _i in range(100):
             start = 0
             length = random.randint(0, 4)
             walk = g.random_walk(start, length, mode)
@@ -51,7 +53,7 @@ class RandomWalkTests(unittest.TestCase):
     def testRandomWalkDirectedIn(self):
         g = Graph.Tree(121, 3, mode="out")
         mode = "in"
-        for i in range(100):
+        for _i in range(100):
             start = random.randint(40, g.vcount() - 1)
             length = random.randint(0, 4)
             walk = g.random_walk(start, length, mode)
@@ -60,7 +62,7 @@ class RandomWalkTests(unittest.TestCase):
     def testRandomWalkDirectedAll(self):
         g = Graph.Tree(121, 3, mode="out")
         mode = "all"
-        for i in range(100):
+        for _i in range(100):
             start = random.randint(0, g.vcount() - 1)
             length = random.randint(0, 10)
             walk = g.random_walk(start, length, mode)
@@ -74,43 +76,45 @@ class RandomWalkTests(unittest.TestCase):
 
     def testRandomWalkUndirectedVertices(self):
         g = Graph.GRG(100, 0.2)
-        for i in range(10):
+        for _i in range(10):
             start = random.randint(0, g.vcount() - 1)
             length = random.randint(0, 10)
-            walk = g.random_walk(start, length, return_type='vertices')
+            walk = g.random_walk(start, length, return_type="vertices")
             self.validate_walk(g, walk, start, length)
 
     def testRandomWalkUndirectedEdges(self):
         g = Graph.GRG(100, 0.2)
-        for i in range(10):
+        for _i in range(10):
             start = random.randint(0, g.vcount() - 1)
             length = random.randint(0, 10)
-            walk = g.random_walk(start, length, return_type='edges')
+            walk = g.random_walk(start, length, return_type="edges")
             self.validate_edge_walk(g, walk, start, length)
 
     def testRandomWalkUndirectedBoth(self):
         g = Graph.GRG(100, 0.2)
-        for i in range(10):
+        for _i in range(10):
             start = random.randint(0, g.vcount() - 1)
             length = random.randint(0, 10)
-            walk_dic = g.random_walk(start, length, return_type='both')
-            self.assertTrue('vertices' in walk_dic)
-            self.assertTrue('edges' in walk_dic)
-            self.validate_edge_walk(g, walk_dic['edges'], start, length)
-            self.validate_walk(g, walk_dic['vertices'], start, length)
+            walk_dic = g.random_walk(start, length, return_type="both")
+            self.assertTrue("vertices" in walk_dic)
+            self.assertTrue("edges" in walk_dic)
+            self.validate_edge_walk(g, walk_dic["edges"], start, length)
+            self.validate_walk(g, walk_dic["vertices"], start, length)
 
     def testRandomWalkUndirectedWeighted(self):
         g = Graph.GRG(100, 0.2)
-        g.es['weight'] = [1.0 for i in range(g.ecount())]
-        for i in range(100):
+        g.es["weight"] = [1.0 for i in range(g.ecount())]
+        for _i in range(100):
             start = random.randint(0, g.vcount() - 1)
             length = random.randint(0, 10)
-            walk = g.random_walk(start, length, weights='weight')
+            walk = g.random_walk(start, length, weights="weight")
             self.validate_walk(g, walk, start, length)
 
 
 def suite():
-    random_walk_suite = unittest.defaultTestLoader.loadTestsFromTestCase(RandomWalkTests)
+    random_walk_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        RandomWalkTests
+    )
     return unittest.TestSuite([random_walk_suite])
 
 

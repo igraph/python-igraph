@@ -5283,7 +5283,7 @@ PyObject *igraphmodule_Graph_get_shortest_path(
 
   if (igraphmodule_PyObject_to_shortest_path_algorithm_t(algorithm_o, &algorithm))
     return NULL;
-  
+
   if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
       ATTRIBUTE_TYPE_EDGE)) return NULL;
 
@@ -5297,7 +5297,7 @@ PyObject *igraphmodule_Graph_get_shortest_path(
       &self->g, weights, NULL, mode, /* allow_johnson = */ false
     );
   }
-  
+
   /* Call the C function */
   switch (algorithm) {
     case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA:
@@ -5316,7 +5316,7 @@ PyObject *igraphmodule_Graph_get_shortest_path(
       retval = IGRAPH_UNIMPLEMENTED;
       PyErr_SetString(PyExc_ValueError, "Algorithm not supported");
   }
-  
+
   if (retval) {
     igraph_vector_int_destroy(&vec);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -5516,7 +5516,7 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
       &self->g, weights, NULL, mode, /* allow_johnson = */ false
     );
   }
-  
+
   /* Call the C function */
   switch (algorithm) {
     case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA:
@@ -5537,7 +5537,7 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
       retval = IGRAPH_UNIMPLEMENTED;
       PyErr_SetString(PyExc_ValueError, "Algorithm not supported");
   }
-  
+
   if (retval) {
     igraph_vector_int_list_destroy(&veclist);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -6331,7 +6331,7 @@ PyObject *igraphmodule_Graph_distances(
       &self->g, weights, &from_vs, mode, /* allow_johnson = */ true
     );
   }
-  
+
   if (algorithm == IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_JOHNSON && mode != IGRAPH_OUT) {
     PyErr_SetString(PyExc_ValueError, "Johnson's algorithm is supported for mode=\"out\" only");
     goto cleanup;
@@ -7685,7 +7685,7 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai(igraphmodule_GraphObject *
 {
   static char *kwlist[] =
     { "maxiter", "epsilon", "kkconst", "seed", "minx", "maxx",
-      "miny", "maxy", "minz", "maxz", "dim", NULL };
+      "miny", "maxy", "minz", "maxz", "dim", "weights", NULL };
   igraph_matrix_t m;
   igraph_bool_t use_seed = false;
   igraph_error_t ret;
@@ -7697,9 +7697,11 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai(igraphmodule_GraphObject *
   PyObject *minx_o=Py_None, *maxx_o=Py_None;
   PyObject *miny_o=Py_None, *maxy_o=Py_None;
   PyObject *minz_o=Py_None, *maxz_o=Py_None;
+  PyObject *weights_o=Py_None;
   igraph_vector_t *minx=0, *maxx=0;
   igraph_vector_t *miny=0, *maxy=0;
   igraph_vector_t *minz=0, *maxz=0;
+  igraph_vector_t *weights=0;
 
 #define DESTROY_VECTORS { \
   if (minx)    { igraph_vector_destroy(minx); free(minx); } \
@@ -7708,17 +7710,18 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai(igraphmodule_GraphObject *
   if (maxy)    { igraph_vector_destroy(maxy); free(maxy); } \
   if (minz)    { igraph_vector_destroy(minz); free(minz); } \
   if (maxz)    { igraph_vector_destroy(maxz); free(maxz); } \
+  if (weights) { igraph_vector_destroy(weights); free(weights); } \
 }
 
   kkconst = igraph_vcount(&self->g);
   maxiter = 50 * igraph_vcount(&self->g);
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OdOOOOOOOOn", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OdOOOOOOOOnO", kwlist,
                                    &maxiter_o, &epsilon,
                                    &kkconst_o, &seed_o,
                                    &minx_o, &maxx_o,
                                    &miny_o, &maxy_o,
-                                   &minz_o, &maxz_o, &dim))
+                                   &minz_o, &maxz_o, &dim, &weights_o))
     return NULL;
 
   CHECK_SSIZE_T_RANGE_POSITIVE(dim, "number of dimensions");
@@ -7794,14 +7797,22 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai(igraphmodule_GraphObject *
       return NULL;
     }
   }
+
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights, ATTRIBUTE_TYPE_EDGE)) {
+    igraph_matrix_destroy(&m);
+    DESTROY_VECTORS;
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
   if (dim == 2)
     ret = igraph_layout_kamada_kawai
       (&self->g, &m, use_seed, maxiter, epsilon, kkconst,
-       /*weights=*/ 0, /*bounds*/ minx, maxx, miny, maxy);
+       weights, /*bounds*/ minx, maxx, miny, maxy);
   else
     ret = igraph_layout_kamada_kawai_3d
       (&self->g, &m, use_seed, maxiter, epsilon, kkconst,
-       /*weights=*/ 0, /*bounds*/ minx, maxx, miny, maxy, minz, maxz);
+       weights, /*bounds*/ minx, maxx, miny, maxy, minz, maxz);
 
   DESTROY_VECTORS;
 
@@ -13769,6 +13780,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Atlas(idx)\n--\n\n"
    "Generates a graph from the Graph Atlas.\n\n"
+   "B{Reference}: Ronald C. Read and Robin J. Wilson: I{An Atlas of Graphs}.\n"
+   "Oxford University Press, 1998.\n\n"
    "@param idx: The index of the graph to be generated.\n"
    "  Indices start from zero, graphs are listed:\n\n"
    "    1. in increasing order of number of vertices;\n"
@@ -13777,9 +13790,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "    3. for fixed numbers of vertices and edges, in increasing order\n"
    "       of the degree sequence, for example 111223 < 112222;\n"
    "    4. for fixed degree sequence, in increasing number of automorphisms.\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: I{An Atlas of Graphs} by Ronald C. Read and Robin J. Wilson,\n"
-   "  Oxford University Press, 1998."},
+  },
 
   // interface to igraph_barabasi_game
   {"Barabasi", (PyCFunction) igraphmodule_Graph_Barabasi,
@@ -13787,6 +13798,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Barabasi(n, m, outpref=False, directed=False, power=1,\n"
    "         zero_appeal=1, implementation=\"psumtree\", start_from=None)\n--\n\n"
    "Generates a graph based on the Barabasi-Albert model.\n\n"
+   "B{Reference}: Barabasi, A-L and Albert, R. 1999. Emergence of scaling\n"
+   "in random networks. I{Science}, 286 509-512.\n\n"
    "@param n: the number of vertices\n"
    "@param m: either the number of outgoing edges generated for\n"
    "  each vertex or a list containing the number of outgoing\n"
@@ -13820,9 +13833,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param start_from: if given and not C{None}, this must be another\n"
    "      L{GraphBase} object. igraph will use this graph as a starting\n"
    "      point for the preferential attachment model.\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: Barabasi, A-L and Albert, R. 1999. Emergence of scaling\n"
-   "  in random networks. Science, 286 509-512."},
+  },
 
   /* interface to igraph_create_bipartite */
   {"_Bipartite", (PyCFunction) igraphmodule_Graph_Bipartite,
@@ -14120,6 +14131,20 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
     "multiple or loop edges are allowed) are specified in the C{allowed_edge_types}\n"
     "parameter.\n"
     "\n"
+    "B{References}\n\n"
+    "  - V. Havel, Poznámka o existenci konečných grafů (A remark on the\n"
+    "    existence of finite graphs), Časopis pro pěstování matematiky 80,\n"
+    "    477-480 (1955). U{http://eudml.org/doc/19050}\n"
+    "  - S. L. Hakimi, On Realizability of a Set of Integers as Degrees of the\n"
+    "    Vertices of a Linear Graph, I{Journal of the SIAM} 10, 3 (1962).\n"
+    "    U{https://www.jstor.org/stable/2098770}\n"
+    "  - D. J. Kleitman and D. L. Wang, Algorithms for Constructing Graphs and\n"
+    "    Digraphs with Given Valences and Factors, I{Discrete Mathematics} 6, 1 (1973).\n"
+    "    U{https://doi.org/10.1016/0012-365X%2873%2990037-X}\n"
+    "  - Sz. Horvát and C. D. Modes, Connectedness matters: construction and\n"
+    "    exact random sampling of connected networks (2021).\n"
+    "    U{https://doi.org/10.1088/2632-072X/abced5}\n"
+    "\n"
     "@param out: the degree sequence of an undirected graph (if in_=None),\n"
     "  or the out-degree sequence of a directed graph.\n"
     "@param in_: None to generate an undirected graph, the in-degree sequence\n"
@@ -14143,23 +14168,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
     "\n"
     "  In the undirected case, C{smallest} is guaranteed to produce a connected graph.\n"
     "  See Horvát and Modes (2021) for details.\n"
-    "\n"
-    "@newfield ref: Reference\n"
-    "@ref: V. Havel,\n"
-    "  Poznámka o existenci konečných grafů (A remark on the existence of finite graphs),\n"
-    "  Časopis pro pěstování matematiky 80, 477-480 (1955).\n"
-    "  U{http://eudml.org/doc/19050}\n"
-    "@ref: S. L. Hakimi,\n"
-    "  On Realizability of a Set of Integers as Degrees of the Vertices of a Linear Graph,\n"
-    "  Journal of the SIAM 10, 3 (1962).\n"
-    "  U{https://www.jstor.org/stable/2098770}\n"
-    "@ref: D. J. Kleitman and D. L. Wang,\n"
-    "  Algorithms for Constructing Graphs and Digraphs with Given Valences and Factors,\n"
-    "  Discrete Mathematics 6, 1 (1973).\n"
-    "  U{https://doi.org/10.1016/0012-365X%2873%2990037-X}\n"
-    "@ref: Sz. Horvát and C. D. Modes,\n"
-    "  Connectedness matters: construction and exact random sampling of connected networks (2021).\n"
-    "  U{https://doi.org/10.1088/2632-072X/abced5}\n"
   },
 
   // interface to igraph_ring
@@ -14202,6 +14210,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Static_Power_Law(n, m, exponent_out, exponent_in=-1, loops=False, "
    "multiple=False, finite_size_correction=True)\n--\n\n"
    "Generates a non-growing graph with prescribed power-law degree distributions.\n\n"
+   "B{References}\n\n"
+   "  - Goh K-I, Kahng B, Kim D: Universal behaviour of load distribution\n"
+   "    in scale-free networks. I{Phys Rev Lett} 87(27):278701, 2001.\n"
+   "  - Cho YS, Kim JS, Park J, Kahng B, Kim D: Percolation transitions in\n"
+   "    scale-free networks under the Achlioptas process. I{Phys Rev Lett}\n"
+   "    103:135702, 2009.\n\n"
    "@param n: the number of vertices in the graph\n"
    "@param m: the number of edges in the graph\n"
    "@param exponent_out: the exponent of the out-degree distribution, which\n"
@@ -14219,19 +14233,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  paper of Cho et al for more details.\n"
    "@return: a directed or undirected graph with the prescribed power-law\n"
    "  degree distributions.\n"
-   "\n"
-   "@newfield ref: Reference\n"
-   "@ref: Goh K-I, Kahng B, Kim D: Universal behaviour of load distribution\n"
-   "  in scale-free networks. Phys Rev Lett 87(27):278701, 2001.\n"
-   "@ref: Cho YS, Kim JS, Park J, Kahng B, Kim D: Percolation transitions in\n"
-   "  scale-free networks under the Achlioptas process. Phys Rev Lett\n"
-   "  103:135702, 2009.\n"
   },
 
   // interface to igraph_tree
   {"Tree", (PyCFunction) igraphmodule_Graph_Tree,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Tree(n, children, type=\"undirected\")\n--\n\n"
+   "Tree(n, children, mode=\"undirected\")\n--\n\n"
    "Generates a tree in which almost all vertices have the same number of children.\n\n"
    "@param n: the number of vertices in the graph\n"
    "@param children: the number of children of a vertex in the graph\n"
@@ -14339,6 +14346,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "become fully random even for <code>p=1</code>.\n\n"
    "For appropriate choices of I{p}, both models exhibit the property of\n"
    "simultaneously having short path lengths and high clustering.\n\n"
+   "B{Reference}: Duncan J Watts and Steven H Strogatz: Collective dynamics of\n"
+   "small world networks, I{Nature} 393, 440-442, 1998\n\n"
    "@param dim: the dimension of the lattice\n"
    "@param size: the size of the lattice along all dimensions\n"
    "@param nei: value giving the distance (number of steps) within which\n"
@@ -14348,9 +14357,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param multiple: specifies whether multiple edges are allowed\n"
    "@see: L{Lattice()}, L{rewire()}, L{rewire_edges()} if more flexibility is\n"
    "  needed\n"
-   "@newfield ref: Reference\n"
-   "@ref: Duncan J Watts and Steven H Strogatz: I{Collective dynamics of\n"
-   "  small world networks}, Nature 393, 440-442, 1998\n"},
+  },
 
   /* interface to igraph_weighted_adjacency */
   {"_Weighted_Adjacency", (PyCFunction) igraphmodule_Graph_Weighted_Adjacency,
@@ -14416,6 +14423,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "performed using equation (26) in the same paper for directed graphs, and\n"
    "equation (4) in Newman MEJ: Assortative mixing in networks, Phys Rev Lett\n"
    "89:208701 (2002) for undirected graphs.\n\n"
+   "B{References}\n\n"
+   "  - Newman MEJ: Mixing patterns in networks, I{Phys Rev E} 67:026126, 2003.\n"
+   "  - Newman MEJ: Assortative mixing in networks, I{Phys Rev Lett} 89:208701, 2002.\n\n"
    "@param types1: vertex types in a list or the name of a vertex attribute\n"
    "  holding vertex types. Types are ideally denoted by numeric values.\n"
    "@param types2: in directed assortativity calculations, each vertex can\n"
@@ -14428,10 +14438,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  Pearson correlation. Supply True here to compute the standard\n"
    "  assortativity.\n"
    "@return: the assortativity coefficient\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: Newman MEJ: Mixing patterns in networks, Phys Rev E 67:026126, 2003.\n"
-   "@ref: Newman MEJ: Assortative mixing in networks, Phys Rev Lett 89:208701,\n"
-   "  2002.\n"
    "@see: L{assortativity_degree()} when the types are the vertex degrees\n"
   },
 
@@ -14462,6 +14468,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "asymptotically zero.\n\n"
    "See equation (2) in Newman MEJ: Mixing patterns in networks, Phys Rev E\n"
    "67:026126 (2003) for the proper definition.\n\n"
+   "B{Reference}: Newman MEJ: Mixing patterns in networks, I{Phys Rev E}\n"
+   "67:026126, 2003.\n\n"
    "@param types: vertex types in a list or the name of a vertex attribute\n"
    "  holding vertex types. Types should be denoted by numeric values.\n"
    "@param directed: whether to consider edge directions or not.\n"
@@ -14469,8 +14477,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  The unnormalized version is identical to modularity. Supply True here to\n"
    "  compute the standard assortativity.\n"
    "@return: the assortativity coefficient\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: Newman MEJ: Mixing patterns in networks, Phys Rev E 67:026126, 2003.\n"
   },
 
   /* interface to igraph_average_path_length */
@@ -14802,15 +14808,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Shannon entropy of the weights of the edges incident on the vertex.\n\n"
    "The measure is defined for undirected graphs only; edge directions are\n"
    "ignored.\n\n"
+   "B{Reference}: Eagle N, Macy M and Claxton R: Network diversity and economic\n"
+   "development, I{Science} 328, 1029-1031, 2010.\n\n"
    "@param vertices: the vertices for which the diversity indices must\n"
    "  be returned. If C{None}, uses all of the vertices in the graph.\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name.\n"
    "@return: the calculated diversity indices in a list, or a single number if\n"
    "  a single vertex was supplied.\n"
-   "@newfield ref: Reference\n"
-   "@ref: Eagle N, Macy M and Claxton R: Network diversity and economic\n"
-   "  development, Science 328, 1029--1031, 2010."
   },
 
   /* interface to igraph_eccentricity */
@@ -14933,6 +14938,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "set. Note that the task is trivial for an undirected graph as it is enough\n"
    "to find a spanning tree and then remove all the edges not in the spanning\n"
    "tree. Of course it is more complicated for directed graphs.\n\n"
+   "B{Reference}: Eades P, Lin X and Smyth WF: A fast and effective heuristic for the\n"
+   "feedback arc set problem. In: I{Proc Inf Process Lett} 319-323, 1993.\n\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name. When given, the algorithm will strive to\n"
    "  remove lightweight edges in order to minimize the total weight of the\n"
@@ -14944,9 +14951,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  an integer programming formulation which is guaranteed to yield an optimal\n"
    "  result, but is too slow for large graphs.\n"
    "@return: the IDs of the edges to be removed, in a list.\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: Eades P, Lin X and Smyth WF: A fast and effective heuristic for the\n"
-   "  feedback arc set problem. In: Proc Inf Process Lett 319-323, 1993.\n"
   },
 
   /* interface to igraph_get_shortest_path */
@@ -15610,14 +15614,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Note that this measure is different from the local transitivity\n"
    "measure (see L{transitivity_local_undirected()}) as it calculates\n"
    "a single value for the whole graph.\n\n"
+   "B{Reference}: S. Wasserman and K. Faust: I{Social Network Analysis: Methods\n"
+   "and Applications}. Cambridge: Cambridge University Press, 1994.\n\n"
    "@param mode: if C{TRANSITIVITY_ZERO} or C{\"zero\"}, the result will\n"
    "  be zero if the graph does not have any triplets. If C{\"nan\"} or\n"
    "  C{TRANSITIVITY_NAN}, the result will be C{NaN} (not a number).\n"
    "@return: the transitivity\n"
    "@see: L{transitivity_local_undirected()}, L{transitivity_avglocal_undirected()}\n"
-   "@newfield ref: Reference\n"
-   "@ref: S. Wasserman and K. Faust: I{Social Network Analysis: Methods and\n"
-   "  Applications}. Cambridge: Cambridge University Press, 1994."
   },
 
   /* interface to igraph_transitivity_local_undirected and
@@ -15637,6 +15640,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "The traditional local transitivity measure applies for unweighted graphs\n"
    "only. When the C{weights} argument is given, this function calculates\n"
    "the weighted local transitivity proposed by Barrat et al (see references).\n\n"
+   "B{References}:\n\n"
+   "  - D. J. Watts and S. Strogatz: Collective dynamics of\n"
+   "    small-world networks. I{Nature} 393(6884):440-442, 1998.\n"
+   "  - Barrat A, Barthelemy M, Pastor-Satorras R and Vespignani A:\n"
+   "    The architecture of complex weighted networks. I{PNAS} 101, 3747 (2004).\n"
+   "    U{http://arxiv.org/abs/cond-mat/0311416}.\n\n"
    "@param vertices: a list containing the vertex IDs which should be\n"
    "  included in the result. C{None} means all of the vertices.\n"
    "@param mode: defines how to treat vertices with degree less than two.\n"
@@ -15647,12 +15656,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  even an edge attribute name.\n"
    "@return: the transitivities for the given vertices in a list\n"
    "@see: L{transitivity_undirected()}, L{transitivity_avglocal_undirected()}\n"
-   "@newfield ref: Reference\n"
-   "@ref: Watts DJ and Strogatz S: I{Collective dynamics of small-world\n"
-   "  networks}. Nature 393(6884):440-442, 1998.\n"
-   "@ref: Barrat A, Barthelemy M, Pastor-Satorras R and Vespignani A:\n"
-   "  I{The architecture of complex weighted networks}. PNAS 101, 3747 (2004).\n"
-   "  U{http://arxiv.org/abs/cond-mat/0311416}."
   },
 
   /* interface to igraph_transitivity_avglocal_undirected */
@@ -15671,14 +15674,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Note that this measure is different from the global transitivity measure\n"
    "(see L{transitivity_undirected()}) as it simply takes the average local\n"
    "transitivity across the whole network.\n\n"
+   "B{Reference}: D. J. Watts and S. Strogatz: Collective dynamics of\n"
+   "small-world networks. I{Nature} 393(6884):440-442, 1998.\n\n"
    "@param mode: defines how to treat vertices with degree less than two.\n"
    "  If C{TRANSITIVITT_ZERO} or C{\"zero\"}, these vertices will have\n"
    "  zero transitivity. If C{TRANSITIVITY_NAN} or C{\"nan\"}, these\n"
    "  vertices will be excluded from the average.\n"
    "@see: L{transitivity_undirected()}, L{transitivity_local_undirected()}\n"
-   "@newfield ref: Reference\n"
-   "@ref: D. J. Watts and S. Strogatz: I{Collective dynamics of small-world\n"
-   "  networks}. Nature 393(6884):440-442, 1998."
   },
 
   /* interface to igraph_unfold_tree */
@@ -15834,9 +15836,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "method can be used. This function is capable of doing sampling via\n"
    "the I{cut_prob} argument. This argument gives the probability that\n"
    "a branch of the motif search tree will not be explored.\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: S. Wernicke and F. Rasche: FANMOD: a tool for fast network\n"
-   "  motif detection, Bioinformatics 22(9), 1152--1153, 2006.\n\n"
+   "B{Reference}: S. Wernicke and F. Rasche: FANMOD: a tool for fast network\n"
+   "motif detection, I{Bioinformatics} 22(9), 1152--1153, 2006.\n\n"
    "@param size: the size of the motifs\n"
    "@param cut_prob: the cut probabilities for different levels of the search\n"
    "  tree. This must be a list of length I{size} or C{None} to find all\n"
@@ -15858,9 +15859,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "assigning isomorphism classes to them.\n\n"
    "Currently we support motifs of size 3 and 4 for directed graphs, and\n"
    "motifs of size 3, 4, 5 or 6 for undirected graphs.\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: S. Wernicke and F. Rasche: FANMOD: a tool for fast network\n"
-   "  motif detection, Bioinformatics 22(9), 1152--1153, 2006.\n\n"
+   "B{Reference}: S. Wernicke and F. Rasche: FANMOD: a tool for fast network\n"
+   "motif detection, I{Bioinformatics} 22(9), 1152--1153, 2006.\n\n"
    "@param size: the size of the motifs\n"
    "@param cut_prob: the cut probabilities for different levels of the search\n"
    "  tree. This must be a list of length I{size} or C{None} to find all\n"
@@ -15878,9 +15878,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "sample of vertices.\n\n"
    "Currently we support motifs of size 3 and 4 for directed graphs, and\n"
    "motifs of size 3, 4, 5 or 6 for undirected graphs.\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: S. Wernicke and F. Rasche: FANMOD: a tool for fast network\n"
-   "  motif detection, Bioinformatics 22(9), 1152--1153, 2006.\n\n"
+   "B{Reference}: S. Wernicke and F. Rasche: FANMOD: a tool for fast network\n"
+   "motif detection, I{Bioinformatics} 22(9), 1152--1153, 2006.\n\n"
    "@param size: the size of the motifs\n"
    "@param cut_prob: the cut probabilities for different levels of the search\n"
    "  tree. This must be a list of length I{size} or C{None} to find all\n"
@@ -16047,7 +16046,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    (PyCFunction) igraphmodule_Graph_layout_kamada_kawai,
    METH_VARARGS | METH_KEYWORDS,
    "layout_kamada_kawai(maxiter=None, epsilon=0, kkconst=None, seed=None, "
-   "minx=None, maxx=None, miny=None, maxy=None, minz=None, maxz=None, dim=2)\n--\n\n"
+   "minx=None, maxx=None, miny=None, maxy=None, minz=None, maxz=None, dim=2, "
+   "weights=None)\n--\n\n"
    "Places the vertices on a plane according to the Kamada-Kawai algorithm.\n\n"
    "This is a force directed layout, see Kamada, T. and Kawai, S.:\n"
    "An Algorithm for Drawing General Undirected Graphs.\n"
@@ -16074,6 +16074,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  for 3D layouts (C{dim}=3).\n"
    "@param dim: the desired number of dimensions for the layout. dim=2\n"
    "  means a 2D layout, dim=3 means a 3D layout.\n"
+   "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
+   "  even an edge attribute name.\n"
    "@return: the calculated layout."
   },
 
@@ -16288,6 +16290,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "For unconnected graphs, the method will decompose the graph into\n"
    "weakly connected components and then lay out the components\n"
    "individually using the appropriate parts of the distance matrix.\n\n"
+   "B{Reference}: Cox & Cox: Multidimensional Scaling (1994), Chapman and\n"
+   "Hall, London.\n\n"
    "@param dist: the distance matrix. It must be symmetric and the\n"
    "  symmetry is not checked -- results are unspecified when a\n"
    "  non-symmetric distance matrix is used. If this parameter is\n"
@@ -16299,10 +16303,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param arpack_options: an L{ARPACKOptions} object used to fine-tune\n"
    "  the ARPACK eigenvector calculation. If omitted, the module-level\n"
    "  variable called C{arpack_options} is used.\n"
-   "@return: the calculated layout.\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: Cox & Cox: Multidimensional Scaling (1994), Chapman and\n"
-   "  Hall, London.\n"
+   "@return: the calculated layout.\n"
   },
 
   /* interface to igraph_layout_reingold_tilford */
@@ -16314,6 +16315,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "layout algorithm.\n\n"
    "This is a tree layout. If the given graph is not a tree, a breadth-first\n"
    "search is executed first to obtain a possible spanning tree.\n\n"
+   "B{Reference}: EM Reingold, JS Tilford: Tidier Drawings of Trees. I{IEEE\n"
+   "Transactions on Software Engineering} 7:22, 223-228, 1981.\n\n"
    "@param mode: specifies which edges to consider when builing the tree.\n"
    "  If it is C{OUT} then only the outgoing, if it is C{IN} then only the\n"
    "  incoming edges of a parent are considered. If it is C{ALL} then all\n"
@@ -16335,9 +16338,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  in the forest.\n"
    "@return: the calculated layout.\n\n"
    "@see: layout_reingold_tilford_circular\n"
-   "@newfield ref: Reference\n"
-   "@ref: EM Reingold, JS Tilford: I{Tidier Drawings of Trees.}\n"
-   "IEEE Transactions on Software Engineering 7:22, 223-228, 1981."},
+  },
 
   /* interface to igraph_layout_reingold_tilford_circular */
   {"layout_reingold_tilford_circular",
@@ -16348,11 +16349,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "This layout is similar to the Reingold-Tilford layout, but the vertices\n"
    "are placed in a circular way, with the root vertex in the center.\n\n"
    "See L{layout_reingold_tilford} for the explanation of the parameters.\n\n"
+   "B{Reference}: EM Reingold, JS Tilford: Tidier Drawings of Trees. I{IEEE\n"
+   "Transactions on Software Engineering} 7:22, 223-228, 1981.\n\n"
    "@return: the calculated layout.\n\n"
    "@see: layout_reingold_tilford\n"
-   "@newfield ref: Reference\n"
-   "@ref: EM Reingold, JS Tilford: I{Tidier Drawings of Trees.}\n"
-   "IEEE Transactions on Software Engineering 7:22, 223-228, 1981."},
+  },
 
   /* interface to igraph_layout_random */
   {"layout_random", (PyCFunction) igraphmodule_Graph_layout_random,
@@ -16380,6 +16381,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Uniform Manifold Approximation and Projection (UMAP).\n\n"
    "This layout is a probabilistic algorithm that places vertices that are connected\n"
    "and have a short distance close by in the embedded space.\n\n"
+   "B{Reference}: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation\n"
+   "and Projection for Dimension Reduction. arXiv:1802.03426.\n\n"
    "@param dist: distances associated with the graph edges. If None, all edges will\n"
    "  be assumed to convey the same distance between the vertices. Either this\n"
    "  argument of the C{weights} argument can be set, but not both. It is fine to\n"
@@ -16408,10 +16411,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "computed by igraph.umap_compute_weights(). For example:\n"
    "C{weights = igraph.umap_compute_weights(graph, dist)}\n"
    "C{layout = graph.layout_umap(weights=weights)}\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: L McInnes, J Healy, J Melville: UMAP: Uniform Manifold Approximation\n"
-   "  and Projection for Dimension Reduction. arXiv:1802.03426.\n"
-   "@see: igraph.umap_compute_weights()\n\n"},
+   "@see: igraph.umap_compute_weights()\n"},
 
   ////////////////////////////
   // VISITOR-LIKE FUNCTIONS //
@@ -17363,6 +17363,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Attention: this function has a more convenient interface in class\n"
    "L{Graph}, which wraps the result in a L{Cut} object. It is advised\n"
    "to use that.\n\n"
+   "B{References}\n\n"
+   "  - M. Stoer, F. Wagner: A simple min-cut algorithm. I{Journal of the ACM}\n"
+   "    44(4):585-591, 1997.\n"
+   "  - A. V. Goldberg, R. E. Tarjan: A new approach to the maximum-flow problem.\n"
+   "    I{Journal of the ACM} 35(4):921-940, 1988.\n\n"
    "@param source: the source vertex ID. If C{None}, target must also be\n"
    "  {None} and the calculation will be done for the entire graph (i.e. all\n"
    "  possible vertex pairs).\n"
@@ -17374,12 +17379,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  same capacity.\n"
    "@return: the value of the minimum cut, the IDs of vertices in the\n"
    "  first and second partition, and the IDs of edges in the cut,\n"
-   "  packed in a 4-tuple\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: M. Stoer, F. Wagner: A simple min-cut algorithm. Journal of\n"
-   "  the ACM 44(4):585-591, 1997.\n"
-   "@ref: A. V. Goldberg, R. E. Tarjan: A new approach to the maximum-flow problem.\n"
-   "  Journal of the ACM 35(4):921-940, 1988.\n"
+   "  packed in a 4-tuple\n"
   },
 
   {"st_mincut", (PyCFunction) igraphmodule_Graph_st_mincut,
@@ -17416,13 +17416,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Returns a list containing all the minimal s-t separators of a graph.\n\n"
    "A minimal separator is a set of vertices whose removal disconnects the graph,\n"
    "while the removal of any subset of the set keeps the graph connected.\n\n"
+   "B{Reference}: Anne Berry, Jean-Paul Bordat and Olivier Cogis: Generating all the\n"
+   "minimal separators of a graph. In: Peter Widmayer, Gabriele Neyer and\n"
+   "Stephan Eidenbenz (eds.): Graph-theoretic concepts in computer science,\n"
+   "1665, 167-172, 1999. Springer.\n\n"
    "@return: a list where each item lists the vertex indices of a given\n"
    "  minimal s-t separator.\n"
-   "@newfield ref: Reference\n"
-   "@ref: Anne Berry, Jean-Paul Bordat and Olivier Cogis: Generating all the\n"
-   "  minimal separators of a graph. In: Peter Widmayer, Gabriele Neyer and\n"
-   "  Stephan Eidenbenz (eds.): Graph-theoretic concepts in computer science,\n"
-   "  1665, 167--172, 1999. Springer.\n"},
+  },
 
   {"is_minimal_separator", (PyCFunction) igraphmodule_Graph_is_minimal_separator,
    METH_VARARGS | METH_KEYWORDS,
@@ -17448,11 +17448,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "A vertex set is a separator if its removal disconnects the graph. This method\n"
    "lists all the separators for which no smaller separator set exists in the\n"
    "given graph.\n\n"
+   "B{Reference}: Arkady Kanevsky: Finding all minimum-size separating vertex\n"
+   "sets in a graph. I{Networks} 23:533-541, 1993.\n\n"
    "@return: a list where each item lists the vertex indices of a given\n"
    "  separator of minimum size.\n"
-   "@newfield ref: Reference\n"
-   "@ref: Arkady Kanevsky: Finding all minimum-size separating vertex sets\n"
-   "  in a graph. Networks 23:533--541, 1993.\n"},
+  },
 
   /*******************/
   /* COHESIVE BLOCKS */
@@ -17559,12 +17559,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "which can't be extended by adding any other vertex to it. A maximal\n"
    "independent vertex set is not necessarily one of the largest\n"
    "independent vertex sets in the graph.\n\n"
+   "B{Reference}: S. Tsukiyama, M. Ide, H. Ariyoshi and I. Shirawaka: A new\n"
+   "algorithm for generating all the maximal independent sets.\n"
+   "I{SIAM J Computing}, 6:505-517, 1977.\n\n"
    "@see: L{largest_independent_vertex_sets()} for the largest independent\n"
-   "  vertex sets\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: S. Tsukiyama, M. Ide, H. Ariyoshi and I. Shirawaka: I{A new\n"
-   "  algorithm for generating all the maximal independent sets}.\n"
-   "  SIAM J Computing, 6:505--517, 1977."},
+   "  vertex sets\n"
+  },
   {"independence_number",
    (PyCFunction) igraphmodule_Graph_independence_number,
    METH_NOARGS,
@@ -17600,6 +17600,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Attention: method overridden in L{Graph} to allow L{VertexClustering}\n"
    "objects as a parameter. This method is not strictly necessary, since\n"
    "the L{VertexClustering} class provides a variable called C{modularity}.\n\n"
+   "B{Reference}: MEJ Newman and M Girvan: Finding and evaluating community\n"
+   "structure in networks. I{Phys Rev E} 69 026113, 2004.\n\n"
    "@param membership: the membership vector, e.g. the vertex type index for\n"
    "  each vertex.\n"
    "@param weights: optional edge weights or C{None} if all edges are weighed\n"
@@ -17612,9 +17614,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  in- and out-degrees of nodes are treated separately; C{False} will treat\n"
    "  directed graphs as undirected.\n"
    "@return: the modularity score.\n"
-   "@newfield ref: Reference\n"
-   "@ref: MEJ Newman and M Girvan: Finding and evaluating community structure\n"
-   "  in networks. Phys Rev E 69 026113, 2004.\n"
   },
   {"modularity_matrix", (PyCFunction) igraphmodule_Graph_modularity_matrix,
    METH_VARARGS | METH_KEYWORDS,
@@ -17639,13 +17638,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "has at least degree k. (Degree here means the degree in the\n"
    "subgraph of course). The coreness of a vertex is M{k} if it\n"
    "is a member of the M{k}-core but not a member of the M{k+1}-core.\n\n"
+   "B{Reference}: Vladimir Batagelj, Matjaz Zaversnik: An M{O(m)} Algorithm\n"
+   "for Core Decomposition of Networks.\n\n"
    "@param mode: whether to compute the in-corenesses (C{\"in\"}), the\n"
    "  out-corenesses (C{\"out\"}) or the undirected corenesses (C{\"all\"}).\n"
    "  Ignored and assumed to be C{\"all\"} for undirected graphs.\n"
    "@return: the corenesses for each vertex.\n\n"
-   "@newfield ref: Reference\n"
-   "@ref: Vladimir Batagelj, Matjaz Zaversnik: I{An M{O(m)} Algorithm\n"
-   "  for Core Decomposition of Networks.}"},
+  },
   {"community_fastgreedy",
    (PyCFunction) igraphmodule_Graph_community_fastgreedy,
    METH_VARARGS | METH_KEYWORDS,
@@ -17658,15 +17657,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "in modularity.\n\n"
    "Attention: this function is wrapped in a more convenient syntax in the\n"
    "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
+   "B{Reference}: A. Clauset, M. E. J. Newman and C. Moore: Finding community\n"
+   "structure in very large networks. I{Phys Rev E} 70, 066111 (2004).\n\n"
    "@param weights: name of an edge attribute or a list containing\n"
    "  edge weights\n"
    "@return: a tuple with the following elements:\n"
    "  1. The list of merges\n"
    "  2. The modularity scores before each merge\n"
    "\n"
-   "@newfield ref: Reference\n"
-   "@ref: A. Clauset, M. E. J. Newman and C. Moore: I{Finding community\n"
-   "  structure in very large networks.} Phys Rev E 70, 066111 (2004).\n"
    "@see: modularity()\n"
   },
   {"community_infomap",
@@ -17676,7 +17674,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Finds the community structure of the network according to the Infomap\n"
    "method of Martin Rosvall and Carl T. Bergstrom.\n\n"
    "See U{http://www.mapequation.org} for a visualization of the algorithm\n"
-   "or one of the references provided below.\n\n"
+   "or one of the references provided below.\n"
+   "B{References}\n"
+   "  - M. Rosvall and C. T. Bergstrom: I{Maps of information flow reveal\n"
+   "    community structure in complex networks}. PNAS 105, 1118 (2008).\n"
+   "    U{http://arxiv.org/abs/0707.0609}\n"
+   "  - M. Rosvall, D. Axelsson and C. T. Bergstrom: I{The map equation}.\n"
+   "    I{Eur Phys J Special Topics} 178, 13 (2009).\n"
+   "    U{http://arxiv.org/abs/0906.1405}\n"
+   "\n"
    "@param edge_weights: name of an edge attribute or a list containing\n"
    "  edge weights.\n"
    "@param vertex_weights: name of an vertex attribute or a list containing\n"
@@ -17684,13 +17690,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param trials: the number of attempts to partition the network.\n"
    "@return: the calculated membership vector and the corresponding\n"
    "  codelength in a tuple.\n"
-   "\n"
-   "@newfield ref: Reference\n"
-   "@ref: M. Rosvall and C. T. Bergstrom: I{Maps of information flow reveal\n"
-   "  community structure in complex networks}. PNAS 105, 1118 (2008).\n"
-   "  U{http://arxiv.org/abs/0707.0609}\n"
-   "@ref: M. Rosvall, D. Axelsson and C. T. Bergstrom: I{The map equation}.\n"
-   "  Eur Phys J Special Topics 178, 13 (2009). U{http://arxiv.org/abs/0906.1405}\n"
   },
   {"community_label_propagation",
    (PyCFunction) igraphmodule_Graph_community_label_propagation,
@@ -17706,7 +17705,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Note that since ties are broken randomly, there is no guarantee that\n"
    "the algorithm returns the same community structure after each run.\n"
    "In fact, they frequently differ. See the paper of Raghavan et al\n"
-   "on how to come up with an aggregated community structure.\n\n"
+   "on how to come up with an aggregated community structure.\n"
+   "\n"
+   "B{Reference}: Raghavan, U.N. and Albert, R. and Kumara, S. Near linear\n"
+   "time algorithm to detect community structures in large-scale\n"
+   "networks. I{Phys Rev E} 76:036106, 2007.\n"
+   "U{http://arxiv.org/abs/0709.2938}.\n"
+   "\n"
    "@param weights: name of an edge attribute or a list containing\n"
    "  edge weights\n"
    "@param initial: name of a vertex attribute or a list containing\n"
@@ -17720,11 +17725,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  vertices cannot be fixed. Note that vertex attribute names are not\n"
    "  accepted here.\n"
    "@return: the resulting membership vector\n"
-   "\n"
-   "@newfield ref: Reference\n"
-   "@ref: Raghavan, U.N. and Albert, R. and Kumara, S. Near linear\n"
-   "  time algorithm to detect community structures in large-scale\n"
-   "  networks. Phys Rev E 76:036106, 2007. U{http://arxiv.org/abs/0709.2938}.\n"
   },
   {"community_leading_eigenvector", (PyCFunction) igraphmodule_Graph_community_leading_eigenvector,
    METH_VARARGS | METH_KEYWORDS,
@@ -17734,6 +17734,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "the original network. See the reference for details.\n\n"
    "Attention: this function is wrapped in a more convenient syntax in the\n"
    "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
+   "B{Reference}: MEJ Newman: Finding community structure in networks using the\n"
+   "eigenvectors of matrices, arXiv:physics/0605087\n\n"
    "@param n: the desired number of communities. If negative, the algorithm\n"
    "  tries to do as many splits as possible. Note that the algorithm\n"
    "  won't split a community further if the signs of the leading eigenvector\n"
@@ -17744,10 +17746,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param weights: name of an edge attribute or a list containing\n"
    "  edge weights\n"
    "@return: a tuple where the first element is the membership vector of the\n"
-   "  clustering and the second element is the merge matrix.\n\n"
-   "@newfield ref: Reference\n"
-  "@ref: MEJ Newman: Finding community structure in networks using the\n"
-  "  eigenvectors of matrices, arXiv:physics/0605087\n"
+   "  clustering and the second element is the merge matrix.\n"
   },
   {"community_multilevel",
    (PyCFunction) igraphmodule_Graph_community_multilevel,
@@ -17762,7 +17761,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "community in the original graph is shrank to a single vertex (while\n"
    "keeping the total weight of the incident edges) and the process continues\n"
    "on the next level. The algorithm stops when it is not possible to increase\n"
-   "the modularity any more after shrinking the communities to vertices.\n\n"
+   "the modularity any more after shrinking the communities to vertices.\n"
+   "\n"
+   "B{Reference}: VD Blondel, J-L Guillaume, R Lambiotte and E Lefebvre: Fast\n"
+   "unfolding of community hierarchies in large networks. J Stat Mech\n"
+   "P10008 (2008), U{http://arxiv.org/abs/0803.0476}\n"
+   "\n"
    "Attention: this function is wrapped in a more convenient syntax in the\n"
    "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
    "@param weights: name of an edge attribute or a list containing\n"
@@ -17778,11 +17782,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  vertex (if C{return_levels} is C{False}), or a list of community membership\n"
    "  vectors, one corresponding to each level and a list of corresponding\n"
    "  modularities (if C{return_levels} is C{True}).\n"
-   "\n"
-   "@newfield ref: Reference\n"
-   "@ref: VD Blondel, J-L Guillaume, R Lambiotte and E Lefebvre: Fast\n"
-   "  unfolding of community hierarchies in large networks. J Stat Mech\n"
-   "  P10008 (2008), http://arxiv.org/abs/0803.0476\n"
    "@see: modularity()\n"
   },
   {"community_edge_betweenness",
@@ -17904,14 +17903,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "in the same community. The method provides a dendrogram.\n\n"
    "Attention: this function is wrapped in a more convenient syntax in the\n"
    "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
+   "B{Reference}: Pascal Pons, Matthieu Latapy: Computing communities in large\n"
+   "networks using random walks, U{http://arxiv.org/abs/physics/0512106}.\n\n"
    "@param weights: name of an edge attribute or a list containing\n"
    "  edge weights\n"
    "@return: a tuple with the list of merges and the modularity scores corresponding\n"
    "  to each merge\n"
    "\n"
-   "@newfield ref: Reference\n"
-   "@ref: Pascal Pons, Matthieu Latapy: Computing communities in large networks\n"
-   "  using random walks, U{http://arxiv.org/abs/physics/0512106}.\n"
    "@see: modularity()\n"
   },
 
@@ -18007,8 +18005,7 @@ PyMemberDef igraphmodule_Graph_members[] = {
 PyDoc_STRVAR(
   igraphmodule_Graph_doc,
   "Low-level representation of a graph.\n\n"
-  "Don't use it directly, use L{igraph.Graph} instead.\n\n"
-  "@deffield ref: Reference"  /* tp_doc */
+  "Don't use it directly, use L{igraph.Graph} instead.\n" /* tp_doc */
 );
 
 int igraphmodule_Graph_register_type() {

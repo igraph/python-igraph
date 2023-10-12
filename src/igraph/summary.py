@@ -35,7 +35,7 @@ def _get_wrapper_for_width(width, *args, **kwds):
     """
     if width is None:
         return FakeWrapper(*args, **kwds)
-    return TextWrapper(width=width, *args, **kwds)
+    return TextWrapper(width, *args, **kwds)
 
 
 class GraphSummary:
@@ -231,14 +231,14 @@ class GraphSummary:
     def _construct_header(self):
         """Constructs the header part of the summary."""
         graph = self._graph
-        params = dict(
-            directed="UD"[graph.is_directed()],
-            named="-N"[graph.is_named()],
-            weighted="-W"[graph.is_weighted()],
-            typed="-T"["type" in graph.vertex_attributes()],
-            vcount=graph.vcount(),
-            ecount=graph.ecount(),
-        )
+        params = {
+            "directed": "UD"[graph.is_directed()],
+            "named": "-N"[graph.is_named()],
+            "weighted": "-W"[graph.is_weighted()],
+            "typed": "-T"["type" in graph.vertex_attributes()],
+            "vcount": graph.vcount(),
+            "ecount": graph.ecount(),
+        }
         if "name" in graph.attributes():
             params["name"] = graph["name"]
         else:

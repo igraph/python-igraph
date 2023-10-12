@@ -177,7 +177,7 @@ class LayoutAlgorithmTests(unittest.TestCase):
             self.assertAlmostEqual(0, sum(xs))
             self.assertAlmostEqual(0, sum(ys))
             for x, y in zip(xs, ys):
-                self.assertAlmostEqual(1, x ** 2 + y ** 2)
+                self.assertAlmostEqual(1, x**2 + y**2)
 
         g = Graph.Ring(8)
         layout = g.layout("circle")
@@ -229,9 +229,23 @@ class LayoutAlgorithmTests(unittest.TestCase):
 
     def testKamadaKawai(self):
         g = Graph.Barabasi(100)
+
         lo = g.layout(
             "kk", miny=[2] * 100, maxy=[3] * 100, minx=[4] * 100, maxx=[6] * 100
         )
+
+        self.assertTrue(isinstance(lo, Layout))
+        bbox = lo.bounding_box()
+        self.assertTrue(bbox.top >= 2)
+        self.assertTrue(bbox.bottom <= 3)
+        self.assertTrue(bbox.left >= 4)
+        self.assertTrue(bbox.right <= 6)
+
+        lo = g.layout(
+            "kk", miny=[2] * 100, maxy=[3] * 100, minx=[4] * 100, maxx=[6] * 100,
+            weights=range(10, g.ecount() + 10)
+        )
+
         self.assertTrue(isinstance(lo, Layout))
         bbox = lo.bounding_box()
         self.assertTrue(bbox.top >= 2)
@@ -256,19 +270,22 @@ class LayoutAlgorithmTests(unittest.TestCase):
         g = Graph()
 
         self.assertRaises(
-                InternalError, g.layout_umap,
-                min_dist=-0.01,
-            )
+            InternalError,
+            g.layout_umap,
+            min_dist=-0.01,
+        )
 
         self.assertRaises(
-                ValueError, g.layout_umap,
-                epochs=-1,
-            )
+            ValueError,
+            g.layout_umap,
+            epochs=-1,
+        )
 
         self.assertRaises(
-                ValueError, g.layout_umap,
-                dim=1,
-            )
+            ValueError,
+            g.layout_umap,
+            dim=1,
+        )
 
         # Empty graph
         lo = g.layout_umap()
@@ -282,17 +299,76 @@ class LayoutAlgorithmTests(unittest.TestCase):
 
         # Graph with two articulation points
         edges = [
-            0, 1, 0, 2, 0, 3, 1, 2, 1, 3, 2, 3,
-            3, 4, 4, 5, 5, 6,
-            6, 7, 7, 8, 6, 8, 7, 9, 6, 9, 8, 9, 7, 10, 8, 10, 9, 10,
-            10, 11, 9, 11, 8, 11, 7, 11,
-            ]
+            0,
+            1,
+            0,
+            2,
+            0,
+            3,
+            1,
+            2,
+            1,
+            3,
+            2,
+            3,
+            3,
+            4,
+            4,
+            5,
+            5,
+            6,
+            6,
+            7,
+            7,
+            8,
+            6,
+            8,
+            7,
+            9,
+            6,
+            9,
+            8,
+            9,
+            7,
+            10,
+            8,
+            10,
+            9,
+            10,
+            10,
+            11,
+            9,
+            11,
+            8,
+            11,
+            7,
+            11,
+        ]
         edges = list(zip(edges[::2], edges[1::2]))
         dist = [
-            0.1, 0.09, 0.12, 0.09, 0.1, 0.1,
-            0.9, 0.9, 0.9,
-            0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.08, 0.05, 0.1, 0.08, 0.12, 0.09, 0.11
-            ]
+            0.1,
+            0.09,
+            0.12,
+            0.09,
+            0.1,
+            0.1,
+            0.9,
+            0.9,
+            0.9,
+            0.2,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.08,
+            0.05,
+            0.1,
+            0.08,
+            0.12,
+            0.09,
+            0.11,
+        ]
         g = Graph(edges)
         lo = g.layout_umap(dist=dist, epochs=500)
         self.assertTrue(isinstance(lo, Layout))
@@ -302,8 +378,8 @@ class LayoutAlgorithmTests(unittest.TestCase):
         xmax, ymax, xmin, ymin = max(x), max(y), min(x), min(y)
         distmax = max(xmax - xmin, ymax - ymin)
         for iclu in range(0, 8, 7):
-            xclu = sum(x[iclu:iclu + 4]) / 4
-            yclu = sum(y[iclu:iclu + 4]) / 4
+            xclu = sum(x[iclu : iclu + 4]) / 4
+            yclu = sum(y[iclu : iclu + 4]) / 4
             for i in range(4):
                 dx = x[iclu + i] - xclu
                 dy = y[iclu + i] - yclu
@@ -327,8 +403,8 @@ class LayoutAlgorithmTests(unittest.TestCase):
         g = Graph(edges, directed=True)
         weights = umap_compute_weights(g, dist)
         self.assertEqual(
-            weights,
-            [1.0, 1.0, 1.0, 1.1253517471925912e-07, 6.14421235332821e-06, 0.0])
+            weights, [1.0, 1.0, 1.0, 1.1253517471925912e-07, 6.14421235332821e-06, 0.0]
+        )
 
     def testLGL(self):
         g = Graph.Barabasi(100)
@@ -355,7 +431,6 @@ class LayoutAlgorithmTests(unittest.TestCase):
         lo = g.layout("rt", root=["v0", "v100"])
         self.assertEqual(lo[100][1] - lo[0][1], 0)
 
-
     def testBipartite(self):
         g = Graph.Full_Bipartite(3, 2)
 
@@ -368,12 +443,8 @@ class LayoutAlgorithmTests(unittest.TestCase):
         self.assertEqual([3, 3, 3, 0, 0], ys)
 
         lo = g.layout("bipartite", hgap=5)
-        self.assertEqual(
-            set([0, 5, 10]), set(coord[0] for coord in lo if coord[1] == 1)
-        )
-        self.assertEqual(
-            set([2.5, 7.5]), set(coord[0] for coord in lo if coord[1] == 0)
-        )
+        self.assertEqual({0, 5, 10}, {coord[0] for coord in lo if coord[1] == 1})
+        self.assertEqual({2.5, 7.5}, {coord[0] for coord in lo if coord[1] == 0})
 
     def testDRL(self):
         # Regression test for bug #1091891
@@ -384,7 +455,9 @@ class LayoutAlgorithmTests(unittest.TestCase):
 
 def suite():
     layout_suite = unittest.defaultTestLoader.loadTestsFromTestCase(LayoutTests)
-    layout_algorithm_suite = unittest.defaultTestLoader.loadTestsFromTestCase(LayoutAlgorithmTests)
+    layout_algorithm_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        LayoutAlgorithmTests
+    )
     return unittest.TestSuite([layout_suite, layout_algorithm_suite])
 
 

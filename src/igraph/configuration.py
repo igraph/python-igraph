@@ -260,7 +260,7 @@ class Configuration:
             # Special case: retrieving all the keys within a section and
             # returning it in a dict
             keys = self._config.items(section)
-            return dict((key, self._get(section, key)) for key, _ in keys)
+            return {key: self._get(section, key) for key, _ in keys}
         else:
             return self._get(section, key)
 

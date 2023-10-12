@@ -1,5 +1,4 @@
 # vim:ts=4 sw=4 sts=4:
-import sys
 import unittest
 
 from igraph import Graph
@@ -151,7 +150,7 @@ class AttributeCombinationTests(unittest.TestCase):
         g = self.g
         g.simplify(combine_edges="random")
         del g.es["weight2"]
-        for i in range(100):
+        for _i in range(100):
             self.assertTrue(g.es[0]["weight"] in (1, 2))
             self.assertTrue(g.es[1]["weight"] == 3)
             self.assertTrue(g.es[2]["weight"] in (4, 5, 6))
@@ -198,7 +197,7 @@ class AttributeCombinationTests(unittest.TestCase):
     def testCombinationConcat(self):
         g = self.g
         g.es["name"] = list("ABCDEFG")
-        g.simplify(combine_edges=dict(name="concat"))
+        g.simplify(combine_edges={"name": "concat"})
         self.assertFalse("weight" in g.edge_attributes())
         self.assertFalse("weight2" in g.edge_attributes())
         self.assertTrue(g.es["name"] == ["AB", "C", "DEF"])
@@ -268,13 +267,19 @@ class UnicodeAttributeTests(unittest.TestCase):
 
 def suite():
     attribute_suite = unittest.defaultTestLoader.loadTestsFromTestCase(AttributeTests)
-    attribute_combination_suite = unittest.defaultTestLoader.loadTestsFromTestCase(AttributeCombinationTests)
-    unicode_attributes_suite = unittest.defaultTestLoader.loadTestsFromTestCase(UnicodeAttributeTests)
-    return unittest.TestSuite([
-        attribute_suite,
-        attribute_combination_suite,
-        unicode_attributes_suite,
-    ])
+    attribute_combination_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        AttributeCombinationTests
+    )
+    unicode_attributes_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        UnicodeAttributeTests
+    )
+    return unittest.TestSuite(
+        [
+            attribute_suite,
+            attribute_combination_suite,
+            unicode_attributes_suite,
+        ]
+    )
 
 
 def test():

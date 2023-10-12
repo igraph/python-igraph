@@ -5,7 +5,6 @@ This module contains routines to draw graphs on plotly surfaces.
 
 """
 
-from collections import defaultdict
 from warnings import warn
 
 from igraph._igraph import convex_hull, VertexSeq
@@ -59,6 +58,7 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                 "Positional arguments to plot functions are ignored "
                 "and will be deprecated soon.",
                 DeprecationWarning,
+                stacklevel=1,
             )
 
         # Some abbreviations for sake of simplicity
@@ -104,9 +104,6 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
         # Draw the highlighted groups (if any)
         if "mark_groups" in kwds:
             mark_groups = kwds["mark_groups"]
-
-            # Deferred import to avoid a cycle in the import graph
-            from igraph.clustering import VertexClustering, VertexCover
 
             # Figure out what to do with mark_groups in order to be able to
             # iterate over it and get memberlist-color pairs
@@ -202,6 +199,26 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
                 (vs[i], vertex_builder[i], layout[i]) for i in vertex_order
             )
 
+        # Construct the iterator that we will use to draw the edges
+        es = graph.es
+        if edge_order is None:
+            # Default edge order
+            edge_coord_iter = zip(es, edge_builder)
+        else:
+            # Specified edge order
+            edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
+
+        # Draw the edges
+        # We need the vertex builder to get the layout and offsets
+        if directed:
+            drawer_method = edge_drawer.draw_directed_edge
+        else:
+            drawer_method = edge_drawer.draw_undirected_edge
+        for edge, visual_edge in edge_coord_iter:
+            src, dest = edge.tuple
+            src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
+            drawer_method(visual_edge, src_vertex, dest_vertex)
+
         # Draw the vertices
         drawer_method = vertex_drawer.draw
         for vertex, visual_vertex, coords in vertex_coord_iter:
@@ -219,26 +236,6 @@ class PlotlyGraphDrawer(AbstractGraphDrawer):
         # Draw the vertex labels
         for vertex, coords in vertex_coord_iter:
             vertex_drawer.draw_label(vertex, coords, **kwds)
-
-        # Construct the iterator that we will use to draw the edges
-        es = graph.es
-        if edge_order is None:
-            # Default edge order
-            edge_coord_iter = zip(es, edge_builder)
-        else:
-            # Specified edge order
-            edge_coord_iter = ((es[i], edge_builder[i]) for i in edge_order)
-
-        # Draw the edges and labels
-        # We need the vertex builder to get the layout and offsets
-        if directed:
-            drawer_method = edge_drawer.draw_directed_edge
-        else:
-            drawer_method = edge_drawer.draw_undirected_edge
-        for edge, visual_edge in edge_coord_iter:
-            src, dest = edge.tuple
-            src_vertex, dest_vertex = vertex_builder[src], vertex_builder[dest]
-            drawer_method(visual_edge, src_vertex, dest_vertex)
 
         # Draw the edge labels
         labels = kwds.get("edge_label", None)

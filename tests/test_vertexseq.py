@@ -53,10 +53,10 @@ class VertexTests(unittest.TestCase):
         self.assertEqual(v["a"], 2)
 
         v.update_attributes([("a", 3), ("b", 4)], c=5, d=6)
-        self.assertEqual(v.attributes(), dict(a=3, b=4, c=5, d=6))
+        self.assertEqual(v.attributes(), {"a": 3, "b": 4, "c": 5, "d": 6})
 
-        v.update_attributes(dict(b=44, c=55))
-        self.assertEqual(v.attributes(), dict(a=3, b=44, c=55, d=6))
+        v.update_attributes({"b": 44, "c": 55})
+        self.assertEqual(v.attributes(), {"a": 3, "b": 44, "c": 55, "d": 6})
 
     def testPhantomVertex(self):
         v = self.g.vs[9]
@@ -99,7 +99,9 @@ class VertexTests(unittest.TestCase):
                     [edge.index for edge in vertex.neighbors(mode=mode)],
                 )
 
-    @unittest.skipIf(is_pypy, "skipped on PyPy because we do not have access to docstrings")
+    @unittest.skipIf(
+        is_pypy, "skipped on PyPy because we do not have access to docstrings"
+    )
     def testProxyMethods(self):
         # We only test with connected graphs because disconnected graphs might
         # print a warning when distances() is invoked on them and we want

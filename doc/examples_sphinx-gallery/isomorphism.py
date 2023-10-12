@@ -44,7 +44,7 @@ print(g2.isomorphic(g3))
 visual_style = {
     "vertex_color": "lightblue",
     "vertex_label": [0, 1, 2, 3, 4],
-    "vertex_size": 0.4,
+    "vertex_size": 25,
 }
 
 fig, axs = plt.subplots(1, 3)
@@ -66,6 +66,6 @@ ig.plot(
     target=axs[2],
     **visual_style,
 )
-fig.text(0.38, 0.5, '$\simeq$' if g1.isomorphic(g2) else '$\\neq$', fontsize=15, ha='center', va='center')
-fig.text(0.65, 0.5, '$\simeq$' if g2.isomorphic(g3) else '$\\neq$', fontsize=15, ha='center', va='center')
+fig.text(0.38, 0.5, '$\\simeq$' if g1.isomorphic(g2) else '$\\neq$', fontsize=15, ha='center', va='center')
+fig.text(0.65, 0.5, '$\\simeq$' if g2.isomorphic(g3) else '$\\neq$', fontsize=15, ha='center', va='center')
 plt.show()

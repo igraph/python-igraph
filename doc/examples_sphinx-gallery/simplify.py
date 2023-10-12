@@ -16,7 +16,7 @@ g1 = ig.Graph([
     (2, 3),
     (3, 4),
     (4, 0),
-    (0, 0), 
+    (0, 0),
     (1, 4),
     (1, 4),
     (0, 2),
@@ -39,7 +39,7 @@ g2.simplify()
 # choose a consistent visual style:
 visual_style = {
     "vertex_color": "lightblue",
-    "vertex_size": 0.4,
+    "vertex_size": 20,
     "vertex_label": [0, 1, 2, 3, 4],
 }
 

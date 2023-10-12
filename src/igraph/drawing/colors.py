@@ -86,8 +86,8 @@ class Palette(metaclass=ABCMeta):
             pass
         if isinstance(v, str):
             result = color_name_to_rgba(v)
-        elif hasattr(v, "__iter__"):    # lists, tuples etc
-            return v   # no need to cache
+        elif hasattr(v, "__iter__"):  # lists, tuples etc
+            return v  # no need to cache
         else:
             if v < 0:
                 raise IndexError("color index must be non-negative")
@@ -468,7 +468,9 @@ def color_name_to_rgba(color, palette=None):
             try:
                 components = palette.get(color)
             except AttributeError:
-                raise ValueError("palette index used when no palette was given") from None
+                raise ValueError(
+                    "palette index used when no palette was given"
+                ) from None
         if len(components) < 4:
             components += [1.0] * (4 - len(components))
     else:
@@ -1996,7 +1998,6 @@ known_colors = {
     "webgray": (0.5019607843137255, 0.5019607843137255, 0.5019607843137255, 1.0),
     "web green": (0.0, 0.5019607843137255, 0.0, 1.0),
     "webgreen": (0.0, 0.5019607843137255, 0.0, 1.0),
-    "webgray": (0.5019607843137255, 0.5019607843137255, 0.5019607843137255, 1.0),
     "web grey": (0.5019607843137255, 0.5019607843137255, 0.5019607843137255, 1.0),
     "webgrey": (0.5019607843137255, 0.5019607843137255, 0.5019607843137255, 1.0),
     "web maroon": (0.5019607843137255, 0.0, 0.0, 1.0),

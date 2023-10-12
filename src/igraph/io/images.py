@@ -266,7 +266,7 @@ def _write_graph_to_svg(
                     "font sizes must be specified in pixels "
                     "when any of the nodes has shape=3 (i.e. "
                     "node size determined by text size)"
-                )
+                ) from None
         tk_window = tk.Tk()
         font = tkinter.font.Font(
             root=tk_window, font=("Sans", font_size_in_pixels, tkinter.font.NORMAL)

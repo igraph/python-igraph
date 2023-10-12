@@ -489,7 +489,7 @@ class TriadCensus(tuple):
         if rowcount * colcount < maxidx:
             rowcount += 1
 
-        invmap = dict((v, k) for k, v in self._remap.items())
+        invmap = {v: k for k, v in self._remap.items()}
         result, row, idx = [], [], 0
         for _ in range(rowcount):
             for _ in range(colcount):
@@ -575,13 +575,13 @@ class UniqueIdGenerator:
     def reverse_dict(self):
         """Returns the reverse mapping, i.e., the one that maps from generated
         IDs to their corresponding objects"""
-        return dict((v, k) for k, v in self._ids.items())
+        return {v: k for k, v in self._ids.items()}
 
     def values(self):
         """Returns the values stored so far. If the generator generates items
         according to the standard sorting order, the values returned will be
         exactly in the order they were added. This holds for integer IDs for
         instance (but for many other ID generators as well)."""
-        return sorted(list(self._ids.keys()), key=self._ids.__getitem__)
+        return sorted(self._ids.keys(), key=self._ids.__getitem__)
 
     add = __getitem__

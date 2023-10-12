@@ -96,10 +96,9 @@ class RectangleDrawer(ShapeDrawer):
         height = height or width
         if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             return mpl.patches.Rectangle(
-                (center_x - width / 2, center_y - height / 2),
+                (-width / 2, -height / 2),
                 width,
                 height,
-                transform=ctx.transData,
                 clip_on=True,
                 **kwargs,
             )
@@ -169,9 +168,8 @@ class CircleDrawer(ShapeDrawer):
         @see: ShapeDrawer.draw_path"""
         if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             return mpl.patches.Circle(
-                (center_x, center_y),
+                (0, 0),
                 width / 2,
-                transform=ctx.transData,
                 clip_on=True,
                 **kwargs,
             )
@@ -211,7 +209,6 @@ class UpTriangleDrawer(ShapeDrawer):
             return mpl.patches.Polygon(
                 vertices,
                 closed=True,
-                transform=ctx.transData,
                 clip_on=True,
                 **kwargs,
             )
@@ -247,14 +244,13 @@ class DownTriangleDrawer(ShapeDrawer):
         height = height or width
         if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             vertices = [
-                [center_x - 0.5 * width, center_y + 0.333 * height],
-                [center_x + 0.5 * width, center_y + 0.333 * height],
-                [center_x, center_y - 0.667 * height],
+                [-0.5 * width, 0.333 * height],
+                [0.5 * width, 0.333 * height],
+                [0, -0.667 * height],
             ]
             return mpl.patches.Polygon(
                 vertices,
                 closed=True,
-                transform=ctx.transData,
                 clip_on=True,
                 **kwargs,
             )
@@ -291,15 +287,14 @@ class DiamondDrawer(ShapeDrawer):
         height = height or width
         if hasattr(plt, "Axes") and isinstance(ctx, plt.Axes):
             vertices = [
-                [center_x - 0.5 * width, center_y],
-                [center_x, center_y - 0.5 * height],
-                [center_x + 0.5 * width, center_y],
-                [center_x, center_y + 0.5 * height],
+                [-0.5 * width, 0],
+                [0, -0.5 * height],
+                [0.5 * width, 0],
+                [0, 0.5 * height],
             ]
             return mpl.patches.Polygon(
                 vertices,
                 closed=True,
-                transform=ctx.transData,
                 clip_on=True,
                 **kwargs,
             )
@@ -389,7 +384,7 @@ class ShapeDrawerDirectory:
         try:
             return cls.known_shapes[shape]
         except KeyError:
-            raise ValueError("unknown shape: %s" % shape)
+            raise ValueError("unknown shape: %s" % shape) from None
 
     @classmethod
     def resolve_default(cls, shape, default=NullDrawer):

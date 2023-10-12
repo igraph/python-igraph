@@ -42,7 +42,7 @@ Indexing and slicing can be performed and returns the coordinates of the request
 
 .. note:: The returned object is a list of lists with the coordinates, not an `igraph.layout.Layout`
    object. You can wrap the result into such an object easily:
-   
+
       >>> layout_subgraph = ig.Layout(coords=layout[:2])
 
 It is possible to perform linear transformations to the layout:
@@ -129,6 +129,11 @@ You can then further manipulate the axes and figure however you like via the `ax
 called them). This variant does not use `Cairo`_ directly and might be lacking some features that are available in the
 `Cairo`_ backend: please open an issue on Github to request specific features.
 
+.. note::
+   When plotting rooted trees, Cairo automatically puts the root on top of the image and
+   the leaves at the bottom. For `matplotlib`_, the root is usually at the bottom instead.
+   You can easily place the root on top by calling `ax.invert_yaxis()`.
+
 Plotting via `matplotlib`_ makes it easy to combine igraph with other plots. For instance, if you want to have a figure
 with two panels showing different aspects of some data set, say a graph and a bar plot, you can easily do that::
 
@@ -143,15 +148,17 @@ you might want to change the size and color of the vertices::
    >>> import matplotlib.pyplot as plt
    >>> fig, ax = plt.subplots()
    >>> ig.plot(g, target=ax)
-   >>> dot = ax.get_children()[0] # This is a Circle for the first vertex
-   >>> dot.set_color('tomato')
-   >>> dot.radius *= 2 # double the default radius
+   >>> artist = ax.get_children()[0] # This is a GraphArtist
+   >>> dots = artist.get_vertices()
+   >>> dot.set_facecolors(['tomato'] * g.vcount())
+   >>> dot.set_sizes(dot.get_sizes() * 2) # double the default radius
 
 That also helps as a workaround if you cannot figure out how to use the plotting options below: just use the defaults and
 then customize the appearance of your graph via standard `matplotlib`_ tools.
 
-.. note:: The order of `ax.get_children()` is the following: (i) patches for clustering hulls if requested;
-   (ii) patches for vertices; (iii) patches for edges: for undirected graphs, there's one patch per edge. For directed graphs, there's a *pair* of patches, associated with the arrow body and head, respectively. 
+.. note:: The order of `artist.get_children()` is the following: (i) one artist for clustering hulls if requested;
+   (ii) one artist for edges; (iii) one artist for vertices; (iv) one artist for **each** edge label; (v) one
+   artist for **each** vertex label.
 
 To use `matplotlib_` as your default plotting backend, you can set:
 

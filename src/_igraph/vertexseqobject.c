@@ -440,7 +440,7 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
     if (PyList_SetItem(newList, 0, values)) {  /* reference stolen here */
       return -1;
     }
-    
+
     result = igraphmodule_VertexSeq_set_attribute_values_mapping(self, attrname, newList);
     Py_DECREF(newList);
 
@@ -1121,8 +1121,7 @@ PyMemberDef igraphmodule_VertexSeq_members[] = {
 PyDoc_STRVAR(
   igraphmodule_VertexSeq_doc,
   "Low-level representation of a vertex sequence.\n\n" /* tp_doc */
-  "Don't use it directly, use L{igraph.VertexSeq} instead.\n\n"
-  "@deffield ref: Reference"
+  "Don't use it directly, use L{igraph.VertexSeq} instead.\n"
 );
 
 int igraphmodule_VertexSeq_register_type() {
@@ -1139,7 +1138,7 @@ int igraphmodule_VertexSeq_register_type() {
 
     { Py_mp_subscript, igraphmodule_VertexSeq_get_attribute_values_mapping },
     { Py_mp_ass_subscript, igraphmodule_VertexSeq_set_attribute_values_mapping },
-  
+
     { 0 }
   };
 

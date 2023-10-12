@@ -110,7 +110,7 @@ int igraphmodule_EdgeSeq_init(igraphmodule_EdgeSeqObject *self, PyObject *args, 
   } else if (PyLong_Check(esobj)) {
     /* We selected a single edge */
     igraph_integer_t idx;
-    
+
     if (igraphmodule_PyObject_to_integer_t(esobj, &idx)) {
       return -1;
     }
@@ -355,7 +355,7 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
           Py_DECREF(result);
           return 0;
         }
-        
+
         Py_INCREF(item);
 
         if (PyList_SetItem(result, i, item)) {
@@ -1078,8 +1078,7 @@ PyMemberDef igraphmodule_EdgeSeq_members[] = {
 PyDoc_STRVAR(
   igraphmodule_EdgeSeq_doc,
   "Low-level representation of an edge sequence.\n\n" /* tp_doc */
-  "Don't use it directly, use L{igraph.EdgeSeq} instead.\n\n"
-  "@deffield ref: Reference"
+  "Don't use it directly, use L{igraph.EdgeSeq} instead.\n"
 );
 
 int igraphmodule_EdgeSeq_register_type() {
@@ -1096,7 +1095,7 @@ int igraphmodule_EdgeSeq_register_type() {
 
     { Py_mp_subscript, igraphmodule_EdgeSeq_get_attribute_values_mapping },
     { Py_mp_ass_subscript, igraphmodule_EdgeSeq_set_attribute_values_mapping },
-  
+
     { 0 }
   };
 

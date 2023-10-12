@@ -55,7 +55,7 @@ ig.plot(
     target=ax1,
     mark_groups=True,
     palette=palette1,
-    vertex_size=0.1,
+    vertex_size=15,
     edge_width=0.5,
 )
 fig1.set_size_inches(20, 20)
@@ -67,8 +67,8 @@ fig1.set_size_inches(20, 20)
 # for each node in the original graph:
 layout = g.layout_kamada_kawai()
 g.vs["x"], g.vs["y"] = list(zip(*layout))
-g.vs["size"] = 1
-g.es["size"] = 1
+g.vs["size"] = 15
+g.es["size"] = 15
 
 # %%
 # Then we can generate the cluster graph that compresses each community into a
@@ -114,7 +114,7 @@ ig.plot(
     target=ax2,
     palette=palette1,
     # set a minimum size on vertex_size, otherwise vertices are too small
-    vertex_size=[max(0.2, size / 20) for size in cluster_graph.vs["size"]],
+    vertex_size=[max(20, size) for size in cluster_graph.vs["size"]],
     edge_color=g.es["color"],
     edge_width=0.8,
 )

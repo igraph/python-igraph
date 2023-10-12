@@ -4,7 +4,7 @@ on: [push, pull_request]
 env:
   CIBW_ENVIRONMENT_PASS_LINUX: PYTEST_TIMEOUT
   CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test]' && python -m pytest -v tests"
-  CIBW_SKIP: "cp36-*"
+  CIBW_SKIP: "cp36-* cp37-* pp37-*"
   PYTEST_TIMEOUT: 60
   MACOSX_DEPLOYMENT_TARGET: "10.9"
 
@@ -34,9 +34,8 @@ jobs:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
           # Skip tests for Python 3.10 onwards because SciPy does not have
-          # 32-bit wheels for Linux. Also skip tests for Python 3.12 until
-          # NumPy 1.26 is out (with Python 3.12 wheels)
-          CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-manylinux_i686 cp312-manylinux_i686 cp312-*"
+          # 32-bit wheels for Linux
+          CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-manylinux_i686 cp312-manylinux_i686"
 
       - name: Build wheels (musllinux)
         uses: pypa/cibuildwheel@v2.16.2
@@ -69,9 +68,6 @@ jobs:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
-          # Skip tests for Python 3.12 until NumPy 1.26 is out (with Python
-          # 3.12 wheels)
-          CIBW_TEST_SKIP: "cp312-*"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -98,9 +94,6 @@ jobs:
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-musllinux_aarch64"
           CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
-          # Skip tests for Python 3.12 until NumPy 1.26 is out (with Python
-          # 3.12 wheels)
-          CIBW_TEST_SKIP: "cp312-*"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -168,9 +161,6 @@ jobs:
           CIBW_BEFORE_BUILD: "python setup.py build_c_core"
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
-          # Skip tests for Python 3.12 until NumPy 1.26 is out (with Python
-          # 3.12 wheels)
-          CIBW_TEST_SKIP: "cp312-*"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -179,7 +169,7 @@ jobs:
   build_wheel_wasm:
     name: Build wheels for WebAssembly
     runs-on: ubuntu-20.04
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -191,15 +181,27 @@ jobs:
         with:
           python-version: '3.11.2'
 
+      - name: Install OS dependencies
+        run:
+          sudo apt install ninja-build cmake flex bison
+
       - uses: mymindstorm/setup-emsdk@v12
         with:
-          version: '3.1.32'
+          version: '3.1.45'
           actions-cache-folder: 'emsdk-cache'
 
       - name: Build wheel
         run: |
-          pip install pyodide-build==0.23.4
+          pip install pyodide-build==0.24.1
+          python3 scripts/fix_pyodide_build.py
           pyodide build
+
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        if: ${{ failure() }}
+        with:
+          limit-access-to-actor: true
+          wait-timeout-minutes: 5
 
       - uses: actions/upload-artifact@v3
         with:
@@ -259,9 +261,8 @@ jobs:
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
           CIBW_TEST_COMMAND: "cd /d {project} && pip install --prefer-binary \".[test]\" && python -m pytest tests"
           # Skip tests for Python 3.10 onwards because SciPy does not have
-          # 32-bit wheels for Windows. Also skip tests for Python 3.12 until
-          # NumPy 1.26 is out (with Python 3.12 wheels)
-          CIBW_TEST_SKIP: "cp310-win32 cp311-win32 cp312-win32 cp312-*"
+          # 32-bit wheels for Windows
+          CIBW_TEST_SKIP: "cp310-win32 cp311-win32 cp312-win32"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
           IGRAPH_STATIC_EXTENSION: True
@@ -326,7 +327,7 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
-          
+
       - name: Cache installed C core
         id: cache-c-core
         uses: actions/cache@v3
@@ -344,7 +345,11 @@ jobs:
       - uses: actions/setup-python@v4
         name: Install Python
         with:
-          python-version: '3.11'
+          python-version: '3.12'
+
+      - name: Install test dependencies
+        run: |
+          pip install --prefer-binary pytest pytest-timeout setuptools
 
       - name: Build C core
         env:
@@ -358,10 +363,6 @@ jobs:
         run: |
           # NOTE: install calls "build" first
           python setup.py install
-
-      - name: Install test dependencies
-        run: |
-          pip install --prefer-binary pytest pytest-timeout
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.

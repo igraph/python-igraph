@@ -59,7 +59,7 @@ ig.plot(
     g,
     target=ax,
     layout=layout,
-    vertex_size=0.4,
+    vertex_size=30,
     vertex_label=range(g.vcount()),
     vertex_color=["lightblue" if i < 9 else "orange" for i in range(11)],
     edge_width=[1.0 + flow.flow[i] for i in range(g.ecount())]

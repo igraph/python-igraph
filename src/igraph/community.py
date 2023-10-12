@@ -1,6 +1,6 @@
 from igraph._igraph import GraphBase
 from igraph.clustering import VertexDendrogram, VertexClustering
-from igraph.utils import deprecated, safemax
+from igraph.utils import deprecated
 
 from typing import List, Sequence, Tuple
 
@@ -15,24 +15,34 @@ def _community_fastgreedy(graph, weights=None):
 
     This algorithm is said to run almost in linear time on sparse graphs.
 
+    B{Reference}: A Clauset, MEJ Newman and C Moore: Finding community structure
+    in very large networks. I{Phys Rev E} 70, 066111 (2004).
+
     @param weights: edge attribute name or a list containing edge
       weights
     @return: an appropriate L{VertexDendrogram} object.
-
-    @newfield ref: Reference
-    @ref: A Clauset, MEJ Newman and C Moore: Finding community structure
-      in very large networks. Phys Rev E 70, 066111 (2004).
     """
     merges, qs = GraphBase.community_fastgreedy(graph, weights)
     optimal_count = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
     return VertexDendrogram(
-        graph, merges, optimal_count, modularity_params=dict(weights=weights)
+        graph, merges, optimal_count, modularity_params={"weights": weights}
     )
 
 
 def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10):
     """Finds the community structure of the network according to the Infomap
     method of Martin Rosvall and Carl T. Bergstrom.
+
+    B{References}
+
+      - M. Rosvall and C. T. Bergstrom: Maps of information flow reveal
+        community structure in complex networks, I{PNAS} 105, 1118 (2008).
+        U{http://dx.doi.org/10.1073/pnas.0706851105},
+        U{http://arxiv.org/abs/0707.0609}.
+      - M. Rosvall, D. Axelsson, and C. T. Bergstrom: The map equation,
+        I{Eur Phys. J Special Topics} 178, 13 (2009).
+        U{http://dx.doi.org/10.1140/epjst/e2010-01179-1},
+        U{http://arxiv.org/abs/0906.1405}.
 
     @param edge_weights: name of an edge attribute or a list containing
       edge weights.
@@ -42,16 +52,6 @@ def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10)
     @return: an appropriate L{VertexClustering} object with an extra attribute
       called C{codelength} that stores the code length determined by the
       algorithm.
-
-    @newfield ref: Reference
-    @ref: M. Rosvall and C. T. Bergstrom: Maps of information flow reveal
-      community structure in complex networks, PNAS 105, 1118 (2008).
-      U{http://dx.doi.org/10.1073/pnas.0706851105},
-      U{http://arxiv.org/abs/0707.0609}.
-    @ref: M. Rosvall, D. Axelsson, and C. T. Bergstrom: The map equation,
-      Eur. Phys. J. Special Topics 178, 13 (2009).
-      U{http://dx.doi.org/10.1140/epjst/e2010-01179-1},
-      U{http://arxiv.org/abs/0906.1405}.
     """
     membership, codelength = GraphBase.community_infomap(
         graph, edge_weights, vertex_weights, trials
@@ -73,6 +73,9 @@ def _community_leading_eigenvector(
     each split is done by maximizing the modularity regarding the
     original network.
 
+    B{Reference}: MEJ Newman: Finding community structure in networks using the
+    eigenvectors of matrices, arXiv:physics/0605087
+
     @param clusters: the desired number of communities. If C{None}, the
       algorithm tries to do as many splits as possible. Note that the
       algorithm won't split a community further if the signs of the leading
@@ -84,14 +87,11 @@ def _community_leading_eigenvector(
       the ARPACK eigenvector calculation. If omitted, the module-level
       variable called C{arpack_options} is used.
     @return: an appropriate L{VertexClustering} object.
-
-    @newfield ref: Reference
-    @ref: MEJ Newman: Finding community structure in networks using the
-    eigenvectors of matrices, arXiv:physics/0605087"""
+    """
     if clusters is None:
         clusters = -1
 
-    kwds = dict(weights=weights)
+    kwds = {"weights": weights}
     if arpack_options is not None:
         kwds["arpack_options"] = arpack_options
 
@@ -123,6 +123,10 @@ def _community_label_propagation(graph, weights=None, initial=None, fixed=None):
     labels that belonged to different communities, they will still be in
     different communities at the end.
 
+    B{Reference}: Raghavan, U.N. and Albert, R. and Kumara, S. Near linear
+    time algorithm to detect community structures in large-scale networks.
+    I{Phys Rev} E 76:036106, 2007. U{http://arxiv.org/abs/0709.2938}.
+
     @param weights: name of an edge attribute or a list containing
       edge weights
     @param initial: name of a vertex attribute or a list containing
@@ -136,17 +140,11 @@ def _community_label_propagation(graph, weights=None, initial=None, fixed=None):
       vertices cannot be fixed. It may also be the name of a vertex
       attribute; each attribute value will be interpreted as a Boolean.
     @return: an appropriate L{VertexClustering} object.
-
-    @newfield ref: Reference
-    @ref: Raghavan, U.N. and Albert, R. and Kumara, S. Near linear
-      time algorithm to detect community structures in large-scale
-      networks. Phys Rev E 76:036106, 2007.
-      U{http://arxiv.org/abs/0709.2938}.
     """
     if isinstance(fixed, str):
         fixed = [bool(o) for o in graph.vs[fixed]]
     cl = GraphBase.community_label_propagation(graph, weights, initial, fixed)
-    return VertexClustering(graph, cl, modularity_params=dict(weights=weights))
+    return VertexClustering(graph, cl, modularity_params={"weights": weights})
 
 
 def _community_multilevel(graph, weights=None, return_levels=False, resolution=1):
@@ -165,6 +163,10 @@ def _community_multilevel(graph, weights=None, return_levels=False, resolution=1
 
     This algorithm is said to run almost in linear time on sparse graphs.
 
+    B{Reference}: VD Blondel, J-L Guillaume, R Lambiotte and E Lefebvre: Fast
+    unfolding of community hierarchies in large networks, I{J Stat Mech}
+    P10008 (2008). U{http://arxiv.org/abs/0803.0476}
+
     @param weights: edge attribute name or a list containing edge
       weights
     @param return_levels: if C{True}, the communities at each level are
@@ -177,16 +179,11 @@ def _community_multilevel(graph, weights=None, return_levels=False, resolution=1
     @return: a list of L{VertexClustering} objects, one corresponding to
       each level (if C{return_levels} is C{True}), or a L{VertexClustering}
       corresponding to the best modularity.
-
-    @newfield ref: Reference
-    @ref: VD Blondel, J-L Guillaume, R Lambiotte and E Lefebvre: Fast
-      unfolding of community hierarchies in large networks, J Stat Mech
-      P10008 (2008), http://arxiv.org/abs/0803.0476
     """
     if graph.is_directed():
         raise ValueError("input graph must be undirected")
 
-    modularity_params = dict(weights=weights, resolution=resolution)
+    modularity_params = {"weights": weights, "resolution": resolution}
     if return_levels:
         levels, qs = GraphBase.community_multilevel(
             graph, weights, return_levels=True, resolution=resolution
@@ -194,9 +191,7 @@ def _community_multilevel(graph, weights=None, return_levels=False, resolution=1
         result = []
         for level, q in zip(levels, qs):
             result.append(
-                VertexClustering(
-                    graph, level, q, modularity_params=modularity_params
-                )
+                VertexClustering(graph, level, q, modularity_params=modularity_params)
             )
     else:
         membership = GraphBase.community_multilevel(
@@ -257,18 +252,30 @@ def _community_edge_betweenness(graph, clusters=None, directed=True, weights=Non
     merges, qs = GraphBase.community_edge_betweenness(graph, directed, weights)
     if clusters is None:
         if qs is not None:
-            clusters = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
+            clusters = _optimal_cluster_count_from_merges_and_modularity(
+                graph, merges, qs
+            )
         else:
             clusters = 1
 
     return VertexDendrogram(
-        graph, merges, clusters, modularity_params=dict(weights=weights)
+        graph, merges, clusters, modularity_params={"weights": weights}
     )
 
 
 def _community_spinglass(graph, *args, **kwds):
     """Finds the community structure of the graph according to the
     spinglass community detection method of Reichardt & Bornholdt.
+
+    B{References}
+
+      - Reichardt J and Bornholdt S: Statistical mechanics of community
+        detection. I{Phys Rev E} 74:016110 (2006).
+        U{http://arxiv.org/abs/cond-mat/0603718}.
+
+      - Traag VA and Bruggeman J: Community detection in networks
+        with positive and negative links. I{Phys Rev E} 80:036115 (2009).
+        U{http://arxiv.org/abs/0811.2329}.
 
     @keyword weights: edge weights to be used. Can be a sequence or
       iterable or even an edge attribute name.
@@ -304,18 +311,10 @@ def _community_spinglass(graph, *args, **kwds):
       at the end of the argument name; this is due to the fact that
       lambda is a reserved keyword in Python.
     @return: an appropriate L{VertexClustering} object.
-
-    @newfield ref: Reference
-    @ref: Reichardt J and Bornholdt S: Statistical mechanics of
-      community detection. Phys Rev E 74:016110 (2006).
-      U{http://arxiv.org/abs/cond-mat/0603718}.
-    @ref: Traag VA and Bruggeman J: Community detection in networks
-      with positive and negative links. Phys Rev E 80:036115 (2009).
-      U{http://arxiv.org/abs/0811.2329}.
     """
     membership = GraphBase.community_spinglass(graph, *args, **kwds)
     if "weights" in kwds:
-        modularity_params = dict(weights=kwds["weights"])
+        modularity_params = {"weights": kwds["weights"]}
     else:
         modularity_params = {}
     return VertexClustering(graph, membership, modularity_params=modularity_params)
@@ -329,21 +328,20 @@ def _community_walktrap(graph, weights=None, steps=4):
     in the same community. The result of the clustering will be represented
     as a dendrogram.
 
+    B{Reference}: Pascal Pons, Matthieu Latapy: Computing communities in large
+    networks using random walks, U{http://arxiv.org/abs/physics/0512106}.
+
     @param weights: name of an edge attribute or a list containing
       edge weights
     @param steps: length of random walks to perform
 
     @return: a L{VertexDendrogram} object, initially cut at the maximum
       modularity.
-
-    @newfield ref: Reference
-    @ref: Pascal Pons, Matthieu Latapy: Computing communities in large
-      networks using random walks, U{http://arxiv.org/abs/physics/0512106}.
     """
     merges, qs = GraphBase.community_walktrap(graph, weights, steps)
     optimal_count = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
     return VertexDendrogram(
-        graph, merges, optimal_count, modularity_params=dict(weights=weights)
+        graph, merges, optimal_count, modularity_params={"weights": weights}
     )
 
 
@@ -399,6 +397,10 @@ def _community_leiden(
     """Finds the community structure of the graph using the Leiden
     algorithm of Traag, van Eck & Waltman.
 
+    B{Reference}: Traag, V. A., Waltman, L., & van Eck, N. J. (2019). From Louvain
+    to Leiden: guaranteeing well-connected communities. I{Scientific Reports},
+    9(1), 5233. doi: 10.1038/s41598-019-41695-z
+
     @param objective_function: whether to use the Constant Potts
       Model (CPM) or modularity. Must be either C{"CPM"} or C{"modularity"}.
     @param weights: edge weights to be used. Can be a sequence or
@@ -423,11 +425,6 @@ def _community_leiden(
     @return: an appropriate L{VertexClustering} object with an extra attribute
       called C{quality} that stores the value of the internal quality function
       optimized by the algorithm.
-
-    @newfield ref: Reference
-    @ref: Traag, V. A., Waltman, L., & van Eck, N. J. (2019). From Louvain
-      to Leiden: guaranteeing well-connected communities. Scientific
-      reports, 9(1), 5233. doi: 10.1038/s41598-019-41695-z
     """
     if objective_function.lower() not in ("cpm", "modularity"):
         raise ValueError('objective_function must be "CPM" or "modularity".')
@@ -440,7 +437,7 @@ def _community_leiden(
         resolution = kwds.pop("resolution_parameter")
 
     if kwds:
-        raise TypeError('unexpected keyword argument')
+        raise TypeError("unexpected keyword argument")
 
     membership, quality = GraphBase.community_leiden(
         graph,
@@ -484,6 +481,9 @@ def _modularity(self, membership, weights=None, resolution=1, directed=True):
     total weight of edges adjacent to vertex M{j} and M{m} is the total
     edge weight in the graph.
 
+    B{Reference}: MEJ Newman and M Girvan: Finding and evaluating community
+    structure in networks. I{Phys Rev E} 69 026113, 2004.
+
     @param membership: a membership list or a L{VertexClustering} object
     @param weights: optional edge weights or C{None} if all edges are
       weighed equally. Attribute names are also allowed.
@@ -495,10 +495,6 @@ def _modularity(self, membership, weights=None, resolution=1, directed=True):
       in- and out-degrees of nodes are treated separately; C{False} will treat
       directed graphs as undirected.
     @return: the modularity score
-
-    @newfield ref: Reference
-    @ref: MEJ Newman and M Girvan: Finding and evaluating community
-      structure in networks. Phys Rev E 69 026113, 2004.
     """
     if isinstance(membership, VertexClustering):
         if membership.graph != self:

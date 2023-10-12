@@ -202,7 +202,7 @@ pip install git+https://github.com/igraph/python-igraph@develop
 In addition to `git`, the installation of the development version requires some
 additional dependencies, read further below for details.
 
-For more information about installing directly from `git` using `pip` see 
+For more information about installing directly from `git` using `pip` see
 https://pip.pypa.io/en/stable/topics/vcs-support/#git.
 
 Alternatively, you can clone this repository locally. This repository contains a
@@ -290,7 +290,7 @@ faster than the first one as the C core does not need to be recompiled.
 
 We aim to keep up with the development cycle of Python and support all official
 Python versions that have not reached their end of life yet. Currently this
-means that we support Python 3.7 to 3.11, inclusive. Please refer to [this
+means that we support Python 3.8 to 3.12, inclusive. Please refer to [this
 page](https://devguide.python.org/versions/) for the status of Python
 branches and let us know if you encounter problems with `igraph` on any
 of the non-EOL Python versions.
@@ -314,4 +314,3 @@ There are also some subtle differences between the CPython and PyPy versions:
 
 - ``GraphBase`` is hashable and iterable in PyPy but not in CPython. Since
   ``GraphBase`` is internal anyway, this is likely to stay this way.
-

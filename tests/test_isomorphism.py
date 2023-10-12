@@ -423,22 +423,32 @@ class AutomorphismTests(unittest.TestCase):
             [
                 [0, 1, 2, 7, 5, 4, 6, 3, 9, 8],
                 [0, 4, 3, 8, 5, 1, 9, 2, 6, 7],
-                [1, 2, 3, 8, 6, 0, 7, 4, 5, 9]
-            ]
+                [1, 2, 3, 8, 6, 0, 7, 4, 5, 9],
+            ],
         )
 
 
 def suite():
-    isomorphism_suite = unittest.defaultTestLoader.loadTestsFromTestCase(IsomorphismTests)
-    subisomorphism_suite = unittest.defaultTestLoader.loadTestsFromTestCase(SubisomorphismTests)
-    permutation_suite = unittest.defaultTestLoader.loadTestsFromTestCase(PermutationTests)
-    automorphism_suite = unittest.defaultTestLoader.loadTestsFromTestCase(AutomorphismTests)
-    return unittest.TestSuite([
-        isomorphism_suite,
-        subisomorphism_suite,
-        permutation_suite,
-        automorphism_suite,
-    ])
+    isomorphism_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        IsomorphismTests
+    )
+    subisomorphism_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        SubisomorphismTests
+    )
+    permutation_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        PermutationTests
+    )
+    automorphism_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        AutomorphismTests
+    )
+    return unittest.TestSuite(
+        [
+            isomorphism_suite,
+            subisomorphism_suite,
+            permutation_suite,
+            automorphism_suite,
+        ]
+    )
 
 
 def test():

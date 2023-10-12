@@ -1,22 +1,22 @@
 /* vim:set ts=4 sw=2 sts=2 et:  */
-/* 
+/*
    IGraph library - Python interface.
    Copyright (C) 2006-2011  Tamas Nepusz <ntamas@gmail.com>
    5 Avenue Road, Staines, Middlesex, TW18 3AW, United Kingdom
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 
+   Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301 USA
 
 */
@@ -51,21 +51,11 @@ char* PyUnicode_CopyAsString(PyObject* string);
 
 /* Calling Py_DECREF() on heap-allocated types in tp_dealloc was not needed
  * before Python 3.8 (see Python issue 35810) */
-#if PY_VERSION_HEX >= 0x03080000
-  #define PY_FREE_AND_DECREF_TYPE(obj, base_type) {    \
-    PyTypeObject* _tp = Py_TYPE(obj);       \
-    ((freefunc)PyType_GetSlot(_tp, Py_tp_free))(obj); \
-    Py_DECREF(_tp); \
-  }
-#else
-  #define PY_FREE_AND_DECREF_TYPE(obj, base_type) {    \
-    PyTypeObject* _tp = Py_TYPE(obj);       \
-    ((freefunc)PyType_GetSlot(_tp, Py_tp_free))(obj); \
-    if (_tp == base_type) { \
-      Py_DECREF(_tp); \
-    } \
-  }
-#endif
+#define PY_FREE_AND_DECREF_TYPE(obj, base_type) {    \
+  PyTypeObject* _tp = Py_TYPE(obj);       \
+  ((freefunc)PyType_GetSlot(_tp, Py_tp_free))(obj); \
+  Py_DECREF(_tp); \
+}
 
 #define CHECK_SSIZE_T_RANGE(value, message) {   \
   if ((value) < 0) {                             \

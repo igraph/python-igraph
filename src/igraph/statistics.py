@@ -405,7 +405,7 @@ class RunningMean:
     @property
     def var(self):
         """Returns the current variation"""
-        return self._sd ** 2
+        return self._sd**2
 
     def __repr__(self):
         return "%s(n=%r, mean=%r, sd=%r)" % (
@@ -505,6 +505,13 @@ def percentile(xs, p=(25, 50, 75), sort=True):
 def power_law_fit(data, xmin=None, method="auto", p_precision=0.01):
     """Fitting a power-law distribution to empirical data
 
+    B{References}
+
+      - MEJ Newman: Power laws, Pareto distributions and Zipf's law.
+        I{Contemporary Physics} 46, 323-351 (2005)
+      - A Clauset, CR Shalizi, MEJ Newman: Power-law distributions
+        in empirical data. E-print (2007). arXiv:0706.1062
+
     @param data: the data to fit, a list containing integer values
     @param xmin: the lower bound for fitting the power-law. If C{None},
       the optimal xmin value will be estimated as well. Zero means that
@@ -539,12 +546,6 @@ def power_law_fit(data, xmin=None, method="auto", p_precision=0.01):
     @return: a L{FittedPowerLaw} object. The fitted C{xmin} value and the
       power-law exponent can be queried from the C{xmin} and C{alpha}
       properties of the returned object.
-
-    @newfield ref: Reference
-    @ref: MEJ Newman: Power laws, Pareto distributions and Zipf's law.
-      Contemporary Physics 46, 323-351 (2005)
-    @ref: A Clauset, CR Shalizi, MEJ Newman: Power-law distributions
-      in empirical data. E-print (2007). arXiv:0706.1062
     """
     from igraph._igraph import _power_law_fit
 

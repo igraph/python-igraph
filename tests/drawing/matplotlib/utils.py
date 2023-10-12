@@ -34,7 +34,6 @@ def _unittest_image_comparison(
     This function creates a decorator that wraps a figure-generating function
     with image comparison code.
     """
-    import unittest
 
     def decorator(func):
         old_sig = inspect.signature(func)
@@ -108,8 +107,8 @@ def image_comparison(
         "_classic_test_patch"]``.
     """
     if savefig_kwarg is None:
-        savefig_kwarg = dict()  # default no kwargs to savefig
-    if sys.maxsize <= 2 ** 32:
+        savefig_kwarg = {}  # default no kwargs to savefig
+    if sys.maxsize <= 2**32:
         tol += 0.06
     return _unittest_image_comparison(
         baseline_images=baseline_images,

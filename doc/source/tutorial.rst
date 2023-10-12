@@ -117,7 +117,7 @@ If you try to add edges to vertices with invalid IDs (i.e., you try to add an ed
     File "/usr/lib/python3.10/site-packages/igraph/__init__.py", line 376, in add_edges
       res = GraphBase.add_edges(self, es)
   igraph._igraph.InternalError: Error at src/graph/type_indexededgelist.c:270: cannot add edges. -- Invalid vertex id
- 
+
 The message tries to explain what went wrong (``cannot add edges. -- Invalid
 vertex id``) along with the corresponding line in the source code where the error
 occurred.
@@ -554,7 +554,7 @@ you look them up by names, the other one will be available only by its index.
 Treating a graph as an adjacency matrix
 =======================================
 
-Adjacency matrix is another way to form a graph. In adjacency matrix, rows and columns are labeled by graph vertices: the elements of the matrix indicate whether the vertices *i* and *j* have a common edge (*i, j*). 
+Adjacency matrix is another way to form a graph. In adjacency matrix, rows and columns are labeled by graph vertices: the elements of the matrix indicate whether the vertices *i* and *j* have a common edge (*i, j*).
 The adjacency matrix for the example graph is
 
 ::
@@ -691,6 +691,11 @@ If you prefer to use `matplotlib`_ as a plotting engine, create an axes and use 
    :alt: The visual representation of our social network (matplotlib backend)
    :align: center
 
+.. note::
+   When plotting rooted trees, Cairo automatically puts the root on top of the image and
+   the leaves at the bottom. For `matplotlib`_, the root is usually at the bottom instead.
+   You can easily place the root on top by calling `ax.invert_yaxis()`.
+
 Hmm, this is not too pretty so far. A trivial addition would be to use the names as the
 vertex labels and to color the vertices according to the gender. Vertex labels are taken
 from the ``label`` attribute by default and vertex colors are determined by the
@@ -824,7 +829,16 @@ Attribute name  Keyword argument       Purpose
 ``arrow_width`` ``edge_arrow_width``   Width of the arrowhead on the edge if the
                                        graph is directed, relative to 10 pixels.
 --------------- ---------------------- ------------------------------------------
-``width``       ``edge_width``         Width of the edge in pixels
+``loop_size``   ``edge_loop_size``     Size of self-loops. It can be set as a
+                                       negative number, in which case it scales
+                                       with the size of the corresponding vertex
+                                       (e.g. -1.0 means the loop has the same size
+                                       as the vertex). This attribute is
+                                       ignored by edges that are not loops.
+                                       This attribute is available only in the
+                                       matplotlib backend.
+--------------- ---------------------- ------------------------------------------
+``width``       ``edge_width``         Width of the edge in pixels.
 --------------- ---------------------- ------------------------------------------
 ``label``       ``edge_label``         If specified, it adds a label to the edge.
 --------------- ---------------------- ------------------------------------------

@@ -186,7 +186,7 @@ class TerminalController:
         the corresponding terminal control string (if it's defined) or
         '' (if it's not).
         """
-        return re.sub("r\$\$|\${\w+}", self._render_sub, template)  # noqa: W605
+        return re.sub(r"r\$\$|\${\w+}", self._render_sub, template)  # noqa: W605
 
     def _render_sub(self, match):
         """Helper function for L{render}"""
@@ -287,9 +287,6 @@ class ProgressBar:
 class Shell(metaclass=ABCMeta):
     """Superclass of the embeddable shells supported by igraph"""
 
-    def __init__(self):
-        pass
-
     @abstractmethod
     def __call__(self):
         raise NotImplementedError
@@ -343,7 +340,7 @@ class IDLEShell(Shell):
         idlelib.PyShell.use_subprocess = True
 
         try:
-            sys.ps1
+            sys.ps1  # noqa: B018
         except AttributeError:
             sys.ps1 = ">>> "
 
@@ -498,13 +495,11 @@ def main():
     if "shells" in config:
         parts = [part.strip() for part in config["shells"].split(",")]
         shell_classes = []
-        available_classes = dict(
-            [
-                (k, v)
-                for k, v in globals().items()
-                if isinstance(v, type) and issubclass(v, Shell)
-            ]
-        )
+        available_classes = {
+            k: v
+            for k, v in globals().items()
+            if isinstance(v, type) and issubclass(v, Shell)
+        }
         for part in parts:
             cls = available_classes.get(part, None)
             if cls is None:

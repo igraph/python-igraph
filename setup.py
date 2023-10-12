@@ -7,8 +7,8 @@ import sys
 ###########################################################################
 
 # Check Python's version info and exit early if it is too old
-if sys.version_info < (3, 7):
-    print("This module requires Python >= 3.7")
+if sys.version_info < (3, 8):
+    print("This module requires Python >= 3.8")
     sys.exit(0)
 
 ###########################################################################
@@ -43,9 +43,9 @@ LIBIGRAPH_FALLBACK_LIBRARY_DIRS = []
 # not be installed in these cases, or when the SKIP_HEADER_INSTALL envvar is
 # set explicitly.
 SKIP_HEADER_INSTALL = (
-    platform.python_implementation() == "PyPy" or
-    (sysconfig.get_config_var("HOST_GNU_TYPE") or "").endswith("emscripten") or
-    "SKIP_HEADER_INSTALL" in os.environ
+    platform.python_implementation() == "PyPy"
+    or (sysconfig.get_config_var("HOST_GNU_TYPE") or "").endswith("emscripten")
+    or "SKIP_HEADER_INSTALL" in os.environ
 )
 
 ###########################################################################
@@ -289,12 +289,12 @@ class IgraphCCoreCMakeBuilder:
 
         # No need to build tests
         args.append("-DBUILD_TESTING=OFF")
-        
+
         # Do not treat compilation warnings as errors in case someone is trying
         # to "pip install" igraph in an environment for which we don't provide
         # wheels and the compiler complains about harmless things
         args.append("-DIGRAPH_WARNINGS_AS_ERRORS=OFF")
-        
+
         # Set install directory during config step instead of install step in order
         # to avoid having the architecture name in the LIBPATH (e.g. lib/x86_64-linux-gnu)
         args.append("-DCMAKE_INSTALL_PREFIX=" + str(install_folder))
@@ -302,7 +302,10 @@ class IgraphCCoreCMakeBuilder:
         # On macOS, compile the C core with the same macOS deployment target as
         # the one that was used to compile Python itself
         if sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET"):
-            args.append("-DCMAKE_OSX_DEPLOYMENT_TARGET=" + sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET"))
+            args.append(
+                "-DCMAKE_OSX_DEPLOYMENT_TARGET="
+                + sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET")
+            )
 
         # Compile the C core with sanitizers if needed
         if building_with_sanitizers():
@@ -312,7 +315,12 @@ class IgraphCCoreCMakeBuilder:
 
         # Add any extra CMake args from environment variables
         if "IGRAPH_CMAKE_EXTRA_ARGS" in os.environ:
-            args.extend(shlex.split(os.environ["IGRAPH_CMAKE_EXTRA_ARGS"], posix=not building_on_windows_msvc()))
+            args.extend(
+                shlex.split(
+                    os.environ["IGRAPH_CMAKE_EXTRA_ARGS"],
+                    posix=not building_on_windows_msvc(),
+                )
+            )
 
         # Finally, add the source folder path
         args.append(str(build_to_source_folder))
@@ -334,7 +342,7 @@ class IgraphCCoreCMakeBuilder:
                 "--install",
                 ".",
                 "--config",
-                "Release",
+                cmake_build_mode,
             ]
         )
         if retcode:
@@ -369,7 +377,9 @@ class IgraphCCoreCMakeBuilder:
                         )
                     # Remap known library names in Requires and Requires.private with
                     # prior knowledge -- we don't want to rebuild pkg-config in Python
-                    if line.startswith("Requires: ") or line.startswith("Requires.private: "):
+                    if line.startswith("Requires: ") or line.startswith(
+                        "Requires.private: "
+                    ):
                         for word in line.strip().split():
                             if word.startswith("libxml-"):
                                 libraries.append("xml2")
@@ -457,7 +467,7 @@ class BuildConfiguration:
         class custom_build_ext(build_ext):
             def run(self):
                 # Bail out if we don't have the Python include files
-                include_dir = sysconfig.get_path('include')
+                include_dir = sysconfig.get_path("include")
                 if not os.path.isfile(os.path.join(include_dir, "Python.h")):
                     fail("You will need the Python headers to compile this extension.")
 
@@ -511,8 +521,16 @@ class BuildConfiguration:
 
                 # Add sanitizer flags
                 if buildcfg.use_sanitizers:
-                    buildcfg.extra_link_args += ["-fsanitize=address", "-fsanitize=undefined"]
-                    buildcfg.extra_compile_args += ["-g", "-Og", "-fno-omit-frame-pointer", "-fdiagnostics-color"]
+                    buildcfg.extra_link_args += [
+                        "-fsanitize=address",
+                        "-fsanitize=undefined",
+                    ]
+                    buildcfg.extra_compile_args += [
+                        "-g",
+                        "-Og",
+                        "-fno-omit-frame-pointer",
+                        "-fdiagnostics-color",
+                    ]
 
                 # Add extra libraries that may have been specified
                 if "IGRAPH_EXTRA_DYNAMIC_LIBRARIES" in os.environ:
@@ -619,8 +637,7 @@ class BuildConfiguration:
                     parser_dir = igraph_build_dir / "src" / "io" / "parsers"
                     if parser_dir.is_dir():
                         shutil.copytree(
-                            parser_dir,
-                            igraph_source_repo / "src" / "io" / "parsers"
+                            parser_dir, igraph_source_repo / "src" / "io" / "parsers"
                         )
                     else:
                         raise RuntimeError(
@@ -778,6 +795,7 @@ class BuildConfiguration:
         pass the same options to ``setup.py build`` and ``setup.py install``
         at the same time.
         """
+
         def process_envvar(name, attr, value):
             name = "IGRAPH_" + name.upper()
             if name in os.environ:
@@ -881,6 +899,7 @@ class BuildConfiguration:
 ###########################################################################
 
 if bdist_wheel is not None:
+
     class bdist_wheel_abi3(bdist_wheel):
         def get_tag(self):
             python, abi, plat = super().get_tag()
@@ -889,17 +908,17 @@ if bdist_wheel is not None:
                 return "cp39", "abi3", plat
 
             return python, abi, plat
+
 else:
     bdist_wheel_abi3 = None
 
 # We are going to build an abi3 wheel if we are at least on CPython 3.9.
-# This is because the C code contains conditionals for CPython 3.7 and
-# 3.8 so we cannot use an abi3 wheel built with CPython 3.7 or 3.8 on
-# CPython 3.9
+# This is because the C code contains conditionals for CPython 3.8 so we cannot
+# use an abi3 wheel built with CPython 3.8 on CPython 3.9
 should_build_abi3_wheel = (
-    bdist_wheel_abi3 and
-    platform.python_implementation() == "CPython" and
-    sys.version_info >= (3, 9)
+    bdist_wheel_abi3
+    and platform.python_implementation() == "CPython"
+    and sys.version_info >= (3, 9)
 )
 
 ###########################################################################
@@ -950,47 +969,43 @@ cmdclass = {
 if should_build_abi3_wheel:
     cmdclass["bdist_wheel"] = bdist_wheel_abi3
 
-options = dict(
-    name="igraph",
-    version=__version__,
-    url="https://igraph.org/python",
-    description="High performance graph data structures and algorithms",
-    long_description=description,
-    license="GNU General Public License (GPL)",
-    author="Tamas Nepusz",
-    author_email="ntamas@gmail.com",
-    project_urls={
+options = {
+    "name": "igraph",
+    "version": __version__,
+    "url": "https://igraph.org/python",
+    "description": "High performance graph data structures and algorithms",
+    "long_description": description,
+    "license": "GNU General Public License (GPL)",
+    "author": "Tamas Nepusz",
+    "author_email": "ntamas@gmail.com",
+    "project_urls": {
         "Bug Tracker": "https://github.com/igraph/python-igraph/issues",
         "Changelog": "https://github.com/igraph/python-igraph/blob/main/CHANGELOG.md",
         "CI": "https://github.com/igraph/python-igraph/actions",
         "Documentation": "https://igraph.readthedocs.io",
         "Source Code": "https://github.com/igraph/python-igraph",
     },
-    ext_modules=[igraph_extension],
-    package_dir={
+    "ext_modules": [igraph_extension],
+    "package_dir": {
         # make sure to use the next line and not the more logical and restrictive
         # "igraph": "src/igraph" because that one breaks 'setup.py develop'.
         # See: https://github.com/igraph/python-igraph/issues/464
         "": "src"
     },
-    packages=find_packages(where="src"),
-    install_requires=["texttable>=1.6.2"],
-    entry_points={
-        "console_scripts": ["igraph=igraph.app.shell:main"]
-    },
-    extras_require={
+    "packages": find_packages(where="src"),
+    "install_requires": ["texttable>=1.6.2"],
+    "entry_points": {"console_scripts": ["igraph=igraph.app.shell:main"]},
+    "extras_require": {
         # Dependencies needed for plotting with Cairo
         "cairo": ["cairocffi>=1.2.0"],
-
         # Dependencies needed for plotting with Matplotlib
-        "matplotlib": ["matplotlib>=3.5.0,<3.6.0; platform_python_implementation != 'PyPy'"],
-
+        "matplotlib": [
+            "matplotlib>=3.5.0,<3.6.0; platform_python_implementation != 'PyPy'"
+        ],
         # Dependencies needed for plotting with Plotly
         "plotly": ["plotly>=5.3.0"],
-
         # Compatibility alias to 'cairo' for python-igraph <= 0.9.6
         "plotting": ["cairocffi>=1.2.0"],
-
         # Dependencies needed for testing only
         "test": [
             "cairocffi>=1.2.0",
@@ -1000,13 +1015,10 @@ options = dict(
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
-            # Matplotlib 3.6.0 does not support Python 3.7 any more, but we need
-            # it because Python 3.11 support came in Matplotlib 3.6.0 first
-            "matplotlib>=3.6.0; platform_python_implementation != 'PyPy' and python_version >= '3.8'",
+            "matplotlib>=3.6.0; platform_python_implementation != 'PyPy'",
             "plotly>=5.3.0",
             "Pillow>=9; platform_python_implementation != 'PyPy'",
         ],
-
         # Dependencies needed for testing on musllinux; only those that are either
         # pure Python or have musllinux wheels as we don't want to compile wheels
         # in CI
@@ -1016,19 +1028,18 @@ options = dict(
             "pytest>=7.0.1",
             "pytest-timeout>=2.1.0",
         ],
-
         # Dependencies needed for building the documentation
         "doc": [
             "Sphinx>=7.0.0",
             "sphinx-rtd-theme>=1.3.0",
             "sphinx-gallery>=0.14.0",
-            "pydoctor>=23.4.0"
-        ]
+            "pydoctor>=23.4.0",
+        ],
     },
-    python_requires=">=3.7",
-    headers=headers,
-    platforms="ALL",
-    keywords=[
+    "python_requires": ">=3.8",
+    "headers": headers,
+    "platforms": "ALL",
+    "keywords": [
         "graph",
         "network",
         "mathematics",
@@ -1036,18 +1047,18 @@ options = dict(
         "graph theory",
         "discrete mathematics",
     ],
-    classifiers=[
+    "classifiers": [
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Operating System :: OS Independent",
         "Programming Language :: C",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Information Analysis",
@@ -1056,7 +1067,7 @@ options = dict(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    cmdclass=cmdclass,
-)
+    "cmdclass": cmdclass,
+}
 
 setup(**options)

@@ -96,7 +96,7 @@ class CairoTextDrawer(AbstractCairoDrawer):
         if wrap and width and width > 0:
             iterlines = self._iterlines_wrapped(width)
         elif wrap:
-            warn("ignoring wrap=True as no width was specified")
+            warn("ignoring wrap=True as no width was specified", stacklevel=1)
             iterlines = self._iterlines()
         else:
             iterlines = self._iterlines()

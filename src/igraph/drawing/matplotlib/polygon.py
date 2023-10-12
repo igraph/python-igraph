@@ -1,49 +1,56 @@
+from copy import deepcopy
+
 from igraph.drawing.utils import calculate_corner_radii
 from igraph.utils import consecutive_pairs
+from igraph.drawing.utils import Point, FakeModule
 
 from .utils import find_matplotlib
 
-__all__ = ("MatplotlibPolygonDrawer",)
+__all__ = ("HullCollection",)
 
 mpl, plt = find_matplotlib()
+try:
+    PathCollection = mpl.collections.PathCollection
+except AttributeError:
+    PathCollection = FakeModule
 
 
-class MatplotlibPolygonDrawer:
-    """Class that is used to draw polygons in matplotlib.
+class HullCollection(PathCollection):
+    """Collection for hulls connecting vertex covers/clusters.
 
-    The corner points of the polygon can be set by the C{points}
-    property of the drawer, or passed at construction time. Most
-    drawing methods in this class also have an extra C{points}
-    argument that can be used to override the set of points in the
-    C{points} property."""
+    The class takes the normal arguments of a PathCollection, plus one argument
+    called "corner_radius" that specifies how much to smoothen the polygon
+    vertices into round corners. This argument can be a float or a sequence
+    of floats, one for each hull to be drawn.
+    """
 
-    def __init__(self, ax):
-        """Constructs a new polygon drawer that draws on the given
-        Matplotlib axes.
+    def __init__(self, *args, **kwargs):
+        self._corner_radii = kwargs.pop("corner_radius", None)
+        super().__init__(*args, **kwargs)
+        self._paths_original = deepcopy(self._paths)
+        try:
+            self._corner_radii = list(iter(self._corner_radii))
+        except TypeError:
+            self._corner_radii = [self._corner_radii for x in self._paths]
 
-        @param  ax: the matplotlib Axes to draw on
-        """
-        self.context = ax
+    def _update_paths(self):
+        paths_original = self._paths_original
+        corner_radii = self._corner_radii
+        trans = self.axes.transData.transform
+        trans_inv = self.axes.transData.inverted().transform
 
-    def draw(self, points, corner_radius=0, **kwds):
-        """Draws a polygon to the associated axes.
+        for i, (path_orig, radius) in enumerate(zip(paths_original, corner_radii)):
+            self._paths[i] = self._compute_path_with_corner_radius(
+                path_orig,
+                radius,
+                trans,
+                trans_inv,
+            )
 
-        @param points: the coordinates of the corners of the polygon,
-          in clockwise or counter-clockwise order, or C{None} if we are
-          about to use the C{points} property of the class.
-        @param corner_radius: if zero, an ordinary polygon will be drawn.
-          If positive, the corners of the polygon will be rounded with
-          the given radius.
-        """
-        if len(points) < 2:
-            # Well, a polygon must have at least two corner points
-            return
-
-        ax = self.context
+    @staticmethod
+    def _round_corners(points, corner_radius):
         if corner_radius <= 0:
-            # No rounded corners, this is simple
-            stroke = mpl.patches.Polygon(points, **kwds)
-            ax.add_patch(stroke)
+            return (points, None)
 
         # Rounded corners. First, we will take each side of the
         # polygon and find what the corner radius should be on
@@ -80,11 +87,48 @@ class MatplotlibPolygonDrawer:
             codes.extend([mpl.path.Path.CURVE4] * 3)
             u = v
 
-        art = mpl.patches.PathPatch(
-            mpl.path.Path(path, codes=codes, closed=True),
-            transform=ax.transData,
-            clip_on=True,
-            zorder=4,
-            **kwds,
-        )
-        return art
+        return (path, codes)
+
+    @staticmethod
+    def _expand_path(coordst, radius):
+        if len(coordst) == 1:
+            # Expand a rectangle around a single vertex
+            a = Point(*coordst[0])
+            c = Point(radius, 0)
+            n = Point(-c[1], c[0])
+            polygon = [a + n, a - c, a - n, a + c]
+        elif len(coordst) == 2:
+            # Flat line, make it an actual shape
+            a, b = Point(*coordst[0]), Point(*coordst[1])
+            c = radius * (a - b).normalized()
+            n = Point(-c[1], c[0])
+            polygon = [a + n, b + n, b - c, b - n, a - n, a + c]
+        else:
+            # Expand the polygon around its center of mass
+            center = Point(
+                *[sum(coords) / float(len(coords)) for coords in zip(*coordst)]
+            )
+            polygon = [Point(*point).towards(center, -radius) for point in coordst]
+        return polygon
+
+    def _compute_path_with_corner_radius(
+        self,
+        path_orig,
+        radius,
+        trans,
+        trans_inv,
+    ):
+        # Move to point/canvas coordinates
+        coordst = trans(path_orig.vertices)
+        # Expand around vertices
+        polygon = self._expand_path(coordst, radius)
+        # Compute round corners
+        (polygon, codes) = self._round_corners(polygon, radius)
+        # Return to data coordinates
+        polygon = [trans_inv(x) for x in polygon]
+        return mpl.path.Path(polygon, codes)
+
+    def draw(self, renderer):
+        if self._corner_radii is not None:
+            self._update_paths()
+        return super().draw(renderer)

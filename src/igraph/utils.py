@@ -246,7 +246,7 @@ class multidict(MutableMapping):
         try:
             return self._dict[key][0]
         except IndexError:
-            raise KeyError(key)
+            raise KeyError(key) from None
 
     def __iter__(self):
         """Iterates over the keys of the multidict."""

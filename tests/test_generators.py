@@ -131,9 +131,25 @@ class GeneratorTests(unittest.TestCase):
 
     def testHexagonalLattice(self):
         el = [
-            (0, 1), (0, 6), (1, 2), (2, 3), (2, 8), (3, 4), (4, 10),
-            (5, 6), (5, 11), (6, 7), (7, 8), (7, 13), (8, 9), (9, 10),
-            (9, 15), (11, 12), (12, 13), (13, 14), (14, 15)
+            (0, 1),
+            (0, 6),
+            (1, 2),
+            (2, 3),
+            (2, 8),
+            (3, 4),
+            (4, 10),
+            (5, 6),
+            (5, 11),
+            (6, 7),
+            (7, 8),
+            (7, 13),
+            (8, 9),
+            (9, 10),
+            (9, 15),
+            (11, 12),
+            (12, 13),
+            (13, 14),
+            (14, 15),
         ]
         g = Graph.Hexagonal_Lattice([2, 2])
         self.assertEqual(sorted(g.get_edgelist()), el)
@@ -142,10 +158,7 @@ class GeneratorTests(unittest.TestCase):
         self.assertEqual(sorted(g.get_edgelist()), el)
 
         g = Graph.Hexagonal_Lattice([2, 2], directed=True, mutual=True)
-        self.assertEqual(
-            sorted(g.get_edgelist()),
-            sorted(el + [(y, x) for x, y in el])
-        )
+        self.assertEqual(sorted(g.get_edgelist()), sorted(el + [(y, x) for x, y in el]))
 
     def testLCF(self):
         g1 = Graph.LCF(12, (5, -5), 6)
@@ -378,7 +391,18 @@ class GeneratorTests(unittest.TestCase):
         g = Graph.Triangular_Lattice([2, 2], directed=True, mutual=True)
         self.assertEqual(
             sorted(g.get_edgelist()),
-            [(0, 1), (0, 2), (0, 3), (1, 0), (1, 3), (2, 0), (2, 3), (3, 0), (3, 1), (3, 2)]
+            [
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (1, 0),
+                (1, 3),
+                (2, 0),
+                (2, 3),
+                (3, 0),
+                (3, 1),
+                (3, 2),
+            ],
         )
 
     @unittest.skipIf(np is None, "test case depends on NumPy")

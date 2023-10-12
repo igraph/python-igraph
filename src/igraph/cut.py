@@ -200,13 +200,12 @@ def _all_st_cuts(graph, source, target):
     This function lists all edge-cuts between a source and a target vertex.
     Every cut is listed exactly once.
 
+    B{Reference}: JS Provan and DR Shier: A paradigm for listing (s,t)-cuts in
+    graphs. I{Algorithmica} 15, 351-372, 1996.
+
     @param source: the source vertex ID
     @param target: the target vertex ID
     @return: a list of L{Cut} objects.
-
-    @newfield ref: Reference
-    @ref: JS Provan and DR Shier: A paradigm for listing (s,t)-cuts in
-      graphs. Algorithmica 15, 351--372, 1996.
     """
     return [
         Cut(graph, cut=cut, partition=part)
@@ -222,15 +221,14 @@ def _all_st_mincuts(graph, source, target, capacity=None):
     This function lists all minimum edge-cuts between a source and a target
     vertex.
 
+    B{Reference}: JS Provan and DR Shier: A paradigm for listing (s,t)-cuts in
+    graphs. I{Algorithmica} 15, 351-372, 1996.
+
     @param source: the source vertex ID
     @param target: the target vertex ID
     @param capacity: the edge capacities (weights). If C{None}, all
       edges have equal weight. May also be an attribute name.
     @return: a list of L{Cut} objects.
-
-    @newfield ref: Reference
-    @ref: JS Provan and DR Shier: A paradigm for listing (s,t)-cuts in
-      graphs. Algorithmica 15, 351--372, 1996.
     """
     value, cuts, parts = GraphBase.all_st_mincuts(graph, source, target, capacity)
     return [
