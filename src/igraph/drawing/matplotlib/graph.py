@@ -532,7 +532,7 @@ class GraphArtist(Artist, AbstractGraphDrawer):
 
         art = VertexCollection(
             patches,
-            offsets=offsets,
+            offsets=offsets if offsets else None,
             offset_transform=self.axes.transData,
             match_original=True,
             transform=Affine2D(),
