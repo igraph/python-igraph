@@ -85,6 +85,11 @@ class GraphTestRunner(unittest.TestCase):
             backend="cairo",
         )
 
+    @image_comparison(baseline_images=["graph_null"])
+    def test_null_graph(self):
+        g = Graph()
+        plot(g, backend="cairo", target=result_image_folder / "graph_null.png")
+
 
 class ClusteringTestRunner(unittest.TestCase):
     @classmethod

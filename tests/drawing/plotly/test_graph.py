@@ -82,6 +82,13 @@ class GraphTestRunner(unittest.TestCase):
         # dot.radius *= 0.5
         return fig
 
+    @image_comparison(baseline_images=["graph_null"])
+    def test_null_graph(self):
+        g = Graph()
+        fig = go.Figure()
+        plot(g, target=fig)
+        return fig
+
 
 class ClusteringTestRunner(unittest.TestCase):
     def setUp(self):

@@ -126,6 +126,10 @@ def _compare_image_json(baseline, fig, tol=0.001):
     if baseline["layout"]["yaxis"] != baseline["layout"]["yaxis"]:
         return False
     # 'shapes' is a list of shape, should be the same up to tolerance
+    if "shapes" not in baseline["layout"]:
+        baseline["layout"]["shapes"] = []
+    if "shapes" not in figd["layout"]:
+        figd["layout"]["shapes"] = []
     if len(baseline["layout"]["shapes"]) != len(figd["layout"]["shapes"]):
         return False
     for shape1, shape2 in zip(baseline["layout"]["shapes"], figd["layout"]["shapes"]):

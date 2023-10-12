@@ -155,6 +155,14 @@ class GraphTestRunner(unittest.TestCase):
         )
         ax.set_aspect(1.0)
 
+    @image_comparison(baseline_images=["graph_null"])
+    def test_null_graph(self):
+        plt.close("all")
+        g = Graph()
+        fig, ax = plt.subplots()
+        plot(g, target=ax)
+        ax.set_aspect(1.0)
+
 
 class ClusteringTestRunner(unittest.TestCase):
     def setUp(self):
