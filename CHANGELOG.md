@@ -1,5 +1,11 @@
 # igraph Python interface changelog
 
+## [0.11.1] - 2023-10-12
+
+### Fixed
+
+- Fixed plotting of null graphs with the Matplotlib backend.
+
 ## [0.11.0] - 2023-10-12
 
 ### Added
@@ -582,7 +588,8 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[main]: https://github.com/igraph/python-igraph/compare/0.11.0...main
+[main]: https://github.com/igraph/python-igraph/compare/0.11.1...main
+[0.11.1]: https://github.com/igraph/python-igraph/compare/0.11.0...0.11.1
 [0.11.0]: https://github.com/igraph/python-igraph/compare/0.10.8...0.11.0
 [0.10.8]: https://github.com/igraph/python-igraph/compare/0.10.7...0.10.8
 [0.10.7]: https://github.com/igraph/python-igraph/compare/0.10.6...0.10.7
