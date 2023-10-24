@@ -23,6 +23,7 @@
 /************************ Conversion functions *************************/
 
 #include <limits.h>
+#include <ctype.h>
 #include "attributes.h"
 #include "convert.h"
 #include "edgeseqobject.h"
