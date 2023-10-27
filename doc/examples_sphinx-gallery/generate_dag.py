@@ -14,19 +14,19 @@ import random
 
 
 # %%
-# First, we set a random seed for reproducibility
+# First, we set a random seed for reproducibility.
 random.seed(0)
 
 # %%
-# First, we generate a random undirected graph without loops
-g = ig.Graph.Erdos_Renyi(n=15, p=0.3, directed=False, loops=False)
+# First, we generate a random undirected graph with a fixed number of edges, without loops.
+g = ig.Graph.Erdos_Renyi(n=15, m=30, directed=False, loops=False)
 
 # %%
-# Then we convert it to a DAG *in place*
+# Then we convert it to a DAG *in place*. This method samples DAGs with a given number of edges and vertices uniformly.
 g.to_directed(mode="acyclic")
 
 # %%
-# We can print out a summary of the DAG
+# We can print out a summary of the DAG.
 ig.summary(g)
 
 
