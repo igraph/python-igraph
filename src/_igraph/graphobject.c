@@ -13420,6 +13420,12 @@ PyObject *igraphmodule_Graph___graph_as_capsule__(igraphmodule_GraphObject *
   return PyCapsule_New((void *)&self->g, 0, 0);
 }
 
+PyObject *igraphmodule_Graph___invalidate_cache__(igraphmodule_GraphObject *self)
+{
+  igraph_invalidate_cache(&self->g);
+  Py_RETURN_NONE;
+}
+
 /** \ingroup python_interface_internal
  * \brief Returns the pointer of the encapsulated igraph graph as an ordinary
  * Python integer. This allows us to use igraph graphs with the Python ctypes
@@ -17962,6 +17968,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /**********************/
   /* INTERNAL FUNCTIONS */
   /**********************/
+
   {"__graph_as_capsule",
    (PyCFunction) igraphmodule_Graph___graph_as_capsule__,
    METH_VARARGS | METH_KEYWORDS,
@@ -17972,6 +17979,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Python object. This function should not be used directly by igraph\n"
    "users, it is useful only in the case when the underlying igraph object\n"
    "must be passed to other C code through Python.\n\n"},
+
+  {"__invalidate_cache",
+   (PyCFunction) igraphmodule_Graph___invalidate_cache__,
+   METH_NOARGS,
+   "__invalidate_cache()\n--\n\n"
+   "Invalidates the internal cache of the low-level C graph object that\n"
+   "the Python object wraps. This function should not be used directly\n"
+   "by igraph users, but it may be useful for benchmarking or debugging\n"
+   "purposes.",
+  },
 
   {"_raw_pointer",
    (PyCFunction) igraphmodule_Graph__raw_pointer,
