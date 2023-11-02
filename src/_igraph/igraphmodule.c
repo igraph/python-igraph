@@ -536,7 +536,7 @@ static PyObject* igraphmodule_i_is_graphical_or_bigraphical(
   PyObject *self, PyObject *args, PyObject *kwds, igraph_bool_t is_bigraphical
 ) {
   static char* kwlist_graphical[] = { "out_deg", "in_deg", "loops", "multiple", NULL };
-  static char* kwlist_bigraphical[] = { "degrees1", "degrees2", "loops", "multiple", NULL };
+  static char* kwlist_bigraphical[] = { "degrees1", "degrees2", "multiple", NULL };
   PyObject *out_deg_o = 0, *in_deg_o = 0;
   PyObject *loops = Py_False, *multiple = Py_False;
   igraph_vector_int_t out_deg, in_deg;
@@ -544,13 +544,21 @@ static PyObject* igraphmodule_i_is_graphical_or_bigraphical(
   int allowed_edge_types;
   igraph_error_t retval;
 
-  if (!PyArg_ParseTupleAndKeywords(
-      args, kwds,
-      is_bigraphical ? "OO|OO" : "O|OOO",
-      is_bigraphical ? kwlist_bigraphical : kwlist_graphical,
-      &out_deg_o, &in_deg_o, &loops, &multiple
-  ))
-    return NULL;
+  if (is_bigraphical) {
+    if (!PyArg_ParseTupleAndKeywords(
+        args, kwds, "OO|O", kwlist_bigraphical,
+        &out_deg_o, &in_deg_o, &multiple
+    )) {
+      return NULL;
+    }
+  } else {
+    if (!PyArg_ParseTupleAndKeywords(
+        args, kwds, "O|OOO", kwlist_graphical,
+        &out_deg_o, &in_deg_o, &loops, &multiple
+    )) {
+      return NULL;
+    }
+  }
 
   is_directed = (in_deg_o != 0 && in_deg_o != Py_None) || is_bigraphical;
 
@@ -820,17 +828,16 @@ static PyMethodDef igraphmodule_methods[] =
   },
   {"is_bigraphical", (PyCFunction)igraphmodule_is_bigraphical,
     METH_VARARGS | METH_KEYWORDS,
-    "is_bigraphical(degrees1, degrees2, loops=False, multiple=False)\n--\n\n"
+    "is_bigraphical(degrees1, degrees2, multiple=False)\n--\n\n"
     "Returns whether two sequences of integers can be the degree sequences of a\n"
     "bipartite graph.\n\n"
-    "The bipartite graph may or may not have multiple and loop edges, depending\n"
+    "The bipartite graph may or may not have multiple edges, depending\n"
     "on the allowed edge types in the remaining arguments.\n\n"
     "@param degrees1: the list of degrees in the first partition.\n"
     "@param degrees2: the list of degrees in the second partition.\n"
-    "@param loops: whether loop edges are allowed.\n"
     "@param multiple: whether multiple edges are allowed.\n"
     "@return: C{True} if there exists some bipartite graph that can realize the\n"
-    "  given degree sequences with the given edge types, C{False} otherwise.\n"
+    "  given degree sequences with or without multiple edges, C{False} otherwise.\n"
   },
   {"is_graphical", (PyCFunction)igraphmodule_is_graphical,
     METH_VARARGS | METH_KEYWORDS,
