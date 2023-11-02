@@ -1,5 +1,15 @@
 # igraph Python interface changelog
 
+## [main]
+
+### Added
+
+- Added `Graph.__invalidate_cache()` for debugging and benchmarking purposes.
+
+### Fixed
+
+- Removed incorrectly added `loops=...` argument of `Graph.is_bigraphical()`.
+
 ## [0.11.2] - 2023-10-12
 
 ### Fixed
