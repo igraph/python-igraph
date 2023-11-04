@@ -410,6 +410,11 @@ class EdgeCollection(PatchCollection):
             voff *= sizes[1] / 2
             path["vertices"].append(coordst[1] - voff)
 
+            # This is a dirty trick to make the facecolor work
+            # without making a separate Patch, which would be a little messy
+            path["codes"].extend(["CURVE4"] * 3)
+            path["vertices"].extend(path["vertices"][-2::-1])
+
         path = mpl.path.Path(
             path["vertices"],
             codes=[getattr(mpl.path.Path, x) for x in path["codes"]],
