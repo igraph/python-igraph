@@ -144,10 +144,6 @@ class DegreeTests(unittest.TestCase):
         self.assertTrue(knn == [9.0] * 10)
         self.assertAlmostEqual(knnk[8], 9.0, places=6)
 
-        # knn works for simple graphs only -- self.g is not simple
-        self.assertRaises(InternalError, self.g.knn)
-
-        # Okay, simplify it and then go on
         g = self.g.copy()
         g.simplify()
 
@@ -157,6 +153,20 @@ class DegreeTests(unittest.TestCase):
         self.assertEqual(len(knnk), 3)
         self.assertAlmostEqual(knnk[1], 3, places=6)
         self.assertAlmostEqual(knnk[2], 7 / 3.0, places=6)
+
+    def testKnnNonSimple(self):
+        knn, knnk = self.gfull.knn()
+        self.assertTrue(knn == [9.0] * 10)
+        self.assertAlmostEqual(knnk[8], 9.0, places=6)
+
+        # knn works for non-simple graphs as well
+        knn, knnk = self.g.knn()
+        diff = max(abs(a - b) for a, b in zip(knn, [17 / 5.0, 3, 4, 4]))
+        self.assertAlmostEqual(diff, 0.0, places=6)
+        self.assertEqual(len(knnk), 5)
+        self.assertAlmostEqual(knnk[1], 4, places=6)
+        self.assertAlmostEqual(knnk[2], 3, places=6)
+        self.assertAlmostEqual(knnk[4], 3.4, places=6)
 
     def testDegree(self):
         self.assertTrue(self.gfull.degree() == [9] * 10)
