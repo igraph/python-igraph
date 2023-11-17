@@ -280,8 +280,8 @@ class SubisomorphismTests(unittest.TestCase):
 
         # Corner cases
         empty = Graph()
-        self.assertEqual([], g.get_subisomorphisms_lad(empty))
-        self.assertEqual([], empty.get_subisomorphisms_lad(empty))
+        self.assertEqual([[]], g.get_subisomorphisms_lad(empty))
+        self.assertEqual([[]], empty.get_subisomorphisms_lad(empty))
 
     def testSubisomorphicVF2(self):
         g = Graph.Lattice([3, 3], circular=False)
