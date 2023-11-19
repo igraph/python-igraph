@@ -6,9 +6,15 @@
 
 - Added `Graph.__invalidate_cache()` for debugging and benchmarking purposes.
 
+### Changed
+
+- The C core of igraph was updated to version 0.10.8.
+
 ### Fixed
 
 - Removed incorrectly added `loops=...` argument of `Graph.is_bigraphical()`.
+
+- Fixed a bug in the Matplotlib graph drawing backend that filled the interior of undirected curved edges.
 
 ## [0.11.2] - 2023-10-12
 
