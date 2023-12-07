@@ -15729,8 +15729,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  graph, therefore it is advised to set this to C{True}. The parameter\n"
    "  is ignored if the connectivity between two given vertices is computed.\n"
    "@param neighbors: tells igraph what to do when the two vertices are\n"
-   "  connected. C{\"error\"} raises an exception, C{\"infinity\"} returns\n"
-   "  infinity, C{\"ignore\"} ignores the edge.\n"
+   "  connected. C{\"error\"} raises an exception, C{\"negative\"} returns\n"
+   "  a negative value, C{\"number_of_nodes\"} or C{\"nodes\"} returns the\n"
+   "  number of nodes, or C{\"ignore\"} ignores the edge.\n"
    "@return: the vertex connectivity\n"
   },
 
