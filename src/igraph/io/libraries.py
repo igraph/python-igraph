@@ -248,9 +248,12 @@ def _construct_graph_from_graph_tool(cls, g):
 
     # Node attributes
     for key, val in g.vertex_properties.items():
+        # val.get_array() returns None for non-scalar types so use the slower
+        # way if this happens
         prop = val.get_array()
+        arr = prop if prop is not None else val
         for i in range(vcount):
-            graph.vs[i][key] = prop[i]
+            graph.vs[i][key] = arr[i]
 
     # Edges and edge attributes
     # NOTE: graph-tool is quite strongly typed, so each property is always

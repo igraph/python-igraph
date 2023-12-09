@@ -1,5 +1,12 @@
 # igraph Python interface changelog
 
+## [main]
+
+### Fixed
+
+- Fixed import of `graph-tool` graphs for vertex properties where each property
+  has a vector value.
+
 ## [0.11.3] - 2023-11-19
 
 ### Added
