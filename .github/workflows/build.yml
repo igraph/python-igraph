@@ -23,7 +23,7 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         name: Install Python
         with:
           python-version: '3.8'
@@ -133,7 +133,7 @@ jobs:
           path: ~/local
           key: deps-cache-v2-${{ runner.os }}-${{ matrix.cmake_arch }}-llvm${{ env.LLVM_VERSION }}
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         name: Install Python
         with:
           python-version: '3.8'
@@ -176,7 +176,7 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         name: Install Python
         with:
           python-version: '3.11.2'
@@ -226,7 +226,7 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         name: Install Python
         with:
           python-version: '3.8'
@@ -295,7 +295,7 @@ jobs:
         run:
           sudo apt install ninja-build cmake flex bison
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         name: Install Python
         with:
           python-version: '3.8'
@@ -342,7 +342,7 @@ jobs:
         run:
           sudo apt install ninja-build cmake flex bison
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         name: Install Python
         with:
           python-version: '3.12'
