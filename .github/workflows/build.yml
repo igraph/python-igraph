@@ -1,4 +1,5 @@
-name: Build and test, upload to PyPI on release
+# Name cannot contain commas because of setup-emsdk job
+name: Build and test
 
 on: [push, pull_request]
 env:
