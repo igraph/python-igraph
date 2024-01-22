@@ -121,14 +121,14 @@ jobs:
 
       - name: Cache installed C core
         id: cache-c-core
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: vendor/install
           key: C-core-cache-${{ runner.os }}-${{ matrix.cmake_arch }}-llvm${{ env.LLVM_VERSION }}-${{ hashFiles('.git/modules/**/HEAD') }}
 
       - name: Cache C core dependencies
         id: cache-c-deps
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/local
           key: deps-cache-v2-${{ runner.os }}-${{ matrix.cmake_arch }}-llvm${{ env.LLVM_VERSION }}
@@ -233,13 +233,13 @@ jobs:
 
       - name: Cache installed C core
         id: cache-c-core
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: vendor/install
           key: C-core-cache-${{ runner.os }}-${{ matrix.cmake_arch }}-${{ hashFiles('.git/modules/**/HEAD') }}
 
       - name: Cache VCPKG
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: C:/vcpkg/installed/
           key: vcpkg-${{ runner.os }}-${{ matrix.vcpkg_arch }}
@@ -284,7 +284,7 @@ jobs:
 
       - name: Cache installed C core
         id: cache-c-core
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             vendor/install
@@ -330,7 +330,7 @@ jobs:
 
       - name: Cache installed C core
         id: cache-c-core
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             vendor/build
