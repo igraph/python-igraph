@@ -1049,7 +1049,7 @@ save = write
 
 ##############################################################
 # Configuration singleton instance
-config = init_configuration()
+config: Configuration = init_configuration()
 """The main configuration object of igraph. Use this object to modify igraph's
 behaviour, typically when used in interactive mode.
 """
