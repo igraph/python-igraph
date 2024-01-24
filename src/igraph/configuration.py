@@ -11,6 +11,7 @@ as well as saving them to and retrieving them from disk.
 import os.path
 
 from configparser import ConfigParser
+from typing import IO, Optional, Sequence, Tuple, Union
 
 
 class Configuration:
@@ -114,9 +115,6 @@ class Configuration:
         """Static class for the implementation of custom getter/setter functions
         for configuration keys"""
 
-        def __init__(self):
-            pass
-
         @staticmethod
         def setboolean(obj, section, key, value):
             """Sets a boolean value in the given configuration object.
@@ -169,7 +167,7 @@ class Configuration:
         "float": {"getter": ConfigParser.getfloat, "setter": Types.setfloat},
     }
 
-    _sections = ("general", "apps", "plotting", "remote", "shell")
+    _sections: Sequence[str] = ("general", "apps", "plotting", "remote", "shell")
     _definitions = {
         "general.shells": {"default": "IPythonShell,ClassicPythonShell"},
         "general.verbose": {"default": True, "type": "boolean"},
@@ -184,10 +182,15 @@ class Configuration:
     # The singleton instance we are using throughout other modules
     _instance = None
 
+    _filename: Optional[str] = None
+    """Name of the file that the configuration was loaded from, or ``None`` if
+    not known.
+    """
+
     def __init__(self, filename=None):
         """Creates a new configuration instance.
 
-        @param filename: file or file pointer to be read. Can be omitted.
+        @param filename: file or file-like object to be read. Can be omitted.
         """
         self._config = ConfigParser()
         self._filename = None
@@ -195,6 +198,7 @@ class Configuration:
         # Create default sections
         for sec in self._sections:
             self._config.add_section(sec)
+
         # Create default values
         for name, definition in self._definitions.items():
             if "default" in definition:
@@ -204,7 +208,7 @@ class Configuration:
             self.load(filename)
 
     @property
-    def filename(self):
+    def filename(self) -> Optional[str]:
         """Returns the filename associated to the object.
 
         It is usually the name of the configuration file that was used when
@@ -214,7 +218,7 @@ class Configuration:
         information."""
         return self._filename
 
-    def _get(self, section, key):
+    def _get(self, section: str, key: str):
         """Internal function that returns the value of a given key in a
         given section."""
         definition = self._definitions.get("%s.%s" % (section, key), {})
@@ -226,7 +230,7 @@ class Configuration:
         return getter(self._config, section, key)
 
     @staticmethod
-    def _item_to_section_key(item):
+    def _item_to_section_key(item: str) -> Tuple[str, str]:
         """Converts an item description to a section-key pair.
 
         @param item: the item to be converted
@@ -241,7 +245,7 @@ class Configuration:
             section, key = "general", item
         return section, key
 
-    def __contains__(self, item):
+    def __contains__(self, item: str) -> bool:
         """Checks whether the given configuration item is set.
 
         @param item: the configuration key to check.
@@ -250,7 +254,7 @@ class Configuration:
         section, key = self._item_to_section_key(item)
         return self._config.has_option(section, key)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str):
         """Returns the given configuration item.
 
         @param item: the configuration key to retrieve.
@@ -264,7 +268,7 @@ class Configuration:
         else:
             return self._get(section, key)
 
-    def __setitem__(self, item, value):
+    def __setitem__(self, item: str, value):
         """Sets the given configuration item.
 
         @param item: the configuration key to set
@@ -279,7 +283,7 @@ class Configuration:
             setter = self._config.__class__.set
         return setter(self._config, section, key, value)
 
-    def __delitem__(self, item):
+    def __delitem__(self, item: str):
         """Deletes the given item from the configuration.
 
         If the item has a default value, the default value is written back instead
@@ -292,14 +296,11 @@ class Configuration:
         else:
             self._config.remove_option(section, key)
 
-    def has_key(self, item):
+    def has_key(self, item: str) -> bool:
         """Checks if the configuration has a given key.
 
         @param item: the key being sought"""
-        if "." in item:
-            section, key = item.split(".", 1)
-        else:
-            section, key = "general", item
+        section, key = self._item_to_section_key(item)
         return self._config.has_option(section, key)
 
     def load(self, stream=None):
@@ -310,28 +311,40 @@ class Configuration:
           loaded.
         """
         stream = stream or get_user_config_file()
+
         if isinstance(stream, str):
             stream = open(stream, "r")
             file_was_open = True
+        else:
+            file_was_open = False
+
         self._config.read_file(stream)
-        self._filename = getattr(stream, "name", None)
+
+        filename = getattr(stream, "name", None)
+        self._filename = str(filename) if filename is not None else None
+
         if file_was_open:
             stream.close()
 
-    def save(self, stream=None):
+    def save(self, stream: Optional[Union[str, IO[str]]]=None):
         """Saves the configuration.
 
-        @param stream: name of a file or a file object. The configuration will be saved
-          there. Can be omitted, in this case, the user-level configuration file will
-          be overwritten.
+        @param stream: name of a file or a file-like object. The configuration
+            will be saved there. Can be omitted, in this case, the user-level
+            configuration file will be overwritten.
         """
         stream = stream or get_user_config_file()
+
         if not hasattr(stream, "write") or not hasattr(stream, "close"):
-            stream = open(stream, "w")
+            stream = open(stream, "w")  # type: ignore
             file_was_open = True
-        self._config.write(stream)
+        else:
+            file_was_open = False
+
+        self._config.write(stream)  # type: ignore
+
         if file_was_open:
-            stream.close()
+            stream.close()  # type: ignore
 
     @classmethod
     def instance(cls):
@@ -347,12 +360,12 @@ class Configuration:
         return cls._instance
 
 
-def get_user_config_file():
+def get_user_config_file() -> str:
     """Returns the path where the user-level configuration file is stored"""
     return os.path.expanduser("~/.igraphrc")
 
 
-def init():
+def init() -> Configuration:
     """Default mechanism to initiate igraph configuration
 
     This method loads the user-specific configuration file from the
