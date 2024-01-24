@@ -1,7 +1,7 @@
 """
 Drawing and plotting routines for igraph.
 
-IGraph has two stable plotting backends at the moment: Cairo and Matplotlib.
+igraph has two stable plotting backends at the moment: Cairo and Matplotlib.
 It also has experimental support for plotly.
 
 The Cairo backend is dependent on the C{pycairo} or C{cairocffi} libraries that
