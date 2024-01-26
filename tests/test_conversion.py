@@ -171,6 +171,14 @@ class GraphRepresentationTests(unittest.TestCase):
             np.all(g.get_adjacency_sparse() == np.array(g.get_adjacency().data))
         )
 
+    def testGetAdjacencyRoundtrip(self):
+        g = Graph.Tree(6, 3)
+        adj = g.get_adjacency()
+        g2 = Graph.Adjacency(adj, mode="undirected")
+        self.assertEqual(g.vcount(), g2.vcount())
+        self.assertEqual(g.is_directed(), g2.is_directed())
+        self.assertTrue(g.get_edgelist() == g2.get_edgelist())
+
 
 class PruferTests(unittest.TestCase):
     def testFromPrufer(self):

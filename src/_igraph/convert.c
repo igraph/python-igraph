@@ -2594,10 +2594,10 @@ PyObject* igraphmodule_graph_list_t_to_PyList(igraph_graph_list_t *v, PyTypeObje
  *        applicable. May be used in error messages.
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyList_to_matrix_t(
+int igraphmodule_PyObject_to_matrix_t(
   PyObject* o, igraph_matrix_t *m, const char *arg_name
 ) {
-  return igraphmodule_PyList_to_matrix_t_with_minimum_column_count(o, m, 0, arg_name);
+  return igraphmodule_PyObject_to_matrix_t_with_minimum_column_count(o, m, 0, arg_name);
 }
 
 /**
@@ -2612,7 +2612,7 @@ int igraphmodule_PyList_to_matrix_t(
  *        applicable. May be used in error messages.
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(
+int igraphmodule_PyObject_to_matrix_t_with_minimum_column_count(
   PyObject *o, igraph_matrix_t *m, int min_cols, const char *arg_name
 ) {
   Py_ssize_t nr, nc, n, i, j;
@@ -2630,6 +2630,10 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(
   }
 
   nr = PySequence_Size(o);
+  if (nr < 0) {
+    return 1;
+  }
+
   nc = min_cols > 0 ? min_cols : 0;
   for (i = 0; i < nr; i++) {
     row = PySequence_GetItem(o, i);
@@ -2644,18 +2648,30 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(
     }
     n = PySequence_Size(row);
     Py_DECREF(row);
+    if (n < 0) {
+      return 1;
+    }
     if (n > nc) {
       nc = n;
     }
   }
 
-  igraph_matrix_init(m, nr, nc);
+  if (igraph_matrix_init(m, nr, nc)) {
+    igraphmodule_handle_igraph_error();
+    return 1;
+  }
+
   for (i = 0; i < nr; i++) {
     row = PySequence_GetItem(o, i);
     n = PySequence_Size(row);
     for (j = 0; j < n; j++) {
       item = PySequence_GetItem(row, j);
+      if (!item) {
+        igraph_matrix_destroy(m);
+        return 1;
+      }
       if (igraphmodule_PyObject_to_real_t(item, &value)) {
+        igraph_matrix_destroy(m);
         Py_DECREF(item);
         return 1;
       }
@@ -2678,10 +2694,10 @@ int igraphmodule_PyList_to_matrix_t_with_minimum_column_count(
  *        applicable. May be used in error messages.
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyList_to_matrix_int_t(
+int igraphmodule_PyObject_to_matrix_int_t(
   PyObject* o, igraph_matrix_int_t *m, const char* arg_name
 ) {
-  return igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(o, m, 0, arg_name);
+  return igraphmodule_PyObject_to_matrix_int_t_with_minimum_column_count(o, m, 0, arg_name);
 }
 
 /**
@@ -2696,7 +2712,7 @@ int igraphmodule_PyList_to_matrix_int_t(
  *        applicable. May be used in error messages.
  * \return 0 if everything was OK, 1 otherwise. Sets appropriate exceptions.
  */
-int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(
+int igraphmodule_PyObject_to_matrix_int_t_with_minimum_column_count(
   PyObject *o, igraph_matrix_int_t *m, int min_cols, const char* arg_name
 ) {
   Py_ssize_t nr, nc, n, i, j;
@@ -2714,6 +2730,10 @@ int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(
   }
 
   nr = PySequence_Size(o);
+  if (nr < 0) {
+    return 1;
+  }
+
   nc = min_cols > 0 ? min_cols : 0;
   for (i = 0; i < nr; i++) {
     row = PySequence_GetItem(o, i);
@@ -2728,6 +2748,9 @@ int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(
     }
     n = PySequence_Size(row);
     Py_DECREF(row);
+    if (n < 0) {
+      return 1;
+    }
     if (n > nc) {
       nc = n;
     }
@@ -2743,7 +2766,12 @@ int igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(
     n = PySequence_Size(row);
     for (j = 0; j < n; j++) {
       item = PySequence_GetItem(row, j);
+      if (!item) {
+        igraph_matrix_int_destroy(m);
+        return 1;
+      }
       if (igraphmodule_PyObject_to_integer_t(item, &value)) {
+        igraph_matrix_int_destroy(m);
         Py_DECREF(item);
         return 1;
       }
