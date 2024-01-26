@@ -15,9 +15,11 @@ def _construct_graph_from_adjacency(cls, matrix, mode="directed", loops="once"):
       - a pandas.DataFrame (column/row names must match, and will be used
         as vertex names).
     @param mode: the mode to be used. Possible values are:
-      - C{"directed"} - the graph will be directed and a matrix
-        element gives the number of edges between two vertex.
-      - C{"undirected"} - alias to C{"max"} for convenience.
+      - C{"directed"} - the graph will be directed and a matrix element
+        specifies the number of edges between two vertices.
+      - C{"undirected"} - the graph will be undirected and a matrix element
+        specifies the number of edges between two vertices. The matrix must
+        be symmetric.
       - C{"max"} - undirected graph will be created and the number of
         edges between vertex M{i} and M{j} is M{max(A(i,j), A(j,i))}
       - C{"min"} - like C{"max"}, but with M{min(A(i,j), A(j,i))}
@@ -82,9 +84,11 @@ def _construct_graph_from_weighted_adjacency(
       - a scipy.sparse matrix (will be converted to a COO matrix, but not
         to a dense matrix)
     @param mode: the mode to be used. Possible values are:
-      - C{"directed"} - the graph will be directed and a matrix
-        element gives the number of edges between two vertex.
-      - C{"undirected"} - alias to C{"max"} for convenience.
+      - C{"directed"} - the graph will be directed and a matrix element
+        specifies the number of edges between two vertices.
+      - C{"undirected"} - the graph will be undirected and a matrix element
+        specifies the number of edges between two vertices. The matrix must
+        be symmetric.
       - C{"max"}   - undirected graph will be created and the number of
         edges between vertex M{i} and M{j} is M{max(A(i,j), A(j,i))}
       - C{"min"}   - like C{"max"}, but with M{min(A(i,j), A(j,i))}
