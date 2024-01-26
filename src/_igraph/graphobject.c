@@ -3154,6 +3154,43 @@ PyObject *igraphmodule_Graph_Asymmetric_Preference(PyTypeObject * type,
   return (PyObject *) self;
 }
 
+
+/** \ingroup python_interface_graph
+ * \brief Generates a tree graph based on a Prufer sequenve
+ * \return a reference to the newly generated Python igraph object
+ * \sa igraph_from_prufer
+ */
+PyObject *igraphmodule_Graph_Prufer(
+  PyTypeObject * type, PyObject * args, PyObject * kwds
+) {
+  igraphmodule_GraphObject *self;
+  igraph_t g;
+  PyObject *seq_o;
+  igraph_vector_int_t seq;
+
+  static char *kwlist[] = { "seq", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &seq_o)) {
+    return NULL;
+  }
+
+  if (igraphmodule_PyObject_to_vector_int_t(seq_o, &seq)) {
+    return NULL;
+  }
+
+  if (igraph_from_prufer(&g, &seq)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_int_destroy(&seq);
+    return NULL;
+  }
+
+  CREATE_GRAPH_FROM_TYPE(self, g, type);
+
+  igraph_vector_int_destroy(&seq);
+
+  return (PyObject *) self;
+}
+
 /** \ingroup python_interface_graph
  * \brief Generates a bipartite graph based on the Erdos-Renyi model
  * \return a reference to the newly generated Python igraph object
@@ -14036,6 +14073,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  types. If C{None}, vertex types are not stored.\n"
    "@param directed: whether to generate a directed graph.\n"
    "@param loops: whether loop edges are allowed.\n"},
+
+  /* interface to igraph_from_prufer */
+  {"Prufer", (PyCFunction) igraphmodule_Graph_Prufer,
+   METH_VARARGS | METH_CLASS | METH_KEYWORDS,
+   "Prufer(seq)\n--\n\n"
+   "Generates a tree from its Prufer sequence.\n\n"
+   "A Prufer sequence is a unique sequence of integers associated with a\n"
+   "labelled tree. A tree on M{n} vertices can be represented by a sequence\n"
+   "of M{n-2} integers, each between M{0} and M{n-1} (inclusive).\n\n"
+   "@param seq: the Prufer sequence as an iterable of integers\n"},
 
   /* interface to igraph_bipartite_game */
   {"_Random_Bipartite", (PyCFunction) igraphmodule_Graph_Random_Bipartite,

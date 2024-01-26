@@ -172,6 +172,21 @@ class GraphRepresentationTests(unittest.TestCase):
         )
 
 
+class PruferTests(unittest.TestCase):
+    def testFromPrufer(self):
+        g = Graph.Prufer([3, 3, 3, 4])
+        self.assertEqual(6, g.vcount())
+        self.assertEqual(5, g.ecount())
+        self.assertEqual(
+            [(0, 3), (1, 3), (2, 3), (3, 4), (4, 5)],
+            sorted(g.get_edgelist())
+        )
+
+    def testToPrufer(self):
+        g = Graph([(0, 3), (1, 3), (2, 3), (3, 4), (4, 5)])
+        self.assertEqual([3, 3, 3, 4], g.to_prufer())
+
+
 def suite():
     direction_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
         DirectedUndirectedTests
@@ -179,7 +194,10 @@ def suite():
     representation_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
         GraphRepresentationTests
     )
-    return unittest.TestSuite([direction_suite, representation_suite])
+    prufer_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        PruferTests
+    )
+    return unittest.TestSuite([direction_suite, representation_suite, prufer_suite])
 
 
 def test():
