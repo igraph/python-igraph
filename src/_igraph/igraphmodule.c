@@ -355,10 +355,10 @@ PyObject* igraphmodule_community_to_membership(PyObject *self,
   igraph_vector_int_t result, csize, *csize_p = 0;
   Py_ssize_t nodes, steps;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!nn|O", kwlist,
-      &PyList_Type, &merges_o, &nodes, &steps, &return_csize)) return NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "Onn|O", kwlist,
+      &merges_o, &nodes, &steps, &return_csize)) return NULL;
 
-  if (igraphmodule_PyList_to_matrix_int_t_with_minimum_column_count(merges_o, &merges, 2, "merges")) {
+  if (igraphmodule_PyObject_to_matrix_int_t_with_minimum_column_count(merges_o, &merges, 2, "merges")) {
     return NULL;
   }
 

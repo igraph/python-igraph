@@ -1943,14 +1943,14 @@ PyObject *igraphmodule_Graph_Adjacency(PyTypeObject * type,
   igraphmodule_GraphObject *self;
   igraph_t g;
   igraph_matrix_t m;
-  PyObject *matrix, *mode_o = Py_None, *loops_o = Py_None;
+  PyObject *matrix_o, *mode_o = Py_None, *loops_o = Py_None;
   igraph_adjacency_t mode = IGRAPH_ADJ_DIRECTED;
   igraph_loops_t loops = IGRAPH_LOOPS_ONCE;
 
   static char *kwlist[] = { "matrix", "mode", "loops", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OO", kwlist,
-                                   &PyList_Type, &matrix, &mode_o, &loops_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist,
+                                   &matrix_o, &mode_o, &loops_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_adjacency_t(mode_o, &mode))
@@ -1959,7 +1959,7 @@ PyObject *igraphmodule_Graph_Adjacency(PyTypeObject * type,
   if (igraphmodule_PyObject_to_loops_t(loops_o, &loops))
     return NULL;
 
-  if (igraphmodule_PyList_to_matrix_t(matrix, &m, "matrix")) {
+  if (igraphmodule_PyObject_to_matrix_t(matrix_o, &m, "matrix")) {
     return NULL;
   }
 
@@ -2281,9 +2281,8 @@ PyObject *igraphmodule_Graph_Establishment(PyTypeObject * type,
 
   char *kwlist[] = { "n", "k", "type_dist", "pref_matrix", "directed", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nnO!O!|O", kwlist,
-                                   &n, &k, &PyList_Type, &type_dist,
-                                   &PyList_Type, &pref_matrix, &directed))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nnOO|O", kwlist,
+                                   &n, &k, &type_dist, &pref_matrix, &directed))
     return NULL;
 
   if (n <= 0 || k <= 0) {
@@ -2295,29 +2294,32 @@ PyObject *igraphmodule_Graph_Establishment(PyTypeObject * type,
   CHECK_SSIZE_T_RANGE(n, "vertex count");
   CHECK_SSIZE_T_RANGE(k, "connection trials per set");
 
-  types = PyList_Size(type_dist);
-
-  if (igraphmodule_PyList_to_matrix_t(pref_matrix, &pm, "pref_matrix")) {
+  if (igraphmodule_PyObject_to_vector_t(type_dist, &td, 1)) {
+    PyErr_SetString(PyExc_ValueError,
+                    "Error while converting type distribution vector");
     return NULL;
   }
+ 
+  if (igraphmodule_PyObject_to_matrix_t(pref_matrix, &pm, "pref_matrix")) {
+    igraph_vector_destroy(&td);
+    return NULL;
+  }
+
+  types = igraph_vector_size(&td);
+
   if (igraph_matrix_nrow(&pm) != igraph_matrix_ncol(&pm) ||
       igraph_matrix_nrow(&pm) != types) {
     PyErr_SetString(PyExc_ValueError,
                     "Preference matrix must have exactly the same rows and columns as the number of types");
-    igraph_matrix_destroy(&pm);
-    return NULL;
-  }
-  if (igraphmodule_PyObject_to_vector_t(type_dist, &td, 1)) {
-    PyErr_SetString(PyExc_ValueError,
-                    "Error while converting type distribution vector");
+    igraph_vector_destroy(&td);
     igraph_matrix_destroy(&pm);
     return NULL;
   }
 
   if (igraph_establishment_game(&g, n, types, k, &td, &pm, PyObject_IsTrue(directed), 0)) {
     igraphmodule_handle_igraph_error();
-    igraph_matrix_destroy(&pm);
     igraph_vector_destroy(&td);
+    igraph_matrix_destroy(&pm);
     return NULL;
   }
 
@@ -2659,7 +2661,7 @@ PyObject *igraphmodule_Graph_Biadjacency(PyTypeObject * type,
 
   static char *kwlist[] = { "matrix", "directed", "mode", "multiple", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OOO", kwlist, &PyList_Type, &matrix_o,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &matrix_o,
               &directed, &mode_o, &multiple))
     return NULL;
 
@@ -2670,7 +2672,7 @@ PyObject *igraphmodule_Graph_Biadjacency(PyTypeObject * type,
     return NULL;
   }
 
-  if (igraphmodule_PyList_to_matrix_t(matrix_o, &matrix, "matrix")) {
+  if (igraphmodule_PyObject_to_matrix_t(matrix_o, &matrix, "matrix")) {
     igraph_vector_bool_destroy(&vertex_types);
     return NULL;
   }
@@ -2977,16 +2979,15 @@ PyObject *igraphmodule_Graph_Preference(PyTypeObject * type,
     { "n", "type_dist", "pref_matrix", "attribute", "directed", "loops",
 NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nO!O!|OOO", kwlist,
-                                   &n, &PyList_Type, &type_dist,
-                                   &PyList_Type, &pref_matrix,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nOO|OOO", kwlist,
+                                   &n, &type_dist, &pref_matrix,
                                    &attribute_key, &directed, &loops))
     return NULL;
 
   CHECK_SSIZE_T_RANGE(n, "vertex count");
   types = PyList_Size(type_dist);
 
-  if (igraphmodule_PyList_to_matrix_t(pref_matrix, &pm, "pref_matrix")) {
+  if (igraphmodule_PyObject_to_matrix_t(pref_matrix, &pm, "pref_matrix")) {
     return NULL;
   }
   if (igraphmodule_PyObject_float_to_vector_t(type_dist, &td)) {
@@ -3070,18 +3071,18 @@ PyObject *igraphmodule_Graph_Asymmetric_Preference(PyTypeObject * type,
   char *kwlist[] =
     { "n", "type_dist_matrix", "pref_matrix", "attribute", "loops", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nO!O!|OO", kwlist,
-                                   &n, &PyList_Type, &type_dist_matrix,
-                                   &PyList_Type, &pref_matrix,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nOO|OO", kwlist,
+                                   &n, &type_dist_matrix,
+                                   &pref_matrix,
                                    &attribute_key, &loops))
     return NULL;
 
   CHECK_SSIZE_T_RANGE(n, "vertex count");
 
-  if (igraphmodule_PyList_to_matrix_t(pref_matrix, &pm, "pref_matrix")) {
+  if (igraphmodule_PyObject_to_matrix_t(pref_matrix, &pm, "pref_matrix")) {
     return NULL;
   }
-  if (igraphmodule_PyList_to_matrix_t(type_dist_matrix, &td, "type_dist_matrix")) {
+  if (igraphmodule_PyObject_to_matrix_t(type_dist_matrix, &td, "type_dist_matrix")) {
     igraph_matrix_destroy(&pm);
     return NULL;
   }
@@ -3375,15 +3376,15 @@ PyObject *igraphmodule_Graph_SBM(PyTypeObject * type,
   static char *kwlist[] = { "n", "pref_matrix", "block_sizes", "directed",
     "loops", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nO!O!|OO", kwlist,
-                                   &n, &PyList_Type, &pref_matrix_o,
-                                   &PyList_Type, &block_sizes_o,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nOO|OO", kwlist,
+                                   &n, &pref_matrix_o,
+                                   &block_sizes_o,
                                    &directed_o, &loops_o))
     return NULL;
 
   CHECK_SSIZE_T_RANGE(n, "vertex count");
 
-  if (igraphmodule_PyList_to_matrix_t(pref_matrix_o, &pref_matrix, "pref_matrix")) {
+  if (igraphmodule_PyObject_to_matrix_t(pref_matrix_o, &pref_matrix, "pref_matrix")) {
     return NULL;
   }
 
@@ -3746,8 +3747,8 @@ PyObject *igraphmodule_Graph_Weighted_Adjacency(PyTypeObject * type,
 
   static char *kwlist[] = { "matrix", "mode", "loops", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|OO", kwlist,
-                                   &PyList_Type, &matrix, &mode_o, &loops_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist,
+                                   &matrix, &mode_o, &loops_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_adjacency_t(mode_o, &mode))
@@ -3760,7 +3761,7 @@ PyObject *igraphmodule_Graph_Weighted_Adjacency(PyTypeObject * type,
   } else if (igraphmodule_PyObject_to_loops_t(loops_o, &loops))
     return NULL;
 
-  if (igraphmodule_PyList_to_matrix_t(matrix, &m, "matrix")) {
+  if (igraphmodule_PyObject_to_matrix_t(matrix, &m, "matrix")) {
     return NULL;
   }
 
@@ -6234,7 +6235,7 @@ PyObject *igraphmodule_Graph_permute_vertices(igraphmodule_GraphObject *self,
   igraphmodule_GraphObject *result_o;
   PyObject *list;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist, &PyList_Type, &list))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &list))
     return NULL;
 
   if (igraphmodule_PyObject_to_vector_int_t(list, &perm))
@@ -7790,7 +7791,7 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai(igraphmodule_GraphObject *
     }
   } else {
     use_seed = 1;
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m, "seed")) {
+    if (igraphmodule_PyObject_to_matrix_t(seed_o, &m, "seed")) {
       return NULL;
     }
   }
@@ -7936,7 +7937,7 @@ PyObject* igraphmodule_Graph_layout_davidson_harel(igraphmodule_GraphObject *sel
       return NULL;
     }
   } else {
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m, "seed")) {
+    if (igraphmodule_PyObject_to_matrix_t(seed_o, &m, "seed")) {
       return NULL;
     }
     use_seed = 1;
@@ -8005,7 +8006,7 @@ PyObject* igraphmodule_Graph_layout_drl(igraphmodule_GraphObject *self,
       return NULL;
     }
   } else {
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m, "seed")) {
+    if (igraphmodule_PyObject_to_matrix_t(seed_o, &m, "seed")) {
       return NULL;
     }
     use_seed = 1;
@@ -8104,7 +8105,7 @@ PyObject
       return NULL;
     }
   } else {
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m, "seed")) {
+    if (igraphmodule_PyObject_to_matrix_t(seed_o, &m, "seed")) {
       return NULL;
     }
     use_seed = 1;
@@ -8215,7 +8216,7 @@ PyObject *igraphmodule_Graph_layout_graphopt(igraphmodule_GraphObject *self,
     }
   } else {
     use_seed = 1;
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m, "seed")) {
+    if (igraphmodule_PyObject_to_matrix_t(seed_o, &m, "seed")) {
       return NULL;
     }
   }
@@ -8324,7 +8325,7 @@ PyObject *igraphmodule_Graph_layout_mds(igraphmodule_GraphObject * self,
       PyErr_NoMemory();
       return NULL;
     }
-    if (igraphmodule_PyList_to_matrix_t(dist_o, dist, "dist")) {
+    if (igraphmodule_PyObject_to_matrix_t(dist_o, dist, "dist")) {
       free(dist);
       return NULL;
     }
@@ -8614,7 +8615,7 @@ PyObject *igraphmodule_Graph_layout_umap(
     }
   } else {
     use_seed = 1;
-    if (igraphmodule_PyList_to_matrix_t(seed_o, &m, "seed")) {
+    if (igraphmodule_PyObject_to_matrix_t(seed_o, &m, "seed")) {
       return NULL;
     }
   }
@@ -9859,7 +9860,7 @@ PyObject *igraphmodule_Graph_isoclass(igraphmodule_GraphObject * self,
   char *kwlist[] = { "vertices", NULL };
 
   if (!PyArg_ParseTupleAndKeywords
-      (args, kwds, "|O!", kwlist, &PyList_Type, &vids))
+      (args, kwds, "|O", kwlist, &vids))
     return NULL;
 
   if (vids) {
