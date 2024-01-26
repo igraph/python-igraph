@@ -2,6 +2,10 @@
 
 ## [main]
 
+### Added
+
+- Added `Graph.Prufer()` to construct a graph from a Prüfer sequence.
+
 ### Fixed
 
 - Fixed import of `graph-tool` graphs for vertex properties where each property
