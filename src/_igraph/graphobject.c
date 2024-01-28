@@ -3157,7 +3157,7 @@ PyObject *igraphmodule_Graph_Asymmetric_Preference(PyTypeObject * type,
 
 
 /** \ingroup python_interface_graph
- * \brief Generates a tree graph based on a Prufer sequenve
+ * \brief Generates a tree graph based on a Prufer sequence
  * \return a reference to the newly generated Python igraph object
  * \sa igraph_from_prufer
  */
