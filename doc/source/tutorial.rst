@@ -792,8 +792,9 @@ Attribute name  Keyword argument       Purpose
                                        drawn first.
 --------------- ---------------------- ------------------------------------------
 ``shape``       ``vertex_shape``       Shape of the vertex. Known shapes are:
-                                       ``rectangle``, ``circle``, ``hidden``,
-                                       ``triangle-up``, ``triangle-down``.
+                                       ``rectangle``, ``circle``, ``diamond``,
+                                       ``hidden``, ``triangle-up``,
+                                       ``triangle-down``.
                                        Several aliases are also accepted, see
                                        :data:`drawing.known_shapes`.
 --------------- ---------------------- ------------------------------------------
