@@ -242,6 +242,8 @@ class BiconnectedComponentTests(unittest.TestCase):
     g1 = Graph.Full(10)
     g2 = Graph(5, [(0, 1), (1, 2), (2, 3), (3, 4)])
     g3 = Graph(6, [(0, 1), (1, 2), (2, 3), (3, 0), (2, 4), (2, 5), (4, 5)])
+    g4 = Graph.Full(2)
+    g5 = Graph.Full(1)
 
     def testBiconnectedComponents(self):
         s = self.g1.biconnected_components()
@@ -260,6 +262,14 @@ class BiconnectedComponentTests(unittest.TestCase):
         self.assertTrue(self.g1.articulation_points() == [])
         self.assertTrue(self.g2.cut_vertices() == [1, 2, 3])
         self.assertTrue(self.g3.articulation_points() == [2])
+        self.assertTrue(self.g4.articulation_points() == [])
+
+    def testIsBiconnected(self):
+        self.assertTrue(self.g1.is_biconnected())
+        self.assertFalse(self.g2.is_biconnected())
+        self.assertFalse(self.g3.is_biconnected())
+        self.assertTrue(self.g4.is_biconnected())
+        self.assertFalse(self.g5.is_biconnected())
 
 
 class CentralityTests(unittest.TestCase):
