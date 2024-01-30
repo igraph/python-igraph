@@ -1422,6 +1422,27 @@ PyObject *igraphmodule_Graph_is_connected(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
+ * \brief Decides whether a graph is biconnected.
+ * \return Py_True if the graph is biconnected, Py_False otherwise
+ * \sa igraph_is_biconnected
+ */
+PyObject *igraphmodule_Graph_is_biconnected(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null))
+{
+  igraph_bool_t res;
+
+  if (igraph_is_biconnected(&self->g, &res)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (res) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
+}
+
+/** \ingroup python_interface_graph
  * \brief Decides whether there is an edge from a given vertex to an other one.
  * \return Py_True if the vertices are directly connected, Py_False otherwise
  * \sa igraph_are_connected
@@ -15274,6 +15295,20 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Decides whether the graph is connected.\n\n"
    "@param mode: whether we should calculate strong or weak connectivity.\n"
    "@return: C{True} if the graph is connected, C{False} otherwise.\n"},
+
+  /* interface to igraph_is_biconnected */
+  {"is_biconnected", (PyCFunction) igraphmodule_Graph_is_biconnected,
+   METH_NOARGS,
+   "is_biconnected()\n--\n\n"
+   "Decides whether the graph is biconnected.\n\n"
+   "A graph is biconnected if it stays connected after the removal of\n"
+   "any single vertex.\n\n"
+   "Note that there are different conventions in use about whether to\n"
+   "consider a graph consisting of two connected vertices to be biconnected.\n"
+   "igraph does consider it biconnected.\n\n"
+   "@return: C{True} if it is biconnected, C{False} otherwise.\n"
+   "@rtype: boolean"
+  },
 
   /* interface to igraph_linegraph */
   {"linegraph", (PyCFunction) igraphmodule_Graph_linegraph,
