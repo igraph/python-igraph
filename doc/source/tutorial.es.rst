@@ -543,7 +543,7 @@ Hmm, esto no es demasiado bonito hasta ahora. Una adición trivial sería usar l
   >>> color_dict = {"m": "blue", "f": "pink"}
   >>> g.vs["color"] = [color_dict[gender] for gender in g.vs["gender"]]
   >>> ig.plot(g, layout=layout, bbox=(300, 300), margin=20)  # Cairo backend
-  >>> ig.plot(g, layout=layout, bbox=(300, 300), margin=20, target=ax)  # matplotlib backend
+  >>> ig.plot(g, layout=layout, target=ax)  # matplotlib backend
 
 Tenga en cuenta que aquí simplemente estamos reutilizando el objeto de diseño anterior, pero también hemos especificado que necesitamos un gráfico más pequeño (300 x 300 píxeles) y un margen mayor alrededor del grafo para que quepan las etiquetas (20 píxeles). El resultado es:
 

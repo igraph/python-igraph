@@ -177,7 +177,7 @@ Plotting graphs in Jupyter notebooks
 |igraph| supports inline plots within a `Jupyter`_ notebook via both the `Cairo`_ and `matplotlib`_ backend. If you are
 calling `igraph.plot` from a notebook cell without a `matplotlib`_ axes, the image will be shown inline in the corresponding
 output cell. Use the `bbox` argument to scale the image while preserving the size of the vertices, text, and other artists.
-For instance, to get a compact plot::
+For instance, to get a compact plot (using the Cairo backend only)::
 
    >>> ig.plot(g, bbox=(0, 0, 100, 100))
 

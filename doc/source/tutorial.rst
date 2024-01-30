@@ -705,11 +705,12 @@ from the ``label`` attribute by default and vertex colors are determined by the
   >>> color_dict = {"m": "blue", "f": "pink"}
   >>> g.vs["color"] = [color_dict[gender] for gender in g.vs["gender"]]
   >>> ig.plot(g, layout=layout, bbox=(300, 300), margin=20)  # Cairo backend
-  >>> ig.plot(g, layout=layout, bbox=(300, 300), margin=20, target=ax)  # matplotlib backend
+  >>> ig.plot(g, layout=layout, target=ax)  # matplotlib backend
 
-Note that we are simply re-using the previous layout object here, but we also specified
-that we need a smaller plot (300 x 300 pixels) and a larger margin around the graph
-to fit the labels (20 pixels). The result is:
+Note that we are simply re-using the previous layout object here, but for the Cairo backend
+we also specified that we need a smaller plot (300 x 300 pixels) and a larger margin around
+the graph to fit the labels (20 pixels). These settings would be ignored for the Matplotlib
+backend. The result is:
 
 .. figure:: figures/tutorial_social_network_2.png
    :alt: The visual representation of our social network - with names and genders
@@ -869,7 +870,8 @@ Keyword argument Purpose
 ---------------- ----------------------------------------------------------------
 ``bbox``         The bounding box of the plot. This must be a tuple containing
                  the desired width and height of the plot. The default plot is
-                 600 pixels wide and 600 pixels high.
+                 600 pixels wide and 600 pixels high. Ignored for the
+                 Matplotlib backend.
 ---------------- ----------------------------------------------------------------
 ``layout``       The layout to be used. It can be an instance of
                  :class:`~layout.Layout`,
@@ -881,7 +883,7 @@ Keyword argument Purpose
 ``margin``       The top, right, bottom and left margins of the plot in pixels.
                  This argument must be a list or tuple and its elements will be
                  re-used if you specify a list or tuple with less than four
-                 elements.
+                 elements. Ignored for the Matplotlib backend.
 ================ ================================================================
 
 Specifying colors in plots
