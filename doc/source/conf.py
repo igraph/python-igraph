@@ -136,7 +136,8 @@ pygments_style = "sphinx"
 # Inspired by pydoctor's RTD page itself
 # https://github.com/twisted/pydoctor/blob/master/docs/source/conf.py
 html_theme = "sphinx_rtd_theme"
-html_static_path = []
+html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
