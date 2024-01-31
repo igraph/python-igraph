@@ -125,7 +125,7 @@ class Configuration:
             @param value: the value itself. C{0}, C{false}, C{no} and C{off}
               means false, C{1}, C{true}, C{yes} and C{on} means true,
               everything else results in a C{ValueError} being thrown.
-              Values are case insensitive
+              Values are case-insensitive
             """
             value = str(value).lower()
             if value in ("0", "false", "no", "off"):
@@ -234,7 +234,7 @@ class Configuration:
         """Converts an item description to a section-key pair.
 
         @param item: the item to be converted
-        @return: if C{item} contains a period (C{.}), it is splitted into two parts
+        @return: if C{item} contains a period (C{.}), it is split into two parts
           at the first period, then the two parts are returned, so the part before
           the period is the section. If C{item} does not contain a period, the
           section is assumed to be C{general}, and the second part of the returned

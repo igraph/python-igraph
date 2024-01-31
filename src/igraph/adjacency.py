@@ -128,7 +128,7 @@ def _get_adjlist(self, mode="out"):
     contains the neighbors of the given vertex.
 
     @param mode: if C{\"out\"}, returns the successors of the vertex. If
-      C{\"in\"}, returns the predecessors of the vertex. If C{\"all"\"}, both
+      C{\"in\"}, returns the predecessors of the vertex. If C{\"all\"}, both
       the predecessors and the successors will be returned. Ignored
       for undirected graphs.
     """

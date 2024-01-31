@@ -46,7 +46,7 @@ def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10)
 
     @param edge_weights: name of an edge attribute or a list containing
       edge weights.
-    @param vertex_weights: name of an vertex attribute or a list containing
+    @param vertex_weights: name of a vertex attribute or a list containing
       vertex weights.
     @param trials: the number of attempts to partition the network.
     @return: an appropriate L{VertexClustering} object with an extra attribute
@@ -111,7 +111,7 @@ def _community_label_propagation(graph, weights=None, initial=None, fixed=None):
 
     Note that since ties are broken randomly, there is no guarantee that
     the algorithm returns the same community structure after each run.
-    In fact, they frequently differ. See the paper of Raghavan et al
+    In fact, they frequently differ. See the paper of Raghavan et al.
     on how to come up with an aggregated community structure.
 
     Also note that the community _labels_ (numbers) have no semantic meaning
@@ -156,10 +156,10 @@ def _community_multilevel(graph, weights=None, return_levels=False, resolution=1
     iteratively in a way that maximizes the vertices' local contribution
     to the overall modularity score. When a consensus is reached (i.e. no
     single move would increase the modularity score), every community in
-    the original graph is shrank to a single vertex (while keeping the
+    the original graph is shrunk to a single vertex (while keeping the
     total weight of the incident edges) and the process continues on the
     next level. The algorithm stops when it is not possible to increase
-    the modularity any more after shrinking the communities to vertices.
+    the modularity anymore after shrinking the communities to vertices.
 
     This algorithm is said to run almost in linear time on sparse graphs.
 

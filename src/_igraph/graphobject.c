@@ -1925,8 +1925,8 @@ PyObject *igraphmodule_Graph_radius(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
- * \brief Converts a tree graph into a Prufer sequence
- * \return the Prufer sequence as a Python object
+ * \brief Converts a tree graph into a Prüfer sequence
+ * \return the Prüfer sequence as a Python object
  * \sa igraph_to_prufer
  */
 PyObject *igraphmodule_Graph_to_prufer(igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null))
@@ -2024,7 +2024,7 @@ PyObject *igraphmodule_Graph_Atlas(PyTypeObject * type, PyObject * args)
 }
 
 /** \ingroup python_interface_graph
- * \brief Generates a graph based on the Barabasi-Albert model
+ * \brief Generates a graph based on the Barabási-Albert model
  * This is intended to be a class method in Python, so the first argument
  * is the type object and not the Python igraph object (because we have
  * to allocate that in this method).
@@ -3290,7 +3290,7 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
 }
 
 /** \ingroup python_interface_graph
- * \brief Generates a graph based on sort of a "windowed" Barabasi-Albert model
+ * \brief Generates a graph based on sort of a "windowed" Barabási-Albert model
  * \return a reference to the newly generated Python igraph object
  * \sa igraph_recent_degree_game
  */
@@ -13864,8 +13864,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Barabasi(n, m, outpref=False, directed=False, power=1,\n"
    "         zero_appeal=1, implementation=\"psumtree\", start_from=None)\n--\n\n"
-   "Generates a graph based on the Barabasi-Albert model.\n\n"
-   "B{Reference}: Barabasi, A-L and Albert, R. 1999. Emergence of scaling\n"
+   "Generates a graph based on the Barabási-Albert model.\n\n"
+   "B{Reference}: Barabási, A-L and Albert, R. 1999. Emergence of scaling\n"
    "in random networks. I{Science}, 286 509-512.\n\n"
    "@param n: the number of vertices\n"
    "@param m: either the number of outgoing edges generated for\n"
@@ -14084,7 +14084,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Preference(n, type_dist, pref_matrix, attribute=None, directed=False, loops=False)\n--\n\n"
    "Generates a graph based on vertex types and connection probabilities.\n\n"
-   "This is practically the nongrowing variant of L{Establishment}.\n"
+   "This is practically the non-growing variant of L{Establishment}.\n"
    "A given number of vertices are generated. Every vertex is assigned to a\n"
    "vertex type according to the given type probabilities. Finally, every\n"
    "vertex pair is evaluated and an edge is created between them with a\n"
@@ -14140,7 +14140,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"SBM", (PyCFunction) igraphmodule_Graph_SBM,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "SBM(n, pref_matrix, block_sizes, directed=False, loops=False)\n--\n\n"
-   "Generates a graph based on a stochastic blockmodel.\n\n"
+   "Generates a graph based on a stochastic block model.\n\n"
    "A given number of vertices are generated. Every vertex is assigned to a\n"
    "vertex type according to the given block sizes. Vertices of the same\n"
    "type will be assigned consecutive vertex IDs. Finally, every\n"
@@ -14494,7 +14494,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "of the vertices.\n\n"
    "This coefficient is basically the correlation between the actual\n"
    "connectivity patterns of the vertices and the pattern expected from the\n"
-   "disribution of the vertex types.\n\n"
+   "distribution of the vertex types.\n\n"
    "See equation (21) in Newman MEJ: Mixing patterns in networks, Phys Rev E\n"
    "67:026126 (2003) for the proper definition. The actual calculation is\n"
    "performed using equation (26) in the same paper for directed graphs, and\n"
@@ -14684,7 +14684,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "closeness(vertices=None, mode=\"all\", cutoff=None, weights=None, "
    "normalized=True)\n--\n\n"
    "Calculates the closeness centralities of given vertices in a graph.\n\n"
-   "The closeness centerality of a vertex measures how easily other\n"
+   "The closeness centrality of a vertex measures how easily other\n"
    "vertices can be reached from it (or the other way: how easily it\n"
    "can be reached from the other vertices). It is defined as the\n"
    "number of vertices minus one divided by the sum of\n"
@@ -14717,7 +14717,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "harmonic_centrality(vertices=None, mode=\"all\", cutoff=None, weights=None, "
    "normalized=True)\n--\n\n"
    "Calculates the harmonic centralities of given vertices in a graph.\n\n"
-   "The harmonic centerality of a vertex measures how easily other\n"
+   "The harmonic centrality of a vertex measures how easily other\n"
    "vertices can be reached from it (or the other way: how easily it\n"
    "can be reached from the other vertices). It is defined as the\n"
    "mean inverse distance to all other vertices.\n\n"
@@ -14744,7 +14744,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "connected_components(mode=\"strong\")\n--\n\n"
    "Calculates the (strong or weak) connected components for a given graph.\n\n"
-   "Atttention: this function has a more convenient interface in class\n"
+   "Attention: this function has a more convenient interface in class\n"
    "L{Graph}, which wraps the result in a L{VertexClustering} object.\n"
    "It is advised to use that.\n"
    "@param mode: must be either C{\"strong\"} or C{\"weak\"}, depending on\n"
