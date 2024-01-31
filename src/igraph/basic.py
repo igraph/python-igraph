@@ -34,7 +34,7 @@ def _add_edges(graph, es, attributes=None):
     @param es: the list of edges to be added. Every edge is represented
       with a tuple containing the vertex IDs or names of the two
       endpoints. Vertices are enumerated from zero.
-    @param attributes: dict of sequences, all of length equal to the
+    @param attributes: dict of sequences, each of length equal to the
       number of edges to be added, containing the attributes of the new
       edges.
     """
@@ -92,7 +92,7 @@ def _add_vertices(graph, n, attributes=None):
       vertex to be added, or a sequence of strings, each corresponding to the
       name of a vertex to be added. Names will be assigned to the C{name}
       vertex attribute.
-    @param attributes: dict of sequences, all of length equal to the
+    @param attributes: dict of sequences, each of length equal to the
       number of vertices to be added, containing the attributes of the new
       vertices. If n is a string (so a single vertex is added), then the
       values of this dict are the attributes themselves, but if n=1 then
@@ -136,7 +136,7 @@ def _delete_edges(graph, *args, **kwds):
     first positional argument is callable, an edge sequence is derived by
     calling L{EdgeSeq.select} with the same positional and keyword
     arguments. Edges in the derived edge sequence will be removed.
-    Otherwise the first positional argument is considered as follows:
+    Otherwise, the first positional argument is considered as follows:
 
     Deprecation notice: C{delete_edges(None)} has been replaced by
     C{delete_edges()} - with no arguments - since igraph 0.8.3.

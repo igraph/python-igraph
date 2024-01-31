@@ -153,7 +153,7 @@ def construct_graph_from_formula(cls, formula=None, attr="name", simplify=True):
       + edges (vertex names):
       A->B
 
-    If you have may disconnected componnets, you can separate them
+    If you have many disconnected componnets, you can separate them
     with commas. You can also specify isolated vertices:
 
       >>> g = Graph.Formula("A--B, C--D, E--F, G--H, I, J, K")
@@ -181,7 +181,7 @@ def construct_graph_from_formula(cls, formula=None, attr="name", simplify=True):
     @param formula: the formula itself
     @param attr: name of the vertex attribute where the vertex names
                  will be stored
-    @param simplify: whether the simplify the constructed graph
+    @param simplify: whether to simplify the constructed graph
     @return: the constructed graph:
     """
 

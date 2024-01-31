@@ -38,7 +38,7 @@ class Layout:
     the vertices. It was particularly convenient for me to use the same layout
     for all of them, especially when I made figures for a paper. However,
     C{igraph} will of course refuse to draw a graph with a layout that has
-    less coordinates than the node count of the graph.
+    fewer coordinates than the node count of the graph.
 
     Layouts behave exactly like lists when they are accessed using the item
     index operator (C{[...]}). They can even be iterated through. Items

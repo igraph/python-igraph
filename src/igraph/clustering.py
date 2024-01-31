@@ -452,7 +452,7 @@ class VertexClustering(Clustering):
 
               - C{True}: all the groups will be highlighted, the colors matching
                 the corresponding color indices from the current palette
-                (see the C{palette} keyword argument of L{Graph.__plot__}.
+                (see the C{palette} keyword argument of L{Graph.__plot__}).
 
               - A dict mapping cluster indices or tuples of vertex indices to
                 color names.  The given clusters or vertex groups will be
@@ -1151,7 +1151,7 @@ class VertexCover(Cover):
 
               - C{True}: all the clusters will be highlighted, the colors matching
                 the corresponding color indices from the current palette
-                (see the C{palette} keyword argument of L{Graph.__plot__}.
+                (see the C{palette} keyword argument of L{Graph.__plot__}).
 
               - A dict mapping cluster indices or tuples of vertex indices to
                 color names.  The given clusters or vertex groups will be
@@ -1371,7 +1371,7 @@ def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):
     to clusters automatically.
     """
     # Handle the case of mark_groups = True, mark_groups containing a list or
-    # tuple of cluster IDs, and and mark_groups yielding (cluster ID, color)
+    # tuple of cluster IDs, and mark_groups yielding (cluster ID, color)
     # pairs
     if mark_groups is True:
         group_iter = ((group, color) for color, group in enumerate(clustering))
@@ -1483,7 +1483,7 @@ def compare_communities(comm1, comm2, method="vi", remove_none=False):
       as a L{Clustering} object.
     @param method: the measure to use. C{"vi"} or C{"meila"} means the
       variation of information metric of Meila (2003), C{"nmi"} or C{"danon"}
-      means the normalized mutual information as defined by Danon et al (2005),
+      means the normalized mutual information as defined by Danon et al. (2005),
       C{"split-join"} means the split-join distance of van Dongen (2000),
       C{"rand"} means the Rand index of Rand (1971), C{"adjusted_rand"}
       means the adjusted Rand index of Hubert and Arabie (1985).

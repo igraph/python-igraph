@@ -530,7 +530,7 @@ def power_law_fit(data, xmin=None, method="auto", p_precision=0.01):
           size if n is small.
 
         - C{discrete}: exact maximum likelihood estimation when the
-          input comes from a discrete scale (see Clauset et al among the
+          input comes from a discrete scale (see Clauset et al. among the
           references).
 
         - C{auto}: exact maximum likelihood estimation where the continuous
