@@ -3636,7 +3636,7 @@ PyObject *igraphmodule_Graph_Tree(PyTypeObject * type,
  * - directed is a bool that specifies if the edges should be directed. If so, they
  * point away from the root.
  * - method is one of:
- *   - 'Prufer' aka sample Pruefer sequences and convert to trees.
+ *   - 'prufer' aka sample Prüfer sequences and convert to trees.
  *   - 'lerw' aka loop-erased random walk on the complete graph to sample spanning
  *     trees.
  *
@@ -13946,7 +13946,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"Erdos_Renyi", (PyCFunction) igraphmodule_Graph_Erdos_Renyi,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Erdos_Renyi(n, p, m, directed=False, loops=False)\n--\n\n"
-   "Generates a graph based on the Erdos-Renyi model.\n\n"
+   "Generates a graph based on the Erdős-Rényi model.\n\n"
    "@param n: the number of vertices.\n"
    "@param p: the probability of edges. If given, C{m} must be missing.\n"
    "@param m: the number of edges. If given, C{p} must be missing.\n"
@@ -14102,11 +14102,11 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"Prufer", (PyCFunction) igraphmodule_Graph_Prufer,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Prufer(seq)\n--\n\n"
-   "Generates a tree from its Prufer sequence.\n\n"
-   "A Prufer sequence is a unique sequence of integers associated with a\n"
+   "Generates a tree from its Prüfer sequence.\n\n"
+   "A Prüfer sequence is a unique sequence of integers associated with a\n"
    "labelled tree. A tree on M{n} vertices can be represented by a sequence\n"
    "of M{n-2} integers, each between M{0} and M{n-1} (inclusive).\n\n"
-   "@param seq: the Prufer sequence as an iterable of integers\n"},
+   "@param seq: the Prüfer sequence as an iterable of integers\n"},
 
   /* interface to igraph_bipartite_game */
   {"_Random_Bipartite", (PyCFunction) igraphmodule_Graph_Random_Bipartite,
@@ -14389,7 +14389,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param directed: whether the graph should be directed\n"
    "@param method: the generation method to be used. One of the following:\n"
    "  \n"
-   "    - C{\"prufer\"} -- samples Prufer sequences uniformly, then converts\n"
+   "    - C{\"prufer\"} -- samples Prüfer sequences uniformly, then converts\n"
    "      them to trees\n"
    "    - C{\"lerw\"} -- performs a loop-erased random walk on the complete\n"
    "      graph to uniformly sample its spanning trees (Wilson's algorithm).\n"
@@ -15686,8 +15686,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    (PyCFunction) igraphmodule_Graph_to_prufer,
    METH_NOARGS,
    "to_prufer()\n--\n\n"
-   "Converts a tree graph into a Prufer sequence.\n\n"
-   "@return: the Prufer sequence as a list"
+   "Converts a tree graph into a Prüfer sequence.\n\n"
+   "@return: the Prüfer sequence as a list"
   },
 
   // interface to igraph_transitivity_undirected
