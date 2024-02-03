@@ -249,6 +249,67 @@ class GeneratorTests(unittest.TestCase):
         self.assertFalse(g.is_directed())
         self.assertTrue(g.degree() == degrees)
 
+    def testRealizeBipartiteDegreeSequence(self):
+        deg1 = [2, 2]
+        deg2 = [1, 1, 2]
+        g = Graph.Realize_Bipartite_Degree_Sequence(
+            deg1,
+            deg2,
+            "simple",
+            "smallest",
+        )
+        self.assertFalse(g.is_directed())
+        self.assertTrue(g.is_connected())
+        self.assertTrue(g.degree() == deg1 + deg2)
+
+        g = Graph.Realize_Bipartite_Degree_Sequence(
+            deg1,
+            deg2,
+            "simple",
+            "largest",
+        )
+        self.assertFalse(g.is_directed())
+        self.assertTrue(g.degree() == deg1 + deg2)
+
+        g = Graph.Realize_Bipartite_Degree_Sequence(
+            deg1,
+            deg2,
+            "simple",
+            "index",
+        )
+        self.assertFalse(g.is_directed())
+        self.assertTrue(g.degree() == deg1 + deg2)
+
+        deg1 = [3, 1, 1]
+        deg2 = [2, 3]
+        self.assertRaises(
+            InternalError,
+            Graph.Realize_Bipartite_Degree_Sequence,
+            deg1,
+            deg2,
+            "simple",
+            "smallest",
+        )
+
+        self.assertRaises(
+            InternalError,
+            Graph.Realize_Bipartite_Degree_Sequence,
+            deg1,
+            deg2,
+            "simple",
+            "index",
+        )
+
+        g = Graph.Realize_Bipartite_Degree_Sequence(
+            deg1,
+            deg2,
+            "multi",
+            "smallest",
+        )
+        self.assertFalse(g.is_directed())
+        self.assertTrue(g.is_connected())
+        self.assertTrue(g.degree() == deg1 + deg2)
+
     def testKautz(self):
         g = Graph.Kautz(2, 2)
         deg_in = g.degree(mode="in")
