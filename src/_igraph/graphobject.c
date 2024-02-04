@@ -2976,6 +2976,61 @@ PyObject *igraphmodule_Graph_Realize_Degree_Sequence(PyTypeObject *type,
 
 
 /** \ingroup python_interface_graph
+ * \brief Generates a graph with a specified degree sequence
+ * \return a reference to the newly generated Python igraph object
+ * \sa igraph_realize_bipartite_degree_sequence
+ */
+PyObject *igraphmodule_Graph_Realize_Bipartite_Degree_Sequence(PyTypeObject *type,
+                                 PyObject *args, PyObject *kwds) {
+
+  igraph_vector_int_t degrees1, degrees2;
+  igraph_edge_type_sw_t allowed_edge_types = IGRAPH_SIMPLE_SW;
+  igraph_realize_degseq_t method = IGRAPH_REALIZE_DEGSEQ_SMALLEST;
+  PyObject *degrees1_o, *degrees2_o;
+  PyObject *edge_types_o = Py_None, *method_o = Py_None;
+  igraphmodule_GraphObject *self;
+  igraph_t g;
+
+  static char *kwlist[] = { "degrees1", "degrees2", "allowed_edge_types", "method", NULL };
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|OO", kwlist,
+                                   &degrees1_o, &degrees2_o, &edge_types_o, &method_o))
+    return NULL;
+
+  /* allowed edge types */
+  if (igraphmodule_PyObject_to_edge_type_sw_t(edge_types_o, &allowed_edge_types))
+    return NULL;
+
+  /* methods */
+  if (igraphmodule_PyObject_to_realize_degseq_t(method_o, &method))
+    return NULL;
+
+  /* First degree vector */
+  if (igraphmodule_PyObject_to_vector_int_t(degrees1_o, &degrees1))
+    return NULL;
+
+  /* Second degree vector */
+  if (igraphmodule_PyObject_to_vector_int_t(degrees2_o, &degrees2)) {
+    igraph_vector_int_destroy(&degrees1);
+    return NULL;
+  }
+
+  if (igraph_realize_bipartite_degree_sequence(&g, &degrees1, &degrees2, allowed_edge_types, method)) {
+    igraph_vector_int_destroy(&degrees1);
+    igraph_vector_int_destroy(&degrees2);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  igraph_vector_int_destroy(&degrees1);
+  igraph_vector_int_destroy(&degrees2);
+
+  CREATE_GRAPH_FROM_TYPE(self, g, type);
+
+  return (PyObject *) self;
+}
+
+
+/** \ingroup python_interface_graph
  * \brief Generates a graph based on vertex types and connection preferences
  * \return a reference to the newly generated Python igraph object
  * \sa igraph_preference_game
@@ -14245,6 +14300,37 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
     "\n"
     "  In the undirected case, C{smallest} is guaranteed to produce a connected graph.\n"
     "  See Horvát and Modes (2021) for details.\n"
+  },
+
+  {"Realize_Bipartite_Degree_Sequence", (PyCFunction) igraphmodule_Graph_Realize_Bipartite_Degree_Sequence,
+    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
+    "Realize_Bipartite_Degree_Sequence(degrees1, degrees2, allowed_edge_types=\"simple\", method=\"smallest\")\n--\n\n"
+    "Generates a bipartite graph from the degree sequences of its partitions.\n"
+    "\n"
+    "This method implements a Havel-Hakimi style graph construction for biparite\n"
+    "graphs. In each step, the algorithm picks two vertices in a deterministic\n"
+    "manner and connects them. The way the vertices are picked is defined by the\n"
+    "C{method} parameter. The allowed edge types (i.e. whether multi-edges are allowed)\n"
+    "are specified in the C{allowed_edge_types} parameter. Self-loops are never created,\n"
+    "since a graph with self-loops is not bipartite.\n"
+    "\n"
+    "@param degrees1: the degrees of the first partition.\n"
+    "@param degrees2: the degrees of the second partition.\n"
+    "@param allowed_edge_types: controls whether multi-edges are allowed\n"
+    "  during the generation process. Possible values are:\n"
+    "\n"
+    "    - C{\"simple\"}: simple graphs (no multi-edges)\n"
+    "    - C{\"multi\"}: multi-edges allowed\n"
+    "\n"
+    "@param method: controls how the vertices are selected during the generation\n"
+    "  process. Possible values are:\n"
+    "\n"
+    "    - C{smallest}: The vertex with smallest remaining degree first.\n"
+    "    - C{largest}: The vertex with the largest remaining degree first.\n"
+    "    - C{index}: The vertices are selected in order of their index.\n"
+    "\n"
+    "  The smallest C{smallest} method is guaranteed to produce a connected graph,\n"
+    "  if one exists."
   },
 
   // interface to igraph_ring
