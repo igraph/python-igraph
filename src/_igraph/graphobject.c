@@ -2992,7 +2992,7 @@ PyObject *igraphmodule_Graph_Realize_Bipartite_Degree_Sequence(PyTypeObject *typ
   igraph_t g;
 
   static char *kwlist[] = { "degrees1", "degrees2", "allowed_edge_types", "method", NULL };
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|OO", kwlist,
                                    &degrees1_o, &degrees2_o, &edge_types_o, &method_o))
     return NULL;
 
