@@ -895,9 +895,9 @@ color (e.g., edge, vertex or label colors in the respective attributes):
 X11 color names
     See the `list of X11 color names <https://en.wikipedia.org/wiki/X11_color_names>`_
     in Wikipedia for the complete list. Alternatively you can see the
-    keys of the igraph.drawing.colors.known_colors dictionary. Color
-    names are case insensitive in igraph so "DarkBlue" can be written as
-    "darkblue" as well.
+    keys of the ``igraph.drawing.colors.known_colors`` dictionary. Color
+    names are case insensitive in igraph so ``"DarkBlue"`` can be written as
+    ``"darkblue"`` as well.
 
 Color specification in CSS syntax
     This is a string according to one of the following formats (where *R*, *G* and
@@ -912,6 +912,23 @@ Color specification in CSS syntax
 
 Lists or tuples of RGB values in the range 0-1
     Example: ``(1.0, 0.5, 0)`` or ``[1.0, 0.5, 0]``.
+
+Note that when specifying the same color for all vertices or edges, you can use
+a string as-is but not the tuple or list syntax as tuples or lists would be
+interpreted as if the *items* in the tuple are for individual vertices or
+edges. So, this would work::
+
+  >>> ig.plot(g, vertex_color="green")
+
+But this would not, as it would treat the items in the tuple as palette indices
+for the first, second and third vertoces::
+
+  >>> ig.plot(g, vertex_color=(1, 0, 0))
+
+In this latter case, you need to expand the color specification for each vertex
+explicitly::
+
+  >>> ig.plot(g, vertex_color=[(1, 0, 0)] * g.vcount())
 
 
 Saving plots

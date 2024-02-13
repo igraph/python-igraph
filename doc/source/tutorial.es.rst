@@ -701,7 +701,7 @@ Especificación de colores en los gráficos
 
 ***Nombres de colores X11***
 
-Consulta la `lista de nombres de colores X11 <https://en.wikipedia.org/wiki/X11_color_names>`_ en Wikipedia para ver la lista completa. Los nombres de los colores no distinguen entre mayúsculas y minúsculas en |igraph|, por lo que "DarkBLue" puede escribirse también como "darkblue".
+Consulta la `lista de nombres de colores X11 <https://en.wikipedia.org/wiki/X11_color_names>`_ en Wikipedia para ver la lista completa. Los nombres de los colores no distinguen entre mayúsculas y minúsculas en |igraph|, por lo que ``"DarkBLue"`` puede escribirse también como ``"darkblue"``.
 
 ***Especificación del color en la sintaxis CSS***
 
