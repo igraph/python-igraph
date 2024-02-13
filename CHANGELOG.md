@@ -1,15 +1,21 @@
 # igraph Python interface changelog
 
-## [main]
+## [0.11.4]
 
 ### Added
 
 - Added `Graph.Prufer()` to construct a graph from a Prüfer sequence.
 
+- Added `Graph.Bipartite_Degree_Sequence()` to construct a bipartite graph from
+  a bidegree sequence.
+
 ### Fixed
 
 - Fixed import of `graph-tool` graphs for vertex properties where each property
   has a vector value.
+
+- `Graph.Adjacency()` now accepts `Matrix` instances and other sequences as an
+  input, it is not limited to lists-of-lists-of-ints any more.
 
 ## [0.11.3] - 2023-11-19
 
@@ -615,7 +621,8 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[main]: https://github.com/igraph/python-igraph/compare/0.11.3...main
+[main]: https://github.com/igraph/python-igraph/compare/0.11.4...main
+[0.11.4]: https://github.com/igraph/python-igraph/compare/0.11.3...0.11.4
 [0.11.3]: https://github.com/igraph/python-igraph/compare/0.11.2...0.11.3
 [0.11.2]: https://github.com/igraph/python-igraph/compare/0.11.0...0.11.2
 [0.11.0]: https://github.com/igraph/python-igraph/compare/0.10.8...0.11.0
