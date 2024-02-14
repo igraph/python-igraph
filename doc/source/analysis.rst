@@ -63,7 +63,7 @@ To get the vertices at the two ends of an edge, use :attr:`Edge.source` and :att
     >>> v1, v2 = e.source, e.target
 
 Vice versa, to get the edge if from the source and target vertices, you can use :meth:`Graph.get_eid` or, for multiple pairs of source/targets,
-:meth:`Graph.get_eids`. The boolean version, asking whether two vertices are directly connected, is :meth:`Graph.are_connected`.
+:meth:`Graph.get_eids`. The boolean version, asking whether two vertices are directly connected, is :meth:`Graph.are_adjacent`.
 
 To get the edges incident on a vertex, you can use :meth:`Vertex.incident`, :meth:`Vertex.out_edges` and
 :meth:`Vertex.in_edges`. The three are equivalent on undirected graphs but not directed ones of course::
