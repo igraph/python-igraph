@@ -360,6 +360,7 @@ class ForeignTests(unittest.TestCase):
             self.assertTrue("name" in g.vertex_attributes())
 
             g.write_graphml(tmpfname)
+            g.write_graphml(tmpfname, prefixattr=False)
 
     def testGraphMLz(self):
         with temporary_file(

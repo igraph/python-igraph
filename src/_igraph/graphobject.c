@@ -9728,18 +9728,19 @@ PyObject *igraphmodule_Graph_write_pajek(igraphmodule_GraphObject * self,
 PyObject *igraphmodule_Graph_write_graphml(igraphmodule_GraphObject * self,
                                            PyObject * args, PyObject * kwds)
 {
-  PyObject *fname = NULL;
-  static char *kwlist[] = { "f", NULL };
+  PyObject *fname = NULL, *prefixattr_o = Py_True;
+  static char *kwlist[] = { "f", "prefixattr", NULL };
   igraphmodule_filehandle_t fobj;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &fname))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &fname, &prefixattr_o))
     return NULL;
 
   if (igraphmodule_filehandle_init(&fobj, fname, "w"))
     return NULL;
 
-  if (igraph_write_graph_graphml(&self->g, igraphmodule_filehandle_get(&fobj),
-                 /*prefixattr=*/ 1)) {
+  if (igraph_write_graph_graphml(
+    &self->g, igraphmodule_filehandle_get(&fobj), PyObject_IsTrue(prefixattr_o)
+  )) {
     igraphmodule_handle_igraph_error();
     igraphmodule_filehandle_destroy(&fobj);
     return NULL;
@@ -16930,9 +16931,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_write_graph_edgelist */
   {"write_graphml", (PyCFunction) igraphmodule_Graph_write_graphml,
    METH_VARARGS | METH_KEYWORDS,
-   "write_graphml(f)\n--\n\n"
+   "write_graphml(f, prefixattr=True)\n--\n\n"
    "Writes the graph to a GraphML file.\n\n"
    "@param f: the name of the file to be written or a Python file handle\n"
+   "@param prefixattr: whether attribute names in the written file should be\n"
+   "  prefixed with C{g_}, C{v_} and C{e_} for graph, vertex and edge\n"
+   "  attributes, respectively. This might be needed to ensure the uniqueness\n"
+   "  of attribute identifiers in the written GraphML file.\n"
   },
   /* interface to igraph_write_graph_leda */
   {"write_leda", (PyCFunction) igraphmodule_Graph_write_leda,
