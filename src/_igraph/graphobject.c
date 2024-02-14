@@ -1445,10 +1445,10 @@ PyObject *igraphmodule_Graph_is_biconnected(igraphmodule_GraphObject *self, PyOb
 /** \ingroup python_interface_graph
  * \brief Decides whether there is an edge from a given vertex to an other one.
  * \return Py_True if the vertices are directly connected, Py_False otherwise
- * \sa igraph_are_connected
+ * \sa igraph_are_adjacent
  */
-PyObject *igraphmodule_Graph_are_connected(igraphmodule_GraphObject * self,
-                                           PyObject * args, PyObject * kwds)
+PyObject *igraphmodule_Graph_are_adjacent(igraphmodule_GraphObject * self,
+                                          PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] = { "v1", "v2", NULL };
   PyObject *v1, *v2;
@@ -1464,7 +1464,7 @@ PyObject *igraphmodule_Graph_are_connected(igraphmodule_GraphObject * self,
   if (igraphmodule_PyObject_to_vid(v2, &idx2, &self->g))
     return NULL;
 
-  if (igraph_are_connected(&self->g, idx1, idx2, &res))
+  if (igraph_are_adjacent(&self->g, idx1, idx2, &res))
     return igraphmodule_handle_igraph_error();
 
   if (res)
@@ -14554,10 +14554,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // STRUCTURAL PROPERTIES OF GRAPHS //
   /////////////////////////////////////
 
-  // interface to igraph_are_connected
-  {"are_connected", (PyCFunction) igraphmodule_Graph_are_connected,
+  // interface to igraph_are_adjacent
+  {"are_adjacent", (PyCFunction) igraphmodule_Graph_are_adjacent,
    METH_VARARGS | METH_KEYWORDS,
-   "are_connected(v1, v2)\n--\n\n"
+   "are_adjacent(v1, v2)\n--\n\n"
    "Decides whether two given vertices are directly connected.\n\n"
    "@param v1: the ID or name of the first vertex\n"
    "@param v2: the ID or name of the second vertex\n"

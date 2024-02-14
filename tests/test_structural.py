@@ -994,7 +994,7 @@ class PathTests(unittest.TestCase):
             self.assertEqual(15, path[-1])
             curr = path[0]
             for next in path[1:]:
-                self.assertTrue(g.are_connected(curr, next))
+                self.assertTrue(g.are_adjacent(curr, next))
                 curr = next
 
     def testPathLengthHist(self):

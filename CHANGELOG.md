@@ -8,6 +8,12 @@
   allows the user to strip the `g_`, `v_` and `e_` prefixes from GraphML files
   written by igraph.
 
+### Changed
+
+- `Graph.are_connected()` has now been renamed to `Graph.are_adjacent()`,
+  following up a similar change in the C core. The old name of the function
+  is deprecated but will be kept around until at least 0.12.0.
+
 ## [0.11.4]
 
 ### Added

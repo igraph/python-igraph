@@ -112,7 +112,7 @@ class AttributeTests(unittest.TestCase):
         g.add_vertices([a, b])
         g.add_edges([(a, b)])
         self.assertEqual(g.ecount(), 1)
-        self.assertTrue(g.are_connected(a, b))
+        self.assertTrue(g.are_adjacent(a, b))
 
     def testInvalidAttributeNames(self):
         g = Graph.Famous("bull")

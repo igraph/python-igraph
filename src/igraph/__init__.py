@@ -948,6 +948,14 @@ class Graph(GraphBase):
         deprecated("Graph.Incidence() is deprecated; use Graph.Biadjacency() instead")
         return cls.Biadjacency(*args, **kwds)
 
+    def are_connected(self, *args, **kwds):
+        """Deprecated alias to L{Graph.are_adjacent()}."""
+        deprecated(
+            "Graph.are_connected() is deprecated; use Graph.are_adjacent() "
+            "instead"
+        )
+        return self.are_adjacent(*args, **kwds)
+
     def get_incidence(self, *args, **kwds):
         """Deprecated alias to L{Graph.get_biadjacency()}."""
         deprecated(
