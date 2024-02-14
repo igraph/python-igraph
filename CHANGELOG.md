@@ -1,5 +1,13 @@
 # igraph Python interface changelog
 
+## [master]
+
+### Added
+
+- Added a `prefixattr=...` keyword argument to `Graph.write_graphml()` that
+  allows the user to strip the `g_`, `v_` and `e_` prefixes from GraphML files
+  written by igraph.
+
 ## [0.11.4]
 
 ### Added
