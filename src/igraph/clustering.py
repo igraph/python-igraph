@@ -1459,6 +1459,9 @@ def _prepare_community_comparison(comm1, comm2, remove_none=False):
 def compare_communities(comm1, comm2, method="vi", remove_none=False):
     """Compares two community structures using various distance measures.
 
+    For measures involving entropies (e.g., the variation of information metric),
+    igraph uses natural logarithms.
+
     B{References}
 
       - Meila M: Comparing clusterings by the variation of information. In:
