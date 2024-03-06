@@ -56,25 +56,8 @@ extern "C" {
 
   /* Return -1 and set exception on error, 0 on success */
   static int import_igraph(void) {
-    PyObject *c_api_object;
-    PyObject *module;
-
-    module = PyImport_ImportModule("igraph._igraph");
-    if (module == 0)
-      return -1;
-
-    c_api_object = PyObject_GetAttrString(module, "_C_API");
-    if (c_api_object == 0) {
-      Py_DECREF(module);
-      return -1;
-    }
-
-    if (PyCObject_Check(c_api_object))
-      PyIGraph_API = (void**)PyCObject_AsVoidPtr(c_api_object);
-
-    Py_DECREF(c_api_object);
-    Py_DECREF(module);
-    return 0;
+    PyIGraph_API = (void **)PyCapsule_Import("igraph._igraph._C_API", 0);
+    return (PyIGraph_API != NULL) ? 0 : -1;
   }
 
 #endif
