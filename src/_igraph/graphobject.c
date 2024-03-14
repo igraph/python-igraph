@@ -15122,6 +15122,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "get_shortest_path(v, to, weights=None, mode=\"out\", output=\"vpath\", algorithm=\"auto\")\n--\n\n"
    "Calculates the shortest path from a source vertex to a target vertex in a graph.\n\n"
+   "This function only returns a single shortest path. Consider using L{get_shortest_paths()}\n"
+   "to find all shortest paths between a source and one or more target vertices.\n\n"
    "@param v: the source vertex of the path\n"
    "@param to: the target vertex of the path\n"
    "@param weights: edge weights in a list or the name of an edge attribute\n"
@@ -15139,7 +15141,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  algorithm automatically based on whether the graph has negative weights\n"
    "  or not. C{\"dijkstra\"} uses Dijkstra's algorithm. C{\"bellman_ford\"}\n"
    "  uses the Bellman-Ford algorithm. Ignored for unweighted graphs.\n"
-   "@return: see the documentation of the C{output} parameter.\n"},
+   "@return: see the documentation of the C{output} parameter.\n"
+   "@see: L{get_shortest_paths()}\n"},
 
   /* interface to igraph_get_shortest_paths */
   {"get_shortest_paths", (PyCFunction) igraphmodule_Graph_get_shortest_paths,
