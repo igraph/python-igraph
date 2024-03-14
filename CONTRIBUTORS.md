@@ -81,6 +81,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://hohoweiya.xyz/"><img src="https://avatars.githubusercontent.com/u/13688320?v=4?s=100" width="100px;" alt=""/><br /><sub><b>szcf-weiya</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=szcf-weiya" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/tristanlatr"><img src="https://avatars.githubusercontent.com/u/19967168?v=4?s=100" width="100px;" alt=""/><br /><sub><b>tristanlatr</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=tristanlatr" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/JDPowell648"><img src="https://avatars.githubusercontent.com/u/41934552?v=4?s=100" width="100px;" alt=""/><br /><sub><b>JDPowell648</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=JDPowell648" title="Documentation">📖</a></td>
   </tr>
 </table>
 
