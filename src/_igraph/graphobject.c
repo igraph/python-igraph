@@ -15122,7 +15122,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_KEYWORDS,
    "get_shortest_path(v, to, weights=None, mode=\"out\", output=\"vpath\", algorithm=\"auto\")\n--\n\n"
    "Calculates the shortest path from a source vertex to a target vertex in a graph.\n\n"
-   "This function only returns a single shortest path, to find all shortest paths consider using L{get_shortest_paths()}.\n\n"
+   "This function only returns a single shortest path. Consider using L{get_shortest_paths()}\n"
+   "to find all shortest paths between a source and one or more target vertices.\n\n"
    "@param v: the source vertex of the path\n"
    "@param to: the target vertex of the path\n"
    "@param weights: edge weights in a list or the name of an edge attribute\n"
