@@ -55,7 +55,7 @@ def _export_graph_to_networkx(
         eattr["_igraph_index"] = i
 
         if multigraph and "_nx_multiedge_key" in eattr:
-            eattr["key"] = eattr.pop["_nx_multiedge_key"]
+            eattr["key"] = eattr.pop("_nx_multiedge_key")
 
         if vertex_attr_hashable in graph.vertex_attributes():
             hashable_source = graph.vs[vertex_attr_hashable][edge.source]
