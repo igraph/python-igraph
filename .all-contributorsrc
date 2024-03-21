@@ -540,6 +540,51 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "Adriankhl",
+      "name": "k.h.lai",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16377650?v=4",
+      "profile": "https://github.com/Adriankhl",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "gruebel",
+      "name": "Anton Grübel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/33207684?v=4",
+      "profile": "https://github.com/gruebel",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "flange-ipb",
+      "name": "flange-ipb",
+      "avatar_url": "https://avatars.githubusercontent.com/u/34936695?v=4",
+      "profile": "https://github.com/flange-ipb",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "pmp-p",
+      "name": "Paul m. p. Peny",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16009100?v=4",
+      "profile": "https://discuss.afpy.org/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "DavidRConnell",
+      "name": "David R. Connell",
+      "avatar_url": "https://avatars.githubusercontent.com/u/35470740?v=4",
+      "profile": "https://davidrconnell.github.io/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
