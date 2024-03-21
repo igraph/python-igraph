@@ -82,6 +82,13 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://hohoweiya.xyz/"><img src="https://avatars.githubusercontent.com/u/13688320?v=4?s=100" width="100px;" alt=""/><br /><sub><b>szcf-weiya</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=szcf-weiya" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/tristanlatr"><img src="https://avatars.githubusercontent.com/u/19967168?v=4?s=100" width="100px;" alt=""/><br /><sub><b>tristanlatr</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=tristanlatr" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/JDPowell648"><img src="https://avatars.githubusercontent.com/u/41934552?v=4?s=100" width="100px;" alt=""/><br /><sub><b>JDPowell648</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=JDPowell648" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/Adriankhl"><img src="https://avatars.githubusercontent.com/u/16377650?v=4?s=100" width="100px;" alt=""/><br /><sub><b>k.h.lai</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=Adriankhl" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/gruebel"><img src="https://avatars.githubusercontent.com/u/33207684?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Anton Grübel</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=gruebel" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/flange-ipb"><img src="https://avatars.githubusercontent.com/u/34936695?v=4?s=100" width="100px;" alt=""/><br /><sub><b>flange-ipb</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=flange-ipb" title="Code">💻</a></td>
+    <td align="center"><a href="https://discuss.afpy.org/"><img src="https://avatars.githubusercontent.com/u/16009100?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Paul m. p. Peny</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=pmp-p" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://davidrconnell.github.io/"><img src="https://avatars.githubusercontent.com/u/35470740?v=4?s=100" width="100px;" alt=""/><br /><sub><b>David R. Connell</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=DavidRConnell" title="Code">💻</a></td>
   </tr>
 </table>
 
