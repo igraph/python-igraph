@@ -77,6 +77,8 @@ where `[arch]` is either `Win32` for 32-bit builds or `x64` for 64-bit builds.
 Also, when building in MSYS2, you need to set the `SETUPTOOLS_USE_DISTUTILS`
 environment variable to `stdlib`; this is because MSYS2 uses a patched version
 of `distutils` that conflicts with `setuptools >= 60.0`.
+Note: You need the following packages:
+`$MINGW_PACKAGE_PREFIX-python-pip $MINGW_PACKAGE_PREFIX-python-setuptools $MINGW_PACKAGE_PREFIX-cc $MINGW_PACKAGE_PREFIX-cmake`
 
 ### Enabling GraphML
 
@@ -158,8 +160,16 @@ the packaged igraph library instead of bringing its own copy.
 It is also useful on macOS if you want to link to the igraph library installed
 from Homebrew.
 
-Due to the lack of support of `pkg-config` on Windows, it is currently not
-possible to build against an external library on Windows.
+Due to the lack of support of `pkg-config` on MSVC, it is currently not
+possible to build against an external library on MSVC.
+
+In case you are already using a MSYS2/[MinGW](https://www.mingw-w64.org/) and already have 
+[mingw-w64-igraph](https://packages.msys2.org/base/mingw-w64-igraph) installed,
+simply type: 
+```
+IGRAPH_USE_PKG_CONFIG=1 SETUPTOOLS_USE_DISTUTILS=stdlib pip install igraph
+```
+to build.
 
 **Warning:** the Python interface is guaranteed to work only with the same
 version of the C core that is vendored inside the `vendor/source/igraph`
