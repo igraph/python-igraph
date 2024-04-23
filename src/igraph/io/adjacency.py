@@ -78,6 +78,8 @@ def _construct_graph_from_weighted_adjacency(
 ):
     """Generates a graph from its weighted adjacency matrix.
 
+    Only edges with a non-zero weight are created.
+
     @param matrix: the adjacency matrix. Possible types are:
       - a list of lists
       - a numpy 2D array or matrix (will be converted to list of lists)
@@ -85,12 +87,12 @@ def _construct_graph_from_weighted_adjacency(
         to a dense matrix)
     @param mode: the mode to be used. Possible values are:
       - C{"directed"} - the graph will be directed and a matrix element
-        specifies the number of edges between two vertices.
+        specifies the weight of the corresponding edge.
       - C{"undirected"} - the graph will be undirected and a matrix element
-        specifies the number of edges between two vertices. The matrix must
+        specifies the weight of the corresponding edge. The matrix must
         be symmetric.
-      - C{"max"}   - undirected graph will be created and the number of
-        edges between vertex M{i} and M{j} is M{max(A(i,j), A(j,i))}
+      - C{"max"}   - undirected graph will be created and the weight of the
+        edge between vertex M{i} and M{j} is M{max(A(i,j), A(j,i))}
       - C{"min"}   - like C{"max"}, but with M{min(A(i,j), A(j,i))}
       - C{"plus"}  - like C{"max"}, but with M{A(i,j) + A(j,i)}
       - C{"upper"} - undirected graph with the upper right triangle of
