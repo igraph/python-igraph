@@ -16,6 +16,21 @@
 
 - The C core of igraph was updated to version 0.10.12.
 
+- Deprecated `PyCObject` API calls in the C code were replaced by calls to
+  `PyCapsule`, thanks to @DavidRConnell in
+  https://github.com/igraph/python-igraph/pull/763
+
+- `get_shortest_path()` documentation was clarified by @JDPowell648 in
+  https://github.com/igraph/python-igraph/pull/764
+
+- It is now possible to link to an existing igraph C core on MSYS2, thanks to
+  @Kreijstal in https://github.com/igraph/python-igraph/pull/770
+
+### Fixed
+
+- Bugfix in the NetworkX graph conversion code by @rmmaf in
+  https://github.com/igraph/python-igraph/pull/767
+
 ## [0.11.4]
 
 ### Added
