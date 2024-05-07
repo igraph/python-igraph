@@ -156,7 +156,7 @@ class GraphTestRunner(unittest.TestCase):
         ax.set_aspect(1.0)
 
     @image_comparison(baseline_images=["multigraph_with_curved_edges_undirected"])
-    def test_graph_with_curved_edges(self):
+    def test_graph_with_curved_edges_undirected(self):
         plt.close("all")
         g = Graph.Ring(24, directed=False)
         g.add_edges([(0, 1), (1, 2)])

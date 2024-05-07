@@ -2320,7 +2320,7 @@ PyObject *igraphmodule_Graph_Establishment(PyTypeObject * type,
                     "Error while converting type distribution vector");
     return NULL;
   }
- 
+
   if (igraphmodule_PyObject_to_matrix_t(pref_matrix, &pm, "pref_matrix")) {
     igraph_vector_destroy(&td);
     return NULL;

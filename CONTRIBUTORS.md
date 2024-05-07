@@ -89,6 +89,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tr>
   <tr>
     <td align="center"><a href="https://davidrconnell.github.io/"><img src="https://avatars.githubusercontent.com/u/35470740?v=4?s=100" width="100px;" alt=""/><br /><sub><b>David R. Connell</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=DavidRConnell" title="Code">💻</a></td>
+    <td align="center"><a href="https://www.linkedin.com/in/rmmaf/"><img src="https://avatars.githubusercontent.com/u/23747884?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Rodrigo Monteiro de Moraes de Arruda Falcão</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=rmmaf" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/Kreijstal"><img src="https://avatars.githubusercontent.com/u/2415206?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kreijstal</b></sub></a><br /><a href="https://github.com/igraph/python-igraph/commits?author=Kreijstal" title="Code">💻</a></td>
   </tr>
 </table>
 

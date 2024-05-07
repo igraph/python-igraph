@@ -4,6 +4,7 @@ repos:
     rev: v4.6.0
     hooks:
       - id: end-of-file-fixer
+        exclude: ^tests/drawing/plotly/baseline_images
       - id: trailing-whitespace
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit

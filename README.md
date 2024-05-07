@@ -165,9 +165,9 @@ from Homebrew.
 Due to the lack of support of `pkg-config` on MSVC, it is currently not
 possible to build against an external library on MSVC.
 
-In case you are already using a MSYS2/[MinGW](https://www.mingw-w64.org/) and already have 
+In case you are already using a MSYS2/[MinGW](https://www.mingw-w64.org/) and already have
 [mingw-w64-igraph](https://packages.msys2.org/base/mingw-w64-igraph) installed,
-simply type: 
+simply type:
 ```
 IGRAPH_USE_PKG_CONFIG=1 SETUPTOOLS_USE_DISTUTILS=stdlib pip install igraph
 ```
