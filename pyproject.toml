@@ -3,6 +3,5 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.ruff]
-ignore = ["B905", "C901", "E402", "E501"]
-line-length = 80
-select = ["B", "C", "E", "F", "W"]
+lint.ignore = ["B905", "C901", "E402", "E501"]
+lint.select = ["B", "C", "E", "F", "W"]
