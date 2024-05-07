@@ -184,7 +184,7 @@ class Matrix:
                 for i in range(len(row)):
                     row[i] -= other
         return self
-    
+
     def __len__(self):
         """Returns the number of rows in the matrix."""
         return len(self._data)
