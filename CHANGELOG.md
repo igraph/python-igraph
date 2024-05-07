@@ -1,6 +1,6 @@
 # igraph Python interface changelog
 
-## [master]
+## [0.11.5] - 2024-05-07
 
 ### Added
 
@@ -13,6 +13,8 @@
 - `Graph.are_connected()` has now been renamed to `Graph.are_adjacent()`,
   following up a similar change in the C core. The old name of the function
   is deprecated but will be kept around until at least 0.12.0.
+
+- The C core of igraph was updated to version 0.10.12.
 
 ## [0.11.4]
 
@@ -635,7 +637,8 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[main]: https://github.com/igraph/python-igraph/compare/0.11.4...main
+[main]: https://github.com/igraph/python-igraph/compare/0.11.5...main
+[0.11.5]: https://github.com/igraph/python-igraph/compare/0.11.4...0.11.5
 [0.11.4]: https://github.com/igraph/python-igraph/compare/0.11.3...0.11.4
 [0.11.3]: https://github.com/igraph/python-igraph/compare/0.11.2...0.11.3
 [0.11.2]: https://github.com/igraph/python-igraph/compare/0.11.0...0.11.2
