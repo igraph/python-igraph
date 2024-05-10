@@ -1683,12 +1683,13 @@ igraph_error_t igraphmodule_i_attribute_get_type(const igraph_t *graph,
   int is_numeric, is_string, is_boolean;
   Py_ssize_t i, j;
   PyObject *o, *dict;
+  const char *attr_type_name;
 
   switch (elemtype) {
-  case IGRAPH_ATTRIBUTE_GRAPH:  attrnum = ATTRHASH_IDX_GRAPH;  break;
-  case IGRAPH_ATTRIBUTE_VERTEX: attrnum = ATTRHASH_IDX_VERTEX; break;
-  case IGRAPH_ATTRIBUTE_EDGE:   attrnum = ATTRHASH_IDX_EDGE;   break;
-  default: IGRAPH_ERROR("No such attribute type", IGRAPH_EINVAL); break;
+  case IGRAPH_ATTRIBUTE_GRAPH:  attrnum = ATTRHASH_IDX_GRAPH;  attr_type_name = "graph";  break;
+  case IGRAPH_ATTRIBUTE_VERTEX: attrnum = ATTRHASH_IDX_VERTEX; attr_type_name = "vertex"; break;
+  case IGRAPH_ATTRIBUTE_EDGE:   attrnum = ATTRHASH_IDX_EDGE;   attr_type_name = "edge";   break;
+  default: IGRAPH_ERROR("No such attribute type.", IGRAPH_EINVAL); break;
   }
 
   /* Get the attribute dict */
@@ -1697,12 +1698,12 @@ igraph_error_t igraphmodule_i_attribute_get_type(const igraph_t *graph,
   /* Check whether the attribute exists */
   o = PyDict_GetItemString(dict, name);
   if (o == 0) {
-    IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+    IGRAPH_ERRORF("No %s attribute named \"%s\" exists.", IGRAPH_EINVAL, attr_type_name, name);
   }
 
   /* Basic type check */
   if (attrnum != ATTRHASH_IDX_GRAPH && !PyList_Check(o)) {
-    IGRAPH_ERROR("attribute hash type mismatch", IGRAPH_EINVAL);
+    IGRAPH_ERROR("Attribute hash type mismatch.", IGRAPH_EINVAL);
   }
 
   j = PyList_Size(o);
@@ -1765,7 +1766,7 @@ igraph_error_t igraphmodule_i_get_boolean_graph_attr(const igraph_t *graph,
      attribute handler calls... hopefully :) Same applies for the other handlers. */
   o = PyDict_GetItemString(dict, name);
   if (!o) {
-    IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+    IGRAPH_ERRORF("No boolean graph attribute named \"%s\" exists.", IGRAPH_EINVAL, name);
   }
   IGRAPH_CHECK(igraph_vector_bool_resize(value, 1));
   VECTOR(*value)[0] = PyObject_IsTrue(o);
@@ -1781,7 +1782,7 @@ igraph_error_t igraphmodule_i_get_numeric_graph_attr(const igraph_t *graph,
      attribute handler calls... hopefully :) Same applies for the other handlers. */
   o = PyDict_GetItemString(dict, name);
   if (!o) {
-    IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+    IGRAPH_ERRORF("No numeric graph attribute named \"%s\" exists.", IGRAPH_EINVAL, name);
   }
   IGRAPH_CHECK(igraph_vector_resize(value, 1));
   if (o == Py_None) {
@@ -1806,7 +1807,7 @@ igraph_error_t igraphmodule_i_get_string_graph_attr(const igraph_t *graph,
   dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_GRAPH];
   o = PyDict_GetItemString(dict, name);
   if (!o) {
-    IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+    IGRAPH_ERRORF("No string graph attribute named \"%s\" exists.", IGRAPH_EINVAL, name);
   }
   IGRAPH_CHECK(igraph_strvector_resize(value, 1));
 
@@ -1853,7 +1854,9 @@ igraph_error_t igraphmodule_i_get_numeric_vertex_attr(const igraph_t *graph,
 
   dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_VERTEX];
   list = PyDict_GetItemString(dict, name);
-  if (!list) IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+  if (!list) {
+    IGRAPH_ERRORF("No numeric vertex attribute named \"%s\" exists.", IGRAPH_EINVAL, name);
+  }
 
   if (igraph_vs_is_all(&vs)) {
     if (igraphmodule_PyObject_float_to_vector_t(list, &newvalue))
@@ -1895,8 +1898,9 @@ igraph_error_t igraphmodule_i_get_string_vertex_attr(const igraph_t *graph,
 
   dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_VERTEX];
   list = PyDict_GetItemString(dict, name);
-  if (!list)
-    IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+  if (!list) {
+    IGRAPH_ERRORF("No string vertex attribute named \"%s\" exists.", IGRAPH_EINVAL, name);
+  }
 
   if (igraph_vs_is_all(&vs)) {
     if (igraphmodule_PyList_to_strvector_t(list, &newvalue))
@@ -1949,7 +1953,9 @@ igraph_error_t igraphmodule_i_get_boolean_vertex_attr(const igraph_t *graph,
 
   dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_VERTEX];
   list = PyDict_GetItemString(dict, name);
-  if (!list) IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+  if (!list) {
+    IGRAPH_ERRORF("No boolean vertex attribute named \"%s\" exists.", IGRAPH_EINVAL, name);
+  }
 
   if (igraph_vs_is_all(&vs)) {
     if (igraphmodule_PyObject_to_vector_bool_t(list, &newvalue))
@@ -1985,7 +1991,9 @@ igraph_error_t igraphmodule_i_get_numeric_edge_attr(const igraph_t *graph,
 
   dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_EDGE];
   list = PyDict_GetItemString(dict, name);
-  if (!list) IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+  if (!list) {
+    IGRAPH_ERRORF("No numeric edge attribute named \"%s\" exists.", IGRAPH_EINVAL, name);
+  }
 
   if (igraph_es_is_all(&es)) {
     if (igraphmodule_PyObject_float_to_vector_t(list, &newvalue))
@@ -2025,7 +2033,9 @@ igraph_error_t igraphmodule_i_get_string_edge_attr(const igraph_t *graph,
 
   dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_EDGE];
   list = PyDict_GetItemString(dict, name);
-  if (!list) IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+  if (!list) {
+    IGRAPH_ERRORF("No string edge attribute named \"%s\" exists.", IGRAPH_EINVAL, name);
+  }
 
   if (igraph_es_is_all(&es)) {
     if (igraphmodule_PyList_to_strvector_t(list, &newvalue))
@@ -2077,7 +2087,9 @@ igraph_error_t igraphmodule_i_get_boolean_edge_attr(const igraph_t *graph,
 
   dict = ATTR_STRUCT_DICT(graph)[ATTRHASH_IDX_EDGE];
   list = PyDict_GetItemString(dict, name);
-  if (!list) IGRAPH_ERROR("No such attribute", IGRAPH_EINVAL);
+  if (!list) {
+    IGRAPH_ERRORF("No boolean edge attribute named \"%s\" exists.", IGRAPH_EINVAL, name);
+  }
 
   if (igraph_es_is_all(&es)) {
     if (igraphmodule_PyObject_to_vector_bool_t(list, &newvalue))
