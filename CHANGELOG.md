@@ -1,5 +1,9 @@
 # igraph Python interface changelog
 
+### Changed
+
+ - Error messages issued when an attribute is not found now mention the name and type of that attribute.
+
 ## [0.11.5] - 2024-05-07
 
 ### Added
