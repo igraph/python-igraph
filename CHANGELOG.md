@@ -44,6 +44,8 @@
 - Added `Graph.Bipartite_Degree_Sequence()` to construct a bipartite graph from
   a bidegree sequence.
 
+- Added `Graph.is_biconnected()` to check if a graph is biconnected.
+
 ### Fixed
 
 - Fixed import of `graph-tool` graphs for vertex properties where each property
