@@ -140,7 +140,7 @@ def _get_biadjacency(graph, types="type", *args, **kwds):
     bipartite adjacency matrix is an M{n} times M{m} matrix, where M{n} and
     M{m} are the number of vertices in the two vertex classes.
 
-    @param types: an igraph vector containing the vertex types, or an
+    @param types: a vector containing the vertex types, or an
       attribute name. Anything that evalulates to C{False} corresponds to
       vertices of the first kind, everything else to the second kind.
     @return: the bipartite adjacency matrix and two lists in a triplet. The

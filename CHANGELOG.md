@@ -1,5 +1,9 @@
 # igraph Python interface changelog
 
+### Added
+
+ - Added `Graph.is_complete()` to test if there is a connection between all distinct pair of vertices.
+
 ### Changed
 
  - Error messages issued when an attribute is not found now mention the name and type of that attribute.
