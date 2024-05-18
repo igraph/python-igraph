@@ -549,6 +549,25 @@ PyObject *igraphmodule_Graph_is_simple(igraphmodule_GraphObject* self, PyObject*
 
 
 /** \ingroup python_interface_graph
+ * \brief Checks whether an \c igraph.Graph object is a complete graph.
+ * \return \c True if the graph is complete, \c False otherwise.
+ * \sa igraph_is_complete
+ */
+PyObject *igraphmodule_Graph_is_complete(igraphmodule_GraphObject* self, PyObject* Py_UNUSED(_null)) {
+  igraph_bool_t res;
+
+  if (igraph_is_complete(&self->g, &res)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (res)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+
+/** \ingroup python_interface_graph
  * \brief Determines whether a graph is a (directed or undirected) tree
  * \sa igraph_is_tree
  */
@@ -13623,6 +13642,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "is_simple()\n--\n\n"
    "Checks whether the graph is simple (no loop or multiple edges).\n\n"
    "@return: C{True} if it is simple, C{False} otherwise.\n"
+   "@rtype: boolean"},
+
+  /* interface to igraph_is_complete */
+  {"is_complete", (PyCFunction) igraphmodule_Graph_is_complete,
+   METH_NOARGS,
+   "is_complete()\n--\n\n"
+   "Checks whether the graph is complete, i.e. whether there is at least one\n"
+   "connection between all distinct pairs of vertices. In directed graphs,\n"
+   "ordered pairs are considered.\n\n"
+   "@return: C{True} if it is complete, C{False} otherwise.\n"
    "@rtype: boolean"},
 
   /* interface to igraph_is_tree */

@@ -172,7 +172,9 @@ class BipartiteTests(unittest.TestCase):
         g = Graph.Full_Bipartite(10, 5)
 
         g1, g2 = g.bipartite_projection()
+        self.assertTrue(g1.is_complete())
         self.assertTrue(g1.isomorphic(Graph.Full(10)))
+        self.assertTrue(g2.is_complete())
         self.assertTrue(g2.isomorphic(Graph.Full(5)))
         self.assertTrue(g.bipartite_projection(which=0).isomorphic(g1))
         self.assertTrue(g.bipartite_projection(which=1).isomorphic(g2))
@@ -183,7 +185,9 @@ class BipartiteTests(unittest.TestCase):
         self.assertTrue(g.bipartite_projection_size() == (10, 45, 5, 10))
 
         g1, g2 = g.bipartite_projection(probe1=10)
+        self.assertTrue(g1.is_complete())
         self.assertTrue(g1.isomorphic(Graph.Full(5)))
+        self.assertTrue(g2.is_complete())
         self.assertTrue(g2.isomorphic(Graph.Full(10)))
         self.assertTrue(g.bipartite_projection(which=0).isomorphic(g2))
         self.assertTrue(g.bipartite_projection(which=1).isomorphic(g1))
@@ -191,7 +195,9 @@ class BipartiteTests(unittest.TestCase):
         self.assertTrue(g.bipartite_projection(which=True).isomorphic(g1))
 
         g1, g2 = g.bipartite_projection(multiplicity=False)
+        self.assertTrue(g1.is_complete())
         self.assertTrue(g1.isomorphic(Graph.Full(10)))
+        self.assertTrue(g2.is_complete())
         self.assertTrue(g2.isomorphic(Graph.Full(5)))
         self.assertTrue(g.bipartite_projection(which=0).isomorphic(g1))
         self.assertTrue(g.bipartite_projection(which=1).isomorphic(g2))

@@ -110,6 +110,7 @@ class GeneratorTests(unittest.TestCase):
         g = Graph.Full(20, directed=True)
         el = g.get_edgelist()
         el.sort()
+        self.assertTrue(g.is_complete())
         self.assertTrue(
             g.get_edgelist() == [(x, y) for x in range(20) for y in range(20) if x != y]
         )
