@@ -516,6 +516,20 @@ int igraphmodule_PyObject_to_bliss_sh_t(PyObject *o,
 
 /**
  * \ingroup python_interface_conversion
+ * \brief Converts a Python object to an igraph \c igraph_chung_lu_t
+ */
+int igraphmodule_PyObject_to_chung_lu_t(PyObject *o, igraph_chung_lu_t *result) {
+  static igraphmodule_enum_translation_table_entry_t chung_lu_tt[] = {
+        {"original", IGRAPH_CHUNG_LU_ORIGINAL},
+        {"grg", IGRAPH_CHUNG_LU_GRG},
+        {"nr", IGRAPH_CHUNG_LU_NR},
+        {0,0}
+    };
+  TRANSLATE_ENUM_WITH(chung_lu_tt);
+}
+
+/**
+ * \ingroup python_interface_conversion
  * \brief Converts a Python object to an igraph \c igraph_coloring_greedy_t
  */
 int igraphmodule_PyObject_to_coloring_greedy_t(PyObject *o, igraph_coloring_greedy_t *result) {

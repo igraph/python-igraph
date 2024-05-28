@@ -2170,6 +2170,57 @@ PyObject *igraphmodule_Graph_Bipartite(PyTypeObject * type,
 }
 
 /** \ingroup python_interface_graph
+ * \brief Generates a Chung-Lu random graph
+ * This is intended to be a class method in Python, so the first argument
+ * is the type object and not the Python igraph object (because we have
+ * to allocate that in this method).
+ *
+ * \return a reference to the newly generated Python igraph object
+ * \sa igraph_chung_lu_game
+ */
+PyObject *igraphmodule_Graph_Chung_Lu(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  igraphmodule_GraphObject *self;
+  igraph_t g;
+  igraph_vector_t outw, inw;
+  igraph_chung_lu_t var = IGRAPH_CHUNG_LU_ORIGINAL;
+  igraph_bool_t has_inw = false;
+  PyObject *weight_out = NULL, *weight_in = NULL, *loops = Py_True, *variant = NULL;
+
+  static char *kwlist[] = { "out", "in_", "loops", "variant", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist,
+                                   &weight_out, &weight_in, &loops, &variant))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_chung_lu_t(variant, &var)) return NULL;
+  if (igraphmodule_PyObject_to_vector_t(weight_out, &outw, /* need_non_negative */ true)) return NULL;
+  if (weight_in) {
+    if (igraphmodule_PyObject_to_vector_t(weight_in, &inw, /* need_non_negative */ true)) {
+      igraph_vector_destroy(&outw);
+      return NULL;
+    }
+    has_inw=true;
+  }
+
+  if (igraph_chung_lu_game(&g, &outw, has_inw ? &inw : NULL, PyObject_IsTrue(loops), var)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vector_destroy(&outw);
+    if (has_inw)
+      igraph_vector_destroy(&inw);
+    return NULL;
+  }
+
+  igraph_vector_destroy(&outw);
+  if (has_inw)
+    igraph_vector_destroy(&inw);
+
+  CREATE_GRAPH_FROM_TYPE(self, g, type);
+
+  return (PyObject *) self;
+}
+
+/** \ingroup python_interface_graph
  * \brief Generates a De Bruijn graph
  * \sa igraph_kautz
  */
@@ -14438,6 +14489,86 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param mode: determines whether the tree should be directed, and if\n"
    "  this is the case, also its orientation. Must be one of\n"
    "  C{\"in\"}, C{\"out\"} and C{\"undirected\"}.\n"},
+
+  /* interface to igraph_chung_lu_game */
+  {"Chung_Lu", (PyCFunction) igraphmodule_Graph_Chung_Lu,
+   METH_VARARGS | METH_CLASS | METH_KEYWORDS,
+   "Chung_Lu(out, in_=None, loops=True, variant=\"original\")\n--\n\n"
+   "Generates a Chung-Lu random graph.\n\n"
+   "In the Chung-Lu model, each pair of vertices M{i} and M{j} is connected with\n"
+   "independent probability M{p_{ij} = w_i w_j / S}, where M{w_i} is a weight\n"
+   "associated with vertex M{i} and M{S = \\sum_k w_k} is the sum of weights.\n"
+   "In the directed variant, vertices have both out-weights, M{w^\\text{out}},\n"
+   "and in-weights, M{w^\\text{in}}, with equal sums,\n"
+   "M{S = \\sum_k w^\\text{out}_k = \\sum_k w^\\text{in}_k}. The connection\n"
+   "probability between M{i} and M{j} is M{p_{ij} = w^\\text{out}_i w^\\text{in}_j / S}.\n\n"
+   "This model is commonly used to create random graphs with a fixed I{expected}\n"
+   "degree sequence. The expected degree of vertex M{i} is approximately equal\n"
+   "to the weight M{w_i}. Specifically, if the graph is directed and self-loops\n"
+   "are allowed, then the expected out- and in-degrees are precisely M{w^\\text{out}}\n"
+   "and M{w^\\text{in}}. If self-loops are disallowed, then the expected out-\n"
+   "and in-degrees are M{w^\\text{out} (S - w^\\text{in}) / S} and\n"
+   "M{w^\\text{in} (S - w^\\text{out}) / S}, respectively. If the graph is\n"
+   "undirected, then the expected degrees with and without self-loops are\n"
+   "M{w (S + w) / S} and M{w (S - w) / S}, respectively.\n\n"
+   "A limitation of the original Chung-Lu model is that when some of the\n"
+   "weights are large, the formula for M{p_{ij}} yields values larger than 1.\n"
+   "Chung and Lu's original paper exludes the use of such weights. When\n"
+   "M{p_{ij} > 1}, this function simply issues a warning and creates\n"
+   "a connection between M{i} and M{j}. However, in this case the expected degrees\n"
+   "will no longer relate to the weights in the manner stated above. Thus the\n"
+   "original Chung-Lu model cannot produce certain (large) expected degrees.\n\n"
+   "The overcome this limitation, this function implements additional variants of\n"
+   "the model, with modified expressions for the connection probability M{p_{ij}}\n"
+   "between vertices M{i} and M{j}. Let M{q_{ij} = w_i w_j / S}, or\n"
+   "M{q_{ij} = w^out_i w^in_j / S} in the directed case. All model\n"
+   "variants become equivalent in the limit of sparse graphs where M{q_{ij}}\n"
+   "approaches zero. In the original Chung-Lu model, selectable by setting\n"
+   "C{variant} to C{\"original\"}, M{p_{ij} = min(q_{ij}, 1)}.\n"
+   "The C{\"grg\"} variant, often referred to a the generalized\n"
+   "random graph, uses M{p_{ij} = q_{ij} / (1 + q_{ij})}, and is equivalent\n"
+   "to a maximum entropy model (i.e. exponential random graph model) with\n"
+   "a constraint on expected degrees, see Park and Newman (2004), Section B,\n"
+   "setting M{exp(-\\Theta_{ij}) = w_i w_j / S}. This model is also\n"
+   "discussed by Britton, Deijfen and Martin-Löf (2006). By virtue of being\n"
+   "a degree-constrained maximum entropy model, it generates graphs having\n"
+   "the same degree sequence with the same probability.\n"
+   "A third variant can be requested with C{\"nr\"}, and uses\n"
+   "M{p_{ij} = 1 - exp(-q_{ij})}. This is the underlying simple graph\n"
+   "of a multigraph model introduced by Norros and Reittu (2006).\n"
+   "For a discussion of these three model variants, see Section 16.4 of\n"
+   "Bollobás, Janson, Riordan (2007), as well as Van Der Hofstad (2013).\n\n"
+   "B{References:}\n\n"
+   "  - Chung F and Lu L: Connected components in a random graph with given degree sequences.\n"
+   "    I{Annals of Combinatorics} 6, 125-145 (2002) U{https://doi.org/10.1007/PL00012580}\n"
+   "  - Miller JC and Hagberg A: Efficient Generation of Networks with Given Expected Degrees (2011)\n"
+   "    U{https://doi.org/10.1007/978-3-642-21286-4_10}\n"
+   "  - Park J and Newman MEJ: Statistical mechanics of networks.\n"
+   "    I{Physical Review E} 70, 066117 (2004). U{https://doi.org/10.1103/PhysRevE.70.066117}\n"
+   "  - Britton T, Deijfen M, Martin-Löf A: Generating Simple Random Graphs with Prescribed Degree Distribution.\n"
+   "    I{J Stat Phys} 124, 1377–1397 (2006). U{https://doi.org/10.1007/s10955-006-9168-x}\n"
+   "  - Norros I and Reittu H: On a conditionally Poissonian graph process.\n"
+   "    I{Advances in Applied Probability} 38, 59–75 (2006).\n"
+   "    U{https://doi.org/10.1239/aap/1143936140}\n"
+   "  - Bollobás B, Janson S, Riordan O: The phase transition in inhomogeneous random graphs.\n"
+   "    I{Random Struct Algorithms} 31, 3–122 (2007). U{https://doi.org/10.1002/rsa.20168}\n"
+   "  - Van Der Hofstad R: Critical behavior in inhomogeneous random graphs.\n"
+   "    I{Random Struct Algorithms} 42, 480–508 (2013). U{https://doi.org/10.1002/rsa.20450}\n\n"
+   "@param out: the vertex weights (or out-weights). In sparse graphs\n"
+   "    these will be approximately equal to the expected (out-)degrees.\n"
+   "@param in_: the vertex in-weights, approximately equal to the expected\n"
+   "    in-degrees of the graph. If omitted, the generated graph will be\n"
+   "    undirected.\n"
+   "@param loops: whether to allow the generation of self-loops.\n"
+   "@param variant: the model variant to be used. Let M{q_{ij}=w_i w_j / S},\n"
+   "    where M{S = \\sum_k w_k}. The following variants are available:\n"
+   "  \n"
+   "     - C{\"original\"} -- the original Chung-Lu model with\n"
+   "       M{p_{ij} = min(1, q_{ij})}.\n"
+   "     - C{\"grg\"} -- generalized random graph, a maximum entropy model with\n"
+   "       a soft constraint on degrees, M{p_{ij} = q_{ij} / (1 + q_{ij})}\n"
+   "     - C{\"nr\"} -- Norros and Reittu's model, M{p_{ij} = 1 - exp(-q_{ij})}\n"
+  },
 
   /* interface to igraph_degree_sequence_game */
   {"Degree_Sequence", (PyCFunction) igraphmodule_Graph_Degree_Sequence,
