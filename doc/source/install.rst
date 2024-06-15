@@ -174,13 +174,6 @@ you need to install Cairo headers using your package manager (Linux) or `homebre
 
   $ pip install pycairo
 
-The Cairo project does not provide pre-compiled binaries for Windows, but Christoph Gohlke
-maintains a site containing unofficial Windows binaries for several Python extension packages,
-including Cairo. Therefore, the easiest way to install Cairo on Windows along with its Python bindings
-is simply to download it from `Christoph's site <https://www.lfd.uci.edu/~gohlke/pythonlibs/#pycairo>`_.
-Make sure you use an installer that is suitable for your Windows platform (32-bit or 64-bit) and the
-version of Python you are using.
-
 To check if Cairo is installed correctly on your system, run the following example::
 
   >>> import igraph as ig
