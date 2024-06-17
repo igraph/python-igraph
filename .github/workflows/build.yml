@@ -159,7 +159,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.17.0
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
-          CIBW_BEFORE_BUILD: "python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
 
@@ -258,7 +258,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.17.0
         env:
-          CIBW_BEFORE_BUILD: "python setup.py build_c_core"
+          CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
           CIBW_TEST_COMMAND: "cd /d {project} && pip install --prefer-binary \".[test]\" && python -m pytest tests"
           # Skip tests for Python 3.10 onwards because SciPy does not have
