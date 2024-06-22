@@ -521,7 +521,7 @@ int igraphmodule_PyObject_to_bliss_sh_t(PyObject *o,
 int igraphmodule_PyObject_to_chung_lu_t(PyObject *o, igraph_chung_lu_t *result) {
   static igraphmodule_enum_translation_table_entry_t chung_lu_tt[] = {
         {"original", IGRAPH_CHUNG_LU_ORIGINAL},
-        {"grg", IGRAPH_CHUNG_LU_GRG},
+        {"maxent", IGRAPH_CHUNG_LU_MAXENT},
         {"nr", IGRAPH_CHUNG_LU_NR},
         {0,0}
     };
