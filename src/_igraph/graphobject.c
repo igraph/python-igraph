@@ -14495,8 +14495,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "Chung_Lu(out, in_=None, loops=True, variant=\"original\")\n--\n\n"
    "Generates a Chung-Lu random graph.\n\n"
-   "In the Chung-Lu model, each pair of vertices M{i} and M{j} is connected with\n"
-   "independent probability M{p_{ij} = w_i w_j / S}, where M{w_i} is a weight\n"
+   "In the original Chung-Lu model, each pair of vertices M{i} and M{j} is connected\n"
+   "with independent probability M{p_{ij} = w_i w_j / S}, where M{w_i} is a weight\n"
    "associated with vertex M{i} and M{S = \\sum_k w_k} is the sum of weights.\n"
    "In the directed variant, vertices have both out-weights, M{w^\\text{out}},\n"
    "and in-weights, M{w^\\text{in}}, with equal sums,\n"
@@ -14525,7 +14525,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "variants become equivalent in the limit of sparse graphs where M{q_{ij}}\n"
    "approaches zero. In the original Chung-Lu model, selectable by setting\n"
    "C{variant} to C{\"original\"}, M{p_{ij} = min(q_{ij}, 1)}.\n"
-   "The C{\"grg\"} variant, often referred to a the generalized\n"
+   "The C{\"grg\"} variant, sometimes referred to a the generalized\n"
    "random graph, uses M{p_{ij} = q_{ij} / (1 + q_{ij})}, and is equivalent\n"
    "to a maximum entropy model (i.e. exponential random graph model) with\n"
    "a constraint on expected degrees, see Park and Newman (2004), Section B,\n"
@@ -14565,8 +14565,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  \n"
    "     - C{\"original\"} -- the original Chung-Lu model with\n"
    "       M{p_{ij} = min(1, q_{ij})}.\n"
-   "     - C{\"grg\"} -- generalized random graph, a maximum entropy model with\n"
-   "       a soft constraint on degrees, M{p_{ij} = q_{ij} / (1 + q_{ij})}\n"
+   "     - C{\"maxent\"} -- maximum entropy model with fixed expected degrees\n"
+   "       M{p_{ij} = q_{ij} / (1 + q_{ij})}\n"
    "     - C{\"nr\"} -- Norros and Reittu's model, M{p_{ij} = 1 - exp(-q_{ij})}\n"
   },
 
