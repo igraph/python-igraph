@@ -2758,6 +2758,41 @@ PyObject *igraphmodule_Graph_Hexagonal_Lattice(PyTypeObject * type,
   return (PyObject *) self;
 }
 
+
+/** \ingroup python_interface_graph
+ * \brief Generates hypercube graph
+ * \return a reference to the newly generated Python igraph object
+ * \sa igraph_hypercube
+ */
+PyObject *igraphmodule_Graph_Hypercube(PyTypeObject * type,
+                                       PyObject * args, PyObject * kwds)
+{
+  Py_ssize_t n;
+  igraph_bool_t directed;
+  PyObject *o_directed = Py_False;
+  igraphmodule_GraphObject *self;
+  igraph_t g;
+
+  static char *kwlist[] = { "n", "directed", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "n|O", kwlist, &n, &o_directed)) {
+    return NULL;
+  }
+
+  CHECK_SSIZE_T_RANGE(n, "vertex count");
+
+  directed = PyObject_IsTrue(o_directed);
+
+  if (igraph_hypercube(&g, n, directed)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  CREATE_GRAPH_FROM_TYPE(self, g, type);
+
+  return (PyObject *) self;
+}
+
 /** \ingroup python_interface_graph
  * \brief Generates a bipartite graph from a bipartite adjacency matrix
  * \return a reference to the newly generated Python igraph object
@@ -14204,6 +14239,18 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param directed: whether to create a directed graph.\n"
    "@param mutual: whether to create all connections as mutual\n"
    "    in case of a directed graph.\n"},
+
+  /* interface to igraph_hypercube */
+  {"Hypercube", (PyCFunction) igraphmodule_Graph_Hypercube,
+   METH_VARARGS | METH_CLASS | METH_KEYWORDS,
+   "Hypercube(n, directed=False)\n--\n\n"
+   "Generates an n-dimensional hypercube graph.\n\n"
+   "The hypercube graph M{Q_n} has M{2^n} vertices and M{2^{n-1} n} edges.\n"
+   "Two vertices are connected when the binary representations of their vertex\n"
+   "IDs differ in precisely one bit.\n"
+   "@param n: the dimension of the hypercube graph\n"
+   "@param directed: whether to create a directed graph; edges will point\n"
+   "    from lower index vertices towards higher index ones."},
 
   /* interface to igraph_biadjacency */
   {"_Biadjacency", (PyCFunction) igraphmodule_Graph_Biadjacency,
