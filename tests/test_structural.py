@@ -24,6 +24,13 @@ class SimplePropertiesTests(unittest.TestCase):
         self.assertAlmostEqual(7 / 16, self.gdir.density(True), places=5)
         self.assertAlmostEqual(1 / 7, self.tree.density(), places=5)
 
+    def testMeanDegree(self):
+        self.assertEqual(9.0, self.gfull.mean_degree())
+        self.assertEqual(0.0, self.gempty.mean_degree())
+        self.assertEqual(2.5, self.g.mean_degree())
+        self.assertEqual(7 / 4, self.gdir.mean_degree())
+        self.assertAlmostEqual(13 / 7, self.tree.mean_degree(), places=5)
+
     def testDiameter(self):
         self.assertTrue(self.gfull.diameter() == 1)
         self.assertTrue(self.gempty.diameter(unconn=False) == inf)
