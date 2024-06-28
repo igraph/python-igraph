@@ -568,6 +568,77 @@ PyObject *igraphmodule_Graph_is_complete(igraphmodule_GraphObject* self, PyObjec
 
 
 /** \ingroup python_interface_graph
+ * \brief Checks whether a given vertex set forms a clique
+ */
+PyObject *igraphmodule_Graph_is_clique(igraphmodule_GraphObject * self,
+                                       PyObject * args, PyObject * kwds)
+{
+  PyObject *list = Py_None;
+  PyObject *directed = Py_False;
+  igraph_bool_t res;
+  igraph_vs_t vs;
+
+  static char *kwlist[] = { "vertices", "directed", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &list, &directed)) {
+    return NULL;
+  }
+
+  if (igraphmodule_PyObject_to_vs_t(list, &vs, &self->g, NULL, NULL)) {
+    return NULL;
+  }
+
+  if (igraph_is_clique(&self->g, vs, PyObject_IsTrue(directed), &res)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vs_destroy(&vs);
+    return NULL;
+  }
+
+  igraph_vs_destroy(&vs);
+
+  if (res)
+    Py_RETURN_TRUE;
+  else
+    Py_RETURN_FALSE;
+}
+
+
+/** \ingroup python_interface_graph
+ * \brief Checks whether a the given vertices form an independent set
+ */
+PyObject *igraphmodule_Graph_is_independent_vertex_set(igraphmodule_GraphObject * self,
+                                       PyObject * args, PyObject * kwds)
+{
+  PyObject *list = Py_None;
+  igraph_bool_t res;
+  igraph_vs_t vs;
+
+  static char *kwlist[] = { "vertices", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &list)) {
+    return NULL;
+  }
+
+  if (igraphmodule_PyObject_to_vs_t(list, &vs, &self->g, NULL, NULL)) {
+    return NULL;
+  }
+
+  if (igraph_is_independent_vertex_set(&self->g, vs, &res)) {
+    igraphmodule_handle_igraph_error();
+    igraph_vs_destroy(&vs);
+    return NULL;
+  }
+
+  igraph_vs_destroy(&vs);
+
+  if (res)
+    Py_RETURN_TRUE;
+  else
+    Py_RETURN_FALSE;
+}
+
+
+/** \ingroup python_interface_graph
  * \brief Determines whether a graph is a (directed or undirected) tree
  * \sa igraph_is_tree
  */
@@ -13767,6 +13838,22 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "ordered pairs are considered.\n\n"
    "@return: C{True} if it is complete, C{False} otherwise.\n"
    "@rtype: boolean"},
+
+  {"is_clique", (PyCFunction) igraphmodule_Graph_is_clique,
+   METH_VARARGS | METH_KEYWORDS,
+   "is_clique(vertices=None, directed=False)\n--\n\n"
+   "Decides whether a set of vertices is a clique, i.e. a fully connected subgraph.\n\n"
+   "@param vertices: a list of vertex IDs.\n"
+   "@param directed: whether to require mutual connections between vertex pairs\n"
+   "    in directed graphs.\n"
+   "@return: C{True} is the given vertex set is a clique, C{False} if not.\n"},
+
+  {"is_independent_vertex_set", (PyCFunction) igraphmodule_Graph_is_independent_vertex_set,
+   METH_VARARGS | METH_KEYWORDS,
+   "is_independent_vertex_set(vertices=None)\n--\n\n"
+   "Decides whether no two vertices within a set are adjacent.\n\n"
+   "@param vertices: a list of vertex IDs.\n"
+   "@return: C{True} is the given vertices form an independent set, C{False} if not.\n"},
 
   /* interface to igraph_is_tree */
   {"is_tree", (PyCFunction) igraphmodule_Graph_is_tree,
