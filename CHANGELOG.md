@@ -2,6 +2,7 @@
 
 ### Added
 
+ - Added `Graph.Chung_Lu()` for sampling from the Chung-Lu model as well as several related models.
  - Added `Graph.is_complete()` to test if there is a connection between all distinct pairs of vertices.
 
 ### Changed
