@@ -161,6 +161,11 @@ class GeneratorTests(unittest.TestCase):
         g = Graph.Hexagonal_Lattice([2, 2], directed=True, mutual=True)
         self.assertEqual(sorted(g.get_edgelist()), sorted(el + [(y, x) for x, y in el]))
 
+    def testHypercube(self):
+        el = [(0, 1), (0, 2), (0, 4), (1, 3), (1, 5), (2, 3), (2, 6), (3, 7), (4, 5), (4, 6), (5, 7), (6, 7)]
+        g = Graph.Hypercube(3)
+        self.assertEqual(g.get_edgelist(), el)
+
     def testLCF(self):
         g1 = Graph.LCF(12, (5, -5), 6)
         g2 = Graph.Famous("Franklin")
