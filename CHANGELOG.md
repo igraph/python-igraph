@@ -5,6 +5,8 @@
  - Added `Graph.Hypercube()` for creating n-dimensional hypercube graphs.
  - Added `Graph.Chung_Lu()` for sampling from the Chung-Lu model as well as several related models.
  - Added `Graph.is_complete()` to test if there is a connection between all distinct pairs of vertices.
+ - Added `Graph.is_clique()` to test if a set of vertices forms a clique.
+ - Added `Graph.is_independent_vertex_set()` to test if some vertices form an independent set.
  - Added `Graph.mean_degree()` for a convenient way to compute the average degree of a graph.
 
 ### Changed
