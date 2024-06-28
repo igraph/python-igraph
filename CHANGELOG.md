@@ -2,7 +2,7 @@
 
 ### Added
 
- - Added `Graph.is_complete()` to test if there is a connection between all distinct pair of vertices.
+ - Added `Graph.is_complete()` to test if there is a connection between all distinct pairs of vertices.
 
 ### Changed
 
