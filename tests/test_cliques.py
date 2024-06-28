@@ -66,12 +66,14 @@ class CliqueTests(unittest.TestCase):
         self.assertEqual(
             sorted(map(sorted, self.g.largest_cliques())), [[1, 2, 3, 4], [1, 2, 4, 5]]
         )
+        self.assertTrue(all(map(self.g.is_clique, self.g.largest_cliques())))
 
     def testMaximalCliques(self):
         self.assertEqual(
             sorted(map(sorted, self.g.maximal_cliques())),
             [[0, 3, 4], [0, 4, 5], [1, 2, 3, 4], [1, 2, 4, 5]],
         )
+        self.assertTrue(all(map(self.g.is_clique, self.g.maximal_cliques())))
         self.assertEqual(
             sorted(map(sorted, self.g.maximal_cliques(min=4))),
             [[1, 2, 3, 4], [1, 2, 4, 5]],
@@ -136,6 +138,7 @@ class IndependentVertexSetTests(unittest.TestCase):
         self.assertEqual(
             self.g1.largest_independent_vertex_sets(), [(0, 3, 4), (2, 3, 4)]
         )
+        self.assertTrue(all(map(self.g1.is_independent_vertex_set, self.g1.largest_independent_vertex_sets())))
 
     def testMaximalIndependentVertexSets(self):
         self.assertEqual(
@@ -152,6 +155,7 @@ class IndependentVertexSetTests(unittest.TestCase):
                 (2, 4, 7, 8),
             ],
         )
+        self.assertTrue(all(map(self.g2.is_independent_vertex_set, self.g2.maximal_independent_vertex_sets())))
 
     def testIndependenceNumber(self):
         self.assertEqual(self.g2.independence_number(), 6)
