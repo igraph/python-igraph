@@ -3,6 +3,7 @@
 ### Added
 
  - Added `Graph.is_complete()` to test if there is a connection between all distinct pairs of vertices.
+ - Added `Graph.Hypercube()` for creating n-dimensional hypercube graphs.
 
 ### Changed
 
