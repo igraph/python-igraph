@@ -283,6 +283,9 @@ class IgraphCCoreCMakeBuilder:
         for deps in "ARPACK BLAS GLPK GMP LAPACK".split():
             args.append("-DIGRAPH_USE_INTERNAL_" + deps + "=ON")
 
+        # Use link-time optinization if available
+        args.append("-DIGRAPH_ENABLE_LTO=AUTO")
+
         # -fPIC is needed on Linux so we can link to a static igraph lib from a
         # Python shared library
         args.append("-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
