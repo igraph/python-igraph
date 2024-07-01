@@ -8,7 +8,7 @@
 Tutorial
 ========
 
-This page is a detailed tutorial of |igraph|'s Python capabilities. To get an quick impression of what |igraph| can do, check out the :doc:`tutorials/quickstart`. If you have not installed |igraph| yet, follow the :doc:`install`.
+This page is a detailed tutorial of |igraph|'s Python capabilities. To get an quick impression of what |igraph| can do, check out the :doc:`tutorials/quickstart`. If you have not installed |igraph| yet, follow the section titled :doc:`install`.
 
 .. note::
    For the impatient reader, see the :doc:`tutorials/index` page for short, self-contained examples.
@@ -16,7 +16,7 @@ This page is a detailed tutorial of |igraph|'s Python capabilities. To get an qu
 Starting |igraph|
 =================
 
-The most common way to use |igraph| is as a named import within a Python environment (e.g. a bare Python shell, a `IPython`_ shell, a `Jupyter`_ notebook or JupyterLab instance, `Google Colab <https://colab.research.google.com/>`_, or an `IDE <https://www.spyder-ide.org/>`_)::
+The most common way to use |igraph| is as a named import within a Python environment (e.g. a bare Python shell, an `IPython`_ shell, a `Jupyter`_ notebook or JupyterLab instance, `Google Colab <https://colab.research.google.com/>`_, or an `IDE <https://www.spyder-ide.org/>`_)::
 
   $ python
   Python 3.9.6 (default, Jun 29 2021, 05:25:02)
@@ -79,10 +79,9 @@ This means: **U** ndirected graph with **10** vertices and **2** edges, with the
 
 .. note::
 
-   :meth:`Graph.summary` is similar to ``print`` but does not list the edges, which is
-   convenient for large graphs with millions of edges::
+   |igraph| also has a :func:`igraph.summary()` function, which is similar to ``print()`` but it does not list the edges. This is convenient for large graphs with millions of edges::
 
-     >>> summary(g)
+     >>> ig.summary(g)
      IGRAPH U--- 10 2 --
 
 
@@ -206,7 +205,7 @@ answer can quickly be given by checking the degree distributions of the two grap
 
 Setting and retrieving attributes
 =================================
-As mentioned above, in |igraph| each vertex and each edge have a numeric id from ``0`` upwards. Deleting vertices or edges can therefore cause reassignments of vertex and/or edge IDs. In addition to IDs, vertex and edges can have *attributes* such as a name, coordinates for plotting, metadata, and weights. The graph itself can have such attributes too (e.g. a name, which will show in ``print`` or :meth:`Graph.summary`). In a sense, every :class:`Graph`, vertex and edge can be used as a Python dictionary to store and retrieve these attributes.
+As mentioned above, vertices and edges of a graph in |igraph| have numeric IDs from ``0`` upwards. Deleting vertices or edges can therefore cause reassignments of vertex and/or edge IDs. In addition to IDs, vertices and edges can have *attributes* such as a name, coordinates for plotting, metadata, and weights. The graph itself can have such attributes too (e.g. a name, which will show in ``print`` or :meth:`Graph.summary`). In a sense, every :class:`Graph`, vertex and edge can be used as a Python dictionary to store and retrieve these attributes.
 
 To demonstrate the use of attributes, let us create a simple social network::
 
@@ -604,6 +603,8 @@ Method name                          Short name      Algorithm description
 ``layout_circle``                    ``circle``,     Deterministic layout that places the
                                      ``circular``    vertices on a circle
 ------------------------------------ --------------- ---------------------------------------------
+``layout_davidson_harel``            ``dh``          Davidson-Harel simulated annealing algorithm
+------------------------------------ --------------- ---------------------------------------------
 ``layout_drl``                       ``drl``         The `Distributed Recursive Layout`_ algorithm
                                                      for large graphs
 ------------------------------------ --------------- ---------------------------------------------
@@ -611,6 +612,10 @@ Method name                          Short name      Algorithm description
 ------------------------------------ --------------- ---------------------------------------------
 ``layout_fruchterman_reingold_3d``   ``fr3d``,       Fruchterman-Reingold force-directed algorithm
                                      ``fr_3d``       in three dimensions
+------------------------------------ --------------- ---------------------------------------------
+``layout_graphopt``                  ``graphopt``    The GraphOpt algorithm for large graphs
+------------------------------------ --------------- ---------------------------------------------
+``layout_grid``                      ``grid``        Regular grid layout
 ------------------------------------ --------------- ---------------------------------------------
 ``layout_kamada_kawai``              ``kk``          Kamada-Kawai force-directed algorithm
 ------------------------------------ --------------- ---------------------------------------------
@@ -621,6 +626,8 @@ Method name                          Short name      Algorithm description
                                      ``lgl``,        large graphs
                                      ``large_graph``
 ------------------------------------ --------------- ---------------------------------------------
+``layout_mds``                       ``mds``         Multidimensional scaling layout
+------------------------------------ --------------- ---------------------------------------------
 ``layout_random``                    ``random``      Places the vertices completely randomly
 ------------------------------------ --------------- ---------------------------------------------
 ``layout_random_3d``                 ``random_3d``   Places the vertices completely randomly in 3D
@@ -630,7 +637,7 @@ Method name                          Short name      Algorithm description
 ------------------------------------ --------------- ---------------------------------------------
 ``layout_reingold_tilford_circular`` ``rt_circular`` Reingold-Tilford tree layout with a polar
                                                      coordinate post-transformation, useful for
-                                     ``tree``        (almost) tree-like graphs
+                                                     (almost) tree-like graphs
 ------------------------------------ --------------- ---------------------------------------------
 ``layout_sphere``                    ``sphere``,     Deterministic layout that places the vertices
                                      ``spherical``,  evenly on the surface of a sphere
@@ -652,9 +659,9 @@ are passed intact to the chosen layout method. For instance, the following two c
 completely equivalent::
 
   >>> layout = g.layout_reingold_tilford(root=[2])
-  >>> layout = g.layout("rt", [2])
+  >>> layout = g.layout("rt", root=[2])
 
-Layout methods return a :class:`~layout.Layout` object which behaves mostly like a list of lists.
+Layout methods return a :class:`~layout.Layout` object, which behaves mostly like a list of lists.
 Each list entry in a :class:`~layout.Layout` object corresponds to a vertex in the original graph
 and contains the vertex coordinates in the 2D or 3D space. :class:`~layout.Layout` objects also
 contain some useful methods to translate, scale or rotate the coordinates in a batch.
