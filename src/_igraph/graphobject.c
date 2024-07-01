@@ -963,6 +963,29 @@ PyObject *igraphmodule_Graph_density(igraphmodule_GraphObject * self,
 }
 
 /** \ingroup python_interface_graph
+ * \brief Calculates the mean degree
+ * \return the mean degree
+ * \sa igraph_mean_degree
+ */
+PyObject *igraphmodule_Graph_mean_degree(igraphmodule_GraphObject * self,
+                                     PyObject * args, PyObject * kwds)
+{
+  char *kwlist[] = { "loops", NULL };
+  igraph_real_t res;
+  PyObject *loops = Py_True;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &loops))
+    return NULL;
+
+  if (igraph_mean_degree(&self->g, &res, PyObject_IsTrue(loops))) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  return igraphmodule_real_t_to_PyObject(res, IGRAPHMODULE_TYPE_FLOAT);
+}
+
+/** \ingroup python_interface_graph
  * \brief The maximum degree of some vertices in an \c igraph.Graph
  * \return the maxium degree as a Python object
  * \sa igraph_maxdegree
@@ -15074,6 +15097,14 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  and calculates the density accordingly. If C{False}, the algorithm\n"
    "  assumes that there can't be any loops.\n"
    "@return: the density of the graph."},
+
+  /* interface to igraph_mean_degree */
+  {"mean_degree", (PyCFunction) igraphmodule_Graph_mean_degree,
+   METH_VARARGS | METH_KEYWORDS,
+   "mean_degree(loops=True)\n--\n\n"
+   "Calculates the mean degree of the graph.\n\n"
+   "@param loops: whether to consider self-loops during the calculation\n"
+   "@return: the mean degree of the graph."},
 
   /* interfaces to igraph_diameter */
   {"diameter", (PyCFunction) igraphmodule_Graph_diameter,
