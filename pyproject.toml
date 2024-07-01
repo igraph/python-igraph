@@ -5,7 +5,3 @@ build-backend = "setuptools.build_meta"
 [tool.ruff]
 lint.ignore = ["B905", "C901", "E402", "E501"]
 lint.select = ["B", "C", "E", "F", "W"]
-
-[tool.cibuildwheel]
-build-frontend = "build[uv]"
-
