@@ -29,9 +29,6 @@ jobs:
         with:
           python-version: '3.8'
 
-      - uses: yezz123/setup-uv@v4
-        name: Install uv
-
       - name: Build wheels (manylinux)
         uses: pypa/cibuildwheel@v2.19.1
         env:
@@ -66,9 +63,6 @@ jobs:
         id: qemu
         uses: docker/setup-qemu-action@v3
 
-      - uses: yezz123/setup-uv@v4
-        name: Install uv
-
       - name: Build wheels (manylinux)
         uses: pypa/cibuildwheel@v2.19.1
         env:
@@ -93,9 +87,6 @@ jobs:
       - name: Set up QEMU
         id: qemu
         uses: docker/setup-qemu-action@v3
-
-      - uses: yezz123/setup-uv@v4
-        name: Install uv
 
       - name: Build wheels (musllinux)
         uses: pypa/cibuildwheel@v2.19.1
@@ -148,9 +139,6 @@ jobs:
         with:
           python-version: '3.8'
 
-      - uses: yezz123/setup-uv@v4
-        name: Install uv
-
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' || steps.cache-c-deps.outputs.cache-hit != 'true' # Only needed when building the C core or libomp
         run:
@@ -193,9 +181,6 @@ jobs:
         name: Install Python
         with:
           python-version: '3.11.2'
-
-      - uses: yezz123/setup-uv@v4
-        name: Install uv
 
       - name: Install OS dependencies
         run:
@@ -246,9 +231,6 @@ jobs:
         name: Install Python
         with:
           python-version: '3.8'
-
-      - uses: yezz123/setup-uv@v4
-        name: Install uv
 
       - name: Cache installed C core
         id: cache-c-core
