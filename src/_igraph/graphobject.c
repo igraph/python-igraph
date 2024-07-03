@@ -6432,14 +6432,19 @@ PyObject *igraphmodule_Graph_rewire(igraphmodule_GraphObject * self,
                                     PyObject * args, PyObject * kwds)
 {
   static char *kwlist[] = { "n", "mode", NULL };
-  Py_ssize_t n = 1000;
-  PyObject *mode_o = Py_None;
+  PyObject *n_o = Py_None, *mode_o = Py_None;
+  igraph_integer_t n = 10 * igraph_ecount(&self->g); /* TODO overflow check */
   igraph_rewiring_t mode = IGRAPH_REWIRING_SIMPLE;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nO", kwlist, &n, &mode_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &n_o, &mode_o)) {
     return NULL;
+  }
 
-  CHECK_SSIZE_T_RANGE(n, "number of rewiring attempts");
+  if (n_o != Py_None) {
+    if (igraphmodule_PyObject_to_integer_t(n_o, &n)) {
+      return NULL;
+    }
+  }
 
   if (igraphmodule_PyObject_to_rewiring_t(mode_o, &mode)) {
     return NULL;
@@ -15810,12 +15815,13 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_rewire */
   {"rewire", (PyCFunction) igraphmodule_Graph_rewire,
    METH_VARARGS | METH_KEYWORDS,
-   "rewire(n=1000, mode=\"simple\")\n--\n\n"
+   "rewire(n=None, mode=\"simple\")\n--\n\n"
    "Randomly rewires the graph while preserving the degree distribution.\n\n"
-   "Please note that the rewiring is done \"in-place\", so the original\n"
-   "graph will be modified. If you want to preserve the original graph,\n"
-   "use the L{copy} method before.\n\n"
-   "@param n: the number of rewiring trials.\n"
+   "The rewiring is done \"in-place\", so the original graph will be modified.\n"
+   "If you want to preserve the original graph, use the L{copy} method before\n"
+   "rewiring.\n\n"
+   "@param n: the number of rewiring trials. The default is 10 times the number\n"
+   "  of edges.\n"
    "@param mode: the rewiring algorithm to use. It can either be C{\"simple\"} or\n"
    "  C{\"loops\"}; the former does not create or destroy loop edges while the\n"
    "  latter does.\n"},
