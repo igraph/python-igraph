@@ -1,17 +1,34 @@
 # igraph Python interface changelog
 
+## [0.11.6] - 2024-07-08
+
 ### Added
 
  - Added `Graph.Hypercube()` for creating n-dimensional hypercube graphs.
- - Added `Graph.Chung_Lu()` for sampling from the Chung-Lu model as well as several related models.
- - Added `Graph.is_complete()` to test if there is a connection between all distinct pairs of vertices.
+
+ - Added `Graph.Chung_Lu()` for sampling from the Chung-Lu model as well as
+   several related models.
+
+ - Added `Graph.is_complete()` to test if there is a connection between all
+   distinct pairs of vertices.
+
  - Added `Graph.is_clique()` to test if a set of vertices forms a clique.
- - Added `Graph.is_independent_vertex_set()` to test if some vertices form an independent set.
- - Added `Graph.mean_degree()` for a convenient way to compute the average degree of a graph.
+
+ - Added `Graph.is_independent_vertex_set()` to test if some vertices form an
+   independent set.
+
+ - Added `Graph.mean_degree()` for a convenient way to compute the average
+   degree of a graph.
 
 ### Changed
 
- - Error messages issued when an attribute is not found now mention the name and type of that attribute.
+ - The C core of igraph was updated to version 0.10.13.
+
+ - `Graph.rewire()` now attempts to perform edge swaps 10 times the number of
+   edges by default.
+
+ - Error messages issued when an attribute is not found now mention the name
+   and type of that attribute.
 
 ## [0.11.5] - 2024-05-07
 
@@ -667,7 +684,8 @@ Please refer to the commit logs at https://github.com/igraph/python-igraph for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[main]: https://github.com/igraph/python-igraph/compare/0.11.5...main
+[main]: https://github.com/igraph/python-igraph/compare/0.11.6...main
+[0.11.6]: https://github.com/igraph/python-igraph/compare/0.11.5...0.11.6
 [0.11.5]: https://github.com/igraph/python-igraph/compare/0.11.4...0.11.5
 [0.11.4]: https://github.com/igraph/python-igraph/compare/0.11.3...0.11.4
 [0.11.3]: https://github.com/igraph/python-igraph/compare/0.11.2...0.11.3
