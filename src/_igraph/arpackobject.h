@@ -25,7 +25,7 @@
 
 #include "preamble.h"
 
-#include <igraph_arpack.h>
+#include <igraph/igraph_arpack.h>
 #include "graphobject.h"
 
 /**

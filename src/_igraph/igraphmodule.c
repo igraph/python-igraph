@@ -22,7 +22,7 @@
 
 #include "preamble.h"
 
-#include <igraph.h>
+#include <igraph/igraph.h>
 #include "arpackobject.h"
 #include "attributes.h"
 #include "bfsiter.h"
