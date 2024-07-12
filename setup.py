@@ -73,6 +73,8 @@ if should_build_abi3_wheel:
 igraph_extension = Extension(
     "igraph._igraph",
     libraries=["igraph"],
+    include_dirs=['build-deps/install/include'],
+    library_dirs=['build-deps/install/lib'],
     sources=sources,
     py_limited_api=should_build_abi3_wheel,
     define_macros=macros,
