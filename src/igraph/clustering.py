@@ -1376,7 +1376,7 @@ def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):
     if mark_groups is True:
         group_iter = ((group, color) for color, group in enumerate(clustering))
     elif isinstance(mark_groups, dict):
-        group_iter = mark_groups.iteritems()
+        group_iter = mark_groups.items()
     elif hasattr(mark_groups, "__getitem__") and hasattr(mark_groups, "__len__"):
         # Lists, tuples
         try:
@@ -1399,7 +1399,7 @@ def _handle_mark_groups_arg_for_clustering(mark_groups, clustering):
         # Iterators etc
         group_iter = mark_groups
     else:
-        group_iter = {}.iteritems()
+        group_iter = {}.items()
 
     def cluster_index_resolver():
         for group, color in group_iter:
