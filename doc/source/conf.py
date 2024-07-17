@@ -187,6 +187,14 @@ html_logo = "_static/logo-black.svg"
 # Output file base name for HTML help builder.
 htmlhelp_basename = "igraphdoc"
 
+# Integration with Read the Docs since RTD is not manipulating the Sphinx
+# config files on its own any more.
+# This is according to:
+# https://about.readthedocs.com/blog/2024/07/addons-by-default/
+html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "")
+html_context = {}
+if os.environ.get("READTHEDOCS", "") == "True":
+    html_context["READTHEDOCS"] = True
 
 # -- Options for pydoctor ------------------------------------------------------
 
