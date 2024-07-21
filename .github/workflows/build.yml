@@ -45,8 +45,9 @@ jobs:
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
           CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-linux-${{ matrix.wheel_arch }}
           path: ./wheelhouse/*.whl
 
   build_wheel_linux_aarch64_manylinux:
@@ -70,8 +71,9 @@ jobs:
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-linux-aarch64-manylinux
           path: ./wheelhouse/*.whl
 
   build_wheel_linux_aarch64_musllinux:
@@ -96,8 +98,9 @@ jobs:
           CIBW_BUILD: "*-musllinux_aarch64"
           CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-linux-aarch64-musllinux
           path: ./wheelhouse/*.whl
 
   build_wheel_macos:
@@ -163,8 +166,9 @@ jobs:
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-macos-${{ matrix.wheel_arch }}
           path: ./wheelhouse/*.whl
 
   build_wheel_wasm:
@@ -204,8 +208,9 @@ jobs:
           limit-access-to-actor: true
           wait-timeout-minutes: 5
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-wasm
           path: ./dist/*.whl
 
   build_wheel_win:
@@ -270,8 +275,9 @@ jobs:
           IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset
           IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-win-${{ matrix.wheel_arch }}
           path: ./wheelhouse/*.whl
 
   build_sdist:
@@ -312,8 +318,9 @@ jobs:
           pip install --prefer-binary cairocffi numpy scipy pandas networkx pytest pytest-timeout
           python -m pytest -v tests
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: sdist
           path: dist/*.tar.gz
 
   # When updating 'runs-on', the ASan/UBSan library paths/versions must also be updated for LD_PRELOAD
@@ -375,3 +382,4 @@ jobs:
           LSAN_OPTIONS: "suppressions=etc/lsan-suppr.txt:print_suppressions=false"
         run: |
           LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.1 python -m pytest --capture=sys tests
+
