@@ -30,8 +30,8 @@
 
 #include "preamble.h"
 
-#include <igraph_constants.h>
-#include <igraph_types.h>
+#include <igraph/igraph_constants.h>
+#include <igraph/igraph_types.h>
 #include "graphobject.h"
 
 typedef enum {

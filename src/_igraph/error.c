@@ -23,7 +23,7 @@
 #include "error.h"
 #include "pyhelpers.h"
 
-#include <igraph.h>
+#include <igraph/igraph.h>
 
 /** \ingroup python_interface_errors
  * \brief Exception type to be returned when an internal \c igraph error occurs.

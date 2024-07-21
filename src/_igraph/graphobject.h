@@ -25,7 +25,7 @@
 
 #include "preamble.h"
 
-#include <igraph.h>
+#include <igraph/igraph.h>
 #include "structmember.h"
 #include "common.h"
 

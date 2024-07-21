@@ -1,3 +1,0 @@
-[submodule "vendor/source/igraph"]
-	path = vendor/source/igraph
-	url = https://github.com/igraph/igraph

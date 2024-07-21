@@ -24,7 +24,7 @@
 #include "random.h"
 #include "pyhelpers.h"
 #include <limits.h>
-#include <igraph_random.h>
+#include <igraph/igraph_random.h>
 
 /**
  * \ingroup python_interface_rng
