@@ -35,8 +35,9 @@ jobs:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
           # Skip tests for Python 3.10 onwards because SciPy does not have
-          # 32-bit wheels for Linux
-          CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-manylinux_i686 cp312-manylinux_i686"
+          # 32-bit wheels for Linux. Also skip tests for Python 3.13 because
+          # SciPy does not have wheels for Python 3.13 at all right now.
+          CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-manylinux_i686 cp312-manylinux_i686 cp313-manylinux_*"
 
       - name: Build wheels (musllinux)
         uses: pypa/cibuildwheel@v2.20.0
@@ -164,6 +165,8 @@ jobs:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
+          # Skip tests for Python 3.13 because SciPy does not have wheels for Python 3.13 at all right now.
+          CIBW_TEST_SKIP: "cp313-*"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
 
       - uses: actions/upload-artifact@v4
@@ -267,8 +270,9 @@ jobs:
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
           CIBW_TEST_COMMAND: "cd /d {project} && pip install --prefer-binary \".[test]\" && python -m pytest tests"
           # Skip tests for Python 3.10 onwards because SciPy does not have
-          # 32-bit wheels for Windows
-          CIBW_TEST_SKIP: "cp310-win32 cp311-win32 cp312-win32"
+          # 32-bit wheels for Linux. Also skip tests for Python 3.13 because
+          # SciPy does not have wheels for Python 3.13 at all right now.
+          CIBW_TEST_SKIP: "cp310-win32 cp311-win32 cp312-win32 cp313-win32"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
           IGRAPH_STATIC_EXTENSION: True
