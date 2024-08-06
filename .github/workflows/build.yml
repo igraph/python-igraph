@@ -195,12 +195,12 @@ jobs:
 
       - uses: mymindstorm/setup-emsdk@v14
         with:
-          version: '3.1.45'
+          version: '3.1.52'
           actions-cache-folder: 'emsdk-cache'
 
       - name: Build wheel
         run: |
-          pip install pyodide-build==0.24.1
+          pip install pyodide-build==0.26.2
           python3 scripts/fix_pyodide_build.py
           pyodide build
 

@@ -9,5 +9,5 @@ target_dir.mkdir(exist_ok=True, parents=True)
 
 target_file = target_dir / "Emscripten.cmake"
 if not target_file.is_file():
-    url = "https://raw.githubusercontent.com/pyodide/pyodide/main/pyodide-build/pyodide_build/tools/cmake/Modules/Platform/Emscripten.cmake"
+    url = "https://raw.githubusercontent.com/pyodide/pyodide-build/main/pyodide_build/tools/cmake/Modules/Platform/Emscripten.cmake"
     urlretrieve(url, str(target_file))
