@@ -72,6 +72,7 @@ int igraphmodule_PyObject_to_community_comparison_t(PyObject *obj,
 int igraphmodule_PyObject_to_connectedness_t(PyObject *o, igraph_connectedness_t *result);
 int igraphmodule_PyObject_to_degseq_t(PyObject *o, igraph_degseq_t *result);
 int igraphmodule_PyObject_to_fas_algorithm_t(PyObject *o, igraph_fas_algorithm_t *result);
+int igraphmodule_PyObject_to_fvs_algorithm_t(PyObject *o, igraph_fas_algorithm_t *result);
 int igraphmodule_PyObject_to_get_adjacency_t(PyObject *o, igraph_get_adjacency_t *result);
 int igraphmodule_PyObject_to_laplacian_normalization_t(PyObject *o, igraph_laplacian_normalization_t *result);
 int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *result);

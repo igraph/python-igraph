@@ -605,6 +605,19 @@ int igraphmodule_PyObject_to_fas_algorithm_t(PyObject *o,
 
 /**
  * \ingroup python_interface_conversion
+ * \brief Converts a Python object to an igraph \c igraph_fvs_algorithm_t
+ */
+int igraphmodule_PyObject_to_fvs_algorithm_t(PyObject *o,
+  igraph_fas_algorithm_t *result) {
+  static igraphmodule_enum_translation_table_entry_t fvs_algorithm_tt[] = {
+        {"ip", IGRAPH_FVS_EXACT_IP},
+        {0,0}
+    };
+  TRANSLATE_ENUM_WITH(fvs_algorithm_tt);
+}
+
+/**
+ * \ingroup python_interface_conversion
  * \brief Converts a Python object to an igraph \c igraph_get_adjacency_t
  */
 int igraphmodule_PyObject_to_get_adjacency_t(PyObject *o,
