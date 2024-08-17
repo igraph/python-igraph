@@ -15442,8 +15442,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  breaking heuristic of Eades, Lin and Smyth, which is linear in the number\n"
    "  of edges but not necessarily optimal; however, it guarantees that the\n"
    "  number of edges to be removed is smaller than |E|/2 - |V|/6. C{\"ip\"} uses\n"
-   "  an integer programming formulation which is guaranteed to yield an optimal\n"
-   "  result, but is too slow for large graphs.\n"
+   "  the most efficient available integer programming formulation which is guaranteed\n"
+   "  to yield an optimal result. Specific integer programming formulations can be\n"
+   "  selected using C{\"ip_ti\"} (using triangle inequalities) and C{\"ip_cg\"}\n"
+   "  (a minimum set cover formulation using incremental constraint generation).\n"
+   "  Note that the minimum feedback arc set problem is NP-hard, therefore all methods\n"
+   "  that obtain exact optimal solutions are infeasibly slow on large graphs.\n"
    "@return: the IDs of the edges to be removed, in a list.\n\n"
   },
 

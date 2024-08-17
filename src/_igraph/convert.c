@@ -596,6 +596,8 @@ int igraphmodule_PyObject_to_fas_algorithm_t(PyObject *o,
         {"exact", IGRAPH_FAS_EXACT_IP},
         {"exact_ip", IGRAPH_FAS_EXACT_IP},
         {"ip", IGRAPH_FAS_EXACT_IP},
+        {"ip_ti", IGRAPH_FAS_EXACT_IP_TI},
+        {"ip_cg", IGRAPH_FAS_EXACT_IP_CG},
         {0,0}
     };
   TRANSLATE_ENUM_WITH(fas_algorithm_tt);
