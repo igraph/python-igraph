@@ -5713,6 +5713,7 @@ igraph_error_t igraphmodule_i_Graph_get_shortest_path_astar_callback(
   to_o = igraphmodule_integer_t_to_PyObject(to);
   if (to_o == NULL) {
     /* Error in conversion, return 1 */
+    Py_DECREF(from_o);
     return IGRAPH_FAILURE;
   }
 
@@ -5727,9 +5728,11 @@ igraph_error_t igraphmodule_i_Graph_get_shortest_path_astar_callback(
 
   if (igraphmodule_PyObject_to_real_t(result_o, result)) {
     /* Error in conversion, return 1 */
+    Py_DECREF(result_o);
     return IGRAPH_FAILURE;
   }
 
+  Py_DECREF(result_o);
   return IGRAPH_SUCCESS;
 }
 
