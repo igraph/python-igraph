@@ -608,7 +608,7 @@ int igraphmodule_PyObject_to_fas_algorithm_t(PyObject *o,
  * \brief Converts a Python object to an igraph \c igraph_fvs_algorithm_t
  */
 int igraphmodule_PyObject_to_fvs_algorithm_t(PyObject *o,
-  igraph_fas_algorithm_t *result) {
+  igraph_fvs_algorithm_t *result) {
   static igraphmodule_enum_translation_table_entry_t fvs_algorithm_tt[] = {
         {"ip", IGRAPH_FVS_EXACT_IP},
         {0,0}
