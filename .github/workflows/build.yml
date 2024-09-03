@@ -192,7 +192,7 @@ jobs:
 
       - uses: mymindstorm/setup-emsdk@v14
         with:
-          version: '3.1.52'
+          version: '3.1.58'
           actions-cache-folder: 'emsdk-cache'
 
       - name: Build wheel
