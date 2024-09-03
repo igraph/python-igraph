@@ -1,5 +1,10 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = [
+    "wheel",
+    # pin setuptools:
+    # https://github.com/airspeed-velocity/asv/pull/1426#issuecomment-2290658198
+    "setuptools>=64,<72.2.0"
+]
 build-backend = "setuptools.build_meta"
 
 [tool.ruff]
