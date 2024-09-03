@@ -41,13 +41,13 @@
 
 /**
  * \brief Converts a Python long to a C int
- * 
+ *
  * This is similar to PyLong_AsLong, but it checks for overflow first and
  * throws an exception if necessary. This variant is needed for enum conversions
  * because we assume that enums fit into an int.
  *
- * Note that Python 3.13 also provides a PyLong_AsInt_OutArg() function, hence we need
- * a different name for this function. The difference is that PyLong_AsInt_OutArg()
+ * Note that Python 3.13 also provides a PyLong_AsInt() function, hence we need
+ * a different name for this function. The difference is that PyLong_AsInt()
  * needs an extra call to PyErr_Occurred() to disambiguate in case of errors.
  *
  * Returns -1 if there was an error, 0 otherwise.
