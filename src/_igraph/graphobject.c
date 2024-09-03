@@ -14732,7 +14732,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "variants become equivalent in the limit of sparse graphs where M{q_{ij}}\n"
    "approaches zero. In the original Chung-Lu model, selectable by setting\n"
    "C{variant} to C{\"original\"}, M{p_{ij} = min(q_{ij}, 1)}.\n"
-   "The C{\"maxent\"} variant, sometimes referred to a the generalized\n"
+   "The C{\"maxent\"} variant, sometimes referred to as the generalized\n"
    "random graph, uses M{p_{ij} = q_{ij} / (1 + q_{ij})}, and is equivalent\n"
    "to a maximum entropy model (i.e. exponential random graph model) with\n"
    "a constraint on expected degrees, see Park and Newman (2004), Section B,\n"
