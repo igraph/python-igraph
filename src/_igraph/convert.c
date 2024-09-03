@@ -41,14 +41,18 @@
 
 /**
  * \brief Converts a Python long to a C int
- *
+ * 
  * This is similar to PyLong_AsLong, but it checks for overflow first and
  * throws an exception if necessary. This variant is needed for enum conversions
  * because we assume that enums fit into an int.
  *
+ * Note that Python 3.13 also provides a PyLong_AsInt_OutArg() function, hence we need
+ * a different name for this function. The difference is that PyLong_AsInt_OutArg()
+ * needs an extra call to PyErr_Occurred() to disambiguate in case of errors.
+ *
  * Returns -1 if there was an error, 0 otherwise.
  */
-int PyLong_AsInt(PyObject* obj, int* result) {
+int PyLong_AsInt_OutArg(PyObject* obj, int* result) {
   long dummy = PyLong_AsLong(obj);
   if (dummy < INT_MIN) {
     PyErr_SetString(PyExc_OverflowError, "long integer too small for conversion to C int");
@@ -92,7 +96,7 @@ int igraphmodule_PyObject_to_enum(PyObject *o,
     return 0;
 
   if (PyLong_Check(o))
-    return PyLong_AsInt(o, result);
+    return PyLong_AsInt_OutArg(o, result);
 
   s = PyUnicode_CopyAsString(o);
   if (s == 0) {
@@ -174,7 +178,7 @@ int igraphmodule_PyObject_to_enum_strict(PyObject *o,
     }
 
     if (PyLong_Check(o)) {
-      return PyLong_AsInt(o, result);
+      return PyLong_AsInt_OutArg(o, result);
     }
 
     s = PyUnicode_CopyAsString(o);
@@ -410,15 +414,15 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *o,
         }
         w->pos = w_pos_int;
       } else if (!strcasecmp(kv, "howmany")) {
-        if (PyLong_AsInt(value, &w->howmany)) {
+        if (PyLong_AsInt_OutArg(value, &w->howmany)) {
           return -1;
         }
       } else if (!strcasecmp(kv, "il")) {
-        if (PyLong_AsInt(value, &w->il)) {
+        if (PyLong_AsInt_OutArg(value, &w->il)) {
           return -1;
         }
       } else if (!strcasecmp(kv, "iu")) {
-        if (PyLong_AsInt(value, &w->iu)) {
+        if (PyLong_AsInt_OutArg(value, &w->iu)) {
           return -1;
         }
       } else if (!strcasecmp(kv, "vl")) {
@@ -426,7 +430,7 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *o,
       } else if (!strcasecmp(kv, "vu")) {
         w->vu = PyFloat_AsDouble(value);
       } else if (!strcasecmp(kv, "vestimate")) {
-        if (PyLong_AsInt(value, &w->vestimate)) {
+        if (PyLong_AsInt_OutArg(value, &w->vestimate)) {
           return -1;
         }
       } else if (!strcasecmp(kv, "balance")) {
