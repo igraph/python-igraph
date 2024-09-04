@@ -5559,6 +5559,48 @@ PyObject *igraphmodule_Graph_feedback_arc_set(
 
 
 /** \ingroup python_interface_graph
+ * \brief Calculates a feedback vertex set for a graph
+ * \return a list containing the indices in the chosen feedback vertex set
+ * \sa igraph_feedback_vertex_set
+ */
+PyObject *igraphmodule_Graph_feedback_vertex_set(
+    igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = { "weights", "method", NULL };
+  igraph_vector_t* weights = 0;
+  igraph_vector_int_t res;
+  igraph_fvs_algorithm_t algo = IGRAPH_FVS_EXACT_IP;
+  PyObject *weights_o = Py_None, *result_o = NULL, *algo_o = NULL;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &weights_o, &algo_o))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_fvs_algorithm_t(algo_o, &algo))
+    return NULL;
+
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
+    ATTRIBUTE_TYPE_VERTEX))
+    return NULL;
+
+  if (igraph_vector_int_init(&res, 0)) {
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+  }
+
+  if (igraph_feedback_vertex_set(&self->g, &res, weights, algo)) {
+    if (weights) { igraph_vector_destroy(weights); free(weights); }
+    igraph_vector_int_destroy(&res);
+    return NULL;
+  }
+
+  if (weights) { igraph_vector_destroy(weights); free(weights); }
+
+  result_o = igraphmodule_vector_int_t_to_PyList(&res);
+  igraph_vector_int_destroy(&res);
+
+  return result_o;
+}
+
+
+/** \ingroup python_interface_graph
  * \brief Calculates a single shortest path between a source and a target vertex
  * \return a list containing a single shortest path from the source to the target
  * \sa igraph_get_shortest_path
@@ -15445,9 +15487,30 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  breaking heuristic of Eades, Lin and Smyth, which is linear in the number\n"
    "  of edges but not necessarily optimal; however, it guarantees that the\n"
    "  number of edges to be removed is smaller than |E|/2 - |V|/6. C{\"ip\"} uses\n"
-   "  an integer programming formulation which is guaranteed to yield an optimal\n"
-   "  result, but is too slow for large graphs.\n"
+   "  the most efficient available integer programming formulation which is guaranteed\n"
+   "  to yield an optimal result. Specific integer programming formulations can be\n"
+   "  selected using C{\"ip_ti\"} (using triangle inequalities) and C{\"ip_cg\"}\n"
+   "  (a minimum set cover formulation using incremental constraint generation).\n"
+   "  Note that the minimum feedback arc set problem is NP-hard, therefore all methods\n"
+   "  that obtain exact optimal solutions are infeasibly slow on large graphs.\n"
    "@return: the IDs of the edges to be removed, in a list.\n\n"
+  },
+
+  /* interface to igraph_feedback_vertex_set */
+  {"feedback_vertex_set", (PyCFunction) igraphmodule_Graph_feedback_vertex_set,
+   METH_VARARGS | METH_KEYWORDS,
+   "feedback_vertex_set(weights=None, method=\"ip\")\n--\n\n"
+   "Calculates a minimum feedback vertex set.\n\n"
+   "A feedback vertex set is a set of edges whose removal makes the graph acyclic.\n"
+   "Finding a minimum feedback vertex set is an NP-hard problem both in directed\n"
+   "and undirected graphs.\n\n"
+   "@param weights: vertex weights to be used. Can be a sequence or iterable or\n"
+   "  even a vertex attribute name. When given, the algorithm will strive to\n"
+   "  remove lightweight vertices in order to minimize the total weight of the\n"
+   "  feedback vertex set.\n"
+   "@param method: the algorithm to use. C{\"ip\"} uses an exact integer programming\n"
+   "  approach, and is currently the only available method.\n"
+   "@return: the IDs of the vertices to be removed, in a list.\n\n"
   },
 
   /* interface to igraph_get_shortest_path */

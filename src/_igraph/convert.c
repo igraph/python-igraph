@@ -600,9 +600,24 @@ int igraphmodule_PyObject_to_fas_algorithm_t(PyObject *o,
         {"exact", IGRAPH_FAS_EXACT_IP},
         {"exact_ip", IGRAPH_FAS_EXACT_IP},
         {"ip", IGRAPH_FAS_EXACT_IP},
+        {"ip_ti", IGRAPH_FAS_EXACT_IP_TI},
+        {"ip_cg", IGRAPH_FAS_EXACT_IP_CG},
         {0,0}
     };
   TRANSLATE_ENUM_WITH(fas_algorithm_tt);
+}
+
+/**
+ * \ingroup python_interface_conversion
+ * \brief Converts a Python object to an igraph \c igraph_fvs_algorithm_t
+ */
+int igraphmodule_PyObject_to_fvs_algorithm_t(PyObject *o,
+  igraph_fvs_algorithm_t *result) {
+  static igraphmodule_enum_translation_table_entry_t fvs_algorithm_tt[] = {
+        {"ip", IGRAPH_FVS_EXACT_IP},
+        {0,0}
+    };
+  TRANSLATE_ENUM_WITH(fvs_algorithm_tt);
 }
 
 /**
