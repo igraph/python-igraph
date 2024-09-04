@@ -1,5 +1,27 @@
 # igraph Python interface changelog
 
+## [master]
+
+### Added
+
+- Added `Graph.feedback_vertex_set()` to calculate a feedback vertex set of the
+  graph.
+
+- Added new methods to `Graph.feedback_arc_set()` that allows the user to
+  select the specific integer problem formulation used by the underlying
+  solver.
+
+### Changed
+
+- Ensured compatibility with Python 3.13.
+
+- The C core of igraph was updated to version 0.10.14.
+
+### Fixed
+
+- Fixed a potential memory leak in the `Graph.get_shortest_path_astar()` heuristic
+  function callback
+
 ## [0.11.6] - 2024-07-08
 
 ### Added
