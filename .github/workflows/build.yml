@@ -30,7 +30,7 @@ jobs:
           python-version: '3.8'
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v2.20.0
+        uses: pypa/cibuildwheel@v2.21.0
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
@@ -39,7 +39,7 @@ jobs:
           CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-manylinux_i686 cp312-manylinux_i686 cp313-manylinux_i686"
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v2.20.0
+        uses: pypa/cibuildwheel@v2.21.0
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
@@ -65,7 +65,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v2.20.0
+        uses: pypa/cibuildwheel@v2.21.0
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -91,7 +91,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v2.20.0
+        uses: pypa/cibuildwheel@v2.21.0
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -159,7 +159,7 @@ jobs:
           cmake --install .
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.20.0
+        uses: pypa/cibuildwheel@v2.21.0
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
@@ -261,7 +261,7 @@ jobs:
         shell: cmd
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.20.0
+        uses: pypa/cibuildwheel@v2.21.0
         env:
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
