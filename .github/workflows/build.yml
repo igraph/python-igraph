@@ -5,7 +5,7 @@ on: [push, pull_request]
 env:
   CIBW_ENVIRONMENT_PASS_LINUX: PYTEST_TIMEOUT
   CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test]' && python -m pytest -v tests"
-  CIBW_SKIP: "cp36-* cp37-* pp37-*"
+  CIBW_SKIP: "cp36-* cp37-* cp38-* pp37-*"
   PYTEST_TIMEOUT: 60
   MACOSX_DEPLOYMENT_TARGET: "10.9"
 
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.8'
+          python-version: '3.9'
 
       - name: Build wheels (manylinux)
         uses: pypa/cibuildwheel@v2.21.3
@@ -140,12 +140,12 @@ jobs:
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.8'
+          python-version: '3.9'
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' || steps.cache-c-deps.outputs.cache-hit != 'true' # Only needed when building the C core or libomp
         run:
-          brew install ninja autoconf automake libtool cmake
+          brew install ninja autoconf automake libtool
 
       - name: Install OpenMP library
         if: steps.cache-c-deps.outputs.cache-hit != 'true'
@@ -235,7 +235,7 @@ jobs:
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.8'
+          python-version: '3.9'
 
       - name: Cache installed C core
         id: cache-c-core
@@ -305,7 +305,7 @@ jobs:
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.8'
+          python-version: '3.9'
 
       - name: Build sdist
         run: |
