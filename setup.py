@@ -7,8 +7,8 @@ import sys
 ###########################################################################
 
 # Check Python's version info and exit early if it is too old
-if sys.version_info < (3, 8):
-    print("This module requires Python >= 3.8")
+if sys.version_info < (3, 9):
+    print("This module requires Python >= 3.9")
     sys.exit(0)
 
 ###########################################################################
@@ -916,8 +916,6 @@ else:
     bdist_wheel_abi3 = None
 
 # We are going to build an abi3 wheel if we are at least on CPython 3.9.
-# This is because the C code contains conditionals for CPython 3.8 so we cannot
-# use an abi3 wheel built with CPython 3.8 on CPython 3.9
 should_build_abi3_wheel = (
     bdist_wheel_abi3
     and platform.python_implementation() == "CPython"
@@ -1039,7 +1037,7 @@ options = {
             "pydoctor>=23.4.0",
         ],
     },
-    "python_requires": ">=3.8",
+    "python_requires": ">=3.9",
     "headers": headers,
     "platforms": "ALL",
     "keywords": [
@@ -1057,7 +1055,6 @@ options = {
         "Operating System :: OS Independent",
         "Programming Language :: C",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
