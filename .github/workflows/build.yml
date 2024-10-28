@@ -7,7 +7,6 @@ env:
   CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test]' && python -m pytest -v tests"
   CIBW_SKIP: "cp36-* cp37-* cp38-* pp37-* pp38-*"
   PYTEST_TIMEOUT: 60
-  MACOSX_DEPLOYMENT_TARGET: "10.9"
 
 jobs:
   build_wheel_linux:
@@ -108,6 +107,7 @@ jobs:
     runs-on: macos-latest
     env:
       LLVM_VERSION: "14.0.5"
+      MACOSX_DEPLOYMENT_TARGET: "10.9"
     strategy:
       matrix:
         include:
