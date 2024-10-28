@@ -1,5 +1,11 @@
 # igraph Python interface changelog
 
+## [main]
+
+### Changed
+
+- Dropped support for Python 3.8 as it has now reached its end of life.
+
 ## [0.11.8] - 2024-10-25
 
 ### Fixed
