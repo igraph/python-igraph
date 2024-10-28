@@ -5,7 +5,7 @@ on: [push, pull_request]
 env:
   CIBW_ENVIRONMENT_PASS_LINUX: PYTEST_TIMEOUT
   CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test]' && python -m pytest -v tests"
-  CIBW_SKIP: "cp36-* cp37-* cp38-* pp37-*"
+  CIBW_SKIP: "cp36-* cp37-* cp38-* pp37-* pp38-*"
   PYTEST_TIMEOUT: 60
   MACOSX_DEPLOYMENT_TARGET: "10.9"
 
