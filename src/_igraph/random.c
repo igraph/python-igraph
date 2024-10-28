@@ -112,7 +112,7 @@ PyObject* igraph_rng_Python_set_generator(PyObject* self, PyObject* object) {
   GET_FUNC("random"); new_state.random_func = func;
   GET_FUNC("gauss"); new_state.gauss_func = func;
 
-  /* construct the arguments of getrandbits(RNG_BITS) and randint(0, 2 ^ RNG_BITS-1)
+  /* construct the arguments of getrandbits(RNG_BITS) and randint(0, (2^RNG_BITS)-1)
    * in advance */
   new_state.rng_bits_as_pyobject = PyLong_FromLong(RNG_BITS);
   if (new_state.rng_bits_as_pyobject == 0) {
