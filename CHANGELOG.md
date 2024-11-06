@@ -6,6 +6,8 @@
 
 - Dropped support for Python 3.8 as it has now reached its end of life.
 
+- The C core of igraph was updated to version 0.10.15.
+
 ## [0.11.8] - 2024-10-25
 
 ### Fixed
@@ -28,7 +30,9 @@
 
 - Ensured compatibility with Python 3.13.
 
-- The C core of igraph was updated to version 0.10.14.
+- The C core of igraph was updated to an interim commit (3dd336a) between
+  version 0.10.13 and version 0.10.15. Earlier versions of this changelog
+  mistakenly marked this revision as version 0.10.14.
 
 ### Fixed
 
