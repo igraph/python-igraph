@@ -7813,6 +7813,60 @@ PyObject *igraphmodule_Graph_minimum_cycle_basis(
   return result_o;
 }
 
+
+PyObject *igraphmodule_Graph_simple_cycles(
+  igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds
+) {
+  PyObject *mode_o = Py_None;
+  PyObject *min_cycle_length_o = Py_None;
+  PyObject *max_cycle_length_o = Py_None;
+
+  // argument defaults: no cycle limits
+  igraph_integer_t mode = IGRAPH_OUT;
+  igraph_integer_t min_cycle_length = -1;
+  igraph_integer_t max_cycle_length = -1;
+
+  static char *kwlist[] = { "mode", "min_cycle_length", "max_cycle_length", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist, &mode_o, &min_cycle_length_o, &max_cycle_length_o))
+    return NULL;
+
+  if (mode_o != Py_None && igraphmodule_PyObject_to_integer_t(mode_o, &mode))
+    return NULL;
+
+  if (min_cycle_length_o != Py_None && igraphmodule_PyObject_to_integer_t(min_cycle_length_o, &min_cycle_length))
+    return NULL;
+
+  if (max_cycle_length_o != Py_None && igraphmodule_PyObject_to_integer_t(max_cycle_length_o, &max_cycle_length))
+    return NULL;
+
+  igraph_vector_int_list_t vertices;
+  igraph_vector_int_list_init(&vertices, 0);
+  igraph_vector_int_list_t edges;
+  igraph_vector_int_list_init(&edges, 0);
+
+  if (igraph_simple_cycles(
+    &self->g, &vertices, &edges, mode, min_cycle_length, max_cycle_length
+  )) {
+    igraph_vector_int_list_destroy(&vertices);
+    igraph_vector_int_list_destroy(&edges);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  PyObject *result_edges_o;
+  result_edges_o = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&edges);
+  igraph_vector_int_list_destroy(&edges);
+
+  PyObject *result_vertices_o;
+  result_vertices_o = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&vertices);
+  igraph_vector_int_list_destroy(&vertices);
+
+  PyObject *results;
+  results = Py_BuildValue("(OO)", result_vertices_o, result_edges_o);
+  return results;
+}
+
 /**********************************************************************
  * Graph layout algorithms                                            *
  **********************************************************************/
@@ -16562,6 +16616,23 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  order: the edge IDs will appear ordered along the cycle. If C{False},\n"
    "  no guarantees are given about the ordering of edge IDs within cycles.\n"
    "@return: the cycle basis as a list of tuples containing edge IDs"
+  },
+  {"simple_cycles", (PyCFunction) igraphmodule_Graph_simple_cycles,
+   METH_VARARGS | METH_KEYWORDS,
+   "simple_cycles(mode=None, min_cycle_length=0, max_cycle_length=-1)\n--\n\n"
+   "Finds simple cycles in a graph\n\n"
+   "@param mode: for directed graphs, specifies how the edge directions\n"
+   "  should be taken into account. C{\"all\"} means that the edge directions\n"
+   "  must be ignored, C{\"out\"} means that the edges must be oriented away\n"
+   "  from the root, C{\"in\"} means that the edges must be oriented\n"
+   "  towards the root. Ignored for undirected graphs.\n"
+   "@param min_cycle_length: the minimum number of vertices in a cycle\n"
+   "  for it to be returned.\n"
+   "@param max_cycle_length: the maximum number of vertices in a cycle\n"
+   "  for it to be considered.\n"
+   "@return: vertices, edges: a tuple with the vertices and edges, \n"
+   "  respectively, each as a list of tuples containing edge and vertex\n"
+   "  IDs, respectively."
   },
 
   /********************/

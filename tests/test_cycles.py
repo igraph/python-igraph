@@ -60,6 +60,25 @@ class CycleTests(unittest.TestCase):
         ]
         assert cycles == [[6, 7, 10], [8, 9, 10]]
 
+    def test_simple_cycles(self):
+        g = Graph(
+            [
+                (0, 1),
+                (1, 2),
+                (2, 0),
+                (0, 0),
+                (0, 3),
+                (3, 4),
+                (4, 5),
+                (5, 0),
+            ]
+        )
+
+        vertices, edges = g.simple_cycles()
+        assert len(vertices) == 3
+        assert len(edges) == 3
+
+
     def test_minimum_cycle_basis(self):
         g = Graph(
             [
