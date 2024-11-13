@@ -7828,7 +7828,7 @@ PyObject *igraphmodule_Graph_simple_cycles(
   igraph_integer_t max_cycle_length = -1;
   igraph_bool_t use_edges = false;
 
-  static char *kwlist[] = { "mode", "min_cycle_length", "max_cycle_length", "output" NULL };
+  static char *kwlist[] = { "mode", "min_cycle_length", "max_cycle_length", "output", NULL };
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist, &mode_o, &min_cycle_length_o, &max_cycle_length_o, &output_o))
     return NULL;
@@ -7864,7 +7864,7 @@ PyObject *igraphmodule_Graph_simple_cycles(
   if (use_edges) {
     result_o = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&edges);
   } else {
-    result_vertices_o = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&vertices);
+    result_o = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&vertices);
   }
   igraph_vector_int_list_destroy(&edges);
   igraph_vector_int_list_destroy(&vertices);
