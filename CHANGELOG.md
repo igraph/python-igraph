@@ -7,6 +7,7 @@
 - Dropped support for Python 3.8 as it has now reached its end of life.
 
 - The C core of igraph was updated to version 0.10.15.
+- Added `Graph.simple_cycles()` to find simple cycles in the graph.
 
 ## [0.11.8] - 2024-10-25
 
