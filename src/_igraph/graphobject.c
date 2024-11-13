@@ -7828,7 +7828,7 @@ PyObject *igraphmodule_Graph_simple_cycles(
   igraph_integer_t max_cycle_length = -1;
   igraph_bool_t use_edges = false;
 
-  static char *kwlist[] = { "mode", "min_cycle_length", "max_cycle_length", "output", NULL };
+  static char *kwlist[] = { "mode", "min", "max", "output", NULL };
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist, &mode_o, &min_cycle_length_o, &max_cycle_length_o, &output_o))
     return NULL;
@@ -16624,16 +16624,16 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"simple_cycles", (PyCFunction) igraphmodule_Graph_simple_cycles,
    METH_VARARGS | METH_KEYWORDS,
-   "simple_cycles(mode=None, min_cycle_length=0, max_cycle_length=-1, output=\"vpath\")\n--\n\n"
+   "simple_cycles(mode=None, min=0, max=-1, output=\"vpath\")\n--\n\n"
    "Finds simple cycles in a graph\n\n"
    "@param mode: for directed graphs, specifies how the edge directions\n"
    "  should be taken into account. C{\"all\"} means that the edge directions\n"
    "  must be ignored, C{\"out\"} means that the edges must be oriented away\n"
    "  from the root, C{\"in\"} means that the edges must be oriented\n"
    "  towards the root. Ignored for undirected graphs.\n"
-   "@param min_cycle_length: the minimum number of vertices in a cycle\n"
+   "@param min: the minimum number of vertices in a cycle\n"
    "  for it to be returned.\n"
-   "@param max_cycle_length: the maximum number of vertices in a cycle\n"
+   "@param max: the maximum number of vertices in a cycle\n"
    "  for it to be considered.\n"
    "@param output: determines what should be returned. If this is\n"
    "  C{\"vpath\"}, a list of tuples of vertex IDs will be returned. If this is\n"
