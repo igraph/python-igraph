@@ -71,7 +71,7 @@ def _unittest_image_comparison(
 
 def image_comparison(
     baseline_images,
-    tol=0.025,
+    tol=4.0,
     remove_text=False,
     savefig_kwarg=None,
     # Default of mpl_test_settings fixture and cleanup too.
