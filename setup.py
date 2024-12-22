@@ -16,7 +16,7 @@ if sys.version_info < (3, 9):
 from setuptools import find_packages, setup, Command, Extension
 
 try:
-    from wheel.bdist_wheel import bdist_wheel
+    from setuptools.command.bdist_wheel import bdist_wheel
 except ImportError:
     bdist_wheel = None
 
