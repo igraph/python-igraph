@@ -1,6 +1,5 @@
 [build-system]
 requires = [
-    "wheel",
     # pin setuptools:
     # https://github.com/airspeed-velocity/asv/pull/1426#issuecomment-2290658198
     # Most likely cause:
