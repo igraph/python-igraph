@@ -603,6 +603,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "m1-s",
+      "name": "Michael Schneider",
+      "avatar_url": "https://avatars.githubusercontent.com/u/94642227?v=4",
+      "profile": "https://github.com/m1-s",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
