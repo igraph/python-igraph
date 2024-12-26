@@ -272,7 +272,7 @@ jobs:
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
           IGRAPH_STATIC_EXTENSION: True
-          IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset
+          IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset,bcrypt
           IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
 
       - uses: actions/upload-artifact@v4
@@ -382,4 +382,3 @@ jobs:
           LSAN_OPTIONS: "suppressions=etc/lsan-suppr.txt:print_suppressions=false"
         run: |
           LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.1 python -m pytest --capture=sys tests
-
