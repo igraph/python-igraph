@@ -51,17 +51,12 @@ jobs:
 
   build_wheel_linux_aarch64_manylinux:
     name: Build wheels on Linux (aarch64/manylinux)
-    runs-on: ubuntu-20.04
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    runs-on: ubuntu-22.04-arm
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
-
-      - name: Set up QEMU
-        id: qemu
-        uses: docker/setup-qemu-action@v3
 
       - name: Build wheels (manylinux)
         uses: pypa/cibuildwheel@v2.22.0
@@ -77,17 +72,12 @@ jobs:
 
   build_wheel_linux_aarch64_musllinux:
     name: Build wheels on Linux (aarch64/musllinux)
-    runs-on: ubuntu-20.04
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    runs-on: ubuntu-22.04-arm
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
-
-      - name: Set up QEMU
-        id: qemu
-        uses: docker/setup-qemu-action@v3
 
       - name: Build wheels (musllinux)
         uses: pypa/cibuildwheel@v2.22.0
