@@ -612,6 +612,24 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "aothms",
+      "name": "Thomas Krijnen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1096535?v=4",
+      "profile": "http://thomaskrijnen.com/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "GenieTim",
+      "name": "Tim Bernhard",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8596965?v=4",
+      "profile": "https://github.com/GenieTim",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
