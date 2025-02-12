@@ -11,7 +11,7 @@ env:
 jobs:
   build_wheel_linux:
     name: Build wheels on Linux (${{ matrix.wheel_arch }})
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -163,7 +163,7 @@ jobs:
 
   build_wheel_wasm:
     name: Build wheels for WebAssembly
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -317,7 +317,7 @@ jobs:
   # for the "Test" step below.
   build_with_sanitizer:
     name: Build with sanitizers for debugging purposes
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       IGRAPH_CMAKE_EXTRA_ARGS: -DFORCE_COLORED_OUTPUT=ON
     steps:
