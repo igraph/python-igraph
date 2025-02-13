@@ -376,4 +376,4 @@ jobs:
           LSAN_OPTIONS: "suppressions=etc/lsan-suppr.txt:print_suppressions=false"
         run: |
           sudo sysctl vm.mmap_rnd_bits=28
-          LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.1 python -m pytest --capture=sys tests
+          LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.6:/lib/x86_64-linux-gnu/libubsan.so.1 python -m pytest --capture=sys tests
