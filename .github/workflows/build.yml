@@ -33,6 +33,7 @@ jobs:
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
+          CIBW_ENABLE: pypy
           # Skip tests for Python 3.10 onwards because SciPy does not have
           # 32-bit wheels for Linux.
           CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-manylinux_i686 cp312-manylinux_i686 cp313-manylinux_i686"
@@ -64,6 +65,7 @@ jobs:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
+          CIBW_ENABLE: pypy
 
       - uses: actions/upload-artifact@v4
         with:
@@ -153,6 +155,7 @@ jobs:
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
+          CIBW_ENABLE: pypy
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
 
@@ -255,6 +258,7 @@ jobs:
         env:
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
+          CIBW_ENABLE: pypy
           CIBW_TEST_COMMAND: "cd /d {project} && pip install --prefer-binary \".[test]\" && python -m pytest tests"
           # Skip tests for Python 3.10 onwards because SciPy does not have
           # 32-bit wheels for Linux.
