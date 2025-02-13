@@ -317,7 +317,7 @@ jobs:
   # for the "Test" step below.
   build_with_sanitizer:
     name: Build with sanitizers for debugging purposes
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     env:
       IGRAPH_CMAKE_EXTRA_ARGS: -DFORCE_COLORED_OUTPUT=ON
     steps:
@@ -371,4 +371,5 @@ jobs:
           ASAN_OPTIONS: "detect_stack_use_after_return=1"
           LSAN_OPTIONS: "suppressions=etc/lsan-suppr.txt:print_suppressions=false"
         run: |
+          sudo sysctl vm.mmap_rnd_bits=28
           LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.1 python -m pytest --capture=sys tests
