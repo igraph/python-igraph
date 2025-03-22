@@ -280,7 +280,7 @@ class IgraphCCoreCMakeBuilder:
             args.append("-DIGRAPH_GRAPHML_SUPPORT:BOOL=OFF")
 
         # Build the Python interface with vendored libraries
-        for deps in "ARPACK BLAS GLPK GMP LAPACK".split():
+        for deps in "ARPACK BLAS GLPK GMP LAPACK PLFIT".split():
             args.append("-DIGRAPH_USE_INTERNAL_" + deps + "=ON")
 
         # Use link-time optinization if available
