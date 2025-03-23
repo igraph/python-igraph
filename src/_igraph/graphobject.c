@@ -4912,7 +4912,7 @@ PyObject *igraphmodule_Graph_harmonic_centrality(igraphmodule_GraphObject * self
       return NULL;
     }
     if (igraph_harmonic_centrality_cutoff(&self->g, &res, vs, mode, weights,
-        PyFloat_AsDouble(cutoff_num), PyObject_IsTrue(normalized_o))) {
+        PyObject_IsTrue(normalized_o), PyFloat_AsDouble(cutoff_num))) {
       igraph_vs_destroy(&vs);
       igraph_vector_destroy(&res);
       if (weights) { igraph_vector_destroy(weights); free(weights); }
@@ -15913,7 +15913,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param vertices: a single vertex ID or a list of vertex IDs, or\n"
    "  C{None} meaning all the vertices in the graph.\n"
    "@param order: the order of the neighborhood, i.e. the maximum number of\n"
-   "  steps to take from the seed vertex.\n"
+   "  steps to take from the seed vertex. Negative values are interpreted as\n"
+   "  an infinite order, i.e. no limit on the number of steps.\n"
    "@param mode: specifies how to take into account the direction of\n"
    "  the edges if a directed graph is analyzed. C{\"out\"} means that\n"
    "  only the outgoing edges are followed, so all vertices reachable\n"
@@ -15941,7 +15942,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param vertices: a single vertex ID or a list of vertex IDs, or\n"
    "  C{None} meaning all the vertices in the graph.\n"
    "@param order: the order of the neighborhood, i.e. the maximum number of\n"
-   "  steps to take from the seed vertex.\n"
+   "  steps to take from the seed vertex. Negative values are interpreted as\n"
+   "  an infinite order, i.e. no limit on the number of steps.\n"
    "@param mode: specifies how to take into account the direction of\n"
    "  the edges if a directed graph is analyzed. C{\"out\"} means that\n"
    "  only the outgoing edges are followed, so all vertices reachable\n"
@@ -16624,7 +16626,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"simple_cycles", (PyCFunction) igraphmodule_Graph_simple_cycles,
    METH_VARARGS | METH_KEYWORDS,
-   "simple_cycles(mode=None, min=0, max=-1, output=\"vpath\")\n--\n\n"
+   "simple_cycles(mode=None, min=-1, max=-1, output=\"epath\")\n--\n\n"
    "Finds simple cycles in a graph\n\n"
    "@param mode: for directed graphs, specifies how the edge directions\n"
    "  should be taken into account. C{\"all\"} means that the edge directions\n"

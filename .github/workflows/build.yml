@@ -11,7 +11,7 @@ env:
 jobs:
   build_wheel_linux:
     name: Build wheels on Linux (${{ matrix.wheel_arch }})
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -29,16 +29,17 @@ jobs:
           python-version: '3.9'
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.23.1
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
+          CIBW_ENABLE: pypy
           # Skip tests for Python 3.10 onwards because SciPy does not have
           # 32-bit wheels for Linux.
           CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-manylinux_i686 cp312-manylinux_i686 cp313-manylinux_i686"
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.23.1
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
@@ -51,24 +52,20 @@ jobs:
 
   build_wheel_linux_aarch64_manylinux:
     name: Build wheels on Linux (aarch64/manylinux)
-    runs-on: ubuntu-20.04
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    runs-on: ubuntu-22.04-arm
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
 
-      - name: Set up QEMU
-        id: qemu
-        uses: docker/setup-qemu-action@v3
-
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.23.1
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
+          CIBW_ENABLE: pypy
 
       - uses: actions/upload-artifact@v4
         with:
@@ -77,20 +74,15 @@ jobs:
 
   build_wheel_linux_aarch64_musllinux:
     name: Build wheels on Linux (aarch64/musllinux)
-    runs-on: ubuntu-20.04
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    runs-on: ubuntu-22.04-arm
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
 
-      - name: Set up QEMU
-        id: qemu
-        uses: docker/setup-qemu-action@v3
-
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.23.1
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -159,10 +151,11 @@ jobs:
           cmake --install .
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.23.1
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
+          CIBW_ENABLE: pypy
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
 
@@ -173,7 +166,7 @@ jobs:
 
   build_wheel_wasm:
     name: Build wheels for WebAssembly
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -261,10 +254,11 @@ jobs:
         shell: cmd
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.23.1
         env:
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
+          CIBW_ENABLE: pypy
           CIBW_TEST_COMMAND: "cd /d {project} && pip install --prefer-binary \".[test]\" && python -m pytest tests"
           # Skip tests for Python 3.10 onwards because SciPy does not have
           # 32-bit wheels for Linux.
@@ -272,7 +266,7 @@ jobs:
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
           IGRAPH_STATIC_EXTENSION: True
-          IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset
+          IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset,bcrypt
           IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
 
       - uses: actions/upload-artifact@v4
@@ -327,7 +321,7 @@ jobs:
   # for the "Test" step below.
   build_with_sanitizer:
     name: Build with sanitizers for debugging purposes
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       IGRAPH_CMAKE_EXTRA_ARGS: -DFORCE_COLORED_OUTPUT=ON
     steps:
@@ -381,5 +375,5 @@ jobs:
           ASAN_OPTIONS: "detect_stack_use_after_return=1"
           LSAN_OPTIONS: "suppressions=etc/lsan-suppr.txt:print_suppressions=false"
         run: |
-          LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.5:/lib/x86_64-linux-gnu/libubsan.so.1 python -m pytest --capture=sys tests
-
+          sudo sysctl vm.mmap_rnd_bits=28
+          LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.8:/lib/x86_64-linux-gnu/libubsan.so.1 python -m pytest --capture=sys tests

@@ -16,7 +16,7 @@ if sys.version_info < (3, 9):
 from setuptools import find_packages, setup, Command, Extension
 
 try:
-    from wheel.bdist_wheel import bdist_wheel
+    from setuptools.command.bdist_wheel import bdist_wheel
 except ImportError:
     bdist_wheel = None
 
@@ -280,7 +280,7 @@ class IgraphCCoreCMakeBuilder:
             args.append("-DIGRAPH_GRAPHML_SUPPORT:BOOL=OFF")
 
         # Build the Python interface with vendored libraries
-        for deps in "ARPACK BLAS GLPK GMP LAPACK".split():
+        for deps in "ARPACK BLAS GLPK GMP LAPACK PLFIT".split():
             args.append("-DIGRAPH_USE_INTERNAL_" + deps + "=ON")
 
         # Use link-time optinization if available
@@ -1059,6 +1059,7 @@ options = {
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Information Analysis",
