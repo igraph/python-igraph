@@ -7846,12 +7846,12 @@ PyObject *igraphmodule_Graph_simple_cycles(
     return NULL;
 
   igraph_vector_int_list_t vertices;
-  if (!igraph_vector_int_list_init(&vertices, 0)) {
+  if (igraph_vector_int_list_init(&vertices, 0)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
   igraph_vector_int_list_t edges;
-  if (!igraph_vector_int_list_init(&edges, 0)) {
+  if (igraph_vector_int_list_init(&edges, 0)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
