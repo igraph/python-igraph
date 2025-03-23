@@ -7846,9 +7846,15 @@ PyObject *igraphmodule_Graph_simple_cycles(
     return NULL;
 
   igraph_vector_int_list_t vertices;
-  igraph_vector_int_list_init(&vertices, 0);
+  if (!igraph_vector_int_list_init(&vertices, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
   igraph_vector_int_list_t edges;
-  igraph_vector_int_list_init(&edges, 0);
+  if (!igraph_vector_int_list_init(&edges, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
 
   if (igraph_simple_cycles(
     &self->g, use_edges ? NULL :  &vertices, use_edges ? &edges : NULL, mode, min_cycle_length, max_cycle_length
