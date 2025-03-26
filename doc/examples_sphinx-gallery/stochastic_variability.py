@@ -91,6 +91,3 @@ plt.show()
 #The key reason for the inconsistency in random graphs and higher consistency in structured graphs is due to community structure strength:
 #Random Graphs: Lack clear communities, leading to unstable partitions. Stochastic algorithms detect different structures across runs, resulting in low NMI, high VI, and inconsistent RI.
 #Structured Graphs: Have well-defined communities, so detected partitions are more stable across multiple runs, leading to high NMI, low VI, and stable RI.
-
-
-# %%
