@@ -47,7 +47,7 @@ cd ${ROOT_FOLDER}
 
 # Create a virtual environment
 if [ ! -d ".venv" ]; then
-  python3 -m venv .venv
+  ${PYTHON:-python3} -m venv .venv
 
   # Install sphinx, matplotlib, pandas, scipy, wheel and pydoctor into the venv.
   # doc2dash is optional; it will be installed when -d is given

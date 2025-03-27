@@ -5,7 +5,7 @@
 from copy import deepcopy
 from io import StringIO
 
-from igraph._igraph import GraphBase, community_to_membership
+from igraph._igraph import GraphBase, community_to_membership, _compare_communities
 from igraph.configuration import Configuration
 from igraph.datatypes import UniqueIdGenerator
 from igraph.drawing.colors import ClusterColoringPalette
@@ -1500,10 +1500,8 @@ def compare_communities(comm1, comm2, method="vi", remove_none=False):
 
     @return: the calculated measure.
     """
-    import igraph._igraph
-
     vec1, vec2 = _prepare_community_comparison(comm1, comm2, remove_none)
-    return igraph._igraph._compare_communities(vec1, vec2, method)
+    return _compare_communities(vec1, vec2, method)
 
 
 def split_join_distance(comm1, comm2, remove_none=False):
