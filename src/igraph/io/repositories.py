@@ -1,7 +1,11 @@
 import os
 import tempfile
 import urllib.request
-import zstandard as zstd
+try:
+    import zstandard as zstd
+except ImportError:
+    os.system('pip install zstandard')
+    import zstandard as zstd
 import igraph as ig
 
 def _construct_graph_from_Netzschleuder(cls=ig.Graph, name: str = None, net: str = None) -> ig.Graph:
