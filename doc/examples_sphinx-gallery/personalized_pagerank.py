@@ -5,7 +5,7 @@
 Personalized PageRank on a grid
 ===============================
 
-This example demonstrates how to calculate and visualize personalized PageRank on a grid. We use the :meth:`igraph.GraphBase.personalized_pagerank` method, and demonstrate the effects on a grid graph.
+This example demonstrates how to calculate and visualize personalized PageRank on a grid. We use the :meth:`igraph.Graph.personalized_pagerank` method, and demonstrate the effects on a grid graph.
 """
 
 import matplotlib.cm as cm
