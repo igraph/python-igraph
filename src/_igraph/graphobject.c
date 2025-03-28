@@ -7852,6 +7852,7 @@ PyObject *igraphmodule_Graph_simple_cycles(
   }
   igraph_vector_int_list_t edges;
   if (igraph_vector_int_list_init(&edges, 0)) {
+    igraph_vector_int_list_destroy(&vertices);
     igraphmodule_handle_igraph_error();
     return NULL;
   }
