@@ -5,44 +5,67 @@
 Stochastic Variability in Community Detection Algorithms
 =========================================================
 
-This example demonstrates the variability of stochastic community detection methods by analyzing the consistency of multiple partitions using similarity measures (NMI, VI, RI) on both random and structured graphs.
+This example demonstrates the variability of stochastic community detection methods by analyzing the consistency of multiple partitions using similarity measures normalized mutual information (NMI), variation of information (VI), rand index (RI) on both random and structured graphs.
 
 """
 # %%
-# Import Libraries
+# Import libraries
 import igraph as ig
-import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 
 # %%
 # First, we generate a graph.
-# Generates a random Erdos-Renyi graph (no clear community structure)
-def generate_random_graph(n, p):
-    return ig.Graph.Erdos_Renyi(n=n, p=p)
+# Load the karate club network
+karate = ig.Graph.Famous("Zachary")
   
 # %%
-# Generates a clustered graph with clear communities using the Stochastic Block Model (SBM)
-def generate_clustered_graph(n, clusters, intra_p, inter_p):
-    block_sizes = [n // clusters] * clusters
-    prob_matrix = [[intra_p if i == j else inter_p for j in range(clusters)] for i in range(clusters)]
-    return ig.Graph.SBM(sum(block_sizes), prob_matrix, block_sizes)
+#For the random graph, we use an Erdős-Rényi :math:`G(n, m)` model, where 'n' is the number of nodes 
+#and 'm' is the number of edges. We set 'm' to match the edge count of the empirical (Karate Club) 
+#network to ensure structural similarity in terms of connectivity, making comparisons meaningful.
+n_nodes = karate.vcount()
+n_edges = karate.ecount()
+#Generate an Erdős-Rényi graph with the same number of nodes and edges
+random_graph = ig.Graph.Erdos_Renyi(n=n_nodes, m=n_edges)
 
 # %%
-# Computes pairwise similarity (NMI, VI, RI) between partitions
+# Now, lets plot the graph to visually understand them.
+
+# Create subplots
+fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+
+# Karate Club Graph
+layout_karate = karate.layout("fr")
+ig.plot(
+    karate, layout=layout_karate, target=axes[0], vertex_size=30, vertex_color="lightblue", edge_width=1,
+    vertex_label=[str(v.index) for v in karate.vs], vertex_label_size=10
+)
+axes[0].set_title("Karate Club Network")
+
+# Erdős-Rényi Graph
+layout_random = random_graph.layout("fr")
+ig.plot(
+    random_graph, layout=layout_random, target=axes[1], vertex_size=30, vertex_color="lightcoral", edge_width=1,
+    vertex_label=[str(v.index) for v in random_graph.vs], vertex_label_size=10
+)
+axes[1].set_title("Erdős-Rényi Random Graph")
+# %%
+# Function to compute similarity between partitions
 def compute_pairwise_similarity(partitions, method):
-    """Computes pairwise similarity measure between partitions."""
-    scores = []
+    similarities = []
+    
     for p1, p2 in itertools.combinations(partitions, 2):
-        scores.append(ig.compare_communities(p1, p2, method=method))
-    return scores
+        similarity = ig.compare_communities(p1, p2, method=method)
+        similarities.append(similarity)
+    
+    return similarities
 
 # %%
-# Stochastic Community Detection
-# Runs Louvain's method iteratively to generate partitions
-# Computes similarity metrics: 
+# We have used, stochastic community detection using the Louvain method, iteratively generating partitions and computing similarity metrics to assess stability.
+# The Louvain method is a modularity maximization approach for community detection. 
+# Since exact modularity maximization is NP-hard, the algorithm employs a greedy heuristic that processes vertices in a random order. 
+# This randomness leads to variations in the detected communities across different runs, which is why results may differ each time the method is applied.
 def run_experiment(graph, iterations=50):
-    """Runs the stochastic method multiple times and collects community partitions."""
     partitions = [graph.community_multilevel().membership for _ in range(iterations)]
     nmi_scores = compute_pairwise_similarity(partitions, method="nmi")
     vi_scores = compute_pairwise_similarity(partitions, method="vi")
@@ -50,44 +73,62 @@ def run_experiment(graph, iterations=50):
     return nmi_scores, vi_scores, ri_scores
 
 # %%
-# Parameters
-n_nodes = 100
-p_random = 0.05
-clusters = 4
-p_intra = 0.3  # High intra-cluster connection probability
-p_inter = 0.01  # Low inter-cluster connection probability
-
-# %%
-# Generate graphs
-random_graph = generate_random_graph(n_nodes, p_random)
-clustered_graph = generate_clustered_graph(n_nodes, clusters, p_intra, p_inter)
-
-# %%
 # Run experiments
+nmi_karate, vi_karate, ri_karate = run_experiment(karate)
 nmi_random, vi_random, ri_random = run_experiment(random_graph)
-nmi_clustered, vi_clustered, ri_clustered = run_experiment(clustered_graph)
 
-# %% 
-# Lets, plot the histograms
+# %%
+# Lastly, lets plot probability density histograms to understand the result.
 fig, axes = plt.subplots(3, 2, figsize=(12, 10))
-measures = [(nmi_random, nmi_clustered, "NMI"), (vi_random, vi_clustered, "VI"), (ri_random, ri_clustered, "RI")]
+measures = [
+    (nmi_karate, nmi_random, "NMI", 0, 1),  # Normalized Mutual Information (0-1, higher = more similar)
+    (vi_karate, vi_random, "VI", 0, None),  # Variation of Information (0+, lower = more similar)
+    (ri_karate, ri_random, "RI", 0, 1),  # Rand Index (0-1, higher = more similar)
+]
 colors = ["red", "blue", "green"]
 
-for i, (random_scores, clustered_scores, measure) in enumerate(measures):
-    axes[i][0].hist(random_scores, bins=20, alpha=0.7, color=colors[i], edgecolor="black")
-    axes[i][0].set_title(f"Histogram of {measure} - Random Graph")
+for i, (karate_scores, random_scores, measure, lower, upper) in enumerate(measures):
+    # Karate Club histogram
+    axes[i][0].hist(
+        karate_scores, bins=20, alpha=0.7, color=colors[i], edgecolor="black",
+        density=True  # Probability density
+    )
+    axes[i][0].set_title(f"Probability Density of {measure} - Karate Club Network")
     axes[i][0].set_xlabel(f"{measure} Score")
-    axes[i][0].set_ylabel("Frequency")
-    
-    axes[i][1].hist(clustered_scores, bins=20, alpha=0.7, color=colors[i], edgecolor="black")
-    axes[i][1].set_title(f"Histogram of {measure} - Clustered Graph")
+    axes[i][0].set_ylabel("Density")
+    axes[i][0].set_xlim(lower, upper)  # Set axis limits explicitly
+
+    # Erdős-Rényi Graph histogram
+    axes[i][1].hist(
+        random_scores, bins=20, alpha=0.7, color=colors[i], edgecolor="black",
+        density=True
+    )
+    axes[i][1].set_title(f"Probability Density of {measure} - Erdős-Rényi Graph")
     axes[i][1].set_xlabel(f"{measure} Score")
+    axes[i][1].set_xlim(lower, upper)  # Set axis limits explicitly
 
 plt.tight_layout()
 plt.show()
 
 # %%
-# The results are plotted as histograms for random vs. clustered graphs, highlighting differences in detected community structures.
-#The key reason for the inconsistency in random graphs and higher consistency in structured graphs is due to community structure strength:
-#Random Graphs: Lack clear communities, leading to unstable partitions. Stochastic algorithms detect different structures across runs, resulting in low NMI, high VI, and inconsistent RI.
-#Structured Graphs: Have well-defined communities, so detected partitions are more stable across multiple runs, leading to high NMI, low VI, and stable RI.
+# We have compared the probability density of NMI, VI, and RI for the Karate Club network (structured) and an Erdős-Rényi random graph.
+#
+# **NMI (Normalized Mutual Information):**
+# 
+# - Karate Club Network: The distribution is concentrated near 1, indicating high similarity across multiple runs, suggesting stable community detection.
+# - Erdős-Rényi Graph: The values are more spread out, with lower NMI scores, showing inconsistent partitions due to the lack of clear community structures.
+#
+# **VI (Variation of Information):**
+#
+# - Karate Club Network: The values are low and clustered, indicating stable partitioning with minor variations across runs.
+# - Erdős-Rényi Graph: The distribution is broader and shifted toward higher VI values, meaning higher partition variability and less consistency.
+#
+# **RI (Rand Index):**
+#
+# - Karate Club Network: The RI values are high and concentrated near 1, suggesting consistent clustering results across multiple iterations.
+# - Erdős-Rényi Graph: The distribution is more spread out, but with lower RI values, confirming unstable community detection.
+#
+# **Conclusion**
+# 
+# The Karate Club Network exhibits strong, well-defined community structures, leading to consistent results across runs.  
+# The Erdős-Rényi Graph, being random, lacks clear communities, causing high variability in detected partitions.
