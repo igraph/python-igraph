@@ -104,17 +104,19 @@ if [ "x$DOC2DASH" = "x1" ]; then
   PWD=`pwd`
   # Output folder of sphinx (before Jekyll if requested)
   DOC_API_FOLDER=${ROOT_FOLDER}/doc/html/api
-  DOC2DASH=`which doc2dash 2>/dev/null || true`
+  DOC2DASH=.venv/bin/doc2dash
   DASH_FOLDER=${ROOT_FOLDER}/doc/dash
   if [ "x$DOC2DASH" != x ]; then
       echo "Generating Dash docset..."
       "$DOC2DASH" \
-          --online-redirect-url "https://igraph.org/python/api/latest" \
+          --online-redirect-url "https://python.igraph.org/en/latest/api/" \
           --name "python-igraph" \
           -d "${DASH_FOLDER}" \
           -f \
           -j \
           -I "index.html" \
+          --icon ${ROOT_FOLDER}/doc/source/icon.png \
+          --icon-2x ${ROOT_FOLDER}/doc/source/icon@2x.png \
           "${DOC_API_FOLDER}"
       DASH_READY=1
   else
