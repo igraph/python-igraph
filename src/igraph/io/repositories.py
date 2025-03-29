@@ -6,9 +6,8 @@ try:
 except ImportError:
     os.system('pip install zstandard')
     import zstandard as zstd
-import igraph as ig
 
-def _construct_graph_from_Netzschleuder(cls=ig.Graph, name: str = None, net: str = None) -> ig.Graph:
+def _construct_graph_from_Netzschleuder(cls, name: str = None, net: str = None):
     """
     Downloads, decompresses, and loads a graph from a .gml.zst file from Netzschleuder into an igraph.Graph.
     Parameters:
@@ -35,7 +34,9 @@ def _construct_graph_from_Netzschleuder(cls=ig.Graph, name: str = None, net: str
                 raise ValueError(f"Dataset '{name}' does not exist at {dataset_url}.")
     except:
         raise ValueError(f"Dataset '{name}' does not exist at {dataset_url}.")
-
+        
+    from igraph import Graph
+    
     # Check network file existence
     file_url = f"{dataset_url}/files/{net}.gml.zst"
     try:
