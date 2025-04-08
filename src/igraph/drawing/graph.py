@@ -7,8 +7,8 @@ This module contains routines to draw graphs on:
     - Matplotlib axes (L{MatplotlibGraphDrawer})
 
 It also contains routines to send an igraph graph directly to
-(U{Cytoscape<http://www.cytoscape.org>}) using the
-(U{CytoscapeRPC plugin<http://gforge.nbic.nl/projects/cytoscaperpc/>}), see
+(U{Cytoscape<https://cytoscape.org>}) using the
+(U{CytoscapeRPC plugin<https://apps.cytoscape.org/apps/cytoscaperpc>}), see
 L{CytoscapeGraphDrawer}. L{CytoscapeGraphDrawer} can also fetch the current
 network from Cytoscape and convert it to igraph format.
 """
@@ -24,8 +24,8 @@ class CytoscapeGraphDrawer(AbstractXMLRPCDrawer, AbstractGraphDrawer):
     """Graph drawer that sends/receives graphs to/from Cytoscape using
     CytoscapeRPC.
 
-    This graph drawer cooperates with U{Cytoscape<http://www.cytoscape.org>}
-    using U{CytoscapeRPC<http://wiki.nbic.nl/index.php/CytoscapeRPC>}.
+    This graph drawer cooperates with U{Cytoscape<https://cytoscape.org>}
+    using U{CytoscapeRPC<https://apps.cytoscape.org/apps/cytoscaperpc>}.
     You need to install the CytoscapeRPC plugin first and start the
     XML-RPC server on a given port (port 9000 by default) from the
     appropriate Plugins submenu in Cytoscape.

@@ -234,6 +234,6 @@ See the :ref:`tutorial <tutorial-layouts-plotting>` for examples and a full list
 .. _matplotlib: https://matplotlib.org
 .. _Jupyter: https://jupyter.org/
 .. _Cairo: https://www.cairographics.org
-.. _graphviz: http://www.graphviz.org
+.. _graphviz: https://www.graphviz.org
 .. _networkx: https://networkx.org/
 .. _graph-tool: https://graph-tool.skewed.de/
