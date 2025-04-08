@@ -149,7 +149,7 @@ def _write_graph_to_svg(
 
     print('<?xml version="1.0" encoding="UTF-8" standalone="no"?>', file=f)
     print(
-        "<!-- Created by igraph (http://igraph.org/) -->",
+        "<!-- Created by igraph (https://igraph.org/) -->",
         file=f,
     )
     print(file=f)

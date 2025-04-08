@@ -953,7 +953,7 @@ library, primarily aimed at complex network research and analysis.
 Graph plotting functionality is provided by the Cairo library, so make
 sure you install the Python bindings of Cairo if you want to generate
 publication-quality graph plots. You can try either `pycairo
-<http://cairographics.org/pycairo>`_ or `cairocffi <http://cairocffi.readthedocs.io>`_,
+<http://cairographics.org/pycairo>`_ or `cairocffi <https://doc.courtbouillon.org/cairocffi/>`_,
 ``cairocffi`` is recommended because there were bug reports affecting igraph
 graph plots in Jupyter notebooks when using ``pycairo`` (but not with
 ``cairocffi``).
@@ -983,7 +983,7 @@ options = {
         "Bug Tracker": "https://github.com/igraph/python-igraph/issues",
         "Changelog": "https://github.com/igraph/python-igraph/blob/main/CHANGELOG.md",
         "CI": "https://github.com/igraph/python-igraph/actions",
-        "Documentation": "https://igraph.readthedocs.io",
+        "Documentation": "https://python.igraph.org",
         "Source Code": "https://github.com/igraph/python-igraph",
     },
     "ext_modules": [igraph_extension],

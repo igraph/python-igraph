@@ -6,7 +6,7 @@ igraph has two plotting backends at the moment: Cairo and Matplotlib.
 The Cairo backend is dependent on the C{pycairo} or C{cairocffi} libraries that
 provide Python bindings to the popular U{Cairo library<http://www.cairographics.org>}.
 This means that if you don't have U{pycairo<http://www.cairographics.org/pycairo>}
-or U{cairocffi<http://cairocffi.readthedocs.io>} installed, you won't be able
+or U{cairocffi<https://doc.courtbouillon.org/cairocffi/>} installed, you won't be able
 to use the Cairo plotting backend. Whenever the documentation refers to the
 C{pycairo} library, you can safely replace it with C{cairocffi} as the two are
 API-compatible.
@@ -17,8 +17,8 @@ plotting backend.
 
 If you do not want to (or cannot) install any of the dependencies outlined
 above, you can still save the graph to an SVG file and view it from
-U{Mozilla Firefox<http://www.mozilla.org/firefox>} (free) or edit it in
-U{Inkscape<http://www.inkscape.org>} (free), U{Skencil<http://www.skencil.org>}
+U{Mozilla Firefox<https://www.mozilla.org/firefox>} (free) or edit it in
+U{Inkscape<https://www.inkscape.org>} (free), U{Skencil<https://www.skencil.org>}
 (formerly known as Sketch, also free) or Adobe Illustrator.
 """
 

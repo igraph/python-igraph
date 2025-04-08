@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 # %%
 # We begin by load the graph from file. The file containing this network can be
-# downloaded `here <http://www-personal.umich.edu/~mejn/netdata/>`_.
+# downloaded `here <https://www-personal.umich.edu/~mejn/netdata/>`_.
 g = ig.load("./lesmis/lesmis.gml")
 
 # %%
