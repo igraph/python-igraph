@@ -860,7 +860,7 @@ class Graph(GraphBase):
             networks. I{Nature} 393(6884):440-442, 1998.
           - Barrat A, Barthelemy M, Pastor-Satorras R and Vespignani A:
             The architecture of complex weighted networks. I{PNAS} 101, 3747
-            (2004). U{http://arxiv.org/abs/cond-mat/0311416}.
+            (2004). U{https://arxiv.org/abs/cond-mat/0311416}.
 
         @param mode: defines how to treat vertices with degree less than two.
           If C{TRANSITIVITY_ZERO} or C{"zero"}, these vertices will have zero

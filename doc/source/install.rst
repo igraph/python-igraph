@@ -131,7 +131,7 @@ Fourth, call ``pip`` to compile and install the package from source::
   $ pip install .
 
 Alternatively, you can call ``build`` or another PEP 517-compliant build frontend
-to build an installable Python wheel. Here we use `pipx <https://pypa.github.io/pipx/>`_
+to build an installable Python wheel. Here we use `pipx <https://pipx.pypa.io>`_
 to invoke ``build`` in a separate virtualenv::
 
   $ pipx run build
@@ -140,7 +140,7 @@ Testing your installation
 -------------------------
 
 Use ``tox`` or another standard test runner tool to run all the unit tests.
-Here we use `pipx <https://pypa.github.io/pipx/>`_` to invoke ``tox``::
+Here we use `pipx <https://pipx.pypa.io>`_ to invoke ``tox``::
 
   $ pipx run tox
 
