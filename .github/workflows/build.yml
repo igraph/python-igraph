@@ -208,16 +208,22 @@ jobs:
 
   build_wheel_win:
     name: Build wheels on Windows (${{ matrix.cmake_arch }})
-    runs-on: windows-2019
     strategy:
       matrix:
         include:
           - cmake_arch: Win32
             wheel_arch: win32
             vcpkg_arch: x86
+            os: windows-2019
           - cmake_arch: x64
             wheel_arch: win_amd64
             vcpkg_arch: x64
+            os: windows-2019
+          - cmake_arch: ARM64
+            wheel_arch: win_arm64
+            vcpkg_arch: arm64
+            os: windows-11-arm
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
