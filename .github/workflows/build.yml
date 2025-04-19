@@ -23,11 +23,6 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        name: Install Python
-        with:
-          python-version: '3.9'
-
       - name: Build wheels (manylinux)
         uses: pypa/cibuildwheel@v2.23.2
         env:
@@ -129,11 +124,6 @@ jobs:
           path: ~/local
           key: deps-cache-v2-${{ runner.os }}-${{ matrix.cmake_arch }}-llvm${{ env.LLVM_VERSION }}
 
-      - uses: actions/setup-python@v5
-        name: Install Python
-        with:
-          python-version: '3.9'
-
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' || steps.cache-c-deps.outputs.cache-hit != 'true' # Only needed when building the C core or libomp
         run:
@@ -231,11 +221,6 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        name: Install Python
-        with:
-          python-version: '3.9'
-
       - name: Cache installed C core
         id: cache-c-core
         uses: actions/cache@v4
@@ -267,7 +252,7 @@ jobs:
           CIBW_ENABLE: pypy
           CIBW_TEST_COMMAND: "cd /d {project} && pip install --prefer-binary \".[test]\" && python -m pytest tests"
           # Skip tests for Python 3.10 onwards because SciPy does not have
-          # 32-bit wheels for Linux.
+          # 32-bit wheels for Windows any more
           CIBW_TEST_SKIP: "cp310-win32 cp311-win32 cp312-win32 cp313-win32"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
