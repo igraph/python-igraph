@@ -205,14 +205,17 @@ jobs:
             wheel_arch: win32
             vcpkg_arch: x86
             os: windows-2019
+            test_extra: test
           - cmake_arch: x64
             wheel_arch: win_amd64
             vcpkg_arch: x64
             os: windows-2019
+            test_extra: test
           - cmake_arch: ARM64
             wheel_arch: win_arm64
             vcpkg_arch: arm64
             os: windows-11-arm
+            test_extra: test-win-arm64
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -250,7 +253,7 @@ jobs:
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
           CIBW_ENABLE: pypy
-          CIBW_TEST_COMMAND: "cd /d {project} && pip install --prefer-binary \".[test]\" && python -m pytest tests"
+          CIBW_TEST_COMMAND: "cd /d {project} && pip install --prefer-binary \".[${{ matrix.test_extra }}]\" && python -m pytest tests"
           # Skip tests for Python 3.10 onwards because SciPy does not have
           # 32-bit wheels for Windows any more
           CIBW_TEST_SKIP: "cp310-win32 cp311-win32 cp312-win32 cp313-win32"
