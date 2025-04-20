@@ -1020,6 +1020,15 @@ options = {
             "plotly>=5.3.0",
             "Pillow>=9; platform_python_implementation != 'PyPy'",
         ],
+        # Dependencies needed for testing on Windows ARM64; only those that are either
+        # pure Python or have Windows ARM64 wheels as we don't want to compile wheels
+        # in CI
+        "test-win-arm64": [
+            "cairocffi>=1.2.0",
+            "networkx>=2.5",
+            "pytest>=7.0.1",
+            "pytest-timeout>=2.1.0",
+        ],
         # Dependencies needed for testing on musllinux; only those that are either
         # pure Python or have musllinux wheels as we don't want to compile wheels
         # in CI
