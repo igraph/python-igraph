@@ -17,27 +17,27 @@ CLEAN=0
 
 while getopts ":scjdl" OPTION; do
   case $OPTION in
-    c)
-      CLEAN=1
-      ;;
-    d)
-      DOC2DASH=1
-      ;;
-    l)
-      LINKCHECK=1
-      ;;
-    \?)
-      echo "Usage: $0 [-sjd]"
-      exit 1
-      ;;
-    esac
+  c)
+    CLEAN=1
+    ;;
+  d)
+    DOC2DASH=1
+    ;;
+  l)
+    LINKCHECK=1
+    ;;
+  \?)
+    echo "Usage: $0 [-sjd]"
+    exit 1
+    ;;
+  esac
 done
-shift $((OPTIND -1))
+shift $((OPTIND - 1))
 
-SCRIPTS_FOLDER=`dirname $0`
+SCRIPTS_FOLDER=$(dirname $0)
 
 cd ${SCRIPTS_FOLDER}/..
-ROOT_FOLDER=`pwd`
+ROOT_FOLDER=$(pwd)
 DOC_SOURCE_FOLDER=${ROOT_FOLDER}/doc/source
 DOC_HTML_FOLDER=${ROOT_FOLDER}/doc/html
 DOC_LINKCHECK_FOLDER=${ROOT_FOLDER}/doc/linkcheck
@@ -51,17 +51,20 @@ if [ ! -d ".venv" ]; then
 
   # Install sphinx, matplotlib, pandas, scipy, wheel and pydoctor into the venv.
   # doc2dash is optional; it will be installed when -d is given
-  .venv/bin/pip install -U pip wheel sphinx==7.4.7 matplotlib pandas scipy pydoctor sphinx-rtd-theme
+  .venv/bin/pip install -q -U pip wheel sphinx==7.4.7 matplotlib pandas scipy pydoctor sphinx-rtd-theme
+else
+  # Upgrade pip in the virtualenv
+  .venv/bin/pip install -q -U pip wheel
 fi
 
 # Make sure that Sphinx, PyDoctor (and maybe doc2dash) are up-to-date in the virtualenv
-.venv/bin/pip install -U sphinx==7.4.7 pydoctor sphinx-gallery sphinxcontrib-jquery sphinx-rtd-theme
+.venv/bin/pip install -q -U sphinx==7.4.7 pydoctor sphinx-gallery sphinxcontrib-jquery sphinx-rtd-theme
 if [ x$DOC2DASH = x1 ]; then
-    .venv/bin/pip install -U doc2dash
+  .venv/bin/pip install -U doc2dash
 fi
 
 echo "Removing existing igraph and python-igraph eggs from virtualenv..."
-SITE_PACKAGES_DIR=`.venv/bin/python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'`
+SITE_PACKAGES_DIR=$(.venv/bin/python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')
 rm -rf "${SITE_PACKAGES_DIR}"/igraph*.egg
 rm -rf "${SITE_PACKAGES_DIR}"/igraph*.egg-link
 rm -rf "${SITE_PACKAGES_DIR}"/python_igraph*.egg
@@ -84,49 +87,47 @@ fi
 if [ "x$LINKCHECK" = "x1" ]; then
   echo "Check for broken links"
   .venv/bin/python -m sphinx \
-   -T \
-   -b linkcheck \
-   -Dtemplates_path='' \
-   -Dhtml_theme='alabaster' \
-   ${DOC_SOURCE_FOLDER} ${DOC_LINKCHECK_FOLDER}
+    -T \
+    -b linkcheck \
+    -Dtemplates_path='' \
+    -Dhtml_theme='alabaster' \
+    ${DOC_SOURCE_FOLDER} ${DOC_LINKCHECK_FOLDER}
 fi
 
-
 echo "Generating HTML documentation..."
-.venv/bin/pip install -U sphinx-rtd-theme
+.venv/bin/pip install -q -U sphinx-rtd-theme
 .venv/bin/python -m sphinx -T -b html ${DOC_SOURCE_FOLDER} ${DOC_HTML_FOLDER}
 
 echo "HTML documentation generated in ${DOC_HTML_FOLDER}"
 
-
 # doc2dash
 if [ "x$DOC2DASH" = "x1" ]; then
-  PWD=`pwd`
+  PWD=$(pwd)
   # Output folder of sphinx (before Jekyll if requested)
   DOC_API_FOLDER=${ROOT_FOLDER}/doc/html/api
   DOC2DASH=.venv/bin/doc2dash
   DASH_FOLDER=${ROOT_FOLDER}/doc/dash
   if [ "x$DOC2DASH" != x ]; then
-      echo "Generating Dash docset..."
-      "$DOC2DASH" \
-          --online-redirect-url "https://python.igraph.org/en/latest/api/" \
-          --name "python-igraph" \
-          -d "${DASH_FOLDER}" \
-          -f \
-          -j \
-          -I "index.html" \
-          --icon ${ROOT_FOLDER}/doc/source/icon.png \
-          --icon-2x ${ROOT_FOLDER}/doc/source/icon@2x.png \
-          "${DOC_API_FOLDER}"
-      DASH_READY=1
+    echo "Generating Dash docset..."
+    "$DOC2DASH" \
+      --online-redirect-url "https://python.igraph.org/en/latest/api/" \
+      --name "python-igraph" \
+      -d "${DASH_FOLDER}" \
+      -f \
+      -j \
+      -I "index.html" \
+      --icon ${ROOT_FOLDER}/doc/source/icon.png \
+      --icon-2x ${ROOT_FOLDER}/doc/source/icon@2x.png \
+      "${DOC_API_FOLDER}"
+    DASH_READY=1
   else
-      echo "WARNING: doc2dash not installed, skipping Dash docset generation."
-      DASH_READY=0
+    echo "WARNING: doc2dash not installed, skipping Dash docset generation."
+    DASH_READY=0
   fi
 
   echo ""
   if [ "x${DASH_READY}" = x1 ]; then
-      echo "Dash docset generated in ${DASH_FOLDER}/python-igraph.docset"
+    echo "Dash docset generated in ${DASH_FOLDER}/python-igraph.docset"
   fi
 
   cd "$PWD"
