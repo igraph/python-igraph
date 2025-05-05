@@ -100,7 +100,14 @@ class AtlasTestBase:
     def testHubScore(self):
         for idx, g in enumerate(self.__class__.graphs):
             try:
-                sc = g.hub_score()
+                if g.ecount() == 0:
+                    with self.assertWarns(RuntimeWarning, msg="The graph has no edges"):
+                        sc = g.hub_score()
+                elif not g.is_directed():
+                    with self.assertWarns(RuntimeWarning, msg="Hub and authority scores requested for undirected graph"):
+                        sc = g.hub_score()
+                else:
+                    sc = g.hub_score()
             except Exception as ex:
                 self.assertTrue(
                     False,
@@ -126,7 +133,14 @@ class AtlasTestBase:
     def testAuthorityScore(self):
         for idx, g in enumerate(self.__class__.graphs):
             try:
-                sc = g.authority_score()
+                if g.ecount() == 0:
+                    with self.assertWarns(RuntimeWarning, msg="The graph has no edges"):
+                        sc = g.authority_score()
+                elif not g.is_directed():
+                    with self.assertWarns(RuntimeWarning, msg="Hub and authority scores requested for undirected graph"):
+                        sc = g.authority_score()
+                else:
+                    sc = g.authority_score()
             except Exception as ex:
                 self.assertTrue(
                     False,

@@ -687,7 +687,7 @@ class Graph(GraphBase):
 
     ###########################
     # Paths/traversals
-    def get_all_simple_paths(self, v, to=None, cutoff=-1, mode="out"):
+    def get_all_simple_paths(self, v, to=None, minlen=0, maxlen=-1, mode="out"):
         """Calculates all the simple paths from a given node to some other nodes
         (or all of them) in a graph.
 
@@ -703,7 +703,8 @@ class Graph(GraphBase):
           paths. This can be a single vertex ID, a list of vertex IDs, a single
           vertex name, a list of vertex names or a L{VertexSeq} object. C{None}
           means all the vertices.
-        @param cutoff: maximum length of path that is considered. If negative,
+        @param minlen: minimum length of path that is considered.
+        @param maxlen: maximum length of path that is considered. If negative,
           paths of all lengths are considered.
         @param mode: the directionality of the paths. C{\"in\"} means to calculate
           incoming paths, C{\"out\"} means to calculate outgoing paths, C{\"all\"} means
@@ -712,14 +713,7 @@ class Graph(GraphBase):
           reachable node in the graph in a list. Note that in case of mode=C{\"in\"},
           the vertices in a path are returned in reversed order!
         """
-        paths = self._get_all_simple_paths(v, to, cutoff, mode)
-        prev = 0
-        result = []
-        for index, item in enumerate(paths):
-            if item < 0:
-                result.append(paths[prev:index])
-                prev = index + 1
-        return result
+        return self._get_all_simple_paths(v, to, minlen, maxlen, mode)
 
     def path_length_hist(self, directed=True):
         """Returns the path length histogram of the graph
@@ -782,7 +776,7 @@ class Graph(GraphBase):
 
         return (vids, parents)
 
-    def spanning_tree(self, weights=None, return_tree=True):
+    def spanning_tree(self, weights=None, return_tree=True, method="auto"):
         """Calculates a minimum spanning tree for a graph.
 
         B{Reference}: Prim, R.C. Shortest connection networks and some
@@ -795,11 +789,16 @@ class Graph(GraphBase):
           the minimum spanning tree instead (when C{return_tree} is C{False}).
           The default is C{True} for historical reasons as this argument was
           introduced in igraph 0.6.
+        @param method: the algorithm to use. C{"auto"} means that the algorithm
+          is selected automatically. C{"prim"} means that Prim's algorithm is
+          used. C{"kruskal"} means that Kruskal's algorithm is used.
+          C{"unweighted"} assumes that the graph is unweighted even if weights
+          are provided.
         @return: the spanning tree as a L{Graph} object if C{return_tree}
           is C{True} or the IDs of the edges that constitute the spanning
           tree if C{return_tree} is C{False}.
         """
-        result = GraphBase._spanning_tree(self, weights)
+        result = GraphBase._spanning_tree(self, weights, method)
         if return_tree:
             return self.subgraph_edges(result, delete_vertices=False)
         return result

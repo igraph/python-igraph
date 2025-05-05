@@ -142,12 +142,8 @@ static int igraphmodule_clear(PyObject *m) {
   return 0;
 }
 
-static igraph_error_t igraphmodule_igraph_interrupt_hook(void* data) {
-  if (PyErr_CheckSignals()) {
-    IGRAPH_FINALLY_FREE();
-    return IGRAPH_INTERRUPTED;
-  }
-  return IGRAPH_SUCCESS;
+static igraph_bool_t igraphmodule_igraph_interrupt_hook() {
+  return PyErr_CheckSignals();
 }
 
 igraph_error_t igraphmodule_igraph_progress_hook(const char* message, igraph_real_t percent,

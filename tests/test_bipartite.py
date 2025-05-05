@@ -76,8 +76,8 @@ class BipartiteTests(unittest.TestCase):
             )
         )
         self.assertListEqual(g.vs["type"], [False] * 2 + [True] * 3)
-        self.assertListEqual(g.es["weight"], [1, 1, 1, 2])
-        self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2), (1, 3)])
+        self.assertListEqual(g.get_edgelist(), [(1, 2), (0, 3), (1, 3), (0, 4)])
+        self.assertListEqual(g.es["weight"], [1, 1, 2, 1])
 
         # Graph is not weighted when weighted=`str`
         g = Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], weighted="some_attr_name")
@@ -92,8 +92,8 @@ class BipartiteTests(unittest.TestCase):
             )
         )
         self.assertListEqual(g.vs["type"], [False] * 2 + [True] * 3)
-        self.assertListEqual(g.es["some_attr_name"], [1, 1, 1, 2])
-        self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2), (1, 3)])
+        self.assertListEqual(g.get_edgelist(), [(1, 2), (0, 3), (1, 3), (0, 4)])
+        self.assertListEqual(g.es["some_attr_name"], [1, 1, 2, 1])
 
         # Graph is not weighted when weighted=""
         g = Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], weighted="")
@@ -108,8 +108,8 @@ class BipartiteTests(unittest.TestCase):
             )
         )
         self.assertListEqual(g.vs["type"], [False] * 2 + [True] * 3)
-        self.assertListEqual(g.es[""], [1, 1, 1, 2])
-        self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2), (1, 3)])
+        self.assertListEqual(g.get_edgelist(), [(1, 2), (0, 3), (1, 3), (0, 4)])
+        self.assertListEqual(g.es[""], [1, 1, 2, 1])
 
         # Should work when directed=True and mode=out with weighted
         g = Graph.Biadjacency([[0, 1, 1], [1, 2, 0]], directed=True, weighted=True)
@@ -117,8 +117,8 @@ class BipartiteTests(unittest.TestCase):
             all((g.vcount() == 5, g.ecount() == 4, g.is_directed(), g.is_weighted()))
         )
         self.assertListEqual(g.vs["type"], [False] * 2 + [True] * 3)
-        self.assertListEqual(g.es["weight"], [1, 1, 1, 2])
-        self.assertListEqual(sorted(g.get_edgelist()), [(0, 3), (0, 4), (1, 2), (1, 3)])
+        self.assertListEqual(g.get_edgelist(), [(1, 2), (0, 3), (1, 3), (0, 4)])
+        self.assertListEqual(g.es["weight"], [1, 1, 2, 1])
 
         # Should work when directed=True and mode=in with weighted
         g = Graph.Biadjacency(
@@ -128,8 +128,8 @@ class BipartiteTests(unittest.TestCase):
             all((g.vcount() == 5, g.ecount() == 4, g.is_directed(), g.is_weighted()))
         )
         self.assertListEqual(g.vs["type"], [False] * 2 + [True] * 3)
-        self.assertListEqual(g.es["weight"], [1, 1, 1, 2])
-        self.assertListEqual(sorted(g.get_edgelist()), [(2, 1), (3, 0), (3, 1), (4, 0)])
+        self.assertListEqual(g.get_edgelist(), [(2, 1), (3, 0), (3, 1), (4, 0)])
+        self.assertListEqual(g.es["weight"], [1, 1, 2, 1])
 
         # Should work when directed=True and mode=all with weighted
         g = Graph.Biadjacency(
@@ -139,11 +139,11 @@ class BipartiteTests(unittest.TestCase):
             all((g.vcount() == 5, g.ecount() == 8, g.is_directed(), g.is_weighted()))
         )
         self.assertListEqual(g.vs["type"], [False] * 2 + [True] * 3)
-        self.assertListEqual(g.es["weight"], [1, 1, 1, 1, 1, 1, 2, 2])
         self.assertListEqual(
-            sorted(g.get_edgelist()),
-            [(0, 3), (0, 4), (1, 2), (1, 3), (2, 1), (3, 0), (3, 1), (4, 0)],
+            g.get_edgelist(),
+            [(1, 2), (2, 1), (0, 3), (3, 0), (1, 3), (3, 1), (0, 4), (4, 0)]
         )
+        self.assertListEqual(g.es["weight"], [1, 1, 1, 1, 2, 2, 1, 1])
 
     def testBiadjacencyError(self):
         msg = "arguments weighted and multiple can not co-exist"

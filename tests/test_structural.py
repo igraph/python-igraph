@@ -824,14 +824,6 @@ class PathTests(unittest.TestCase):
             g.distances(weights="weight", target=[2, 3], algorithm="johnson")
             == [row[2:4] for row in expected]
         )
-        self.assertRaises(
-            ValueError,
-            g.distances,
-            weights="weight",
-            target=[2, 3],
-            algorithm="johnson",
-            mode="in",
-        )
 
     def testGetShortestPath(self):
         g = Graph(4, [(0, 1), (0, 2), (1, 3), (3, 2), (2, 1)], directed=True)

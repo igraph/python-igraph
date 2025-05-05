@@ -711,6 +711,36 @@ int igraphmodule_PyObject_to_loops_t(PyObject *o, igraph_loops_t *result) {
 }
 
 /**
+ * \brief Converts a Python object to an igraph \c igraph_lpa_variant_t
+ */
+int igraphmodule_PyObject_to_lpa_variant_t(PyObject *o, igraph_lpa_variant_t *result) {
+  static igraphmodule_enum_translation_table_entry_t lpa_variant_tt[] = {
+    {"dominance", IGRAPH_LPA_DOMINANCE},
+    {"retention", IGRAPH_LPA_RETENTION},
+    {"fast", IGRAPH_LPA_FAST},
+    {0,0}
+  };
+
+  TRANSLATE_ENUM_WITH(lpa_variant_tt);
+}
+
+/**
+ * \brief Converts a Python object to an igraph \c igraph_mst_algorithm_t
+ */
+int igraphmodule_PyObject_to_mst_algorithm_t(PyObject *o, igraph_mst_algorithm_t *result) {
+  static igraphmodule_enum_translation_table_entry_t mst_algorithm_tt[] = {
+    {"auto", IGRAPH_MST_AUTOMATIC},
+    {"automatic", IGRAPH_MST_AUTOMATIC},
+    {"unweighted", IGRAPH_MST_UNWEIGHTED},
+    {"prim", IGRAPH_MST_PRIM},
+    {"kruskal", IGRAPH_MST_KRUSKAL},
+    {0,0}
+  };
+
+  TRANSLATE_ENUM_WITH(mst_algorithm_tt);
+}
+
+/**
  * \ingroup python_interface_conversion
  * \brief Converts a Python object to an igraph \c igraph_random_walk_stuck_t
  */
@@ -1962,7 +1992,19 @@ int igraphmodule_attrib_to_vector_t(PyObject *o, igraphmodule_GraphObject *self,
       free(name);
       return 1;
     }
-    igraph_vector_init(result, n);
+    if (igraph_vector_init(result, 0)) {
+      igraphmodule_handle_igraph_error();
+      free(name);
+      free(result);
+      return 1;
+    }
+    if (igraph_vector_reserve(result, n)) {
+      igraphmodule_handle_igraph_error();
+      igraph_vector_destroy(result);
+      free(name);
+      free(result);
+      return 1;
+    }
     if (attr_type == ATTRIBUTE_TYPE_VERTEX) {
       if (igraphmodule_i_get_numeric_vertex_attr(&self->g, name,
           igraph_vss_all(), result)) {
@@ -2157,7 +2199,19 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
         free(name);
         return 1;
       }
-      igraph_vector_bool_init(result, n);
+      if (igraph_vector_bool_init(result, 0)) {
+        igraphmodule_handle_igraph_error();
+        free(name);
+        free(result);
+        return 1;
+      }
+      if (igraph_vector_bool_reserve(result, n)) {
+        igraph_vector_bool_destroy(result);
+        igraphmodule_handle_igraph_error();
+        free(name);
+        free(result);
+        return 1;
+      }
       if (attr_type == ATTRIBUTE_TYPE_VERTEX) {
         if (igraphmodule_i_get_boolean_vertex_attr(&self->g, name,
             igraph_vss_all(), result)) {
@@ -2193,10 +2247,15 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
 
       n = igraph_vector_size(dummy);
       result = (igraph_vector_bool_t*)calloc(1, sizeof(igraph_vector_bool_t));
-      igraph_vector_bool_init(result, n);
       if (result == 0) {
         igraph_vector_destroy(dummy); free(dummy);
         PyErr_NoMemory();
+        return 1;
+      }
+      if (igraph_vector_bool_init(result, n)) {
+        igraphmodule_handle_igraph_error();        
+        igraph_vector_destroy(dummy); free(dummy);
+        igraph_vector_bool_destroy(result); free(result);
         return 1;
       }
       for (i = 0; i < n; i++) {

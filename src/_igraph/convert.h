@@ -76,7 +76,9 @@ int igraphmodule_PyObject_to_fvs_algorithm_t(PyObject *o, igraph_fvs_algorithm_t
 int igraphmodule_PyObject_to_get_adjacency_t(PyObject *o, igraph_get_adjacency_t *result);
 int igraphmodule_PyObject_to_laplacian_normalization_t(PyObject *o, igraph_laplacian_normalization_t *result);
 int igraphmodule_PyObject_to_layout_grid_t(PyObject *o, igraph_layout_grid_t *result);
+int igraphmodule_PyObject_to_lpa_variant_t(PyObject *o, igraph_lpa_variant_t *result);
 int igraphmodule_PyObject_to_loops_t(PyObject *o, igraph_loops_t *result);
+int igraphmodule_PyObject_to_mst_algorithm_t(PyObject *o, igraph_mst_algorithm_t *result);
 int igraphmodule_PyObject_to_neimode_t(PyObject *o, igraph_neimode_t *result);
 int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o, igraph_pagerank_algo_t *result);
 int igraphmodule_PyObject_to_edge_type_sw_t(PyObject *o, igraph_edge_type_sw_t *result);

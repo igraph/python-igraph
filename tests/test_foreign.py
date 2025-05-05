@@ -215,14 +215,14 @@ class ForeignTests(unittest.TestCase):
         self.assertTrue(
             "name" not in g.vertex_attributes() and "weight" in g.edge_attributes()
         )
-        self.assertTrue(g.es["weight"] == [1, 2, 0, 3, 0])
+        self.assertListEqual(g.es["weight"], [1.0, 2.0, 1.0, 3.0, 1.0])
 
         g = func(fname, directed=False)
         self.assertTrue(
             "name" in g.vertex_attributes() and "weight" in g.edge_attributes()
         )
-        self.assertTrue(g.vs["name"] == ["eggs", "spam", "ham", "bacon"])
-        self.assertTrue(g.es["weight"] == [1, 2, 0, 3, 0])
+        self.assertListEqual(g.vs["name"], ["eggs", "spam", "ham", "bacon"])
+        self.assertListEqual(g.es["weight"], [1.0, 2.0, 1.0, 3.0, 1.0])
 
     def testNCOL(self):
         with temporary_file(
