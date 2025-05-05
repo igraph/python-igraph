@@ -46,27 +46,3 @@ PyObject* igraphmodule_unimplemented(PyObject* self, PyObject* args, PyObject* k
    PyErr_SetString(PyExc_NotImplementedError, "This method is unimplemented.");
    return NULL;
 }
-
-/**
- * \ingroup python_interface
- * \brief Resolves a weak reference to an \c igraph.Graph
- * \return the \c igraph.Graph object or NULL if the weak reference is dead.
- * Sets an exception in the latter case.
- */
-PyObject* igraphmodule_resolve_graph_weakref(PyObject* ref) {
-  PyObject *o;
-
-#ifndef PYPY_VERSION
-  /* PyWeakref_Check is not implemented in PyPy yet */
-  if (!PyWeakref_Check(ref)) {
-    PyErr_SetString(PyExc_TypeError, "weak reference expected");
-    return NULL;
-  }
-#endif  /* PYPY_VERSION */
-  o=PyWeakref_GetObject(ref);
-  if (o == Py_None) {
-    PyErr_SetString(PyExc_TypeError, "underlying graph has already been destroyed");
-    return NULL;
-  }
-  return o;
-}

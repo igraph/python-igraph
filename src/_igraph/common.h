@@ -51,5 +51,4 @@
 #define ATTRIBUTE_TYPE_EDGE 2
 
 PyObject* igraphmodule_unimplemented(PyObject* self, PyObject* args, PyObject* kwds);
-PyObject* igraphmodule_resolve_graph_weakref(PyObject* ref);
 #endif
