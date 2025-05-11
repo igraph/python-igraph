@@ -126,8 +126,7 @@ jobs:
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' || steps.cache-c-deps.outputs.cache-hit != 'true' # Only needed when building the C core or libomp
-        run:
-          brew install ninja autoconf automake libtool
+        run: brew install ninja autoconf automake libtool
 
       - name: Install OpenMP library
         if: steps.cache-c-deps.outputs.cache-hit != 'true'
@@ -167,16 +166,15 @@ jobs:
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.12.1'
+          python-version: "3.12.1"
 
       - name: Install OS dependencies
-        run:
-          sudo apt install ninja-build cmake flex bison
+        run: sudo apt install ninja-build cmake flex bison
 
       - uses: mymindstorm/setup-emsdk@v14
         with:
-          version: '3.1.58'
-          actions-cache-folder: 'emsdk-cache'
+          version: "3.1.58"
+          actions-cache-folder: "emsdk-cache"
 
       - name: Build wheel
         run: |
@@ -253,7 +251,7 @@ jobs:
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
           CIBW_ENABLE: pypy
-          CIBW_TEST_COMMAND: "cd /d {project} && pip install --prefer-binary \".[${{ matrix.test_extra }}]\" && python -m pytest tests"
+          CIBW_TEST_COMMAND: 'cd /d {project} && pip install --prefer-binary ".[${{ matrix.test_extra }}]" && python -m pytest tests'
           # Skip tests for Python 3.10 onwards because SciPy does not have
           # 32-bit wheels for Windows any more
           CIBW_TEST_SKIP: "cp310-win32 cp311-win32 cp312-win32 cp313-win32"
@@ -287,23 +285,22 @@ jobs:
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
-        run:
-          sudo apt install ninja-build cmake flex bison
+        run: sudo apt install ninja-build cmake flex bison
 
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.9'
+          python-version: "3.9"
 
       - name: Build sdist
         run: |
           python setup.py build_c_core
           python setup.py sdist
-          python setup.py install
+          pip install .
 
       - name: Test
         run: |
-          pip install --prefer-binary cairocffi numpy scipy pandas networkx pytest pytest-timeout
+          pip install '.[test]'
           python -m pytest -v tests
 
       - uses: actions/upload-artifact@v4
@@ -335,13 +332,12 @@ jobs:
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
-        run:
-          sudo apt install ninja-build cmake flex bison
+        run: sudo apt install ninja-build cmake flex bison
 
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install test dependencies
         run: |
@@ -357,8 +353,7 @@ jobs:
         env:
           IGRAPH_USE_SANITIZERS: 1
         run: |
-          # NOTE: install calls "build" first
-          python setup.py install
+          pip install .
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.
