@@ -1,12 +1,12 @@
 # igraph Python interface changelog
 
-## [main]
+## [0.11.9] - 2025-06-11
 
 ### Changed
 
 - Dropped support for Python 3.8 as it has now reached its end of life.
 
-- The C core of igraph was updated to version 0.10.15.
+- The C core of igraph was updated to version 0.10.16.
 
 - Added `Graph.simple_cycles()` to find simple cycles in the graph.
 
@@ -725,7 +725,7 @@ Please refer to the commit logs at <https://github.com/igraph/python-igraph> for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[main]: https://github.com/igraph/python-igraph/compare/0.11.8...main
+[0.11.9]: https://github.com/igraph/python-igraph/compare/0.11.8...0.11.9
 [0.11.8]: https://github.com/igraph/python-igraph/compare/0.11.7...0.11.8
 [0.11.7]: https://github.com/igraph/python-igraph/compare/0.11.6...0.11.7
 [0.11.6]: https://github.com/igraph/python-igraph/compare/0.11.5...0.11.6
