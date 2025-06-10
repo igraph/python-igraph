@@ -7,6 +7,7 @@
 - Dropped support for Python 3.8 as it has now reached its end of life.
 
 - The C core of igraph was updated to version 0.10.15.
+
 - Added `Graph.simple_cycles()` to find simple cycles in the graph.
 
 ## [0.11.8] - 2024-10-25
@@ -44,30 +45,30 @@
 
 ### Added
 
- - Added `Graph.Hypercube()` for creating n-dimensional hypercube graphs.
+- Added `Graph.Hypercube()` for creating n-dimensional hypercube graphs.
 
- - Added `Graph.Chung_Lu()` for sampling from the Chung-Lu model as well as
+- Added `Graph.Chung_Lu()` for sampling from the Chung-Lu model as well as
    several related models.
 
- - Added `Graph.is_complete()` to test if there is a connection between all
+- Added `Graph.is_complete()` to test if there is a connection between all
    distinct pairs of vertices.
 
- - Added `Graph.is_clique()` to test if a set of vertices forms a clique.
+- Added `Graph.is_clique()` to test if a set of vertices forms a clique.
 
- - Added `Graph.is_independent_vertex_set()` to test if some vertices form an
+- Added `Graph.is_independent_vertex_set()` to test if some vertices form an
    independent set.
 
- - Added `Graph.mean_degree()` for a convenient way to compute the average
+- Added `Graph.mean_degree()` for a convenient way to compute the average
    degree of a graph.
 
 ### Changed
 
- - The C core of igraph was updated to version 0.10.13.
+- The C core of igraph was updated to version 0.10.13.
 
- - `Graph.rewire()` now attempts to perform edge swaps 10 times the number of
+- `Graph.rewire()` now attempts to perform edge swaps 10 times the number of
    edges by default.
 
- - Error messages issued when an attribute is not found now mention the name
+- Error messages issued when an attribute is not found now mention the name
    and type of that attribute.
 
 ## [0.11.5] - 2024-05-07
@@ -88,18 +89,18 @@
 
 - Deprecated `PyCObject` API calls in the C code were replaced by calls to
   `PyCapsule`, thanks to @DavidRConnell in
-  https://github.com/igraph/python-igraph/pull/763
+  <https://github.com/igraph/python-igraph/pull/763>
 
 - `get_shortest_path()` documentation was clarified by @JDPowell648 in
-  https://github.com/igraph/python-igraph/pull/764
+  <https://github.com/igraph/python-igraph/pull/764>
 
 - It is now possible to link to an existing igraph C core on MSYS2, thanks to
-  @Kreijstal in https://github.com/igraph/python-igraph/pull/770
+  @Kreijstal in <https://github.com/igraph/python-igraph/pull/770>
 
 ### Fixed
 
 - Bugfix in the NetworkX graph conversion code by @rmmaf in
-  https://github.com/igraph/python-igraph/pull/767
+  <https://github.com/igraph/python-igraph/pull/767>
 
 ## [0.11.4]
 
@@ -720,7 +721,7 @@
 ## [0.8.3]
 
 This is the last released version of `python-igraph` without a changelog file.
-Please refer to the commit logs at https://github.com/igraph/python-igraph for
+Please refer to the commit logs at <https://github.com/igraph/python-igraph> for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
