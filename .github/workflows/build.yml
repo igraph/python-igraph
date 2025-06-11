@@ -94,7 +94,7 @@ jobs:
     runs-on: macos-latest
     env:
       LLVM_VERSION: "14.0.5"
-      MACOSX_DEPLOYMENT_TARGET: "10.9"
+      MACOSX_DEPLOYMENT_TARGET: "10.15"
     strategy:
       matrix:
         include:
@@ -126,8 +126,7 @@ jobs:
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' || steps.cache-c-deps.outputs.cache-hit != 'true' # Only needed when building the C core or libomp
-        run:
-          brew install ninja autoconf automake libtool
+        run: brew install ninja autoconf automake libtool
 
       - name: Install OpenMP library
         if: steps.cache-c-deps.outputs.cache-hit != 'true'
@@ -167,16 +166,15 @@ jobs:
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.12.1'
+          python-version: "3.12.1"
 
       - name: Install OS dependencies
-        run:
-          sudo apt install ninja-build cmake flex bison
+        run: sudo apt install ninja-build cmake flex bison
 
       - uses: mymindstorm/setup-emsdk@v14
         with:
-          version: '3.1.58'
-          actions-cache-folder: 'emsdk-cache'
+          version: "3.1.58"
+          actions-cache-folder: "emsdk-cache"
 
       - name: Build wheel
         run: |
@@ -204,12 +202,12 @@ jobs:
           - cmake_arch: Win32
             wheel_arch: win32
             vcpkg_arch: x86
-            os: windows-2019
+            os: windows-2022
             test_extra: test
           - cmake_arch: x64
             wheel_arch: win_amd64
             vcpkg_arch: x64
-            os: windows-2019
+            os: windows-2022
             test_extra: test
           - cmake_arch: ARM64
             wheel_arch: win_arm64
@@ -253,7 +251,7 @@ jobs:
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
           CIBW_ENABLE: pypy
-          CIBW_TEST_COMMAND: "cd /d {project} && pip install --prefer-binary \".[${{ matrix.test_extra }}]\" && python -m pytest tests"
+          CIBW_TEST_COMMAND: 'cd /d {project} && pip install --prefer-binary ".[${{ matrix.test_extra }}]" && python -m pytest tests'
           # Skip tests for Python 3.10 onwards because SciPy does not have
           # 32-bit wheels for Windows any more
           CIBW_TEST_SKIP: "cp310-win32 cp311-win32 cp312-win32 cp313-win32"
@@ -287,13 +285,12 @@ jobs:
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
-        run:
-          sudo apt install ninja-build cmake flex bison
+        run: sudo apt install ninja-build cmake flex bison
 
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.9'
+          python-version: "3.9"
 
       - name: Build sdist
         run: |
@@ -335,13 +332,12 @@ jobs:
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
-        run:
-          sudo apt install ninja-build cmake flex bison
+        run: sudo apt install ninja-build cmake flex bison
 
       - uses: actions/setup-python@v5
         name: Install Python
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install test dependencies
         run: |
