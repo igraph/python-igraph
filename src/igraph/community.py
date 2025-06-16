@@ -1,8 +1,8 @@
-from igraph._igraph import GraphBase
-from igraph.clustering import VertexDendrogram, VertexClustering
-from igraph.utils import deprecated
-
 from typing import List, Sequence, Tuple
+
+from igraph._igraph import GraphBase
+from igraph.clustering import VertexClustering, VertexDendrogram
+from igraph.utils import deprecated
 
 
 def _community_fastgreedy(graph, weights=None):
@@ -24,9 +24,7 @@ def _community_fastgreedy(graph, weights=None):
     """
     merges, qs = GraphBase.community_fastgreedy(graph, weights)
     optimal_count = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
-    return VertexDendrogram(
-        graph, merges, optimal_count, modularity_params={"weights": weights}
-    )
+    return VertexDendrogram(graph, merges, optimal_count, modularity_params={"weights": weights})
 
 
 def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10):
@@ -53,9 +51,7 @@ def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10)
       called C{codelength} that stores the code length determined by the
       algorithm.
     """
-    membership, codelength = GraphBase.community_infomap(
-        graph, edge_weights, vertex_weights, trials
-    )
+    membership, codelength = GraphBase.community_infomap(graph, edge_weights, vertex_weights, trials)
     return VertexClustering(
         graph,
         membership,
@@ -64,9 +60,7 @@ def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10)
     )
 
 
-def _community_leading_eigenvector(
-    graph, clusters=None, weights=None, arpack_options=None
-):
+def _community_leading_eigenvector(graph, clusters=None, weights=None, arpack_options=None):
     """Newman's leading eigenvector method for detecting community structure.
 
     This is the proper implementation of the recursive, divisive algorithm:
@@ -185,21 +179,13 @@ def _community_multilevel(graph, weights=None, return_levels=False, resolution=1
 
     modularity_params = {"weights": weights, "resolution": resolution}
     if return_levels:
-        levels, qs = GraphBase.community_multilevel(
-            graph, weights, return_levels=True, resolution=resolution
-        )
+        levels, qs = GraphBase.community_multilevel(graph, weights, return_levels=True, resolution=resolution)
         result = []
         for level, q in zip(levels, qs):
-            result.append(
-                VertexClustering(graph, level, q, modularity_params=modularity_params)
-            )
+            result.append(VertexClustering(graph, level, q, modularity_params=modularity_params))
     else:
-        membership = GraphBase.community_multilevel(
-            graph, weights, return_levels=False, resolution=resolution
-        )
-        result = VertexClustering(
-            graph, membership, modularity_params=modularity_params
-        )
+        membership = GraphBase.community_multilevel(graph, weights, return_levels=False, resolution=resolution)
+        result = VertexClustering(graph, membership, modularity_params=modularity_params)
 
     return result
 
@@ -217,9 +203,7 @@ def _community_optimal_modularity(graph, *args, **kwds):
 
     @return: the calculated membership vector and the corresponding
       modularity in a tuple."""
-    membership, modularity = GraphBase.community_optimal_modularity(
-        graph, *args, **kwds
-    )
+    membership, modularity = GraphBase.community_optimal_modularity(graph, *args, **kwds)
     return VertexClustering(graph, membership, modularity)
 
 
@@ -252,15 +236,11 @@ def _community_edge_betweenness(graph, clusters=None, directed=True, weights=Non
     merges, qs = GraphBase.community_edge_betweenness(graph, directed, weights)
     if clusters is None:
         if qs is not None:
-            clusters = _optimal_cluster_count_from_merges_and_modularity(
-                graph, merges, qs
-            )
+            clusters = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
         else:
             clusters = 1
 
-    return VertexDendrogram(
-        graph, merges, clusters, modularity_params={"weights": weights}
-    )
+    return VertexDendrogram(graph, merges, clusters, modularity_params={"weights": weights})
 
 
 def _community_spinglass(graph, *args, **kwds):
@@ -340,9 +320,7 @@ def _community_walktrap(graph, weights=None, steps=4):
     """
     merges, qs = GraphBase.community_walktrap(graph, weights, steps)
     optimal_count = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
-    return VertexDendrogram(
-        graph, merges, optimal_count, modularity_params={"weights": weights}
-    )
+    return VertexDendrogram(graph, merges, optimal_count, modularity_params={"weights": weights})
 
 
 def _k_core(graph, *args):
@@ -392,7 +370,7 @@ def _community_leiden(
     initial_membership=None,
     n_iterations=2,
     node_weights=None,
-    **kwds
+    **kwds,
 ):
     """Finds the community structure of the graph using the Leiden
     algorithm of Traag, van Eck & Waltman.
@@ -430,10 +408,7 @@ def _community_leiden(
         raise ValueError('objective_function must be "CPM" or "modularity".')
 
     if "resolution_parameter" in kwds:
-        deprecated(
-            "resolution_parameter keyword argument is deprecated, use "
-            "resolution=... instead"
-        )
+        deprecated("resolution_parameter keyword argument is deprecated, use " "resolution=... instead")
         resolution = kwds.pop("resolution_parameter")
 
     if kwds:
@@ -456,9 +431,67 @@ def _community_leiden(
     if weights is not None:
         modularity_params["weights"] = weights
 
-    return VertexClustering(
-        graph, membership, params=params, modularity_params=modularity_params
+    return VertexClustering(graph, membership, params=params, modularity_params=modularity_params)
+
+
+def _community_voronoi(graph, lengths=None, weights=None, mode="all", radius=None):
+    """Finds communities using Voronoi partitioning.
+
+    This function finds communities using a Voronoi partitioning of vertices based
+    on the given edge lengths divided by the edge clustering coefficient
+    (L{igraph.Graph.ecc}). The generator vertices are chosen to be those with the
+    largest local relative density within a radius, with the local relative
+    density of a vertex defined as C{s * m / (m + k)}, where C{s} is the strength
+    of the vertex, C{m} is the number of edges within the vertex's first order
+    neighborhood, while C{k} is the number of edges with only one endpoint within
+    this neighborhood.
+
+    B{References}
+
+      - Deritei et al., Community detection by graph Voronoi diagrams,
+        I{New Journal of Physics} 16, 063007 (2014).
+        U{https://doi.org/10.1088/1367-2630/16/6/063007}.
+      - Molnár et al., Community Detection in Directed Weighted Networks using
+        Voronoi Partitioning, I{Scientific Reports} 14, 8124 (2024).
+        U{https://doi.org/10.1038/s41598-024-58624-4}.
+
+    @param lengths: edge lengths, or C{None} to consider all edges as having
+      unit length. Voronoi partitioning will use edge lengths equal to
+      lengths / ECC where ECC is the edge clustering coefficient.
+    @param weights: edge weights, or C{None} to consider all edges as having
+      unit weight. Weights are used when selecting generator points, as well
+      as for computing modularity.
+    @param mode: if C{"out"}, distances from generator points to all other
+      nodes are considered. If C{"in"}, the reverse distances are used.
+      If C{"all"}, edge directions are ignored. This parameter is ignored
+      for undirected graphs.
+    @param radius: the radius/resolution to use when selecting generator points.
+      The larger this value, the fewer partitions there will be. Pass C{None}
+      to automatically select the radius that maximizes modularity.
+    @return: an appropriate L{VertexClustering} object with extra attributes
+      called C{generators} (the generator vertices).
+    """
+    # Convert mode string to proper enum value to avoid deprecation warning
+    if isinstance(mode, str):
+        mode_map = {"out": "out", "in": "in", "all": "all", "total": "all"}  # alias
+        if mode.lower() in mode_map:
+            mode = mode_map[mode.lower()]
+        else:
+            raise ValueError(f"Invalid mode '{mode}'. Must be one of: out, in, all")
+
+    membership, generators, modularity = GraphBase.community_voronoi(graph, lengths, weights, mode, radius)
+
+    params = {"generators": generators}
+    modularity_params = {}
+    if weights is not None:
+        modularity_params["weights"] = weights
+
+    clustering = VertexClustering(
+        graph, membership, modularity=modularity, params=params, modularity_params=modularity_params
     )
+
+    clustering.generators = generators
+    return clustering
 
 
 def _modularity(self, membership, weights=None, resolution=1, directed=True):
@@ -499,9 +532,7 @@ def _modularity(self, membership, weights=None, resolution=1, directed=True):
     if isinstance(membership, VertexClustering):
         if membership.graph != self:
             raise ValueError("clustering object belongs to another graph")
-        return GraphBase.modularity(
-            self, membership.membership, weights, resolution, directed
-        )
+        return GraphBase.modularity(self, membership.membership, weights, resolution, directed)
     else:
         return GraphBase.modularity(self, membership, weights, resolution, directed)
 

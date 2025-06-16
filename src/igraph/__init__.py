@@ -2,7 +2,6 @@
 igraph library.
 """
 
-
 __license__ = """
 Copyright (C) 2006- The igraph development team
 
@@ -22,6 +21,9 @@ Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 """
 
+import os
+import sys
+
 from igraph._igraph import (
     ADJ_DIRECTED,
     ADJ_LOWER,
@@ -31,22 +33,16 @@ from igraph._igraph import (
     ADJ_UNDIRECTED,
     ADJ_UPPER,
     ALL,
-    ARPACKOptions,
-    BFSIter,
     BLISS_F,
     BLISS_FL,
     BLISS_FLM,
     BLISS_FM,
     BLISS_FS,
     BLISS_FSM,
-    DFSIter,
-    Edge,
     GET_ADJACENCY_BOTH,
     GET_ADJACENCY_LOWER,
     GET_ADJACENCY_UPPER,
-    GraphBase,
     IN,
-    InternalError,
     OUT,
     REWIRING_SIMPLE,
     REWIRING_SIMPLE_LOOPS,
@@ -60,9 +56,18 @@ from igraph._igraph import (
     TREE_IN,
     TREE_OUT,
     TREE_UNDIRECTED,
-    Vertex,
     WEAK,
-    arpack_options as default_arpack_options,
+    ARPACKOptions,
+    BFSIter,
+    DFSIter,
+    Edge,
+    GraphBase,
+    InternalError,
+    Vertex,
+    __igraph_version__,
+)
+from igraph._igraph import arpack_options as default_arpack_options
+from igraph._igraph import (
     community_to_membership,
     convex_hull,
     is_bigraphical,
@@ -73,7 +78,6 @@ from igraph._igraph import (
     set_random_number_generator,
     set_status_handler,
     umap_compute_weights,
-    __igraph_version__,
 )
 from igraph.adjacency import (
     _get_adjacency,
@@ -82,54 +86,54 @@ from igraph.adjacency import (
     _get_biadjacency,
     _get_inclist,
 )
-from igraph.automorphisms import (
-    _count_automorphisms_vf2,
-    _get_automorphisms_vf2,
-)
+from igraph.automorphisms import _count_automorphisms_vf2, _get_automorphisms_vf2
 from igraph.basic import (
     _add_edge,
     _add_edges,
     _add_vertex,
     _add_vertices,
-    _delete_edges,
-    _clear,
     _as_directed,
     _as_undirected,
+    _clear,
+    _delete_edges,
 )
 from igraph.bipartite import (
-    _maximum_bipartite_matching,
     _bipartite_projection,
     _bipartite_projection_size,
-)
-from igraph.community import (
-    _community_fastgreedy,
-    _community_infomap,
-    _community_leading_eigenvector,
-    _community_label_propagation,
-    _community_multilevel,
-    _community_optimal_modularity,
-    _community_edge_betweenness,
-    _community_spinglass,
-    _community_walktrap,
-    _k_core,
-    _community_leiden,
-    _modularity,
+    _maximum_bipartite_matching,
 )
 from igraph.clustering import (
     Clustering,
-    VertexClustering,
-    Dendrogram,
-    VertexDendrogram,
-    Cover,
-    VertexCover,
     CohesiveBlocks,
-    compare_communities,
-    split_join_distance,
+    Cover,
+    Dendrogram,
+    VertexClustering,
+    VertexCover,
+    VertexDendrogram,
     _biconnected_components,
+    _clusters,
     _cohesive_blocks,
     _connected_components,
-    _clusters,
+    compare_communities,
+    split_join_distance,
 )
+from igraph.community import (
+    _community_edge_betweenness,
+    _community_fastgreedy,
+    _community_infomap,
+    _community_label_propagation,
+    _community_leading_eigenvector,
+    _community_leiden,
+    _community_multilevel,
+    _community_optimal_modularity,
+    _community_spinglass,
+    _community_voronoi,
+    _community_walktrap,
+    _k_core,
+    _modularity,
+)
+from igraph.configuration import Configuration
+from igraph.configuration import init as init_configuration
 from igraph.cut import (
     Cut,
     Flow,
@@ -140,7 +144,7 @@ from igraph.cut import (
     _mincut,
     _st_mincut,
 )
-from igraph.configuration import Configuration, init as init_configuration
+from igraph.datatypes import DyadCensus, Matrix, TriadCensus, UniqueIdGenerator
 from igraph.drawing import (
     BoundingBox,
     CairoGraphDrawer,
@@ -152,69 +156,32 @@ from igraph.drawing import (
     plot,
 )
 from igraph.drawing.colors import (
-    Palette,
-    GradientPalette,
     AdvancedGradientPalette,
-    RainbowPalette,
-    PrecalculatedPalette,
     ClusterColoringPalette,
+    GradientPalette,
+    Palette,
+    PrecalculatedPalette,
+    RainbowPalette,
     color_name_to_rgb,
     color_name_to_rgba,
-    hsv_to_rgb,
-    hsva_to_rgba,
     hsl_to_rgb,
     hsla_to_rgba,
-    rgb_to_hsv,
-    rgba_to_hsva,
-    rgb_to_hsl,
-    rgba_to_hsla,
-    palettes,
+    hsv_to_rgb,
+    hsva_to_rgba,
     known_colors,
+    palettes,
+    rgb_to_hsl,
+    rgb_to_hsv,
+    rgba_to_hsla,
+    rgba_to_hsva,
 )
 from igraph.drawing.graph import __plot__ as _graph_plot
 from igraph.drawing.utils import autocurve
-from igraph.datatypes import Matrix, DyadCensus, TriadCensus, UniqueIdGenerator
 from igraph.formula import construct_graph_from_formula
 from igraph.io import _format_mapping
-from igraph.io.files import (
-    _construct_graph_from_graphmlz_file,
-    _construct_graph_from_dimacs_file,
-    _construct_graph_from_pickle_file,
-    _construct_graph_from_picklez_file,
-    _construct_graph_from_adjacency_file,
-    _construct_graph_from_file,
-    _write_graph_to_adjacency_file,
-    _write_graph_to_dimacs_file,
-    _write_graph_to_graphmlz_file,
-    _write_graph_to_pickle_file,
-    _write_graph_to_picklez_file,
-    _write_graph_to_file,
-)
-from igraph.io.objects import (
-    _construct_graph_from_dict_list,
-    _export_graph_to_dict_list,
-    _construct_graph_from_tuple_list,
-    _export_graph_to_tuple_list,
-    _construct_graph_from_list_dict,
-    _export_graph_to_list_dict,
-    _construct_graph_from_dict_dict,
-    _export_graph_to_dict_dict,
-    _construct_graph_from_dataframe,
-    _export_vertex_dataframe,
-    _export_edge_dataframe,
-)
 from igraph.io.adjacency import (
     _construct_graph_from_adjacency,
     _construct_graph_from_weighted_adjacency,
-)
-from igraph.io.libraries import (
-    _construct_graph_from_networkx,
-    _export_graph_to_networkx,
-    _construct_graph_from_graph_tool,
-    _export_graph_to_graph_tool,
-)
-from igraph.io.random import (
-    _construct_random_geometric_graph,
 )
 from igraph.io.bipartite import (
     _construct_bipartite_graph,
@@ -222,23 +189,54 @@ from igraph.io.bipartite import (
     _construct_full_bipartite_graph,
     _construct_random_bipartite_graph,
 )
+from igraph.io.files import (
+    _construct_graph_from_adjacency_file,
+    _construct_graph_from_dimacs_file,
+    _construct_graph_from_file,
+    _construct_graph_from_graphmlz_file,
+    _construct_graph_from_pickle_file,
+    _construct_graph_from_picklez_file,
+    _write_graph_to_adjacency_file,
+    _write_graph_to_dimacs_file,
+    _write_graph_to_file,
+    _write_graph_to_graphmlz_file,
+    _write_graph_to_pickle_file,
+    _write_graph_to_picklez_file,
+)
 from igraph.io.images import _write_graph_to_svg
+from igraph.io.libraries import (
+    _construct_graph_from_graph_tool,
+    _construct_graph_from_networkx,
+    _export_graph_to_graph_tool,
+    _export_graph_to_networkx,
+)
+from igraph.io.objects import (
+    _construct_graph_from_dataframe,
+    _construct_graph_from_dict_dict,
+    _construct_graph_from_dict_list,
+    _construct_graph_from_list_dict,
+    _construct_graph_from_tuple_list,
+    _export_edge_dataframe,
+    _export_graph_to_dict_dict,
+    _export_graph_to_dict_list,
+    _export_graph_to_list_dict,
+    _export_graph_to_tuple_list,
+    _export_vertex_dataframe,
+)
+from igraph.io.random import _construct_random_geometric_graph
 from igraph.layout import (
     Layout,
+    _3d_version_for,
     _layout,
     _layout_auto,
-    _layout_sugiyama,
-    _layout_method_wrapper,
-    _3d_version_for,
     _layout_mapping,
+    _layout_method_wrapper,
+    _layout_sugiyama,
 )
 from igraph.matching import Matching
-from igraph.operators import (
-    disjoint_union,
-    union,
-    intersection,
-    operator_method_registry as _operator_method_registry,
-)
+from igraph.operators import disjoint_union, intersection
+from igraph.operators import operator_method_registry as _operator_method_registry
+from igraph.operators import union
 from igraph.seq import EdgeSeq, VertexSeq, _add_proxy_methods
 from igraph.statistics import (
     FittedPowerLaw,
@@ -247,26 +245,19 @@ from igraph.statistics import (
     mean,
     median,
     percentile,
-    quantile,
     power_law_fit,
+    quantile,
 )
 from igraph.structural import (
+    _degree_distribution,
     _indegree,
     _outdegree,
-    _degree_distribution,
     _pagerank,
     _shortest_paths,
 )
 from igraph.summary import GraphSummary, summary
-from igraph.utils import (
-    deprecated,
-    numpy_to_contiguous_memoryview,
-    rescale,
-)
+from igraph.utils import deprecated, numpy_to_contiguous_memoryview, rescale
 from igraph.version import __version__, __version_info__
-
-import os
-import sys
 
 
 class Graph(GraphBase):
@@ -424,7 +415,7 @@ class Graph(GraphBase):
         # When 'edges' is a NumPy array or matrix, convert it into a memoryview
         # as the lower-level C API works with memoryviews only
         try:
-            from numpy import ndarray, matrix
+            from numpy import matrix, ndarray
 
             if isinstance(edges, (ndarray, matrix)):
                 edges = numpy_to_contiguous_memoryview(edges)
@@ -659,6 +650,7 @@ class Graph(GraphBase):
     community_optimal_modularity = _community_optimal_modularity
     community_edge_betweenness = _community_edge_betweenness
     community_spinglass = _community_spinglass
+    community_voronoi = _community_voronoi
     community_walktrap = _community_walktrap
     k_core = _k_core
     community_leiden = _community_leiden
@@ -949,18 +941,12 @@ class Graph(GraphBase):
 
     def are_connected(self, *args, **kwds):
         """Deprecated alias to L{Graph.are_adjacent()}."""
-        deprecated(
-            "Graph.are_connected() is deprecated; use Graph.are_adjacent() "
-            "instead"
-        )
+        deprecated("Graph.are_connected() is deprecated; use Graph.are_adjacent() " "instead")
         return self.are_adjacent(*args, **kwds)
 
     def get_incidence(self, *args, **kwds):
         """Deprecated alias to L{Graph.get_biadjacency()}."""
-        deprecated(
-            "Graph.get_incidence() is deprecated; use Graph.get_biadjacency() "
-            "instead"
-        )
+        deprecated("Graph.get_incidence() is deprecated; use Graph.get_biadjacency() " "instead")
         return self.get_biadjacency(*args, **kwds)
 
 
@@ -991,9 +977,7 @@ for name in dir(Graph):
 
 ##############################################################
 # Adding aliases for the 3D versions of the layout methods
-Graph.layout_fruchterman_reingold_3d = _3d_version_for(
-    Graph.layout_fruchterman_reingold
-)
+Graph.layout_fruchterman_reingold_3d = _3d_version_for(Graph.layout_fruchterman_reingold)
 Graph.layout_kamada_kawai_3d = _3d_version_for(Graph.layout_kamada_kawai)
 Graph.layout_random_3d = _3d_version_for(Graph.layout_random)
 Graph.layout_grid_3d = _3d_version_for(Graph.layout_grid)
@@ -1101,6 +1085,7 @@ del (
     _community_optimal_modularity,
     _community_edge_betweenness,
     _community_spinglass,
+    _community_voronoi,
     _community_walktrap,
     _k_core,
     _community_leiden,

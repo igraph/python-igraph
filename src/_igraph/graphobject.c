@@ -13895,6 +13895,130 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
   }
 }
 
+
+/**********************************************************************
+ * Other methods                                                      *
+ **********************************************************************/
+
+/**
+ * Voronoi clustering
+ */
+PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
+                                               PyObject *args, PyObject *kwds) {
+    static char *kwlist[] = {"lengths", "weights", "mode", "radius", NULL};
+    PyObject *lengths_o = Py_None, *weights_o = Py_None;
+    PyObject *mode_o = Py_None;
+    PyObject *radius_o = Py_None;
+    igraph_vector_t lengths_v, weights_v;
+    igraph_vector_int_t membership_v, generators_v;
+    igraph_neimode_t mode = IGRAPH_ALL;
+    igraph_real_t radius = -1.0;  /* negative means auto-optimize */
+    igraph_real_t modularity;
+    PyObject *membership_o, *generators_o, *result_o;
+    igraph_bool_t return_modularity = 1;
+    igraph_bool_t lengths_allocated = 0, weights_allocated = 0;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
+                                     &lengths_o, &weights_o, &mode_o, &radius_o))
+        return NULL;
+
+    /* Handle mode parameter */
+    if (mode_o != Py_None) {
+        if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+            return NULL;
+    }
+
+    /* Handle radius parameter */
+    if (radius_o != Py_None) {
+        if (PyFloat_Check(radius_o)) {
+            radius = PyFloat_AsDouble(radius_o);
+        } else if (PyLong_Check(radius_o)) {
+            radius = PyLong_AsDouble(radius_o);
+        } else {
+            PyErr_SetString(PyExc_TypeError, "radius must be a number or None");
+            return NULL;
+        }
+        if (PyErr_Occurred()) return NULL;
+    }
+
+    /* Handle lengths parameter */
+    if (lengths_o != Py_None) {
+        if (igraphmodule_PyObject_to_vector_t(lengths_o, &lengths_v, 1)) {
+            return NULL;
+        }
+        lengths_allocated = 1;
+    }
+
+    /* Handle weights parameter */
+    if (weights_o != Py_None) {
+        if (igraphmodule_PyObject_to_vector_t(weights_o, &weights_v, 1)) {
+            if (lengths_allocated) {
+                igraph_vector_destroy(&lengths_v);
+            }
+            return NULL;
+        }
+        weights_allocated = 1;
+    }
+
+    /* Initialize result vectors */
+    if (igraph_vector_int_init(&membership_v, 0)) {
+        if (lengths_allocated) igraph_vector_destroy(&lengths_v);
+        if (weights_allocated) igraph_vector_destroy(&weights_v);
+        igraphmodule_handle_igraph_error();
+        return NULL;
+    }
+
+    if (igraph_vector_int_init(&generators_v, 0)) {
+        if (lengths_allocated) igraph_vector_destroy(&lengths_v);
+        if (weights_allocated) igraph_vector_destroy(&weights_v);
+        igraph_vector_int_destroy(&membership_v);
+        igraphmodule_handle_igraph_error();
+        return NULL;
+    }
+
+    /* Call the C function - pass NULL for None parameters */
+    if (igraph_community_voronoi(&self->g, &membership_v, &generators_v,
+                                return_modularity ? &modularity : NULL,
+                                lengths_allocated ? &lengths_v : NULL,
+                                weights_allocated ? &weights_v : NULL,
+                                mode, radius)) {
+        if (lengths_allocated) igraph_vector_destroy(&lengths_v);
+        if (weights_allocated) igraph_vector_destroy(&weights_v);
+        igraph_vector_int_destroy(&membership_v);
+        igraph_vector_int_destroy(&generators_v);
+        igraphmodule_handle_igraph_error();
+        return NULL;
+    }
+
+    /* Clean up input vectors */
+    if (lengths_allocated) igraph_vector_destroy(&lengths_v);
+    if (weights_allocated) igraph_vector_destroy(&weights_v);
+
+    /* Convert results to Python objects */
+    membership_o = igraphmodule_vector_int_t_to_PyList(&membership_v);
+    igraph_vector_int_destroy(&membership_v);
+    if (!membership_o) {
+        igraph_vector_int_destroy(&generators_v);
+        return NULL;
+    }
+
+    generators_o = igraphmodule_vector_int_t_to_PyList(&generators_v);
+    igraph_vector_int_destroy(&generators_v);
+    if (!generators_o) {
+        Py_DECREF(membership_o);
+        return NULL;
+    }
+
+    /* Return tuple with membership, generators, and modularity */
+    if (return_modularity) {
+        result_o = Py_BuildValue("(NNd)", membership_o, generators_o, (double)modularity);
+    } else {
+        result_o = Py_BuildValue("(NN)", membership_o, generators_o);
+    }
+
+    return result_o;
+}
+
 /**********************************************************************
  * Special internal methods that you won't need to mess around with   *
  **********************************************************************/
@@ -18628,6 +18752,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  current membership vector any more.\n"
    "@return: the community membership vector.\n"
   },
+  {"community_voronoi", (PyCFunction) igraphmodule_Graph_community_voronoi,
+     METH_VARARGS | METH_KEYWORDS, "Finds communities using Voronoi partitioning"},
   {"community_walktrap",
    (PyCFunction) igraphmodule_Graph_community_walktrap,
    METH_VARARGS | METH_KEYWORDS,
@@ -18693,6 +18819,46 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: a random walk that starts from the given vertex and has at most\n"
    "  the given length (shorter if the random walk got stuck).\n"
   },
+  
+  /****************/
+  /* OTHER METHODS */
+  /****************/{
+    "community_voronoi", 
+    (PyCFunction) igraphmodule_Graph_community_voronoi,
+    METH_VARARGS | METH_KEYWORDS,
+    "community_voronoi(lengths=None, weights=None, mode=\"all\", radius=None)\n\n"
+    "Finds communities using Voronoi partitioning.\n\n"
+    "This function finds communities using a Voronoi partitioning of vertices based\n"
+    "on the given edge lengths divided by the edge clustering coefficient.\n"
+    "The generator vertices are chosen to be those with the largest local relative\n"
+    "density within a radius, with the local relative density of a vertex defined as\n"
+    "s * m / (m + k), where s is the strength of the vertex, m is the number of\n"
+    "edges within the vertex's first order neighborhood, while k is the number of\n"
+    "edges with only one endpoint within this neighborhood.\n\n"
+    "@param lengths: edge lengths, or C{None} to consider all edges as having\n"
+    "  unit length. Voronoi partitioning will use edge lengths equal to\n"
+    "  lengths / ECC where ECC is the edge clustering coefficient.\n"
+    "@param weights: edge weights, or C{None} to consider all edges as having\n"
+    "  unit weight. Weights are used when selecting generator points, as well\n"
+    "  as for computing modularity.\n"
+    "@param mode: if C{\"out\"}, distances from generator points to all other\n"
+    "  nodes are considered. If C{\"in\"}, the reverse distances are used.\n"
+    "  If C{\"all\"}, edge directions are ignored. This parameter is ignored\n"
+    "  for undirected graphs.\n"
+    "@param radius: the radius/resolution to use when selecting generator points.\n"
+    "  The larger this value, the fewer partitions there will be. Pass C{None}\n"
+    "  to automatically select the radius that maximizes modularity.\n"
+    "@return: a tuple containing the membership vector, generator vertices,\n"
+    "  and modularity score.\n"
+    "@rtype: tuple\n\n"
+    "@newfield ref: Reference\n"
+    "@ref: Deritei et al., Community detection by graph Voronoi diagrams,\n"
+    "  New Journal of Physics 16, 063007 (2014)\n"
+    "  U{https://doi.org/10.1088/1367-2630/16/6/063007}\n"
+    "@ref: Molnár et al., Community Detection in Directed Weighted Networks\n"
+    "  using Voronoi Partitioning, Scientific Reports 14, 8124 (2024)\n"
+    "  U{https://doi.org/10.1038/s41598-024-58624-4}\n"
+},
 
   /**********************/
   /* INTERNAL FUNCTIONS */
