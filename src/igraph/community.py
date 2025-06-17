@@ -478,9 +478,26 @@ def _community_fluid_communities(graph, no_of_communities):
       greater than 0 and fewer than number of vertices in the graph.
     @return: an appropriate L{VertexClustering} object.
     """
+    # Validate input parameters
+    if no_of_communities <= 0:
+        raise ValueError("no_of_communities must be greater than 0")
+    
+    if no_of_communities >= graph.vcount():
+        raise ValueError("no_of_communities must be fewer than the number of vertices")
+    
+    # Check if graph is weighted (not supported)
+    if graph.is_weighted():
+        raise ValueError("Weighted graphs are not supported by the fluid communities algorithm")
+    
+    # Handle directed graphs - the algorithm works on undirected graphs
+    # but can accept directed graphs (they are treated as undirected)
     if graph.is_directed():
-        # The C implementation will show a warning, but we can handle it here
-        pass
+        import warnings
+        warnings.warn(
+            "Directed graphs are treated as undirected in the fluid communities algorithm",
+            UserWarning,
+            stacklevel=2
+        )
     
     membership = GraphBase.community_fluid_communities(graph, no_of_communities)
     return VertexClustering(graph, membership)
