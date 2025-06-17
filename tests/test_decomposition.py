@@ -12,8 +12,8 @@ from igraph import (
     UniqueIdGenerator,
     VertexClustering,
     compare_communities,
-    set_random_number_generator,
     split_join_distance,
+    set_random_number_generator,
 )
 
 
@@ -483,6 +483,61 @@ class CommunityTests(unittest.TestCase):
                 ok = True
                 break
         self.assertTrue(ok)
+        
+    def testVoronoi(self):
+        # Test 1: Two disconnected cliques - should find exactly 2 communities
+        g = Graph.Full(5) + Graph.Full(5)  # Two separate complete graphs
+        cl = g.community_voronoi()
+
+        # Should find exactly 2 communities
+        self.assertEqual(len(cl), 2)
+
+        # Vertices 0-4 should be in one community, vertices 5-9 in another
+        communities = [set(), set()]
+        for vertex, community in enumerate(cl.membership):
+            communities[community].add(vertex)
+
+        # One community should have vertices 0-4, the other should have 5-9
+        expected_communities = [{0, 1, 2, 3, 4}, {5, 6, 7, 8, 9}]
+        self.assertTrue(
+            communities == expected_communities or communities == expected_communities[::-1]  # Order might be swapped
+        )
+
+        # Test 2: Two cliques connected by a single bridge edge
+        g = Graph.Full(4) + Graph.Full(4)
+        g.add_edges([(0, 4)])  # Bridge connecting the two cliques
+
+        cl = g.community_voronoi()
+
+        # Should still find 2 communities (bridge is weak)
+        self.assertEqual(len(cl), 2)
+
+        # Check that vertices within each clique are in the same community
+        # Vertices 0,1,2,3 should be together, and 4,5,6,7 should be together
+        comm_0123 = {cl.membership[i] for i in [0, 1, 2, 3]}
+        comm_4567 = {cl.membership[i] for i in [4, 5, 6, 7]}
+
+        self.assertEqual(len(comm_0123), 1)  # All in same community
+        self.assertEqual(len(comm_4567), 1)  # All in same community
+        self.assertNotEqual(comm_0123, comm_4567)  # Different communities
+
+        # Test 3: Three disconnected triangles
+        g = Graph(9)
+        g.add_edges([(0, 1), (1, 2), (2, 0)])  # Triangle 1
+        g.add_edges([(3, 4), (4, 5), (5, 3)])  # Triangle 2
+        g.add_edges([(6, 7), (7, 8), (8, 6)])  # Triangle 3
+
+        cl = g.community_voronoi()
+
+        # Should find exactly 3 communities
+        self.assertEqual(len(cl), 3)
+
+        # Each triangle should be in its own community
+        triangles = [
+            {cl.membership[0], cl.membership[1], cl.membership[2]},
+            {cl.membership[3], cl.membership[4], cl.membership[5]},
+            {cl.membership[6], cl.membership[7], cl.membership[8]},
+        ]
 
     def testWalktrap(self):
         g = Graph.Full(5) + Graph.Full(5) + Graph.Full(5)
@@ -538,61 +593,6 @@ class CommunityTests(unittest.TestCase):
             initial_membership=[0] * G.vcount(),
         )
         self.assertMembershipsEqual(cl, [0, 1, 0, 0, 0, 1, 1, 1])
-
-    def testVoronoi(self):
-        # Test 1: Two disconnected cliques - should find exactly 2 communities
-        g = Graph.Full(5) + Graph.Full(5)  # Two separate complete graphs
-        cl = g.community_voronoi()
-
-        # Should find exactly 2 communities
-        self.assertEqual(len(cl), 2)
-
-        # Vertices 0-4 should be in one community, vertices 5-9 in another
-        communities = [set(), set()]
-        for vertex, community in enumerate(cl.membership):
-            communities[community].add(vertex)
-
-        # One community should have vertices 0-4, the other should have 5-9
-        expected_communities = [{0, 1, 2, 3, 4}, {5, 6, 7, 8, 9}]
-        self.assertTrue(
-            communities == expected_communities or communities == expected_communities[::-1]  # Order might be swapped
-        )
-
-        # Test 2: Two cliques connected by a single bridge edge
-        g = Graph.Full(4) + Graph.Full(4)
-        g.add_edges([(0, 4)])  # Bridge connecting the two cliques
-
-        cl = g.community_voronoi()
-
-        # Should still find 2 communities (bridge is weak)
-        self.assertEqual(len(cl), 2)
-
-        # Check that vertices within each clique are in the same community
-        # Vertices 0,1,2,3 should be together, and 4,5,6,7 should be together
-        comm_0123 = {cl.membership[i] for i in [0, 1, 2, 3]}
-        comm_4567 = {cl.membership[i] for i in [4, 5, 6, 7]}
-
-        self.assertEqual(len(comm_0123), 1)  # All in same community
-        self.assertEqual(len(comm_4567), 1)  # All in same community
-        self.assertNotEqual(comm_0123, comm_4567)  # Different communities
-
-        # Test 3: Three disconnected triangles
-        g = Graph(9)
-        g.add_edges([(0, 1), (1, 2), (2, 0)])  # Triangle 1
-        g.add_edges([(3, 4), (4, 5), (5, 3)])  # Triangle 2
-        g.add_edges([(6, 7), (7, 8), (8, 6)])  # Triangle 3
-
-        cl = g.community_voronoi()
-
-        # Should find exactly 3 communities
-        self.assertEqual(len(cl), 3)
-
-        # Each triangle should be in its own community
-        triangles = [
-            {cl.membership[0], cl.membership[1], cl.membership[2]},
-            {cl.membership[3], cl.membership[4], cl.membership[5]},
-            {cl.membership[6], cl.membership[7], cl.membership[8]},
-        ]
 
 
 class CohesiveBlocksTests(unittest.TestCase):
