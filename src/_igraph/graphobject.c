@@ -13896,6 +13896,46 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
 }
 
 /**********************************************************************
+ * Other methods                                                      *
+ **********************************************************************/
+
+ /**
+ * Fluid communities
+ */
+PyObject *igraphmodule_Graph_community_fluid_communities(igraphmodule_GraphObject *self,
+                                                        PyObject *args, PyObject *kwds) {
+    static char *kwlist[] = {"no_of_communities", NULL};
+    long no_of_communities_long;
+    igraph_integer_t no_of_communities;
+    igraph_vector_int_t membership;
+    PyObject *result;
+
+    // Parse the Python integer argument
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l", kwlist, &no_of_communities_long)) {
+        return NULL;
+    }
+    
+    // Convert to igraph_integer_t
+    no_of_communities = (igraph_integer_t) no_of_communities_long;
+
+    if (igraph_vector_int_init(&membership, 0)) {
+        igraphmodule_handle_igraph_error();
+        return NULL;
+    }
+
+    if (igraph_community_fluid_communities(&self->g, no_of_communities, &membership)) {
+        igraphmodule_handle_igraph_error();
+        igraph_vector_int_destroy(&membership);
+        return NULL;
+    }
+
+    result = igraphmodule_vector_int_t_to_PyList(&membership);
+    igraph_vector_int_destroy(&membership);
+
+    return result;
+}
+
+/**********************************************************************
  * Special internal methods that you won't need to mess around with   *
  **********************************************************************/
 
@@ -18693,6 +18733,31 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: a random walk that starts from the given vertex and has at most\n"
    "  the given length (shorter if the random walk got stuck).\n"
   },
+
+
+  /**********************/
+  /* OTHER METHODS */
+  /**********************/
+  {"community_fluid_communities", (PyCFunction) igraphmodule_Graph_community_fluid_communities,
+ METH_VARARGS | METH_KEYWORDS,
+ "community_fluid_communities(no_of_communities)\n--\n\n"
+ "Community detection based on fluids interacting on the graph.\n\n"
+ "The algorithm is based on the simple idea of several fluids interacting\n"
+ "in a non-homogeneous environment (the graph topology), expanding and\n"
+ "contracting based on their interaction and density. Weighted graphs are\n"
+ "not supported.\n\n"
+ "This function implements the community detection method described in:\n"
+ "Parés F, Gasulla DG, et. al. (2018) Fluid Communities: A Competitive,\n"
+ "Scalable and Diverse Community Detection Algorithm. In: Complex Networks\n"
+ "& Their Applications VI: Proceedings of Complex Networks 2017 (The Sixth\n"
+ "International Conference on Complex Networks and Their Applications),\n"
+ "Springer, vol 689, p 229. https://doi.org/10.1007/978-3-319-72150-7_19\n\n"
+ "@param no_of_communities: The number of communities to be found. Must be\n"
+ " greater than 0 and fewer than number of vertices in the graph.\n"
+ "@return: a list with the community membership of each vertex.\n"
+ "@note: The graph must be simple and connected. Edge directions will be\n"
+ " ignored if the graph is directed.\n"
+ "@note: Time complexity: O(|E|)\n"},
 
   /**********************/
   /* INTERNAL FUNCTIONS */

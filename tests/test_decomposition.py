@@ -280,6 +280,61 @@ class CommunityTests(unittest.TestCase):
         cl = g.community_leading_eigenvector(2)
         self.assertMembershipsEqual(cl, [0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
         self.assertAlmostEqual(cl.q, 0.4523, places=3)
+        
+    def testFluidCommunities(self):
+        # Test with a simple graph: two cliques connected by a single edge
+        g = Graph.Full(5) + Graph.Full(5)
+        g.add_edges([(0, 5)])
+        
+        # Test basic functionality - should find 2 communities
+        cl = g.community_fluid_communities(2)
+        self.assertEqual(len(set(cl.membership)), 2)
+        self.assertMembershipsEqual(cl, [0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
+        
+        # Test with 3 cliques
+        g = Graph.Full(4) + Graph.Full(4) + Graph.Full(4)
+        g += [(0, 4), (4, 8)]  # Connect the cliques
+        cl = g.community_fluid_communities(3)
+        self.assertEqual(len(set(cl.membership)), 3)
+        self.assertMembershipsEqual(cl, [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2])
+        
+        # Test error conditions
+        # Number of communities must be positive
+        with self.assertRaises(Exception):
+            g.community_fluid_communities(0)
+        
+        # Number of communities cannot exceed number of vertices
+        with self.assertRaises(Exception):
+            g.community_fluid_communities(g.vcount() + 1)
+        
+        # Test with disconnected graph (should raise error)
+        g_disconnected = Graph.Full(3) + Graph.Full(3)  # No connecting edge
+        with self.assertRaises(Exception):
+            g_disconnected.community_fluid_communities(2)
+        
+        # Test with single vertex (edge case)
+        g_single = Graph(1)
+        cl = g_single.community_fluid_communities(1)
+        self.assertEqual(cl.membership, [0])
+        
+        # Test with small connected graph
+        g_small = Graph([(0, 1), (1, 2), (2, 0)])  # Triangle
+        cl = g_small.community_fluid_communities(1)
+        self.assertEqual(len(set(cl.membership)), 1)
+        self.assertEqual(cl.membership, [0, 0, 0])
+        
+        # Test deterministic behavior on simple structure
+        # Note: Fluid communities can be non-deterministic due to randomization,
+        # but on very simple structures it should be consistent
+        g_path = Graph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)])
+        cl = g_path.community_fluid_communities(2)
+        self.assertEqual(len(set(cl.membership)), 2)
+        
+        # Test that it returns a VertexClustering object
+        g = Graph.Full(6)
+        cl = g.community_fluid_communities(2)
+        self.assertIsInstance(cl, VertexClustering)
+        self.assertEqual(len(cl.membership), g.vcount())
 
     def testInfomap(self):
         g = Graph.Famous("zachary")
