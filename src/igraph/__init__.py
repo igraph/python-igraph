@@ -2,6 +2,7 @@
 igraph library.
 """
 
+
 __license__ = """
 Copyright (C) 2006- The igraph development team
 
@@ -941,12 +942,18 @@ class Graph(GraphBase):
 
     def are_connected(self, *args, **kwds):
         """Deprecated alias to L{Graph.are_adjacent()}."""
-        deprecated("Graph.are_connected() is deprecated; use Graph.are_adjacent() " "instead")
+        deprecated(
+            "Graph.are_connected() is deprecated; use Graph.are_adjacent() "
+            "instead"
+        )
         return self.are_adjacent(*args, **kwds)
 
     def get_incidence(self, *args, **kwds):
         """Deprecated alias to L{Graph.get_biadjacency()}."""
-        deprecated("Graph.get_incidence() is deprecated; use Graph.get_biadjacency() " "instead")
+        deprecated(
+            "Graph.get_incidence() is deprecated; use Graph.get_biadjacency() "
+            "instead"
+        )
         return self.get_biadjacency(*args, **kwds)
 
 
@@ -977,7 +984,9 @@ for name in dir(Graph):
 
 ##############################################################
 # Adding aliases for the 3D versions of the layout methods
-Graph.layout_fruchterman_reingold_3d = _3d_version_for(Graph.layout_fruchterman_reingold)
+Graph.layout_fruchterman_reingold_3d = _3d_version_for(
+    Graph.layout_fruchterman_reingold
+)
 Graph.layout_kamada_kawai_3d = _3d_version_for(Graph.layout_kamada_kawai)
 Graph.layout_random_3d = _3d_version_for(Graph.layout_random)
 Graph.layout_grid_3d = _3d_version_for(Graph.layout_grid)

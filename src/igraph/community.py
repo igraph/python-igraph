@@ -24,7 +24,9 @@ def _community_fastgreedy(graph, weights=None):
     """
     merges, qs = GraphBase.community_fastgreedy(graph, weights)
     optimal_count = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
-    return VertexDendrogram(graph, merges, optimal_count, modularity_params={"weights": weights})
+    return VertexDendrogram(
+        graph, merges, optimal_count, modularity_params={"weights": weights}
+    )
 
 
 def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10):
@@ -51,7 +53,9 @@ def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10)
       called C{codelength} that stores the code length determined by the
       algorithm.
     """
-    membership, codelength = GraphBase.community_infomap(graph, edge_weights, vertex_weights, trials)
+    membership, codelength = GraphBase.community_infomap(
+        graph, edge_weights, vertex_weights, trials
+    )
     return VertexClustering(
         graph,
         membership,
@@ -60,7 +64,9 @@ def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10)
     )
 
 
-def _community_leading_eigenvector(graph, clusters=None, weights=None, arpack_options=None):
+def _community_leading_eigenvector(
+    graph, clusters=None, weights=None, arpack_options=None
+):
     """Newman's leading eigenvector method for detecting community structure.
 
     This is the proper implementation of the recursive, divisive algorithm:
@@ -179,13 +185,21 @@ def _community_multilevel(graph, weights=None, return_levels=False, resolution=1
 
     modularity_params = {"weights": weights, "resolution": resolution}
     if return_levels:
-        levels, qs = GraphBase.community_multilevel(graph, weights, return_levels=True, resolution=resolution)
+        levels, qs = GraphBase.community_multilevel(
+            graph, weights, return_levels=True, resolution=resolution
+        )
         result = []
         for level, q in zip(levels, qs):
-            result.append(VertexClustering(graph, level, q, modularity_params=modularity_params))
+            result.append(
+                VertexClustering(graph, level, q, modularity_params=modularity_params)
+            )
     else:
-        membership = GraphBase.community_multilevel(graph, weights, return_levels=False, resolution=resolution)
-        result = VertexClustering(graph, membership, modularity_params=modularity_params)
+        membership = GraphBase.community_multilevel(
+            graph, weights, return_levels=False, resolution=resolution
+        )
+        result = VertexClustering(
+            graph, membership, modularity_params=modularity_params
+        )
 
     return result
 
@@ -203,7 +217,9 @@ def _community_optimal_modularity(graph, *args, **kwds):
 
     @return: the calculated membership vector and the corresponding
       modularity in a tuple."""
-    membership, modularity = GraphBase.community_optimal_modularity(graph, *args, **kwds)
+    membership, modularity = GraphBase.community_optimal_modularity(
+        graph, *args, **kwds
+    )
     return VertexClustering(graph, membership, modularity)
 
 
@@ -236,11 +252,15 @@ def _community_edge_betweenness(graph, clusters=None, directed=True, weights=Non
     merges, qs = GraphBase.community_edge_betweenness(graph, directed, weights)
     if clusters is None:
         if qs is not None:
-            clusters = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
+            clusters = _optimal_cluster_count_from_merges_and_modularity(
+                graph, merges, qs
+            )
         else:
             clusters = 1
 
-    return VertexDendrogram(graph, merges, clusters, modularity_params={"weights": weights})
+    return VertexDendrogram(
+        graph, merges, clusters, modularity_params={"weights": weights}
+    )
 
 
 def _community_spinglass(graph, *args, **kwds):
@@ -320,7 +340,9 @@ def _community_walktrap(graph, weights=None, steps=4):
     """
     merges, qs = GraphBase.community_walktrap(graph, weights, steps)
     optimal_count = _optimal_cluster_count_from_merges_and_modularity(graph, merges, qs)
-    return VertexDendrogram(graph, merges, optimal_count, modularity_params={"weights": weights})
+    return VertexDendrogram(
+        graph, merges, optimal_count, modularity_params={"weights": weights}
+    )
 
 
 def _k_core(graph, *args):
@@ -370,7 +392,7 @@ def _community_leiden(
     initial_membership=None,
     n_iterations=2,
     node_weights=None,
-    **kwds,
+    **kwds
 ):
     """Finds the community structure of the graph using the Leiden
     algorithm of Traag, van Eck & Waltman.
@@ -408,7 +430,10 @@ def _community_leiden(
         raise ValueError('objective_function must be "CPM" or "modularity".')
 
     if "resolution_parameter" in kwds:
-        deprecated("resolution_parameter keyword argument is deprecated, use " "resolution=... instead")
+        deprecated(
+            "resolution_parameter keyword argument is deprecated, use "
+            "resolution=... instead"
+        )
         resolution = kwds.pop("resolution_parameter")
 
     if kwds:
@@ -431,7 +456,9 @@ def _community_leiden(
     if weights is not None:
         modularity_params["weights"] = weights
 
-    return VertexClustering(graph, membership, params=params, modularity_params=modularity_params)
+    return VertexClustering(
+        graph, membership, params=params, modularity_params=modularity_params
+    )
 
 
 def _community_voronoi(graph, lengths=None, weights=None, mode="all", radius=None):
@@ -492,7 +519,7 @@ def _community_voronoi(graph, lengths=None, weights=None, mode="all", radius=Non
 
     clustering.generators = generators
     return clustering
-
+  
 
 def _modularity(self, membership, weights=None, resolution=1, directed=True):
     """Calculates the modularity score of the graph with respect to a given
@@ -532,7 +559,9 @@ def _modularity(self, membership, weights=None, resolution=1, directed=True):
     if isinstance(membership, VertexClustering):
         if membership.graph != self:
             raise ValueError("clustering object belongs to another graph")
-        return GraphBase.modularity(self, membership.membership, weights, resolution, directed)
+        return GraphBase.modularity(
+            self, membership.membership, weights, resolution, directed
+        )
     else:
         return GraphBase.modularity(self, membership, weights, resolution, directed)
 

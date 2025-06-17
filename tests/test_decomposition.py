@@ -25,7 +25,9 @@ class SubgraphTests(unittest.TestCase):
         vs = [0, 1, 2, 10, 11, 12, 20, 21, 22]
         sg = g.subgraph(vs)
 
-        self.assertTrue(sg.isomorphic(Graph.Lattice([3, 3], circular=False, mutual=False)))
+        self.assertTrue(
+            sg.isomorphic(Graph.Lattice([3, 3], circular=False, mutual=False))
+        )
         self.assertTrue(sg.vs["id"] == vs)
 
     def testSubgraphEdges(self):
@@ -150,7 +152,12 @@ class VertexClusteringTests(unittest.TestCase):
 
         clg = cl.cluster_graph({"string": "concat", "int": max}, False)
         self.assertTrue(
-            sorted(clg.get_edgelist()) == [(0, 0)] * 3 + [(0, 2)] * 12 + [(1, 1)] * 3 + [(1, 2)] * 12 + [(2, 2)] * 6
+            sorted(clg.get_edgelist())
+            == [(0, 0)] * 3
+            + [(0, 2)] * 12
+            + [(1, 1)] * 3
+            + [(1, 2)] * 12
+            + [(2, 2)] * 6
         )
         self.assertTrue(not clg.is_directed())
         self.assertTrue(clg.vs["string"] == ["aaa", "bbc", "ccab"])
@@ -210,7 +217,9 @@ class CommunityTests(unittest.TestCase):
             observed = observed.membership
         if hasattr(expected, "membership"):
             expected = expected.membership
-        self.assertEqual(self.reindexMembership(expected), self.reindexMembership(observed))
+        self.assertEqual(
+            self.reindexMembership(expected), self.reindexMembership(observed)
+        )
 
     def testClauset(self):
         # Two cliques of size 5 with one connecting edge
@@ -279,7 +288,8 @@ class CommunityTests(unittest.TestCase):
         self.assertAlmostEqual(cl.q, 0.40203, places=3)
         self.assertMembershipsEqual(
             cl,
-            [1, 1, 1, 1, 2, 2, 2, 1, 0, 1, 2, 1, 1, 1, 0, 0, 2, 1, 0, 1, 0, 1] + [0] * 12,
+            [1, 1, 1, 1, 2, 2, 2, 1, 0, 1, 2, 1, 1, 1, 0, 0, 2, 1, 0, 1, 0, 1]
+            + [0] * 12,
         )
 
         # Smoke testing with vertex and edge weights
@@ -302,19 +312,25 @@ class CommunityTests(unittest.TestCase):
         self.assertMembershipsEqual(cl, [0, 0, 1, 1])
         cl = g.community_label_propagation(initial="initial", fixed=[1, 0, 0, 1])
         self.assertTrue(
-            cl.membership == [0, 0, 1, 1] or cl.membership == [0, 1, 1, 1] or cl.membership == [0, 0, 0, 1]
+            cl.membership == [0, 0, 1, 1]
+            or cl.membership == [0, 1, 1, 1]
+            or cl.membership == [0, 0, 0, 1]
         )
 
         g = Graph.GRG(100, 0.2)
         g.vs["initial"] = [
-            0 if i == 0 else 1 if i == 99 else 2 if i == 49 else random.randint(0, 50) for i in range(g.vcount())
+            0 if i == 0 else 1 if i == 99 else 2 if i == 49 else random.randint(0, 50)
+            for i in range(g.vcount())
         ]
         g.vs["dont_move"] = [i in (0, 49, 99) for i in range(g.vcount())]
         cl = g.community_label_propagation(initial="initial", fixed="dont_move")
 
         # igraph is free to reorder the clusters so only co-membership will be
         # preserved, hence the next assertion
-        self.assertTrue(cl.membership[0] != cl.membership[49] and cl.membership[49] != cl.membership[99])
+        self.assertTrue(
+            cl.membership[0] != cl.membership[49]
+            and cl.membership[49] != cl.membership[99]
+        )
         self.assertTrue(x >= 0 and x <= 5 for x in cl.membership)
 
     def testMultilevel(self):
@@ -354,14 +370,20 @@ class CommunityTests(unittest.TestCase):
 
         cls = g.community_multilevel(return_levels=True)
         self.assertTrue(len(cls) == 2)
-        self.assertMembershipsEqual(cls[0], [1, 1, 1, 0, 1, 1, 0, 0, 2, 2, 2, 3, 2, 3, 2, 2])
-        self.assertMembershipsEqual(cls[1], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1])
+        self.assertMembershipsEqual(
+            cls[0], [1, 1, 1, 0, 1, 1, 0, 0, 2, 2, 2, 3, 2, 3, 2, 2]
+        )
+        self.assertMembershipsEqual(
+            cls[1], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
+        )
         self.assertAlmostEqual(cls[0].q, 0.346301, places=5)
         self.assertAlmostEqual(cls[1].q, 0.392219, places=5)
 
         cls = g.community_multilevel()
         self.assertTrue(len(cls.membership) == g.vcount())
-        self.assertMembershipsEqual(cls, [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1])
+        self.assertMembershipsEqual(
+            cls, [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
+        )
         self.assertAlmostEqual(cls.q, 0.392219, places=5)
 
     def testOptimalModularity(self):
@@ -375,7 +397,9 @@ class CommunityTests(unittest.TestCase):
 
             ws = [i % 5 for i in range(g.ecount())]
             cl = g.community_optimal_modularity(weights=ws)
-            self.assertAlmostEqual(cl.q, g.modularity(cl.membership, weights=ws), places=7)
+            self.assertAlmostEqual(
+                cl.q, g.modularity(cl.membership, weights=ws), places=7
+            )
 
             g = Graph.Famous("zachary")
             cl = g.community_optimal_modularity()
@@ -423,7 +447,9 @@ class CommunityTests(unittest.TestCase):
 
             ws = [2 + (i % 3) for i in range(g.ecount())]
             cl = g.community_optimal_modularity(weights=ws)
-            self.assertAlmostEqual(cl.q, g.modularity(cl.membership, weights=ws), places=7)
+            self.assertAlmostEqual(
+                cl.q, g.modularity(cl.membership, weights=ws), places=7
+            )
 
         except NotImplementedError:
             # Well, meh
@@ -492,7 +518,9 @@ class CommunityTests(unittest.TestCase):
         random.seed(42)
         set_random_number_generator(random)
         # We don't find the optimal partition if we are greedy
-        cl = G.community_leiden("CPM", resolution=1, weights="weight", beta=0, n_iterations=-1)
+        cl = G.community_leiden(
+            "CPM", resolution=1, weights="weight", beta=0, n_iterations=-1
+        )
         self.assertMembershipsEqual(cl, [0, 0, 1, 1, 1, 2, 2, 2])
 
         random.seed(42)
@@ -570,9 +598,13 @@ class CommunityTests(unittest.TestCase):
 class CohesiveBlocksTests(unittest.TestCase):
     def genericTests(self, cbs):
         self.assertTrue(isinstance(cbs, CohesiveBlocks))
-        self.assertTrue(all(cbs.cohesion(i) == c for i, c in enumerate(cbs.cohesions())))
+        self.assertTrue(
+            all(cbs.cohesion(i) == c for i, c in enumerate(cbs.cohesions()))
+        )
         self.assertTrue(all(cbs.parent(i) == c for i, c in enumerate(cbs.parents())))
-        self.assertTrue(all(cbs.max_cohesion(i) == c for i, c in enumerate(cbs.max_cohesions())))
+        self.assertTrue(
+            all(cbs.max_cohesion(i) == c for i, c in enumerate(cbs.max_cohesions()))
+        )
 
     def testCohesiveBlocks1(self):
         # Taken from the igraph R manual
@@ -594,7 +626,9 @@ class CohesiveBlocksTests(unittest.TestCase):
             ],
         )
         self.assertEqual(cbs.cohesions(), [1, 2, 2, 4, 3, 3])
-        self.assertEqual(cbs.max_cohesions(), [4, 4, 4, 4, 4, 1, 3, 3, 3, 3, 2, 1, 3, 3, 3, 3, 2, 1])
+        self.assertEqual(
+            cbs.max_cohesions(), [4, 4, 4, 4, 4, 1, 3, 3, 3, 3, 2, 1, 3, 3, 3, 3, 2, 1]
+        )
         self.assertEqual(cbs.parents(), [None, 0, 0, 1, 2, 1])
 
     def testCohesiveBlocks2(self):
@@ -617,11 +651,15 @@ class CohesiveBlocksTests(unittest.TestCase):
             list(range(6, 16)),
             [6, 7, 10, 13],
         ]
-        observed_blocks = sorted(sorted(int(x) - 1 for x in g.vs[bl]["name"]) for bl in cbs)
+        observed_blocks = sorted(
+            sorted(int(x) - 1 for x in g.vs[bl]["name"]) for bl in cbs
+        )
         self.assertEqual(expected_blocks, observed_blocks)
         self.assertTrue(cbs.cohesions() == [1, 2, 2, 5, 3])
         self.assertTrue(cbs.parents() == [None, 0, 0, 1, 2])
-        self.assertTrue(sorted(cbs.hierarchy().get_edgelist()) == [(0, 1), (0, 2), (1, 3), (2, 4)])
+        self.assertTrue(
+            sorted(cbs.hierarchy().get_edgelist()) == [(0, 1), (0, 2), (1, 3), (2, 4)]
+        )
 
     def testCohesiveBlockingErrors(self):
         g = Graph.GRG(100, 0.2)
@@ -643,7 +681,9 @@ class ComparisonTests(unittest.TestCase):
 
     def _testMethod(self, method, expected):
         for (comm1, comm2), result in zip(self.clusterings, expected):
-            self.assertAlmostEqual(compare_communities(comm1, comm2, method=method), result, places=3)
+            self.assertAlmostEqual(
+                compare_communities(comm1, comm2, method=method), result, places=3
+            )
 
     def testCompareVI(self):
         expected = [0, 0.8675, math.log(6)]
@@ -672,16 +712,24 @@ class ComparisonTests(unittest.TestCase):
     def testRemoveNone(self):
         l1 = Clustering([1, 1, 1, None, None, 2, 2, 2, 2])
         l2 = Clustering([1, 1, 2, 2, None, 2, 3, 3, None])
-        self.assertAlmostEqual(compare_communities(l1, l2, "nmi", remove_none=True), 0.5158, places=3)
+        self.assertAlmostEqual(
+            compare_communities(l1, l2, "nmi", remove_none=True), 0.5158, places=3
+        )
 
 
 def suite():
-    decomposition_suite = unittest.defaultTestLoader.loadTestsFromTestCase(DecompositionTests)
+    decomposition_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        DecompositionTests
+    )
     clustering_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ClusteringTests)
-    vertex_clustering_suite = unittest.defaultTestLoader.loadTestsFromTestCase(VertexClusteringTests)
+    vertex_clustering_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        VertexClusteringTests
+    )
     cover_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CoverTests)
     community_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CommunityTests)
-    cohesive_blocks_suite = unittest.defaultTestLoader.loadTestsFromTestCase(CohesiveBlocksTests)
+    cohesive_blocks_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+        CohesiveBlocksTests
+    )
     comparison_suite = unittest.defaultTestLoader.loadTestsFromTestCase(ComparisonTests)
     return unittest.TestSuite(
         [
