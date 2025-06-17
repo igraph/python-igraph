@@ -461,7 +461,6 @@ def _community_leiden(
     )
 
 
-
 def _community_fluid_communities(graph, no_of_communities):
     """Community detection based on fluids interacting on the graph.
 
@@ -475,15 +474,15 @@ def _community_fluid_communities(graph, no_of_communities):
     Scalable and Diverse Community Detection Algorithm.
 
     @param no_of_communities: The number of communities to be found. Must be
-      greater than 0 and fewer than number of vertices in the graph.
+      greater than 0 and fewer than or equal to the number of vertices in the graph.
     @return: an appropriate L{VertexClustering} object.
     """
     # Validate input parameters
     if no_of_communities <= 0:
         raise ValueError("no_of_communities must be greater than 0")
     
-    if no_of_communities >= graph.vcount():
-        raise ValueError("no_of_communities must be fewer than the number of vertices")
+    if no_of_communities > graph.vcount():
+        raise ValueError("no_of_communities must be fewer than or equal to the number of vertices")
     
     # Check if graph is weighted (not supported)
     if graph.is_weighted():
