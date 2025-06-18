@@ -13048,16 +13048,18 @@ PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject
   PyObject *res, *qs, *ms;
   igraph_matrix_int_t merges;
   igraph_vector_t q;
-  igraph_vector_t *weights = 0;
+  igraph_vector_t *weights = NULL;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &directed, &weights_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &directed, &weights_o)) {
     return NULL;
+  }
 
-  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
-      ATTRIBUTE_TYPE_EDGE)) return NULL;
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights, ATTRIBUTE_TYPE_EDGE)) {
+    return NULL;
+  }
 
   if (igraph_matrix_int_init(&merges, 0, 0)) {
-    if (weights != 0) {
+    if (weights) {
       igraph_vector_destroy(weights); free(weights);
     }
     return igraphmodule_handle_igraph_error();
@@ -13065,32 +13067,33 @@ PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject
 
   if (igraph_vector_init(&q, 0)) {
     igraph_matrix_int_destroy(&merges);
-    if (weights != 0) {
+    if (weights) {
       igraph_vector_destroy(weights); free(weights);
     }
     return igraphmodule_handle_igraph_error();
   }
 
   if (igraph_community_edge_betweenness(&self->g,
-        /* removed_edges = */ 0,
-        /* edge_betweenness = */ 0,
+        /* removed_edges = */ NULL,
+        /* edge_betweenness = */ NULL,
         /* merges = */ &merges,
-        /* bridges = */ 0,
+        /* bridges = */ NULL,
         /* modularity = */ &q,
-        /* membership = */ 0,
+        /* membership = */ NULL,
         PyObject_IsTrue(directed),
         weights,
-        /* lengths = */ 0)) {
-    igraphmodule_handle_igraph_error();
-    if (weights != 0) {
+        /* lengths = */ NULL)) {
+
+    igraph_vector_destroy(&q);
+    igraph_matrix_int_destroy(&merges);
+    if (weights) {
       igraph_vector_destroy(weights); free(weights);
     }
-    igraph_matrix_int_destroy(&merges);
-    igraph_vector_destroy(&q);
-    return NULL;
+    
+    return igraphmodule_handle_igraph_error();;
   }
 
-  if (weights != 0) {
+  if (weights) {
     igraph_vector_destroy(weights); free(weights);
   }
 
@@ -13101,7 +13104,7 @@ PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject
     return NULL;
   }
 
-  ms=igraphmodule_matrix_int_t_to_PyList(&merges);
+  ms = igraphmodule_matrix_int_t_to_PyList(&merges);
   igraph_matrix_int_destroy(&merges);
 
   if (ms == NULL) {
