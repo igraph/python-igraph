@@ -320,7 +320,7 @@ def _community_spinglass(graph, *args, **kwds):
     return VertexClustering(graph, membership, modularity_params=modularity_params)
 
 
-def _community_voronoi(graph, lengths=None, weights=None, mode="all", radius=None):
+def _community_voronoi(graph, modularity=None, lengths=None, weights=None, mode="all", radius=None):
     """Finds communities using Voronoi partitioning.
 
     This function finds communities using a Voronoi partitioning of vertices based
@@ -364,8 +364,11 @@ def _community_voronoi(graph, lengths=None, weights=None, mode="all", radius=Non
             mode = mode_map[mode.lower()]
         else:
             raise ValueError(f"Invalid mode '{mode}'. Must be one of: out, in, all")
-
-    membership, generators, modularity = GraphBase.community_voronoi(graph, lengths, weights, mode, radius)
+    
+    if modularity is None:
+      membership, generators, modularity = GraphBase.community_voronoi(graph, modularity, lengths, weights, mode, radius)
+    else:
+      membership, generators = GraphBase.community_voronoi(graph, modularity, lengths, weights, mode, radius)
 
     params = {"generators": generators}
     modularity_params = {}
