@@ -13905,18 +13905,14 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
 PyObject *igraphmodule_Graph_community_fluid_communities(igraphmodule_GraphObject *self,
                                                         PyObject *args, PyObject *kwds) {
     static char *kwlist[] = {"no_of_communities", NULL};
-    long no_of_communities_long;
-    igraph_integer_t no_of_communities;
+    Py_ssize_t no_of_communities;
     igraph_vector_int_t membership;
     PyObject *result;
 
     // Parse the Python integer argument
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l", kwlist, &no_of_communities_long)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "n", kwlist, &no_of_communities)) {
         return NULL;
     }
-    
-    // Convert to igraph_integer_t
-    no_of_communities = (igraph_integer_t) no_of_communities_long;
 
     if (igraph_vector_int_init(&membership, 0)) {
         igraphmodule_handle_igraph_error();
