@@ -13909,8 +13909,8 @@ PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
     PyObject *lengths_o = Py_None, *weights_o = Py_None;
     PyObject *mode_o = Py_None;
     PyObject *radius_o = Py_None;
-    igraph_vector_t *lengths_v = 0;
-    igraph_vector_t *weights_v = 0;
+    igraph_vector_t *lengths_v = NULL;
+    igraph_vector_t *weights_v = NULL;
     igraph_vector_int_t membership_v, generators_v;
     igraph_neimode_t mode = IGRAPH_ALL;
     igraph_real_t radius = -1.0;  /* negative means auto-optimize */
@@ -18738,6 +18738,42 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  original implementation is used.\n"
    "@return: the community membership vector.\n"
   },
+  {"community_voronoi", 
+    (PyCFunction) igraphmodule_Graph_community_voronoi,
+    METH_VARARGS | METH_KEYWORDS,
+    "community_voronoi(lengths=None, weights=None, mode=\"all\", radius=None)\n\n"
+    "Finds communities using Voronoi partitioning.\n\n"
+    "This function finds communities using a Voronoi partitioning of vertices based\n"
+    "on the given edge lengths divided by the edge clustering coefficient.\n"
+    "The generator vertices are chosen to be those with the largest local relative\n"
+    "density within a radius, with the local relative density of a vertex defined as\n"
+    "s * m / (m + k), where s is the strength of the vertex, m is the number of\n"
+    "edges within the vertex's first order neighborhood, while k is the number of\n"
+    "edges with only one endpoint within this neighborhood.\n\n"
+    "@param lengths: edge lengths, or C{None} to consider all edges as having\n"
+    "  unit length. Voronoi partitioning will use edge lengths equal to\n"
+    "  lengths / ECC where ECC is the edge clustering coefficient.\n"
+    "@param weights: edge weights, or C{None} to consider all edges as having\n"
+    "  unit weight. Weights are used when selecting generator points, as well\n"
+    "  as for computing modularity.\n"
+    "@param mode: if C{\"out\"}, distances from generator points to all other\n"
+    "  nodes are considered. If C{\"in\"}, the reverse distances are used.\n"
+    "  If C{\"all\"}, edge directions are ignored. This parameter is ignored\n"
+    "  for undirected graphs.\n"
+    "@param radius: the radius/resolution to use when selecting generator points.\n"
+    "  The larger this value, the fewer partitions there will be. Pass C{None}\n"
+    "  to automatically select the radius that maximizes modularity.\n"
+    "@return: a tuple containing the membership vector, generator vertices,\n"
+    "  and modularity score.\n"
+    "@rtype: tuple\n\n"
+    "@newfield ref: Reference\n"
+    "@ref: Deritei et al., Community detection by graph Voronoi diagrams,\n"
+    "  New Journal of Physics 16, 063007 (2014)\n"
+    "  U{https://doi.org/10.1088/1367-2630/16/6/063007}\n"
+    "@ref: Molnár et al., Community Detection in Directed Weighted Networks\n"
+    "  using Voronoi Partitioning, Scientific Reports 14, 8124 (2024)\n"
+    "  U{https://doi.org/10.1038/s41598-024-58624-4}\n"
+  },
   {"community_leiden",
    (PyCFunction) igraphmodule_Graph_community_leiden,
    METH_VARARGS | METH_KEYWORDS,
@@ -18768,8 +18804,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  current membership vector any more.\n"
    "@return: the community membership vector.\n"
   },
-  {"community_voronoi", (PyCFunction) igraphmodule_Graph_community_voronoi,
-     METH_VARARGS | METH_KEYWORDS, "Finds communities using Voronoi partitioning"},
   {"community_walktrap",
    (PyCFunction) igraphmodule_Graph_community_walktrap,
    METH_VARARGS | METH_KEYWORDS,
@@ -18835,46 +18869,6 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@return: a random walk that starts from the given vertex and has at most\n"
    "  the given length (shorter if the random walk got stuck).\n"
   },
-  
-  /****************/
-  /* OTHER METHODS */
-  /****************/{
-    "community_voronoi", 
-    (PyCFunction) igraphmodule_Graph_community_voronoi,
-    METH_VARARGS | METH_KEYWORDS,
-    "community_voronoi(lengths=None, weights=None, mode=\"all\", radius=None)\n\n"
-    "Finds communities using Voronoi partitioning.\n\n"
-    "This function finds communities using a Voronoi partitioning of vertices based\n"
-    "on the given edge lengths divided by the edge clustering coefficient.\n"
-    "The generator vertices are chosen to be those with the largest local relative\n"
-    "density within a radius, with the local relative density of a vertex defined as\n"
-    "s * m / (m + k), where s is the strength of the vertex, m is the number of\n"
-    "edges within the vertex's first order neighborhood, while k is the number of\n"
-    "edges with only one endpoint within this neighborhood.\n\n"
-    "@param lengths: edge lengths, or C{None} to consider all edges as having\n"
-    "  unit length. Voronoi partitioning will use edge lengths equal to\n"
-    "  lengths / ECC where ECC is the edge clustering coefficient.\n"
-    "@param weights: edge weights, or C{None} to consider all edges as having\n"
-    "  unit weight. Weights are used when selecting generator points, as well\n"
-    "  as for computing modularity.\n"
-    "@param mode: if C{\"out\"}, distances from generator points to all other\n"
-    "  nodes are considered. If C{\"in\"}, the reverse distances are used.\n"
-    "  If C{\"all\"}, edge directions are ignored. This parameter is ignored\n"
-    "  for undirected graphs.\n"
-    "@param radius: the radius/resolution to use when selecting generator points.\n"
-    "  The larger this value, the fewer partitions there will be. Pass C{None}\n"
-    "  to automatically select the radius that maximizes modularity.\n"
-    "@return: a tuple containing the membership vector, generator vertices,\n"
-    "  and modularity score.\n"
-    "@rtype: tuple\n\n"
-    "@newfield ref: Reference\n"
-    "@ref: Deritei et al., Community detection by graph Voronoi diagrams,\n"
-    "  New Journal of Physics 16, 063007 (2014)\n"
-    "  U{https://doi.org/10.1088/1367-2630/16/6/063007}\n"
-    "@ref: Molnár et al., Community Detection in Directed Weighted Networks\n"
-    "  using Voronoi Partitioning, Scientific Reports 14, 8124 (2024)\n"
-    "  U{https://doi.org/10.1038/s41598-024-58624-4}\n"
-},
 
   /**********************/
   /* INTERNAL FUNCTIONS */
