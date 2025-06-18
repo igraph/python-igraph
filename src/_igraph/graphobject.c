@@ -14027,7 +14027,7 @@ PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
 
     /* Return tuple with membership, generators, and modularity */
     if (return_modularity) {
-        result_o = Py_BuildValue("(NNd)", membership_o, generators_o, (double)modularity);
+        result_o = Py_BuildValue("(NNd)", membership_o, generators_o, modularity);
     } else {
         result_o = Py_BuildValue("(NN)", membership_o, generators_o);
     }
