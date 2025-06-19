@@ -503,19 +503,28 @@ class CentralityTests(unittest.TestCase):
 
     def testAuthorityScore(self):
         g = Graph.Tree(15, 2, TREE_IN)
-        asc = g.authority_score()
+        
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            asc = g.authority_score()
         self.assertAlmostEqual(max(asc), 1.0, places=3)
 
         # Smoke testing
-        g.authority_score(scale=False, return_eigenvalue=True)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            g.authority_score(scale=False, return_eigenvalue=True)
 
     def testHubScore(self):
         g = Graph.Tree(15, 2, TREE_IN)
-        hsc = g.hub_score()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            hsc = g.hub_score()
         self.assertAlmostEqual(max(hsc), 1.0, places=3)
 
         # Smoke testing
-        g.hub_score(scale=False, return_eigenvalue=True)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            g.hub_score(scale=False, return_eigenvalue=True)
 
     def testCoreness(self):
         g = Graph.Full(4) + Graph(4) + [(0, 4), (1, 5), (2, 6), (3, 7)]
