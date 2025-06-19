@@ -18431,7 +18431,9 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "\n"
    "@see: modularity()\n"
   },
-  {"community_fluid_communities",(PyCFunction) igraphmodule_Graph_community_fluid_communities,METH_VARARGS | METH_KEYWORDS,
+  {"community_fluid_communities",
+  (PyCFunction) igraphmodule_Graph_community_fluid_communities,
+  METH_VARARGS | METH_KEYWORDS,
    "community_fluid_communities(no_of_communities)\n--\n\n"
    "Community detection based on fluids interacting on the graph.\n\n"
    "The algorithm is based on the simple idea of several fluids interacting\n"
