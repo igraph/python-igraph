@@ -338,7 +338,7 @@ jobs:
           pip install --prefer-binary '.[test]'
           # Uninstall Matplotlib because Matplotlib-related tests cause false positives in the
           # leak sanitizer checks
-          pip uninstall matplotlib
+          pip uninstall -y matplotlib
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.
