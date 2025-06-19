@@ -235,6 +235,13 @@ def _community_edge_betweenness(graph, clusters=None, directed=True, weights=Non
     separate components. The result of the clustering will be represented
     by a dendrogram.
 
+    When edge weights are given, the ratio of betweenness and weight values
+    is used to choose which edges to remove first, as described in
+    M. E. J. Newman: Analysis of Weighted Networks (2004), Section C.
+    Thus, edges with large weights are treated as strong connections,
+    and will be removed later than weak connections having similar betweenness.
+    Weights are also used for calculating modularity.
+
     @param clusters: the number of clusters we would like to see. This
       practically defines the "level" where we "cut" the dendrogram to
       get the membership vector of the vertices. If C{None}, the dendrogram
@@ -245,7 +252,7 @@ def _community_edge_betweenness(graph, clusters=None, directed=True, weights=Non
     @param directed: whether the directionality of the edges should be
       taken into account or not.
     @param weights: name of an edge attribute or a list containing
-      edge weights.
+      edge weights. Higher weights indicate stronger connections.
     @return: a L{VertexDendrogram} object, initally cut at the maximum
       modularity or at the desired number of clusters.
     """

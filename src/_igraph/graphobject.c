@@ -13048,16 +13048,18 @@ PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject
   PyObject *res, *qs, *ms;
   igraph_matrix_int_t merges;
   igraph_vector_t q;
-  igraph_vector_t *weights = 0;
+  igraph_vector_t *weights = NULL;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &directed, &weights_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &directed, &weights_o)) {
     return NULL;
+  }
 
-  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights,
-      ATTRIBUTE_TYPE_EDGE)) return NULL;
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights, ATTRIBUTE_TYPE_EDGE)) {
+    return NULL;
+  }
 
   if (igraph_matrix_int_init(&merges, 0, 0)) {
-    if (weights != 0) {
+    if (weights) {
       igraph_vector_destroy(weights); free(weights);
     }
     return igraphmodule_handle_igraph_error();
@@ -13065,51 +13067,44 @@ PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject
 
   if (igraph_vector_init(&q, 0)) {
     igraph_matrix_int_destroy(&merges);
-    if (weights != 0) {
+    if (weights) {
       igraph_vector_destroy(weights); free(weights);
     }
     return igraphmodule_handle_igraph_error();
   }
 
   if (igraph_community_edge_betweenness(&self->g,
-        /* removed_edges = */ 0,
-        /* edge_betweenness = */ 0,
+        /* removed_edges = */ NULL,
+        /* edge_betweenness = */ NULL,
         /* merges = */ &merges,
-        /* bridges = */ 0,
-        /* modularity = */ weights ? 0 : &q,
-        /* membership = */ 0,
+        /* bridges = */ NULL,
+        /* modularity = */ &q,
+        /* membership = */ NULL,
         PyObject_IsTrue(directed),
         weights,
-        /* lengths = */ 0)) {
-    igraphmodule_handle_igraph_error();
-    if (weights != 0) {
+        /* lengths = */ NULL)) {
+
+    igraph_vector_destroy(&q);
+    igraph_matrix_int_destroy(&merges);
+    if (weights) {
       igraph_vector_destroy(weights); free(weights);
     }
-    igraph_matrix_int_destroy(&merges);
-    igraph_vector_destroy(&q);
-    return NULL;
+    
+    return igraphmodule_handle_igraph_error();;
   }
 
-  if (weights != 0) {
+  if (weights) {
     igraph_vector_destroy(weights); free(weights);
   }
 
-  if (weights == 0) {
-    /* Calculate modularity vector only in the unweighted case as we don't
-     * calculate modularities for the weighted case */
-    qs=igraphmodule_vector_t_to_PyList(&q, IGRAPHMODULE_TYPE_FLOAT);
-    igraph_vector_destroy(&q);
-    if (!qs) {
-      igraph_matrix_int_destroy(&merges);
-      return NULL;
-    }
-  } else {
-    qs = Py_None;
-    Py_INCREF(qs);
-    igraph_vector_destroy(&q);
+  qs = igraphmodule_vector_t_to_PyList(&q, IGRAPHMODULE_TYPE_FLOAT);
+  igraph_vector_destroy(&q);
+  if (!qs) {
+    igraph_matrix_int_destroy(&merges);
+    return NULL;
   }
 
-  ms=igraphmodule_matrix_int_t_to_PyList(&merges);
+  ms = igraphmodule_matrix_int_t_to_PyList(&merges);
   igraph_matrix_int_destroy(&merges);
 
   if (ms == NULL) {
@@ -18531,12 +18526,18 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   "is typically high. So we gradually remove the edge with the highest\n"
   "betweenness from the network and recalculate edge betweenness after every\n"
   "removal, as long as all edges are removed.\n\n"
+  "When edge weights are given, the ratio of betweenness and weight values\n"
+  "is used to choose which edges to remove first, as described in\n"
+  "M. E. J. Newman: Analysis of Weighted Networks (2004), Section C.\n"
+  "Thus, edges with large weights are treated as strong connections,\n"
+  "and will be removed later than weak connections having similar betweenness.\n"
+  "Weights are also used for calculating modularity.\n\n"
   "Attention: this function is wrapped in a more convenient syntax in the\n"
   "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
   "@param directed: whether to take into account the directedness of the edges\n"
   "  when we calculate the betweenness values.\n"
   "@param weights: name of an edge attribute or a list containing\n"
-  "  edge weights.\n\n"
+  "  edge weights. Higher weights indicate stronger connections.\n\n"
   "@return: a tuple with the merge matrix that describes the dendrogram\n"
   "  and the modularity scores before each merge. The modularity scores\n"
   "  use the weights if the original graph was weighted.\n"
