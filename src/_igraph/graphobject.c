@@ -18450,6 +18450,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@note: The graph must be simple and connected. Edge directions will be\n"
    " ignored if the graph is directed.\n"
    "@note: Time complexity: O(|E|)\n",
+  },
   {"community_infomap",
    (PyCFunction) igraphmodule_Graph_community_infomap,
    METH_VARARGS | METH_KEYWORDS,
