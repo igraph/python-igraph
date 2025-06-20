@@ -13772,47 +13772,35 @@ PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
         return NULL;
 
     if (modularity_o != Py_None){
-      modularity = (igraph_real_t)PyFloat_AsDouble(modularity_o);
+        if (igraphmodule_PyObject_to_real_t(modularity_o, &modularity))
+            return NULL;;
     }
     else {
       return_modularity = true;
     }
 
     /* Handle mode parameter */
-    if (mode_o != Py_None) {
-        if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
-            return NULL;
-    }
+    if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
+        return NULL;
 
     /* Handle radius parameter */
     if (radius_o != Py_None) {
-        if (PyFloat_Check(radius_o)) {
-            radius = PyFloat_AsDouble(radius_o);
-        } else if (PyLong_Check(radius_o)) {
-            radius = PyLong_AsDouble(radius_o);
-        } else {
-            PyErr_SetString(PyExc_TypeError, "radius must be a number or None");
+        if (igraphmodule_PyObject_to_real_t(radius_o, &radius))
             return NULL;
-        }
-        if (PyErr_Occurred()) return NULL;
     }
 
     /* Handle lengths parameter */
-    if (lengths_o != Py_None) {
-        if (igraphmodule_attrib_to_vector_t(lengths_o, self, &lengths_v, ATTRIBUTE_TYPE_EDGE)) {
-            return NULL;
-        }
-    }
+      if (igraphmodule_attrib_to_vector_t(lengths_o, self, &lengths_v, ATTRIBUTE_TYPE_EDGE)) {
+          return NULL;
+      }
 
     /* Handle weights parameter */
-    if (weights_o != Py_None) {
-        if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights_v, ATTRIBUTE_TYPE_EDGE)) {
-            if (lengths_v != 0) {
-                igraph_vector_destroy(lengths_v); free(lengths_v);
-            }
-            return NULL;
-        }
-    }
+      if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights_v, ATTRIBUTE_TYPE_EDGE)) {
+          if (lengths_v != 0) {
+              igraph_vector_destroy(lengths_v); free(lengths_v);
+          }
+          return NULL;
+      }
 
     /* Initialize result vectors */
     if (igraph_vector_int_init(&membership_v, 0)) {
@@ -14037,7 +14025,6 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
           "edges", rese); /* steals references */
   }
 }
-
 
 /**********************************************************************
  * Special internal methods that you won't need to mess around with   *
