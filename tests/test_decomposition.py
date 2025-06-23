@@ -499,8 +499,9 @@ class CommunityTests(unittest.TestCase):
 
         # One community should have vertices 0-4, the other should have 5-9
         expected_communities = [{0, 1, 2, 3, 4}, {5, 6, 7, 8, 9}]
-        self.assertTrue(
-            communities == expected_communities or communities == expected_communities[::-1]  # Order might be swapped
+        self.assertEqual(
+            set(frozenset(c) for c in communities),
+            set(frozenset(c) for c in expected_communities)
         )
 
         # Test 2: Two cliques connected by a single bridge edge

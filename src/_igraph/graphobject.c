@@ -13796,7 +13796,7 @@ PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
 
     /* Handle weights parameter */
       if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights_v, ATTRIBUTE_TYPE_EDGE)) {
-          if (lengths_v != 0) {
+          if (lengths_v != NULL) {
               igraph_vector_destroy(lengths_v); free(lengths_v);
           }
           return NULL;
@@ -13804,10 +13804,10 @@ PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
 
     /* Initialize result vectors */
     if (igraph_vector_int_init(&membership_v, 0)) {
-        if (lengths_v != 0) {
+        if (lengths_v != NULL) {
           igraph_vector_destroy(lengths_v); free(lengths_v);
         }
-        if (weights_v != 0) {
+        if (weights_v != NULL) {
           igraph_vector_destroy(weights_v); free(weights_v);
         }
         igraphmodule_handle_igraph_error();
@@ -13815,10 +13815,10 @@ PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
     }
 
     if (igraph_vector_int_init(&generators_v, 0)) {
-        if (lengths_v != 0) {
+        if (lengths_v != NULL) {
           igraph_vector_destroy(lengths_v); free(lengths_v);
         }
-        if (weights_v != 0) {
+        if (weights_v != NULL) {
           igraph_vector_destroy(weights_v); free(weights_v);
         }
         igraph_vector_int_destroy(&membership_v);
@@ -13833,10 +13833,10 @@ PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
                                 weights_v,
                                 mode, radius)) {
         
-        if (lengths_v != 0) {
+        if (lengths_v != NULL) {
           igraph_vector_destroy(lengths_v); free(lengths_v);
         }
-        if (weights_v != 0) {
+        if (weights_v != NULL) {
           igraph_vector_destroy(weights_v); free(weights_v);
         }
         igraph_vector_int_destroy(&membership_v);
@@ -13847,10 +13847,10 @@ PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
 
     /* Clean up input vectors */
     
-    if (lengths_v != 0) {
+    if (lengths_v != NULL) {
       igraph_vector_destroy(lengths_v); free(lengths_v);
     }
-    if (weights_v != 0) {
+    if (weights_v != NULL) {
       igraph_vector_destroy(weights_v); free(weights_v);
     }
 
