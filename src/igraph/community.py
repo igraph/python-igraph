@@ -327,7 +327,7 @@ def _community_spinglass(graph, *args, **kwds):
     return VertexClustering(graph, membership, modularity_params=modularity_params)
 
 
-def _community_voronoi(graph, modularity=None, lengths=None, weights=None, mode="all", radius=None):
+def _community_voronoi(graph, lengths=None, weights=None, mode="out", radius=None):
     """Finds communities using Voronoi partitioning.
 
     This function finds communities using a Voronoi partitioning of vertices based
@@ -354,10 +354,13 @@ def _community_voronoi(graph, modularity=None, lengths=None, weights=None, mode=
     @param weights: edge weights, or C{None} to consider all edges as having
       unit weight. Weights are used when selecting generator points, as well
       as for computing modularity.
-    @param mode: if C{"out"}, distances from generator points to all other
-      nodes are considered. If C{"in"}, the reverse distances are used.
-      If C{"all"}, edge directions are ignored. This parameter is ignored
-      for undirected graphs.
+    @param mode: specifies how to use the direction of edges when computing
+      distances from generator points. If C{"out"} (the default), distances
+      from generator points to all other nodes are considered following the
+      direction of edges. If C{"in"}, distances are computed in the reverse
+      direction (i.e., from all nodes to generator points). If C{"all"}, 
+      edge directions are ignored and the graph is treated as undirected.
+      This parameter is ignored for undirected graphs.
     @param radius: the radius/resolution to use when selecting generator points.
       The larger this value, the fewer partitions there will be. Pass C{None}
       to automatically select the radius that maximizes modularity.
@@ -372,10 +375,7 @@ def _community_voronoi(graph, modularity=None, lengths=None, weights=None, mode=
         else:
             raise ValueError(f"Invalid mode '{mode}'. Must be one of: out, in, all")
     
-    if modularity is None:
-      membership, generators, modularity = GraphBase.community_voronoi(graph, modularity, lengths, weights, mode, radius)
-    else:
-      membership, generators = GraphBase.community_voronoi(graph, modularity, lengths, weights, mode, radius)
+    membership, generators, modularity = GraphBase.community_voronoi(graph, lengths, weights, mode, radius)
 
     params = {"generators": generators}
     modularity_params = {}

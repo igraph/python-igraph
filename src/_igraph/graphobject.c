@@ -13780,31 +13780,21 @@ PyObject *igraphmodule_Graph_community_fluid_communities(igraphmodule_GraphObjec
  */
 PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
                                                PyObject *args, PyObject *kwds) {
-    static char *kwlist[] = {"modularity", "lengths", "weights", "mode", "radius", NULL};
+    static char *kwlist[] = {"lengths", "weights", "mode", "radius", NULL};
     PyObject *lengths_o = Py_None, *weights_o = Py_None;
     PyObject *mode_o = Py_None;
     PyObject *radius_o = Py_None;
-    PyObject *modularity_o = Py_None;
     igraph_vector_t *lengths_v = NULL;
     igraph_vector_t *weights_v = NULL;
     igraph_vector_int_t membership_v, generators_v;
-    igraph_neimode_t mode = IGRAPH_ALL;
+    igraph_neimode_t mode = IGRAPH_OUT;
     igraph_real_t radius = -1.0;  /* negative means auto-optimize */
     igraph_real_t modularity = IGRAPH_NAN;
     PyObject *membership_o, *generators_o, *result_o;
-    igraph_bool_t return_modularity = false;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOOO", kwlist,
-                                     &modularity_o, &lengths_o, &weights_o, &mode_o, &radius_o))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
+                                     &lengths_o, &weights_o, &mode_o, &radius_o))
         return NULL;
-
-    if (modularity_o != Py_None){
-        if (igraphmodule_PyObject_to_real_t(modularity_o, &modularity))
-            return NULL;
-    }
-    else {
-      return_modularity = true;
-    }
 
     /* Handle mode parameter */
     if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
@@ -13855,7 +13845,7 @@ PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
 
     /* Call the C function - pass NULL for None parameters */
     if (igraph_community_voronoi(&self->g, &membership_v, &generators_v,
-                                return_modularity ? &modularity : NULL,
+                                &modularity,
                                 lengths_v,
                                 weights_v,
                                 mode, radius)) {
@@ -13897,11 +13887,8 @@ PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
     }
 
     /* Return tuple with membership, generators, and modularity */
-    if (return_modularity) {
-        result_o = Py_BuildValue("(NNd)", membership_o, generators_o, modularity);
-    } else {
-        result_o = Py_BuildValue("(NN)", membership_o, generators_o);
-    }
+    result_o = Py_BuildValue("(NNd)", membership_o, generators_o, modularity);
+    
 
     return result_o;
 }
@@ -18787,7 +18774,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_voronoi", 
     (PyCFunction) igraphmodule_Graph_community_voronoi, 
     METH_VARARGS | METH_KEYWORDS,
-   "community_voronoi(lengths=None, weights=None, mode=\"all\", radius=None, modularity=None)\n\n"
+   "community_voronoi(lengths=None, weights=None, mode=\"out\", radius=None)\n\n"
    "Finds communities using Voronoi partitioning.\n\n"
    "This function finds communities using a Voronoi partitioning of vertices based\n"
    "on the given edge lengths divided by the edge clustering coefficient.\n"
@@ -18802,19 +18789,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param weights: edge weights, or C{None} to consider all edges as having\n"
    "  unit weight. Weights are used when selecting generator points, as well\n"
    "  as for computing modularity.\n"
-   "@param mode: if C{\"out\"}, distances from generator points to all other\n"
+   "@param mode: if C{\"out\"} (the default), distances from generator points to all other\n"
    "  nodes are considered. If C{\"in\"}, the reverse distances are used.\n"
    "  If C{\"all\"}, edge directions are ignored. This parameter is ignored\n"
    "  for undirected graphs.\n"
    "@param radius: the radius/resolution to use when selecting generator points.\n"
    "  The larger this value, the fewer partitions there will be. Pass C{None}\n"
    "  to automatically select the radius that maximizes modularity.\n"
-   "@param modularity: if not C{None}, the modularity score will be calculated\n"
-   "  and returned as part of the result tuple.\n"
-   "@return: a tuple containing the membership vector and generator vertices.\n"
-   "  When modularity calculation is requested, also includes the modularity score\n"
-   "  as a third element: (membership, generators, modularity).\n"
-   "  Otherwise: (membership, generators).\n"
+   "@return: a tuple containing the membership vector, generator vertices, and\n"
+   "  modularity score: (membership, generators, modularity).\n"
    "@rtype: tuple\n\n"
    "B{References}\n\n"
     "  - Deritei et al., Community detection by graph Voronoi diagrams,\n"
