@@ -109,6 +109,7 @@ from igraph.community import (
     _community_multilevel,
     _community_optimal_modularity,
     _community_edge_betweenness,
+    _community_fluid_communities,
     _community_spinglass,
     _community_voronoi,
     _community_walktrap,
@@ -659,6 +660,7 @@ class Graph(GraphBase):
     community_multilevel = _community_multilevel
     community_optimal_modularity = _community_optimal_modularity
     community_edge_betweenness = _community_edge_betweenness
+    community_fluid_communities = _community_fluid_communities
     community_spinglass = _community_spinglass
     community_voronoi = _community_voronoi
     community_walktrap = _community_walktrap
@@ -1102,6 +1104,7 @@ del (
     _community_multilevel,
     _community_optimal_modularity,
     _community_edge_betweenness,
+    _community_fluid_communities,
     _community_spinglass,
     _community_voronoi,
     _community_walktrap,

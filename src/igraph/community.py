@@ -235,6 +235,13 @@ def _community_edge_betweenness(graph, clusters=None, directed=True, weights=Non
     separate components. The result of the clustering will be represented
     by a dendrogram.
 
+    When edge weights are given, the ratio of betweenness and weight values
+    is used to choose which edges to remove first, as described in
+    M. E. J. Newman: Analysis of Weighted Networks (2004), Section C.
+    Thus, edges with large weights are treated as strong connections,
+    and will be removed later than weak connections having similar betweenness.
+    Weights are also used for calculating modularity.
+
     @param clusters: the number of clusters we would like to see. This
       practically defines the "level" where we "cut" the dendrogram to
       get the membership vector of the vertices. If C{None}, the dendrogram
@@ -245,7 +252,7 @@ def _community_edge_betweenness(graph, clusters=None, directed=True, weights=Non
     @param directed: whether the directionality of the edges should be
       taken into account or not.
     @param weights: name of an edge attribute or a list containing
-      edge weights.
+      edge weights. Higher weights indicate stronger connections.
     @return: a L{VertexDendrogram} object, initally cut at the maximum
       modularity or at the desired number of clusters.
     """
@@ -524,6 +531,47 @@ def _community_leiden(
     )
 
 
+def _community_fluid_communities(graph, no_of_communities):
+    """Community detection based on fluids interacting on the graph.
+
+    The algorithm is based on the simple idea of several fluids interacting 
+    in a non-homogeneous environment (the graph topology), expanding and 
+    contracting based on their interaction and density. Weighted graphs are 
+    not supported.
+
+    This function implements the community detection method described in:
+    Parés F, Gasulla DG, et. al. (2018) Fluid Communities: A Competitive,
+    Scalable and Diverse Community Detection Algorithm.
+
+    @param no_of_communities: The number of communities to be found. Must be
+      greater than 0 and fewer than or equal to the number of vertices in the graph.
+    @return: an appropriate L{VertexClustering} object.
+    """
+    # Validate input parameters
+    if no_of_communities <= 0:
+        raise ValueError("no_of_communities must be greater than 0")
+    
+    if no_of_communities > graph.vcount():
+        raise ValueError("no_of_communities must be fewer than or equal to the number of vertices")
+    
+    # Check if graph is weighted (not supported)
+    if graph.is_weighted():
+        raise ValueError("Weighted graphs are not supported by the fluid communities algorithm")
+    
+    # Handle directed graphs - the algorithm works on undirected graphs
+    # but can accept directed graphs (they are treated as undirected)
+    if graph.is_directed():
+        import warnings
+        warnings.warn(
+            "Directed graphs are treated as undirected in the fluid communities algorithm",
+            UserWarning,
+            stacklevel=2
+        )
+    
+    membership = GraphBase.community_fluid_communities(graph, no_of_communities)
+    return VertexClustering(graph, membership)
+  
+  
 def _modularity(self, membership, weights=None, resolution=1, directed=True):
     """Calculates the modularity score of the graph with respect to a given
     clustering.
