@@ -13800,7 +13800,7 @@ PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
 
     if (modularity_o != Py_None){
         if (igraphmodule_PyObject_to_real_t(modularity_o, &modularity))
-            return NULL;;
+            return NULL;
     }
     else {
       return_modularity = true;
