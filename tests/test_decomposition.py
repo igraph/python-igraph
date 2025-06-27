@@ -575,9 +575,9 @@ class CommunityTests(unittest.TestCase):
 
         # Test 3: Three disconnected triangles
         g = Graph(9)
-        g.add_edges([(0, 1), (1, 2), (2, 0)])  # Triangle 1
-        g.add_edges([(3, 4), (4, 5), (5, 3)])  # Triangle 2
-        g.add_edges([(6, 7), (7, 8), (8, 6)])  # Triangle 3
+        g.add_edges([(0, 1), (1, 2), (2, 0),  # Triangle 1
+                     (3, 4), (4, 5), (5, 3),  # Triangle 2
+                     (6, 7), (7, 8), (8, 6)]) # Triangle 3
 
         cl = g.community_voronoi()
 
