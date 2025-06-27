@@ -13780,117 +13780,118 @@ PyObject *igraphmodule_Graph_community_fluid_communities(igraphmodule_GraphObjec
  */
 PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
                                                PyObject *args, PyObject *kwds) {
-    static char *kwlist[] = {"lengths", "weights", "mode", "radius", NULL};
-    PyObject *lengths_o = Py_None, *weights_o = Py_None;
-    PyObject *mode_o = Py_None;
-    PyObject *radius_o = Py_None;
-    igraph_vector_t *lengths_v = NULL;
-    igraph_vector_t *weights_v = NULL;
-    igraph_vector_int_t membership_v, generators_v;
-    igraph_neimode_t mode = IGRAPH_OUT;
-    igraph_real_t radius = -1.0;  /* negative means auto-optimize */
-    igraph_real_t modularity = IGRAPH_NAN;
-    PyObject *membership_o, *generators_o, *result_o;
+  static char *kwlist[] = {"lengths", "weights", "mode", "radius", NULL};
+  PyObject *lengths_o = Py_None, *weights_o = Py_None;
+  PyObject *mode_o = Py_None;
+  PyObject *radius_o = Py_None;
+  igraph_vector_t *lengths_v = NULL;
+  igraph_vector_t *weights_v = NULL;
+  igraph_vector_int_t membership_v, generators_v;
+  igraph_neimode_t mode = IGRAPH_OUT;
+  igraph_real_t radius = -1.0;  /* negative means auto-optimize */
+  igraph_real_t modularity = IGRAPH_NAN;
+  PyObject *membership_o, *generators_o, *result_o;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
-                                     &lengths_o, &weights_o, &mode_o, &radius_o))
-        return NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
+                                   &lengths_o, &weights_o, &mode_o, &radius_o)) {
+    return NULL;
+  }
 
-    /* Handle mode parameter */
-    if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
-        return NULL;
+  /* Handle mode parameter */
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) {
+    return NULL;
+  }
 
-    /* Handle radius parameter */
-    if (radius_o != Py_None) {
-        if (igraphmodule_PyObject_to_real_t(radius_o, &radius))
-            return NULL;
+  /* Handle radius parameter */
+  if (radius_o != Py_None) {
+    if (igraphmodule_PyObject_to_real_t(radius_o, &radius)) {
+      return NULL;
     }
+  }
 
-    /* Handle lengths parameter */
-      if (igraphmodule_attrib_to_vector_t(lengths_o, self, &lengths_v, ATTRIBUTE_TYPE_EDGE)) {
-          return NULL;
-      }
+  /* Handle lengths parameter */
+  if (igraphmodule_attrib_to_vector_t(lengths_o, self, &lengths_v, ATTRIBUTE_TYPE_EDGE)) {
+    return NULL;
+  }
 
-    /* Handle weights parameter */
-      if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights_v, ATTRIBUTE_TYPE_EDGE)) {
-          if (lengths_v != NULL) {
-              igraph_vector_destroy(lengths_v); free(lengths_v);
-          }
-          return NULL;
-      }
-
-    /* Initialize result vectors */
-    if (igraph_vector_int_init(&membership_v, 0)) {
-        if (lengths_v != NULL) {
-          igraph_vector_destroy(lengths_v); free(lengths_v);
-        }
-        if (weights_v != NULL) {
-          igraph_vector_destroy(weights_v); free(weights_v);
-        }
-        igraphmodule_handle_igraph_error();
-        return NULL;
+  /* Handle weights parameter */
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights_v, ATTRIBUTE_TYPE_EDGE)) {
+    if (lengths_v != NULL) {
+      igraph_vector_destroy(lengths_v); free(lengths_v);
     }
+    return NULL;
+  }
 
-    if (igraph_vector_int_init(&generators_v, 0)) {
-        if (lengths_v != NULL) {
-          igraph_vector_destroy(lengths_v); free(lengths_v);
-        }
-        if (weights_v != NULL) {
-          igraph_vector_destroy(weights_v); free(weights_v);
-        }
-        igraph_vector_int_destroy(&membership_v);
-        igraphmodule_handle_igraph_error();
-        return NULL;
-    }
-
-    /* Call the C function - pass NULL for None parameters */
-    if (igraph_community_voronoi(&self->g, &membership_v, &generators_v,
-                                &modularity,
-                                lengths_v,
-                                weights_v,
-                                mode, radius)) {
-        
-        if (lengths_v != NULL) {
-          igraph_vector_destroy(lengths_v); free(lengths_v);
-        }
-        if (weights_v != NULL) {
-          igraph_vector_destroy(weights_v); free(weights_v);
-        }
-        igraph_vector_int_destroy(&membership_v);
-        igraph_vector_int_destroy(&generators_v);
-        igraphmodule_handle_igraph_error();
-        return NULL;
-    }
-
-    /* Clean up input vectors */
-    
+  /* Initialize result vectors */
+  if (igraph_vector_int_init(&membership_v, 0)) {
     if (lengths_v != NULL) {
       igraph_vector_destroy(lengths_v); free(lengths_v);
     }
     if (weights_v != NULL) {
       igraph_vector_destroy(weights_v); free(weights_v);
     }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
 
-    /* Convert results to Python objects */
-    membership_o = igraphmodule_vector_int_t_to_PyList(&membership_v);
+  if (igraph_vector_int_init(&generators_v, 0)) {
+    if (lengths_v != NULL) {
+      igraph_vector_destroy(lengths_v); free(lengths_v);
+    }
+    if (weights_v != NULL) {
+      igraph_vector_destroy(weights_v); free(weights_v);
+    }
     igraph_vector_int_destroy(&membership_v);
-    if (!membership_o) {
-        igraph_vector_int_destroy(&generators_v);
-        return NULL;
-    }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
 
-    generators_o = igraphmodule_vector_int_t_to_PyList(&generators_v);
+  /* Call the C function - pass NULL for None parameters */
+  if (igraph_community_voronoi(&self->g, &membership_v, &generators_v,
+                               &modularity,
+                               lengths_v,
+                               weights_v,
+                               mode, radius)) {
+      
+    if (lengths_v != NULL) {
+      igraph_vector_destroy(lengths_v); free(lengths_v);
+    }
+    if (weights_v != NULL) {
+      igraph_vector_destroy(weights_v); free(weights_v);
+    }
+    igraph_vector_int_destroy(&membership_v);
     igraph_vector_int_destroy(&generators_v);
-    if (!generators_o) {
-        Py_DECREF(membership_o);
-        return NULL;
-    }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
 
-    /* Return tuple with membership, generators, and modularity */
-    result_o = Py_BuildValue("(NNd)", membership_o, generators_o, modularity);
-    
+  /* Clean up input vectors */
+  if (lengths_v != NULL) {
+    igraph_vector_destroy(lengths_v); free(lengths_v);
+  }
+  if (weights_v != NULL) {
+    igraph_vector_destroy(weights_v); free(weights_v);
+  }
 
-    return result_o;
+  /* Convert results to Python objects */
+  membership_o = igraphmodule_vector_int_t_to_PyList(&membership_v);
+  igraph_vector_int_destroy(&membership_v);
+  if (!membership_o) {
+    igraph_vector_int_destroy(&generators_v);
+    return NULL;
+  }
+
+  generators_o = igraphmodule_vector_int_t_to_PyList(&generators_v);
+  igraph_vector_int_destroy(&generators_v);
+  if (!generators_o) {
+    Py_DECREF(membership_o);
+    return NULL;
+  }
+
+  /* Return tuple with membership, generators, and modularity */
+  result_o = Py_BuildValue("(NNd)", membership_o, generators_o, modularity);
+
+  return result_o;
 }
 
 /**********************************************************************
