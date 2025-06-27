@@ -584,13 +584,6 @@ class CommunityTests(unittest.TestCase):
         # Should find exactly 3 communities
         self.assertEqual(len(cl), 3)
 
-        # Each triangle should be in its own community
-        triangles = [
-            {cl.membership[0], cl.membership[1], cl.membership[2]},
-            {cl.membership[3], cl.membership[4], cl.membership[5]},
-            {cl.membership[6], cl.membership[7], cl.membership[8]},
-        ]
-
     def testWalktrap(self):
         g = Graph.Full(5) + Graph.Full(5) + Graph.Full(5)
         g += [(0, 5), (5, 10), (10, 0)]
