@@ -327,6 +327,68 @@ def _community_spinglass(graph, *args, **kwds):
     return VertexClustering(graph, membership, modularity_params=modularity_params)
 
 
+def _community_voronoi(graph, lengths=None, weights=None, mode="out", radius=None):
+    """Finds communities using Voronoi partitioning.
+
+    This function finds communities using a Voronoi partitioning of vertices based
+    on the given edge lengths divided by the edge clustering coefficient.
+    The generator vertices are chosen to be those with the largest local relative
+    density within a radius, with the local relative density of a vertex defined
+    as C{s * m / (m + k)}, where C{s} is the strength of the vertex, C{m} is
+    the number of edges within the vertex's first order neighborhood, while C{k}
+    is the number of edges with only one endpoint within this neighborhood.
+
+    B{References}
+
+      - Deritei et al., Community detection by graph Voronoi diagrams,
+        I{New Journal of Physics} 16, 063007 (2014).
+        U{https://doi.org/10.1088/1367-2630/16/6/063007}.
+      - Molnár et al., Community Detection in Directed Weighted Networks using
+        Voronoi Partitioning, I{Scientific Reports} 14, 8124 (2024).
+        U{https://doi.org/10.1038/s41598-024-58624-4}.
+
+    @param lengths: edge lengths, or C{None} to consider all edges as having
+      unit length. Voronoi partitioning will use edge lengths equal to
+      lengths / ECC where ECC is the edge clustering coefficient.
+    @param weights: edge weights, or C{None} to consider all edges as having
+      unit weight. Weights are used when selecting generator points, as well
+      as for computing modularity.
+    @param mode: specifies how to use the direction of edges when computing
+      distances from generator points. If C{"out"} (the default), distances
+      from generator points to all other nodes are considered following the
+      direction of edges. If C{"in"}, distances are computed in the reverse
+      direction (i.e., from all nodes to generator points). If C{"all"}, 
+      edge directions are ignored and the graph is treated as undirected.
+      This parameter is ignored for undirected graphs.
+    @param radius: the radius/resolution to use when selecting generator points.
+      The larger this value, the fewer partitions there will be. Pass C{None}
+      to automatically select the radius that maximizes modularity.
+    @return: an appropriate L{VertexClustering} object with an extra attribute
+      called C{generators} (the generator vertices).
+    """
+    # Convert mode string to proper enum value to avoid deprecation warning
+    if isinstance(mode, str):
+        mode_map = {"out": "out", "in": "in", "all": "all", "total": "all"}  # alias
+        if mode.lower() in mode_map:
+            mode = mode_map[mode.lower()]
+        else:
+            raise ValueError(f"Invalid mode '{mode}'. Must be one of: out, in, all")
+    
+    membership, generators, modularity = GraphBase.community_voronoi(graph, lengths, weights, mode, radius)
+
+    params = {"generators": generators}
+    modularity_params = {}
+    if weights is not None:
+        modularity_params["weights"] = weights
+
+    clustering = VertexClustering(
+        graph, membership, modularity=modularity, params=params, modularity_params=modularity_params
+    )
+
+    clustering.generators = generators
+    return clustering
+
+
 def _community_walktrap(graph, weights=None, steps=4):
     """Community detection algorithm of Latapy & Pons, based on random
     walks.
