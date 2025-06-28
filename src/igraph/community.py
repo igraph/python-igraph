@@ -363,7 +363,7 @@ def _community_voronoi(graph, lengths=None, weights=None, mode="out", radius=Non
     @param radius: the radius/resolution to use when selecting generator points.
       The larger this value, the fewer partitions there will be. Pass C{None}
       to automatically select the radius that maximizes modularity.
-    @return: an appropriate L{VertexClustering} object with extra attributes
+    @return: an appropriate L{VertexClustering} object with an extra attribute
       called C{generators} (the generator vertices).
     """
     # Convert mode string to proper enum value to avoid deprecation warning
