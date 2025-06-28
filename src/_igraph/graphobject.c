@@ -18775,7 +18775,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_voronoi", 
     (PyCFunction) igraphmodule_Graph_community_voronoi, 
     METH_VARARGS | METH_KEYWORDS,
-   "community_voronoi(lengths=None, weights=None, mode=\"out\", radius=None)\n\n"
+   "community_voronoi(lengths=None, weights=None, mode=\"out\", radius=None)\n--\n\n"
    "Finds communities using Voronoi partitioning.\n\n"
    "This function finds communities using a Voronoi partitioning of vertices based\n"
    "on the given edge lengths divided by the edge clustering coefficient.\n"
