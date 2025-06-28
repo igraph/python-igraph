@@ -331,13 +331,12 @@ def _community_voronoi(graph, lengths=None, weights=None, mode="out", radius=Non
     """Finds communities using Voronoi partitioning.
 
     This function finds communities using a Voronoi partitioning of vertices based
-    on the given edge lengths divided by the edge clustering coefficient
-    (L{igraph.Graph.ecc}). The generator vertices are chosen to be those with the
-    largest local relative density within a radius, with the local relative
-    density of a vertex defined as C{s * m / (m + k)}, where C{s} is the strength
-    of the vertex, C{m} is the number of edges within the vertex's first order
-    neighborhood, while C{k} is the number of edges with only one endpoint within
-    this neighborhood.
+    on the given edge lengths divided by the edge clustering coefficient.
+    The generator vertices are chosen to be those with the largest local relative
+    density within a radius, with the local relative density of a vertex defined
+    as C{s * m / (m + k)}, where C{s} is the strength of the vertex, C{m} is
+    the number of edges within the vertex's first order neighborhood, while C{k}
+    is the number of edges with only one endpoint within this neighborhood.
 
     B{References}
 

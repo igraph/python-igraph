@@ -18780,7 +18780,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "on the given edge lengths divided by the edge clustering coefficient.\n"
    "The generator vertices are chosen to be those with the largest local relative\n"
    "density within a radius, with the local relative density of a vertex defined as\n"
-   "s * m / (m + k), where s is the strength of the vertex, m is the number of\n"
+   "C{s * m / (m + k)}, where s is the strength of the vertex, m is the number of\n"
    "edges within the vertex's first order neighborhood, while k is the number of\n"
    "edges with only one endpoint within this neighborhood.\n\n"
    "@param lengths: edge lengths, or C{None} to consider all edges as having\n"
@@ -18800,12 +18800,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  modularity score: (membership, generators, modularity).\n"
    "@rtype: tuple\n\n"
    "B{References}\n\n"
-    "  - Deritei et al., Community detection by graph Voronoi diagrams,\n"
-    "    New Journal of Physics 16, 063007 (2014)\n"
-    "    https://doi.org/10.1088/1367-2630/16/6/063007\n"
-    "  - Molnár et al., Community Detection in Directed Weighted Networks\n"
-    "    using Voronoi Partitioning, Scientific Reports 14, 8124 (2024)\n"
-    "    https://doi.org/10.1038/s41598-024-58624-4\n"
+   "  - Deritei et al., Community detection by graph Voronoi diagrams,\n"
+   "    New Journal of Physics 16, 063007 (2014)\n"
+   "    https://doi.org/10.1088/1367-2630/16/6/063007\n"
+   "  - Molnár et al., Community Detection in Directed Weighted Networks\n"
+   "    using Voronoi Partitioning, Scientific Reports 14, 8124 (2024)\n"
+   "    https://doi.org/10.1038/s41598-024-58624-4\n"
   },
   {"community_leiden",
    (PyCFunction) igraphmodule_Graph_community_leiden,
