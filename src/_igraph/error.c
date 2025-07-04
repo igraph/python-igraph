@@ -61,7 +61,20 @@ PyObject* igraphmodule_handle_igraph_error() {
 void igraphmodule_igraph_warning_hook(const char *reason, const char *file,
                                       int line) {
   char buf[4096];
-  snprintf(buf, sizeof(buf), "%s at %s:%i", reason, file, line);
+  char end;
+  size_t len = strlen(reason);
+  const char* separator = " ";
+
+  if (len == 0) {
+    separator = "";
+  } else {
+    end = reason[len - 1];
+    if (end != '.' && end != '?' && end != '!') {
+      separator = ". ";
+    }
+  }
+
+  snprintf(buf, sizeof(buf), "%s%sLocation: %s:%i", reason, separator, file, line);
   PY_IGRAPH_WARN(buf);
 }
 
