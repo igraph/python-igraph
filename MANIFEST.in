@@ -8,6 +8,10 @@ include scripts/*.sh
 include scripts/*.py
 include tests/*.py
 
+include CHANGELOG.md
+include CONTRIBUTORS.md
+include CITATION.cff
+
 graft vendor/source/igraph
 
 graft doc

@@ -849,7 +849,7 @@ PyObject* igraphmodule_EdgeSeq_select(igraphmodule_EdgeSeqObject *self, PyObject
       igraph_vector_int_destroy(&v);
     } else {
       /* Iterators and everything that was not handled directly */
-      PyObject *iter, *item2;
+      PyObject *iter = NULL, *item2 = NULL;
 
       /* Allocate stuff */
       if (igraph_vector_int_init(&v, 0)) {

@@ -5,18 +5,13 @@ on: [push, pull_request]
 env:
   CIBW_ENVIRONMENT_PASS_LINUX: PYTEST_TIMEOUT
   CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test]' && python -m pytest -v tests"
-  CIBW_SKIP: "cp36-* cp37-* cp38-* pp37-* pp38-*"
+  CIBW_SKIP: "cp38-* pp38-*"
   PYTEST_TIMEOUT: 60
 
 jobs:
   build_wheel_linux:
-    name: Build wheels on Linux (${{ matrix.wheel_arch }})
+    name: Build wheels on Linux (x86_64)
     runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        wheel_arch: [x86_64, i686]
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,25 +19,22 @@ jobs:
           fetch-depth: 0
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v2.23.3
+        uses: pypa/cibuildwheel@v3.0.0
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
-          CIBW_BUILD: "*-manylinux_${{ matrix.wheel_arch }}"
+          CIBW_BUILD: "*-manylinux_x86_64"
           CIBW_ENABLE: pypy
-          # Skip tests for Python 3.10 onwards because SciPy does not have
-          # 32-bit wheels for Linux.
-          CIBW_TEST_SKIP: "cp310-manylinux_i686 cp311-manylinux_i686 cp312-manylinux_i686 cp313-manylinux_i686"
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v2.23.3
+        uses: pypa/cibuildwheel@v3.0.0
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
-          CIBW_BUILD: "*-musllinux_${{ matrix.wheel_arch }}"
+          CIBW_BUILD: "*-musllinux_x86_64"
           CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels-linux-${{ matrix.wheel_arch }}
+          name: wheels-linux-x86_64
           path: ./wheelhouse/*.whl
 
   build_wheel_linux_aarch64_manylinux:
@@ -55,7 +47,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v2.23.3
+        uses: pypa/cibuildwheel@v3.0.0
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -77,7 +69,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v2.23.3
+        uses: pypa/cibuildwheel@v3.0.0
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -94,7 +86,7 @@ jobs:
     runs-on: macos-latest
     env:
       LLVM_VERSION: "14.0.5"
-      MACOSX_DEPLOYMENT_TARGET: "10.9"
+      MACOSX_DEPLOYMENT_TARGET: "10.15"
     strategy:
       matrix:
         include:
@@ -140,7 +132,7 @@ jobs:
           cmake --install .
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.23.3
+        uses: pypa/cibuildwheel@v3.0.0
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
@@ -202,12 +194,12 @@ jobs:
           - cmake_arch: Win32
             wheel_arch: win32
             vcpkg_arch: x86
-            os: windows-2019
+            os: windows-2022
             test_extra: test
           - cmake_arch: x64
             wheel_arch: win_amd64
             vcpkg_arch: x64
-            os: windows-2019
+            os: windows-2022
             test_extra: test
           - cmake_arch: ARM64
             wheel_arch: win_arm64
@@ -246,7 +238,7 @@ jobs:
         shell: cmd
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.23.3
+        uses: pypa/cibuildwheel@v3.0.0
         env:
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
@@ -339,21 +331,14 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install test dependencies
-        run: |
-          pip install --prefer-binary pytest pytest-timeout setuptools
-
-      - name: Build C core
-        env:
-          IGRAPH_USE_SANITIZERS: 1
-        run: |
-          python setup.py build_c_core
-
       - name: Build and install Python extension
         env:
           IGRAPH_USE_SANITIZERS: 1
         run: |
-          pip install .
+          pip install --prefer-binary '.[test]'
+          # Uninstall Matplotlib because Matplotlib-related tests cause false positives in the
+          # leak sanitizer checks
+          pip uninstall -y matplotlib
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.
