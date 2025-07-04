@@ -13775,6 +13775,125 @@ PyObject *igraphmodule_Graph_community_fluid_communities(igraphmodule_GraphObjec
     return result;
 }
 
+/**
+ * Voronoi clustering
+ */
+PyObject *igraphmodule_Graph_community_voronoi(igraphmodule_GraphObject *self,
+                                               PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = {"lengths", "weights", "mode", "radius", NULL};
+  PyObject *lengths_o = Py_None, *weights_o = Py_None;
+  PyObject *mode_o = Py_None;
+  PyObject *radius_o = Py_None;
+  igraph_vector_t *lengths_v = NULL;
+  igraph_vector_t *weights_v = NULL;
+  igraph_vector_int_t membership_v, generators_v;
+  igraph_neimode_t mode = IGRAPH_OUT;
+  igraph_real_t radius = -1.0;  /* negative means auto-optimize */
+  igraph_real_t modularity = IGRAPH_NAN;
+  PyObject *membership_o, *generators_o, *result_o;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
+                                   &lengths_o, &weights_o, &mode_o, &radius_o)) {
+    return NULL;
+  }
+
+  /* Handle mode parameter */
+  if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode)) {
+    return NULL;
+  }
+
+  /* Handle radius parameter */
+  if (radius_o != Py_None) {
+    if (igraphmodule_PyObject_to_real_t(radius_o, &radius)) {
+      return NULL;
+    }
+  }
+
+  /* Handle lengths parameter */
+  if (igraphmodule_attrib_to_vector_t(lengths_o, self, &lengths_v, ATTRIBUTE_TYPE_EDGE)) {
+    return NULL;
+  }
+
+  /* Handle weights parameter */
+  if (igraphmodule_attrib_to_vector_t(weights_o, self, &weights_v, ATTRIBUTE_TYPE_EDGE)) {
+    if (lengths_v != NULL) {
+      igraph_vector_destroy(lengths_v); free(lengths_v);
+    }
+    return NULL;
+  }
+
+  /* Initialize result vectors */
+  if (igraph_vector_int_init(&membership_v, 0)) {
+    if (lengths_v != NULL) {
+      igraph_vector_destroy(lengths_v); free(lengths_v);
+    }
+    if (weights_v != NULL) {
+      igraph_vector_destroy(weights_v); free(weights_v);
+    }
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_vector_int_init(&generators_v, 0)) {
+    if (lengths_v != NULL) {
+      igraph_vector_destroy(lengths_v); free(lengths_v);
+    }
+    if (weights_v != NULL) {
+      igraph_vector_destroy(weights_v); free(weights_v);
+    }
+    igraph_vector_int_destroy(&membership_v);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  /* Call the C function - pass NULL for None parameters */
+  if (igraph_community_voronoi(&self->g, &membership_v, &generators_v,
+                               &modularity,
+                               lengths_v,
+                               weights_v,
+                               mode, radius)) {
+      
+    if (lengths_v != NULL) {
+      igraph_vector_destroy(lengths_v); free(lengths_v);
+    }
+    if (weights_v != NULL) {
+      igraph_vector_destroy(weights_v); free(weights_v);
+    }
+    igraph_vector_int_destroy(&membership_v);
+    igraph_vector_int_destroy(&generators_v);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  /* Clean up input vectors */
+  if (lengths_v != NULL) {
+    igraph_vector_destroy(lengths_v); free(lengths_v);
+  }
+  if (weights_v != NULL) {
+    igraph_vector_destroy(weights_v); free(weights_v);
+  }
+
+  /* Convert results to Python objects */
+  membership_o = igraphmodule_vector_int_t_to_PyList(&membership_v);
+  igraph_vector_int_destroy(&membership_v);
+  if (!membership_o) {
+    igraph_vector_int_destroy(&generators_v);
+    return NULL;
+  }
+
+  generators_o = igraphmodule_vector_int_t_to_PyList(&generators_v);
+  igraph_vector_int_destroy(&generators_v);
+  if (!generators_o) {
+    Py_DECREF(membership_o);
+    return NULL;
+  }
+
+  /* Return tuple with membership, generators, and modularity */
+  result_o = Py_BuildValue("(NNd)", membership_o, generators_o, modularity);
+
+  return result_o;
+}
+
 /**********************************************************************
  * Random walks                                                       *
  **********************************************************************/
@@ -18652,6 +18771,42 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  the number of spins as colors. This argument is ignored if the\n"
    "  original implementation is used.\n"
    "@return: the community membership vector.\n"
+  },
+  {"community_voronoi", 
+    (PyCFunction) igraphmodule_Graph_community_voronoi, 
+    METH_VARARGS | METH_KEYWORDS,
+   "community_voronoi(lengths=None, weights=None, mode=\"out\", radius=None)\n--\n\n"
+   "Finds communities using Voronoi partitioning.\n\n"
+   "This function finds communities using a Voronoi partitioning of vertices based\n"
+   "on the given edge lengths divided by the edge clustering coefficient.\n"
+   "The generator vertices are chosen to be those with the largest local relative\n"
+   "density within a radius, with the local relative density of a vertex defined as\n"
+   "C{s * m / (m + k)}, where s is the strength of the vertex, m is the number of\n"
+   "edges within the vertex's first order neighborhood, while k is the number of\n"
+   "edges with only one endpoint within this neighborhood.\n\n"
+   "B{References}\n\n"
+   "  - Deritei et al., Community detection by graph Voronoi diagrams,\n"
+   "    New Journal of Physics 16, 063007 (2014)\n"
+   "    U{https://doi.org/10.1088/1367-2630/16/6/063007}\n"
+   "  - Molnár et al., Community Detection in Directed Weighted Networks\n"
+   "    using Voronoi Partitioning, Scientific Reports 14, 8124 (2024)\n"
+   "    U{https://doi.org/10.1038/s41598-024-58624-4}\n\n"
+   "@param lengths: edge lengths, or C{None} to consider all edges as having\n"
+   "  unit length. Voronoi partitioning will use edge lengths equal to\n"
+   "  lengths / ECC where ECC is the edge clustering coefficient.\n"
+   "@param weights: edge weights, or C{None} to consider all edges as having\n"
+   "  unit weight. Weights are used when selecting generator points, as well\n"
+   "  as for computing modularity.\n"
+   "@param mode: if C{\"out\"} (the default), distances from generator points to all other\n"
+   "  nodes are considered. If C{\"in\"}, the reverse distances are used.\n"
+   "  If C{\"all\"}, edge directions are ignored. This parameter is ignored\n"
+   "  for undirected graphs.\n"
+   "@param radius: the radius/resolution to use when selecting generator points.\n"
+   "  The larger this value, the fewer partitions there will be. Pass C{None}\n"
+   "  to automatically select the radius that maximizes modularity.\n"
+   "@return: a tuple containing the membership vector, generator vertices, and\n"
+   "  modularity score: (membership, generators, modularity).\n"
+   "@rtype: tuple\n"
   },
   {"community_leiden",
    (PyCFunction) igraphmodule_Graph_community_leiden,
