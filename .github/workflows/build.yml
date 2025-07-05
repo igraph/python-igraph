@@ -335,10 +335,9 @@ jobs:
         env:
           IGRAPH_USE_SANITIZERS: 1
         run: |
-          pip install --prefer-binary '.[test]'
-          # Uninstall some test dependencies because related tests cause false positives in the
-          # leak sanitizer checks
-          pip uninstall -y numpy scipy matplotlib pandas pillow
+          # We cannot install the test dependency group because many test dependencies cause
+          # false positives in the sanitizer
+          pip install --prefer-binary networkx pytest pytest-timeout
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
       # The ASan/UBSan library versions need to be updated when switching to a newer Ubuntu/GCC.
