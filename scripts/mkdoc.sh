@@ -47,6 +47,7 @@ cd ${ROOT_FOLDER}
 
 # Create a virtual environment
 if [ ! -d ".venv" ]; then
+  echo "Creating virtualenv..."
   ${PYTHON:-python3} -m venv .venv
 
   # Install sphinx, matplotlib, pandas, scipy, wheel and pydoctor into the venv.
@@ -54,10 +55,12 @@ if [ ! -d ".venv" ]; then
   .venv/bin/pip install -q -U pip wheel sphinx==7.4.7 matplotlib pandas scipy pydoctor sphinx-rtd-theme
 else
   # Upgrade pip in the virtualenv
+  echo "Upgrading pip in virtualenv..."
   .venv/bin/pip install -q -U pip wheel
 fi
 
 # Make sure that Sphinx, PyDoctor (and maybe doc2dash) are up-to-date in the virtualenv
+echo "Making sure that all dependencies are up-to-date..."
 .venv/bin/pip install -q -U sphinx==7.4.7 pydoctor sphinx-gallery sphinxcontrib-jquery sphinx-rtd-theme
 if [ x$DOC2DASH = x1 ]; then
   .venv/bin/pip install -U doc2dash
