@@ -120,19 +120,27 @@ def _get_adjacency_sparse(self, attribute=None):
     return mtx
 
 
-def _get_adjlist(self, mode="out"):
+def _get_adjlist(self, mode="out", loops="twice", multiple=True):
     """Returns the adjacency list representation of the graph.
 
     The adjacency list representation is a list of lists. Each item of the
     outer list belongs to a single vertex of the graph. The inner list
     contains the neighbors of the given vertex.
 
-    @param mode: if C{\"out\"}, returns the successors of the vertex. If
-      C{\"in\"}, returns the predecessors of the vertex. If C{\"all\"}, both
+    @param mode: if C{"out"}, returns the successors of the vertex. If
+      C{"in"}, returns the predecessors of the vertex. If C{"all"}, both
       the predecessors and the successors will be returned. Ignored
       for undirected graphs.
+    @param loops: whether to return loops in I{undirected} graphs once
+      (C{"once"}), twice (C{"twice"}) or not at all (C{"ignore"}). C{False}
+      is accepted as an alias to C{"ignore"} and C{True} is accepted as an
+      alias to C{"twice"}. For directed graphs, C{"twice"} is equivalent
+      to C{"once"} (except when C{mode} is C{"all"} because the graph is
+      then treated as undirected).
+    @param multiple: whether to return endpoints of multiple edges as many
+      times as their multiplicities.
     """
-    return [self.neighbors(idx, mode) for idx in range(self.vcount())]
+    return [self.neighbors(idx, mode, loops, multiple) for idx in range(self.vcount())]
 
 
 def _get_biadjacency(graph, types="type", *args, **kwds):
@@ -153,7 +161,7 @@ def _get_biadjacency(graph, types="type", *args, **kwds):
     return super(Graph, graph).get_biadjacency(types, *args, **kwds)
 
 
-def _get_inclist(graph, mode="out"):
+def _get_inclist(graph, mode="out", loops="twice"):
     """Returns the incidence list representation of the graph.
 
     The incidence list representation is a list of lists. Each
@@ -161,9 +169,15 @@ def _get_inclist(graph, mode="out"):
     The inner list contains the IDs of the incident edges of the
     given vertex.
 
-    @param mode: if C{\"out\"}, returns the successors of the vertex. If
-      C{\"in\"}, returns the predecessors of the vertex. If C{\"all\"}, both
+    @param mode: if C{"out"}, returns the successors of each vertex. If
+      C{"in"}, returns the predecessors of each vertex. If C{"all"}, both
       the predecessors and the successors will be returned. Ignored
       for undirected graphs.
+    @param loops: whether to return loops in I{undirected} graphs once
+      (C{"once"}), twice (C{"twice"}) or not at all (C{"ignore"}). C{False}
+      is accepted as an alias to C{"ignore"} and C{True} is accepted as an
+      alias to C{"twice"}. For directed graphs, C{"twice"} is equivalent
+      to C{"once"} (except when C{mode} is C{"all"} because the graph is
+      then treated as undirected).
     """
-    return [graph.incident(idx, mode) for idx in range(graph.vcount())]
+    return [graph.incident(idx, mode, loops) for idx in range(graph.vcount())]

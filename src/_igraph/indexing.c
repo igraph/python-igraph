@@ -142,7 +142,7 @@ static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph,
     /* Simple case: all edges */
     IGRAPH_PYCHECK(igraph_vector_int_init(&eids, 0));
     IGRAPH_FINALLY(igraph_vector_int_destroy, &eids);
-    IGRAPH_PYCHECK(igraph_incident(graph, &eids, from, neimode));
+    IGRAPH_PYCHECK(igraph_incident(graph, &eids, from, neimode, IGRAPH_LOOPS));
 
     n = igraph_vector_int_size(&eids);
     result = igraphmodule_PyList_Zeroes(igraph_vcount(graph));

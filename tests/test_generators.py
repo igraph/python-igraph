@@ -537,14 +537,14 @@ class GeneratorTests(unittest.TestCase):
         el = g.get_edgelist()
         self.assertFalse(g.is_directed())
         self.assertEqual(4, g.vcount())
-        self.assertListEqual(sorted(el), [(0, 1), (1, 3), (2, 2)])
+        self.assertListEqual(sorted(el), [(0, 1), (1, 3), (2, 2), (2, 2)])
 
         # ADJ UPPER
         g = Graph.Adjacency(mat, mode="upper", loops="twice")
         el = g.get_edgelist()
         self.assertFalse(g.is_directed())
         self.assertEqual(4, g.vcount())
-        self.assertListEqual(sorted(el), [(0, 1), (0, 2), (2, 2)])
+        self.assertListEqual(sorted(el), [(0, 1), (0, 2), (2, 2), (2, 2)])
 
         # ADJ_DIRECTED (default)
         g = Graph.Adjacency(mat, loops=False)
@@ -705,7 +705,7 @@ class GeneratorTests(unittest.TestCase):
         g = Graph.Weighted_Adjacency(mat, attr="w0", loops="twice")
         el = g.get_edgelist()
         self.assertListEqual(el, [(1, 0), (0, 1), (3, 1), (0, 2), (2, 2)])
-        self.assertListEqual(g.es["w0"], [2, 1, 1, 2, 1.25])
+        self.assertListEqual(g.es["w0"], [2, 1, 1, 2, 2.5])
 
     @unittest.skipIf(np is None, "test case depends on NumPy")
     def testWeightedAdjacencyNumPy(self):
@@ -731,7 +731,7 @@ class GeneratorTests(unittest.TestCase):
         g = Graph.Weighted_Adjacency(mat, attr="w0", loops="twice")
         el = g.get_edgelist()
         self.assertListEqual(el, [(1, 0), (0, 1), (3, 1), (0, 2), (2, 2)])
-        self.assertListEqual(g.es["w0"], [2, 1, 1, 2, 1.25])
+        self.assertListEqual(g.es["w0"], [2, 1, 1, 2, 2.5])
 
     @unittest.skipIf(
         (sparse is None) or (np is None), "test case depends on NumPy/SciPy"

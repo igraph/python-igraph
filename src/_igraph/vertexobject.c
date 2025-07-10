@@ -840,10 +840,10 @@ PyMethodDef igraphmodule_Vertex_methods[] = {
   GRAPH_PROXY_METHOD_SPEC(neighbors, "neighbors"),
   GRAPH_PROXY_METHOD_SPEC_3(outdegree, "outdegree"),
   GRAPH_PROXY_METHOD_SPEC_3(pagerank, "pagerank"),
-  GRAPH_PROXY_METHOD_SPEC(predecessors, "predecessors"),
+  GRAPH_PROXY_METHOD_SPEC_3(predecessors, "predecessors"),
   GRAPH_PROXY_METHOD_SPEC(personalized_pagerank, "personalized_pagerank"),
   GRAPH_PROXY_METHOD_SPEC(strength, "strength"),
-  GRAPH_PROXY_METHOD_SPEC(successors, "successors"),
+  GRAPH_PROXY_METHOD_SPEC_3(successors, "successors"),
   {NULL}
 };
 
@@ -875,6 +875,9 @@ PyDoc_STRVAR(
   "  >>> v[\"color\"] = \"red\"                  #doctest: +SKIP\n"
   "  >>> print(v[\"color\"])                     #doctest: +SKIP\n"
   "  red\n"
+  "\n"
+  "@ivar index: Index of the vertex\n"
+  "@ivar graph: The graph the vertex belongs to\n"
 );
 
 int igraphmodule_Vertex_register_type() {

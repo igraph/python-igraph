@@ -1031,6 +1031,7 @@ PyObject* PyInit__igraph(void)
   PyObject* m;
   static void *PyIGraph_API[PyIGraph_API_pointers];
   PyObject *c_api_object;
+  igraph_error_t retval;
 
   /* Prevent linking 64-bit igraph to 32-bit Python */
   PY_IGRAPH_ASSERT_AT_BUILD_TIME(sizeof(igraph_integer_t) >= sizeof(Py_ssize_t));
@@ -1040,6 +1041,14 @@ PyObject* PyInit__igraph(void)
   if (igraphmodule_initialized) {
     PyErr_SetString(PyExc_RuntimeError, "igraph module is already initialized "
         "in a different Python interpreter");
+    INITERROR;
+  }
+
+  /* Initialize the igraph library */
+  retval = igraph_setup();
+  if (retval != IGRAPH_SUCCESS) {
+    PyErr_Format(PyExc_RuntimeError, "Failed to initialize the C core of "
+        "the igraph library, code: %d", retval);
     INITERROR;
   }
 

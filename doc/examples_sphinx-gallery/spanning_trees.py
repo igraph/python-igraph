@@ -29,7 +29,7 @@ random.shuffle(permutation)
 g = g.permute_vertices(permutation)
 new_layout = g.layout("grid")
 for i in range(36):
-    new_layout[permutation[i]] = layout[i]
+    new_layout[i] = layout[permutation[i]]
 layout = new_layout
 
 # %%

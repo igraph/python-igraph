@@ -167,7 +167,7 @@ static PyObject* igraphmodule_BFSIter_iternext(igraphmodule_BFSIterObject* self)
     igraph_integer_t parent = igraph_dqueue_int_pop(&self->queue);
     igraph_integer_t i, n;
 
-    if (igraph_neighbors(self->graph, &self->neis, vid, self->mode)) {
+    if (igraph_neighbors(self->graph, &self->neis, vid, self->mode, /* loops = */ 0, /* multiple = */ 0)) {
       igraphmodule_handle_igraph_error();
       return NULL;
     }

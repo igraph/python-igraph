@@ -583,6 +583,23 @@ class Graph(GraphBase):
         return "weight" in self.edge_attributes()
 
     #############################################
+    # Neighbors
+
+    def predecessors(self, vertex, loops=True, multiple=True):
+        """Returns the predecessors of a given vertex.
+
+        Equivalent to calling the L{Graph.neighbors()} method with mode=C{\"in\"}.
+        """
+        return self.neighbors(vertex, mode="in", loops=loops, multiple=multiple)
+
+    def successors(self, vertex, loops=True, multiple=True):
+        """Returns the successors of a given vertex.
+
+        Equivalent to calling the L{Graph.neighbors()} method with mode=C{\"out\"}.
+        """
+        return self.neighbors(vertex, mode="out", loops=loops, multiple=multiple)
+
+    #############################################
     # Vertex and edge sequence
     @property
     def vs(self):

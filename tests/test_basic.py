@@ -350,6 +350,20 @@ class BasicTests(unittest.TestCase):
         self.assertTrue(g.get_adjlist(IN) == [[2], [0], [1], [2]])
         self.assertTrue(g.get_adjlist(ALL) == [[1, 2], [0, 2], [0, 1, 3], [2]])
 
+    def testAdjacencyWithLoopsAndMultiEdges(self):
+        g = Graph(4, [(0, 0), (0, 1), (1, 2), (2, 0), (2, 3), (2, 3), (3, 3), (3, 3)], directed=True)
+
+        self.assertTrue(g.neighbors(2) == [0, 1, 3, 3])
+        self.assertTrue(g.predecessors(2) == [1])
+        self.assertTrue(g.successors(2) == [0, 3, 3])
+
+        self.assertTrue(g.get_adjlist() == [[0, 1], [2], [0, 3, 3], [3, 3]])
+        self.assertTrue(g.get_adjlist(IN) == [[0, 2], [0], [1], [2, 2, 3, 3]])
+        self.assertTrue(g.get_adjlist(ALL) == [[0, 0, 1, 2], [0, 2], [0, 1, 3, 3], [2, 2, 3, 3, 3, 3]])
+
+        self.assertTrue(g.get_adjlist(ALL, loops="once") == [[0, 1, 2], [0, 2], [0, 1, 3, 3], [2, 2, 3, 3]])
+        self.assertTrue(g.get_adjlist(ALL, loops="once", multiple=False) == [[0, 1, 2], [0, 2], [0, 1, 3], [2, 3]])
+
     def testEdgeIncidence(self):
         g = Graph(4, [(0, 1), (1, 2), (2, 0), (2, 3)], directed=True)
         self.assertTrue(g.incident(2) == [2, 3])
@@ -358,6 +372,19 @@ class BasicTests(unittest.TestCase):
         self.assertTrue(g.get_inclist() == [[0], [1], [2, 3], []])
         self.assertTrue(g.get_inclist(IN) == [[2], [0], [1], [3]])
         self.assertTrue(g.get_inclist(ALL) == [[0, 2], [0, 1], [2, 1, 3], [3]])
+
+    def testEdgeIncidenceWithLoopsAndMultiEdges(self):
+        g = Graph(4, [(0, 1), (1, 2), (2, 0), (2, 3), (2, 3), (0, 0), (3, 3), (3, 3)], directed=True)
+
+        self.assertTrue(g.incident(2) == [2, 4, 3])
+        self.assertTrue(g.incident(2, IN) == [1])
+        self.assertTrue(g.incident(2, ALL) == [2, 1, 4, 3])
+
+        self.assertTrue(g.get_inclist() == [[5, 0], [1], [2, 4, 3], [7, 6]])
+        self.assertTrue(g.get_inclist(IN) == [[5, 2], [0], [1], [4, 3, 7, 6]])
+        self.assertTrue(g.get_inclist(ALL) == [[5, 5, 0, 2], [0, 1], [2, 1, 4, 3], [4, 3, 7, 7, 6, 6]])
+
+        self.assertTrue(g.get_inclist(ALL, loops="once") == [[5, 0, 2], [0, 1], [2, 1, 4, 3], [4, 3, 7, 6]])
 
     def testMultiplesLoops(self):
         g = Graph.Tree(7, 2)

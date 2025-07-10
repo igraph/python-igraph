@@ -359,6 +359,7 @@ class PermutationTests(unittest.TestCase):
         perm = list(range(10))
         shuffle(perm)
         g2 = g.permute_vertices(perm)
+        self.assertTrue(g.isomorphic(g2))
         g3 = g.permute_vertices(g.canonical_permutation())
         g4 = g2.permute_vertices(g2.canonical_permutation())
 
@@ -400,7 +401,7 @@ class PermutationTests(unittest.TestCase):
                 (7, 4),
             ],
         )
-        _, _, mapping = g1.isomorphic_vf2(g2, return_mapping_21=True)
+        _, mapping, _ = g1.isomorphic_vf2(g2, return_mapping_12=True)
         g3 = g2.permute_vertices(mapping)
         self.assertTrue(g3.vcount() == g2.vcount() and g3.ecount() == g2.ecount())
         self.assertTrue(set(g3.get_edgelist()) == set(g1.get_edgelist()))

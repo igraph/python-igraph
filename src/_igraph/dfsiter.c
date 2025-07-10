@@ -192,7 +192,7 @@ static PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self)
     /* the values above are returned at at this stage. However, we must
      * prepare for the next iteration by putting the next unvisited
      * neighbor onto the stack */
-    if (igraph_neighbors(self->graph, &self->neis, vid, self->mode)) {
+    if (igraph_neighbors(self->graph, &self->neis, vid, self->mode, /* loops = */ 0, /* multiple = */ 0)) {
       igraphmodule_handle_igraph_error();
       return NULL;
     }
