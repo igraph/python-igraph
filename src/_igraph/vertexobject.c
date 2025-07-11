@@ -877,7 +877,7 @@ PyDoc_STRVAR(
   "  red\n"
   "\n"
   "@ivar index: Index of the vertex\n"
-  "@ivar graph: The graph the vertex belongs to\n"
+  "@ivar graph: The graph the vertex belongs to\t"
 );
 
 int igraphmodule_Vertex_register_type() {
