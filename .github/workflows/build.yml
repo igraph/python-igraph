@@ -3,6 +3,7 @@ name: Build and test
 
 on: [push, pull_request]
 env:
+  CIBW_ENABLE: pypy
   CIBW_ENVIRONMENT_PASS_LINUX: PYTEST_TIMEOUT
   CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test]' && python -m pytest -v tests"
   CIBW_SKIP: "cp38-* pp38-*"
@@ -118,7 +119,7 @@ jobs:
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' || steps.cache-c-deps.outputs.cache-hit != 'true' # Only needed when building the C core or libomp
-        run: brew install ninja autoconf automake libtool
+        run: brew install autoconf automake libtool
 
       - name: Install OpenMP library
         if: steps.cache-c-deps.outputs.cache-hit != 'true'
