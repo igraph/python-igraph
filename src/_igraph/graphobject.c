@@ -10144,7 +10144,7 @@ PyObject *igraphmodule_Graph_canonical_permutation(
   if (igraphmodule_attrib_to_vector_int_t(color_o, self, &color,
       ATTRIBUTE_TYPE_VERTEX)) return NULL;
 
-  retval = igraph_canonical_permutation_bliss(&self->g, color, &labeling, sh, 0);
+  retval = igraph_canonical_permutation(&self->g, color, &labeling);
 
   if (color) { igraph_vector_int_destroy(color); free(color); }
 

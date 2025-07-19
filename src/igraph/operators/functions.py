@@ -158,7 +158,7 @@ def union(graphs, byname="auto"):
         raise RuntimeError(
             f"Some graphs are not named (got {n_named} named, {ngr-n_named} unnamed)"
         )
-    # Now we know that byname is only used is all graphs are named
+    # Now we know that byname is only used if all graphs are named
 
     # Trivial cases
     if ngr == 0:
@@ -184,7 +184,12 @@ def union(graphs, byname="auto"):
             # Reorder vertices to match uninames
             # vertex k -> p[k]
             permutation = [permutation_map[x] for x in ng.vs["name"]]
-            ng = ng.permute_vertices(permutation)
+
+            # permute_vertices() needs the inverse permutation
+            inv_permutation = [0] * len(permutation)
+            for i, x in enumerate(permutation):
+                inv_permutation[x] = i
+            ng = ng.permute_vertices(inv_permutation)
 
             newgraphs.append(ng)
     else:
@@ -353,7 +358,7 @@ def intersection(graphs, byname="auto", keep_all_vertices=True):
         raise RuntimeError(
             f"Some graphs are not named (got {n_named} named, {ngr-n_named} unnamed)"
         )
-    # Now we know that byname is only used is all graphs are named
+    # Now we know that byname is only used if all graphs are named
 
     # Trivial cases
     if ngr == 0:
@@ -389,7 +394,12 @@ def intersection(graphs, byname="auto", keep_all_vertices=True):
             # Reorder vertices to match uninames
             # vertex k -> p[k]
             permutation = [permutation_map[x] for x in ng.vs["name"]]
-            ng = ng.permute_vertices(permutation)
+
+            # permute_vertices() needs the inverse permutation
+            inv_permutation = [0] * len(permutation)
+            for i, x in enumerate(permutation):
+                inv_permutation[x] = i
+            ng = ng.permute_vertices(inv_permutation)
 
             newgraphs.append(ng)
     else:
