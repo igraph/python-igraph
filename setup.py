@@ -953,7 +953,7 @@ library, primarily aimed at complex network research and analysis.
 Graph plotting functionality is provided by the Cairo library, so make
 sure you install the Python bindings of Cairo if you want to generate
 publication-quality graph plots. You can try either `pycairo
-<http://cairographics.org/pycairo>`_ or `cairocffi <http://cairocffi.readthedocs.io>`_,
+<http://cairographics.org/pycairo>`_ or `cairocffi <https://doc.courtbouillon.org/cairocffi/>`_,
 ``cairocffi`` is recommended because there were bug reports affecting igraph
 graph plots in Jupyter notebooks when using ``pycairo`` (but not with
 ``cairocffi``).
@@ -983,7 +983,7 @@ options = {
         "Bug Tracker": "https://github.com/igraph/python-igraph/issues",
         "Changelog": "https://github.com/igraph/python-igraph/blob/main/CHANGELOG.md",
         "CI": "https://github.com/igraph/python-igraph/actions",
-        "Documentation": "https://igraph.readthedocs.io",
+        "Documentation": "https://python.igraph.org",
         "Source Code": "https://github.com/igraph/python-igraph",
     },
     "ext_modules": [igraph_extension],
@@ -1019,6 +1019,15 @@ options = {
             "matplotlib>=3.6.0; platform_python_implementation != 'PyPy'",
             "plotly>=5.3.0",
             "Pillow>=9; platform_python_implementation != 'PyPy'",
+        ],
+        # Dependencies needed for testing on Windows ARM64; only those that are either
+        # pure Python or have Windows ARM64 wheels as we don't want to compile wheels
+        # in CI
+        "test-win-arm64": [
+            "cairocffi>=1.2.0",
+            "networkx>=2.5",
+            "pytest>=7.0.1",
+            "pytest-timeout>=2.1.0",
         ],
         # Dependencies needed for testing on musllinux; only those that are either
         # pure Python or have musllinux wheels as we don't want to compile wheels

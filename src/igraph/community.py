@@ -37,12 +37,12 @@ def _community_infomap(graph, edge_weights=None, vertex_weights=None, trials=10)
 
       - M. Rosvall and C. T. Bergstrom: Maps of information flow reveal
         community structure in complex networks, I{PNAS} 105, 1118 (2008).
-        U{http://dx.doi.org/10.1073/pnas.0706851105},
-        U{http://arxiv.org/abs/0707.0609}.
+        U{https://doi.org/10.1073/pnas.0706851105},
+        U{https://arxiv.org/abs/0707.0609}.
       - M. Rosvall, D. Axelsson, and C. T. Bergstrom: The map equation,
         I{Eur Phys. J Special Topics} 178, 13 (2009).
-        U{http://dx.doi.org/10.1140/epjst/e2010-01179-1},
-        U{http://arxiv.org/abs/0906.1405}.
+        U{https://doi.org/10.1140/epjst/e2010-01179-1},
+        U{https://arxiv.org/abs/0906.1405}.
 
     @param edge_weights: name of an edge attribute or a list containing
       edge weights.
@@ -125,7 +125,7 @@ def _community_label_propagation(graph, weights=None, initial=None, fixed=None):
 
     B{Reference}: Raghavan, U.N. and Albert, R. and Kumara, S. Near linear
     time algorithm to detect community structures in large-scale networks.
-    I{Phys Rev} E 76:036106, 2007. U{http://arxiv.org/abs/0709.2938}.
+    I{Phys Rev} E 76:036106, 2007. U{https://arxiv.org/abs/0709.2938}.
 
     @param weights: name of an edge attribute or a list containing
       edge weights
@@ -165,7 +165,7 @@ def _community_multilevel(graph, weights=None, return_levels=False, resolution=1
 
     B{Reference}: VD Blondel, J-L Guillaume, R Lambiotte and E Lefebvre: Fast
     unfolding of community hierarchies in large networks, I{J Stat Mech}
-    P10008 (2008). U{http://arxiv.org/abs/0803.0476}
+    P10008 (2008). U{https://arxiv.org/abs/0803.0476}
 
     @param weights: edge attribute name or a list containing edge
       weights
@@ -271,11 +271,11 @@ def _community_spinglass(graph, *args, **kwds):
 
       - Reichardt J and Bornholdt S: Statistical mechanics of community
         detection. I{Phys Rev E} 74:016110 (2006).
-        U{http://arxiv.org/abs/cond-mat/0603718}.
+        U{https://arxiv.org/abs/cond-mat/0603718}.
 
       - Traag VA and Bruggeman J: Community detection in networks
         with positive and negative links. I{Phys Rev E} 80:036115 (2009).
-        U{http://arxiv.org/abs/0811.2329}.
+        U{https://arxiv.org/abs/0811.2329}.
 
     @keyword weights: edge weights to be used. Can be a sequence or
       iterable or even an edge attribute name.
@@ -329,7 +329,7 @@ def _community_walktrap(graph, weights=None, steps=4):
     as a dendrogram.
 
     B{Reference}: Pascal Pons, Matthieu Latapy: Computing communities in large
-    networks using random walks, U{http://arxiv.org/abs/physics/0512106}.
+    networks using random walks, U{https://arxiv.org/abs/physics/0512106}.
 
     @param weights: name of an edge attribute or a list containing
       edge weights

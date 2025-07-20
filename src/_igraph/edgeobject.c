@@ -724,6 +724,15 @@ PyDoc_STRVAR(
   "  >>> e[\"weight\"] = 2                  #doctest: +SKIP\n"
   "  >>> print(e[\"weight\"])               #doctest: +SKIP\n"
   "  2\n"
+  "\n"
+  "@ivar source: Source vertex index of this edge\n"
+  "@ivar source_vertex: Source vertex of this edge\n"
+  "@ivar target: Target vertex index of this edge\n"
+  "@ivar target_vertex: Target vertex of this edge\n"
+  "@ivar tuple: Source and target vertex index of this edge as a tuple\n"
+  "@ivar vertex_tuple: Source and target vertex of this edge as a tuple\n"
+  "@ivar index: Index of this edge\n"
+  "@ivar graph: The graph the edge belongs to\t"
 );
 
 int igraphmodule_Edge_register_type() {

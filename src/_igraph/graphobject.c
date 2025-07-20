@@ -7813,6 +7813,72 @@ PyObject *igraphmodule_Graph_minimum_cycle_basis(
   return result_o;
 }
 
+
+PyObject *igraphmodule_Graph_simple_cycles(
+  igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds
+) {
+  PyObject *mode_o = Py_None;
+  PyObject *output_o = Py_None;
+  PyObject *min_cycle_length_o = Py_None;
+  PyObject *max_cycle_length_o = Py_None;
+
+  // argument defaults: no cycle limits
+  igraph_integer_t mode = IGRAPH_OUT;
+  igraph_integer_t min_cycle_length = -1;
+  igraph_integer_t max_cycle_length = -1;
+  igraph_bool_t use_edges = false;
+
+  static char *kwlist[] = { "mode", "min", "max", "output", NULL };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist, &mode_o, &min_cycle_length_o, &max_cycle_length_o, &output_o))
+    return NULL;
+
+  if (mode_o != Py_None && igraphmodule_PyObject_to_integer_t(mode_o, &mode))
+    return NULL;
+
+  if (min_cycle_length_o != Py_None && igraphmodule_PyObject_to_integer_t(min_cycle_length_o, &min_cycle_length))
+    return NULL;
+
+  if (max_cycle_length_o != Py_None && igraphmodule_PyObject_to_integer_t(max_cycle_length_o, &max_cycle_length))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
+    return NULL;
+
+  igraph_vector_int_list_t vertices;
+  if (igraph_vector_int_list_init(&vertices, 0)) {
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+  igraph_vector_int_list_t edges;
+  if (igraph_vector_int_list_init(&edges, 0)) {
+    igraph_vector_int_list_destroy(&vertices);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  if (igraph_simple_cycles(
+    &self->g, use_edges ? NULL :  &vertices, use_edges ? &edges : NULL, mode, min_cycle_length, max_cycle_length
+  )) {
+    igraph_vector_int_list_destroy(&vertices);
+    igraph_vector_int_list_destroy(&edges);
+    igraphmodule_handle_igraph_error();
+    return NULL;
+  }
+
+  PyObject *result_o;
+
+  if (use_edges) {
+    result_o = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&edges);
+  } else {
+    result_o = igraphmodule_vector_int_list_t_to_PyList_of_tuples(&vertices);
+  }
+  igraph_vector_int_list_destroy(&edges);
+  igraph_vector_int_list_destroy(&vertices);
+
+  return result_o;
+}
+
 /**********************************************************************
  * Graph layout algorithms                                            *
  **********************************************************************/
@@ -14530,7 +14596,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
     "the number of vertices in the graph, a list of shifts giving\n"
     "additional edges to a cycle backbone and another integer giving how\n"
     "many times the shifts should be performed. See\n"
-    "U{http://mathworld.wolfram.com/LCFNotation.html} for details.\n\n"
+    "U{https://mathworld.wolfram.com/LCFNotation.html} for details.\n\n"
     "@param n: the number of vertices\n"
     "@param shifts: the shifts in a list or tuple\n"
     "@param repeats: the number of repeats\n"
@@ -16222,7 +16288,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "    small-world networks. I{Nature} 393(6884):440-442, 1998.\n"
    "  - Barrat A, Barthelemy M, Pastor-Satorras R and Vespignani A:\n"
    "    The architecture of complex weighted networks. I{PNAS} 101, 3747 (2004).\n"
-   "    U{http://arxiv.org/abs/cond-mat/0311416}.\n\n"
+   "    U{https://arxiv.org/abs/cond-mat/0311416}.\n\n"
    "@param vertices: a list containing the vertex IDs which should be\n"
    "  included in the result. C{None} means all of the vertices.\n"
    "@param mode: defines how to treat vertices with degree less than two.\n"
@@ -16565,6 +16631,24 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  no guarantees are given about the ordering of edge IDs within cycles.\n"
    "@return: the cycle basis as a list of tuples containing edge IDs"
   },
+  {"simple_cycles", (PyCFunction) igraphmodule_Graph_simple_cycles,
+   METH_VARARGS | METH_KEYWORDS,
+   "simple_cycles(mode=None, min=-1, max=-1, output=\"epath\")\n--\n\n"
+   "Finds simple cycles in a graph\n\n"
+   "@param mode: for directed graphs, specifies how the edge directions\n"
+   "  should be taken into account. C{\"all\"} means that the edge directions\n"
+   "  must be ignored, C{\"out\"} means that the edges must be oriented away\n"
+   "  from the root, C{\"in\"} means that the edges must be oriented\n"
+   "  towards the root. Ignored for undirected graphs.\n"
+   "@param min: the minimum number of vertices in a cycle\n"
+   "  for it to be returned.\n"
+   "@param max: the maximum number of vertices in a cycle\n"
+   "  for it to be considered.\n"
+   "@param output: determines what should be returned. If this is\n"
+   "  C{\"vpath\"}, a list of tuples of vertex IDs will be returned. If this is\n"
+   "  C{\"epath\"}, edge IDs are returned instead of vertex IDs.\n"
+   "@return: see the documentation of the C{output} parameter.\n"
+  },
 
   /********************/
   /* LAYOUT FUNCTIONS */
@@ -16820,7 +16904,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "forces among the vertices and then the physical system is simulated\n"
    "until it reaches an equilibrium or the maximal number of iterations is\n"
    "reached.\n\n"
-   "See U{http://www.schmuhl.org/graphopt/} for the original graphopt.\n\n"
+   "See U{https://web.archive.org/web/20220611030748/http://www.schmuhl.org/graphopt/}\n"
+   "and U{https://sourceforge.net/projects/graphopt/} for the original graphopt.\n\n"
    "@param niter: the number of iterations to perform. Should be a couple\n"
    "  of hundred in general.\n\n"
    "@param node_charge: the charge of the vertices, used to calculate electric\n"
@@ -17135,7 +17220,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Read_DIMACS(f, directed=False)\n--\n\n"
    "Reads a graph from a file conforming to the DIMACS minimum-cost flow file format.\n\n"
    "For the exact description of the format, see\n"
-   "U{http://lpsolve.sourceforge.net/5.5/DIMACS.htm}\n\n"
+   "U{https://lpsolve.sourceforge.net/5.5/DIMACS.htm}\n\n"
    "Restrictions compared to the official description of the format:\n\n"
    "  - igraph's DIMACS reader requires only three fields in an arc definition,\n"
    "    describing the edge's source and target node and its capacity.\n"
@@ -17171,7 +17256,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Read_GraphDB(f, directed=False)\n--\n\n"
    "Reads a GraphDB format file and creates a graph based on it.\n\n"
    "GraphDB is a binary format, used in the graph database for\n"
-   "isomorphism testing (see U{http://amalfi.dis.unina.it/graph/}).\n\n"
+   "isomorphism testing (see U{https://mivia.unisa.it/datasets/graph-database/arg-database/}).\n\n"
    "@param f: the name of the file or a Python file handle\n"
    "@param directed: whether the generated graph should be directed.\n"},
   /* interface to igraph_read_graph_graphml */
@@ -17394,7 +17479,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "algorithm.\n\n"
    "Passing the permutation returned here to L{permute_vertices()} will\n"
    "transform the graph into its canonical form.\n\n"
-   "See U{http://www.tcs.hut.fi/Software/bliss/index.html} for more information\n"
+   "See U{https://users.aalto.fi/~tjunttil/bliss/} for more information\n"
    "about the BLISS algorithm and canonical permutations.\n\n"
    "@param sh: splitting heuristics for graph as a case-insensitive string,\n"
    "  with the following possible values:\n\n"
@@ -17420,7 +17505,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "count_automorphisms(sh=\"fl\", color=None)\n--\n\n"
    "Calculates the number of automorphisms of a graph using the BLISS isomorphism\n"
    "algorithm.\n\n"
-   "See U{http://www.tcs.hut.fi/Software/bliss/index.html} for more information\n"
+   "See U{https://users.aalto.fi/~tjunttil/bliss/} for more information\n"
    "about the BLISS algorithm and canonical permutations.\n\n"
    "@param sh: splitting heuristics for graph as a case-insensitive string,\n"
    "  with the following possible values:\n\n"
@@ -17471,7 +17556,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  sh1=\"fl\", sh2=None, color1=None, color2=None)\n--\n\n"
    "Checks whether the graph is isomorphic to another graph, using the\n"
    "BLISS isomorphism algorithm.\n\n"
-   "See U{http://www.tcs.hut.fi/Software/bliss/index.html} for more information\n"
+   "See U{https://users.aalto.fi/~tjunttil/bliss/} for more information\n"
    "about the BLISS algorithm.\n\n"
    "@param other: the other graph with which we want to compare the graph.\n"
    "@param color1: optional vector storing the coloring of the vertices of\n"
@@ -18264,15 +18349,15 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "community_infomap(edge_weights=None, vertex_weights=None, trials=10)\n--\n\n"
    "Finds the community structure of the network according to the Infomap\n"
    "method of Martin Rosvall and Carl T. Bergstrom.\n\n"
-   "See U{http://www.mapequation.org} for a visualization of the algorithm\n"
+   "See U{https://www.mapequation.org} for a visualization of the algorithm\n"
    "or one of the references provided below.\n"
    "B{References}\n"
    "  - M. Rosvall and C. T. Bergstrom: I{Maps of information flow reveal\n"
    "    community structure in complex networks}. PNAS 105, 1118 (2008).\n"
-   "    U{http://arxiv.org/abs/0707.0609}\n"
+   "    U{https://arxiv.org/abs/0707.0609}\n"
    "  - M. Rosvall, D. Axelsson and C. T. Bergstrom: I{The map equation}.\n"
    "    I{Eur Phys J Special Topics} 178, 13 (2009).\n"
-   "    U{http://arxiv.org/abs/0906.1405}\n"
+   "    U{https://arxiv.org/abs/0906.1405}\n"
    "\n"
    "@param edge_weights: name of an edge attribute or a list containing\n"
    "  edge weights.\n"
@@ -18301,7 +18386,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "B{Reference}: Raghavan, U.N. and Albert, R. and Kumara, S. Near linear\n"
    "time algorithm to detect community structures in large-scale\n"
    "networks. I{Phys Rev E} 76:036106, 2007.\n"
-   "U{http://arxiv.org/abs/0709.2938}.\n"
+   "U{https://arxiv.org/abs/0709.2938}.\n"
    "\n"
    "@param weights: name of an edge attribute or a list containing\n"
    "  edge weights\n"
@@ -18356,7 +18441,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "\n"
    "B{Reference}: VD Blondel, J-L Guillaume, R Lambiotte and E Lefebvre: Fast\n"
    "unfolding of community hierarchies in large networks. J Stat Mech\n"
-   "P10008 (2008), U{http://arxiv.org/abs/0803.0476}\n"
+   "P10008 (2008), U{https://arxiv.org/abs/0803.0476}\n"
    "\n"
    "Attention: this function is wrapped in a more convenient syntax in the\n"
    "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
@@ -18495,7 +18580,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "Attention: this function is wrapped in a more convenient syntax in the\n"
    "derived class L{Graph}. It is advised to use that instead of this version.\n\n"
    "B{Reference}: Pascal Pons, Matthieu Latapy: Computing communities in large\n"
-   "networks using random walks, U{http://arxiv.org/abs/physics/0512106}.\n\n"
+   "networks using random walks, U{https://arxiv.org/abs/physics/0512106}.\n\n"
    "@param weights: name of an edge attribute or a list containing\n"
    "  edge weights\n"
    "@return: a tuple with the list of merges and the modularity scores corresponding\n"

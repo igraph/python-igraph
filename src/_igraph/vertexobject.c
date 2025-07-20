@@ -875,6 +875,9 @@ PyDoc_STRVAR(
   "  >>> v[\"color\"] = \"red\"                  #doctest: +SKIP\n"
   "  >>> print(v[\"color\"])                     #doctest: +SKIP\n"
   "  red\n"
+  "\n"
+  "@ivar index: Index of the vertex\n"
+  "@ivar graph: The graph the vertex belongs to\t"
 );
 
 int igraphmodule_Vertex_register_type() {
