@@ -15,7 +15,7 @@ DOC2DASH=0
 LINKCHECK=0
 CLEAN=0
 
-while getopts ":scjdl" OPTION; do
+while getopts ":cdl" OPTION; do
   case $OPTION in
   c)
     CLEAN=1
@@ -27,7 +27,11 @@ while getopts ":scjdl" OPTION; do
     LINKCHECK=1
     ;;
   \?)
-    echo "Usage: $0 [-sjd]"
+    echo "Usage: $0 [-cdl]"
+    echo ""
+    echo "-c: clean and force a full rebuild of the documentation"
+    echo "-d: generate Dash docset with doc2dash"
+    echo "-l: check the generated documentation for broken links"
     exit 1
     ;;
   esac
