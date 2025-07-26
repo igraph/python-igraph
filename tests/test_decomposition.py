@@ -335,7 +335,7 @@ class CommunityTests(unittest.TestCase):
     def testInfomap(self):
         g = Graph.Famous("zachary")
         cl = g.community_infomap()
-        self.assertAlmostEqual(cl.codelength, 4.60605, places=3)
+        self.assertAlmostEqual(cl.codelength, 4.31179, places=3)
         self.assertAlmostEqual(cl.q, 0.40203, places=3)
         self.assertMembershipsEqual(
             cl,

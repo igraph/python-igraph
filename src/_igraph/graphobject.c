@@ -534,7 +534,7 @@ PyObject *igraphmodule_Graph_is_maximal_matching(igraphmodule_GraphObject* self,
 PyObject *igraphmodule_Graph_is_simple(igraphmodule_GraphObject* self, PyObject* Py_UNUSED(_null)) {
   igraph_bool_t res;
 
-  if (igraph_is_simple(&self->g, &res)) {
+  if (igraph_is_simple(&self->g, &res, IGRAPH_DIRECTED)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
