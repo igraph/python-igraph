@@ -621,7 +621,11 @@ def _layout_auto(graph, *args, **kwds):
         algo = "fr"
     else:
         algo = "drl"
-    return graph.layout(algo, *args, **kwds)
+
+    layout = graph.layout(algo, *args, **kwds)
+    if graph.vcount() <= 1000:
+        layout = align_layout(graph, layout)
+    return layout
 
 
 def _layout_sugiyama(
