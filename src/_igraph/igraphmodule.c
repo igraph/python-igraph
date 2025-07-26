@@ -687,7 +687,7 @@ PyObject *igraphmodule_umap_compute_weights(
   PyObject *result_o;
   igraphmodule_GraphObject * graph;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &graph_o, &dist_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O", kwlist, igraphmodule_GraphType, &graph_o, &dist_o))
     return NULL;
 
   /* Initialize distances */
