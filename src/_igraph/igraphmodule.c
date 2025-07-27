@@ -227,6 +227,38 @@ PyObject* igraphmodule_set_status_handler(PyObject* self, PyObject* o) {
   Py_RETURN_NONE;
 }
 
+PyObject* igraphmodule_align_layout(PyObject* self, PyObject* args, PyObject* kwds) {
+  static char* kwlist[] = {"graph", "layout", NULL};
+  PyObject *graph_o, *layout_o;
+  PyObject *res;
+  igraph_t *graph;
+  igraph_matrix_t layout;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &graph_o, &layout_o)) {
+    return NULL;
+  }
+
+  if (igraphmodule_PyObject_to_igraph_t(graph_o, &graph)) {
+    return NULL;
+  }
+
+  if (igraphmodule_PyObject_to_matrix_t(layout_o, &layout, "layout")) {
+    return NULL;
+  }
+
+  if (igraph_layout_align(graph, &layout)) {
+    igraphmodule_handle_igraph_error();
+    igraph_matrix_destroy(&layout);
+    return NULL;
+  }
+
+  res = igraphmodule_matrix_t_to_PyList(&layout, IGRAPHMODULE_TYPE_FLOAT);
+
+  igraph_matrix_destroy(&layout);
+
+  return res;
+}
+
 PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwds) {
   static char* kwlist[] = {"vs", "coords", NULL};
   PyObject *vs, *o, *o1 = 0, *o2 = 0, *o1_float, *o2_float, *coords = Py_False;
@@ -789,6 +821,10 @@ static PyMethodDef igraphmodule_methods[] =
   {"_power_law_fit", (PyCFunction)igraphmodule_power_law_fit,
     METH_VARARGS | METH_KEYWORDS,
     "_power_law_fit(data, xmin=-1, force_continuous=False, p_precision=0.01)\n--\n\n"
+  },
+  {"_align_layout", (PyCFunction)igraphmodule_align_layout,
+    METH_VARARGS | METH_KEYWORDS,
+    "_align_layout(graph, layout)\n--\n\n"
   },
   {"convex_hull", (PyCFunction)igraphmodule_convex_hull,
     METH_VARARGS | METH_KEYWORDS,
