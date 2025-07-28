@@ -8188,14 +8188,15 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai(igraphmodule_GraphObject *
     return NULL;
   }
 
-  if (dim == 2)
+  if (dim == 2) {
     ret = igraph_layout_kamada_kawai
       (&self->g, &m, use_seed, maxiter, epsilon, kkconst,
        weights, /*bounds*/ minx, maxx, miny, maxy);
-  else
+    } else {
     ret = igraph_layout_kamada_kawai_3d
       (&self->g, &m, use_seed, maxiter, epsilon, kkconst,
        weights, /*bounds*/ minx, maxx, miny, maxy, minz, maxz);
+  }
 
   DESTROY_VECTORS;
 
@@ -8205,6 +8206,19 @@ PyObject *igraphmodule_Graph_layout_kamada_kawai(igraphmodule_GraphObject *
     igraph_matrix_destroy(&m);
     igraphmodule_handle_igraph_error();
     return NULL;
+  }
+
+  /* Align layout, but only if no bounding box was specified. */
+  if (minx == NULL && maxx == NULL &&
+      miny == NULL && maxy == NULL &&
+      minz == NULL && maxz == NULL &&
+      igraph_vcount(&self->g) <= 1000) {
+    ret = igraph_layout_align(&self->g, &m);
+    if (ret) {
+      igraph_matrix_destroy(&m);
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
   }
 
   result_o = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
@@ -8296,6 +8310,16 @@ PyObject* igraphmodule_Graph_layout_davidson_harel(igraphmodule_GraphObject *sel
     igraph_matrix_destroy(&m);
     igraphmodule_handle_igraph_error();
     return NULL;
+  }
+
+  /* Align layout */
+  if (igraph_vcount(&self->g)) {
+    retval = igraph_layout_align(&self->g, &m);
+    if (retval) {
+      igraph_matrix_destroy(&m);
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
   }
 
   result_o = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
@@ -8520,6 +8544,19 @@ PyObject
     return NULL;
   }
 
+  /* Align layout, but only if no bounding box was specified. */
+  if (minx == NULL && maxx == NULL &&
+      miny == NULL && maxy == NULL &&
+      minz == NULL && maxz == NULL &&
+      igraph_vcount(&self->g) <= 1000) {
+    ret = igraph_layout_align(&self->g, &m);
+    if (ret) {
+      igraph_matrix_destroy(&m);
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
+  }
+
 #undef DESTROY_VECTORS
 
   result_o = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
@@ -8572,6 +8609,15 @@ PyObject *igraphmodule_Graph_layout_graphopt(igraphmodule_GraphObject *self,
     igraph_matrix_destroy(&m);
     igraphmodule_handle_igraph_error();
     return NULL;
+  }
+
+  /* Align layout */
+  if (igraph_vcount(&self->g) <= 1000) {
+    if (igraph_layout_align(&self->g, &m)) {
+      igraph_matrix_destroy(&m);
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
   }
 
   result_o = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
@@ -8630,6 +8676,15 @@ PyObject *igraphmodule_Graph_layout_lgl(igraphmodule_GraphObject * self,
     igraph_matrix_destroy(&m);
     igraphmodule_handle_igraph_error();
     return NULL;
+  }
+
+  /* Align layout */
+  if (igraph_vcount(&self->g) <= 1000) {
+    if (igraph_layout_align(&self->g, &m)) {
+      igraph_matrix_destroy(&m);
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
   }
 
   result_o = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
@@ -8695,6 +8750,15 @@ PyObject *igraphmodule_Graph_layout_mds(igraphmodule_GraphObject * self,
 
   if (dist) {
     igraph_matrix_destroy(dist); free(dist);
+  }
+
+  /* Align layout */
+  if (igraph_vcount(&self->g) <= 1000) {
+    if (igraph_layout_align(&self->g, &m)) {
+      igraph_matrix_destroy(&m);
+      igraphmodule_handle_igraph_error();
+      return NULL;
+    }
   }
 
   result_o = igraphmodule_matrix_t_to_PyList(&m, IGRAPHMODULE_TYPE_FLOAT);
