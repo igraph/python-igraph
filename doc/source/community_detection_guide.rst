@@ -7,23 +7,23 @@ This documentation provides an overview of the notebooks available in the commun
    :maxdepth: 2
    :hidden:
 
-   community_detection_guide/functions.ipynb
-   community_detection_guide/community_detection_algorithms.ipynb
-   community_detection_guide/initial_workflow.ipynb
-   community_detection_guide/consensus_clustering.ipynb
-   community_detection_guide/generating_and_visualizing_clusters.ipynb
-   community_detection_guide/hierarchical_clustering.ipynb
-   community_detection_guide/interactive_resolution_on_sierpinski.ipynb
-   community_detection_guide/membership_vector.ipynb
-   community_detection_guide/modularity.ipynb
-   community_detection_guide/test_significance_of_community.ipynb
-   community_detection_guide/vertex_clustering_object.ipynb
+   community_detection_guide/notebooks/functions.ipynb
+   community_detection_guide/notebooks/community_detection_algorithms.ipynb
+   community_detection_guide/notebooks/initial_workflow.ipynb
+   community_detection_guide/notebooks/consensus_clustering.ipynb
+   community_detection_guide/notebooks/generating_and_visualizing_clusters.ipynb
+   community_detection_guide/notebooks/hierarchical_clustering.ipynb
+   community_detection_guide/notebooks/interactive_resolution_on_sierpinski.ipynb
+   community_detection_guide/notebooks/membership_vector.ipynb
+   community_detection_guide/notebooks/modularity.ipynb
+   community_detection_guide/notebooks/test_significance_of_community.ipynb
+   community_detection_guide/notebooks/vertex_clustering_object.ipynb
 
 .. grid:: 2 2 3 3
    :gutter: 3
 
    .. grid-item-card::  Initial Workflow
-      :link: community_detection_guide/initial_workflow
+      :link: community_detection_guide/notebooks/initial_workflow
       :link-type: doc
       :class-card: sd-card-hover card-red-orange
       :shadow: sm
@@ -31,7 +31,7 @@ This documentation provides an overview of the notebooks available in the commun
       **Overview:** This notebook is a quick start guide to community detection in igraph. It covers the initial workflow for detecting communities in networks. (If you look for a more practical learning experience, we recommend starting with this notebook.)
 
    .. grid-item-card::  Community Detection Algorithms
-      :link: community_detection_guide/community_detection_algorithms
+      :link: community_detection_guide/notebooks/community_detection_algorithms
       :link-type: doc
       :class-card: sd-card-hover card-deep-orange
       :shadow: sm
@@ -39,7 +39,7 @@ This documentation provides an overview of the notebooks available in the commun
       **Overview:** This notebook covers various community detection algorithms available in igraph. It provides a detailed explanation of these algorithms and when to use them.
 
    .. grid-item-card::  Test Significance of Community
-      :link: community_detection_guide/test_significance_of_community
+      :link: community_detection_guide/notebooks/test_significance_of_community
       :link-type: doc
       :class-card: sd-card-hover card-yellow-orange
       :shadow: sm   
@@ -47,7 +47,7 @@ This documentation provides an overview of the notebooks available in the commun
       **Overview:** This notebook provides methods to test the significance of detected communities. 
 
    .. grid-item-card::  Generating and Visualizing Clusters
-      :link: community_detection_guide/generating_and_visualizing_clusters
+      :link: community_detection_guide/notebooks/generating_and_visualizing_clusters
       :link-type: doc
       :class-card: sd-card-hover card-dark-green
       :shadow: sm
@@ -55,7 +55,7 @@ This documentation provides an overview of the notebooks available in the commun
       **Overview:** This notebook provides various methods for generating and visualizing clusters in networks. It includes techniques for visualizing community structures.
 
    .. grid-item-card::  Hierarchical Clustering
-      :link: community_detection_guide/hierarchical_clustering
+      :link: community_detection_guide/notebooks/hierarchical_clustering
       :link-type: doc
       :class-card: sd-card-hover card-medium-green
       :shadow: sm
@@ -63,7 +63,7 @@ This documentation provides an overview of the notebooks available in the commun
       **Overview:** This notebook describes hierarchical clustering. It explains how to perform hierarchical clustering on networks and visualize the results.
       
    .. grid-item-card::  Modularity
-      :link: community_detection_guide/modularity
+      :link: community_detection_guide/notebooks/modularity
       :link-type: doc
       :class-card: sd-card-hover card-light-green
       :shadow: sm
@@ -71,7 +71,7 @@ This documentation provides an overview of the notebooks available in the commun
       **Overview:** This notebook introduces the concept of modularity in community detection.
 
    .. grid-item-card::  Interactive Resolution on Sierpinski
-      :link: community_detection_guide/interactive_resolution_on_sierpinski
+      :link: community_detection_guide/notebooks/interactive_resolution_on_sierpinski
       :link-type: doc
       :class-card: sd-card-hover card-deep-blue 
       :shadow: sm
@@ -79,7 +79,7 @@ This documentation provides an overview of the notebooks available in the commun
       **Overview:** This notebook introduces the concept of resolution parameter on the Sierpinski triangle.
 
    .. grid-item-card::  Consensus Clustering
-      :link: community_detection_guide/consensus_clustering
+      :link: community_detection_guide/notebooks/consensus_clustering
       :link-type: doc
       :class-card: sd-card-hover card-medium-blue 
       :shadow: sm
@@ -87,7 +87,7 @@ This documentation provides an overview of the notebooks available in the commun
       **Overview:** This notebook introduces the method of consensus clustering by combining multiple clustering results.
 
    .. grid-item-card::  Membership Vector
-      :link: community_detection_guide/membership_vector
+      :link: community_detection_guide/notebooks/membership_vector
       :link-type: doc
       :class-card: sd-card-hover card-light-blue 
       :shadow: sm
@@ -95,7 +95,7 @@ This documentation provides an overview of the notebooks available in the commun
       **Overview:** This notebook introduces membership vectors in igraph.
 
    .. grid-item-card::  Vertex Clustering Object
-      :link: community_detection_guide/vertex_clustering_object
+      :link: community_detection_guide/notebooks/vertex_clustering_object
       :link-type: doc
       :class-card: sd-card-hover card-deep-purple 
       :shadow: sm
@@ -103,7 +103,7 @@ This documentation provides an overview of the notebooks available in the commun
       **Overview:** This notebook introduces vertex clustering objects in igraph.
 
    .. grid-item-card::  Helper Functions
-      :link: community_detection_guide/functions
+      :link: community_detection_guide/notebooks/functions
       :link-type: doc
       :class-card: sd-card-hover card-medium-purple 
       :shadow: sm
