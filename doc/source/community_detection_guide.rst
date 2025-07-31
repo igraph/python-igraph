@@ -1,5 +1,5 @@
 Welcome to the Community Detection Guide!
-=============================
+=========================================
 
 This documentation provides an overview of the notebooks available in the community detection guide.
 
@@ -36,7 +36,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-deep-orange
       :shadow: sm
 
-      **Overview:** This notebook covers various community detection algorithms available in igraph. It provides a detailed explanation these algorithms and when to use them.
+      **Overview:** This notebook covers various community detection algorithms available in igraph. It provides a detailed explanation of these algorithms and when to use them.
 
    .. grid-item-card::  Test Significance of Community
       :link: community_detection_guide/test_significance_of_community
@@ -73,10 +73,10 @@ This documentation provides an overview of the notebooks available in the commun
    .. grid-item-card::  Interactive Resolution on Sierpinski
       :link: community_detection_guide/interactive_resolution_on_sierpinski
       :link-type: doc
-      :class-card: sd-card-hover card-light-blue 
+      :class-card: sd-card-hover card-deep-blue 
       :shadow: sm
 
-      **Overview:** This notebook introduces the concept of interactive resolution on the Sierpinski triangle.
+      **Overview:** This notebook introduces the concept of resolution parameter on the Sierpinski triangle.
 
    .. grid-item-card::  Consensus Clustering
       :link: community_detection_guide/consensus_clustering
@@ -84,15 +84,15 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-medium-blue 
       :shadow: sm
 
-      **Overview:** This notebook introduces the concept of consensus clustering in community detection.
+      **Overview:** This notebook introduces the method of consensus clustering by combining multiple clustering results.
 
    .. grid-item-card::  Membership Vector
       :link: community_detection_guide/membership_vector
       :link-type: doc
-      :class-card: sd-card-hover card-deep-blue 
+      :class-card: sd-card-hover card-light-blue 
       :shadow: sm
 
-      **Overview:** This notebook introduces the concept of membership vectors in community detection.
+      **Overview:** This notebook introduces membership vectors in igraph.
 
    .. grid-item-card::  Vertex Clustering Object
       :link: community_detection_guide/vertex_clustering_object
@@ -100,7 +100,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-deep-purple 
       :shadow: sm
 
-      **Overview:** This notebook introduces the concept of vertex clustering objects in community detection.
+      **Overview:** This notebook introduces vertex clustering objects in igraph.
 
    .. grid-item-card::  Helper Functions
       :link: community_detection_guide/functions
