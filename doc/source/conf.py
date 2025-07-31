@@ -65,12 +65,14 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.intersphinx",
     # NOTE: sphinx_gallery.gen_gallery is not used because it conflicts with pydoctor and nbsphinx
-    # "sphinx_gallery.gen_gallery",
+    "sphinx_gallery.gen_gallery",
     # #'sphinx_panels',
     "pydoctor.sphinx_ext.build_apidocs",
     "nbsphinx",
     "sphinx_design",
+    "IPython.sphinxext.ipython_console_highlighting",
 ]
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -111,7 +113,7 @@ release = version
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["include/*.rst"]
+exclude_patterns = ["include/*.rst", "**.ipynb_checkpoints"]
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None

@@ -31,7 +31,7 @@ This documentation provides an overview of the notebooks available in the commun
       **Overview:** This notebook is a quick start guide to community detection in igraph. It covers the initial workflow for detecting communities in networks. (If you look for a more practical learning experience, we recommend starting with this notebook.)
 
    .. grid-item-card::  Community Detection Algorithms
-      :link: community_detection_guide/communities_detection_algorithms
+      :link: community_detection_guide/community_detection_algorithms
       :link-type: doc
       :class-card: sd-card-hover card-deep-orange
       :shadow: sm
