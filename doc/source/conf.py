@@ -64,10 +64,15 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.mathjax",
     "sphinx.ext.intersphinx",
+    # NOTE: sphinx_gallery.gen_gallery is not used because it conflicts with pydoctor and nbsphinx
     "sphinx_gallery.gen_gallery",
-    #'sphinx_panels',
+    # #'sphinx_panels',
     "pydoctor.sphinx_ext.build_apidocs",
+    "nbsphinx",
+    "sphinx_design",
+    "IPython.sphinxext.ipython_console_highlighting",
 ]
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -108,7 +113,7 @@ release = version
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["include/*.rst"]
+exclude_patterns = ["include/*.rst", "**.ipynb_checkpoints", "_build", "tutorials/*.ipynb"]
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None
@@ -138,6 +143,9 @@ pygments_style = "sphinx"
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
+
+nbsphinx_execute = 'never'
+nbsphinx_allow_errors = True
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -227,7 +235,6 @@ pydoctor_args = [
     _igraph_dir,
 ]
 pydoctor_url_path = "/en/{rtd_version}/api"
-
 
 # -- Options for sphinx-gallery ------------------------------------------------
 
