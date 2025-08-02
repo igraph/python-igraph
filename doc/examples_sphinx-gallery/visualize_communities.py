@@ -7,6 +7,7 @@ Communities
 
 This example shows how to visualize communities or clusters of a graph.
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 
@@ -47,7 +48,8 @@ ig.plot(
 legend_handles = []
 for i in range(num_communities):
     handle = ax.scatter(
-        [], [],
+        [],
+        [],
         s=100,
         facecolor=palette.get(i),
         edgecolor="k",
@@ -56,7 +58,7 @@ for i in range(num_communities):
     legend_handles.append(handle)
 ax.legend(
     handles=legend_handles,
-    title='Community:',
+    title="Community:",
     bbox_to_anchor=(0, 1.0),
     bbox_transform=ax.transAxes,
 )

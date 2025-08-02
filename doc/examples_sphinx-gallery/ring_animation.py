@@ -9,6 +9,7 @@ This example demonstrates how to use :doc:`matplotlib:api/animation_api` in
 order to animate a ring graph sequentially being revealed.
 
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -22,6 +23,7 @@ g = ig.Graph.Ring(10, directed=True)
 # %%
 # Compute a 2D ring layout that looks like an actual ring
 layout = g.layout_circle()
+
 
 # %%
 # Prepare an update function. This "callback" function will be run at every
@@ -70,6 +72,7 @@ def _update_graph(frame):
 
     handles = ax.get_children()[:nhandles]
     return handles
+
 
 # %%
 # Run the animation

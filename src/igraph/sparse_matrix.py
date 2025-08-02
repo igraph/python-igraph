@@ -24,19 +24,15 @@ _SUPPORTED_MODES = ("directed", "undirected", "max", "min", "plus", "lower", "up
 
 def _convert_mode_argument(mode):
     # resolve mode constants, convert to lowercase
-    mode = (
-        {
-            ADJ_DIRECTED: "directed",
-            ADJ_UNDIRECTED: "undirected",
-            ADJ_MAX: "max",
-            ADJ_MIN: "min",
-            ADJ_PLUS: "plus",
-            ADJ_UPPER: "upper",
-            ADJ_LOWER: "lower",
-        }
-        .get(mode, mode)
-        .lower()
-    )
+    mode = {
+        ADJ_DIRECTED: "directed",
+        ADJ_UNDIRECTED: "undirected",
+        ADJ_MAX: "max",
+        ADJ_MIN: "min",
+        ADJ_PLUS: "plus",
+        ADJ_UPPER: "upper",
+        ADJ_LOWER: "lower",
+    }.get(mode, mode).lower()
 
     if mode not in _SUPPORTED_MODES:
         raise ValueError("mode should be one of " + (" ".join(_SUPPORTED_MODES)))

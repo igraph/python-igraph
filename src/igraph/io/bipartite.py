@@ -6,7 +6,7 @@ def _construct_bipartite_graph_from_adjacency(
     multiple=False,
     weighted=None,
     *args,
-    **kwds
+    **kwds,
 ):
     """Creates a bipartite graph from a bipartite adjacency matrix.
 

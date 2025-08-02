@@ -7,6 +7,7 @@ Maximum Bipartite Matching
 
 This example demonstrates an efficient way to find and visualise a maximum biparite matching using :meth:`igraph.Graph.maximum_bipartite_matching`.
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 
@@ -16,7 +17,7 @@ import matplotlib.pyplot as plt
 #  - nodes 5-8 to the other side
 g = ig.Graph.Bipartite(
     [0, 0, 0, 0, 0, 1, 1, 1, 1],
-    [(0, 5), (1, 6), (1, 7), (2, 5), (2, 8), (3, 6), (4, 5), (4, 6)]
+    [(0, 5), (1, 6), (1, 7), (2, 5), (2, 8), (3, 6), (4, 5), (4, 6)],
 )
 
 # %%

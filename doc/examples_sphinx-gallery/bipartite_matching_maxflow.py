@@ -9,6 +9,7 @@ This example presents how to visualise bipartite matching using maximum flow (se
 
 .. note::  :meth:`igraph.Graph.maximum_bipartite_matching` is usually a better way to find the maximum bipartite matching. For a demonstration on how to use that method instead, check out :ref:`tutorials-bipartite-matching`.
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 
@@ -17,7 +18,7 @@ import matplotlib.pyplot as plt
 g = ig.Graph(
     9,
     [(0, 4), (0, 5), (1, 4), (1, 6), (1, 7), (2, 5), (2, 7), (2, 8), (3, 6), (3, 7)],
-    directed=True
+    directed=True,
 )
 
 # %%
@@ -62,6 +63,6 @@ ig.plot(
     vertex_size=30,
     vertex_label=range(g.vcount()),
     vertex_color=["lightblue" if i < 9 else "orange" for i in range(11)],
-    edge_width=[1.0 + flow.flow[i] for i in range(g.ecount())]
+    edge_width=[1.0 + flow.flow[i] for i in range(g.ecount())],
 )
 plt.show()

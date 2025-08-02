@@ -17,7 +17,7 @@ def _write_graph_to_svg(
     edge_stroke_widths="width",
     font_size=16,
     *args,
-    **kwds
+    **kwds,
 ):
     """Saves the graph as an SVG (Scalable Vector Graphics) file
 
@@ -289,16 +289,12 @@ def _write_graph_to_svg(
                 vs = str(vertex_size)
                 print(
                     '     <path d="M -{0},0 A{0},{0} 0 0,0 {0},0 L \
-                                -{0},0" fill="{1}"/>'.format(
-                        vs, c[0]
-                    ),
+                                -{0},0" fill="{1}"/>'.format(vs, c[0]),
                     file=f,
                 )
                 print(
                     '     <path d="M -{0},0 A{0},{0} 0 0,1 {0},0 L \
-                                -{0},0" fill="{1}"/>'.format(
-                        vs, c[1]
-                    ),
+                                -{0},0" fill="{1}"/>'.format(vs, c[1]),
                     file=f,
                 )
                 print(

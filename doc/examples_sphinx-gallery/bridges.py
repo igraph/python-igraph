@@ -7,6 +7,7 @@ Bridges
 
 This example shows how to compute and visualize the `bridges <https://en.wikipedia.org/wiki/Bridge_(graph_theory)>`_ in a graph using :meth:`igraph.GraphBase.bridges`. For an example on articulation points instead, see :ref:`tutorials-articulation-points`.
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 
@@ -37,7 +38,7 @@ ig.plot(
     target=ax,
     vertex_size=30,
     vertex_color="lightblue",
-    vertex_label=range(g.vcount())
+    vertex_label=range(g.vcount()),
 )
 plt.show()
 
@@ -72,9 +73,9 @@ ig.plot(
     vertex_size=30,
     vertex_color="lightblue",
     vertex_label=range(g.vcount()),
-    edge_background="#FFF0",    # transparent background color
-    edge_align_label=True,      # make sure labels are aligned with the edge
+    edge_background="#FFF0",  # transparent background color
+    edge_align_label=True,  # make sure labels are aligned with the edge
     edge_label=g.es["label"],
-    edge_label_color="red"
+    edge_label_color="red",
 )
 plt.show()

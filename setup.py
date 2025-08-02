@@ -1000,9 +1000,7 @@ options = {
         # Dependencies needed for plotting with Cairo
         "cairo": ["cairocffi>=1.2.0"],
         # Dependencies needed for plotting with Matplotlib
-        "matplotlib": [
-            "matplotlib>=3.6.0; platform_python_implementation != 'PyPy'"
-        ],
+        "matplotlib": ["matplotlib>=3.6.0; platform_python_implementation != 'PyPy'"],
         # Dependencies needed for plotting with Plotly
         "plotly": ["plotly>=5.3.0"],
         # Compatibility alias to 'cairo' for python-igraph <= 0.9.6

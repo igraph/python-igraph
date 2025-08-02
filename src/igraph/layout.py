@@ -6,7 +6,6 @@ Layout-related code in the igraph library.
 This package contains the implementation of the L{Layout} object.
 """
 
-
 from math import sin, cos, pi
 
 from igraph._igraph import GraphBase

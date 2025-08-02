@@ -24,14 +24,14 @@ import igraph as ig
 # :meth:`igraph.utils.rescale` to rescale the betweennesses in the interval
 # ``[0, 1]``.
 def plot_betweenness(g, vertex_betweenness, edge_betweenness, ax, cax1, cax2):
-    '''Plot vertex/edge betweenness, with colorbars
+    """Plot vertex/edge betweenness, with colorbars
 
     Args:
         g: the graph to plot.
         ax: the Axes for the graph
         cax1: the Axes for the vertex betweenness colorbar
         cax2: the Axes for the edge betweenness colorbar
-    '''
+    """
 
     # Rescale betweenness to be between 0.0 and 1.0
     scaled_vertex_betweenness = ig.rescale(vertex_betweenness, clamp=True)
@@ -45,7 +45,7 @@ def plot_betweenness(g, vertex_betweenness, edge_betweenness, ax, cax1, cax2):
 
     # Plot graph
     g.vs["color"] = [cmap1(betweenness) for betweenness in scaled_vertex_betweenness]
-    g.vs["size"]  = ig.rescale(vertex_betweenness, (10, 50))
+    g.vs["size"] = ig.rescale(vertex_betweenness, (10, 50))
     g.es["color"] = [cmap2(betweenness) for betweenness in scaled_edge_betweenness]
     g.es["width"] = ig.rescale(edge_betweenness, (0.5, 1.0))
     ig.plot(
@@ -58,8 +58,8 @@ def plot_betweenness(g, vertex_betweenness, edge_betweenness, ax, cax1, cax2):
     # Color bars
     norm1 = ScalarMappable(norm=Normalize(0, max(vertex_betweenness)), cmap=cmap1)
     norm2 = ScalarMappable(norm=Normalize(0, max(edge_betweenness)), cmap=cmap2)
-    plt.colorbar(norm1, cax=cax1, orientation="horizontal", label='Vertex Betweenness')
-    plt.colorbar(norm2, cax=cax2, orientation="horizontal", label='Edge Betweenness')
+    plt.colorbar(norm1, cax=cax1, orientation="horizontal", label="Vertex Betweenness")
+    plt.colorbar(norm2, cax=cax2, orientation="horizontal", label="Edge Betweenness")
 
 
 # %%

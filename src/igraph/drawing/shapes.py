@@ -16,7 +16,6 @@ L{ShapeDrawerDirectory} manually if you wish to refer to it by a
 name in the C{shape} attribute of vertices.
 """
 
-
 __all__ = ("ShapeDrawerDirectory",)
 
 from abc import ABCMeta, abstractmethod

@@ -22,7 +22,6 @@ U{Inkscape<https://www.inkscape.org>} (free), U{Skencil<https://www.skencil.org>
 (formerly known as Sketch, also free) or Adobe Illustrator.
 """
 
-
 import os
 
 from io import BytesIO
@@ -286,7 +285,7 @@ class CairoPlot:
                     bbox=bbox,
                     palette=palette,
                     *args,  # noqa: B026
-                    **kwds
+                    **kwds,
                 )
                 if opacity < 1.0:
                     ctx.pop_group_to_source()
