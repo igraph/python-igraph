@@ -227,6 +227,7 @@ from igraph.io.bipartite import (
 from igraph.io.images import _write_graph_to_svg
 from igraph.layout import (
     Layout,
+    align_layout,
     _layout,
     _layout_auto,
     _layout_sugiyama,
