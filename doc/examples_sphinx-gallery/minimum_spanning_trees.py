@@ -8,6 +8,7 @@ Minimum Spanning Trees
 This example shows how to generate a `minimum spanning tree <https://en.wikipedia.org/wiki/Minimum_spanning_tree>`_ from an input graph using :meth:`igraph.Graph.spanning_tree`. If you only need a regular spanning tree, check out :ref:`tutorials-spanning-trees`.
 
 """
+
 import random
 import igraph as ig
 import matplotlib.pyplot as plt

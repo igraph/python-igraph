@@ -326,7 +326,7 @@ class Configuration:
         if file_was_open:
             stream.close()
 
-    def save(self, stream: Optional[Union[str, IO[str]]]=None):
+    def save(self, stream: Optional[Union[str, IO[str]]] = None):
         """Saves the configuration.
 
         @param stream: name of a file or a file-like object. The configuration

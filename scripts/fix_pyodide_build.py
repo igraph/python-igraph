@@ -4,7 +4,9 @@ import pyodide_build
 from pathlib import Path
 from urllib.request import urlretrieve
 
-target_dir = Path(pyodide_build.__file__).parent / "tools" / "cmake" / "Modules" / "Platform"
+target_dir = (
+    Path(pyodide_build.__file__).parent / "tools" / "cmake" / "Modules" / "Platform"
+)
 target_dir.mkdir(exist_ok=True, parents=True)
 
 target_file = target_dir / "Emscripten.cmake"

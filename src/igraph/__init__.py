@@ -2,7 +2,6 @@
 igraph library.
 """
 
-
 __license__ = """
 Copyright (C) 2006- The igraph development team
 
@@ -951,8 +950,7 @@ class Graph(GraphBase):
     def are_connected(self, *args, **kwds):
         """Deprecated alias to L{Graph.are_adjacent()}."""
         deprecated(
-            "Graph.are_connected() is deprecated; use Graph.are_adjacent() "
-            "instead"
+            "Graph.are_connected() is deprecated; use Graph.are_adjacent() " "instead"
         )
         return self.are_adjacent(*args, **kwds)
 

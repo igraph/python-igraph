@@ -12,6 +12,7 @@ This example demonstrates how to generate `Erdős–Rényi graphs <https://en.wi
 
 We generate two graphs of each, so we can confirm that our graph generator is truly random.
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 import random
@@ -48,33 +49,11 @@ ig.summary(g4)
 # differences:
 fig, axs = plt.subplots(2, 2)
 # Probability
-ig.plot(
-    g1,
-    target=axs[0, 0],
-    layout="circle",
-    vertex_color="lightblue"
-)
-ig.plot(
-    g2,
-    target=axs[0, 1],
-    layout="circle",
-    vertex_color="lightblue"
-)
-axs[0, 0].set_ylabel('Probability')
+ig.plot(g1, target=axs[0, 0], layout="circle", vertex_color="lightblue")
+ig.plot(g2, target=axs[0, 1], layout="circle", vertex_color="lightblue")
+axs[0, 0].set_ylabel("Probability")
 # N edges
-ig.plot(
-    g3,
-    target=axs[1, 0],
-    layout="circle",
-    vertex_color="lightblue",
-    vertex_size=15
-)
-ig.plot(
-    g4,
-    target=axs[1, 1],
-    layout="circle",
-    vertex_color="lightblue",
-    vertex_size=15
-)
-axs[1, 0].set_ylabel('N. edges')
+ig.plot(g3, target=axs[1, 0], layout="circle", vertex_color="lightblue", vertex_size=15)
+ig.plot(g4, target=axs[1, 1], layout="circle", vertex_color="lightblue", vertex_size=15)
+axs[1, 0].set_ylabel("N. edges")
 plt.show()

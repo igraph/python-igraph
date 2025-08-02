@@ -8,6 +8,7 @@ Stochastic Variability in Community Detection Algorithms
 This example demonstrates the use of stochastic community detection methods to check whether a network possesses a strong community structure, and whether the partitionings we obtain are meaningul. Many community detection algorithms are randomized, and return somewhat different results after each run, depending on the random seed that was set. When there is a robust community structure, we expect these results to be similar to each other. When the community structure is weak or non-existent, the results may be noisy and highly variable. We will employ several partion similarity measures to analyse the consistency of the results, including the normalized mutual information (NMI), the variation of information (VI), and the Rand index (RI).
 
 """
+
 # %%
 import igraph as ig
 import matplotlib.pyplot as plt
@@ -24,7 +25,7 @@ random.seed(42)
 # We will use Zachary's karate club dataset [1]_, a classic example of a network
 # with a strong community structure:
 karate = ig.Graph.Famous("Zachary")
-  
+
 # %%
 # We will compare it to an an Erdős-Rényi :math:`G(n, m)` random network having
 # the same number of vertices and edges. The parameters 'n' and 'm' refer to the
@@ -36,38 +37,46 @@ random_graph = ig.Graph.Erdos_Renyi(n=karate.vcount(), m=karate.ecount())
 # First, let us plot the two networks for a visual comparison:
 
 # Create subplots
-fig, axes = plt.subplots(1, 2, figsize=(12, 6), subplot_kw={'aspect': 'equal'})
+fig, axes = plt.subplots(1, 2, figsize=(12, 6), subplot_kw={"aspect": "equal"})
 
 # Karate club network
 ig.plot(
-    karate, target=axes[0], 
-    vertex_color="lightblue", vertex_size=30,
-    vertex_label=range(karate.vcount()), vertex_label_size=10,
-    edge_width=1
+    karate,
+    target=axes[0],
+    vertex_color="lightblue",
+    vertex_size=30,
+    vertex_label=range(karate.vcount()),
+    vertex_label_size=10,
+    edge_width=1,
 )
 axes[0].set_title("Karate club network")
 
 # Random network
 ig.plot(
-    random_graph, target=axes[1], 
-    vertex_color="lightcoral", vertex_size=30,
-    vertex_label=range(random_graph.vcount()), vertex_label_size=10,
-    edge_width=1
+    random_graph,
+    target=axes[1],
+    vertex_color="lightcoral",
+    vertex_size=30,
+    vertex_label=range(random_graph.vcount()),
+    vertex_label_size=10,
+    edge_width=1,
 )
 axes[1].set_title("Erdős-Rényi random network")
 
 plt.show()
 
+
 # %%
 # Function to compute similarity between partitions using various methods:
 def compute_pairwise_similarity(partitions, method):
     similarities = []
-    
+
     for p1, p2 in itertools.combinations(partitions, 2):
         similarity = ig.compare_communities(p1, p2, method=method)
         similarities.append(similarity)
-    
+
     return similarities
+
 
 # %%
 # The Leiden method, accessible through :meth:`igraph.Graph.community_leiden()`,
@@ -78,11 +87,15 @@ def compute_pairwise_similarity(partitions, method):
 # results may differ each time the method is applied. The following function
 # runs the Leiden algorithm multiple times:
 def run_experiment(graph, iterations=100):
-    partitions = [graph.community_leiden(objective_function='modularity').membership for _ in range(iterations)]
+    partitions = [
+        graph.community_leiden(objective_function="modularity").membership
+        for _ in range(iterations)
+    ]
     nmi_scores = compute_pairwise_similarity(partitions, method="nmi")
     vi_scores = compute_pairwise_similarity(partitions, method="vi")
     ri_scores = compute_pairwise_similarity(partitions, method="rand")
     return nmi_scores, vi_scores, ri_scores
+
 
 # %%
 # Run the experiment on both networks:
@@ -106,9 +119,13 @@ colors = ["red", "blue", "green"]
 for i, (karate_scores, random_scores, measure, lower, upper) in enumerate(measures):
     # Karate club histogram
     axes[0][i].hist(
-        karate_scores, bins=20, range=(lower, upper),
+        karate_scores,
+        bins=20,
+        range=(lower, upper),
         density=True,  # Probability density
-        alpha=0.7, color=colors[i], edgecolor="black"
+        alpha=0.7,
+        color=colors[i],
+        edgecolor="black",
     )
     axes[0][i].set_title(f"{measure} - Karate club network")
     axes[0][i].set_xlabel(f"{measure} score")
@@ -116,8 +133,13 @@ for i, (karate_scores, random_scores, measure, lower, upper) in enumerate(measur
 
     # Random network histogram
     axes[1][i].hist(
-        random_scores, bins=20, range=(lower, upper), density=True,
-        alpha=0.7, color=colors[i], edgecolor="black"
+        random_scores,
+        bins=20,
+        range=(lower, upper),
+        density=True,
+        alpha=0.7,
+        color=colors[i],
+        edgecolor="black",
     )
     axes[1][i].set_title(f"{measure} - Random network")
     axes[1][i].set_xlabel(f"{measure} score")

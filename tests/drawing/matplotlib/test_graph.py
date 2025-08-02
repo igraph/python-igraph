@@ -54,9 +54,11 @@ class GraphTestRunner(unittest.TestCase):
         g = Graph.Ring(5)
         fig, ax = plt.subplots(figsize=(3, 3))
         plot(
-            g, target=ax, layout=self.layout_small_ring,
-            vertex_label=['1', '2', '3', '4', '5'],
-            vertex_label_color='white',
+            g,
+            target=ax,
+            layout=self.layout_small_ring,
+            vertex_label=["1", "2", "3", "4", "5"],
+            vertex_label_color="white",
             vertex_label_size=16,
         )
 

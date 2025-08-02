@@ -8,15 +8,13 @@ Shortest Paths
 This example demonstrates how to find the shortest distance between two vertices
 of a weighted or an unweighted graph.
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 
 # %%
 # To find the shortest path or distance between two nodes, we can use :meth:`igraph.GraphBase.get_shortest_paths`. If we're only interested in counting the unweighted distance, then we can do the following:
-g = ig.Graph(
-    6,
-    [(0, 1), (0, 2), (1, 3), (2, 3), (2, 4), (3, 5), (4, 5)]
-)
+g = ig.Graph(6, [(0, 1), (0, 2), (1, 3), (2, 3), (2, 4), (3, 5), (4, 5)])
 results = g.get_shortest_paths(1, to=4, output="vpath")
 
 # results = [[1, 0, 2, 4]]
@@ -25,7 +23,7 @@ results = g.get_shortest_paths(1, to=4, output="vpath")
 # We can print the result of the computation:
 if len(results[0]) > 0:
     # The distance is the number of vertices in the shortest path minus one.
-    print("Shortest distance is: ", len(results[0])-1)
+    print("Shortest distance is: ", len(results[0]) - 1)
 else:
     print("End node could not be reached!")
 
@@ -60,20 +58,20 @@ else:
 
 # %%
 # In case you are wondering how the visualization figure was done, here's the code:
-g.es['width'] = 0.5
-g.es[results[0]]['width'] = 2.5
+g.es["width"] = 0.5
+g.es[results[0]]["width"] = 2.5
 
 fig, ax = plt.subplots()
 ig.plot(
     g,
     target=ax,
-    layout='circle',
-    vertex_color='steelblue',
+    layout="circle",
+    vertex_color="steelblue",
     vertex_label=range(g.vcount()),
-    edge_width=g.es['width'],
+    edge_width=g.es["width"],
     edge_label=g.es["weight"],
-    edge_color='#666',
+    edge_color="#666",
     edge_align_label=True,
-    edge_background='white'
+    edge_background="white",
 )
 plt.show()

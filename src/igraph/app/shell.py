@@ -19,7 +19,6 @@ unless explicitly stated by C{global.shells}, since Linux and
 Mac OS X users are likely to invoke igraph from the command line.
 """
 
-
 from abc import ABCMeta, abstractmethod
 import re
 import sys

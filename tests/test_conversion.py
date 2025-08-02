@@ -186,8 +186,7 @@ class PruferTests(unittest.TestCase):
         self.assertEqual(6, g.vcount())
         self.assertEqual(5, g.ecount())
         self.assertEqual(
-            [(0, 3), (1, 3), (2, 3), (3, 4), (4, 5)],
-            sorted(g.get_edgelist())
+            [(0, 3), (1, 3), (2, 3), (3, 4), (4, 5)], sorted(g.get_edgelist())
         )
 
     def testToPrufer(self):
@@ -202,9 +201,7 @@ def suite():
     representation_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
         GraphRepresentationTests
     )
-    prufer_suite = unittest.defaultTestLoader.loadTestsFromTestCase(
-        PruferTests
-    )
+    prufer_suite = unittest.defaultTestLoader.loadTestsFromTestCase(PruferTests)
     return unittest.TestSuite([direction_suite, representation_suite, prufer_suite])
 
 

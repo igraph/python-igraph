@@ -6,6 +6,7 @@ Visual styling
 
 This example shows how to change the visual style of network plots.
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 import random
@@ -17,7 +18,7 @@ visual_style = {
     "edge_width": 0.3,
     "vertex_size": 15,
     "palette": "heat",
-    "layout": "fruchterman_reingold"
+    "layout": "fruchterman_reingold",
 }
 
 # %%

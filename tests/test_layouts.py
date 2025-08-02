@@ -242,8 +242,12 @@ class LayoutAlgorithmTests(unittest.TestCase):
         self.assertTrue(bbox.right <= 6)
 
         lo = g.layout(
-            "kk", miny=[2] * 100, maxy=[3] * 100, minx=[4] * 100, maxx=[6] * 100,
-            weights=range(10, g.ecount() + 10)
+            "kk",
+            miny=[2] * 100,
+            maxy=[3] * 100,
+            minx=[4] * 100,
+            maxx=[6] * 100,
+            weights=range(10, g.ecount() + 10),
         )
 
         self.assertTrue(isinstance(lo, Layout))

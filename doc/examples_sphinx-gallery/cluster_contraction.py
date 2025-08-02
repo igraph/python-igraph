@@ -7,6 +7,7 @@ Generating Cluster Graphs
 
 This example shows how to find the communities in a graph, then contract each community into a single node using :class:`igraph.clustering.VertexClustering`. For this tutorial, we'll use the *Donald Knuth's Les Miserables Network*, which shows the coapperances of characters in the novel *Les Miserables*.
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 
@@ -106,7 +107,10 @@ cluster_graph = communities.cluster_graph(
 # Finally, we can assign colors to the clusters and plot the cluster graph,
 # including a legend to make things clear:
 palette2 = ig.GradientPalette("gainsboro", "black")
-g.es["color"] = [palette2.get(int(i)) for i in ig.rescale(cluster_graph.es["size"], (0, 255), clamp=True)]
+g.es["color"] = [
+    palette2.get(int(i))
+    for i in ig.rescale(cluster_graph.es["size"], (0, 255), clamp=True)
+]
 
 fig2, ax2 = plt.subplots()
 ig.plot(
@@ -123,7 +127,8 @@ ig.plot(
 legend_handles = []
 for i in range(num_communities):
     handle = ax2.scatter(
-        [], [],
+        [],
+        [],
         s=100,
         facecolor=palette1.get(i),
         edgecolor="k",
@@ -133,7 +138,7 @@ for i in range(num_communities):
 
 ax2.legend(
     handles=legend_handles,
-    title='Community:',
+    title="Community:",
     bbox_to_anchor=(0, 1.0),
     bbox_transform=ax2.transAxes,
 )

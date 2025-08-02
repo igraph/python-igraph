@@ -392,7 +392,7 @@ def _community_leiden(
     initial_membership=None,
     n_iterations=2,
     node_weights=None,
-    **kwds
+    **kwds,
 ):
     """Finds the community structure of the graph using the Leiden
     algorithm of Traag, van Eck & Waltman.

@@ -26,7 +26,6 @@ U{Inkscape<https://www.inkscape.org>} (free), U{Skencil<https://www.skencil.org>
 (formerly known as Sketch, also free) or Adobe Illustrator.
 """
 
-
 from pathlib import Path
 from warnings import warn
 

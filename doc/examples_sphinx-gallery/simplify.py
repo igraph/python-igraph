@@ -5,25 +5,28 @@ Simplify
 
 This example shows how to remove self loops and multiple edges using :meth:`igraph.GraphBase.simplify`.
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 
 # %%
 # We start with a graph that includes loops and multiedges:
-g1 = ig.Graph([
-    (0, 1),
-    (1, 2),
-    (2, 3),
-    (3, 4),
-    (4, 0),
-    (0, 0),
-    (1, 4),
-    (1, 4),
-    (0, 2),
-    (2, 4),
-    (2, 4),
-    (2, 4),
-    (3, 3)],
+g1 = ig.Graph(
+    [
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 4),
+        (4, 0),
+        (0, 0),
+        (1, 4),
+        (1, 4),
+        (0, 2),
+        (2, 4),
+        (2, 4),
+        (2, 4),
+        (3, 3),
+    ],
 )
 
 # %%
@@ -59,13 +62,29 @@ ig.plot(
     target=axs[1],
     **visual_style,
 )
-axs[0].set_title('Multigraph...')
-axs[1].set_title('...simplified')
+axs[0].set_title("Multigraph...")
+axs[1].set_title("...simplified")
 # Draw rectangles around axes
-axs[0].add_patch(plt.Rectangle(
-    (0, 0), 1, 1, fc='none', ec='k', lw=4, transform=axs[0].transAxes,
-    ))
-axs[1].add_patch(plt.Rectangle(
-    (0, 0), 1, 1, fc='none', ec='k', lw=4, transform=axs[1].transAxes,
-    ))
+axs[0].add_patch(
+    plt.Rectangle(
+        (0, 0),
+        1,
+        1,
+        fc="none",
+        ec="k",
+        lw=4,
+        transform=axs[0].transAxes,
+    )
+)
+axs[1].add_patch(
+    plt.Rectangle(
+        (0, 0),
+        1,
+        1,
+        fc="none",
+        ec="k",
+        lw=4,
+        transform=axs[1].transAxes,
+    )
+)
 plt.show()

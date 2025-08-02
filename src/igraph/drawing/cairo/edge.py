@@ -168,14 +168,16 @@ class CairoArrowEdgeDrawer(AbstractCairoEdgeDrawer):
             ]
 
             # Midpoint of the base of the arrow triangle
-            x_arrow_mid, y_arrow_mid = (aux_points[0][0] + aux_points[1][0]) / 2.0, (
-                aux_points[0][1] + aux_points[1][1]
-            ) / 2.0
+            x_arrow_mid, y_arrow_mid = (
+                (aux_points[0][0] + aux_points[1][0]) / 2.0,
+                (aux_points[0][1] + aux_points[1][1]) / 2.0,
+            )
 
             # Vector representing the base of the arrow triangle
             x_arrow_base_vec, y_arrow_base_vec = (
-                aux_points[0][0] - aux_points[1][0]
-            ), (aux_points[0][1] - aux_points[1][1])
+                (aux_points[0][0] - aux_points[1][0]),
+                (aux_points[0][1] - aux_points[1][1]),
+            )
 
             # Recalculate the curve such that it lands on the base of the arrow triangle
             aux1, aux2 = get_bezier_control_points_for_curved_edge(
@@ -224,9 +226,10 @@ class CairoArrowEdgeDrawer(AbstractCairoEdgeDrawer):
             ]
 
             # Midpoint of the base of the arrow triangle
-            x_arrow_mid, y_arrow_mid = (aux_points[0][0] + aux_points[1][0]) / 2.0, (
-                aux_points[0][1] + aux_points[1][1]
-            ) / 2.0
+            x_arrow_mid, y_arrow_mid = (
+                (aux_points[0][0] + aux_points[1][0]) / 2.0,
+                (aux_points[0][1] + aux_points[1][1]) / 2.0,
+            )
 
             # Draw the line
             ctx.line_to(x_arrow_mid, y_arrow_mid)
