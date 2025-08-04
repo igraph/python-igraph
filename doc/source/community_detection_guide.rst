@@ -17,7 +17,7 @@ This documentation provides an overview of the notebooks available in the commun
    community_detection_guide/notebooks/membership_vector.ipynb
    community_detection_guide/notebooks/modularity.ipynb
    community_detection_guide/notebooks/test_significance_of_community.ipynb
-   community_detection_guide/notebooks/vertex_clustering_object.ipynb
+   community_detection_guide/notebooks/working_with_clusterings.ipynb
 
 .. grid:: 2 2 3 3
    :gutter: 3
@@ -95,12 +95,12 @@ This documentation provides an overview of the notebooks available in the commun
       **Overview:** This notebook introduces membership vectors in igraph.
 
    .. grid-item-card::  Vertex Clustering Object
-      :link: community_detection_guide/notebooks/vertex_clustering_object
+      :link: community_detection_guide/notebooks/working_with_clusterings
       :link-type: doc
       :class-card: sd-card-hover card-deep-purple 
       :shadow: sm
 
-      **Overview:** This notebook introduces vertex clustering objects in igraph.
+      **Overview:** This notebook describes how to work with clusterings in igraph.
 
    .. grid-item-card::  Helper Functions
       :link: community_detection_guide/notebooks/functions
