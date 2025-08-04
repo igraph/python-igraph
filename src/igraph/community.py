@@ -461,6 +461,7 @@ def _community_leiden(
     initial_membership=None,
     n_iterations=2,
     node_weights=None,
+    node_in_weights=None,
     **kwds,
 ):
     """Finds the community structure of the graph using the Leiden
@@ -491,6 +492,11 @@ def _community_leiden(
       If this is not provided, it will be automatically determined on the
       basis of whether you want to use CPM or modularity. If you do provide
       this, please make sure that you understand what you are doing.
+    @param node_in_weights: the inbound node weights used in the directed
+      variant of the Leiden algorithm. If this is not provided, it will be
+      automatically determined on the basis of whether you want to use CPM or
+      modularity. If you do provide this, please make sure that you understand
+      what you are doing.
     @return: an appropriate L{VertexClustering} object with an extra attribute
       called C{quality} that stores the value of the internal quality function
       optimized by the algorithm.
@@ -512,6 +518,7 @@ def _community_leiden(
         graph,
         edge_weights=weights,
         node_weights=node_weights,
+        node_in_weights=node_in_weights,
         resolution=resolution,
         normalize_resolution=(objective_function == "modularity"),
         beta=beta,

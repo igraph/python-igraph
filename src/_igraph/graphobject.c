@@ -13611,11 +13611,12 @@ PyObject *igraphmodule_Graph_community_walktrap(igraphmodule_GraphObject * self,
 PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
         PyObject *args, PyObject *kwds) {
 
-  static char *kwlist[] = {"edge_weights", "node_weights", "resolution",
+  static char *kwlist[] = {"edge_weights", "node_weights", "node_in_weights", "resolution",
                            "normalize_resolution", "beta", "initial_membership", "n_iterations", NULL};
 
   PyObject *edge_weights_o = Py_None;
   PyObject *node_weights_o = Py_None;
+  PyObject *node_in_weights_o = Py_None;
   PyObject *initial_membership_o = Py_None;
   PyObject *normalize_resolution = Py_False;
   PyObject *res = Py_None;
@@ -13624,14 +13625,14 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
   Py_ssize_t n_iterations = 2;
   double resolution = 1.0;
   double beta = 0.01;
-  igraph_vector_t *edge_weights = NULL, *node_weights = NULL;
+  igraph_vector_t *edge_weights = NULL, *node_weights = NULL, *node_in_weights = NULL;
   igraph_vector_int_t *membership = NULL;
   igraph_bool_t start = true;
   igraph_integer_t nb_clusters = 0;
   igraph_real_t quality = 0.0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOdOdOn", kwlist,
-        &edge_weights_o, &node_weights_o, &resolution, &normalize_resolution, &beta, &initial_membership_o, &n_iterations))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOdOdOn", kwlist,
+        &edge_weights_o, &node_weights_o, &node_in_weights_o, &resolution, &normalize_resolution, &beta, &initial_membership_o, &n_iterations))
     return NULL;
 
   if (n_iterations >= 0) {
@@ -13649,6 +13650,13 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
 
   /* Get node weights */
   if (!error && igraphmodule_attrib_to_vector_t(node_weights_o, self, &node_weights,
+    ATTRIBUTE_TYPE_VERTEX)) {
+    igraphmodule_handle_igraph_error();
+    error = -1;
+  }
+
+  /* Get node in-weights (directed case) */
+  if (!error && igraphmodule_attrib_to_vector_t(node_in_weights_o, self, &node_in_weights,
     ATTRIBUTE_TYPE_VERTEX)) {
     igraphmodule_handle_igraph_error();
     error = -1;
@@ -13696,7 +13704,7 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
   /* Run actual Leiden algorithm for several iterations. */
   if (!error) {
     error = igraph_community_leiden(&self->g,
-                                    edge_weights, node_weights,
+                                    edge_weights, node_weights, node_in_weights,
                                     resolution, beta,
                                     start, n_iterations, membership,
                                     &nb_clusters, &quality);
@@ -13709,6 +13717,10 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
   if (node_weights != 0) {
     igraph_vector_destroy(node_weights);
     free(node_weights);
+  }
+  if (node_in_weights != 0) {
+    igraph_vector_destroy(node_in_weights);
+    free(node_in_weights);
   }
 
   if (!error && membership != 0) {
