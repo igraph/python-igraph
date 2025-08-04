@@ -8,6 +8,7 @@ Delaunay Triangulation
 This example demonstrates how to calculate the `Delaunay triangulation <https://en.wikipedia.org/wiki/Delaunay_triangulation>`_ of an input graph. We start by generating a set of points on a 2D grid using random ``numpy`` arrays and a graph with those vertex coordinates and no edges.
 
 """
+
 import numpy as np
 from scipy.spatial import Delaunay
 import igraph as ig
@@ -20,8 +21,8 @@ import matplotlib.pyplot as plt
 np.random.seed(0)
 x, y = np.random.rand(2, 30)
 g = ig.Graph(30)
-g.vs['x'] = x
-g.vs['y'] = y
+g.vs["x"] = x
+g.vs["y"] = y
 
 # %%
 # Because we already set the `x` and `y` vertex attributes, we can use

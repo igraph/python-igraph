@@ -7,6 +7,7 @@ Connected Components
 
 This example demonstrates how to visualise the connected components in a graph using :meth:`igraph.GraphBase.connected_components`.
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 import random
@@ -21,7 +22,7 @@ g = ig.Graph.GRG(50, 0.15)
 # %%
 # Now we can cluster the graph into weakly connected components, i.e. subgraphs
 # that have no edges connecting them to one another:
-components = g.connected_components(mode='weak')
+components = g.connected_components(mode="weak")
 
 # %%
 # Finally, we can visualize the distinct connected components of the graph:

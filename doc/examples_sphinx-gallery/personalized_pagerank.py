@@ -55,7 +55,9 @@ def plot_pagerank(graph: ig.Graph, p_pagerank: list[float]):
     ig.plot(graph, target=ax, layout=graph.layout_grid())
 
     # Add a colorbar
-    sm = cm.ScalarMappable(norm=plt.Normalize(min(p_pagerank), max(p_pagerank)), cmap=cmap)
+    sm = cm.ScalarMappable(
+        norm=plt.Normalize(min(p_pagerank), max(p_pagerank)), cmap=cmap
+    )
     plt.colorbar(sm, ax=ax, label="Personalized PageRank")
 
     plt.title("Graph with Personalized PageRank")

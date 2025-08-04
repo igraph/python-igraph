@@ -2,7 +2,6 @@
 igraph library.
 """
 
-
 __license__ = """
 Copyright (C) 2006- The igraph development team
 
@@ -227,6 +226,7 @@ from igraph.io.bipartite import (
 from igraph.io.images import _write_graph_to_svg
 from igraph.layout import (
     Layout,
+    align_layout,
     _layout,
     _layout_auto,
     _layout_sugiyama,
@@ -971,8 +971,7 @@ class Graph(GraphBase):
     def are_connected(self, *args, **kwds):
         """Deprecated alias to L{Graph.are_adjacent()}."""
         deprecated(
-            "Graph.are_connected() is deprecated; use Graph.are_adjacent() "
-            "instead"
+            "Graph.are_connected() is deprecated; use Graph.are_adjacent() " "instead"
         )
         return self.are_adjacent(*args, **kwds)
 

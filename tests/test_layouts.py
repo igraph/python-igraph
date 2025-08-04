@@ -1,6 +1,6 @@
 import unittest
 from math import hypot
-from igraph import Graph, Layout, BoundingBox, InternalError
+from igraph import Graph, Layout, BoundingBox, InternalError, align_layout
 from igraph import umap_compute_weights
 
 
@@ -242,8 +242,12 @@ class LayoutAlgorithmTests(unittest.TestCase):
         self.assertTrue(bbox.right <= 6)
 
         lo = g.layout(
-            "kk", miny=[2] * 100, maxy=[3] * 100, minx=[4] * 100, maxx=[6] * 100,
-            weights=range(10, g.ecount() + 10)
+            "kk",
+            miny=[2] * 100,
+            maxy=[3] * 100,
+            minx=[4] * 100,
+            maxx=[6] * 100,
+            weights=range(10, g.ecount() + 10),
         )
 
         self.assertTrue(isinstance(lo, Layout))
@@ -451,6 +455,13 @@ class LayoutAlgorithmTests(unittest.TestCase):
         g = Graph.Ring(10, circular=False) + 1
         lo = g.layout("drl")
         self.assertTrue(isinstance(lo, Layout))
+
+    def testAlign(self):
+        g = Graph.Ring(3, circular=False)
+        lo = Layout([[1,1], [2,2], [3,3]])
+        lo = align_layout(g, lo)
+        self.assertTrue(isinstance(lo, Layout))
+        self.assertTrue(all(abs(lo[i][1]) < 1e-10 for i in range(3)))
 
 
 def suite():

@@ -7,6 +7,7 @@ Spanning Trees
 
 This example shows how to generate a spanning tree from an input graph using :meth:`igraph.Graph.spanning_tree`. For the related idea of finding a *minimum spanning tree*, see :ref:`tutorials-minimum-spanning-trees`.
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 import random
@@ -47,13 +48,7 @@ g.es["width"] = 0.5
 g.es[spanning_tree]["width"] = 3.0
 
 fig, ax = plt.subplots()
-ig.plot(
-    g,
-    target=ax,
-    layout=layout,
-    vertex_color="lightblue",
-    edge_width=g.es["width"]
-)
+ig.plot(g, target=ax, layout=layout, vertex_color="lightblue", edge_width=g.es["width"])
 plt.show()
 
 # %%

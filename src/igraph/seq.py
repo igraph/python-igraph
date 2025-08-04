@@ -737,9 +737,7 @@ This method calls the C{%(name)s()} method of the L{Graph} class
 restricted to this sequence, and returns the result.
 
 @see: Graph.%(name)s() for details.
-""" % {
-        "name": name
-    }
+""" % {"name": name}
 
     return decorated
 

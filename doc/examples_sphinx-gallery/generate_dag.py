@@ -8,6 +8,7 @@ Directed Acyclic Graph
 
 This example demonstrates how to create a random directed acyclic graph (DAG), which is useful in a number of contexts including for Git commit history.
 """
+
 import igraph as ig
 import matplotlib.pyplot as plt
 import random

@@ -13,7 +13,6 @@ auxiliary_imports = [
 
 
 def main():
-
     # Get instance and classmethods
     g = igraph.Graph()
     methods = inspect.getmembers(g, predicate=inspect.ismethod)
@@ -43,7 +42,7 @@ def main():
     newmodule = igraph.__file__ + ".new"
     with open(newmodule, "wt") as fout:
         # FIXME: whitelisting all cases is not great, try to improve
-        for (origin, value) in auxiliary_imports:
+        for origin, value in auxiliary_imports:
             fout.write(f"from {origin} import {value}\n")
 
         with open(igraph.__file__, "rt") as f:

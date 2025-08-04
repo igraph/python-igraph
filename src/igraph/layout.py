@@ -6,7 +6,6 @@ Layout-related code in the igraph library.
 This package contains the implementation of the L{Layout} object.
 """
 
-
 from math import sin, cos, pi
 
 from igraph._igraph import GraphBase
@@ -16,6 +15,7 @@ from igraph.statistics import RunningMean
 
 __all__ = (
     "Layout",
+    "align_layout",
     "_layout",
     "_layout_auto",
     "_layout_sugiyama",
@@ -533,6 +533,27 @@ def _layout(graph, layout=None, *args, **kwds):
         layout = Layout(layout)
     return layout
 
+
+def align_layout(graph, layout):
+    """Aligns a graph layout with the coordinate axes
+
+    This function centers a vertex layout on the coordinate system origin and
+    rotates the layout to achieve a visually pleasing alignment with the coordinate
+    axes. Doing this is particularly useful with force-directed layouts such as
+    L{Graph.layout_fruchterman_reingold}. Layouts in arbitrary dimensional spaces
+    are supported.
+
+    @param graph: the graph that the layout is associated with.
+    @param layout: the L{Layout} object containing the vertex coordinates
+      to align.
+    @return: a new aligned L{Layout} object.
+    """
+    from igraph._igraph import _align_layout
+
+    if not isinstance(layout, Layout):
+        layout = Layout(layout)
+
+    return Layout(_align_layout(graph, layout.coords))
 
 def _layout_auto(graph, *args, **kwds):
     """Chooses and runs a suitable layout function based on simple
