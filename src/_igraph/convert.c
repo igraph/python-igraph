@@ -374,7 +374,7 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *o,
   w->pos = IGRAPH_EIGEN_LM;
   w->howmany = 1;
   w->il = w->iu = -1;
-  w->vl = IGRAPH_NEGINFINITY;
+  w->vl = -IGRAPH_INFINITY;
   w->vu = IGRAPH_INFINITY;
   w->vestimate = 0;
   w->balance = IGRAPH_LAPACK_DGEEVX_BALANCE_NONE;
