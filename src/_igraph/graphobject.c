@@ -13672,30 +13672,35 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
   if (!error && membership == 0) {
     start = 0;
     membership = (igraph_vector_int_t*)calloc(1, sizeof(igraph_vector_int_t));
-    if (membership==0) {
+    if (membership == 0) {
       PyErr_NoMemory();
       error = -1;
-    } else {
-      igraph_vector_int_init(membership, 0);
+    } else if (igraph_vector_int_init(membership, 0)) {
+      igraphmodule_handle_igraph_error();
+      error = -1;
     }
   }
 
-  if (PyObject_IsTrue(normalize_resolution))
+  if (!error && PyObject_IsTrue(normalize_resolution))
   {
     /* If we need to normalize the resolution parameter,
      * we will need to have node weights. */
     if (node_weights == 0)
     {
       node_weights = (igraph_vector_t*)calloc(1, sizeof(igraph_vector_t));
-      if (node_weights==0) {
+      if (node_weights == 0) {
         PyErr_NoMemory();
         error = -1;
-      } else {
-        igraph_vector_init(node_weights, 0);
-        if (igraph_strength(&self->g, node_weights, igraph_vss_all(), IGRAPH_ALL, 0, edge_weights)) {
-          igraphmodule_handle_igraph_error();
-          error = -1;
-        }
+      } else if (igraph_vector_init(node_weights, 0)) {
+        igraphmodule_handle_igraph_error();
+        error = -1;
+      } else if (igraph_strength(
+        &self->g, node_weights, igraph_vss_all(),
+        igraph_is_directed(&self->g) ? IGRAPH_OUT : IGRAPH_ALL,
+        IGRAPH_NO_LOOPS, edge_weights
+      )) {
+        igraphmodule_handle_igraph_error();
+        error = -1;
       }
     }
     resolution /= igraph_vector_sum(node_weights);
