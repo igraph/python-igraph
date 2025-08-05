@@ -33,7 +33,6 @@
 #include "indexing.h"
 #include "memory.h"
 #include "pyhelpers.h"
-#include "utils.h"
 #include "vertexseqobject.h"
 #include <float.h>
 
@@ -5571,14 +5570,14 @@ PyObject *igraphmodule_Graph_get_shortest_path(
     return NULL;
   }
 
-  if (algorithm == IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO) {
-    algorithm = igraphmodule_select_shortest_path_algorithm(
-      &self->g, weights, NULL, mode, /* allow_johnson = */ false
-    );
-  }
-
   /* Call the C function */
   switch (algorithm) {
+    case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO:
+      retval = igraph_get_shortest_path(
+        &self->g, weights, use_edges ? NULL : &vec, use_edges ? &vec : NULL, from, to, mode
+      );
+      break;
+
     case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA:
       retval = igraph_get_shortest_path_dijkstra(
         &self->g, use_edges ? NULL : &vec, use_edges ? &vec : NULL, from, to, weights, mode
@@ -5793,14 +5792,15 @@ PyObject *igraphmodule_Graph_get_shortest_paths(igraphmodule_GraphObject *
     return NULL;
   }
 
-  if (algorithm == IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO) {
-    algorithm = igraphmodule_select_shortest_path_algorithm(
-      &self->g, weights, NULL, mode, /* allow_johnson = */ false
-    );
-  }
-
   /* Call the C function */
   switch (algorithm) {
+    case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO:
+      retval = igraph_get_shortest_paths(
+        &self->g, weights, use_edges ? NULL : &veclist, use_edges ? &veclist : NULL,
+        from, to, mode, NULL, NULL
+      );
+      break;
+
     case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA:
       retval = igraph_get_shortest_paths_dijkstra(
         &self->g, use_edges ? NULL : &veclist, use_edges ? &veclist : NULL,
@@ -6619,14 +6619,12 @@ PyObject *igraphmodule_Graph_distances(
     return igraphmodule_handle_igraph_error();
   }
 
-  if (algorithm == IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO) {
-    algorithm = igraphmodule_select_shortest_path_algorithm(
-      &self->g, weights, &from_vs, mode, /* allow_johnson = */ true
-    );
-  }
-
   /* Call the C function */
   switch (algorithm) {
+    case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_AUTO:
+      retval = igraph_distances(&self->g, weights, &res, from_vs, to_vs, mode);
+      break;
+
     case IGRAPHMODULE_SHORTEST_PATH_ALGORITHM_DIJKSTRA:
       retval = igraph_distances_dijkstra(&self->g, &res, from_vs, to_vs, weights, mode);
       break;
