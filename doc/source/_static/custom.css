@@ -60,25 +60,6 @@
     cursor: pointer;
 }
 
-.download-link {
-    text-decoration: none !important;
-}
-
-.download-button {
-    padding: 8px 16px;
-    background-color: #2980b9;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s;
-}
-
-.download-button:hover {
-    background-color: #3498db;
-}
-
 /* Colored cards (your colors are good) */
 .card-red-orange { background-color: #FF6633; }
 .card-deep-orange { background-color: #FF8C40; }
