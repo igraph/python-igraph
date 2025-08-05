@@ -10,94 +10,85 @@
 }
 
 /* Custom CSS for colored cards */
-
-/* Base card styling (adjust padding, font sizes if needed) */
+/* Base card styling for better visual appearance */
 .sd-card {
-    border: none !important; /* Remove default border */
-    border-radius: 8px !important; /* Slightly rounded corners */
-    text-align: center; /* Center content within the card */
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* Vertically center content */
-    align-items: center; /* Horizontally center content */
-    padding: 1.5em; /* Padding inside the card */
-    min-height: 140px; /* Ensure a consistent minimum height for cards */
-    color: white; /* Default text color for all custom cards */
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Smooth hover effect */
+    border: none !important;
+    border-radius: 8px !important;
     position: relative;
+    padding: 1em; /* Adjust padding as needed */
+    color: white;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 /* Hover effect */
 .sd-card:hover {
-    transform: translateY(-5px); /* Lift card slightly */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
-    cursor: pointer;
-    position: relative;
+    transform: translateY(-3px); /* Slightly lift card */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
 }
 
-/* Card titles */
-.sd-card-title {
-    font-size: 1.2em; /* Larger title */
+/* Card titles inside the body */
+.sd-card-body h3, .sd-card-body strong {
+    font-size: 1.2em;
     font-weight: bold;
-    margin-bottom: 0.5em; /* Space between title and icon */
-    color: white !important; /* Ensure title color is white */
+    margin-bottom: 0.5em;
+    color: white !important;
 }
 
-/* Icon styling (for Font Awesome icons within cards) */
-.sd-card .fa-solid,
-.sd-card .fa-regular,
-.sd-card .fa-brands {
-    font-size: 3.5em; /* Large icon size */
-    margin-bottom: 0.3em; /* Space between icon and text */
-    opacity: 0.8; /* Slightly less opaque than text */
-    color: white !important; /* Ensure icon color is white */
+/* Ensure the main content block has flexible spacing */
+.sd-card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
 }
 
+/* Download button container inside the card */
+.sd-card-body .download-container {
+    position: relative;
+    z-index: 10; /* A high number to make sure it's on top */
+    margin-top: auto; /* Push to the bottom */
+    text-align: right;
+}
+
+/* The actual button inside the container */
+.sd-card-body .download-button {
+    background-color: #f8f9fa;
+    color: #212529;
+    border: 1px solid #ced4da;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.download-link {
+    text-decoration: none !important;
+}
+
+.download-button {
+    padding: 8px 16px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.download-button:hover {
+    background-color: #3498db;
+}
+
+/* Colored cards (your colors are good) */
 .card-red-orange { background-color: #FF6633; }
 .card-deep-orange { background-color: #FF8C40; }
 .card-yellow-orange { background-color: #FFA500; }
-
 .card-light-green { background-color: #7ED957; }
 .card-medium-green { background-color: #70B341; }
 .card-dark-green { background-color: #4CAF50; }
-
 .card-light-blue { background-color: #409ED8; }
 .card-medium-blue { background-color: #007BFF; }
 .card-deep-blue { background-color: #0056b3; }
-
 .card-light-purple { background-color: #BF40BF; } 
 .card-medium-purple { background-color: #800080; } 
 .card-deep-purple { background-color: #4B0082; } 
-
-/* Optional: Make links within cards cover the whole card */
-.sd-card a {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    text-decoration: none; /* Remove underline */
-    z-index: 1; /* Ensure link is clickable */
-}
-
-.sd-card a:hover {
-    text-decoration: none; /* No underline on hover */
-}
-
-/* Ensure text is on top of the link layer */
-.sd-card .sd-card-body, .sd-card .sd-card-header, .sd-card .sd-card-footer {
-    position: relative;
-    z-index: 2;
-}
-
-/* Hide default card header/footer if not used */
-.sd-card-header, .sd-card-footer {
-    display: none;
-}
-
-/* Ensure content doesn't block clickable area */
-.sd-card-body {
-    position: relative;
-    z-index: 1;
-    pointer-events: none;
-}

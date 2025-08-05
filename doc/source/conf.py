@@ -142,7 +142,10 @@ pygments_style = "sphinx"
 # https://github.com/twisted/pydoctor/blob/master/docs/source/conf.py
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
-html_css_files = ["custom.css"]
+html_css_files = [
+    "custom.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"   
+]
 
 nbsphinx_execute = 'never'
 nbsphinx_allow_errors = True
