@@ -67,7 +67,7 @@ Documentation
 
        - :doc:`Quick start <tutorials/quickstart>`
        - :doc:`Gallery of examples <tutorials/index>`
-       - :doc:`Community Detection Guide <community_detection_guide>`
+       - :doc:`Community detection guide <community_detection_guide>`
        - :doc:`Extended tutorial <tutorial>` (:doc:`Español <tutorial.es>`)
     
     .. container::

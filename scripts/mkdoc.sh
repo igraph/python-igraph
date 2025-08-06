@@ -62,44 +62,9 @@ else
   echo "Upgrading pip in virtualenv..."
   .venv/bin/pip install -q -U pip wheel
 
-  # Check if nbsphinx is installed and install it if not
+  # Install nbsphinx, pandoc, sphinx-design and ipython
   echo "Checking for nbsphinx, pandoc, sphinx-design and ipython..."
-  if ! .venv/bin/pip show nbsphinx > /dev/null 2>&1; then
-    echo "nbsphinx not found. Installing..."
-    .venv/bin/pip install -q nbsphinx
-  else
-    echo "nbsphinx is already installed."
-  fi
-
-  if ! .venv/bin/pip show pandoc > /dev/null 2>&1; then
-    echo "pandoc not found. Installing..."
-    .venv/bin/pip install -q pandoc
-  else
-    echo "pandoc is already installed."
-  fi
-
-  if ! .venv/bin/pip show sphinx-design > /dev/null 2>&1; then
-    echo "sphinx-design not found. Installing..."
-    .venv/bin/pip install -q sphinx-design
-  else
-    echo "sphinx-design is already installed."
-  fi
-
-  if ! .venv/bin/pip show ipython > /dev/null 2>&1; then
-    echo "ipython not found. Installing..."
-    .venv/bin/pip install -q ipython
-  else
-    echo "ipython is already installed."
-  fi
-
-  if ! .venv/bin/pip show ipywidgets > /dev/null 2>&1; then
-    echo "ipywidgets not found. Installing..."
-    .venv/bin/pip install -q ipywidgets
-  else
-    echo "ipywidgets is already installed."
-  fi
-
-
+  .venv/bin/pip install -q -U nbsphinx pandoc sphinx-design ipython ipywidgets
 fi
 
 # Make sure that Sphinx, PyDoctor (and maybe doc2dash) are up-to-date in the virtualenv

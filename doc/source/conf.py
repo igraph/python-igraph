@@ -64,9 +64,8 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.mathjax",
     "sphinx.ext.intersphinx",
-    # NOTE: sphinx_gallery.gen_gallery is not used because it conflicts with pydoctor and nbsphinx
     "sphinx_gallery.gen_gallery",
-    # #'sphinx_panels',
+    # 'sphinx_panels',
     "pydoctor.sphinx_ext.build_apidocs",
     "nbsphinx",
     "sphinx_design",
@@ -113,7 +112,7 @@ release = version
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["include/*.rst", "**.ipynb_checkpoints", "_build", "tutorials/*.ipynb"]
+exclude_patterns = ["include/*.rst", "**.ipynb_checkpoints", "tutorials/*.ipynb"]
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None
