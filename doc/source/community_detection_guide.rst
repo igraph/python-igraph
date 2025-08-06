@@ -184,7 +184,7 @@ This documentation provides an overview of the notebooks available in the commun
               </a>
           </div>
 
-   .. grid-item-card::  Vertex Clustering Object
+   .. grid-item-card::  Working with Clusterings
       :link: community_detection_guide/notebooks/working_with_clusterings
       :link-type: doc
       :class-card: sd-card-hover card-deep-purple 
