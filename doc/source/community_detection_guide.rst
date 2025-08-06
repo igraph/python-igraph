@@ -1,4 +1,4 @@
-Welcome to the Community Detection Guide!
+Community Detection Guide
 =========================================
 
 This documentation provides an overview of the notebooks available in the community detection guide.
@@ -7,17 +7,17 @@ This documentation provides an overview of the notebooks available in the commun
    :maxdepth: 2
    :hidden:
 
-   community_detection_guide/notebooks/functions.ipynb
-   community_detection_guide/notebooks/community_detection_algorithms.ipynb
    community_detection_guide/notebooks/initial_workflow.ipynb
-   community_detection_guide/notebooks/consensus_clustering.ipynb
+   community_detection_guide/notebooks/community_detection_algorithms.ipynb
+   community_detection_guide/notebooks/test_significance_of_community.ipynb
    community_detection_guide/notebooks/generating_and_visualizing_clusters.ipynb
    community_detection_guide/notebooks/hierarchical_clustering.ipynb
-   community_detection_guide/notebooks/interactive_resolution_on_sierpinski.ipynb
-   community_detection_guide/notebooks/membership_vector.ipynb
    community_detection_guide/notebooks/modularity.ipynb
-   community_detection_guide/notebooks/test_significance_of_community.ipynb
+   community_detection_guide/notebooks/interactive_resolution_on_sierpinski.ipynb
+   community_detection_guide/notebooks/consensus_clustering.ipynb
+   community_detection_guide/notebooks/membership_vector.ipynb
    community_detection_guide/notebooks/working_with_clusterings.ipynb
+   community_detection_guide/notebooks/functions.ipynb
 
 .. grid:: 2 2 3 3
    :gutter: 3
@@ -28,7 +28,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-red-orange
       :shadow: sm
       
-      **Overview:** This notebook is a quick start guide to community detection in igraph. It covers the initial workflow for detecting communities in networks. (If you look for a more practical learning experience, we recommend starting with this notebook.)
+      .. **Overview:** This notebook is a quick start guide to community detection in igraph. It covers the initial workflow for detecting communities in networks. (If you look for a more practical learning experience, we recommend starting with this notebook.)
       
       .. raw:: html
 
@@ -46,7 +46,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-deep-orange
       :shadow: sm
 
-      **Overview:** This notebook covers various community detection algorithms available in igraph. It provides a detailed explanation of these algorithms and when to use them.
+      .. **Overview:** This notebook covers various community detection algorithms available in igraph. It provides a detailed explanation of these algorithms and when to use them.
 
       .. raw:: html
 
@@ -64,7 +64,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-yellow-orange
       :shadow: sm   
 
-      **Overview:** This notebook provides methods to test the significance of detected communities. 
+      .. **Overview:** This notebook provides methods to test the significance of detected communities. 
       
       .. raw:: html
 
@@ -82,7 +82,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-dark-green
       :shadow: sm
 
-      **Overview:** This notebook provides various methods for generating and visualizing clusters in networks. It includes techniques for visualizing community structures.
+      .. **Overview:** This notebook provides various methods for generating and visualizing clusters in networks. It includes techniques for visualizing community structures.
       
       .. raw:: html
 
@@ -100,7 +100,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-medium-green
       :shadow: sm
 
-      **Overview:** This notebook describes hierarchical clustering. It explains how to perform hierarchical clustering on networks and visualize the results.
+      .. **Overview:** This notebook describes hierarchical clustering. It explains how to perform hierarchical clustering on networks and visualize the results.
       
       .. raw:: html
 
@@ -118,7 +118,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-light-green
       :shadow: sm
 
-      **Overview:** This notebook introduces the concept of modularity in community detection.
+      .. **Overview:** This notebook introduces the concept of modularity in community detection.
       
       .. raw:: html
 
@@ -136,7 +136,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-deep-blue 
       :shadow: sm
 
-      **Overview:** This notebook introduces the concept of resolution parameter on the Sierpinski triangle.
+      .. **Overview:** This notebook introduces the concept of resolution parameter on the Sierpinski triangle.
       
       .. raw:: html
 
@@ -154,7 +154,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-medium-blue 
       :shadow: sm
 
-      **Overview:** This notebook introduces the method of consensus clustering by combining multiple clustering results.
+      .. **Overview:** This notebook introduces the method of consensus clustering by combining multiple clustering results.
       
       .. raw:: html
 
@@ -172,7 +172,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-light-blue 
       :shadow: sm
 
-      **Overview:** This notebook introduces membership vectors in igraph.
+      .. **Overview:** This notebook introduces membership vectors in igraph.
       
       .. raw:: html
 
@@ -190,7 +190,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-deep-purple 
       :shadow: sm
 
-      **Overview:** This notebook describes how to work with clusterings in igraph.
+      .. **Overview:** This notebook describes how to work with clusterings in igraph.
       
       .. raw:: html
 
@@ -208,7 +208,7 @@ This documentation provides an overview of the notebooks available in the commun
       :class-card: sd-card-hover card-medium-purple 
       :shadow: sm
 
-      **Overview:** This notebook introduces all the helper functions used in the community detection guide. It provides a collection of utility functions for community detection tasks.
+      .. **Overview:** This notebook introduces all the helper functions used in the community detection guide. It provides a collection of utility functions for community detection tasks.
       
       .. raw:: html
 
