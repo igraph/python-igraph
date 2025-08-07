@@ -13,7 +13,7 @@ This documentation provides an overview of the notebooks available in the commun
    community_detection_guide/notebooks/generating_and_visualizing_clusters.ipynb
    community_detection_guide/notebooks/hierarchical_clustering.ipynb
    community_detection_guide/notebooks/modularity.ipynb
-   community_detection_guide/notebooks/interactive_resolution_on_sierpinski.ipynb
+   community_detection_guide/notebooks/resolution.ipynb
    community_detection_guide/notebooks/consensus_clustering.ipynb
    community_detection_guide/notebooks/membership_vector.ipynb
    community_detection_guide/notebooks/working_with_clusterings.ipynb
@@ -130,8 +130,8 @@ This documentation provides an overview of the notebooks available in the commun
               </a>
           </div>
 
-   .. grid-item-card::  Interactive Resolution on Sierpinski
-      :link: community_detection_guide/notebooks/interactive_resolution_on_sierpinski
+   .. grid-item-card::  Resolution Parameter
+      :link: community_detection_guide/notebooks/resolution
       :link-type: doc
       :class-card: sd-card-hover card-deep-blue 
       :shadow: sm
@@ -141,7 +141,7 @@ This documentation provides an overview of the notebooks available in the commun
       .. raw:: html
 
           <div class="download-container">
-              <a href="community_detection_guide/notebooks/interactive_resolution_on_sierpinski.ipynb" download>
+              <a href="community_detection_guide/notebooks/resolution.ipynb" download>
                   <button type="button" class="download-button">
                       <i class="fa-solid fa-download"></i> Download Notebook
                   </button>
