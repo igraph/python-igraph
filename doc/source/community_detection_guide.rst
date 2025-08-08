@@ -58,7 +58,7 @@ This documentation provides an overview of the notebooks available in the commun
               </a>
           </div>
 
-   .. grid-item-card::  Test Significance of Community
+   .. grid-item-card::  Significance of Community Structure
       :link: community_detection_guide/notebooks/test_significance_of_community
       :link-type: doc
       :class-card: sd-card-hover card-yellow-orange
