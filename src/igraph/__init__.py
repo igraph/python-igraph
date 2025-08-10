@@ -47,8 +47,6 @@ from igraph._igraph import (
     IN,
     InternalError,
     OUT,
-    REWIRING_SIMPLE,
-    REWIRING_SIMPLE_LOOPS,
     STAR_IN,
     STAR_MUTUAL,
     STAR_OUT,

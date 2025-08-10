@@ -163,7 +163,7 @@ class GameTests(unittest.TestCase):
         self.assertTrue(g.is_simple())
 
         # Rewiring with loops (1)
-        g.rewire(10000, mode="loops")
+        g.rewire(10000, allowed_edge_types="loops")
         self.assertEqual(degrees, g.degree())
         self.assertFalse(any(g.is_multiple()))
 
@@ -171,7 +171,7 @@ class GameTests(unittest.TestCase):
         g = Graph.Full(4)
         g[1, 3] = 0
         degrees = g.degree()
-        g.rewire(100, mode="loops")
+        g.rewire(100, allowed_edge_types="loops")
         self.assertEqual(degrees, g.degree())
         self.assertFalse(any(g.is_multiple()))
 
@@ -185,7 +185,7 @@ class GameTests(unittest.TestCase):
         self.assertTrue(g.is_simple())
 
         # Directed graph with loops
-        g.rewire(10000, mode="loops")
+        g.rewire(10000, allowed_edge_types="loops")
         self.assertEqual(indeg, g.indegree())
         self.assertEqual(outdeg, g.outdegree())
         self.assertFalse(any(g.is_multiple()))

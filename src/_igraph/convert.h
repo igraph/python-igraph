@@ -86,7 +86,6 @@ int igraphmodule_PyObject_to_realize_degseq_t(PyObject *o, igraph_realize_degseq
 int igraphmodule_PyObject_to_random_tree_t(PyObject *o, igraph_random_tree_t *result);
 int igraphmodule_PyObject_to_random_walk_stuck_t(PyObject *o, igraph_random_walk_stuck_t *result);
 int igraphmodule_PyObject_to_reciprocity_t(PyObject *o, igraph_reciprocity_t *result);
-int igraphmodule_PyObject_to_rewiring_t(PyObject *o, igraph_rewiring_t *result);
 int igraphmodule_PyObject_to_shortest_path_algorithm_t(PyObject *o, igraphmodule_shortest_path_algorithm_t *result);
 int igraphmodule_PyObject_to_spinglass_implementation_t(PyObject *o, igraph_spinglass_implementation_t *result);
 int igraphmodule_PyObject_to_spincomm_update_t(PyObject *o, igraph_spincomm_update_t *result);
