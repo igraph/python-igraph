@@ -345,7 +345,7 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
       igraph_matrix_destroy(&mtrx);
       return NULL;
     }
-    if (igraph_convex_hull(&mtrx, &result, 0)) {
+    if (igraph_convex_hull_2d(&mtrx, &result, 0)) {
       igraphmodule_handle_igraph_error();
       igraph_matrix_destroy(&mtrx);
       igraph_vector_int_destroy(&result);
@@ -359,7 +359,7 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
       igraph_matrix_destroy(&mtrx);
       return NULL;
     }
-    if (igraph_convex_hull(&mtrx, 0, &resmat)) {
+    if (igraph_convex_hull_2d(&mtrx, 0, &resmat)) {
       igraphmodule_handle_igraph_error();
       igraph_matrix_destroy(&mtrx);
       igraph_matrix_destroy(&resmat);
