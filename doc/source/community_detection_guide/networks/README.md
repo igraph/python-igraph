@@ -15,7 +15,9 @@ This data is licensed under a **Creative Commons Attribution-NonCommercial-Share
 This file was built based on the following CSV file:
 https://raw.githubusercontent.com/mathbeveridge/gameofthrones/master/data/got-s1-edges.csv
 
-
+---
+---
+---
 
 ### README for `lesmis/lesmis.gml`
 
