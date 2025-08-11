@@ -345,7 +345,7 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
       igraph_matrix_destroy(&mtrx);
       return NULL;
     }
-    if (igraph_convex_hull(&mtrx, &result, 0)) {
+    if (igraph_convex_hull_2d(&mtrx, &result, 0)) {
       igraphmodule_handle_igraph_error();
       igraph_matrix_destroy(&mtrx);
       igraph_vector_int_destroy(&result);
@@ -359,7 +359,7 @@ PyObject* igraphmodule_convex_hull(PyObject* self, PyObject* args, PyObject* kwd
       igraph_matrix_destroy(&mtrx);
       return NULL;
     }
-    if (igraph_convex_hull(&mtrx, 0, &resmat)) {
+    if (igraph_convex_hull_2d(&mtrx, 0, &resmat)) {
       igraphmodule_handle_igraph_error();
       igraph_matrix_destroy(&mtrx);
       igraph_matrix_destroy(&resmat);
@@ -1157,9 +1157,6 @@ PyObject* PyInit__igraph(void)
   PyModule_AddIntConstant(m, "GET_ADJACENCY_UPPER", IGRAPH_GET_ADJACENCY_UPPER);
   PyModule_AddIntConstant(m, "GET_ADJACENCY_LOWER", IGRAPH_GET_ADJACENCY_LOWER);
   PyModule_AddIntConstant(m, "GET_ADJACENCY_BOTH", IGRAPH_GET_ADJACENCY_BOTH);
-
-  PyModule_AddIntConstant(m, "REWIRING_SIMPLE", IGRAPH_REWIRING_SIMPLE);
-  PyModule_AddIntConstant(m, "REWIRING_SIMPLE_LOOPS", IGRAPH_REWIRING_SIMPLE_LOOPS);
 
   PyModule_AddIntConstant(m, "ADJ_DIRECTED", IGRAPH_ADJ_DIRECTED);
   PyModule_AddIntConstant(m, "ADJ_UNDIRECTED", IGRAPH_ADJ_UNDIRECTED);

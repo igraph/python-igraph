@@ -767,19 +767,6 @@ int igraphmodule_PyObject_to_reciprocity_t(PyObject *o, igraph_reciprocity_t *re
 }
 
 /**
- * \brief Converts a Python object to an igraph \c igraph_rewiring_t
- */
-int igraphmodule_PyObject_to_rewiring_t(PyObject *o, igraph_rewiring_t *result) {
-  static igraphmodule_enum_translation_table_entry_t rewiring_tt[] = {
-    {"simple", IGRAPH_REWIRING_SIMPLE},
-    {"simple_loops", IGRAPH_REWIRING_SIMPLE_LOOPS},
-    {"loops", IGRAPH_REWIRING_SIMPLE_LOOPS},
-    {0,0}
-  };
-  TRANSLATE_ENUM_WITH(rewiring_tt);
-}
-
-/**
  * \brief Converts a Python object to an igraph \c igraphmodule_shortest_path_algorithm_t
  */
 int igraphmodule_PyObject_to_shortest_path_algorithm_t(PyObject *o, igraphmodule_shortest_path_algorithm_t *result) {

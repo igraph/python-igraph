@@ -6512,12 +6512,12 @@ PyObject *igraphmodule_Graph_permute_vertices(igraphmodule_GraphObject *self,
 PyObject *igraphmodule_Graph_rewire(igraphmodule_GraphObject * self,
                                     PyObject * args, PyObject * kwds)
 {
-  static char *kwlist[] = { "n", "mode", NULL };
-  PyObject *n_o = Py_None, *mode_o = Py_None;
+  static char *kwlist[] = { "n", "allowed_edge_types", NULL };
+  PyObject *n_o = Py_None, *allowed_edge_types_o = Py_None;
   igraph_integer_t n = 10 * igraph_ecount(&self->g); /* TODO overflow check */
-  igraph_rewiring_t mode = IGRAPH_REWIRING_SIMPLE;
+  igraph_edge_type_sw_t allowed_edge_types = IGRAPH_SIMPLE_SW;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &n_o, &mode_o)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &n_o, &allowed_edge_types_o)) {
     return NULL;
   }
 
@@ -6527,11 +6527,11 @@ PyObject *igraphmodule_Graph_rewire(igraphmodule_GraphObject * self,
     }
   }
 
-  if (igraphmodule_PyObject_to_rewiring_t(mode_o, &mode)) {
+  if (igraphmodule_PyObject_to_edge_type_sw_t(allowed_edge_types_o, &allowed_edge_types)) {
     return NULL;
   }
 
-  if (igraph_rewire(&self->g, n, mode)) {
+  if (igraph_rewire(&self->g, n, allowed_edge_types)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -16281,7 +16281,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_rewire */
   {"rewire", (PyCFunction) igraphmodule_Graph_rewire,
    METH_VARARGS | METH_KEYWORDS,
-   "rewire(n=None, mode=\"simple\")\n--\n\n"
+   "rewire(n=None, allowed_edge_types=\"simple\")\n--\n\n"
    "Randomly rewires the graph while preserving the degree distribution.\n\n"
    "The rewiring is done \"in-place\", so the original graph will be modified.\n"
    "If you want to preserve the original graph, use the L{copy} method before\n"
