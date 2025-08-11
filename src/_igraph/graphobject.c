@@ -16288,7 +16288,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "rewiring.\n\n"
    "@param n: the number of rewiring trials. The default is 10 times the number\n"
    "  of edges.\n"
-   "@param mode: the rewiring algorithm to use. It can either be C{\"simple\"} or\n"
+   "@param allowed_edge_types: the rewiring algorithm to use. It can either be C{\"simple\"} or\n"
    "  C{\"loops\"}; the former does not create or destroy loop edges while the\n"
    "  latter does.\n"},
 
