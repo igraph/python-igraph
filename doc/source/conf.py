@@ -149,6 +149,23 @@ html_css_files = [
 nbsphinx_execute = 'never'
 nbsphinx_allow_errors = True
 
+nbsphinx_prolog = r"""
+{% set full_path = env.doc2path(env.docname, base=None) %}
+{% set docname = full_path | basename %}
+.. raw:: html
+
+    <div class="download-container">
+        <p>Debug: full_path is {{ full_path }}</p>
+        <p>Debug: docname is {{ docname }}</p>
+
+        <a href="{{ docname }}" download="{{ docname }}">
+            <button type="button" class="download-button">
+                <i class="fa-solid fa-download"></i> Download Notebook
+            </button>
+        </a>
+    </div>
+"""
+
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
 # html_title = None
