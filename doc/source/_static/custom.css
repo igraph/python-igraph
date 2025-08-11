@@ -38,8 +38,10 @@
 .sd-card-body {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
+    align-items: center;
     height: 100%;
+    text-align: center;
 }
 
 /* Download button container inside the card */
