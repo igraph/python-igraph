@@ -14752,21 +14752,19 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "SBM(n, pref_matrix, block_sizes, directed=False, loops=False)\n--\n\n"
    "Generates a graph based on a stochastic block model.\n\n"
-   "A given number of vertices are generated. Every vertex is assigned to a\n"
-   "vertex type according to the given block sizes. Vertices of the same\n"
+   "Every vertex is assigned to a vertex type according to the given block\n"
+   "sizes, which also determine the total vertex count. Vertices of the same\n"
    "type will be assigned consecutive vertex IDs. Finally, every\n"
    "vertex pair is evaluated and an edge is created between them with a\n"
    "probability depending on the types of the vertices involved. The\n"
    "probabilities are taken from the preference matrix.\n\n"
-   "@param pref_matrix: matrix giving the connection probabilities for\n"
-   "  different vertex types (when C{multiple} = C{False}) or the expected\n"
-   "  number of edges between a vertex pair (when C{multiple} = C{True}).\n"
+   "@param pref_matrix: matrix giving the connection probabilities (or expected\n"
+   "  edge multiplicities for multigraphs) between different vertex types.\n"
    "@param block_sizes: list giving the number of vertices in each block; must\n"
    "  sum up to I{n}.\n"
    "@param directed: whether to generate a directed graph.\n"
    "@param loops: whether loop edges are allowed.\n"
-   "@param multiple: whether multiple edges are allowed.\n"
-  },
+   "@param multiple: whether multi-edges are allowed.\n"},
 
   // interface to igraph_star
   {"Star", (PyCFunction) igraphmodule_Graph_Star,
