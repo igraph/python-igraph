@@ -3563,23 +3563,21 @@ PyObject *igraphmodule_Graph_SBM(PyTypeObject * type,
 {
   igraphmodule_GraphObject *self;
   igraph_t g;
-  Py_ssize_t n;
   PyObject *block_sizes_o, *pref_matrix_o;
   PyObject *directed_o = Py_False;
   PyObject *loops_o = Py_False;
+  PyObject *multiple_o = Py_False;
   igraph_matrix_t pref_matrix;
   igraph_vector_int_t block_sizes;
 
-  static char *kwlist[] = { "n", "pref_matrix", "block_sizes", "directed",
-    "loops", NULL };
+  static char *kwlist[] = { "pref_matrix", "block_sizes", "directed",
+    "loops", "multiple", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nOO|OO", kwlist,
-                                   &n, &pref_matrix_o,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|OOO", kwlist,
+                                   &pref_matrix_o,
                                    &block_sizes_o,
-                                   &directed_o, &loops_o))
+                                   &directed_o, &loops_o, &multiple_o))
     return NULL;
-
-  CHECK_SSIZE_T_RANGE(n, "vertex count");
 
   if (igraphmodule_PyObject_to_matrix_t(pref_matrix_o, &pref_matrix, "pref_matrix")) {
     return NULL;
@@ -3590,7 +3588,7 @@ PyObject *igraphmodule_Graph_SBM(PyTypeObject * type,
     return NULL;
   }
 
-  if (igraph_sbm_game(&g, n, &pref_matrix, &block_sizes, PyObject_IsTrue(directed_o), PyObject_IsTrue(loops_o))) {
+  if (igraph_sbm_game(&g, &pref_matrix, &block_sizes, PyObject_IsTrue(directed_o), PyObject_IsTrue(loops_o), PyObject_IsTrue(multiple_o))) {
     igraphmodule_handle_igraph_error();
     igraph_matrix_destroy(&pref_matrix);
     igraph_vector_int_destroy(&block_sizes);
@@ -14754,19 +14752,19 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
    "SBM(n, pref_matrix, block_sizes, directed=False, loops=False)\n--\n\n"
    "Generates a graph based on a stochastic block model.\n\n"
-   "A given number of vertices are generated. Every vertex is assigned to a\n"
-   "vertex type according to the given block sizes. Vertices of the same\n"
+   "Every vertex is assigned to a vertex type according to the given block\n"
+   "sizes, which also determine the total vertex count. Vertices of the same\n"
    "type will be assigned consecutive vertex IDs. Finally, every\n"
    "vertex pair is evaluated and an edge is created between them with a\n"
    "probability depending on the types of the vertices involved. The\n"
    "probabilities are taken from the preference matrix.\n\n"
-   "@param n: the number of vertices in the graph\n"
-   "@param pref_matrix: matrix giving the connection probabilities for\n"
-   "  different vertex types.\n"
+   "@param pref_matrix: matrix giving the connection probabilities (or expected\n"
+   "  edge multiplicities for multigraphs) between different vertex types.\n"
    "@param block_sizes: list giving the number of vertices in each block; must\n"
    "  sum up to I{n}.\n"
    "@param directed: whether to generate a directed graph.\n"
-   "@param loops: whether loop edges are allowed.\n"},
+   "@param loops: whether loop edges are allowed.\n"
+   "@param multiple: whether multi-edges are allowed.\n"},
 
   // interface to igraph_star
   {"Star", (PyCFunction) igraphmodule_Graph_Star,
