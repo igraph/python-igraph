@@ -239,6 +239,7 @@ from igraph.operators import (
     intersection,
     operator_method_registry as _operator_method_registry,
 )
+from igraph.rewiring import _rewire
 from igraph.seq import EdgeSeq, VertexSeq, _add_proxy_methods
 from igraph.statistics import (
     FittedPowerLaw,
@@ -632,6 +633,7 @@ class Graph(GraphBase):
     disjoint_union = _operator_method_registry["disjoint_union"]
     union = _operator_method_registry["union"]
     intersection = _operator_method_registry["intersection"]
+    rewire = _rewire
 
     #############################################
     # Adjacency/incidence
@@ -1152,6 +1154,7 @@ del (
     _cohesive_blocks,
     _connected_components,
     _add_proxy_methods,
+    _rewire,
 )
 
 # Re-export from _igraph for API docs
@@ -1267,8 +1270,6 @@ __all__ = (
     "GET_ADJACENCY_UPPER",
     "IN",
     "OUT",
-    "REWIRING_SIMPLE",
-    "REWIRING_SIMPLE_LOOPS",
     "STAR_IN",
     "STAR_MUTUAL",
     "STAR_OUT",

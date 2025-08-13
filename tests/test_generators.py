@@ -429,9 +429,8 @@ class GeneratorTests(unittest.TestCase):
 
     def testSBM(self):
         pref_matrix = [[0.5, 0, 0], [0, 0, 0.5], [0, 0.5, 0]]
-        n = 60
         types = [20, 20, 20]
-        g = Graph.SBM(n, pref_matrix, types)
+        g = Graph.SBM(pref_matrix, types)
 
         # Simple smoke tests for the expected structure of the graph
         self.assertTrue(g.is_simple())
@@ -441,21 +440,19 @@ class GeneratorTests(unittest.TestCase):
         self.assertTrue(not any(e.source // 20 == e.target // 20 for e in g2.es))
 
         # Check loops argument
-        g = Graph.SBM(n, pref_matrix, types, loops=True)
+        g = Graph.SBM(pref_matrix, types, loops=True)
         self.assertFalse(g.is_simple())
         self.assertTrue(sum(g.is_loop()) > 0)
 
         # Check directedness
-        g = Graph.SBM(n, pref_matrix, types, directed=True)
+        g = Graph.SBM(pref_matrix, types, directed=True)
         self.assertTrue(g.is_directed())
         self.assertTrue(sum(g.is_mutual()) < g.ecount())
         self.assertTrue(sum(g.is_loop()) == 0)
 
         # Check error conditions
-        self.assertRaises(ValueError, Graph.SBM, -1, pref_matrix, types)
-        self.assertRaises(InternalError, Graph.SBM, 61, pref_matrix, types)
         pref_matrix[0][1] = 0.7
-        self.assertRaises(InternalError, Graph.SBM, 60, pref_matrix, types)
+        self.assertRaises(InternalError, Graph.SBM, pref_matrix, types)
 
     def testTriangularLattice(self):
         g = Graph.Triangular_Lattice([2, 2])
