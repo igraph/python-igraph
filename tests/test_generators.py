@@ -890,6 +890,27 @@ class GeneratorTests(unittest.TestCase):
             edges = pd.DataFrame(np.array([[0, 1], [1, np.nan], [1, 2]]), dtype="Int64")
             Graph.DataFrame(edges)
 
+    def testNearestNeighborGraph(self):
+        points = [[0,0], [1,2], [-3, -3]]
+
+        g = Graph.Nearest_Neighbor_Graph(points)
+        # expecting 1 - 2, 3 - 1
+        self.assertFalse(g.is_directed())
+        self.assertEqual(g.vcount(), 3)
+        self.assertEqual(g.ecount(), 2)
+
+        g = Graph.Nearest_Neighbor_Graph(points, directed=True)
+        # expecting 1 <-> 2, 3 -> 1
+        self.assertTrue(g.is_directed())
+        self.assertEqual(g.vcount(), 3)
+        self.assertEqual(g.ecount(), 3)
+
+        # expecting a complete graph
+        g = Graph.Nearest_Neighbor_Graph(points, k=2)
+        self.assertFalse(g.is_directed())
+        self.assertEqual(g.vcount(), 3)
+        self.assertTrue(g.is_complete())
+
 
 def suite():
     generator_suite = unittest.defaultTestLoader.loadTestsFromTestCase(GeneratorTests)
