@@ -4071,6 +4071,21 @@ int igraphmodule_PyObject_to_pagerank_algo_t(PyObject *o, igraph_pagerank_algo_t
 
 /**
  * \ingroup python_interface_conversion
+ * \brief Converts a Python object to an igraph \c igraph_metric_t
+ */
+int igraphmodule_PyObject_to_metric_t(PyObject *o, igraph_metric_t *result) {
+  static igraphmodule_enum_translation_table_entry_t metric_tt[] = {
+        {"euclidean", IGRAPH_METRIC_EUCLIDEAN},
+        {"l2", IGRAPH_METRIC_L2}, /* alias to the previous */
+        {"manhattan", IGRAPH_METRIC_MANHATTAN},
+        {"l1", IGRAPH_METRIC_L1}, /* alias to the previous */
+        {0,0}
+    };
+  TRANSLATE_ENUM_WITH(metric_tt);
+}
+
+/**
+ * \ingroup python_interface_conversion
  * \brief Converts a Python object to an igraph \c igraph_edge_type_sw_t
  */
 int igraphmodule_PyObject_to_edge_type_sw_t(PyObject *o, igraph_edge_type_sw_t *result) {
