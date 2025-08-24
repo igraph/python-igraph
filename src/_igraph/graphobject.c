@@ -14035,6 +14035,46 @@ PyObject *igraphmodule_Graph_random_walk(igraphmodule_GraphObject * self,
 }
 
 /**********************************************************************
+ * Spatial graphs                                                     *
+ **********************************************************************/
+
+PyObject *igraphmodule_Graph_Nearest_Neighbor_Graph(PyTypeObject *type,
+                                                    PyObject *args, PyObject *kwds) {
+  static char *kwlist[] = {"points", "k", "r", "metric", "directed", NULL};
+  PyObject *points_o = Py_None, *metric_o = Py_None, *directed_o = Py_False;
+  double r = -1;
+  Py_ssize_t k = 1;
+  igraph_matrix_t points;
+  igraphmodule_GraphObject *self;
+  igraph_t graph;
+  igraph_metric_t metric = IGRAPH_METRIC_EUCLIDEAN;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ndOO", kwlist,
+                                   &points_o, &k, &r, &metric_o, &directed_o)) {
+    return NULL;
+  }
+
+  if (igraphmodule_PyObject_to_metric_t(metric_o, &metric)) {
+    return NULL;
+  }
+
+  if (igraphmodule_PyObject_to_matrix_t(points_o, &points, "points")) {
+    return NULL;
+  }
+
+  if (igraph_nearest_neighbor_graph(&graph, &points, metric, k, r, PyObject_IsTrue(directed_o))) {
+    igraph_matrix_destroy(&points);
+    return igraphmodule_handle_igraph_error(); 
+  }
+
+  igraph_matrix_destroy(&points);
+
+  CREATE_GRAPH_FROM_TYPE(self, graph, type);
+
+  return (PyObject *) self;
+}
+
+/**********************************************************************
  * Special internal methods that you won't need to mess around with   *
  **********************************************************************/
 
@@ -18892,6 +18932,22 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  C{\"edges\"}.\n"
    "@return: a random walk that starts from the given vertex and has at most\n"
    "  the given length (shorter if the random walk got stuck).\n"
+  },
+
+  /**********************/
+  /* SPATIAL GRAPHS     */
+  /**********************/
+  {"Nearest_Neighbor_Graph", (PyCFunction)igraphmodule_Graph_Nearest_Neighbor_Graph,
+   METH_VARARGS | METH_CLASS | METH_KEYWORDS,
+   "Nearest_Neighbor_Graph(points, k=1, r=-1, metric=\"euclidean\", directed=False)\n--\n\n"
+   "Constructs a k nearest neighbor graph of a give point set. Each point is\n"
+   "connected to at most k spatial neighbors within a radius of 1.\n\n"
+   "@param points: coordinates of the points to use, in an arbitrary number of dimensions\n"
+   "@param k: at most how many neighbors to connect to. Pass a negative value to ignore\n"
+   "@param r: only neighbors within this radius are considered. Pass a negative value to ignore\n"
+   "@param metric: the metric to use. C{\"euclidean\"} and C{\"manhattan\"} are supported.\n"
+   "@param directed: whethe to create directed edges.\n"
+   "@return: the nearest neighbor graph.\n"
   },
 
   /**********************/
