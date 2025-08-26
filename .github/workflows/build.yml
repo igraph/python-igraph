@@ -19,14 +19,14 @@ jobs:
           fetch-depth: 0
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v3.0.1
+        uses: pypa/cibuildwheel@v3.1.4
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_x86_64"
           CIBW_ENABLE: pypy
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v3.0.1
+        uses: pypa/cibuildwheel@v3.1.4
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_x86_64"
@@ -47,7 +47,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v3.0.1
+        uses: pypa/cibuildwheel@v3.1.4
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -69,7 +69,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v3.0.1
+        uses: pypa/cibuildwheel@v3.1.4
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
@@ -132,7 +132,7 @@ jobs:
           cmake --install .
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.0.1
+        uses: pypa/cibuildwheel@v3.1.4
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
@@ -238,7 +238,7 @@ jobs:
         shell: cmd
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.0.1
+        uses: pypa/cibuildwheel@v3.1.4
         env:
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
