@@ -36,3 +36,24 @@ When using this data, please cite the following work:
 
 This file was obtained from Mark Newman's repository of network datasets at the University of Michigan, located at the following URL:
 https://websites.umich.edu/~mejn/netdata/
+
+---
+---
+---
+
+### README for `highschool/network.gml`
+
+A network of friendships among male students in a small high school in Illinois from 1958. An arc points from student i to student j if i named j as a friend, in either of two identical surveys (from Fall and Spring semesters). Edge weights are the number of surveys in which the friendship was named.
+---
+
+### License
+These data can be cited as:
+
+  > J. S. Coleman, Introduction to Mathematical Sociology, London Free Press Glencoe (1964).
+
+---
+
+### Source
+
+This file was obtained from:
+https://networks.skewed.de/net/highschool#None_draw

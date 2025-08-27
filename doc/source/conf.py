@@ -155,9 +155,6 @@ nbsphinx_prolog = r"""
 .. raw:: html
 
     <div class="download-container">
-        <p>Debug: full_path is {{ full_path }}</p>
-        <p>Debug: docname is {{ docname }}</p>
-
         <a href="{{ docname }}" download="{{ docname }}">
             <button type="button" class="download-button">
                 <i class="fa-solid fa-download"></i> Download Notebook

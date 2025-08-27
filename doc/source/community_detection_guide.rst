@@ -16,6 +16,7 @@ This documentation provides an overview of the notebooks available in the commun
    community_detection_guide/notebooks/resolution.ipynb
    community_detection_guide/notebooks/consensus_clustering.ipynb
    community_detection_guide/notebooks/membership_vector.ipynb
+   community_detection_guide/notebooks/working_with_directed_networks.ipynb
    community_detection_guide/notebooks/working_with_clusterings.ipynb
    community_detection_guide/notebooks/functions.ipynb
 
@@ -94,10 +95,18 @@ This documentation provides an overview of the notebooks available in the commun
 
       .. **Overview:** This notebook introduces membership vectors in igraph.
 
+   .. grid-item-card::  Working with Directed Networks
+      :link: community_detection_guide/notebooks/working_with_directed_networks
+      :link-type: doc
+      :class-card: sd-card-hover card-deep-purple 
+      :shadow: sm
+
+      .. **Overview:** This notebook describes how to work with clusterings in igraph.
+
    .. grid-item-card::  Working with Clusterings
       :link: community_detection_guide/notebooks/working_with_clusterings
       :link-type: doc
-      :class-card: sd-card-hover card-deep-purple 
+      :class-card: sd-card-hover card-medium-purple 
       :shadow: sm
 
       .. **Overview:** This notebook describes how to work with clusterings in igraph.
@@ -105,7 +114,7 @@ This documentation provides an overview of the notebooks available in the commun
    .. grid-item-card::  Helper Functions
       :link: community_detection_guide/notebooks/functions
       :link-type: doc
-      :class-card: sd-card-hover card-medium-purple 
+      :class-card: sd-card-hover card-light-purple 
       :shadow: sm
 
       .. **Overview:** This notebook introduces all the helper functions used in the community detection guide. It provides a collection of utility functions for community detection tasks.
