@@ -49,7 +49,7 @@ A network of friendships among male students in a small high school in Illinois 
 ### License
 These data can be cited as:
 
-  > J. S. Coleman, Introduction to Mathematical Sociology, London Free Press Glencoe (1964).
+> J. S. Coleman, Introduction to Mathematical Sociology, London Free Press Glencoe (1964).
 
 ---
 
@@ -57,3 +57,24 @@ These data can be cited as:
 
 This file was obtained from:
 https://networks.skewed.de/net/highschool#None_draw
+
+---
+---
+---
+
+### README for `football/football.gml`
+
+A network representation of a sporting competition. The vertices in the network represent the teams in one of the regional competitions or ‘‘conferences’’ of U.S. universities in the game of American football. Edges join pairs of teams that played one another during the 2005 football season. 
+---
+
+### License
+These data can be cited as:
+
+> E. A. Leicht, M. E. J. Newman, Community Structure in Directed Networks, Physical Review Letters (2008).
+
+---
+
+### Source
+
+This file was built with `build_football_network.py` obtained from this paper:
+https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.100.118703
