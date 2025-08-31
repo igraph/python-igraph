@@ -195,4 +195,5 @@ PyObject* igraphmodule_vector_int_t_to_PyList(const igraph_vector_int_t *v);
 PyObject* igraphmodule_matrix_t_to_PyList(const igraph_matrix_t *m,
         igraphmodule_conv_t type);
 PyObject* igraphmodule_matrix_int_t_to_PyList(const igraph_matrix_int_t *m);
+PyObject* igraphmodule_matrix_list_t_to_PyList(const igraph_matrix_list_t *m);
 #endif

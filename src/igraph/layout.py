@@ -555,6 +555,7 @@ def align_layout(graph, layout):
 
     return Layout(_align_layout(graph, layout.coords))
 
+
 def _layout_auto(graph, *args, **kwds):
     """Chooses and runs a suitable layout function based on simple
     topological properties of the graph.
@@ -630,7 +631,6 @@ def _layout_sugiyama(
     hgap=1,
     vgap=1,
     maxiter=100,
-    return_extended_graph=False,
 ):
     """Places the vertices using a layered Sugiyama layout.
 
@@ -681,23 +681,14 @@ def _layout_sugiyama(
       The extended graph also contains an edge attribute called C{_original_eid}
       which specifies the ID of the edge in the original graph from which the
       edge of the extended graph was created.
-    @return: the calculated layout, which may (and usually will) have more rows
-      than the number of vertices; the remaining rows correspond to the dummy
-      nodes introduced in the layering step. When C{return_extended_graph} is
-      C{True}, it will also contain the extended graph.
+    @return: the calculated layout and an additional list of matrices where the
+      i-th matrix contains the control points of edge I{i} in the original graph
+      (or an empty matrix if no control points are needed on the edge)
     """
-    if not return_extended_graph:
-        return Layout(
-            GraphBase._layout_sugiyama(
-                graph, layers, weights, hgap, vgap, maxiter, return_extended_graph
-            )
-        )
-
-    layout, extd_graph, extd_to_orig_eids = GraphBase._layout_sugiyama(
-        graph, layers, weights, hgap, vgap, maxiter, return_extended_graph
+    layout, routing = GraphBase._layout_sugiyama(
+        graph, layers, weights, hgap, vgap, maxiter
     )
-    extd_graph.es["_original_eid"] = extd_to_orig_eids
-    return Layout(layout), extd_graph
+    return Layout(layout), routing
 
 
 def _layout_method_wrapper(func):

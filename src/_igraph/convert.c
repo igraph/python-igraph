@@ -2438,6 +2438,40 @@ PyObject* igraphmodule_matrix_int_t_to_PyList(const igraph_matrix_int_t *m) {
 
 /**
  * \ingroup python_interface_conversion
+ * \brief Converts an igraph \c igraph_matrix_list_t to a Python list of lists of lists
+ *
+ * \param v the \c igraph_matrix_list_t containing the matrix list to be converted
+ * \return the Python list as a \c PyObject*, or \c NULL if an error occurred
+ */
+PyObject* igraphmodule_matrix_list_t_to_PyList(const igraph_matrix_list_t *m) {
+  PyObject *list, *item;
+  Py_ssize_t n, i;
+
+  n = igraph_matrix_list_size(m);
+  if (n < 0) {
+    return igraphmodule_handle_igraph_error();
+  }
+
+  list = PyList_New(n);
+  if (!list) {
+    return NULL;
+  }
+
+  for (i = 0; i < n; i++) {
+    item = igraphmodule_matrix_t_to_PyList(igraph_matrix_list_get_ptr(m, i),
+        IGRAPHMODULE_TYPE_FLOAT);
+    if (item == NULL) {
+      Py_DECREF(list);
+      return NULL;
+    }
+    PyList_SetItem(list, i, item);  /* will not fail */
+  }
+
+  return list;
+}
+
+/**
+ * \ingroup python_interface_conversion
  * \brief Converts an igraph \c igraph_vector_ptr_t to a Python list of lists
  *
  * \param v the \c igraph_vector_ptr_t containing the vector pointer to be converted
