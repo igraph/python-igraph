@@ -56,6 +56,14 @@ class Layout:
         >>> layout[1] = coords
         >>> print(layout[1])
         [0, 3]
+
+    Optionally, a layout may have I{edge routing} information attached to
+    each edge in the layout in the L{edge_routing} property.
+
+    @ivar edge_routing: C{None} if no edge routing information is available,
+    or a list of lists of control point coordinates, one for each edge. When
+    an edge has control points, it should be drawn in a way that the edge
+    passes through all the control points in the order they appear in the list.
     """
 
     def __init__(self, coords=None, dim=None):
@@ -69,6 +77,8 @@ class Layout:
         length of the coordinate list is zero, otherwise it should be left as
         is.
         """
+        self.edge_routing = None
+
         if coords is not None:
             self._coords = [list(coord) for coord in coords]
         else:
@@ -675,10 +685,12 @@ def _layout_sugiyama(
       i-th matrix contains the control points of edge I{i} in the original graph
       (or an empty matrix if no control points are needed on the edge)
     """
-    layout, routing = GraphBase._layout_sugiyama(
+    coords, routing = GraphBase._layout_sugiyama(
         graph, layers, weights, hgap, vgap, maxiter
     )
-    return Layout(layout), routing
+    layout = Layout(coords)
+    layout.edge_routing = routing
+    return layout
 
 
 def _layout_method_wrapper(func):
