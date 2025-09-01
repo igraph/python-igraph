@@ -671,16 +671,6 @@ def _layout_sugiyama(
     @param maxiter: maximum number of iterations to take in the crossing
       reduction step. Increase this if you feel that you are getting too many
       edge crossings.
-    @param return_extended_graph: specifies that the extended graph with the
-      added dummy vertices should also be returned. When this is C{True}, the
-      result will be a tuple containing the layout and the extended graph. The
-      first |V| nodes of the extended graph will correspond to the nodes of the
-      original graph, the remaining ones are dummy nodes. Plotting the extended
-      graph with the returned layout and hidden dummy nodes will produce a layout
-      that is similar to the original graph, but with the added edge bends.
-      The extended graph also contains an edge attribute called C{_original_eid}
-      which specifies the ID of the edge in the original graph from which the
-      edge of the extended graph was created.
     @return: the calculated layout and an additional list of matrices where the
       i-th matrix contains the control points of edge I{i} in the original graph
       (or an empty matrix if no control points are needed on the edge)
