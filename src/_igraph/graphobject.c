@@ -17067,7 +17067,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   },
   {"simple_cycles", (PyCFunction) igraphmodule_Graph_simple_cycles,
    METH_VARARGS | METH_KEYWORDS,
-   "simple_cycles(mode=None, min=-1, max=-1, output=\"epath\")\n--\n\n"
+   "simple_cycles(mode=None, min=-1, max=-1, output=\"vpath\")\n--\n\n"
    "Finds simple cycles in a graph\n\n"
    "@param mode: for directed graphs, specifies how the edge directions\n"
    "  should be taken into account. C{\"all\"} means that the edge directions\n"
