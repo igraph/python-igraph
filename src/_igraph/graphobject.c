@@ -2333,15 +2333,16 @@ PyObject *igraphmodule_Graph_Erdos_Renyi(PyTypeObject * type,
   igraph_t g;
   Py_ssize_t n, m = -1;
   double p = -1.0;
-  PyObject *loops = Py_False, *directed = Py_False;
+  PyObject *loops = Py_False, *directed = Py_False, *edge_labeled = Py_False;
   int retval;
 
-  static char *kwlist[] = { "n", "p", "m", "directed", "loops", NULL };
+  static char *kwlist[] = { "n", "p", "m", "directed", "loops", "edge_labeled", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "n|dnOO", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "n|dnOOO", kwlist,
                                    &n, &p, &m,
                                    &directed,
-                                   &loops))
+                                   &loops,
+                                   &edge_labeled))
     return NULL;
 
   CHECK_SSIZE_T_RANGE(n, "vertex count");
@@ -2360,10 +2361,18 @@ PyObject *igraphmodule_Graph_Erdos_Renyi(PyTypeObject * type,
 
   if (m == -1) {
     /* GNP model */
-    retval = igraph_erdos_renyi_game_gnp(&g, n, p, PyObject_IsTrue(directed), PyObject_IsTrue(loops));
+    retval = igraph_erdos_renyi_game_gnp(
+      &g, n, p, PyObject_IsTrue(directed),
+      PyObject_IsTrue(loops) ? IGRAPH_LOOPS_SW : IGRAPH_SIMPLE_SW,
+      PyObject_IsTrue(edge_labeled)
+    );
   } else {
     /* GNM model */
-    retval = igraph_erdos_renyi_game_gnm(&g, n, m, PyObject_IsTrue(directed), PyObject_IsTrue(loops), /* multiple = */ 0);
+    retval = igraph_erdos_renyi_game_gnm(
+      &g, n, m, PyObject_IsTrue(directed),
+      PyObject_IsTrue(loops) ? IGRAPH_LOOPS_SW : IGRAPH_SIMPLE_SW,
+      PyObject_IsTrue(edge_labeled)
+    );
   }
 
   if (retval) {
@@ -3408,15 +3417,20 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
   Py_ssize_t n1, n2, m = -1;
   double p = -1.0;
   igraph_neimode_t neimode = IGRAPH_ALL;
-  PyObject *directed_o = Py_False, *neimode_o = NULL;
+  PyObject *directed_o = Py_False, *neimode_o = NULL, *edge_labeled_o = Py_False;
+  PyObject *edge_types_o = Py_None;
   igraph_vector_bool_t vertex_types;
+  igraph_edge_type_sw_t allowed_edge_types = IGRAPH_SIMPLE_SW;
   PyObject *vertex_types_o;
   igraph_error_t retval;
 
-  static char *kwlist[] = { "n1", "n2", "p", "m", "directed", "neimode", NULL };
+  static char *kwlist[] = {
+    "n1", "n2", "p", "m", "directed", "neimode", "allowed_edge_types", "edge_labeled", NULL
+  };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nn|dnOO", kwlist,
-                                   &n1, &n2, &p, &m, &directed_o, &neimode_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "nn|dnOOOO", kwlist,
+                                   &n1, &n2, &p, &m, &directed_o, &neimode_o,
+                                   &edge_types_o, &edge_labeled_o))
     return NULL;
 
   CHECK_SSIZE_T_RANGE(n1, "number of vertices in first partition");
@@ -3436,6 +3450,9 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
   if (igraphmodule_PyObject_to_neimode_t(neimode_o, &neimode))
     return NULL;
 
+  if (igraphmodule_PyObject_to_edge_type_sw_t(edge_types_o, &allowed_edge_types))
+    return NULL;
+
   if (igraph_vector_bool_init(&vertex_types, n1+n2)) {
     igraphmodule_handle_igraph_error();
     return NULL;
@@ -3444,13 +3461,14 @@ PyObject *igraphmodule_Graph_Random_Bipartite(PyTypeObject * type,
   if (m == -1) {
     /* GNP model */
     retval = igraph_bipartite_game_gnp(
-      &g, &vertex_types, n1, n2, p, PyObject_IsTrue(directed_o), neimode
+      &g, &vertex_types, n1, n2, p, PyObject_IsTrue(directed_o), neimode,
+      allowed_edge_types, PyObject_IsTrue(edge_labeled_o)
     );
   } else {
     /* GNM model */
     retval = igraph_bipartite_game_gnm(
       &g, &vertex_types, n1, n2, m, PyObject_IsTrue(directed_o), neimode,
-      /* multiple = */ 0
+      allowed_edge_types, PyObject_IsTrue(edge_labeled_o)
     );
   }
 
@@ -6026,17 +6044,17 @@ PyObject *igraphmodule_Graph_get_all_simple_paths(igraphmodule_GraphObject *
                                                     self, PyObject * args,
                                                     PyObject * kwds)
 {
-  static char *kwlist[] = { "v", "to", "minlen", "maxlen", "mode", NULL };
+  static char *kwlist[] = { "v", "to", "minlen", "maxlen", "mode", "max_results", NULL };
   igraph_vector_int_list_t res;
   igraph_neimode_t mode = IGRAPH_OUT;
   igraph_integer_t from;
   igraph_vs_t to;
-  igraph_integer_t minlen, maxlen;
-  PyObject *list, *from_o, *mode_o = Py_None, *to_o = Py_None;
+  igraph_integer_t minlen, maxlen, max_results = IGRAPH_UNLIMITED;
+  PyObject *list, *from_o, *mode_o = Py_None, *to_o = Py_None, *max_results_o = Py_None;
   PyObject *minlen_o = Py_None, *maxlen_o = Py_None;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOOO", kwlist, &from_o,
-        &to_o, &minlen_o, &maxlen_o, &mode_o))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOOOO", kwlist, &from_o,
+        &to_o, &minlen_o, &maxlen_o, &mode_o, &max_results_o))
     return NULL;
 
   if (igraphmodule_PyObject_to_neimode_t(mode_o, &mode))
@@ -6054,13 +6072,16 @@ PyObject *igraphmodule_Graph_get_all_simple_paths(igraphmodule_GraphObject *
   if (igraphmodule_PyObject_to_vs_t(to_o, &to, &self->g, 0, 0))
     return NULL;
 
+  if (igraphmodule_PyObject_to_max_results_t(max_results_o, &max_results))
+    return NULL;
+
   if (igraph_vector_int_list_init(&res, 0)) {
     igraphmodule_handle_igraph_error();
     igraph_vs_destroy(&to);
     return NULL;
   }
 
-  if (igraph_get_all_simple_paths(&self->g, &res, from, to, minlen, maxlen, mode)) {
+  if (igraph_get_all_simple_paths(&self->g, &res, from, to, mode, minlen, maxlen, max_results)) {
     igraphmodule_handle_igraph_error();
     igraph_vector_int_list_destroy(&res);
     igraph_vs_destroy(&to);
@@ -6578,7 +6599,7 @@ PyObject *igraphmodule_Graph_rewire(igraphmodule_GraphObject * self,
     return NULL;
   }
 
-  if (igraph_rewire(&self->g, n, allowed_edge_types)) {
+  if (igraph_rewire(&self->g, n, allowed_edge_types, /* rewiring_stats = */ NULL)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
@@ -7484,7 +7505,7 @@ typedef struct {
 } igraphmodule_i_Graph_motifs_randesu_callback_data_t;
 
 igraph_error_t igraphmodule_i_Graph_motifs_randesu_callback(const igraph_t *graph,
-    igraph_vector_int_t *vids, igraph_integer_t isoclass, void* extra) {
+    const igraph_vector_int_t *vids, igraph_integer_t isoclass, void* extra) {
   igraphmodule_i_Graph_motifs_randesu_callback_data_t* data =
     (igraphmodule_i_Graph_motifs_randesu_callback_data_t*)extra;
   PyObject* vector;
@@ -7859,16 +7880,23 @@ PyObject *igraphmodule_Graph_simple_cycles(
   PyObject *output_o = Py_None;
   PyObject *min_cycle_length_o = Py_None;
   PyObject *max_cycle_length_o = Py_None;
+  PyObject *max_results_o = Py_None;
 
   // argument defaults: no cycle limits
   igraph_integer_t mode = IGRAPH_OUT;
   igraph_integer_t min_cycle_length = -1;
   igraph_integer_t max_cycle_length = -1;
+  igraph_integer_t max_results = IGRAPH_UNLIMITED;
   igraph_bool_t use_edges = false;
 
-  static char *kwlist[] = { "mode", "min", "max", "output", NULL };
+  static char *kwlist[] = { "mode", "min", "max", "output", "max_results", NULL };
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist, &mode_o, &min_cycle_length_o, &max_cycle_length_o, &output_o))
+  if (
+    !PyArg_ParseTupleAndKeywords(
+      args, kwds, "|OOOOO", kwlist,
+      &mode_o, &min_cycle_length_o, &max_cycle_length_o, &output_o, &max_results_o
+    )
+  )
     return NULL;
 
   if (mode_o != Py_None && igraphmodule_PyObject_to_integer_t(mode_o, &mode))
@@ -7878,6 +7906,9 @@ PyObject *igraphmodule_Graph_simple_cycles(
     return NULL;
 
   if (max_cycle_length_o != Py_None && igraphmodule_PyObject_to_integer_t(max_cycle_length_o, &max_cycle_length))
+    return NULL;
+
+  if (igraphmodule_PyObject_to_max_results_t(max_results_o, &max_results))
     return NULL;
 
   if (igraphmodule_PyObject_to_vpath_or_epath(output_o, &use_edges))
@@ -7896,7 +7927,11 @@ PyObject *igraphmodule_Graph_simple_cycles(
   }
 
   if (igraph_simple_cycles(
-    &self->g, use_edges ? NULL :  &vertices, use_edges ? &edges : NULL, mode, min_cycle_length, max_cycle_length
+    &self->g,
+    use_edges ? NULL :  &vertices,
+    use_edges ? &edges : NULL,
+    mode, min_cycle_length, max_cycle_length,
+    max_results
   )) {
     igraph_vector_int_list_destroy(&vertices);
     igraph_vector_int_list_destroy(&edges);
@@ -10355,16 +10390,16 @@ PyObject *igraphmodule_Graph_isoclass(igraphmodule_GraphObject * self,
     return NULL;
 
   if (vids) {
-    igraph_vector_int_t vidsvec;
-    if (igraphmodule_PyObject_to_vid_list(vids, &vidsvec, &self->g)) {
+    igraph_vs_t vs;
+    if (igraphmodule_PyObject_to_vs_t(vids, &vs, &self->g, NULL, NULL)) {
       return NULL;
     }
-    if (igraph_isoclass_subgraph(&self->g, &vidsvec, &isoclass)) {
-      igraph_vector_int_destroy(&vidsvec);
+    if (igraph_isoclass_subgraph(&self->g, vs, &isoclass)) {
+      igraph_vs_destroy(&vs);
       igraphmodule_handle_igraph_error();
       return NULL;
     }
-    igraph_vector_int_destroy(&vidsvec);
+    igraph_vs_destroy(&vs);
   } else {
     if (igraph_isoclass(&self->g, &isoclass)) {
       igraphmodule_handle_igraph_error();
@@ -12687,13 +12722,15 @@ PyObject *igraphmodule_Graph_vertex_coloring_greedy(
 PyObject *igraphmodule_Graph_cliques(igraphmodule_GraphObject * self,
                                      PyObject * args, PyObject * kwds)
 {
-  static char *kwlist[] = { "min", "max", NULL };
+  static char *kwlist[] = { "min", "max", "max_results", NULL };
   PyObject *list;
+  PyObject *max_results_o = Py_None;
   Py_ssize_t min_size = 0, max_size = 0;
   igraph_vector_int_list_t res;
+  igraph_int_t max_results;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nn", kwlist,
-                                   &min_size, &max_size))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nnO", kwlist,
+                                   &min_size, &max_size, &max_results_o))
     return NULL;
 
   if (min_size >= 0) {
@@ -12708,12 +12745,16 @@ PyObject *igraphmodule_Graph_cliques(igraphmodule_GraphObject * self,
     max_size = -1;
   }
 
+  if (igraphmodule_PyObject_to_max_results_t(max_results_o, &max_results)) {
+    return NULL;
+  }
+
   if (igraph_vector_int_list_init(&res, 0)) {
     igraphmodule_handle_igraph_error();
     return NULL;
   }
 
-  if (igraph_cliques(&self->g, &res, min_size, max_size)) {
+  if (igraph_cliques(&self->g, &res, min_size, max_size, max_results)) {
     igraph_vector_int_list_destroy(&res);
     return igraphmodule_handle_igraph_error();
   }
@@ -12803,17 +12844,22 @@ PyObject *igraphmodule_Graph_maximum_bipartite_matching(igraphmodule_GraphObject
  */
 PyObject *igraphmodule_Graph_maximal_cliques(igraphmodule_GraphObject * self,
     PyObject* args, PyObject* kwds) {
-  static char* kwlist[] = { "min", "max", "file", NULL };
-  PyObject *list, *file = Py_None;
+  static char* kwlist[] = { "min", "max", "file", "max_results", NULL };
+  PyObject *list, *file = Py_None, *max_results_o = Py_None;
   Py_ssize_t min = 0, max = 0;
   igraph_vector_int_list_t res;
   igraphmodule_filehandle_t filehandle;
+  igraph_int_t max_results = IGRAPH_UNLIMITED;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nnO", kwlist, &min, &max, &file))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nnOO", kwlist, &min, &max, &file, &max_results_o))
     return NULL;
 
   CHECK_SSIZE_T_RANGE(min, "minimum size");
   CHECK_SSIZE_T_RANGE(max, "maximum size");
+
+  if (igraphmodule_PyObject_to_max_results_t(max_results_o, &max_results)) {
+    return NULL;
+  }
 
   if (file == Py_None) {
     if (igraph_vector_int_list_init(&res, 0)) {
@@ -12821,7 +12867,7 @@ PyObject *igraphmodule_Graph_maximal_cliques(igraphmodule_GraphObject * self,
       return NULL;
     }
 
-    if (igraph_maximal_cliques(&self->g, &res, min, max)) {
+    if (igraph_maximal_cliques(&self->g, &res, min, max, max_results)) {
       igraph_vector_int_list_destroy(&res);
       return igraphmodule_handle_igraph_error();
     }
@@ -12835,7 +12881,7 @@ PyObject *igraphmodule_Graph_maximal_cliques(igraphmodule_GraphObject * self,
       return igraphmodule_handle_igraph_error();
     }
     if (igraph_maximal_cliques_file(&self->g,
-          igraphmodule_filehandle_get(&filehandle), min, max)) {
+          igraphmodule_filehandle_get(&filehandle), min, max, max_results)) {
       igraphmodule_filehandle_destroy(&filehandle);
       return igraphmodule_handle_igraph_error();
     }
@@ -12865,13 +12911,14 @@ PyObject *igraphmodule_Graph_independent_vertex_sets(igraphmodule_GraphObject
                                                      * self, PyObject * args,
                                                      PyObject * kwds)
 {
-  static char *kwlist[] = { "min", "max", NULL };
-  PyObject *list;
+  static char *kwlist[] = { "min", "max", "max_results", NULL };
+  PyObject *list, *max_results_o = Py_None;
   Py_ssize_t min_size = 0, max_size = 0;
   igraph_vector_int_list_t res;
+  igraph_integer_t max_results = IGRAPH_UNLIMITED;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nn", kwlist,
-                                   &min_size, &max_size))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nnO", kwlist,
+                                   &min_size, &max_size, &max_results_o))
     return NULL;
 
   if (min_size >= 0) {
@@ -12886,12 +12933,16 @@ PyObject *igraphmodule_Graph_independent_vertex_sets(igraphmodule_GraphObject
     max_size = -1;
   }
 
+  if (igraphmodule_PyObject_to_max_results_t(max_results_o, &max_results)) {
+    return NULL;
+  }
+
   if (igraph_vector_int_list_init(&res, 0)) {
     PyErr_SetString(PyExc_MemoryError, "");
     return NULL;
   }
 
-  if (igraph_independent_vertex_sets(&self->g, &res, min_size, max_size)) {
+  if (igraph_independent_vertex_sets(&self->g, &res, min_size, max_size, max_results)) {
     igraph_vector_int_list_destroy(&res);
     return igraphmodule_handle_igraph_error();
   }
@@ -12929,17 +12980,39 @@ PyObject *igraphmodule_Graph_largest_independent_vertex_sets(
  * \brief Find all maximal independent vertex sets in a graph
  */
 PyObject *igraphmodule_Graph_maximal_independent_vertex_sets(
-  igraphmodule_GraphObject *self, PyObject* Py_UNUSED(_null)
+  igraphmodule_GraphObject *self, PyObject* args, PyObject *kwds
 ) {
-  PyObject *list;
+  static char *kwlist[] = { "min", "max", "max_results", NULL };
+  PyObject *list, *max_results_o = Py_None;
+  Py_ssize_t min_size = 0, max_size = 0;
   igraph_vector_int_list_t res;
+  igraph_int_t max_results = IGRAPH_UNLIMITED;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|nnO", kwlist, &min_size, &max_size, &max_results_o))
+    return NULL;
+
+  if (min_size >= 0) {
+    CHECK_SSIZE_T_RANGE(min_size, "minimum size");
+  } else {
+    min_size = -1;
+  }
+
+  if (max_size >= 0) {
+    CHECK_SSIZE_T_RANGE(max_size, "maximum size");
+  } else {
+    max_size = -1;
+  }
+
+  if (igraphmodule_PyObject_to_max_results_t(max_results_o, &max_results)) {
+    return NULL;
+  }
 
   if (igraph_vector_int_list_init(&res, 0)) {
     PyErr_SetString(PyExc_MemoryError, "");
     return NULL;
   }
 
-  if (igraph_maximal_independent_vertex_sets(&self->g, &res)) {
+  if (igraph_maximal_independent_vertex_sets(&self->g, &res, min_size, max_size, max_results)) {
     igraph_vector_int_list_destroy(&res);
     return igraphmodule_handle_igraph_error();
   }
@@ -14660,13 +14733,17 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   // interface to igraph_erdos_renyi_game
   {"Erdos_Renyi", (PyCFunction) igraphmodule_Graph_Erdos_Renyi,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "Erdos_Renyi(n, p, m, directed=False, loops=False)\n--\n\n"
+   "Erdos_Renyi(n, p, m, directed=False, loops=False, edge_labeled=False)\n--\n\n"
    "Generates a graph based on the Erdős-Rényi model.\n\n"
    "@param n: the number of vertices.\n"
    "@param p: the probability of edges. If given, C{m} must be missing.\n"
    "@param m: the number of edges. If given, C{p} must be missing.\n"
    "@param directed: whether to generate a directed graph.\n"
-   "@param loops: whether self-loops are allowed.\n"},
+   "@param loops: whether self-loops are allowed.\n"
+   "@param edge_labeled: whether to sample uniformly from the set of\n"
+   "  I{ordered} edge lists. Use C{False} to recover the classic\n"
+   "  Erdős-Rényi model.\n"
+  },
 
   /* interface to igraph_famous */
     {"Famous", (PyCFunction) igraphmodule_Graph_Famous,
@@ -14838,7 +14915,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /* interface to igraph_bipartite_game */
   {"_Random_Bipartite", (PyCFunction) igraphmodule_Graph_Random_Bipartite,
    METH_VARARGS | METH_CLASS | METH_KEYWORDS,
-   "_Random_Bipartite(n1, n2, p=None, m=None, directed=False, neimode=\"all\")\n--\n\n"
+   "_Random_Bipartite(n1, n2, p=None, m=None, directed=False, neimode=\"all\", allowed_edge_types=\"simple\", edge_labeled=False)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.Random_Bipartite()\n\n"},
 
@@ -16064,7 +16141,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"_get_all_simple_paths",
    (PyCFunction) igraphmodule_Graph_get_all_simple_paths,
    METH_VARARGS | METH_KEYWORDS,
-   "_get_all_simple_paths(v, to=None, cutoff=-1, mode=\"out\")\n--\n\n"
+   "_get_all_simple_paths(v, to=None, minlen=0, maxlen=-1, mode=\"out\", max_results=None)\n--\n\n"
    "Internal function, undocumented.\n\n"
    "@see: Graph.get_all_simple_paths()\n\n"
   },
@@ -18518,14 +18595,17 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   /********************************/
   {"cliques", (PyCFunction) igraphmodule_Graph_cliques,
    METH_VARARGS | METH_KEYWORDS,
-   "cliques(min=0, max=0)\n--\n\n"
+   "cliques(min=0, max=0, max_results=None)\n--\n\n"
    "Returns some or all cliques of the graph as a list of tuples.\n\n"
    "A clique is a complete subgraph -- a set of vertices where an edge\n"
    "is present between any two of them (excluding loops)\n\n"
    "@param min: the minimum size of cliques to be returned. If zero or\n"
    "  negative, no lower bound will be used.\n"
    "@param max: the maximum size of cliques to be returned. If zero or\n"
-   "  negative, no upper bound will be used."},
+   "  negative, no upper bound will be used.\n"
+   "@param max_results: the maximum number of results to return. C{None}\n"
+   "  means no limit on the number of results.\n"
+  },
   {"largest_cliques", (PyCFunction) igraphmodule_Graph_largest_cliques,
    METH_NOARGS,
    "largest_cliques()\n--\n\n"
@@ -18537,7 +18617,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  L{maximal_cliques()} for the maximal cliques"},
   {"maximal_cliques", (PyCFunction) igraphmodule_Graph_maximal_cliques,
    METH_VARARGS | METH_KEYWORDS,
-   "maximal_cliques(min=0, max=0, file=None)\n--\n\n"
+   "maximal_cliques(min=0, max=0, file=None, max_results=None)\n--\n\n"
    "Returns the maximal cliques of the graph as a list of tuples.\n\n"
    "A maximal clique is a clique which can't be extended by adding any other\n"
    "vertex to it. A maximal clique is not necessarily one of the largest\n"
@@ -18551,6 +18631,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param file: a file object or the name of the file to write the results\n"
    "  to. When this argument is C{None}, the maximal cliques will be returned\n"
    "  as a list of lists.\n"
+   "@param max_results: the maximum number of results to return. C{None}\n"
+   "  means no limit on the number of results.\n"
    "@return: the maximal cliques of the graph as a list of lists, or C{None}\n"
    "  if the C{file} argument was given."
    "@see: L{largest_cliques()} for the largest cliques."},
@@ -18563,14 +18645,17 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"independent_vertex_sets",
    (PyCFunction) igraphmodule_Graph_independent_vertex_sets,
    METH_VARARGS | METH_KEYWORDS,
-   "independent_vertex_sets(min=0, max=0)\n--\n\n"
+   "independent_vertex_sets(min=0, max=0, max_results=None)\n--\n\n"
    "Returns some or all independent vertex sets of the graph as a list of tuples.\n\n"
    "Two vertices are independent if there is no edge between them. Members\n"
    "of an independent vertex set are mutually independent.\n\n"
    "@param min: the minimum size of sets to be returned. If zero or\n"
    "  negative, no lower bound will be used.\n"
    "@param max: the maximum size of sets to be returned. If zero or\n"
-   "  negative, no upper bound will be used."},
+   "  negative, no upper bound will be used.\n"
+   "@param max_results: the maximum number of results to return. C{None}\n"
+   "  means no limit on the number of results.\n"
+  },
   {"largest_independent_vertex_sets",
    (PyCFunction) igraphmodule_Graph_largest_independent_vertex_sets,
    METH_NOARGS,
@@ -18585,8 +18670,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "  (nonextendable) independent vertex sets"},
   {"maximal_independent_vertex_sets",
    (PyCFunction) igraphmodule_Graph_maximal_independent_vertex_sets,
-   METH_NOARGS,
-   "maximal_independent_vertex_sets()\n--\n\n"
+   METH_VARARGS | METH_KEYWORDS,
+   "maximal_independent_vertex_sets(min=0, max=0, max_results=None)\n--\n\n"
    "Returns the maximal independent vertex sets of the graph as a list of tuples.\n\n"
    "A maximal independent vertex set is an independent vertex set\n"
    "which can't be extended by adding any other vertex to it. A maximal\n"
@@ -18595,6 +18680,12 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "B{Reference}: S. Tsukiyama, M. Ide, H. Ariyoshi and I. Shirawaka: A new\n"
    "algorithm for generating all the maximal independent sets.\n"
    "I{SIAM J Computing}, 6:505-517, 1977.\n\n"
+   "@param min: the minimum size of sets to be returned. If zero or\n"
+   "  negative, no lower bound will be used.\n"
+   "@param max: the maximum size of sets to be returned. If zero or\n"
+   "  negative, no upper bound will be used.\n"
+   "@param max_results: the maximum number of results to return. C{None}\n"
+   "  means no limit on the number of results.\n\n"
    "@see: L{largest_independent_vertex_sets()} for the largest independent\n"
    "  vertex sets\n"
   },

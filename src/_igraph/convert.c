@@ -1024,6 +1024,60 @@ int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_integer_t *v) {
 }
 
 /**
+ * \brief Converts a Python object to an igraph \c igraph_integer_t when it is
+ * used as a limit on the number of results for some function.
+ * 
+ * This is different from \ref igraphmodule_PyObject_to_integer_t such that it
+ * converts None and positive infinity to \c IGRAPH_UNLIMITED, and it does not
+ * accept negative values.
+ *
+ * Raises suitable Python exceptions when needed.
+ *
+ * \param object the Python object to be converted
+ * \param v the result is stored here
+ * \return 0 if everything was OK, 1 otherwise
+ */
+int igraphmodule_PyObject_to_max_results_t(PyObject *object, igraph_integer_t *v) {
+  int retval;
+  igraph_integer_t num;
+
+  if (object != NULL) {
+    if (object == Py_None) {
+      *v = IGRAPH_UNLIMITED;
+      return 0;
+    }
+
+    if (PyNumber_Check(object)) {
+      PyObject *flt = PyNumber_Float(object);
+      if (flt == NULL) {
+        return 1;
+      }
+
+      if (PyFloat_AsDouble(flt) == IGRAPH_INFINITY) {
+        Py_DECREF(flt);
+        *v = IGRAPH_UNLIMITED;
+        return 0;
+      }
+
+      Py_DECREF(flt);
+    }
+  }
+
+  retval = igraphmodule_PyObject_to_integer_t(object, &num);
+  if (retval) {
+    return retval;
+  }
+
+  if (num < 0) {
+    PyErr_SetString(PyExc_ValueError, "expected non-negative integer, None or infinity");
+    return 1;
+  }
+
+  *v = num;
+  return 0;
+}
+
+/**
  * \brief Converts a Python object to an igraph \c igraph_real_t
  *
  * Raises suitable Python exceptions when needed.

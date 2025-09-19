@@ -1,5 +1,7 @@
 import unittest
 
+from math import inf
+
 from igraph import Graph
 
 from .utils import temporary_file
@@ -59,8 +61,24 @@ class CliqueTests(unittest.TestCase):
                 [1, 2, 4, 5],
             ],
         }
+
         for (lo, hi), exp in tests.items():
             self.assertEqual(sorted(exp), sorted(map(sorted, self.g.cliques(lo, hi))))
+
+        for (lo, hi), exp in tests.items():
+            self.assertEqual(sorted(exp), sorted(map(sorted, self.g.cliques(lo, hi, max_results=inf))))
+
+        for (lo, hi), exp in tests.items():
+            observed = [sorted(cl) for cl in self.g.cliques(lo, hi, max_results=10)]
+            for cl in observed:
+                self.assertTrue(cl in exp)
+
+        for (lo, hi), _ in tests.items():
+            self.assertEqual([], self.g.cliques(lo, hi, max_results=0))
+
+        for (lo, hi), _ in tests.items():
+            with self.assertRaises(ValueError):
+                self.g.cliques(lo, hi, max_results=-2)
 
     def testLargestCliques(self):
         self.assertEqual(

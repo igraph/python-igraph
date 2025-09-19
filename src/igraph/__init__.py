@@ -708,7 +708,7 @@ class Graph(GraphBase):
 
     ###########################
     # Paths/traversals
-    def get_all_simple_paths(self, v, to=None, minlen=0, maxlen=-1, mode="out"):
+    def get_all_simple_paths(self, v, to=None, minlen=0, maxlen=-1, mode="out", max_results=None):
         """Calculates all the simple paths from a given node to some other nodes
         (or all of them) in a graph.
 
@@ -730,11 +730,13 @@ class Graph(GraphBase):
         @param mode: the directionality of the paths. C{\"in\"} means to calculate
           incoming paths, C{\"out\"} means to calculate outgoing paths, C{\"all\"} means
           to calculate both ones.
+        @param max_results: the maximum number of results to return. C{None} means
+          no limit on the number of results.
         @return: all of the simple paths from the given node to every other
           reachable node in the graph in a list. Note that in case of mode=C{\"in\"},
           the vertices in a path are returned in reversed order!
         """
-        return self._get_all_simple_paths(v, to, minlen, maxlen, mode)
+        return self._get_all_simple_paths(v, to, minlen, maxlen, mode, max_results)
 
     def path_length_hist(self, directed=True):
         """Returns the path length histogram of the graph

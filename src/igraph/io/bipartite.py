@@ -117,7 +117,8 @@ def _construct_full_bipartite_graph(
 
 
 def _construct_random_bipartite_graph(
-    cls, n1, n2, p=None, m=None, directed=False, neimode="all", *args, **kwds
+    cls, n1, n2, p=None, m=None, directed=False, neimode="all",
+    allowed_edge_types="simple", edge_labeled=False, *args, **kwds
 ):
     """Generates a random bipartite graph with the given number of vertices and
     edges (if m is given), or with the given number of vertices and the given
@@ -140,13 +141,23 @@ def _construct_random_bipartite_graph(
       edges will always point from type 1 to type 2. If it is C{"in"}, edges
       will always point from type 2 to type 1. This argument is ignored for
       undirected graphs.
+    @param allowed_edge_types: controls whether multi-edges are allowed
+      during the generation process. Possible values are:
+
+        - C{"simple"}: simple graphs (no self-loops)
+        - C{"multi"}: multi-edges allowed
+
+    @param edge_labeled: whether to sample uniformly from the set of
+      I{ordered} edge lists. Use C{False} to recover the classic random
+      bipartite model.
     """
     if p is None:
         p = -1
     if m is None:
         m = -1
     result, types = cls._Random_Bipartite(
-        n1, n2, p, m, directed, neimode, *args, **kwds
+        n1, n2, p, m, directed, neimode, allowed_edge_types, edge_labeled,
+        *args, **kwds
     )
     result.vs["type"] = types
     return result
