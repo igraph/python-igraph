@@ -155,7 +155,7 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         name: Install Python
         with:
           python-version: "3.12.1"
@@ -279,7 +279,7 @@ jobs:
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
         run: sudo apt install ninja-build cmake flex bison
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         name: Install Python
         with:
           python-version: "3.9"
@@ -326,7 +326,7 @@ jobs:
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
         run: sudo apt install ninja-build cmake flex bison
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         name: Install Python
         with:
           python-version: "3.12"
