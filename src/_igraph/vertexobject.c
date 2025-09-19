@@ -54,7 +54,7 @@ int igraphmodule_Vertex_Check(PyObject* obj) {
  *   exception and returns zero if the vertex object is invalid.
  */
 int igraphmodule_Vertex_Validate(PyObject* obj) {
-  igraph_integer_t n;
+  igraph_int_t n;
   igraphmodule_VertexObject *self;
   igraphmodule_GraphObject *graph;
 
@@ -98,7 +98,7 @@ int igraphmodule_Vertex_Validate(PyObject* obj) {
  * changes, your existing vertex objects will point to elsewhere
  * (or they might even get invalidated).
  */
-PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_integer_t idx) {
+PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_int_t idx) {
   return PyObject_CallFunction((PyObject*) igraphmodule_VertexType, "On", gref, (Py_ssize_t) idx);
 }
 
@@ -110,7 +110,7 @@ PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_integer
 static int igraphmodule_Vertex_init(igraphmodule_EdgeObject *self, PyObject *args, PyObject *kwds) {
   static char *kwlist[] = { "graph", "vid", NULL };
   PyObject *g, *index_o = Py_None;
-  igraph_integer_t vid;
+  igraph_int_t vid;
   igraph_t *graph;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O", kwlist,
@@ -531,7 +531,7 @@ int igraphmodule_Vertex_set_attribute(igraphmodule_VertexObject* self, PyObject*
   /* result is NULL, check whether there was an error */
   if (!PyErr_Occurred()) {
     /* no, there wasn't, so we must simply add the attribute */
-    igraph_integer_t i, n = igraph_vcount(&o->g);
+    igraph_int_t i, n = igraph_vcount(&o->g);
     result = PyList_New(n);
     for (i = 0; i < n; i++) {
       if (i != self->idx) {
@@ -572,9 +572,9 @@ PyObject* igraphmodule_Vertex_get_index(igraphmodule_VertexObject* self, void* c
 
 /**
  * \ingroup python_interface_vertex
- * Returns the vertex index as an igraph_integer_t
+ * Returns the vertex index as an igraph_int_t
  */
-igraph_integer_t igraphmodule_Vertex_get_index_igraph_integer(igraphmodule_VertexObject* self) {
+igraph_int_t igraphmodule_Vertex_get_index_igraph_integer(igraphmodule_VertexObject* self) {
   return self->idx;
 }
 
@@ -618,7 +618,7 @@ static PyObject* _convert_to_edge_list(igraphmodule_VertexObject* vertex, PyObje
   for (i = 0; i < n; i++) {
     PyObject* idx = PyList_GetItem(obj, i);
     PyObject* edge;
-    igraph_integer_t idx_int;
+    igraph_int_t idx_int;
 
     if (!idx) {
       return NULL;
@@ -663,7 +663,7 @@ static PyObject* _convert_to_vertex_list(igraphmodule_VertexObject* vertex, PyOb
   for (i = 0; i < n; i++) {
     PyObject* idx = PyList_GetItem(obj, i);
     PyObject* v;
-    igraph_integer_t idx_int;
+    igraph_int_t idx_int;
 
     if (!idx) {
       return NULL;

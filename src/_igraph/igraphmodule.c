@@ -669,7 +669,7 @@ PyObject* igraphmodule_split_join_distance(PyObject *self,
   static char* kwlist[] = { "comm1", "comm2", NULL };
   PyObject *comm1_o, *comm2_o;
   igraph_vector_int_t comm1, comm2;
-  igraph_integer_t distance12, distance21;
+  igraph_int_t distance12, distance21;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist,
       &comm1_o, &comm2_o))
@@ -694,7 +694,7 @@ PyObject* igraphmodule_split_join_distance(PyObject *self,
   igraph_vector_int_destroy(&comm1);
   igraph_vector_int_destroy(&comm2);
 
-  /* sizeof(Py_ssize_t) is most likely the same as sizeof(igraph_integer_t),
+  /* sizeof(Py_ssize_t) is most likely the same as sizeof(igraph_int_t),
    * but even if it isn't, we cast explicitly so we are safe */
   return Py_BuildValue("nn", (Py_ssize_t)distance12, (Py_ssize_t)distance21);
 }
@@ -1070,7 +1070,7 @@ PyObject* PyInit__igraph(void)
   igraph_error_t retval;
 
   /* Prevent linking 64-bit igraph to 32-bit Python */
-  PY_IGRAPH_ASSERT_AT_BUILD_TIME(sizeof(igraph_integer_t) >= sizeof(Py_ssize_t));
+  PY_IGRAPH_ASSERT_AT_BUILD_TIME(sizeof(igraph_int_t) >= sizeof(Py_ssize_t));
 
   /* Check if the module is already initialized (possibly in another Python
    * interpreter. If so, bail out as we don't support this. */

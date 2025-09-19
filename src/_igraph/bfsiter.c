@@ -44,7 +44,7 @@ PyTypeObject* igraphmodule_BFSIterType;
  */
 PyObject* igraphmodule_BFSIter_new(igraphmodule_GraphObject *g, PyObject *root, igraph_neimode_t mode, igraph_bool_t advanced) {
   igraphmodule_BFSIterObject* self;
-  igraph_integer_t no_of_nodes, r;
+  igraph_int_t no_of_nodes, r;
 
   self = (igraphmodule_BFSIterObject*) PyType_GenericNew(igraphmodule_BFSIterType, 0, 0);
   if (!self) {
@@ -162,10 +162,10 @@ static PyObject* igraphmodule_BFSIter_iter(igraphmodule_BFSIterObject* self) {
 
 static PyObject* igraphmodule_BFSIter_iternext(igraphmodule_BFSIterObject* self) {
   if (!igraph_dqueue_int_empty(&self->queue)) {
-    igraph_integer_t vid = igraph_dqueue_int_pop(&self->queue);
-    igraph_integer_t dist = igraph_dqueue_int_pop(&self->queue);
-    igraph_integer_t parent = igraph_dqueue_int_pop(&self->queue);
-    igraph_integer_t i, n;
+    igraph_int_t vid = igraph_dqueue_int_pop(&self->queue);
+    igraph_int_t dist = igraph_dqueue_int_pop(&self->queue);
+    igraph_int_t parent = igraph_dqueue_int_pop(&self->queue);
+    igraph_int_t i, n;
 
     if (igraph_neighbors(self->graph, &self->neis, vid, self->mode, /* loops = */ 0, /* multiple = */ 0)) {
       igraphmodule_handle_igraph_error();
@@ -174,7 +174,7 @@ static PyObject* igraphmodule_BFSIter_iternext(igraphmodule_BFSIterObject* self)
 
     n = igraph_vector_int_size(&self->neis);
     for (i = 0; i < n; i++) {
-      igraph_integer_t neighbor = VECTOR(self->neis)[i];
+      igraph_int_t neighbor = VECTOR(self->neis)[i];
       if (self->visited[neighbor] == 0) {
         self->visited[neighbor] = 1;
         if (igraph_dqueue_int_push(&self->queue, neighbor) ||

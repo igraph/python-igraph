@@ -44,7 +44,7 @@ PyTypeObject* igraphmodule_DFSIterType;
  */
 PyObject* igraphmodule_DFSIter_new(igraphmodule_GraphObject *g, PyObject *root, igraph_neimode_t mode, igraph_bool_t advanced) {
   igraphmodule_DFSIterObject* self;
-  igraph_integer_t no_of_nodes, r;
+  igraph_int_t no_of_nodes, r;
 
   self = (igraphmodule_DFSIterObject*) PyType_GenericNew(igraphmodule_DFSIterType, 0, 0);
   if (!self) {
@@ -162,7 +162,7 @@ static PyObject* igraphmodule_DFSIter_iter(igraphmodule_DFSIterObject* self) {
 static PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self) {
   /* the design is to return the top of the stack and then proceed until
    * we have found an unvisited neighbor and push that on top */
-  igraph_integer_t parent_out, dist_out, vid_out;
+  igraph_int_t parent_out, dist_out, vid_out;
   igraph_bool_t any = false;
 
   /* nothing on the stack, end of iterator */
@@ -181,13 +181,13 @@ static PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self)
 
   /* look for neighbors until we find one or until we have exhausted the graph */
   while (!any && !igraph_stack_int_empty(&self->stack)) {
-    igraph_integer_t parent = igraph_stack_int_pop(&self->stack);
-    igraph_integer_t dist = igraph_stack_int_pop(&self->stack);
-    igraph_integer_t vid = igraph_stack_int_pop(&self->stack);
+    igraph_int_t parent = igraph_stack_int_pop(&self->stack);
+    igraph_int_t dist = igraph_stack_int_pop(&self->stack);
+    igraph_int_t vid = igraph_stack_int_pop(&self->stack);
     igraph_stack_int_push(&self->stack, vid);
     igraph_stack_int_push(&self->stack, dist);
     igraph_stack_int_push(&self->stack, parent);
-    igraph_integer_t i, n;
+    igraph_int_t i, n;
 
     /* the values above are returned at at this stage. However, we must
      * prepare for the next iteration by putting the next unvisited
@@ -199,7 +199,7 @@ static PyObject* igraphmodule_DFSIter_iternext(igraphmodule_DFSIterObject* self)
 
     n = igraph_vector_int_size(&self->neis);
     for (i = 0; i < n; i++) {
-      igraph_integer_t neighbor = VECTOR(self->neis)[i];
+      igraph_int_t neighbor = VECTOR(self->neis)[i];
       /* new neighbor, push the next item onto the stack */
       if (self->visited[neighbor] == 0) {
         any = 1;

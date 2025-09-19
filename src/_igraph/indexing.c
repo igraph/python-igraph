@@ -31,8 +31,8 @@
 /***************************************************************************/
 
 static PyObject* igraphmodule_i_Graph_adjmatrix_indexing_get_value_for_vertex_pair(
-    igraph_t* graph, igraph_integer_t from, igraph_integer_t to, PyObject* values) {
-  igraph_integer_t eid;
+    igraph_t* graph, igraph_int_t from, igraph_int_t to, PyObject* values) {
+  igraph_int_t eid;
   PyObject* result;
 
   /* Retrieving a single edge */
@@ -53,14 +53,14 @@ static PyObject* igraphmodule_i_Graph_adjmatrix_indexing_get_value_for_vertex_pa
 }
 
 static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph,
-    igraph_integer_t from, igraph_vs_t* to, igraph_neimode_t neimode,
+    igraph_int_t from, igraph_vs_t* to, igraph_neimode_t neimode,
     PyObject* values);
 
 PyObject* igraphmodule_Graph_adjmatrix_get_index(igraph_t* graph,
         PyObject* row_index, PyObject* column_index, PyObject* attr_name) {
     PyObject *result = 0, *values;
     igraph_vs_t vs1, vs2;
-    igraph_integer_t vid1 = -1, vid2 = -1;
+    igraph_int_t vid1 = -1, vid2 = -1;
     char* attr;
 
     if (igraphmodule_PyObject_to_vs_t(row_index, &vs1, graph, 0, &vid1))
@@ -131,10 +131,10 @@ PyObject* igraphmodule_Graph_adjmatrix_get_index(igraph_t* graph,
 }
 
 static PyObject* igraphmodule_i_Graph_adjmatrix_get_index_row(igraph_t* graph,
-    igraph_integer_t from, igraph_vs_t* to, igraph_neimode_t neimode,
+    igraph_int_t from, igraph_vs_t* to, igraph_neimode_t neimode,
     PyObject* values) {
   igraph_vector_int_t eids;
-  igraph_integer_t eid, i, n, v;
+  igraph_int_t eid, i, n, v;
   igraph_vit_t vit;
   PyObject *result = 0, *item;
 
@@ -263,12 +263,12 @@ void igraphmodule_i_Graph_adjmatrix_set_index_data_destroy(
 }
 
 static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
-    igraph_integer_t from, igraph_vs_t* to, igraph_neimode_t neimode,
+    igraph_int_t from, igraph_vs_t* to, igraph_neimode_t neimode,
     PyObject* values, PyObject* new_value,
     igraphmodule_i_Graph_adjmatrix_set_index_data_t* data) {
   PyObject *iter = 0, *item;
   igraph_vit_t vit;
-  igraph_integer_t v, v1, v2, eid;
+  igraph_int_t v, v1, v2, eid;
   igraph_bool_t deleting, ok = true;
 
   /* Check whether new_value is an iterable (and not a string). If not,
@@ -423,7 +423,7 @@ int igraphmodule_Graph_adjmatrix_set_index(igraph_t* graph,
   PyObject *values;
   igraph_vs_t vs1, vs2;
   igraph_vit_t vit;
-  igraph_integer_t vid1 = -1, vid2 = -1, eid = -1;
+  igraph_int_t vid1 = -1, vid2 = -1, eid = -1;
   igraph_bool_t ok = true;
   igraphmodule_i_Graph_adjmatrix_set_index_data_t data;
   char* attr;

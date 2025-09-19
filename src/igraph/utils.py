@@ -75,7 +75,7 @@ def numpy_to_contiguous_memoryview(obj):
         dtype = int32
     else:
         raise TypeError(
-            f"size of igraph_integer_t in the C layer ({INTEGER_SIZE} bits) is not supported"
+            f"size of igraph_int_t in the C layer ({INTEGER_SIZE} bits) is not supported"
         )
 
     return memoryview(require(obj, dtype=dtype, requirements="AC"))

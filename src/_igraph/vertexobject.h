@@ -35,7 +35,7 @@ typedef struct
 {
   PyObject_HEAD
   igraphmodule_GraphObject* gref;
-  igraph_integer_t idx;
+  igraph_int_t idx;
   long hash;
 } igraphmodule_VertexObject;
 
@@ -44,8 +44,8 @@ extern PyTypeObject* igraphmodule_VertexType;
 int igraphmodule_Vertex_register_type(void);
 
 int igraphmodule_Vertex_Check(PyObject* obj);
-PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_integer_t idx);
-igraph_integer_t igraphmodule_Vertex_get_index_igraph_integer(igraphmodule_VertexObject* self);
+PyObject* igraphmodule_Vertex_New(igraphmodule_GraphObject *gref, igraph_int_t idx);
+igraph_int_t igraphmodule_Vertex_get_index_igraph_integer(igraphmodule_VertexObject* self);
 PyObject* igraphmodule_Vertex_update_attributes(PyObject* self, PyObject* args, PyObject* kwds);
 
 #endif

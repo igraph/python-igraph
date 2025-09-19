@@ -106,7 +106,7 @@ int igraphmodule_VertexSeq_init(igraphmodule_VertexSeqObject *self,
     igraph_vs_all(&vs);
   } else if (PyLong_Check(vsobj)) {
     /* We selected a single vertex */
-    igraph_integer_t idx;
+    igraph_int_t idx;
 
     if (igraphmodule_PyObject_to_integer_t(vsobj, &idx)) {
       return -1;
@@ -120,7 +120,7 @@ int igraphmodule_VertexSeq_init(igraphmodule_VertexSeqObject *self,
     igraph_vs_1(&vs, idx);
   } else {
     igraph_vector_int_t v;
-    igraph_integer_t n = igraph_vcount(&((igraphmodule_GraphObject*)g)->g);
+    igraph_int_t n = igraph_vcount(&((igraphmodule_GraphObject*)g)->g);
     if (igraphmodule_PyObject_to_vector_int_t(vsobj, &v))
       return -1;
     if (!igraph_vector_int_isininterval(&v, 0, n-1)) {
@@ -168,7 +168,7 @@ void igraphmodule_VertexSeq_dealloc(igraphmodule_VertexSeqObject* self) {
  */
 Py_ssize_t igraphmodule_VertexSeq_sq_length(igraphmodule_VertexSeqObject* self) {
   igraph_t *g;
-  igraph_integer_t result;
+  igraph_int_t result;
 
   if (!self->gref) {
     return -1;
@@ -190,7 +190,7 @@ Py_ssize_t igraphmodule_VertexSeq_sq_length(igraphmodule_VertexSeqObject* self) 
 PyObject* igraphmodule_VertexSeq_sq_item(igraphmodule_VertexSeqObject* self,
                      Py_ssize_t i) {
   igraph_t *g;
-  igraph_integer_t idx = -1;
+  igraph_int_t idx = -1;
 
   if (!self->gref) {
     return NULL;
@@ -260,7 +260,7 @@ PyObject* igraphmodule_VertexSeq_attribute_names(igraphmodule_VertexSeqObject* s
 PyObject* igraphmodule_VertexSeq_get_attribute_values(igraphmodule_VertexSeqObject* self, PyObject* o) {
   igraphmodule_GraphObject *gr = self->gref;
   PyObject *result=0, *values, *item;
-  igraph_integer_t i, n;
+  igraph_int_t i, n;
 
   if (!igraphmodule_attribute_name_check(o))
     return 0;
@@ -409,7 +409,7 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
   PyObject *dict, *list, *item;
   igraphmodule_GraphObject *gr;
   igraph_vector_int_t vs;
-  igraph_integer_t i, j, n, no_of_nodes;
+  igraph_int_t i, j, n, no_of_nodes;
 
   gr = self->gref;
   dict = ATTR_STRUCT_DICT(&gr->g)[ATTRHASH_IDX_VERTEX];
@@ -540,7 +540,7 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
       /* We don't have attributes with the given name yet. Create an entry
        * in the dict, create a new list, fill with None for vertices not in the
        * sequence and copy the rest */
-      igraph_integer_t n2 = igraph_vcount(&gr->g);
+      igraph_int_t n2 = igraph_vcount(&gr->g);
       list = PyList_New(n2);
       if (list == 0) {
         igraph_vector_int_destroy(&vs);
@@ -605,7 +605,7 @@ PyObject* igraphmodule_VertexSeq_set_attribute_values(igraphmodule_VertexSeqObje
  */
 PyObject* igraphmodule_VertexSeq_find(igraphmodule_VertexSeqObject *self, PyObject *args) {
   PyObject *item;
-  igraph_integer_t i;
+  igraph_int_t i;
   Py_ssize_t n;
   igraph_vit_t vit;
 
@@ -683,7 +683,7 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
   PyObject *args) {
   igraphmodule_VertexSeqObject *result;
   igraphmodule_GraphObject *gr;
-  igraph_integer_t igraph_idx, i, j, n, m;
+  igraph_int_t igraph_idx, i, j, n, m;
   igraph_bool_t working_on_whole_graph = igraph_vs_is_all(&self->vs);
   igraph_vector_int_t v, v2;
 
@@ -787,7 +787,7 @@ PyObject* igraphmodule_VertexSeq_select(igraphmodule_VertexSeqObject *self,
 
       for (; i < n; i++) {
         PyObject *item2 = PyTuple_GetItem(args, i);
-        igraph_integer_t idx;
+        igraph_int_t idx;
         if (item2 == 0) {
           Py_DECREF(result);
           igraph_vector_int_destroy(&v);

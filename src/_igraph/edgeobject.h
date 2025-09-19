@@ -34,7 +34,7 @@
 typedef struct {
   PyObject_HEAD
   igraphmodule_GraphObject* gref;
-  igraph_integer_t idx;
+  igraph_int_t idx;
   long hash;
 } igraphmodule_EdgeObject;
 
@@ -43,7 +43,7 @@ extern PyTypeObject* igraphmodule_EdgeType;
 int igraphmodule_Edge_register_type(void);
 
 int igraphmodule_Edge_Check(PyObject* obj);
-PyObject* igraphmodule_Edge_New(igraphmodule_GraphObject *gref, igraph_integer_t idx);
-igraph_integer_t igraphmodule_Edge_get_index_as_igraph_integer(igraphmodule_EdgeObject* self);
+PyObject* igraphmodule_Edge_New(igraphmodule_GraphObject *gref, igraph_int_t idx);
+igraph_int_t igraphmodule_Edge_get_index_as_igraph_integer(igraphmodule_EdgeObject* self);
 
 #endif

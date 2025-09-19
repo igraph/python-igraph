@@ -115,7 +115,7 @@ static PyObject* igraphmodule_ARPACKOptions_getattr(
 static int igraphmodule_ARPACKOptions_setattr(
   igraphmodule_ARPACKOptionsObject* self, char* attrname,
   PyObject* value) {
-  igraph_integer_t igraph_int;
+  igraph_int_t igraph_int;
 
   if (value == 0) {
     PyErr_SetString(PyExc_TypeError, "attribute can not be deleted");

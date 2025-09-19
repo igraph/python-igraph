@@ -54,7 +54,7 @@ int igraphmodule_Edge_Check(PyObject* obj) {
  *   exception and returns zero if the edge object is invalid.
  */
 int igraphmodule_Edge_Validate(PyObject* obj) {
-  igraph_integer_t n;
+  igraph_int_t n;
   igraphmodule_EdgeObject *self;
   igraphmodule_GraphObject *graph;
 
@@ -98,7 +98,7 @@ int igraphmodule_Edge_Validate(PyObject* obj) {
  * changes, your existing edge objects will point to elsewhere
  * (or they might even get invalidated).
  */
-PyObject* igraphmodule_Edge_New(igraphmodule_GraphObject *gref, igraph_integer_t idx) {
+PyObject* igraphmodule_Edge_New(igraphmodule_GraphObject *gref, igraph_int_t idx) {
   return PyObject_CallFunction((PyObject*) igraphmodule_EdgeType, "On", gref, (Py_ssize_t) idx);
 }
 
@@ -110,7 +110,7 @@ PyObject* igraphmodule_Edge_New(igraphmodule_GraphObject *gref, igraph_integer_t
 static int igraphmodule_Edge_init(igraphmodule_EdgeObject *self, PyObject *args, PyObject *kwds) {
   static char *kwlist[] = { "graph", "eid", NULL };
   PyObject *g, *index_o = Py_None;
-  igraph_integer_t eid;
+  igraph_int_t eid;
   igraph_t *graph;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O", kwlist,
@@ -400,7 +400,7 @@ int igraphmodule_Edge_set_attribute(igraphmodule_EdgeObject* self, PyObject* k, 
   /* result is NULL, check whether there was an error */
   if (!PyErr_Occurred()) {
     /* no, there wasn't, so we must simply add the attribute */
-    igraph_integer_t i, n = igraph_ecount(&o->g);
+    igraph_int_t i, n = igraph_ecount(&o->g);
     result = PyList_New(n);
     for (i = 0; i < n; i++) {
       if (i != self->idx) {
@@ -437,7 +437,7 @@ int igraphmodule_Edge_set_attribute(igraphmodule_EdgeObject* self, PyObject* k, 
  */
 PyObject* igraphmodule_Edge_get_from(igraphmodule_EdgeObject* self, void* closure) {
   igraphmodule_GraphObject *o = self->gref;
-  igraph_integer_t from, to;
+  igraph_int_t from, to;
 
   if (!igraphmodule_Edge_Validate((PyObject*)self)) {
     return NULL;
@@ -456,7 +456,7 @@ PyObject* igraphmodule_Edge_get_from(igraphmodule_EdgeObject* self, void* closur
  */
 PyObject* igraphmodule_Edge_get_source_vertex(igraphmodule_EdgeObject* self, void* closure) {
   igraphmodule_GraphObject *o = self->gref;
-  igraph_integer_t from, to;
+  igraph_int_t from, to;
 
   if (!igraphmodule_Edge_Validate((PyObject*)self))
     return NULL;
@@ -474,7 +474,7 @@ PyObject* igraphmodule_Edge_get_source_vertex(igraphmodule_EdgeObject* self, voi
  */
 PyObject* igraphmodule_Edge_get_to(igraphmodule_EdgeObject* self, void* closure) {
   igraphmodule_GraphObject *o = self->gref;
-  igraph_integer_t from, to;
+  igraph_int_t from, to;
 
   if (!igraphmodule_Edge_Validate((PyObject*)self)) {
     return NULL;
@@ -493,7 +493,7 @@ PyObject* igraphmodule_Edge_get_to(igraphmodule_EdgeObject* self, void* closure)
  */
 PyObject* igraphmodule_Edge_get_target_vertex(igraphmodule_EdgeObject* self, void* closure) {
   igraphmodule_GraphObject *o = self->gref;
-  igraph_integer_t from, to;
+  igraph_int_t from, to;
 
   if (!igraphmodule_Edge_Validate((PyObject*)self))
     return NULL;
@@ -515,9 +515,9 @@ PyObject* igraphmodule_Edge_get_index(igraphmodule_EdgeObject* self, void* closu
 
 /**
  * \ingroup python_interface_edge
- * Returns the edge index as an igraph_integer_t
+ * Returns the edge index as an igraph_int_t
  */
-igraph_integer_t igraphmodule_Edge_get_index_as_igraph_integer(igraphmodule_EdgeObject* self) {
+igraph_int_t igraphmodule_Edge_get_index_as_igraph_integer(igraphmodule_EdgeObject* self) {
   return self->idx;
 }
 
@@ -527,7 +527,7 @@ igraph_integer_t igraphmodule_Edge_get_index_as_igraph_integer(igraphmodule_Edge
  */
 PyObject* igraphmodule_Edge_get_tuple(igraphmodule_EdgeObject* self, void* closure) {
   igraphmodule_GraphObject *o = self->gref;
-  igraph_integer_t from, to;
+  igraph_int_t from, to;
   PyObject *from_o, *to_o, *result;
 
   if (!igraphmodule_Edge_Validate((PyObject*)self)) {
@@ -562,7 +562,7 @@ PyObject* igraphmodule_Edge_get_tuple(igraphmodule_EdgeObject* self, void* closu
  */
 PyObject* igraphmodule_Edge_get_vertex_tuple(igraphmodule_EdgeObject* self, void* closure) {
   igraphmodule_GraphObject *o = self->gref;
-  igraph_integer_t from, to;
+  igraph_int_t from, to;
   PyObject *from_o, *to_o;
 
   if (!igraphmodule_Edge_Validate((PyObject*)self))
