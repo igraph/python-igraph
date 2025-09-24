@@ -65,9 +65,13 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.intersphinx",
     "sphinx_gallery.gen_gallery",
-    #'sphinx_panels',
+    # 'sphinx_panels',
     "pydoctor.sphinx_ext.build_apidocs",
+    "nbsphinx",
+    "sphinx_design",
+    "IPython.sphinxext.ipython_console_highlighting",
 ]
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -108,7 +112,7 @@ release = version
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["include/*.rst"]
+exclude_patterns = ["include/*.rst", "**.ipynb_checkpoints", "tutorials/*.ipynb"]
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None
@@ -137,7 +141,27 @@ pygments_style = "sphinx"
 # https://github.com/twisted/pydoctor/blob/master/docs/source/conf.py
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
-html_css_files = ["custom.css"]
+html_css_files = [
+    "custom.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"   
+]
+
+nbsphinx_execute = 'never'
+nbsphinx_allow_errors = True
+
+nbsphinx_prolog = r"""
+{% set full_path = env.doc2path(env.docname, base=None) %}
+{% set docname = full_path | basename %}
+.. raw:: html
+
+    <div class="download-container">
+        <a href="{{ docname }}" download="{{ docname }}">
+            <button type="button" class="download-button">
+                <i class="fa-solid fa-download"></i> Download Notebook
+            </button>
+        </a>
+    </div>
+"""
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -227,7 +251,6 @@ pydoctor_args = [
     _igraph_dir,
 ]
 pydoctor_url_path = "/en/{rtd_version}/api"
-
 
 # -- Options for sphinx-gallery ------------------------------------------------
 

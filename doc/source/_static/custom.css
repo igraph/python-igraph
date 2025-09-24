@@ -8,3 +8,99 @@
     max-width: 100%;
     overflow: visible;
 }
+
+/* Custom CSS for colored cards */
+/* Base card styling for better visual appearance */
+.sd-card {
+    border: none !important;
+    border-radius: 8px !important;
+    position: relative;
+    padding: 1em; /* Adjust padding as needed */
+    color: white;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* Hover effect */
+.sd-card:hover {
+    transform: translateY(-3px); /* Slightly lift card */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+}
+
+/* Card titles inside the body */
+.sd-card-body h3, .sd-card-body strong {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 0.5em;
+    color: white !important;
+}
+
+/* Ensure the main content block has flexible spacing */
+.sd-card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    text-align: center;
+}
+
+/* Download button container inside the card */
+.sd-card-body .download-container {
+    position: relative;
+    z-index: 10; /* A high number to make sure it's on top */
+    margin-top: auto; /* Push to the bottom */
+    text-align: right;
+}
+
+/* The actual button inside the container */
+.sd-card-body .download-button {
+    background-color: #f8f9fa;
+    color: #212529;
+    border: 1px solid #ced4da;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.download-link {
+    text-decoration: none !important;
+}
+
+.download-button {
+    padding: 8px 16px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.download-button:hover {
+    background-color: #3498db;
+}
+
+/* Colored cards (your colors are good) */
+.card-red-orange { background-color: #FF6633; }
+.card-deep-orange { background-color: #FF8C40; }
+.card-yellow-orange { background-color: #FFA500; }
+.card-light-green { background-color: #7ED957; }
+.card-medium-green { background-color: #70B341; }
+.card-dark-green { background-color: #4CAF50; }
+.card-light-blue { background-color: #409ED8; }
+.card-medium-blue { background-color: #007BFF; }
+.card-deep-blue { background-color: #0056b3; }
+.card-light-purple { background-color: #BF40BF; } 
+.card-medium-purple { background-color: #800080; } 
+.card-deep-purple { background-color: #4B0082; } 
+
+section h1,
+section h2,
+section h3 {
+    margin-top: 35px;
+}
+
+section p {
+    margin-top: 20px;
+}
