@@ -5,7 +5,8 @@ on: [push, pull_request]
 env:
   CIBW_ENVIRONMENT_PASS_LINUX: PYTEST_TIMEOUT
   CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test]' && python -m pytest -v tests"
-  CIBW_SKIP: "cp38-* pp38-*"
+  # Free-threaded builds excluded for Python 3.14 because they do not support the limited API
+  CIBW_SKIP: "cp38-* pp38-* cp314t-*"
   PYTEST_TIMEOUT: 60
 
 jobs:
