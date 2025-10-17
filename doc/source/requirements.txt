@@ -12,3 +12,8 @@ numpy
 scipy
 pandas
 matplotlib
+
+nbsphinx
+pandoc
+sphinx-design
+ipython

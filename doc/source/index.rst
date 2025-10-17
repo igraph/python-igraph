@@ -67,8 +67,9 @@ Documentation
 
        - :doc:`Quick start <tutorials/quickstart>`
        - :doc:`Gallery of examples <tutorials/index>`
+       - :doc:`Community detection guide <community_detection_guide>`
        - :doc:`Extended tutorial <tutorial>` (:doc:`Español <tutorial.es>`)
-
+    
     .. container::
 
        **Detailed docs**
@@ -110,7 +111,8 @@ Documentation for `python-igraph <= 0.10.1` is available on our `old website <ht
    visualisation
    configuration
    faq
-
+   community_detection_guide
+   
 
 Indices and tables
 ==================

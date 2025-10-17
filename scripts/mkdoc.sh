@@ -54,18 +54,22 @@ if [ ! -d ".venv" ]; then
   echo "Creating virtualenv..."
   ${PYTHON:-python3} -m venv .venv
 
-  # Install sphinx, matplotlib, pandas, scipy, wheel and pydoctor into the venv.
+  # Install sphinx, matplotlib, pandas, scipy, wheel, pydoctor, nbsphinx, pandoc, sphinx-design, ipython and ipywidgets into the venv.
   # doc2dash is optional; it will be installed when -d is given
-  .venv/bin/pip install -q -U pip wheel sphinx==7.4.7 matplotlib pandas scipy pydoctor sphinx-rtd-theme
+  .venv/bin/pip install -q -U pip wheel sphinx==8.1.3 matplotlib pandas scipy pydoctor sphinx-rtd-theme nbsphinx pandoc sphinx-design ipython ipywidgets
 else
   # Upgrade pip in the virtualenv
   echo "Upgrading pip in virtualenv..."
   .venv/bin/pip install -q -U pip wheel
+
+  # Install nbsphinx, pandoc, sphinx-design and ipython
+  echo "Checking for nbsphinx, pandoc, sphinx-design and ipython..."
+  .venv/bin/pip install -q -U nbsphinx pandoc sphinx-design ipython ipywidgets
 fi
 
 # Make sure that Sphinx, PyDoctor (and maybe doc2dash) are up-to-date in the virtualenv
 echo "Making sure that all dependencies are up-to-date..."
-.venv/bin/pip install -q -U sphinx==7.4.7 pydoctor sphinx-gallery sphinxcontrib-jquery sphinx-rtd-theme
+.venv/bin/pip install -q -U sphinx==8.1.3 pydoctor sphinx-gallery sphinxcontrib-jquery sphinx-rtd-theme
 if [ x$DOC2DASH = x1 ]; then
   .venv/bin/pip install -U doc2dash
 fi
