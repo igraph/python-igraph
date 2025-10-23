@@ -1,6 +1,32 @@
 # igraph Python interface changelog
 
-## [main]
+## [1.0.0] - 2025-10-23
+
+### Added
+
+- Added `Graph.Nearest_Neighbor_Graph()`.
+
+- Added `node_in_weights` argument to `Graph.community_leiden()`.
+
+- Added `align_layout()` to align the principal axes of a layout nicely
+  with screen dimensions.
+
+- Added `Graph.commnity_voronoi()`.
+
+- Added `Graph.commnity_fluid_communities()`.
+
+### Changed
+
+- The C core of igraph was updated to version 1.0.0.
+
+- Most layouts are now auto-aligned using `align_layout()`.
+
+### Miscellaneous
+
+- Documentation improvements.
+
+- This is the last version that supports Python 3.9 as it will reach its
+  end of life at the end of October 2025.
 
 ## [0.11.9] - 2025-06-11
 
@@ -727,7 +753,7 @@ Please refer to the commit logs at <https://github.com/igraph/python-igraph> for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
-[main]: https://github.com/igraph/python-igraph/compare/0.11.9...main
+[1.0.0]: https://github.com/igraph/python-igraph/compare/0.11.9...1.0.0
 [0.11.9]: https://github.com/igraph/python-igraph/compare/0.11.8...0.11.9
 [0.11.8]: https://github.com/igraph/python-igraph/compare/0.11.7...0.11.8
 [0.11.7]: https://github.com/igraph/python-igraph/compare/0.11.6...0.11.7
