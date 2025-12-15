@@ -16,7 +16,7 @@ jobs:
     name: Build wheels on Linux (x86_64)
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
@@ -43,7 +43,7 @@ jobs:
     name: Build wheels on Linux (aarch64/manylinux)
     runs-on: ubuntu-22.04-arm
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
@@ -64,7 +64,7 @@ jobs:
     name: Build wheels on Linux (aarch64/musllinux)
     runs-on: ubuntu-22.04-arm
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
@@ -98,7 +98,7 @@ jobs:
             wheel_arch: arm64
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
@@ -150,7 +150,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
@@ -209,7 +209,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
@@ -261,7 +261,7 @@ jobs:
     name: Build sdist and test extra dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
@@ -307,7 +307,7 @@ jobs:
     env:
       IGRAPH_CMAKE_EXTRA_ARGS: -DFORCE_COLORED_OUTPUT=ON
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
