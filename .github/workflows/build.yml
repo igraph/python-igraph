@@ -34,7 +34,7 @@ jobs:
           CIBW_BUILD: "*-musllinux_x86_64"
           CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: wheels-linux-x86_64
           path: ./wheelhouse/*.whl
@@ -55,7 +55,7 @@ jobs:
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: wheels-linux-aarch64-manylinux
           path: ./wheelhouse/*.whl
@@ -77,7 +77,7 @@ jobs:
           CIBW_BUILD: "*-musllinux_aarch64"
           CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: wheels-linux-aarch64-musllinux
           path: ./wheelhouse/*.whl
@@ -140,7 +140,7 @@ jobs:
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: wheels-macos-${{ matrix.wheel_arch }}
           path: ./wheelhouse/*.whl
@@ -181,7 +181,7 @@ jobs:
           limit-access-to-actor: true
           wait-timeout-minutes: 5
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: wheels-wasm
           path: ./dist/*.whl
@@ -252,7 +252,7 @@ jobs:
           IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset,bcrypt
           IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: wheels-win-${{ matrix.wheel_arch }}
           path: ./wheelhouse/*.whl
@@ -294,7 +294,7 @@ jobs:
           pip install '.[test]'
           python -m pytest -v tests
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: sdist
           path: dist/*.tar.gz
