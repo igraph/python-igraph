@@ -212,6 +212,9 @@ from igraph.io.libraries import (
     _construct_graph_from_graph_tool,
     _export_graph_to_graph_tool,
 )
+from igraph.io.repositories import(
+    _construct_graph_from_Netzschleuder,
+)
 from igraph.io.random import (
     _construct_random_geometric_graph,
 )
@@ -462,6 +465,9 @@ class Graph(GraphBase):
 
     from_graph_tool = classmethod(_construct_graph_from_graph_tool)
     to_graph_tool = _export_graph_to_graph_tool
+
+    # Repositories
+    from_Netzschleuder = classmethod(_construct_graph_from_Netzschleuder)
 
     # Files
     Read_DIMACS = classmethod(_construct_graph_from_dimacs_file)

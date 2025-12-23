@@ -12,3 +12,4 @@ numpy
 scipy
 pandas
 matplotlib
+zstandrad
