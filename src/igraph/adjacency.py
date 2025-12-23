@@ -113,7 +113,7 @@ def _get_adjacency_sparse(self, attribute=None):
         weights = self.es[attribute]
 
     N = self.vcount()
-    mtx = sparse.csr_matrix((weights, list(zip(*edges))), shape=(N, N))
+    mtx = sparse.csr_matrix((weights, tuple(zip(*edges))), shape=(N, N))
 
     if not self.is_directed():
         mtx = mtx + sparse.triu(mtx, 1).T + sparse.tril(mtx, -1).T
