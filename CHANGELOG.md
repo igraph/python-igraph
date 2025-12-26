@@ -1,5 +1,11 @@
 # igraph Python interface changelog
 
+## 1.0.1 - 2025-12-26
+
+### Changed
+
+- The C core of igraph was updated to version 1.0.1.
+
 ## [1.0.0] - 2025-10-23
 
 ### Added
@@ -20,6 +26,8 @@
 - The C core of igraph was updated to version 1.0.0.
 
 - Most layouts are now auto-aligned using `align_layout()`.
+
+- Dropped support for PyPy 3.9 and PyPy 3.10 as they are now EOL.
 
 ### Miscellaneous
 
