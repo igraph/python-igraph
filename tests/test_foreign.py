@@ -23,6 +23,14 @@ except ImportError:
     pd = None
 
 
+try:
+    import torch
+    from torch_geometric.data import Data as PyGData
+except ImportError:
+    torch = None
+    PyGData = None
+
+
 GRAPHML_EXAMPLE_FILE = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns"
@@ -820,6 +828,44 @@ class ForeignTests(unittest.TestCase):
         self.assertTrue(g2.is_simple())
         self.assertEqual(g.vcount(), g2.vcount())
         self.assertEqual(sorted(g.get_edgelist()), sorted(g2.get_edgelist()))
+
+    @unittest.skipIf(PyGData is None, "test case depends on torch_geometric")
+    def testGraphTorchGeometric(self):
+        # Undirected
+        g = Graph.Ring(10)
+        g.vs["vattr"] = list(range(g.vcount()))
+        g.es["eattr"] = list(range(len(g.es)))
+
+        # Go to torch geometric
+        data_pyg = g.to_torch_geometric()
+
+        self.assertEqual(g.vcount(), data_pyg.num_nodes)
+        self.assertEqual(
+            sorted([list(x) for x in g.get_edgelist()]),
+            sorted(data_pyg.edge_index.tolist()),
+        )
+
+        # Test attributes
+        self.assertEqual(g.vs["vattr"], data_pyg.x[:, 0].tolist())
+        self.assertEqual(g.es["eattr"], data_pyg.edge_attr[:, 0].tolist())
+
+        # Directed
+        g = Graph.Ring(10, directed=True)
+        g.vs["vattr"] = list(range(g.vcount()))
+        g.es["eattr"] = list(range(len(g.es)))
+
+        # Go to torch geometric
+        data_pyg = g.to_torch_geometric()
+
+        self.assertEqual(g.vcount(), data_pyg.num_nodes)
+        self.assertEqual(
+            sorted([list(x) for x in g.get_edgelist()]),
+            sorted(data_pyg.edge_index.tolist()),
+        )
+
+        # Test attributes
+        self.assertEqual(g.vs["vattr"], data_pyg.x[:, 0].tolist())
+        self.assertEqual(g.es["eattr"], data_pyg.edge_attr[:, 0].tolist())
 
     @unittest.skipIf(gt is None, "test case depends on graph-tool")
     def testMultigraphGraphTool(self):

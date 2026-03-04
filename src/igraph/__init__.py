@@ -211,6 +211,7 @@ from igraph.io.libraries import (
     _export_graph_to_networkx,
     _construct_graph_from_graph_tool,
     _export_graph_to_graph_tool,
+    _export_graph_to_torch_geometric,
 )
 from igraph.io.random import (
     _construct_random_geometric_graph,
@@ -463,6 +464,8 @@ class Graph(GraphBase):
     from_graph_tool = classmethod(_construct_graph_from_graph_tool)
     to_graph_tool = _export_graph_to_graph_tool
 
+    to_torch_geometric = _export_graph_to_torch_geometric
+
     # Files
     Read_DIMACS = classmethod(_construct_graph_from_dimacs_file)
     write_dimacs = _write_graph_to_dimacs_file
@@ -708,7 +711,9 @@ class Graph(GraphBase):
 
     ###########################
     # Paths/traversals
-    def get_all_simple_paths(self, v, to=None, minlen=0, maxlen=-1, mode="out", max_results=None):
+    def get_all_simple_paths(
+        self, v, to=None, minlen=0, maxlen=-1, mode="out", max_results=None
+    ):
         """Calculates all the simple paths from a given node to some other nodes
         (or all of them) in a graph.
 
@@ -973,15 +978,14 @@ class Graph(GraphBase):
     def are_connected(self, *args, **kwds):
         """Deprecated alias to L{Graph.are_adjacent()}."""
         deprecated(
-            "Graph.are_connected() is deprecated; use Graph.are_adjacent() " "instead"
+            "Graph.are_connected() is deprecated; use Graph.are_adjacent() instead"
         )
         return self.are_adjacent(*args, **kwds)
 
     def get_incidence(self, *args, **kwds):
         """Deprecated alias to L{Graph.get_biadjacency()}."""
         deprecated(
-            "Graph.get_incidence() is deprecated; use Graph.get_biadjacency() "
-            "instead"
+            "Graph.get_incidence() is deprecated; use Graph.get_biadjacency() instead"
         )
         return self.get_biadjacency(*args, **kwds)
 

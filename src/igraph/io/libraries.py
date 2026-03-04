@@ -270,3 +270,48 @@ def _construct_graph_from_graph_tool(cls, g):
     graph.add_edges(edges, eattr)
 
     return graph
+
+
+def _export_graph_to_torch_geometric(
+    graph, vertex_attributes=None, edge_attributes=None
+):
+    """Converts the graph to torch geometric
+
+    Data types: graph-tool only accepts specific data types. See the
+    following web page for a list:
+
+    https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.data.Data.html#torch_geometric.data.Data
+
+    @param g: graph-tool Graph
+    @param vertex_attributes: dictionary of vertex attributes to transfer.
+      Keys are attributes from the vertices, values are data types (see
+      below). C{None} means no vertex attributes are transferred.
+    @param edge_attributes: dictionary of edge attributes to transfer.
+      Keys are attributes from the edges, values are data types (see
+      below). C{None} means no vertex attributes are transferred.
+    """
+    import torch
+    from torch_geometric.data import Data
+
+    if vertex_attributes is None:
+        vertex_attributes = graph.vertex_attributes()
+    if edge_attributes is None:
+        edge_attributes = graph.edge_attributes()
+
+    # Edge index
+    edge_index = torch.tensor(graph.get_edgelist(), dtype=torch.long)
+
+    # Node attributes
+    x = torch.tensor([graph.vs[attr] for attr in vertex_attributes])
+    if x.ndim > 1:
+        x = x.permute(*torch.arange(x.ndim - 1, -1, -1))
+
+    # Edge attributes
+    edge_attr = torch.tensor([graph.es[attr] for attr in edge_attributes])
+    if edge_attr.ndim > 1:
+        edge_attr = edge_attr.permute(*torch.arange(edge_attr.ndim - 1, -1, -1))
+
+    # Wrap into correct data structure
+    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
+
+    return data

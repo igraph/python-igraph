@@ -1018,6 +1018,10 @@ options = {
             "plotly>=5.3.0",
             "Pillow>=9; platform_python_implementation != 'PyPy'",
         ],
+        "test-pyg": [
+            "torch>=2.0.0; platform_python_implementation != 'PyPy'",
+            "torch-geometric>=2.0.0; platform_python_implementation != 'PyPy'",
+        ],
         # Dependencies needed for testing on Windows ARM64; only those that are either
         # pure Python or have Windows ARM64 wheels as we don't want to compile wheels
         # in CI
