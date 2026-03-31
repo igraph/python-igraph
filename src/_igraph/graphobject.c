@@ -7595,6 +7595,7 @@ PyObject *igraphmodule_Graph_motifs_randesu(igraphmodule_GraphObject *self,
       return NULL;
     Py_RETURN_NONE;
   } else {
+    igraph_vector_destroy(&cut_prob);
     PyErr_SetString(PyExc_TypeError, "callback must be callable or None");
     return NULL;
   }
@@ -11747,11 +11748,14 @@ PyObject *igraphmodule_Graph_bfs(igraphmodule_GraphObject * self,
 
   if (igraph_vector_int_init(&parents, igraph_vcount(&self->g))) {
     igraph_vector_int_destroy(&vids);
-    igraph_vector_int_destroy(&parents);
+    igraph_vector_int_destroy(&layers);
     return igraphmodule_handle_igraph_error();
   }
 
   if (igraph_bfs_simple(&self->g, vid, mode, &vids, &layers, &parents)) {
+    igraph_vector_int_destroy(&vids);
+    igraph_vector_int_destroy(&layers);
+    igraph_vector_int_destroy(&parents);
     igraphmodule_handle_igraph_error();
     return NULL;
   }
