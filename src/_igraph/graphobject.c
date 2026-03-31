@@ -13840,15 +13840,16 @@ PyObject *igraphmodule_Graph_community_leiden(igraphmodule_GraphObject *self,
         igraphmodule_handle_igraph_error();
         error = -1;
       } else if (igraph_strength(
-        &self->g, node_weights, igraph_vss_all(),
-        igraph_is_directed(&self->g) ? IGRAPH_OUT : IGRAPH_ALL,
-        IGRAPH_NO_LOOPS, edge_weights
-      )) {
+          &self->g, node_weights, igraph_vss_all(),
+          igraph_is_directed(&self->g) ? IGRAPH_OUT : IGRAPH_ALL,
+          IGRAPH_NO_LOOPS, edge_weights)) {
         igraphmodule_handle_igraph_error();
         error = -1;
       }
     }
-    resolution /= igraph_vector_sum(node_weights);
+    if (!error) {
+      resolution /= igraph_vector_sum(node_weights);
+    }
   }
 
   /* Run actual Leiden algorithm for several iterations. */
