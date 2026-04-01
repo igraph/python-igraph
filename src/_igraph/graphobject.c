@@ -5329,6 +5329,7 @@ PyObject *igraphmodule_Graph_edge_betweenness(igraphmodule_GraphObject * self,
     igraph_vs_destroy(&sources);
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraphmodule_handle_igraph_error();
+    return NULL;
   }
 
   if (cutoff == Py_None) {
@@ -5529,11 +5530,14 @@ PyObject *igraphmodule_Graph_feedback_arc_set(
 
   if (igraph_vector_int_init(&res, 0)) {
     if (weights) { igraph_vector_destroy(weights); free(weights); }
+    igraphmodule_handle_igraph_error();
+    return NULL;
   }
 
   if (igraph_feedback_arc_set(&self->g, &res, weights, algo)) {
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraph_vector_int_destroy(&res);
+    igraphmodule_handle_igraph_error();
     return NULL;
   }
 
@@ -5571,11 +5575,14 @@ PyObject *igraphmodule_Graph_feedback_vertex_set(
 
   if (igraph_vector_int_init(&res, 0)) {
     if (weights) { igraph_vector_destroy(weights); free(weights); }
+    igraphmodule_handle_igraph_error();
+    return NULL;
   }
 
   if (igraph_feedback_vertex_set(&self->g, &res, weights, algo)) {
     if (weights) { igraph_vector_destroy(weights); free(weights); }
     igraph_vector_int_destroy(&res);
+    igraphmodule_handle_igraph_error();
     return NULL;
   }
 

@@ -784,6 +784,7 @@ PyObject* igraphmodule__enter_safelocale(PyObject* self, PyObject* Py_UNUSED(_nu
   if (igraph_enter_safelocale(loc)) {
     Py_DECREF(capsule);
     igraphmodule_handle_igraph_error();
+    return NULL;
   }
 
   return capsule;
