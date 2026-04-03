@@ -1,0 +1,31 @@
+name: Build Linux wheel
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "wheel-*"
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v3.1.1
+        env:
+          CIBW_BUILD: "cp311-manylinux_x86_64 cp312-manylinux_x86_64"
+          CIBW_ARCHS_LINUX: "x86_64"
+
+      - name: Upload wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheelhouse
+          path: wheelhouse/*.whl
