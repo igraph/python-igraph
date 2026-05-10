@@ -156,7 +156,6 @@ PyObject *igraphmodule__union(PyObject *self,
           if (!dest || PyList_SetItem(emi, j, dest)) {
             igraph_vector_ptr_destroy(&gs);
             igraph_vector_int_list_destroy(&edgemaps);
-            Py_XDECREF(dest);
             Py_DECREF(emi);
             Py_DECREF(em_list);
             return NULL;
@@ -167,7 +166,6 @@ PyObject *igraphmodule__union(PyObject *self,
       if (!emi || PyList_SetItem(em_list, i, emi)) {
         igraph_vector_ptr_destroy(&gs);
         igraph_vector_int_list_destroy(&edgemaps);
-        Py_XDECREF(emi);
         Py_DECREF(em_list);
         return NULL;
       }
@@ -281,7 +279,6 @@ PyObject *igraphmodule__intersection(PyObject *self,
           if (!dest || PyList_SetItem(emi, j, dest)) {
             igraph_vector_ptr_destroy(&gs);
             igraph_vector_int_list_destroy(&edgemaps);
-            Py_XDECREF(dest);
             Py_DECREF(emi);
             Py_DECREF(em_list);
             return NULL;
@@ -292,7 +289,6 @@ PyObject *igraphmodule__intersection(PyObject *self,
       if (!emi || PyList_SetItem(em_list, i, emi)) {
         igraph_vector_ptr_destroy(&gs);
         igraph_vector_int_list_destroy(&edgemaps);
-        Py_XDECREF(emi);
         Py_DECREF(em_list);
         return NULL;
       }

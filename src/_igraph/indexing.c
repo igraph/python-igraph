@@ -340,7 +340,6 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
           /* Setting attribute */
           Py_INCREF(item);
           if (PyList_SetItem(values, eid, item)) {
-            Py_DECREF(item);
             igraph_vector_int_clear(&data->to_add);
           }
         }
@@ -402,7 +401,6 @@ static int igraphmodule_i_Graph_adjmatrix_set_index_row(igraph_t* graph,
           /* Setting attribute */
           Py_INCREF(new_value);
           if (PyList_SetItem(values, eid, new_value)) {
-            Py_DECREF(new_value);
             igraph_vector_int_clear(&data->to_add);
           }
         }

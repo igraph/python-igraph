@@ -310,7 +310,6 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
         Py_INCREF(item);
 
         if (PyList_SetItem(result, i, item)) {
-          Py_DECREF(item);
           Py_DECREF(result);
           return 0;
         }
@@ -335,7 +334,6 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
         Py_INCREF(item);
 
         if (PyList_SetItem(result, i, item)) {
-          Py_DECREF(item);
           Py_DECREF(result);
           return 0;
         }
@@ -359,7 +357,6 @@ PyObject* igraphmodule_EdgeSeq_get_attribute_values(igraphmodule_EdgeSeqObject* 
         Py_INCREF(item);
 
         if (PyList_SetItem(result, i, item)) {
-          Py_DECREF(item);
           Py_DECREF(result);
           return 0;
         }
@@ -495,7 +492,6 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
         }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
         if (PyList_SetItem(list, i, item)) {
-          Py_DECREF(item);
           return -1;
         } /* PyList_SetItem stole a reference to the item automatically */
       }
@@ -516,7 +512,6 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
         }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
         if (PyList_SetItem(list, i, item)) {
-          Py_DECREF(item);
           Py_DECREF(list);
           return -1;
         }
@@ -560,7 +555,6 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
         }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
         if (PyList_SetItem(list, VECTOR(es)[i], item)) {
-          Py_DECREF(item);
           igraph_vector_int_destroy(&es);
           return -1;
         } /* PyList_SetItem stole a reference to the item automatically */
@@ -579,7 +573,6 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
       for (i = 0; i < n2; i++) {
         Py_INCREF(Py_None);
         if (PyList_SetItem(list, i, Py_None)) {
-          Py_DECREF(Py_None);
           Py_DECREF(list);
           return -1;
         }
@@ -596,7 +589,6 @@ int igraphmodule_EdgeSeq_set_attribute_values_mapping(igraphmodule_EdgeSeqObject
         }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
         if (PyList_SetItem(list, VECTOR(es)[i], item)) {
-          Py_DECREF(item);
           Py_DECREF(list);
           return -1;
         }

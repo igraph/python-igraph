@@ -282,7 +282,6 @@ PyObject* igraphmodule_i_create_edge_attribute(const igraph_t* graph,
     Py_INCREF(Py_None);
     if (PyList_SetItem(values, i, Py_None)) {  /* reference stolen */
       Py_DECREF(values);
-      Py_DECREF(Py_None);
       return 0;
     }
   }
@@ -659,7 +658,6 @@ static igraph_error_t igraphmodule_i_attribute_add_vertices(
 
       if (o) {
         if (PyList_SetItem(value, i + j, o)) {
-          Py_DECREF(o); /* append failed */
           o = NULL; /* indicate error */
         } else {
           /* reference stolen by the list */
@@ -721,7 +719,6 @@ static igraph_error_t igraphmodule_i_attribute_permute_vertices(const igraph_t *
       Py_INCREF(o);
       if (PyList_SetItem(newlist, i, o)) {
         PyErr_PrintEx(0);
-        Py_DECREF(o);
         Py_DECREF(newlist);
         Py_DECREF(newdict);
         IGRAPH_ERROR("", IGRAPH_FAILURE);
@@ -878,7 +875,6 @@ static igraph_error_t igraphmodule_i_attribute_add_edges(
 
       if (o) {
         if (PyList_SetItem(value, i + j, o)) {
-          Py_DECREF(o); /* append failed */
           o = NULL; /* indicate error */
         } else {
           /* reference stolen by the list */
@@ -935,7 +931,6 @@ static igraph_error_t igraphmodule_i_attribute_permute_edges(const igraph_t *gra
       Py_INCREF(o);
       if (PyList_SetItem(newlist, i, o)) {
         PyErr_PrintEx(0);
-        Py_DECREF(o);
         Py_DECREF(newlist);
         Py_DECREF(newdict);
         IGRAPH_ERROR("", IGRAPH_FAILURE);
@@ -982,7 +977,6 @@ static PyObject* igraphmodule_i_ac_func(PyObject* values,
       Py_INCREF(item);
 
       if (PyList_SetItem(list, j, item)) {   /* reference to item stolen */
-        Py_DECREF(item);
         Py_DECREF(res);
         return 0;
       }
@@ -1070,7 +1064,6 @@ static PyObject* igraphmodule_i_ac_sum(PyObject* values,
 
     item = PyFloat_FromDouble(sum);
     if (PyList_SetItem(res, i, item)) {   /* reference to item stolen */
-      Py_DECREF(item);
       Py_DECREF(res);
       return 0;
     }
@@ -1114,7 +1107,6 @@ static PyObject* igraphmodule_i_ac_prod(PyObject* values,
     /* reference to new float stolen */
     item = PyFloat_FromDouble((double)prod);
     if (PyList_SetItem(res, i, item)) {   /* reference to item stolen */
-      Py_DECREF(item);
       Py_DECREF(res);
       return 0;
     }
@@ -1147,7 +1139,6 @@ static PyObject* igraphmodule_i_ac_first(PyObject* values,
 
     Py_INCREF(item);
     if (PyList_SetItem(res, i, item)) {  /* reference to item stolen */
-      Py_DECREF(item);
       Py_DECREF(res);
       return 0;
     }
@@ -1207,7 +1198,6 @@ static PyObject* igraphmodule_i_ac_random(PyObject* values,
 
     Py_INCREF(item);
     if (PyList_SetItem(res, i, item)) {  /* reference to item stolen */
-      Py_DECREF(item);
       Py_DECREF(random_func);
       Py_DECREF(res);
       return 0;
@@ -1244,7 +1234,6 @@ static PyObject* igraphmodule_i_ac_last(PyObject* values,
     Py_INCREF(item);
 
     if (PyList_SetItem(res, i, item)) {   /* reference to item stolen */
-      Py_DECREF(item);
       Py_DECREF(res);
       return 0;
     }
@@ -1290,7 +1279,6 @@ static PyObject* igraphmodule_i_ac_mean(PyObject* values,
     /* reference to new float stolen */
     item = PyFloat_FromDouble((double)mean);
     if (PyList_SetItem(res, i, item)) {   /* reference to item stolen */
-      Py_DECREF(item);
       Py_DECREF(res);
       return 0;
     }
@@ -1324,7 +1312,6 @@ static PyObject* igraphmodule_i_ac_median(PyObject* values,
 
       Py_INCREF(item);
       if (PyList_SetItem(list, j, item)) {  /* reference to item stolen */
-        Py_DECREF(item);
         Py_DECREF(list);
         Py_DECREF(res);
         return 0;
@@ -1383,7 +1370,6 @@ static PyObject* igraphmodule_i_ac_median(PyObject* values,
 
     /* reference to item stolen */
     if (PyList_SetItem(res, i, item)) {
-      Py_DECREF(item);
       Py_DECREF(list);
       Py_DECREF(res);
       return 0;
