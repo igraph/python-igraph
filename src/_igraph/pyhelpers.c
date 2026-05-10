@@ -84,10 +84,9 @@ PyObject* igraphmodule_PyList_NewFill(Py_ssize_t len, PyObject* item) {
 	for (i = 0; i < len; i++) {
 		Py_INCREF(item);
 		if (PyList_SetItem(result, i, item)) {
-      Py_DECREF(item);
-      Py_DECREF(result);
-      return 0;
-    }
+          Py_DECREF(result);
+          return 0;
+        }
 	}
 
 	return result;
