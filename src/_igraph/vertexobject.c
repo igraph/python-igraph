@@ -524,7 +524,6 @@ int igraphmodule_Vertex_set_attribute(igraphmodule_VertexObject* self, PyObject*
      * It took me 1.5 hours between London and Manchester to figure it out */
     Py_INCREF(v);
     r=PyList_SetItem(result, self->idx, v);
-    if (r == -1) { Py_DECREF(v); }
     return r;
   }
 
@@ -537,7 +536,6 @@ int igraphmodule_Vertex_set_attribute(igraphmodule_VertexObject* self, PyObject*
       if (i != self->idx) {
         Py_INCREF(Py_None);
         if (PyList_SetItem(result, i, Py_None) == -1) {
-          Py_DECREF(Py_None);
           Py_DECREF(result);
           return -1;
         }
@@ -545,7 +543,6 @@ int igraphmodule_Vertex_set_attribute(igraphmodule_VertexObject* self, PyObject*
         /* Same game with the reference count here */
         Py_INCREF(v);
         if (PyList_SetItem(result, i, v) == -1) {
-          Py_DECREF(v);
           Py_DECREF(result);
           return -1;
         }
@@ -639,7 +636,6 @@ static PyObject* _convert_to_edge_list(igraphmodule_VertexObject* vertex, PyObje
     }
 
     if (PyList_SetItem(obj, i, edge)) {  /* reference to v stolen, reference to idx discarded */
-      Py_DECREF(edge);
       return NULL;
     }
   }
@@ -684,7 +680,6 @@ static PyObject* _convert_to_vertex_list(igraphmodule_VertexObject* vertex, PyOb
     }
 
     if (PyList_SetItem(obj, i, v)) {  /* reference to v stolen, reference to idx discarded */
-      Py_DECREF(v);
       return NULL;
     }
   }
