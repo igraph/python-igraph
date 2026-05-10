@@ -295,7 +295,6 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values(igraphmodule_VertexSeqObje
         Py_INCREF(item);
 
         if (PyList_SetItem(result, i, item)) {
-          Py_DECREF(item);
           Py_DECREF(result);
           return 0;
         }
@@ -320,7 +319,6 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values(igraphmodule_VertexSeqObje
         Py_INCREF(item);
 
         if (PyList_SetItem(result, i, item)) {
-          Py_DECREF(item);
           Py_DECREF(result);
           return 0;
         }
@@ -343,7 +341,6 @@ PyObject* igraphmodule_VertexSeq_get_attribute_values(igraphmodule_VertexSeqObje
         Py_INCREF(item);
 
         if (PyList_SetItem(result, i, item)) {
-          Py_DECREF(item);
           Py_DECREF(result);
           return 0;
         }
@@ -469,7 +466,6 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
         if (item == 0) return -1;
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
         if (PyList_SetItem(list, i, item)) {
-          Py_DECREF(item);
           return -1;
         } /* PyList_SetItem stole a reference to the item automatically */
       }
@@ -487,7 +483,6 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
         }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
         if (PyList_SetItem(list, i, item)) {
-          Py_DECREF(item);
           Py_DECREF(list);
           return -1;
         }
@@ -530,7 +525,6 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
         }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
         if (PyList_SetItem(list, VECTOR(vs)[i], item)) {
-          Py_DECREF(item);
           igraph_vector_int_destroy(&vs);
           return -1;
         } /* PyList_SetItem stole a reference to the item automatically */
@@ -549,7 +543,6 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
       for (i = 0; i < n2; i++) {
         Py_INCREF(Py_None);
         if (PyList_SetItem(list, i, Py_None)) {
-          Py_DECREF(Py_None);
           Py_DECREF(list);
           igraph_vector_int_destroy(&vs);
           return -1;
@@ -566,7 +559,6 @@ int igraphmodule_VertexSeq_set_attribute_values_mapping(igraphmodule_VertexSeqOb
         }
         /* No need to Py_INCREF(item), PySequence_GetItem returns a new reference */
         if (PyList_SetItem(list, VECTOR(vs)[i], item)) {
-          Py_DECREF(list);
           Py_DECREF(item);
           igraph_vector_int_destroy(&vs);
           return -1;
