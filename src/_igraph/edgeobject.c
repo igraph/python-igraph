@@ -393,7 +393,6 @@ int igraphmodule_Edge_set_attribute(igraphmodule_EdgeObject* self, PyObject* k, 
      * It took me 1.5 hours between London and Manchester to figure it out */
     Py_INCREF(v);
     r=PyList_SetItem(result, self->idx, v);
-    if (r == -1) { Py_DECREF(v); }
     return r;
   }
 
@@ -406,7 +405,6 @@ int igraphmodule_Edge_set_attribute(igraphmodule_EdgeObject* self, PyObject* k, 
       if (i != self->idx) {
         Py_INCREF(Py_None);
         if (PyList_SetItem(result, i, Py_None) == -1) {
-          Py_DECREF(Py_None);
           Py_DECREF(result);
           return -1;
         }
@@ -414,7 +412,6 @@ int igraphmodule_Edge_set_attribute(igraphmodule_EdgeObject* self, PyObject* k, 
         /* Same game with the reference count here */
         Py_INCREF(v);
         if (PyList_SetItem(result, i, v) == -1) {
-          Py_DECREF(v);
           Py_DECREF(result);
           return -1;
         }
