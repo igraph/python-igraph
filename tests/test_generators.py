@@ -1,5 +1,7 @@
 import unittest
 
+from parameterized import parameterized
+
 from igraph import Graph, InternalError
 
 
@@ -747,11 +749,13 @@ class GeneratorTests(unittest.TestCase):
         self.assertListEqual(el, [(1, 0), (0, 1), (3, 1), (0, 2), (2, 2)])
         self.assertListEqual(g.es["w0"], [2, 1, 1, 2, 2.5])
 
+    # not testing csc_* here, as the edge order comes out different
+    @parameterized.expand(["coo_array", "coo_matrix", "csr_matrix", "csr_array"])
     @unittest.skipIf(
         (sparse is None) or (np is None), "test case depends on NumPy/SciPy"
     )
-    def testSparseWeightedAdjacency(self):
-        mat = sparse.coo_matrix(
+    def testSparseWeightedAdjacency(self, cls):
+        mat = getattr(sparse, cls)(
             [[0, 1, 2, 0], [2, 0, 0, 0], [0, 0, 2.5, 0], [0, 1, 0, 0]]
         )
 
