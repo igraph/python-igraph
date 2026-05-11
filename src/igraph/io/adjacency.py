@@ -4,13 +4,23 @@ from igraph.sparse_matrix import (
 )
 
 
+def _sp_cls():
+    try:
+        from scipy import sparse
+    except ImportError:
+        return ()
+    if not hasattr(sparse, "sparray"):  # scipy < 1.11
+        return sparse.spmatrix
+    return (sparse.sparray, sparse.spmatrix)
+
+
 def _construct_graph_from_adjacency(cls, matrix, mode="directed", loops="once"):
     """Generates a graph from its adjacency matrix.
 
     @param matrix: the adjacency matrix. Possible types are:
       - a list of lists
       - a numpy 2D array or matrix (will be converted to list of lists)
-      - a scipy.sparse matrix (will be converted to a COO matrix, but not
+      - a scipy.sparse array or matrix (will be converted to COO format, but not
         to a dense matrix)
       - a pandas.DataFrame (column/row names must match, and will be used
         as vertex names).
@@ -43,16 +53,11 @@ def _construct_graph_from_adjacency(cls, matrix, mode="directed", loops="once"):
         np = None
 
     try:
-        from scipy import sparse
-    except ImportError:
-        sparse = None
-
-    try:
         import pandas as pd
     except ImportError:
         pd = None
 
-    if (sparse is not None) and isinstance(matrix, sparse.spmatrix):
+    if isinstance(matrix, _sp_cls()):
         return _graph_from_sparse_matrix(cls, matrix, mode=mode, loops=loops)
 
     if (pd is not None) and isinstance(matrix, pd.DataFrame):
@@ -118,16 +123,11 @@ def _construct_graph_from_weighted_adjacency(
         np = None
 
     try:
-        from scipy import sparse
-    except ImportError:
-        sparse = None
-
-    try:
         import pandas as pd
     except ImportError:
         pd = None
 
-    if (sparse is not None) and isinstance(matrix, sparse.spmatrix):
+    if isinstance(matrix, _sp_cls()):
         return _graph_from_weighted_sparse_matrix(
             cls,
             matrix,

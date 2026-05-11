@@ -86,15 +86,16 @@ def _get_adjacency(
     return Matrix(data)
 
 
-def _get_adjacency_sparse(self, attribute=None):
-    """Returns the adjacency matrix of a graph as a SciPy CSR matrix.
+def _get_adjacency_sparse(self, attribute=None, *, container="matrix"):
+    """Returns the adjacency matrix of a graph as a SciPy CSR array or matrix.
 
     @param attribute: if C{None}, returns the ordinary adjacency
       matrix. When the name of a valid edge attribute is given
       here, the matrix returned will contain the default value
       at the places where there is no edge or the value of the
       given attribute where there is an edge.
-    @return: the adjacency matrix as a C{scipy.sparse.csr_matrix}.
+    @param container: either C{"array"} or C{"matrix"}
+    @return: the adjacency matrix as a C{scipy.sparse.csr_array} or C{scipy.sparse.csr_matrix}.
     """
     try:
         from scipy import sparse
@@ -102,6 +103,10 @@ def _get_adjacency_sparse(self, attribute=None):
         raise ImportError(
             "You should install scipy in order to use this function"
         ) from None
+
+    if container not in {"array", "matrix"}:
+        raise ValueError("container must be either 'array' or 'matrix'")
+    cls = sparse.csr_array if container == "array" else sparse.csr_matrix
 
     edges = self.get_edgelist()
     if attribute is None:
@@ -114,7 +119,7 @@ def _get_adjacency_sparse(self, attribute=None):
 
     N = self.vcount()
     r, c = zip(*edges) if edges else ([], [])
-    mtx = sparse.csr_matrix((weights, (r, c)), shape=(N, N))
+    mtx = cls((weights, (r, c)), shape=(N, N))
 
     if not self.is_directed():
         mtx = mtx + sparse.triu(mtx, 1).T + sparse.tril(mtx, -1).T

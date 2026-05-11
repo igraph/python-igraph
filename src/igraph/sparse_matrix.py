@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Implementation of Python-level sparse matrix operations."""
 
-from __future__ import with_statement
-
 __all__ = ()
 __docformat__ = "restructuredtext en"
 
@@ -65,7 +63,7 @@ def _maybe_halve_diagonal(m, condition):
 # Logic to get graph from scipy sparse matrix. This would be simple if there
 # weren't so many modes.
 def _graph_from_sparse_matrix(klass, matrix, mode="directed", loops="once"):
-    """Construct graph from sparse matrix, unweighted.
+    """Construct graph from sparse array or matrix, unweighted.
 
     @param loops: specifies how the diagonal of the matrix should be handled:
 
@@ -78,7 +76,7 @@ def _graph_from_sparse_matrix(klass, matrix, mode="directed", loops="once"):
     # matrix. The caller should make sure those conditions are met.
     from scipy import sparse
 
-    if not isinstance(matrix, sparse.coo_matrix):
+    if not isinstance(matrix, (sparse.coo_matrix, *([sparse.coo_array] if hasattr(sparse, "coo_array") else []))):
         matrix = matrix.tocoo()
 
     nvert = max(matrix.shape)
@@ -150,7 +148,7 @@ def _graph_from_sparse_matrix(klass, matrix, mode="directed", loops="once"):
 def _graph_from_weighted_sparse_matrix(
     klass, matrix, mode=ADJ_DIRECTED, attr="weight", loops="once"
 ):
-    """Construct graph from sparse matrix, weighted
+    """Construct graph from sparse array or matrix, weighted
 
     NOTE: Of course, you cannot emcompass a fully general weighted multigraph
     with a single adjacency matrix, so we don't try to do it here either.
@@ -165,7 +163,7 @@ def _graph_from_weighted_sparse_matrix(
     # matrix. The caller should make sure those conditions are met.
     from scipy import sparse
 
-    if not isinstance(matrix, sparse.coo_matrix):
+    if not isinstance(matrix, (sparse.coo_matrix, *([sparse.coo_array] if hasattr(sparse, "coo_array") else []))):
         matrix = matrix.tocoo()
 
     nvert = max(matrix.shape)

@@ -1011,6 +1011,7 @@ options = {
             "networkx>=2.5",
             "pytest>=7.0.1",
             "pytest-timeout>=2.1.0",
+            "parameterized",
             "numpy>=1.19.0; platform_python_implementation != 'PyPy'",
             "pandas>=1.1.0; platform_python_implementation != 'PyPy'",
             "scipy>=1.5.0; platform_python_implementation != 'PyPy'",
