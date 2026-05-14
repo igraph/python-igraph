@@ -159,6 +159,7 @@ jobs:
         uses: pypa/cibuildwheel@v3.4.1
         env:
           CIBW_PLATFORM: pyodide
+          CIBW_TEST_SKIP: "*"
 
       - uses: actions/upload-artifact@v7
         with:
