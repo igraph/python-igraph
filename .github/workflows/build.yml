@@ -336,7 +336,7 @@ jobs:
         run: |
           # We cannot install the test dependency group because many test dependencies cause
           # false positives in the sanitizer
-          pip install --prefer-binary networkx pytest pytest-timeout
+          pip install --prefer-binary networkx pytest pytest-timeout parameterized
           pip install -e .
 
       # Only pytest, and nothing else should be run in this section due to the presence of LD_PRELOAD.
