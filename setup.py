@@ -1040,6 +1040,7 @@ options = {
             "networkx>=2.5",
             "pytest>=7.0.1",
             "pytest-timeout>=2.1.0",
+            "parameterized",
         ],
         # Dependencies needed for building the documentation
         "doc": [
