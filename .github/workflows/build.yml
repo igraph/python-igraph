@@ -22,19 +22,19 @@ jobs:
           fetch-depth: 0
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@v3.4.1
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-manylinux_x86_64"
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@v3.4.1
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_BUILD: "*-musllinux_x86_64"
           CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-linux-x86_64
           path: ./wheelhouse/*.whl
@@ -49,13 +49,13 @@ jobs:
           fetch-depth: 0
 
       - name: Build wheels (manylinux)
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@v3.4.1
         env:
           CIBW_BEFORE_BUILD: "yum install -y flex bison libxml2-devel zlib-devel cairo-devel && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-manylinux_aarch64"
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-linux-aarch64-manylinux
           path: ./wheelhouse/*.whl
@@ -70,14 +70,14 @@ jobs:
           fetch-depth: 0
 
       - name: Build wheels (musllinux)
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@v3.4.1
         env:
           CIBW_BEFORE_BUILD: "apk add flex bison libxml2-dev zlib-dev cairo-dev && pip install -U cmake pip setuptools wheel && python setup.py build_c_core"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: "*-musllinux_aarch64"
           CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test-musl]' && python -m pytest -v tests"
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-linux-aarch64-musllinux
           path: ./wheelhouse/*.whl
@@ -133,14 +133,14 @@ jobs:
           cmake --install .
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@v3.4.1
         env:
           CIBW_ARCHS_MACOS: "${{ matrix.wheel_arch }}"
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_ENVIRONMENT: "LDFLAGS=-L$HOME/local/lib"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_arch }} ${{ matrix.cmake_extra_args }} -DCMAKE_PREFIX_PATH=$HOME/local
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-macos-${{ matrix.wheel_arch }}
           path: ./wheelhouse/*.whl
@@ -155,33 +155,12 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: actions/setup-python@v6
-        name: Install Python
-        with:
-          python-version: "3.12.1"
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v3.4.1
+        env:
+          CIBW_PLATFORM: pyodide
 
-      - name: Install OS dependencies
-        run: sudo apt install ninja-build cmake flex bison
-
-      - uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: "3.1.58"
-          actions-cache-folder: "emsdk-cache"
-
-      - name: Build wheel
-        run: |
-          pip install pyodide-build==0.26.2
-          python3 scripts/fix_pyodide_build.py
-          pyodide build
-
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-        if: ${{ failure() }}
-        with:
-          limit-access-to-actor: true
-          wait-timeout-minutes: 5
-
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-wasm
           path: ./dist/*.whl
@@ -238,7 +217,7 @@ jobs:
         shell: cmd
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@v3.4.1
         env:
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
@@ -252,7 +231,7 @@ jobs:
           IGRAPH_EXTRA_LIBRARIES: libxml2,lzma,zlib,iconv,charset,bcrypt
           IGRAPH_EXTRA_DYNAMIC_LIBRARIES: wsock32,ws2_32
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-win-${{ matrix.wheel_arch }}
           path: ./wheelhouse/*.whl
@@ -294,7 +273,7 @@ jobs:
           pip install '.[test]'
           python -m pytest -v tests
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: sdist
           path: dist/*.tar.gz
