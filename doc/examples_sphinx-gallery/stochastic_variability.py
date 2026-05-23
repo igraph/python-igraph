@@ -5,7 +5,7 @@
 Stochastic Variability in Community Detection Algorithms
 =========================================================
 
-This example demonstrates the use of stochastic community detection methods to check whether a network possesses a strong community structure, and whether the partitionings we obtain are meaningul. Many community detection algorithms are randomized, and return somewhat different results after each run, depending on the random seed that was set. When there is a robust community structure, we expect these results to be similar to each other. When the community structure is weak or non-existent, the results may be noisy and highly variable. We will employ several partion similarity measures to analyse the consistency of the results, including the normalized mutual information (NMI), the variation of information (VI), and the Rand index (RI).
+This example demonstrates the use of stochastic community detection methods to check whether a network possesses a strong community structure, and whether the partitionings we obtain are meaningful and consistent. Many community detection algorithms are randomized, and return somewhat different results after each run, depending on the random seed that was set. When there is a robust community structure, we expect these results to be similar to each other. When the community structure is weak or non-existent, the results may be noisy and highly variable. We will employ several partition similarity measures to analyse the consistency of the results, including the normalized mutual information (NMI), the variation of information (VI), and the Rand index (RI).
 
 """
 
@@ -143,7 +143,7 @@ for i, (karate_scores, random_scores, measure, lower, upper) in enumerate(measur
     )
     axes[1][i].set_title(f"{measure} - Random network")
     axes[1][i].set_xlabel(f"{measure} score")
-    axes[0][i].set_ylabel("PDF")
+    axes[0][i].set_ylabel("Density")
 
 plt.tight_layout()
 plt.show()
