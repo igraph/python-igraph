@@ -17,9 +17,9 @@
 - Added `align_layout()` to align the principal axes of a layout nicely
   with screen dimensions.
 
-- Added `Graph.commnity_voronoi()`.
+- Added `Graph.community_voronoi()`.
 
-- Added `Graph.commnity_fluid_communities()`.
+- Added `Graph.community_fluid_communities()`.
 
 ### Changed
 
