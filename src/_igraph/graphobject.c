@@ -13176,15 +13176,16 @@ PyObject *igraphmodule_Graph_modularity_matrix(igraphmodule_GraphObject *self,
  * Newman's edge betweenness method
  */
 PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject *self, PyObject *args, PyObject *kwds) {
-  static char *kwlist[] = { "directed", "weights", NULL };
+  static char *kwlist[] = { "directed", "weights", "lengths", NULL };
   PyObject *directed = Py_True;
-  PyObject *weights_o = Py_None;
+  PyObject *weights_o = Py_None, *lengths_o = Py_None;
   PyObject *res, *qs, *ms;
   igraph_matrix_int_t merges;
   igraph_vector_t q;
-  igraph_vector_t *weights = NULL;
+  igraph_vector_t *weights = NULL, *lengths = NULL;
+  igraph_error_t err;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &directed, &weights_o)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist, &directed, &weights_o, &lengths_o)) {
     return NULL;
   }
 
@@ -13207,7 +13208,16 @@ PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject
     return igraphmodule_handle_igraph_error();
   }
 
-  if (igraph_community_edge_betweenness(&self->g,
+  if (igraphmodule_attrib_to_vector_t(lengths_o, self, &lengths, ATTRIBUTE_TYPE_EDGE)) {
+    igraph_vector_destroy(&q);
+    igraph_matrix_int_destroy(&merges);
+    if (weights) {
+      igraph_vector_destroy(weights); free(weights);
+    }
+    return NULL;
+  }
+
+  err = igraph_community_edge_betweenness(&self->g,
         /* removed_edges = */ NULL,
         /* edge_betweenness = */ NULL,
         /* merges = */ &merges,
@@ -13216,19 +13226,18 @@ PyObject *igraphmodule_Graph_community_edge_betweenness(igraphmodule_GraphObject
         /* membership = */ NULL,
         PyObject_IsTrue(directed),
         weights,
-        /* lengths = */ NULL)) {
-
-    igraph_vector_destroy(&q);
-    igraph_matrix_int_destroy(&merges);
-    if (weights) {
-      igraph_vector_destroy(weights); free(weights);
-    }
-    
-    return igraphmodule_handle_igraph_error();;
-  }
+        lengths);
 
   if (weights) {
     igraph_vector_destroy(weights); free(weights);
+  }
+  if (lengths) {
+    igraph_vector_destroy(lengths); free(lengths);
+  }
+  if (err) {
+    igraph_vector_destroy(&q);
+    igraph_matrix_int_destroy(&merges);
+    return igraphmodule_handle_igraph_error();
   }
 
   qs = igraphmodule_vector_t_to_PyList(&q, IGRAPHMODULE_TYPE_FLOAT);
@@ -18948,7 +18957,7 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   {"community_edge_betweenness",
   (PyCFunction)igraphmodule_Graph_community_edge_betweenness,
   METH_VARARGS | METH_KEYWORDS,
-  "community_edge_betweenness(directed=True, weights=None)\n--\n\n"
+  "community_edge_betweenness(directed=True, weights=None, lengths=None)\n--\n\n"
   "Community structure detection based on the betweenness of the edges in\n"
   "the network. This algorithm was invented by M Girvan and MEJ Newman,\n"
   "see: M Girvan and MEJ Newman: Community structure in social and biological\n"
@@ -18969,6 +18978,8 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
   "  when we calculate the betweenness values.\n"
   "@param weights: name of an edge attribute or a list containing\n"
   "  edge weights. Higher weights indicate stronger connections.\n\n"
+  "@param lengths: name of an edge attribute or a list of positive edge lengths\n"
+  "  used to compute shortest paths for betweenness.\n"
   "@return: a tuple with the merge matrix that describes the dendrogram\n"
   "  and the modularity scores before each merge. The modularity scores\n"
   "  use the weights if the original graph was weighted.\n"

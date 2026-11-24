@@ -223,7 +223,9 @@ def _community_optimal_modularity(graph, *args, **kwds):
     return VertexClustering(graph, membership, modularity)
 
 
-def _community_edge_betweenness(graph, clusters=None, directed=True, weights=None):
+def _community_edge_betweenness(
+    graph, clusters=None, directed=True, weights=None, lengths=None
+):
     """Community structure based on the betweenness of the edges in the
     network.
 
@@ -245,18 +247,18 @@ def _community_edge_betweenness(graph, clusters=None, directed=True, weights=Non
     @param clusters: the number of clusters we would like to see. This
       practically defines the "level" where we "cut" the dendrogram to
       get the membership vector of the vertices. If C{None}, the dendrogram
-      is cut at the level that maximizes the modularity when the graph is
-      unweighted; otherwise the dendrogram is cut at a single cluster
-      (because cluster count selection based on modularities does not make
-      sense for this method if not all the weights are equal).
+      is cut at the level that maximizes modularity.
     @param directed: whether the directionality of the edges should be
       taken into account or not.
     @param weights: name of an edge attribute or a list containing
       edge weights. Higher weights indicate stronger connections.
+    @param lengths: name of an edge attribute or a list of positive edge
+      lengths used to compute shortest paths for betweenness. If omitted,
+      each edge has unit length.
     @return: a L{VertexDendrogram} object, initially cut at the maximum
       modularity or at the desired number of clusters.
     """
-    merges, qs = GraphBase.community_edge_betweenness(graph, directed, weights)
+    merges, qs = GraphBase.community_edge_betweenness(graph, directed, weights, lengths)
     if clusters is None:
         if qs is not None:
             clusters = _optimal_cluster_count_from_merges_and_modularity(
