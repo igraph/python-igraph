@@ -4380,7 +4380,7 @@ PyObject *igraphmodule_Graph_betweenness(igraphmodule_GraphObject * self,
     }
     Py_DECREF(cutoff_num);
   } else {
-    PyErr_SetString(PyExc_TypeError, "cutoff value must be None or integer");
+    PyErr_SetString(PyExc_TypeError, "cutoff must be a real number or None");
     igraph_vs_destroy(&vs);
     igraph_vs_destroy(&targets);
     igraph_vs_destroy(&sources);
@@ -5386,7 +5386,7 @@ PyObject *igraphmodule_Graph_edge_betweenness(igraphmodule_GraphObject * self,
     }
     Py_DECREF(cutoff_num);
   } else {
-    PyErr_SetString(PyExc_TypeError, "cutoff value must be None or integer");
+    PyErr_SetString(PyExc_TypeError, "cutoff must be a real number or None");
     igraph_vector_destroy(&res);
     return NULL;
   }
@@ -15563,10 +15563,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "@param vertices: the vertices for which the betweennesses must be returned.\n"
    "  If C{None}, assumes all of the vertices in the graph.\n"
    "@param directed: whether to consider directed paths.\n"
-   "@param cutoff: if it is an integer, only paths less than or equal to this\n"
-   "  length are considered, effectively resulting in an estimation of the\n"
-   "  betweenness for the given vertices. If C{None}, the exact betweenness is\n"
-   "  returned.\n"
+   "@param cutoff: only count shortest paths of length at most this value.\n"
+   "  Length is the number of edges, or the sum of their weights if C{weights}\n"
+   "  is given. The cutoff may be fractional. C{None} or a negative value\n"
+   "  means there is no limit.\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name.\n"
    "@param sources: the set of source vertices to consider when calculating\n"
@@ -15895,10 +15895,10 @@ struct PyMethodDef igraphmodule_Graph_methods[] = {
    "considering shortest paths only from certain source vertices or to certain\n"
    "target vertices.\n\n"
    "@param directed: whether to consider directed paths.\n"
-   "@param cutoff: if it is an integer, only paths less than or equal to this\n"
-   "  length are considered, effectively resulting in an estimation of the\n"
-   "  betweenness values. If C{None}, the exact betweennesses are\n"
-   "  returned.\n"
+   "@param cutoff: only count shortest paths of length at most this value.\n"
+   "  Length is the number of edges, or the sum of their weights if C{weights}\n"
+   "  is given. The cutoff may be fractional. C{None} or a negative value\n"
+   "  means there is no limit.\n"
    "@param weights: edge weights to be used. Can be a sequence or iterable or\n"
    "  even an edge attribute name.\n"
    "@param sources: the set of source vertices to consider when calculating\n"
