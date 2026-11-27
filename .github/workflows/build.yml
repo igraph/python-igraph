@@ -249,13 +249,17 @@ jobs:
           submodules: true
           fetch-depth: 0
 
+      - name: Get OS version for cache key
+        id: os-version
+        run: echo "version=$(lsb_release -rs)" >> "$GITHUB_OUTPUT"
+
       - name: Cache installed C core
         id: cache-c-core
         uses: actions/cache@v5
         with:
           path: |
             vendor/install
-          key: C-core-cache-${{ runner.os }}-${{ hashFiles('.git/modules/**/HEAD') }}
+          key: C-core-cache-${{ runner.os }}-${{ steps.os-version.outputs.version }}-${{ hashFiles('.git/modules/**/HEAD') }}
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
@@ -295,6 +299,10 @@ jobs:
           submodules: true
           fetch-depth: 0
 
+      - name: Get OS version for cache key
+        id: os-version
+        run: echo "version=$(lsb_release -rs)" >> "$GITHUB_OUTPUT"
+
       - name: Cache installed C core
         id: cache-c-core
         uses: actions/cache@v5
@@ -302,7 +310,7 @@ jobs:
           path: |
             vendor/build
             vendor/install
-          key: C-core-build-sanitizer-v1-${{ runner.os }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
+          key: C-core-build-sanitizer-v1-${{ runner.os }}-${{ steps.os-version.outputs.version }}-${{ hashFiles('.git/modules/vendor/source/igraph/HEAD') }}
 
       - name: Install OS dependencies
         if: steps.cache-c-core.outputs.cache-hit != 'true' # Only needed when building the C core
