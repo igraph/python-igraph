@@ -1,5 +1,12 @@
 # igraph Python interface changelog
 
+## [main]
+
+### Changed
+
+- Dropped support for Python 3.9 and 3.10 as they have reached their end of
+  life. The minimum supported Python version is now 3.11.
+
 ## 1.0.1 - 2025-12-26
 
 ### Changed
@@ -761,6 +768,7 @@ Please refer to the commit logs at <https://github.com/igraph/python-igraph> for
 a list of changes affecting versions up to 0.8.3. Notable changes after 0.8.3
 are documented above.
 
+[main]: https://github.com/igraph/python-igraph/compare/1.0.0...main
 [1.0.0]: https://github.com/igraph/python-igraph/compare/0.11.9...1.0.0
 [0.11.9]: https://github.com/igraph/python-igraph/compare/0.11.8...0.11.9
 [0.11.8]: https://github.com/igraph/python-igraph/compare/0.11.7...0.11.8

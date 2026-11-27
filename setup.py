@@ -7,8 +7,8 @@ import sys
 ###########################################################################
 
 # Check Python's version info and exit early if it is too old
-if sys.version_info < (3, 9):
-    print("This module requires Python >= 3.9")
+if sys.version_info < (3, 11):
+    print("This module requires Python >= 3.11")
     sys.exit(0)
 
 ###########################################################################
@@ -1050,7 +1050,7 @@ options = {
             "pydoctor>=23.4.0",
         ],
     },
-    "python_requires": ">=3.9",
+    "python_requires": ">=3.11",
     "headers": headers,
     "platforms": "ALL",
     "keywords": [
@@ -1068,11 +1068,10 @@ options = {
         "Operating System :: OS Independent",
         "Programming Language :: C",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Information Analysis",

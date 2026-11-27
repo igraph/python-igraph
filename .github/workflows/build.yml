@@ -5,7 +5,7 @@ on: [push, pull_request]
 env:
   CIBW_ENABLE: pypy
   CIBW_ENVIRONMENT_PASS_LINUX: PYTEST_TIMEOUT
-  CIBW_PROJECT_REQUIRES_PYTHON: ">=3.9"
+  CIBW_PROJECT_REQUIRES_PYTHON: ">=3.11"
   CIBW_TEST_COMMAND: "cd {project} && pip install --prefer-binary '.[test]' && python -m pytest -v tests"
   # Free-threaded builds excluded for Python 3.14 because they do not support the limited API
   CIBW_SKIP: "cp314t-*"
@@ -226,9 +226,9 @@ jobs:
           CIBW_BEFORE_BUILD: "pip install -U setuptools && python setup.py build_c_core"
           CIBW_BUILD: "*-${{ matrix.wheel_arch }}"
           CIBW_TEST_COMMAND: 'cd /d {project} && pip install --prefer-binary ".[${{ matrix.test_extra }}]" && python -m pytest tests'
-          # Skip tests for Python 3.10 onwards because SciPy does not have
+          # Skip tests on 32-bit Windows because SciPy does not have
           # 32-bit wheels for Windows any more
-          CIBW_TEST_SKIP: "cp310-win32 cp311-win32 cp312-win32 cp313-win32 cp314-win32"
+          CIBW_TEST_SKIP: "cp311-win32 cp312-win32 cp313-win32 cp314-win32"
           IGRAPH_CMAKE_EXTRA_ARGS: -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_arch }}-windows-static-md -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.cmake_arch }}
           IGRAPH_EXTRA_LIBRARY_PATH: C:/vcpkg/installed/${{ matrix.vcpkg_arch }}-windows-static-md/lib/
           IGRAPH_STATIC_EXTENSION: True
@@ -242,8 +242,7 @@ jobs:
 
   build_sdist:
     name: Build sdist and test extra dependencies
-    # Pinned because Python 3.9 is not available for ubuntu-latest (Ubuntu 26.04)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
@@ -265,7 +264,7 @@ jobs:
       - uses: actions/setup-python@v6
         name: Install Python
         with:
-          python-version: "3.9"
+          python-version: "3.11"
 
       - name: Build sdist
         run: |
@@ -287,7 +286,7 @@ jobs:
   # for the "Test" step below.
   build_with_sanitizer:
     name: Build with sanitizers for debugging purposes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     env:
       IGRAPH_CMAKE_EXTRA_ARGS: -DFORCE_COLORED_OUTPUT=ON
     steps:
