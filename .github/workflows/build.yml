@@ -159,6 +159,9 @@ jobs:
         uses: pypa/cibuildwheel@v3.4.1
         env:
           CIBW_PLATFORM: pyodide
+          # Each Pyodide version uses a different Emscripten version and exception
+          # model, so the C core must not be reused between builds
+          CIBW_BEFORE_BUILD: "rm -rf vendor/build vendor/install"
           CIBW_TEST_SKIP: "*"
 
       - uses: actions/upload-artifact@v7
