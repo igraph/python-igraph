@@ -1031,6 +1031,7 @@ options = {
             "networkx>=2.5",
             "pytest>=7.0.1",
             "pytest-timeout>=2.1.0",
+            "parameterized",
         ],
         # Dependencies needed for testing on musllinux; only those that are either
         # pure Python or have musllinux wheels as we don't want to compile wheels
