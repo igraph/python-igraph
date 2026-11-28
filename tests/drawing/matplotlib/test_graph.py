@@ -24,6 +24,13 @@ except ImportError:
 
 image_comparison = find_image_comparison()
 
+# Matplotlib 3.11 bundles a newer FreeType, which renders text differently.
+# Use a separate baseline for tests whose images contain text.
+if mpl is not None and tuple(int(x) for x in mpl.__version__.split(".")[:2]) >= (3, 11):
+    _text_baseline_suffix = "_mpl311"
+else:
+    _text_baseline_suffix = ""
+
 
 class GraphTestRunner(unittest.TestCase):
     def setUp(self):
@@ -48,7 +55,9 @@ class GraphTestRunner(unittest.TestCase):
         fig, ax = plt.subplots()
         plot(g, target=ax, layout=self.layout_small_ring)
 
-    @image_comparison(baseline_images=["graph_labels"], remove_text=True)
+    @image_comparison(
+        baseline_images=["graph_labels" + _text_baseline_suffix], remove_text=True
+    )
     def test_labels(self):
         plt.close("all")
         g = Graph.Ring(5)

@@ -10056,7 +10056,7 @@ PyObject *igraphmodule_Graph_write_gml(igraphmodule_GraphObject * self,
       igraphmodule_filehandle_destroy(&fobj);
     }
 
-    creator_str = PyUnicode_CopyAsString(o);
+    creator_str = igraphmodule_PyUnicode_CopyAsString(o);
     Py_DECREF(o);
 
     if (creator_str == 0) {

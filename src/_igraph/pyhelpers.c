@@ -121,14 +121,14 @@ char* igraphmodule_PyObject_ConvertToCString(PyObject* string) {
   if (string == NULL) {
     /* Nothing to do */
   } else if (PyBaseString_Check(string)) {
-    result = PyUnicode_CopyAsString(string);
+    result = igraphmodule_PyUnicode_CopyAsString(string);
   } else {
     string = PyObject_Str(string);
     if (string == NULL) {
       return NULL;
     }
 
-    result = PyUnicode_CopyAsString(string);
+    result = igraphmodule_PyUnicode_CopyAsString(string);
     Py_DECREF(string);
   }
 
@@ -165,7 +165,7 @@ PyObject* igraphmodule_PyRange_create(Py_ssize_t start, Py_ssize_t stop, Py_ssiz
   return result;
 }
 
-char* PyUnicode_CopyAsString(PyObject* string) {
+char* igraphmodule_PyUnicode_CopyAsString(PyObject* string) {
   PyObject* bytes;
   char* result;
 
@@ -195,7 +195,7 @@ char* PyUnicode_CopyAsString(PyObject* string) {
   return result;
 }
 
-int PyUnicode_IsEqualToUTF8String(PyObject* py_string,
+int igraphmodule_PyUnicode_IsEqualToUTF8String(PyObject* py_string,
 		const char* c_string) {
 	PyObject* c_string_conv;
 	int result;
