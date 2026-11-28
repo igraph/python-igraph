@@ -267,6 +267,23 @@ class CommunityTests(unittest.TestCase):
         self.assertMembershipsEqual(cl, [0, 0, 0, 1, 1])
         self.assertAlmostEqual(cl.q, 0.2750, places=3)
 
+    def testEdgeBetweennessLengths(self):
+        g = Graph([(0, 1), (1, 2), (2, 3), (3, 0)])
+        g.es["length"] = [1, 10, 1, 1]
+        g.es["strength"] = [4, 1, 4, 1]
+
+        # Shortest paths first avoid the long edge (1, 2). The algorithm
+        # removes (3, 0), then (1, 2), splitting the cycle into two pairs.
+        cl = g.community_edge_betweenness(2, lengths=g.es["length"]).as_clustering()
+        self.assertMembershipsEqual(cl, [0, 0, 1, 1])
+        cl = g.community_edge_betweenness(
+            weights="strength", lengths="length"
+        ).as_clustering()
+        self.assertMembershipsEqual(cl, [0, 0, 1, 1])
+        self.assertAlmostEqual(cl.q, 0.3)
+        with self.assertRaises(InternalError):
+            g.community_edge_betweenness(lengths=[0, 1, 1, 1])
+
     def testEigenvector(self):
         g = Graph.Full(5) + Graph.Full(5)
         g.add_edges([(0, 5)])
