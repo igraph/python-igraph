@@ -3,6 +3,7 @@
 set -e
 
 echo "Compile and install igraph into venv. This might take a few minutes..."
+/home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/${READTHEDOCS_VERSION}/bin/python3 ensurepip
 /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/${READTHEDOCS_VERSION}/bin/pip wheel -q -w dist .
 /home/docs/checkouts/readthedocs.org/user_builds/igraph/envs/${READTHEDOCS_VERSION}/bin/pip install -q --force-reinstall dist/*.whl
 
