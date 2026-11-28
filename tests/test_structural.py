@@ -344,6 +344,14 @@ class CentralityTests(unittest.TestCase):
             ValueError, g.edge_betweenness, cutoff=2, sources=[0, 8], targets=[0, 8]
         )
 
+    def testBetweennessWithFractionalCutoff(self):
+        g = Graph(3, [(0, 1), (1, 2)])
+        weights = [0.75, 0.75]
+        self.assertEqual(g.betweenness(weights=weights, cutoff=1.25), [0, 0, 0])
+        self.assertEqual(g.betweenness(weights=weights, cutoff=1.5), [0, 1, 0])
+        self.assertEqual(g.edge_betweenness(weights=weights, cutoff=1.25), [1, 1])
+        self.assertEqual(g.edge_betweenness(weights=weights, cutoff=1.5), [2, 2])
+
     def testClosenessCentrality(self):
         g = Graph.Star(5)
         cl = g.closeness()
