@@ -1421,9 +1421,9 @@ static igraph_error_t igraphmodule_i_attribute_combine_dicts(PyObject *dict,
   /* Collect what to do for each attribute in the source dict */
   pos = 0; i = 0;
   while (PyDict_Next(dict, &pos, &key, &value)) {
-    todo[i].name = PyUnicode_CopyAsString(key);
+    todo[i].name = igraphmodule_PyUnicode_CopyAsString(key);
     if (todo[i].name == 0) {
-      IGRAPH_ERROR("PyUnicode_CopyAsString failed", IGRAPH_FAILURE);
+      IGRAPH_ERROR("igraphmodule_PyUnicode_CopyAsString failed", IGRAPH_FAILURE);
     }
     IGRAPH_CHECK(igraph_attribute_combination_query(comb, todo[i].name, &todo[i].type, &todo[i].func));
     i++;

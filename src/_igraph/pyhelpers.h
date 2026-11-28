@@ -34,13 +34,13 @@ PyObject* igraphmodule_PyList_NewFill(Py_ssize_t len, PyObject* item);
 PyObject* igraphmodule_PyList_Zeroes(Py_ssize_t len);
 char* igraphmodule_PyObject_ConvertToCString(PyObject* string);
 PyObject* igraphmodule_PyRange_create(Py_ssize_t start, Py_ssize_t stop, Py_ssize_t step);
-int PyUnicode_IsEqualToUTF8String(PyObject* py_string, const char* c_string);
+int igraphmodule_PyUnicode_IsEqualToUTF8String(PyObject* py_string, const char* c_string);
 long igraphmodule_Py_HashPointer(void *p);
 
 #define PyBaseString_Check(o) (PyUnicode_Check(o) || PyBytes_Check(o))
 #define PyUnicode_IsEqualToASCIIString(uni, string) \
         (PyUnicode_CompareWithASCIIString(uni, string) == 0)
-char* PyUnicode_CopyAsString(PyObject* string);
+char* igraphmodule_PyUnicode_CopyAsString(PyObject* string);
 
 #define PY_IGRAPH_ASSERT_AT_BUILD_TIME(condition) \
   ((void)sizeof(char[1 - 2*!(condition)]))

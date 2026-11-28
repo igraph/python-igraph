@@ -52,7 +52,7 @@
  *
  * Returns -1 if there was an error, 0 otherwise.
  */
-int PyLong_AsInt_OutArg(PyObject* obj, int* result) {
+static int igraphmodule_PyLong_AsInt_OutArg(PyObject* obj, int* result) {
   long dummy = PyLong_AsLong(obj);
   if (dummy < INT_MIN) {
     PyErr_SetString(PyExc_OverflowError, "long integer too small for conversion to C int");
@@ -96,9 +96,9 @@ int igraphmodule_PyObject_to_enum(PyObject *o,
     return 0;
 
   if (PyLong_Check(o))
-    return PyLong_AsInt_OutArg(o, result);
+    return igraphmodule_PyLong_AsInt_OutArg(o, result);
 
-  s = PyUnicode_CopyAsString(o);
+  s = igraphmodule_PyUnicode_CopyAsString(o);
   if (s == 0) {
     PyErr_SetString(PyExc_TypeError, "int, long or string expected");
     return -1;
@@ -178,10 +178,10 @@ int igraphmodule_PyObject_to_enum_strict(PyObject *o,
     }
 
     if (PyLong_Check(o)) {
-      return PyLong_AsInt_OutArg(o, result);
+      return igraphmodule_PyLong_AsInt_OutArg(o, result);
     }
 
-    s = PyUnicode_CopyAsString(o);
+    s = igraphmodule_PyUnicode_CopyAsString(o);
     if (s == 0) {
       PyErr_SetString(PyExc_TypeError, "int, long or string expected");
       return -1;
@@ -414,15 +414,15 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *o,
         }
         w->pos = w_pos_int;
       } else if (!strcasecmp(kv, "howmany")) {
-        if (PyLong_AsInt_OutArg(value, &w->howmany)) {
+        if (igraphmodule_PyLong_AsInt_OutArg(value, &w->howmany)) {
           return -1;
         }
       } else if (!strcasecmp(kv, "il")) {
-        if (PyLong_AsInt_OutArg(value, &w->il)) {
+        if (igraphmodule_PyLong_AsInt_OutArg(value, &w->il)) {
           return -1;
         }
       } else if (!strcasecmp(kv, "iu")) {
-        if (PyLong_AsInt_OutArg(value, &w->iu)) {
+        if (igraphmodule_PyLong_AsInt_OutArg(value, &w->iu)) {
           return -1;
         }
       } else if (!strcasecmp(kv, "vl")) {
@@ -430,7 +430,7 @@ int igraphmodule_PyObject_to_eigen_which_t(PyObject *o,
       } else if (!strcasecmp(kv, "vu")) {
         w->vu = PyFloat_AsDouble(value);
       } else if (!strcasecmp(kv, "vestimate")) {
-        if (PyLong_AsInt_OutArg(value, &w->vestimate)) {
+        if (igraphmodule_PyLong_AsInt_OutArg(value, &w->vestimate)) {
           return -1;
         }
       } else if (!strcasecmp(kv, "balance")) {
@@ -962,7 +962,7 @@ int igraphmodule_PyObject_to_igraph_t(PyObject *o, igraph_t **result) {
  * \param v the result is stored here
  * \return 0 if everything was OK, 1 otherwise
  */
-int PyLong_to_integer_t(PyObject* obj, igraph_int_t* v) {
+static int igraphmodule_PyLong_to_integer_t(PyObject* obj, igraph_int_t* v) {
   if (IGRAPH_INTEGER_SIZE == 64) {
     /* here the assumption is that sizeof(long long) == 64 bits; anyhow, this
      * is the widest integer type that we can convert a PyLong to so we cannot
@@ -1001,7 +1001,7 @@ int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_int_t *v) {
 
   if (object == NULL) {
   } else if (PyLong_Check(object)) {
-    retval = PyLong_to_integer_t(object, &num);
+    retval = igraphmodule_PyLong_to_integer_t(object, &num);
     if (retval)
       return retval;
     *v = num;
@@ -1012,7 +1012,7 @@ int igraphmodule_PyObject_to_integer_t(PyObject *object, igraph_int_t *v) {
     if (i == NULL)
       return 1;
     /* as above, plus decrement the reference for the temp variable */
-    retval = PyLong_to_integer_t(i, &num);
+    retval = igraphmodule_PyLong_to_integer_t(i, &num);
     Py_DECREF(i);
     if (retval)
       return retval;
@@ -2005,7 +2005,7 @@ int igraphmodule_attrib_to_vector_t(PyObject *o, igraphmodule_GraphObject *self,
     igraph_attribute_type_t at;
     igraph_attribute_elemtype_t et;
     igraph_int_t n;
-    char *name = PyUnicode_CopyAsString(o);
+    char *name = igraphmodule_PyUnicode_CopyAsString(o);
 
     if (attr_type == ATTRIBUTE_TYPE_VERTEX) {
       et = IGRAPH_ATTRIBUTE_VERTEX;
@@ -2215,7 +2215,7 @@ int igraphmodule_attrib_to_vector_bool_t(PyObject *o, igraphmodule_GraphObject *
     /* First, check if the attribute is a "real" boolean */
     igraph_attribute_type_t at;
     igraph_attribute_elemtype_t et;
-    char *name = PyUnicode_CopyAsString(o);
+    char *name = igraphmodule_PyUnicode_CopyAsString(o);
 
     if (attr_type == ATTRIBUTE_TYPE_VERTEX) {
       et = IGRAPH_ATTRIBUTE_VERTEX;
@@ -3291,7 +3291,7 @@ int igraphmodule_PyList_to_existing_strvector_t(PyObject* v, igraph_strvector_t 
     igraph_bool_t will_free = false;
 
     if (PyUnicode_Check(item)) {
-      ptr = PyUnicode_CopyAsString(item);
+      ptr = igraphmodule_PyUnicode_CopyAsString(item);
       if (ptr == 0) {
         igraph_strvector_destroy(result);
         return 1;
@@ -3303,7 +3303,7 @@ int igraphmodule_PyList_to_existing_strvector_t(PyObject* v, igraph_strvector_t 
         igraph_strvector_destroy(result);
         return 1;
       }
-      ptr = PyUnicode_CopyAsString(o);
+      ptr = igraphmodule_PyUnicode_CopyAsString(o);
       Py_DECREF(o);
       if (ptr == 0) {
         igraph_strvector_destroy(result);
@@ -4057,7 +4057,7 @@ int igraphmodule_i_PyObject_pair_to_attribute_combination_record_t(
     PyErr_SetString(PyExc_TypeError, "keys must be strings or None in attribute combination specification dicts");
     return 1;
   } else {
-    result->name = PyUnicode_CopyAsString(name);
+    result->name = igraphmodule_PyUnicode_CopyAsString(name);
   }
 
   return 0;
