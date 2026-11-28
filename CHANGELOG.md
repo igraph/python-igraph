@@ -2,6 +2,10 @@
 
 ## [main]
 
+### Added
+
+- Added support for Python 3.15.
+
 ### Changed
 
 - Dropped support for Python 3.9 and 3.10 as they have reached their end of
